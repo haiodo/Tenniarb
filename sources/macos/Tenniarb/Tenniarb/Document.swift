@@ -8,11 +8,17 @@
 
 import Cocoa
 
-class Document: NSPersistentDocument {
-
+class Document: NSDocument {
+    var elementModel: ElementModel?
+    
+    var vc: ViewController?
+    
     override init() {
         super.init()
         // Add your subclass-specific initialization here.
+        
+        // Do any additional setup after loading the view.
+        self.elementModel = ElementModelFactory().elementModel
     }
 
     override class func autosavesInPlace() -> Bool {
@@ -23,8 +29,14 @@ class Document: NSPersistentDocument {
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController
+        windowController.window?.acceptsMouseMovedEvents = true
         self.addWindowController(windowController)
         
+        
+        vc = windowController.contentViewController as? ViewController
+        
+        
+        vc?.setElementModel(elementModel: self.elementModel!)
+        
     }
-
 }

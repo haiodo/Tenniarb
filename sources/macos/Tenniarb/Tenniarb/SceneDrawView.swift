@@ -16,11 +16,16 @@ class SceneDrawView: NSView {
     
     var activeElement: Element?
     
+    var x: Int = 0
+    var y: Int = 0
+    
     
     public func setElementModel(_ elementModel: ElementModel ) {
         self.elementModel = elementModel
-        self.setNeedsDisplay(bounds)
+        needsDisplay = true
     }
+    
+    
     
     
     func collectElements(el: Element, elements: inout [Element]) {
@@ -31,8 +36,62 @@ class SceneDrawView: NSView {
         }
     }
     
+    public func findElement(el: Element, x: Int, y: Int) -> Element? {
+        
+        if( el.x < x && x < el.x + 150 &&
+            el.y < y && y < el.y + 50 ) {
+            return el
+        }
+
+        for e in el.elements {
+            let result = findElement(el: e, x: x, y: y)
+            if( result != nil) {
+                return result
+            }
+        }
+        return nil
+    }
+    
     override func mouseDown(with event: NSEvent) {
         
+        let bs = self.convert(frame, from: self)
+        let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
+        self.x = (Int)(mloc.x - bs.minX)
+        self.y = (Int)(mloc.y - bs.minY)
+        
+        
+//        self.convert(event.)
+        
+        
+        if let em = elementModel {
+            let el = findElement(el: em, x: self.x, y: self.y)
+            if( el != nil) {
+                activeElement = el
+            }
+            else {
+                activeElement = nil
+            }
+        }
+        needsDisplay = true
+    }
+    
+    override func mouseMoved(with event: NSEvent) {
+        let bs = self.convert(frame, from: self)
+        let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
+        self.x = (Int)(mloc.x - bs.minX)
+        self.y = (Int)(mloc.y - bs.minY)
+
+
+        if let em = elementModel {
+            let el = findElement(el: em, x: event.absoluteX, y: event.absoluteY)
+            if( el != nil) {
+                activeElement = el
+            }
+            else {
+                activeElement = nil
+            }
+        }
+        needsDisplay = true
     }
     
     func getElements() -> [Element]  {
@@ -55,12 +114,10 @@ class SceneDrawView: NSView {
         
         let allElements = getElements()
         
-        var posx = 50
-        let posy = 50
         for e in allElements {
             
-            let yy: CGFloat = bounds.maxY - CGFloat(150+posy)
-            let xx: CGFloat = CGFloat(posx)
+            let yy: CGFloat = CGFloat(e.y)
+            let xx: CGFloat = CGFloat(e.x)
             var active = false
             
             if let ae = activeElement {
@@ -75,9 +132,27 @@ class SceneDrawView: NSView {
                         fillColor: CGColor.white,
                         text: e.name,
                         active: active)
-            posx += 200
-//            posy += 50
         }
+        
+        
+        let q: NSString = ("mouse at: \(self.x) \(self.y) ") as NSString
+        
+        
+        let font = NSFont.systemFont(ofSize: 14)
+        
+        let textStyle = NSMutableParagraphStyle.default().mutableCopy() as! NSMutableParagraphStyle
+        textStyle.alignment = NSTextAlignment.center
+        let textColor = NSColor(calibratedRed: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+        
+        let textFontAttributes: [String:Any] = [
+            NSForegroundColorAttributeName: textColor,
+            NSParagraphStyleAttributeName: textStyle,
+            NSFontAttributeName: font
+        ]
+        
+        
+        q.draw(in: CGRect(x: 0, y: 0, width: 200, height: 30), withAttributes: textFontAttributes)
+        
         
         
     }

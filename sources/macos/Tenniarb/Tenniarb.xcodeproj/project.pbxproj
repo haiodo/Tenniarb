@@ -24,7 +24,6 @@
 		0C2375F71ED838D900ECB516 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0C2375FA1ED838D900ECB516 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0C2376071ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,7 +43,6 @@
 			isa = PBXGroup;
 			children = (
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
-				0C2376041ED838D900ECB516 /* TenniarbTests */,
 				0C2375EC1ED838D900ECB516 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -70,14 +68,6 @@
 				0C2375FC1ED838D900ECB516 /* Info.plist */,
 			);
 			path = Tenniarb;
-			sourceTree = "<group>";
-		};
-		0C2376041ED838D900ECB516 /* TenniarbTests */ = {
-			isa = PBXGroup;
-			children = (
-				0C2376071ED838D900ECB516 /* Info.plist */,
-			);
-			path = TenniarbTests;
 			sourceTree = "<group>";
 		};
 		0C27F05C1EDC223E006CD2A2 /* model */ = {
@@ -237,6 +227,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -279,6 +270,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

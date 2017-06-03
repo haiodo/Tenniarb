@@ -22,6 +22,8 @@ class Element {
     var id: String
     var name: String
     var elements: [Element]
+    var x: Int = 0
+    var y: Int = 0
 
     convenience init(name: String) {
         self.init(id: NSUUID().uuidString, name: name)
@@ -63,15 +65,32 @@ public class ElementModelFactory {
             
             
         let pl = elementModel.addGet(Element(name: "Platform"))
+        pl.x = 50
+        pl.y = 50
+        
+        let index = pl.addGet( Element(name: "Index"))
+            index.x = 200
+            index.y = 50
+        let st = pl.addGet( Element(name: "StateTracker"))
+            st.x = 200
+            st.y = 100
             
         let dt = pl.addGet( Element(name: "DeviceTracker"))
-            dt.add( Element(name: "Device"))
-            
-            let repo = pl.addGet( Element(name: "Repository"))
-            repo.add(Element(name:"Database"))
-            
-            pl.add( Element(name: "Index"))
-            pl.add( Element(name: "StateTracker"))
+            dt.x = 250
+            dt.y = 100
         
+        let dev = dt.addGet( Element(name: "Device"))
+            dev.x = 250
+            dev.y = 150
+            
+        let repo = pl.addGet( Element(name: "Repository"))
+            repo.x = 250
+            repo.y = 200
+        let db = repo.addGet(Element(name: "Database"))
+            db.x = 400
+            db.y = 50
+            
+    
+
     }
 }

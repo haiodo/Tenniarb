@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16G12b" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Entity" representedClassName="Entity" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="toplevel" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="children" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entity" inverseName="parent" inverseEntity="Entity" syncable="YES"/>
+        <relationship name="nodes" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="EntityNode" inverseName="parent" inverseEntity="EntityNode" syncable="YES"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entity" inverseName="children" inverseEntity="Entity" syncable="YES"/>
+        <relationship name="world" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="World" inverseName="entities" inverseEntity="World" syncable="YES"/>
+    </entity>
+    <entity name="EntityNode" representedClassName="EntityNode" syncable="YES" codeGenerationType="class">
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="x" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="y" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entity" inverseName="nodes" inverseEntity="Entity" syncable="YES"/>
+    </entity>
+    <entity name="World" representedClassName="World" syncable="YES" codeGenerationType="class">
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" attributeType="String" indexed="YES" syncable="YES"/>
+        <relationship name="entities" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entity" inverseName="world" inverseEntity="Entity" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Entity" positionX="-495" positionY="-256" width="128" height="148"/>
+        <element name="World" positionX="-216" positionY="-531" width="128" height="88"/>
+        <element name="EntityNode" positionX="-522" positionY="-0" width="128" height="133"/>
+    </elements>
+</model>

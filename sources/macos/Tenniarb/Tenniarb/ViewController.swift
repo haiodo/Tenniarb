@@ -10,19 +10,24 @@ import Cocoa
 
 class ViewController: NSViewController {
 
+    @IBOutlet weak var scene: SceneDrawView!
+    
+    var elementModel:ElementModel?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        
     }
+    
 
     override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.
         }
     }
-
-
+    
+    public func setElementModel(elementModel: ElementModel) {
+        self.elementModel = elementModel
+        scene.setElementModel(elementModel)
+    }
 }
 
