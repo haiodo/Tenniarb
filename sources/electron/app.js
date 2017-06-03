@@ -1,3 +1,6 @@
+//
+// Plan to move it into nim in some future.
+
 const electron = require('electron')
     // const electron = require('electron')
     // Module to control application life.
@@ -22,17 +25,12 @@ function createWindow() {
     })
 
     // and load the index.html of the app.
-    // mainWindow.loadURL(url.format({
-    //     pathname: path.join(__dirname, '../index.html'),
-    //     protocol: 'file:',
-    //     slashes: true
-    // }))
-
     mainWindow.loadURL(url.format({
-        pathname: "localhost:3000",
-        protocol: 'http:',
+        pathname: path.join(__dirname, 'index.html'),
+        protocol: 'file:',
         slashes: true
     }))
+
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

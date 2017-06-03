@@ -1,11 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { Hello } from "./components/Hello";
+// import { Hello } from "./components/Hello";
 
 import styled from 'styled-components';
-
-const { Window, TitleBar, Text, Toolbar } = require('react-desktop/macOs');
 
 const MainLayout = styled.div`
     display: grid;
@@ -64,6 +62,8 @@ const SceneItem = styled.div`
     vertical-align: middle;
     user-select: none;
     cursor: pointer;
+    left: ${props => props.theme.x + 'px'};
+    top: ${props => props.theme.y + 'px'};
 `
 
 const SceneText = styled.div`
@@ -73,16 +73,50 @@ const SceneText = styled.div`
     text-align: center;
 `
 
+interface ISceneItemPane {
+    x?: number;
+    y?: number;
+    text: string;
+}
+interface ISceneItemState {
+    inMove?: boolean;
+    x: number;
+    y: number;
+}
+class SceneItemPane extends React.Component<ISceneItemPane, ISceneItemState> {
+    state: ISceneItemState = { inMove: false, x: 0, y: 0 }
+    constructor(props: ISceneItemPane) {
+        super(props);
+        this.state.x = props.x;
+        this.state.y = props.y;
+    }
+    render() {
+        return (
+            <SceneItem ref={"item"} theme={{ x: this.state.x, y: this.state.y }} onMouseDown={
+                () => { this.setState({ inMove: true }) }
+            } onMouseUp={
+                () => { this.setState({ inMove: false }) }
+            } onMouseMove={(e) => {
+                let item = ReactDOM.findDOMNode(this.refs["item"]) as HTMLElement;
+                let rect = (item.parentElement as HTMLElement).getBoundingClientRect()
+                if (this.state.inMove) this.setState({ x: e.pageX - rect.left - 75, y: e.pageY - rect.top - 25 });
+            }} onMouseOut={() => { this.setState({ inMove: false }) }}>
+                <SceneText>{this.props.text}</SceneText>
+            </SceneItem>
+        )
+    }
+}
+
 
 export class MainPlain extends React.Component<any, any> {
     render() {
         return (
             <MainLayout>
-                <TitlePane height={45}>
+                {/*<TitlePane height={45}>
                     <TitleBar controls inset>
                         <Toolbar height="43" horizontalAlignment="center" />
                     </TitleBar>
-                </TitlePane>
+                </TitlePane>*/}
                 <NavPanel>
                     Nav
                 </NavPanel>
@@ -92,14 +126,14 @@ export class MainPlain extends React.Component<any, any> {
                 <StatusPanel>
                     Status
                 </StatusPanel>
-                <ScenePanel>
-                    <SceneItem>
-                        <SceneText>Platform</SceneText>
-                    </SceneItem>
+                <ScenePanel ref={"diagram"}>
+                    <SceneItemPane x={20} y={30} text={"Platform"} />
+
+                    <SceneItemPane x={20} y={120} text={"Device"} />
                 </ScenePanel>
 
 
-            </MainLayout>
+            </MainLayout >
         );
     }
 }

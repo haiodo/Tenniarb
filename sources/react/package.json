@@ -1,26 +1,51 @@
 {
-    "name": "tenniarb",
-    "version": "0.1.0",
-    "description": "Tenniarb - Net Brain Mapper",
-    "main": "dist/index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "electron ./src/main.js"
-    },
-    "author": "Andrey Sobolev <haiodo@gmail.com>",
-    "license": "UNLICENSED",
-    "dependencies": {
-        "@types/electron": "^1.4.37",
-        "@types/react": "^15.0.24",
-        "@types/react-dom": "^15.5.0",
-        "react": "^15.5.4",
-        "react-desktop": "^0.3.0",
-        "react-dom": "^15.5.4",
-        "styled-components": "^1.4.6"
-    },
-    "devDependencies": {
-        "awesome-typescript-loader": "^3.1.3",
-        "source-map-loader": "^0.2.1",
-        "typescript": "^2.3.2"
-    }
+  "name": "tenniarb",
+  "version": "0.1.0",
+  "description": "Tenniarb - Net Brain Mapper",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ./src/main.js"
+  },
+  "author": "Andrey Sobolev <haiodo@gmail.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "prop-types": "^15.5.9",
+    "react": "^15.5.4",
+    "react-desktop": "^0.3.0",
+    "react-dom": "^15.5.4",
+    "react-draggable": "^2.2.6",
+    "react-transition-group": "^1.1.3",
+    "react-virtualized": "^9.7.5",
+    "styled-components": "^1.4.6"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.4.37",
+    "@types/electron-window-state": "^2.0.28",
+    "@types/node": "^6.0.31",
+    "@types/react": "^15.0.24",
+    "@types/react-dom": "^15.5.0",
+    "@types/react-transition-group": "^1.1.0",
+    "@types/react-virtualized": "^9.5.1",
+    "awesome-typescript-loader": "^3.1.3",
+    "babel-core": "^6.24.1",
+    "babel-webpack-plugin": "^0.1.1",
+    "clean-webpack-plugin": "^0.1.16",
+    "electron": "1.6.7",
+    "electron-debug": "^1.1.0",
+    "electron-devtools-installer": "^2.1.0",
+    "electron-mocha": "3.3.0",
+    "electron-packager": "8.6.0",
+    "electron-react-devtools": "^0.4.0",
+    "electron-winstaller": "2.5.2",
+    "react-addons-perf": "^15.4.2",
+    "react-addons-test-utils": "^15.4.2",
+    "source-map-loader": "^0.2.1",
+    "typescript": "^2.3.2",
+    "webpack": "^2.4.1",
+    "webpack-dev-middleware": "^1.10.1",
+    "webpack-dev-server": "^2.4.5",
+    "webpack-hot-middleware": "^2.18.0",
+    "webpack-merge": "^4.1.0"
+  }
 }

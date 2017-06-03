@@ -1,21 +1,25 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
+        "outDir": "./out",
         "sourceMap": true,
         "noImplicitAny": true,
         "module": "commonjs",
-        "target": "es5",
+        "moduleResolution": "node",
+        "target": "es6",
         "jsx": "react",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "stripInternal": true,
         "declaration": false,
-        "noEmit": true
+        "noEmit": true,
+        "noUnusedLocals": false
     },
     "include": [
         "./src/**/*"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "dist",
+        "out"
     ]
 }
