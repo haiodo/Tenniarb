@@ -82,29 +82,24 @@ extension ViewController: NSOutlineViewDataSource {
     }
     
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        //1
-        guard let outlineView = notification.object as? NSOutlineView else {
-            return
-        }
-        //2
-        let selectedIndex = outlineView.selectedRow
-        if let el = outlineView.item(atRow: selectedIndex) as? Element {
+        
+        let selectedIndex = worldTree.selectedRow
+        if let el = worldTree.item(atRow: selectedIndex) as? Element {
             //3
             self.scene.setActiveElement(el)
         }
     }
     
     override func controlTextDidEndEditing(_ obj: Notification) {
-        //1
-        guard let outlineView = obj.object as? NSOutlineView else {
-            return
-        }
-        //2
-        let selectedIndex = outlineView.selectedRow
-        if let el = outlineView.item(atRow: selectedIndex) as? Element {
-            //3
-//            outlineView.viewCe
-            self.scene.setActiveElement(el)
+        let selectedIndex = worldTree.selectedRow
+        let cell = worldTree.selectedCell() as? NSTextFieldCell
+        
+        let strValue = cell?.stringValue
+        if let el = worldTree.item(atRow: selectedIndex) as? Element {
+            if let str = strValue  {
+                el.name = str
+                scene.needsDisplay = true
+            }
         }
 
     }
