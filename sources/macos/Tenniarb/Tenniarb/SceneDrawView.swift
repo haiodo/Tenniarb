@@ -25,6 +25,11 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
+    public func setActiveElement( _ element: Element? ) {
+        activeElement = element
+        needsDisplay = true
+    }
+    
     
     
     
