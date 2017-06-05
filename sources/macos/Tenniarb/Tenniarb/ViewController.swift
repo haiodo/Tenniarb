@@ -86,7 +86,7 @@ extension ViewController: NSOutlineViewDataSource {
         let selectedIndex = worldTree.selectedRow
         if let el = worldTree.item(atRow: selectedIndex) as? Element {
             //3
-            self.scene.setActiveElement(el)
+            self.scene.setElementModel(el)
         }
     }
     

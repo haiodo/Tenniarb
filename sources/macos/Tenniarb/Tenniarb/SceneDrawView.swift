@@ -12,15 +12,27 @@ import CoreText
 
 class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
-    var elementModel: ElementModel?
+    var elementModel: Element?
     
     var activeElement: Element?
+    
+    var dragElement: Element?
     
     var x: Int = 0
     var y: Int = 0
     
+    var trackingArea: NSTrackingArea? = nil
     
-    public func setElementModel(_ elementModel: ElementModel ) {
+    var mouseDownState = false
+    
+    override var mouseDownCanMoveWindow: Bool {
+        get {
+            return false
+        }
+    }
+    
+    
+    public func setElementModel(_ elementModel: Element ) {
         self.elementModel = elementModel
         needsDisplay = true
     }
@@ -34,10 +46,13 @@ class SceneDrawView: NSView {
     
     
     func collectElements(el: Element, elements: inout [Element]) {
-        elements.append(el)
+        if !(el is ElementModel) {
+            elements.append(el)
+        }
         elements.append(contentsOf: el.elements)
         for e in el.elements {
-            collectElements(el: e, elements: &elements)
+            elements.append(e)
+//            collectElements(el: e, elements: &elements)
         }
     }
     
@@ -57,21 +72,29 @@ class SceneDrawView: NSView {
         return nil
     }
     
+    
+    override func mouseUp(with event: NSEvent) {
+        Swift.debugPrint("mouseUp")
+        self.mouseDownState = false
+        self.dragElement = nil
+    }
+    
     override func mouseDown(with event: NSEvent) {
-        
+        Swift.debugPrint("mouseDown")
         let bs = self.convert(frame, from: self)
         let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
         self.x = (Int)(mloc.x - bs.minX)
         self.y = (Int)(mloc.y - bs.minY)
         
-        
-//        self.convert(event.)
+        self.mouseDownState = true
         
         
         if let em = elementModel {
             let el = findElement(el: em, x: self.x, y: self.y)
             if( el != nil) {
                 activeElement = el
+                
+                self.dragElement = el
             }
             else {
                 activeElement = nil
@@ -80,23 +103,40 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
+    override var acceptsFirstResponder: Bool {
+        get {
+            return true
+        }
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if let de = dragElement {
+            de.x += (Int)(event.deltaX)
+            de.y -= (Int)(event.deltaY)
+            
+            needsDisplay = true
+        }
+    }
+    
+    
     override func mouseMoved(with event: NSEvent) {
         let bs = self.convert(frame, from: self)
         let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
         self.x = (Int)(mloc.x - bs.minX)
         self.y = (Int)(mloc.y - bs.minY)
 
-
-        if let em = elementModel {
-            let el = findElement(el: em, x: event.absoluteX, y: event.absoluteY)
-            if( el != nil) {
-                activeElement = el
+        if !mouseDownState {
+            if let em = elementModel {
+                let el = findElement(el: em, x: self.x, y: self.y)
+                if( el != nil) {
+                    activeElement = el
+                }
+                else {
+                    activeElement = nil
+                }
             }
-            else {
-                activeElement = nil
-            }
+            needsDisplay = true
         }
-        needsDisplay = true
     }
     
     func getElements() -> [Element]  {
@@ -138,28 +178,6 @@ class SceneDrawView: NSView {
                         text: e.name,
                         active: active)
         }
-        
-        
-        let q: NSString = ("mouse at: \(self.x) \(self.y) ") as NSString
-        
-        
-        let font = NSFont.systemFont(ofSize: 14)
-        
-        let textStyle = NSMutableParagraphStyle.default().mutableCopy() as! NSMutableParagraphStyle
-        textStyle.alignment = NSTextAlignment.center
-        let textColor = NSColor(calibratedRed: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
-        
-        let textFontAttributes: [String:Any] = [
-            NSForegroundColorAttributeName: textColor,
-            NSParagraphStyleAttributeName: textStyle,
-            NSFontAttributeName: font
-        ]
-        
-        
-        q.draw(in: CGRect(x: 0, y: 0, width: 200, height: 30), withAttributes: textFontAttributes)
-        
-        
-        
     }
     func drawRoundedRect(rect: CGRect, inContext context: CGContext?,
                          radius: CGFloat,
