@@ -43,12 +43,11 @@ class SceneDrawView: NSView {
     }
     
     
-    
-    
     func collectElements(el: Element, elements: inout [Element]) {
-        if !(el is ElementModel) {
+        
+//        if elementModel != nil && elementModel!.id != el.id {
             elements.append(el)
-        }
+//        }
         elements.append(contentsOf: el.elements)
         for e in el.elements {
             elements.append(e)
@@ -75,16 +74,15 @@ class SceneDrawView: NSView {
     
     override func mouseUp(with event: NSEvent) {
         Swift.debugPrint("mouseUp")
+        self.updateMousePosition()
+        
         self.mouseDownState = false
         self.dragElement = nil
     }
     
     override func mouseDown(with event: NSEvent) {
         Swift.debugPrint("mouseDown")
-        let bs = self.convert(frame, from: self)
-        let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
-        self.x = (Int)(mloc.x - bs.minX)
-        self.y = (Int)(mloc.y - bs.minY)
+        self.updateMousePosition()
         
         self.mouseDownState = true
         
@@ -110,6 +108,8 @@ class SceneDrawView: NSView {
     }
     
     override func mouseDragged(with event: NSEvent) {
+        self.updateMousePosition()
+        
         if let de = dragElement {
             de.x += (Int)(event.deltaX)
             de.y -= (Int)(event.deltaY)
@@ -118,12 +118,16 @@ class SceneDrawView: NSView {
         }
     }
     
-    
-    override func mouseMoved(with event: NSEvent) {
+    func updateMousePosition() {
         let bs = self.convert(frame, from: self)
         let mloc = self.convert(self.window!.mouseLocationOutsideOfEventStream, to: self)
-        self.x = (Int)(mloc.x - bs.minX)
-        self.y = (Int)(mloc.y - bs.minY)
+        self.x = (Int)(mloc.x - bs.minX - bounds.midX)
+        self.y = (Int)(mloc.y - bs.minY - bounds.midY)
+    }
+    
+    
+    override func mouseMoved(with event: NSEvent) {
+        self.updateMousePosition()
 
         if !mouseDownState {
             if let em = elementModel {
@@ -151,7 +155,7 @@ class SceneDrawView: NSView {
             return
         }
         
-        let context = NSGraphicsContext.current()?.cgContext
+        let context = NSGraphicsContext.current?.cgContext
         
         context?.setFillColor(background)
         context?.fill(bounds)
@@ -161,8 +165,8 @@ class SceneDrawView: NSView {
         
         for e in allElements {
             
-            let yy: CGFloat = CGFloat(e.y)
-            let xx: CGFloat = CGFloat(e.x)
+            let yy: CGFloat = CGFloat(e.y) + bounds.midY
+            let xx: CGFloat = CGFloat(e.x) + bounds.midX
             var active = false
             
             if let ae = activeElement {
@@ -233,14 +237,14 @@ class SceneDrawView: NSView {
         
         let font = NSFont.systemFont(ofSize: 24)
         
-        let textStyle = NSMutableParagraphStyle.default().mutableCopy() as! NSMutableParagraphStyle
+        let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         textStyle.alignment = NSTextAlignment.center
         let textColor = NSColor(calibratedRed: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
         
         let textFontAttributes: [String:Any] = [
-            NSForegroundColorAttributeName: textColor,
-            NSParagraphStyleAttributeName: textStyle,
-            NSFontAttributeName: font
+            NSAttributedStringKey.foregroundColor.rawValue: textColor,
+            NSAttributedStringKey.paragraphStyle.rawValue: textStyle,
+            NSAttributedStringKey.font.rawValue: font
         ]
         
         

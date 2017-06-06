@@ -65,29 +65,29 @@ public class ElementModelFactory {
             
             
         let pl = elementModel.addGet(Element(name: "Platform"))
-        pl.x = 50
-        pl.y = 50
+        pl.x = 0
+        pl.y = 0
         
         let index = pl.addGet( Element(name: "Index"))
-            index.x = 200
+            index.x = 50
             index.y = 50
         let st = pl.addGet( Element(name: "StateTracker"))
-            st.x = 200
-            st.y = 100
+            st.x = -50
+            st.y = -50
             
         let dt = pl.addGet( Element(name: "DeviceTracker"))
-            dt.x = 250
-            dt.y = 100
+            dt.x = 50
+            dt.y = -50
         
         let dev = dt.addGet( Element(name: "Device"))
-            dev.x = 250
-            dev.y = 150
+            dev.x = -50
+            dev.y = 50
             
         let repo = pl.addGet( Element(name: "Repository"))
-            repo.x = 250
-            repo.y = 200
+            repo.x = 50
+            repo.y = 00
         let db = repo.addGet(Element(name: "Database"))
-            db.x = 400
+            db.x = 40
             db.y = 50
             
     

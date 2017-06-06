@@ -33,9 +33,19 @@ class ViewController: NSViewController {
         
         worldTree.reloadData()
         // Expand all top level elements
-        for e in elementModel.elements.enumerated() {
-            worldTree.expandItem(e, expandChildren: true)
+        
+        var firstChild:Element? = nil
+        
+        for e in elementModel.elements {
+            if firstChild == nil {
+                firstChild = e
+            }
+            worldTree.expandItem(e, expandChildren: false)
         }
+//        if firstChild != nil {
+//            let selectedIndex = worldTree.selectedRow
+//            worldTree.
+//        }
         
     }
 }
