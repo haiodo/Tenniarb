@@ -52,6 +52,7 @@ class ViewController: NSViewController {
 
 extension ViewController: NSOutlineViewDataSource {
     
+    
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         //1
         if let el = item as? Element {
@@ -91,9 +92,10 @@ extension ViewController: NSOutlineViewDataSource {
 
     }
     
-    func outlineViewSelectionDidChange(_ notification: Notification) {
+    
+    @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
-        let selectedIndex = worldTree.selectedRow
+                    let selectedIndex = worldTree.selectedRow
         if let el = worldTree.item(atRow: selectedIndex) as? Element {
             //3
             self.scene.setElementModel(el)

@@ -45,9 +45,9 @@ class SceneDrawView: NSView {
     
     func collectElements(el: Element, elements: inout [Element]) {
         
-//        if elementModel != nil && elementModel!.id != el.id {
+        if elementModel != nil && !(elementModel is ElementModel) {
             elements.append(el)
-//        }
+        }
         elements.append(contentsOf: el.elements)
         for e in el.elements {
             elements.append(e)
@@ -241,10 +241,10 @@ class SceneDrawView: NSView {
         textStyle.alignment = NSTextAlignment.center
         let textColor = NSColor(calibratedRed: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
         
-        let textFontAttributes: [String:Any] = [
-            NSAttributedStringKey.foregroundColor.rawValue: textColor,
-            NSAttributedStringKey.paragraphStyle.rawValue: textStyle,
-            NSAttributedStringKey.font.rawValue: font
+        let textFontAttributes: [NSAttributedStringKey:Any] = [
+            NSAttributedStringKey.foregroundColor: textColor,
+            NSAttributedStringKey.paragraphStyle: textStyle,
+            NSAttributedStringKey.font: font
         ]
         
         

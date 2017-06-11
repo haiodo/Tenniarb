@@ -18,10 +18,40 @@ class ElementModel: Element {
     }
 }
 
+enum ElementKind {
+    case Element // A reference to element
+    case Link // A link
+    case Annontation // Annotation box
+}
+
+class DiagramItem {
+    var kind: ElementKind
+    var name: String?
+    var id: String
+    var visible: Bool = true // Some items could be hided
+    
+    init(kind: ElementKind, id: String? = nil, name: String? = nil) {
+        self.kind = kind
+        
+        if id == nil {
+            self.id = NSUUID().uuidString
+        }
+        else {
+            self.id = id!
+        }
+        
+        self.name = name
+    }
+}
+
 class Element {
     var id: String
     var name: String
     var elements: [Element]
+    
+    // Elements drawn on diagram
+    var items: [DiagramItem]
+    
     var x: Int = 0
     var y: Int = 0
 
@@ -33,8 +63,10 @@ class Element {
         self.id = id
         self.name = name
         self.elements = []
+        self.items = []
     }
-
+    
+    // Operations with containment elements
     func add( _ el: Element ) {
         self.elements.append(el)
     }
@@ -52,10 +84,12 @@ class Element {
         }
     }
 
-    func addGet(_ element: Element) -> Element {
-        self.add(element)
-        return element
+    func add(get: Element) -> Element {
+        self.add(get)
+        return get
     }
+    
+    // Operations with
 }
 
 public class ElementModelFactory {
@@ -64,29 +98,29 @@ public class ElementModelFactory {
         self.elementModel = ElementModel()
             
             
-        let pl = elementModel.addGet(Element(name: "Platform"))
+        let pl = elementModel.add(get: Element(name: "Platform"))
         pl.x = 0
         pl.y = 0
         
-        let index = pl.addGet( Element(name: "Index"))
+        let index = pl.add( get: Element(name: "Index"))
             index.x = 50
             index.y = 50
-        let st = pl.addGet( Element(name: "StateTracker"))
+        let st = pl.add( get: Element(name: "StateTracker"))
             st.x = -50
             st.y = -50
             
-        let dt = pl.addGet( Element(name: "DeviceTracker"))
+        let dt = pl.add( get: Element(name: "DeviceTracker"))
             dt.x = 50
             dt.y = -50
         
-        let dev = dt.addGet( Element(name: "Device"))
+        let dev = dt.add( get: Element(name: "Device"))
             dev.x = -50
             dev.y = 50
             
-        let repo = pl.addGet( Element(name: "Repository"))
+        let repo = pl.add( get: Element(name: "Repository"))
             repo.x = 50
             repo.y = 00
-        let db = repo.addGet(Element(name: "Database"))
+        let db = repo.add( get: Element(name: "Database"))
             db.x = 40
             db.y = 50
             
