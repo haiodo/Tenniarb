@@ -44,7 +44,7 @@ class DiagramItem {
     }
 }
 
-class Element {
+class Element: Hashable {
     var id: String
     var name: String
     var elements: [Element]
@@ -52,8 +52,20 @@ class Element {
     // Elements drawn on diagram
     var items: [DiagramItem]
     
-    var x: Int = 0
-    var y: Int = 0
+    var parent: Element? = nil
+    
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+    
+    public var hashValue: Int {
+        get {
+            return id.hashValue
+        }
+    }
+    
+    static func ==(lhs: Element, rhs: Element) -> Bool {
+        return lhs.id == rhs.id
+    }
 
     convenience init(name: String) {
         self.init(id: NSUUID().uuidString, name: name)
@@ -68,6 +80,7 @@ class Element {
     
     // Operations with containment elements
     func add( _ el: Element ) {
+        el.parent = self
         self.elements.append(el)
     }
 
@@ -110,7 +123,7 @@ public class ElementModelFactory {
             st.y = -50
             
         let dt = pl.add( get: Element(name: "DeviceTracker"))
-            dt.x = 50
+            dt.x = 100
             dt.y = -50
         
         let dev = dt.add( get: Element(name: "Device"))
@@ -119,7 +132,7 @@ public class ElementModelFactory {
             
         let repo = pl.add( get: Element(name: "Repository"))
             repo.x = 50
-            repo.y = 00
+            repo.y = -100
         let db = repo.add( get: Element(name: "Database"))
             db.x = 40
             db.y = 50

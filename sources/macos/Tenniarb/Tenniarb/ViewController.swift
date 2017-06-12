@@ -14,6 +14,10 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var worldTree: NSOutlineView!
     
+    @IBOutlet weak var effectView: NSVisualEffectView!
+    
+    @IBOutlet weak var textArea: NSScrollView!
+    
     var elementModel:ElementModel?
     
     override func viewDidLoad() {

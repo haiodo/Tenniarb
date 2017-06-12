@@ -683,20 +683,20 @@
             <objects>
                 <viewController id="5gI-5U-AMq" customClass="ViewController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="ERx-hH-rdd">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="974" height="744"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView wantsLayer="YES" autohidesScrollers="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VUW-I9-jfQ">
-                                <rect key="frame" x="0.0" y="0.0" width="200" height="600"/>
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="744"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="8bW-96-csO">
-                                    <rect key="frame" x="1" y="1" width="198" height="598"/>
+                                    <rect key="frame" x="1" y="1" width="198" height="742"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" rowHeight="22" indentationPerLevel="15" autoresizesOutlineColumn="YES" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb">
-                                            <rect key="frame" x="0.0" y="0.0" width="198" height="598"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="198" height="742"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="0.0"/>
-                                            <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="0.74678938356164382" colorSpace="calibratedRGB"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn identifier="" width="195" minWidth="40" maxWidth="1000" id="YFI-la-VX8" userLabel="WorldElement" colorLabel="IBBuiltInLabel-Yellow">
@@ -722,7 +722,7 @@
                                     <nil key="backgroundColor"/>
                                 </clipView>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="200" id="cse-v0-IRS"/>
+                                    <constraint firstAttribute="width" constant="200" id="yR2-1I-1LS"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="bYx-ah-exa">
                                     <rect key="frame" x="1" y="583" width="198" height="16"/>
@@ -733,62 +733,59 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
+                            <customView canDrawConcurrently="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oxI-2Z-wAL" customClass="SceneDrawView" customModule="Tenniarb" customModuleProvider="target">
+                                <rect key="frame" x="200" y="150" width="774" height="594"/>
+                            </customView>
                             <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9MU-xV-xmq">
-                                <rect key="frame" x="200" y="0.0" width="600" height="150"/>
+                                <rect key="frame" x="200" y="0.0" width="774" height="150"/>
                                 <clipView key="contentView" id="NCo-ST-RLy">
-                                    <rect key="frame" x="1" y="1" width="598" height="148"/>
+                                    <rect key="frame" x="1" y="1" width="772" height="148"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="yLh-cI-Ygj">
-                                            <rect key="frame" x="0.0" y="0.0" width="598" height="148"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="772" height="148"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                            <size key="minSize" width="598" height="148"/>
+                                            <size key="minSize" width="772" height="148"/>
                                             <size key="maxSize" width="799" height="10000000"/>
                                             <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </clipView>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="150" id="BKV-JQ-Bwr"/>
-                                    <constraint firstAttribute="height" constant="150" id="Mdp-r9-e03"/>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="150" id="kzv-eD-5RL"/>
-                                </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="bWa-2s-3pb">
                                     <rect key="frame" x="-100" y="-100" width="87" height="18"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="C5p-9o-nFu">
-                                    <rect key="frame" x="583" y="1" width="16" height="148"/>
+                                    <rect key="frame" x="757" y="1" width="16" height="148"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <customView canDrawConcurrently="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oxI-2Z-wAL" customClass="SceneDrawView" customModule="Tenniarb" customModuleProvider="target">
-                                <rect key="frame" x="200" y="150" width="600" height="450"/>
-                            </customView>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="9MU-xV-xmq" firstAttribute="top" secondItem="oxI-2Z-wAL" secondAttribute="bottom" id="K5l-Y4-Uwv"/>
-                            <constraint firstAttribute="trailing" secondItem="9MU-xV-xmq" secondAttribute="trailing" id="KeA-bh-YLh"/>
-                            <constraint firstItem="oxI-2Z-wAL" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="Q7A-TG-FgZ"/>
-                            <constraint firstAttribute="bottom" secondItem="9MU-xV-xmq" secondAttribute="bottom" id="a1R-au-qIM"/>
-                            <constraint firstItem="oxI-2Z-wAL" firstAttribute="leading" secondItem="VUW-I9-jfQ" secondAttribute="trailing" id="a4z-Yb-uq3"/>
-                            <constraint firstItem="VUW-I9-jfQ" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="bus-jw-0oQ"/>
-                            <constraint firstAttribute="bottom" secondItem="VUW-I9-jfQ" secondAttribute="bottom" id="try-Bu-o81"/>
-                            <constraint firstItem="9MU-xV-xmq" firstAttribute="leading" secondItem="VUW-I9-jfQ" secondAttribute="trailing" id="uu9-Ea-R4l"/>
-                            <constraint firstItem="VUW-I9-jfQ" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" id="v5W-Uy-J4x"/>
-                            <constraint firstAttribute="trailing" secondItem="oxI-2Z-wAL" secondAttribute="trailing" id="wRg-Oq-lPg"/>
+                            <constraint firstAttribute="trailing" secondItem="oxI-2Z-wAL" secondAttribute="trailing" id="6Oc-07-qn0"/>
+                            <constraint firstItem="oxI-2Z-wAL" firstAttribute="leading" secondItem="VUW-I9-jfQ" secondAttribute="trailing" id="Ew6-yh-qKI"/>
+                            <constraint firstAttribute="bottom" secondItem="VUW-I9-jfQ" secondAttribute="bottom" id="FWW-Fp-oxm"/>
+                            <constraint firstItem="VUW-I9-jfQ" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" id="HXP-Qt-g90"/>
+                            <constraint firstAttribute="bottom" secondItem="9MU-xV-xmq" secondAttribute="bottom" id="J8O-u7-4zt"/>
+                            <constraint firstItem="VUW-I9-jfQ" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="L5j-Uc-EWS"/>
+                            <constraint firstItem="9MU-xV-xmq" firstAttribute="top" secondItem="oxI-2Z-wAL" secondAttribute="bottom" id="Pda-89-8qv"/>
+                            <constraint firstAttribute="bottom" secondItem="oxI-2Z-wAL" secondAttribute="bottom" constant="150" id="aLb-bp-Soj"/>
+                            <constraint firstItem="9MU-xV-xmq" firstAttribute="leading" secondItem="VUW-I9-jfQ" secondAttribute="trailing" id="eyx-t2-ffW"/>
+                            <constraint firstAttribute="trailing" secondItem="9MU-xV-xmq" secondAttribute="trailing" id="huS-eo-ac6"/>
+                            <constraint firstItem="oxI-2Z-wAL" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="puX-PC-3SQ"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="scene" destination="oxI-2Z-wAL" id="gqX-pA-f3S"/>
+                        <outlet property="textArea" destination="9MU-xV-xmq" id="T58-EU-Y8I"/>
                         <outlet property="worldTree" destination="IgX-uM-dvb" id="UnG-yX-hx3"/>
                     </connections>
                 </viewController>
                 <customObject id="2Tp-Fl-jBw" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="130.5" y="1271.5"/>
+            <point key="canvasLocation" x="199" y="1553"/>
         </scene>
     </scenes>
 </document>
