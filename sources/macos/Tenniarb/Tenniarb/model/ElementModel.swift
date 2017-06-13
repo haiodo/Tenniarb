@@ -14,7 +14,7 @@ import Foundation
  */
 class ElementModel: Element {
     init() {
-        super.init(id: NSUUID().uuidString, name: "Root")
+        super.init(name: "Root", addSelfItem: false)
     }
 }
 
@@ -24,38 +24,52 @@ enum ElementKind {
     case Annontation // Annotation box
 }
 
-class DiagramItem {
+class DiagramItem: Hashable {
     var kind: ElementKind
     var name: String?
     var id: String
     var visible: Bool = true // Some items could be hided
     
-    init(kind: ElementKind, id: String? = nil, name: String? = nil) {
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+    
+    var element: Element? = nil
+    var source: DiagramItem? = nil // A direct link to source
+    var target: DiagramItem? = nil // A direct link to target in case of Link
+    
+    init(kind: ElementKind, name: String? = nil, element: Element? = nil, source: DiagramItem? = nil, target:DiagramItem? = nil) {
         self.kind = kind
         
-        if id == nil {
-            self.id = NSUUID().uuidString
-        }
-        else {
-            self.id = id!
-        }
+        self.id = NSUUID().uuidString
         
         self.name = name
+        self.element = element
+        self.source = source
+        self.target = target
+    }
+    public var hashValue: Int {
+        get {
+            return id.hashValue
+        }
+    }
+    static func ==(lhs: DiagramItem, rhs: DiagramItem) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 
 class Element: Hashable {
     var id: String
     var name: String
-    var elements: [Element]
+    var elements: [Element] = []
+    
+    var backItems: [DiagramItem] = []
     
     // Elements drawn on diagram
-    var items: [DiagramItem]
+    var items: [DiagramItem] = []
     
     var parent: Element? = nil
     
-    var x: CGFloat = 0
-    var y: CGFloat = 0
+    var selfItem: DiagramItem? = nil
     
     public var hashValue: Int {
         get {
@@ -67,39 +81,64 @@ class Element: Hashable {
         return lhs.id == rhs.id
     }
 
-    convenience init(name: String) {
-        self.init(id: NSUUID().uuidString, name: name)
-    }
-
-    init(id: String, name: String) {
-        self.id = id
+    init(name: String, addSelfItem: Bool = true) {
+        self.id = NSUUID().uuidString
         self.name = name
-        self.elements = []
-        self.items = []
+        
+        // Add self as item
+        
+        if addSelfItem {
+            // Since it is .Element name will be taken from Element itself.
+            let si = DiagramItem(kind: .Element, name: nil, element: self)
+            self.selfItem = si
+            self.backItems.append(si)
+            self.items.append(si)
+        }
     }
     
     // Operations with containment elements
     func add( _ el: Element ) {
         el.parent = self
         self.elements.append(el)
+        
+        // We also automatically need to add a diagramElement's
+        
+        // Since it is .Element name will be taken from Element itself.
+        let de = DiagramItem(kind: .Element, name: nil, element: el )
+        el.backItems.append(de)
+        self.items.append(de)
+        
+        // We also need to add link from self to this item
+        
+        let li = DiagramItem(kind: .Link, name: nil, source: selfItem, target: de)
+        self.items.append(li)
     }
-
-    func remove( id: String ) {
-        var i = -1
-        for (j, x) in elements.enumerated() {
-            if x.id == id {
-                i = j
-                break
-            }
-        }
-        if (i != -1) {
-            elements.remove(at: i)
-        }
-    }
+    
 
     func add(get: Element) -> Element {
         self.add(get)
         return get
+    }
+    
+    var x: CGFloat {
+        set(newx) {
+            for de in backItems {
+                de.x = newx
+            }
+        }
+        get {
+            return 0
+        }
+    }
+    var y: CGFloat {
+        set(newx) {
+            for de in backItems {
+                de.x = newx
+            }
+        }
+        get {
+            return 0
+        }
     }
     
     // Operations with
