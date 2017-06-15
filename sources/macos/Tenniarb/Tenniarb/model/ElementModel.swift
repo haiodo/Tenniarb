@@ -131,9 +131,9 @@ class Element: Hashable {
         }
     }
     var y: CGFloat {
-        set(newx) {
+        set(newy) {
             for de in backItems {
-                de.x = newx
+                de.y = newy
             }
         }
         get {
