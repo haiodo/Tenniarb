@@ -14,8 +14,6 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var worldTree: NSOutlineView!
     
-    @IBOutlet weak var effectView: NSVisualEffectView!
-    
     @IBOutlet weak var textArea: NSScrollView!
     
     var elementModel:ElementModel?
@@ -99,7 +97,7 @@ extension ViewController: NSOutlineViewDataSource {
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
-                    let selectedIndex = worldTree.selectedRow
+        let selectedIndex = worldTree.selectedRow
         if let el = worldTree.item(atRow: selectedIndex) as? Element {
             //3
             self.scene.setElementModel(el)

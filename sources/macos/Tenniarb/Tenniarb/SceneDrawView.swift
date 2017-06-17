@@ -13,7 +13,7 @@ import CoreImage
 
 
 class SceneDrawView: NSView {
-    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
+    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.7)
     var elementModel: Element?
     
     var activeElement: DiagramItem?
@@ -269,22 +269,22 @@ class SceneDrawView: NSView {
             // Draw background
             context.setFillColor(background)
             context.fill(bounds)
-            
-            let blurBackground = CGLayer(context, size: bounds.size, auxiliaryInfo: nil)
-            if let blur = blurBackground {
-                if let blurCtx = blur.context {
-                    if let parent = elementModel!.parent {
-                        drawElements(element: parent, blurCtx, useCoreText: true )
-                    }
-                    
-                }
-                
-                context.saveGState()
-                context.setBlendMode(CGBlendMode.luminosity)
-                context.draw(blur, in: bounds)
-                context.restoreGState()
-                
-            }
+//
+//            let blurBackground = CGLayer(context, size: bounds.size, auxiliaryInfo: nil)
+//            if let blur = blurBackground {
+//                if let blurCtx = blur.context {
+//                    if let parent = elementModel!.parent {
+//                        drawElements(element: parent, blurCtx, useCoreText: true )
+//                    }
+//
+//                }
+//
+//                context.saveGState()
+//                context.setBlendMode(CGBlendMode.luminosity)
+//                context.draw(blur, in: bounds)
+//                context.restoreGState()
+//
+//            }
             
             if let element = elementModel {
                 drawElements(element: element, context)
