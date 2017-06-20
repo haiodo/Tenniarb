@@ -20,11 +20,7 @@ class Document: NSDocument {
         // Do any additional setup after loading the view.
         self.elementModel = ElementModelFactory().elementModel
     }
-
-    override class var autosavesInPlace: Bool {
-        return true
-    }
-
+    
     override func makeWindowControllers() {
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
@@ -38,5 +34,34 @@ class Document: NSDocument {
         
         vc?.setElementModel(elementModel: self.elementModel!)
         
+    }
+    
+    override func read(from url: URL, ofType typeName: String) throws {
+        
+        do {
+            var s = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            Swift.print("Readed: " + s)
+        }
+        catch {
+            Swift.print("Failed to load file")
+        }
+    }
+    
+//    override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
+//        Swift.debugPrint("read from file wrapper")
+//    }
+    
+//    override class var autosavesInPlace: Bool {
+//        return true
+//    }
+    
+    override func write(to url: URL, ofType typeName: String) throws {
+        Swift.print("Write of file called:", url.absoluteString)
+        do {
+            try "Demo".write(to: url, atomically: true, encoding: String.Encoding.utf8)
+        }
+        catch {
+            Swift.print("Some error happen")
+        }
     }
 }
