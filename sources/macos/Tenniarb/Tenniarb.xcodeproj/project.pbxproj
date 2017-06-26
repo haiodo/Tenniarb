@@ -15,9 +15,23 @@
 		0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F91ED838D900ECB516 /* Main.storyboard */; };
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
+		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
+		0C5C6D251EFF669500714971 /* LexerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* LexerTests.swift */; };
+		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
+		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0C5C6D1F1EFF655B00714971 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0C2375E31ED838D900ECB516 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0C2375EA1ED838D900ECB516;
+			remoteInfo = Tenniarb;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0C0C4CAB1EF66A0400E17271 /* WordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordsView.swift; sourceTree = "<group>"; };
@@ -30,12 +44,25 @@
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
+		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
+		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0C5C6D241EFF669500714971 /* LexerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerTests.swift; sourceTree = "<group>"; };
+		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
+		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		0C2375E81ED838D900ECB516 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0C5C6D171EFF655B00714971 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -49,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
+				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C2375EC1ED838D900ECB516 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -57,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				0C2375EB1ED838D900ECB516 /* Tenniarb.app */,
+				0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */,
+				0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */,
+				0C5C6D261EFF7D5900714971 /* TennParser.swift */,
 			);
 			name = model;
 			sourceTree = "<group>";
@@ -93,6 +124,16 @@
 				0C86047E1EF040F70009B205 /* SceneDraw3D.swift */,
 			);
 			name = views;
+			sourceTree = "<group>";
+		};
+		0C5C6D1B1EFF655B00714971 /* TenniarbTests */ = {
+			isa = PBXGroup;
+			children = (
+				0C5C6D241EFF669500714971 /* LexerTests.swift */,
+				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
+				0C5C6D1E1EFF655B00714971 /* Info.plist */,
+			);
+			path = TenniarbTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -115,13 +156,31 @@
 			productReference = 0C2375EB1ED838D900ECB516 /* Tenniarb.app */;
 			productType = "com.apple.product-type.application";
 		};
+		0C5C6D191EFF655B00714971 /* TenniarbTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C5C6D211EFF655B00714971 /* Build configuration list for PBXNativeTarget "TenniarbTests" */;
+			buildPhases = (
+				0C5C6D161EFF655B00714971 /* Sources */,
+				0C5C6D171EFF655B00714971 /* Frameworks */,
+				0C5C6D181EFF655B00714971 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0C5C6D201EFF655B00714971 /* PBXTargetDependency */,
+			);
+			name = TenniarbTests;
+			productName = TenniarbTests;
+			productReference = 0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		0C2375E31ED838D900ECB516 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0830;
+				LastSwiftUpdateCheck = 0900;
 				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "Andrey Sobolev";
 				TargetAttributes = {
@@ -130,6 +189,11 @@
 						DevelopmentTeam = 594YM2Y457;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
+					};
+					0C5C6D191EFF655B00714971 = {
+						CreatedOnToolsVersion = 9.0;
+						DevelopmentTeam = 594YM2Y457;
+						TestTargetID = 0C2375EA1ED838D900ECB516;
 					};
 				};
 			};
@@ -147,6 +211,7 @@
 			projectRoot = "";
 			targets = (
 				0C2375EA1ED838D900ECB516 /* Tenniarb */,
+				0C5C6D191EFF655B00714971 /* TenniarbTests */,
 			);
 		};
 /* End PBXProject section */
@@ -161,6 +226,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0C5C6D181EFF655B00714971 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -172,14 +244,33 @@
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0C0C4CAC1EF66A0400E17271 /* WordsView.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
+				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
+				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0C5C6D161EFF655B00714971 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C5C6D251EFF669500714971 /* LexerTests.swift in Sources */,
+				0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0C5C6D201EFF655B00714971 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0C2375EA1ED838D900ECB516 /* Tenniarb */;
+			targetProxy = 0C5C6D1F1EFF655B00714971 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0C2375F91ED838D900ECB516 /* Main.storyboard */ = {
@@ -329,6 +420,46 @@
 			};
 			name = Release;
 		};
+		0C5C6D221EFF655B00714971 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 594YM2Y457;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TenniarbTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
+			};
+			name = Debug;
+		};
+		0C5C6D231EFF655B00714971 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 594YM2Y457;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TenniarbTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -349,6 +480,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		0C5C6D211EFF655B00714971 /* Build configuration list for PBXNativeTarget "TenniarbTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0C5C6D221EFF655B00714971 /* Debug */,
+				0C5C6D231EFF655B00714971 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
