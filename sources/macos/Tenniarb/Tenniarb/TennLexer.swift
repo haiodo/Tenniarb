@@ -50,7 +50,7 @@ public class TennLexer {
         self.buffer = code
     }
     
-    private func revert(tok: TennToken) {
+    public func revert(tok: TennToken) {
         tokenBuffer.insert(tok, at: 0)
     }
     private func add(type: TennTokenType, literal: String) {
