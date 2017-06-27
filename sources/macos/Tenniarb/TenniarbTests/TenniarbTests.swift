@@ -8,6 +8,8 @@
 
 import XCTest
 
+@testable import Tenniarb
+
 class TenniarbTests: XCTestCase {
     
     override func setUp() {
@@ -20,16 +22,36 @@ class TenniarbTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testParsing() {
+        let parser = TennParser()
+        let nde = parser.parse("""
+            map qwe {
+                elements {
+                    node "Platform" {
+                    }
+                    node ""
+                }
+            }
+            """)
+        let asText:String = nde.toStr()
+        let expected = """
+            map qwe {
+              elements {
+                node "Platform" {
+                }
+                node ""
+              }
+            }
+            """
+        do {
+            try asText.write(toFile: "/tmp/f1.txt", atomically: true, encoding: String.Encoding.utf8)
+            try expected.write(toFile: "/tmp/f2.txt", atomically: true, encoding: String.Encoding.utf8)
+        }
+        catch {
+            
+        }
+        XCTAssertEqual(asText, expected )
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
     
 }

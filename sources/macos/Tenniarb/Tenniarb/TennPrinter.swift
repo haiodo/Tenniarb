@@ -11,18 +11,22 @@ import Foundation
 // A printing extension
 extension TennASTNode {
     private func makeSpaces(_ sb: inout String, pattern: String, count: Int ) {
-        for _ in 0..<count {
-            sb.append(pattern)
+        if count > 0 {
+            for _ in 0..<count {
+                sb.append(pattern)
+            }
         }
     }
     private func getSpaces(pattern: String, count: Int ) -> String {
         var sb = ""
-        for _ in 0..<count {
-            sb.append(pattern)
+        if count > 0 {
+            for _ in 0..<count {
+                sb.append(pattern)
+            }
         }
         return sb
     }
-    public func toStr( _ indent: Int, _ clean: Bool = false) -> String {
+    public func toStr( _ indent: Int = -1, _ clean: Bool = false) -> String {
         var result = ""
         
         if self.kind == .Command {
@@ -43,34 +47,37 @@ extension TennASTNode {
                 break
             }
         }
-        if let children = self.children {
-            if children.count > 0 {
-                var ind = indent
-                var postfix: String? = nil
-                if self.kind == .Statements {
-                    if indent != 0 {
-                        result.append("{\n")
-                        postfix = "\n\(getSpaces(pattern: "  ", count: indent))}"
-                    }
-                    ind += 1
+        var ind = indent
+        var postfix: String? = nil
+        if self.kind == .Statements {
+            if indent != -1 {
+                result.append("{\n")
+                if self.count > 0 {
+                    postfix = "\n\(getSpaces(pattern: "  ", count: indent))}"
                 }
-                var i = 0
-                for c in children {
-                    result.append(c.toStr(ind, clean))
-                    if i  != children.count - 1 {
-                        if self.kind == .Statements {
-                            result.append("\n")
-                        }
-                        else {
-                            result.append(" ")
-                        }
-                    }
-                    i += 1
-                }
-                if let p = postfix {
-                    result.append(p)
+                else {
+                    postfix = "\(getSpaces(pattern: "  ", count: indent))}"
                 }
             }
+            ind += 1
+        }
+        if let children = self.children {
+            var i = 0
+            for c in children {
+                result.append(c.toStr(ind, clean))
+                if i != children.count - 1 {
+                    if self.kind == .Statements {
+                        result.append("\n")
+                    }
+                    else {
+                        result.append(" ")
+                    }
+                }
+                i += 1
+            }
+        }
+        if let p = postfix {
+            result.append(p)
         }
         
         return result

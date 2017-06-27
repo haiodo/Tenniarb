@@ -318,8 +318,8 @@ public class TennLexer {
         
         let openToken = self.blockState.removeFirst()
         // Check for token crossing here.
-        if openToken != .curlyRi {
-            Swift.debugPrint("Invalid open close tokens expected .curlyRi but found \(openToken)")
+        if openToken != .curlyLe {
+            Swift.debugPrint("Invalid open close tokens expected .curlyLe but found \(openToken)")
         }
         
         if !self.tokenBuffer.isEmpty {

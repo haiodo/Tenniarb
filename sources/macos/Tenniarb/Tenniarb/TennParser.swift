@@ -209,7 +209,7 @@ public class TennParser {
     func newNode(kind: TennNodeKind, _ token: TennToken?) -> TennASTNode {
         return TennASTNode(kind: kind, tok: token )
     }
-    public func parse(_ source: String) -> TennASTNode? {
+    public func parse(_ source: String) -> TennASTNode {
         self.reset(source)
         
         let result = newNode(kind: .Statements, nil)
@@ -217,7 +217,7 @@ public class TennParser {
         
         if self.tok == nil {
             errors.report(code: .unexpectedInput, msg: "Unexpected input...", token: nil);
-            return nil
+            return result
         }
         
         var nextCmdMark: Set<TennTokenType> = Set()
@@ -247,7 +247,6 @@ public class TennParser {
         }
         
         if self.tok == nil || endTokens.contains(self.tok!.type) {
-            errors.report(code: .parseError, msg: "No more tokens parsing command", token: nil);
             return nil
         }
         
@@ -318,7 +317,7 @@ public class TennParser {
         
         if self.tok == nil {
             errors.report(code: .parseError, msg: "No more tokens parsing block", token: nil);
-            return nil
+            return result
         }
         
         var nextCmdMark: Set<TennTokenType> = Set()
@@ -342,14 +341,14 @@ public class TennParser {
                 break
             }
             if errors.hasErrors() {
-                return nil
+                return result
             }
             self.nextTok()
         }
         
         if self.tok == nil || self.tok!.type != edToken {
             errors.report(code: .wrongBlockTerminator, msg: "Wrong statements terminator", token: curTok);
-            return nil
+            return result
         }
         
         
