@@ -21,6 +21,7 @@
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
+		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */,
 				0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */,
 				0C5C6D261EFF7D5900714971 /* TennParser.swift */,
+				0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */,
 			);
 			name = model;
 			sourceTree = "<group>";
@@ -247,6 +250,7 @@
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
+				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
@@ -488,6 +492,7 @@
 				0C5C6D231EFF655B00714971 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

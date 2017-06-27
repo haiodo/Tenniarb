@@ -130,7 +130,6 @@ public class TennASTNode {
         }
         return defaultValue
     }
-    
 }
 
 public enum TennErrorCode {
@@ -139,6 +138,7 @@ public enum TennErrorCode {
     case unexpectedToken
     case unexpectedInput
     case invalidCommandStart
+    case wrongBlockTerminator
 }
 
 public class TennError {
@@ -247,6 +247,7 @@ public class TennParser {
         }
         
         if self.tok == nil || endTokens.contains(self.tok!.type) {
+            errors.report(code: .parseError, msg: "No more tokens parsing command", token: nil);
             return nil
         }
         
@@ -310,8 +311,49 @@ public class TennParser {
         
         return cmdNode
     }
-    func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ tok: TennToken  ) -> TennASTNode? {
-        return nil
+    func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennASTNode? {
+        self.eat(tokenType: stToken)
+        
+        let result = self.newNode(kind: .Statements, currentTok)
+        
+        if self.tok == nil {
+            errors.report(code: .parseError, msg: "No more tokens parsing block", token: nil);
+            return nil
+        }
+        
+        var nextCmdMark: Set<TennTokenType> = Set()
+        nextCmdMark.insert(TennTokenType.semiColon)
+        nextCmdMark.insert(TennTokenType.eof)
+        nextCmdMark.insert(edToken)
+        
+        var endCheck: Set<TennTokenType> = Set()
+        endCheck.insert(edToken)
+        endCheck.insert(TennTokenType.eof)
+        
+        var curTok = currentTok
+        
+        while self.tok != nil && !endCheck.contains(self.tok!.type) {
+            curTok = self.tok!
+            
+            if let node = parseCommand(nextCmdMark) {
+                result.add(node)
+            }
+            if endCheck.contains(self.tok!.type) {
+                break
+            }
+            if errors.hasErrors() {
+                return nil
+            }
+            self.nextTok()
+        }
+        
+        if self.tok == nil || self.tok!.type != edToken {
+            errors.report(code: .wrongBlockTerminator, msg: "Wrong statements terminator", token: curTok);
+            return nil
+        }
+        
+        
+        return result
     }
 }
 
