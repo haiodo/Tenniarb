@@ -17,6 +17,7 @@ public enum TennNodeKind {
     case StringLit
     case Command
     case Statements
+    case BlockExpr
 }
 
 public class TennASTNode {
@@ -46,7 +47,7 @@ public class TennASTNode {
         }
         children?.append(node)
         
-        if kind == .Statements && node.isNamedElement() {
+        if kind == .BlockExpr && node.isNamedElement() {
             if named == nil {
                 named = [:]
             }
@@ -57,7 +58,7 @@ public class TennASTNode {
     }
     
     public func getNamedElement(_ name: String) -> TennASTNode? {
-        if kind != .Statements {
+        if kind != .BlockExpr {
             return nil
         }
         return named?[name]
@@ -313,7 +314,7 @@ public class TennParser {
     func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennASTNode? {
         self.eat(tokenType: stToken)
         
-        let result = self.newNode(kind: .Statements, currentTok)
+        let result = self.newNode(kind: .BlockExpr, currentTok)
         
         if self.tok == nil {
             errors.report(code: .parseError, msg: "No more tokens parsing block", token: nil);

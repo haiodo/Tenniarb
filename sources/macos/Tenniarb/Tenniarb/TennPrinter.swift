@@ -26,7 +26,7 @@ extension TennASTNode {
         }
         return sb
     }
-    public func toStr( _ indent: Int = -1, _ clean: Bool = false) -> String {
+    public func toStr( _ indent: Int = 0, _ clean: Bool = false) -> String {
         var result = ""
         
         if self.kind == .Command {
@@ -49,7 +49,7 @@ extension TennASTNode {
         }
         var ind = indent
         var postfix: String? = nil
-        if self.kind == .Statements {
+        if self.kind == .BlockExpr {
             if indent != -1 {
                 result.append("{\n")
                 if self.count > 0 {
@@ -66,7 +66,7 @@ extension TennASTNode {
             for c in children {
                 result.append(c.toStr(ind, clean))
                 if i != children.count - 1 {
-                    if self.kind == .Statements {
+                    if self.kind == .BlockExpr || self.kind == .Statements {
                         result.append("\n")
                     }
                     else {
