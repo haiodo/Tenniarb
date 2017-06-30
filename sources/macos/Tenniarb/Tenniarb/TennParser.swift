@@ -20,12 +20,12 @@ public enum TennNodeKind {
     case BlockExpr
 }
 
-public class TennASTNode {
+public class TennNode {
     public let kind: TennNodeKind
     public let token: TennToken?
-    public var children: [TennASTNode]?
+    public var children: [TennNode]?
     
-    var named: [String:TennASTNode]?
+    var named: [String:TennNode]?
     
     public var count: Int {
         get {
@@ -36,12 +36,12 @@ public class TennASTNode {
         }
     }
     
-    public init(kind: TennNodeKind, tok: TennToken?) {
+    public init(kind: TennNodeKind, tok: TennToken? = nil) {
         self.kind = kind
         self.token = tok
     }
     
-    public func add( _ node: TennASTNode) {
+    public func add( _ node: TennNode) {
         if children == nil {
             children = []
         }
@@ -57,7 +57,7 @@ public class TennASTNode {
         }
     }
     
-    public func getNamedElement(_ name: String) -> TennASTNode? {
+    public func getNamedElement(_ name: String) -> TennNode? {
         if kind != .BlockExpr {
             return nil
         }
@@ -81,7 +81,7 @@ public class TennASTNode {
         return kind == .Command && count > 0 && self.children?[0].kind == .Ident
     }
     
-    public func getChild(_ childIndex: [Int]) -> TennASTNode? {
+    public func getChild(_ childIndex: [Int]) -> TennNode? {
         var nde = self
         for i in 0..<childIndex.count {
             if let nchilds = nde.children {
@@ -204,16 +204,11 @@ public class TennParser {
         }
     }
     
-    func newIdent(_ token: TennToken) -> TennASTNode {
-        return TennASTNode(kind: .Ident, tok: token )
-    }
-    func newNode(kind: TennNodeKind, _ token: TennToken?) -> TennASTNode {
-        return TennASTNode(kind: kind, tok: token )
-    }
-    public func parse(_ source: String) -> TennASTNode {
+    
+    public func parse(_ source: String) -> TennNode {
         self.reset(source)
         
-        let result = newNode(kind: .Statements, nil)
+        let result = TennNode.newNode(kind: .Statements, nil)
         self.nextTok()
         
         if self.tok == nil {
@@ -240,7 +235,7 @@ public class TennParser {
         self.lexer?.revert(tok: self.tok!)
         self.tok = token
     }
-    func parseCommand( _ endTokens: Set<TennTokenType> ) -> TennASTNode? {
+    func parseCommand( _ endTokens: Set<TennTokenType> ) -> TennNode? {
         
         // Skip all semicolons.
         while self.tok != nil && self.tok!.type == .semiColon {
@@ -251,7 +246,7 @@ public class TennParser {
             return nil
         }
         
-        let cmdNode = newNode(kind: .Command, self.tok)
+        let cmdNode = TennNode.newNode(kind: .Command, self.tok)
         
         if self.tok!.type != .symbol {
             errors.report(code: .invalidCommandStart, msg: "Invalid command start symbol: \(self.tok!.literal) ", token: self.tok);
@@ -283,13 +278,13 @@ public class TennParser {
         while self.tok != nil && !checkEnd() {
             switch self.tok!.type {
             case .symbol:
-                cmdNode.add(self.newIdent(self.tok!))
+                cmdNode.add(TennNode.newIdent(self.tok!))
             case .stringLit:
-                cmdNode.add(self.newNode(kind: .StringLit, self.tok))
+                cmdNode.add(TennNode.newNode(kind: .StringLit, self.tok))
             case .intLit:
-                cmdNode.add(self.newNode(kind: .IntLit, self.tok))
+                cmdNode.add(TennNode.newNode(kind: .IntLit, self.tok))
             case .floatLit:
-                cmdNode.add(self.newNode(kind: .FloatLit, self.tok))
+                cmdNode.add(TennNode.newNode(kind: .FloatLit, self.tok))
             case .curlyLe:
                 if let stmtNode = self.parseBlock(TennTokenType.curlyLe, TennTokenType.curlyRi, self.tok!) {
                     cmdNode.add(stmtNode)
@@ -311,10 +306,10 @@ public class TennParser {
         
         return cmdNode
     }
-    func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennASTNode? {
+    func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennNode? {
         self.eat(tokenType: stToken)
         
-        let result = self.newNode(kind: .BlockExpr, currentTok)
+        let result = TennNode.newNode(kind: .BlockExpr, currentTok)
         
         if self.tok == nil {
             errors.report(code: .parseError, msg: "No more tokens parsing block", token: nil);
@@ -354,6 +349,35 @@ public class TennParser {
         
         
         return result
+    }
+}
+
+extension TennNode {
+    public static func newIdent(_ token: TennToken) -> TennNode {
+        return TennNode(kind: .Ident, tok: token )
+    }
+    public static func newIdent(_ literal: String) -> TennNode {
+        return TennNode(kind: .Ident, tok: TennToken(type: .symbol, literal: literal) )
+    }
+    public static func newStrNode(_ literal: String) -> TennNode {
+        return TennNode(kind: .StringLit, tok: TennToken(type: .stringLit, literal: literal) )
+    }
+    public static func newFloatNode(_ value: Double ) -> TennNode {
+        return TennNode(kind: .FloatLit, tok: TennToken(type: .floatLit, literal: String(value)) )
+    }
+    public static func newNode(kind: TennNodeKind, _ token: TennToken? = nil) -> TennNode {
+        return TennNode(kind: kind, tok: token )
+    }
+    public static func newBlockExpr() -> TennNode {
+        return TennNode(kind: .BlockExpr, tok: nil )
+    }
+    public static func newCommand( _ name: String, _ childNodes: TennNode... ) -> TennNode {
+        let nde = TennNode(kind: .Command)
+        nde.add(newIdent(name))
+        for n in childNodes {
+            nde.add(n)
+        }
+        return nde
     }
 }
 

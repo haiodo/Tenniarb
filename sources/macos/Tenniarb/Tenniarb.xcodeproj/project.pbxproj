@@ -16,7 +16,7 @@
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
-		0C5C6D251EFF669500714971 /* LexerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* LexerTests.swift */; };
+		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
@@ -48,7 +48,7 @@
 		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0C5C6D241EFF669500714971 /* LexerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerTests.swift; sourceTree = "<group>"; };
+		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
@@ -132,7 +132,7 @@
 		0C5C6D1B1EFF655B00714971 /* TenniarbTests */ = {
 			isa = PBXGroup;
 			children = (
-				0C5C6D241EFF669500714971 /* LexerTests.swift */,
+				0C5C6D241EFF669500714971 /* TennTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
 			);
@@ -261,7 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C5C6D251EFF669500714971 /* LexerTests.swift in Sources */,
+				0C5C6D251EFF669500714971 /* TennTests.swift in Sources */,
 				0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

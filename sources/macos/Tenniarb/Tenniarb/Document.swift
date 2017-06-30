@@ -15,9 +15,8 @@ class Document: NSDocument {
     
     override init() {
         super.init()
-        // Add your subclass-specific initialization here.
         
-        // Do any additional setup after loading the view.
+        // By default create with sample scene.
         self.elementModel = ElementModelFactory().elementModel
     }
     
@@ -40,6 +39,10 @@ class Document: NSDocument {
         
         do {
             var s = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            
+            
+            
+            
             Swift.print("Readed: " + s)
         }
         catch {

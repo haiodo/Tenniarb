@@ -9,10 +9,10 @@
 import Foundation
 
 // A printing extension
-extension TennASTNode {
+extension TennNode {
     private func makeSpaces(_ sb: inout String, pattern: String, count: Int ) {
         if count > 0 {
-            for _ in 0..<count {
+            for _ in 0...count {
                 sb.append(pattern)
             }
         }
@@ -20,7 +20,7 @@ extension TennASTNode {
     private func getSpaces(pattern: String, count: Int ) -> String {
         var sb = ""
         if count > 0 {
-            for _ in 0..<count {
+            for _ in 0...count {
                 sb.append(pattern)
             }
         }
@@ -50,14 +50,12 @@ extension TennASTNode {
         var ind = indent
         var postfix: String? = nil
         if self.kind == .BlockExpr {
-            if indent != -1 {
-                result.append("{\n")
-                if self.count > 0 {
-                    postfix = "\n\(getSpaces(pattern: "  ", count: indent))}"
-                }
-                else {
-                    postfix = "\(getSpaces(pattern: "  ", count: indent))}"
-                }
+            result.append("{\n")
+            if self.count > 0 {
+                postfix = "\n\(getSpaces(pattern: "  ", count: indent))}"
+            }
+            else {
+                postfix = "\(getSpaces(pattern: "  ", count: indent))}"
             }
             ind += 1
         }

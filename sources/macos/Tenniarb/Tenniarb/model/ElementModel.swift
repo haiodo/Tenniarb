@@ -12,22 +12,33 @@ import Foundation
 /**
  A root of element map
  */
-class ElementModel: Element {
+public class ElementModel: Element {
     init() {
         super.init(name: "Root", addSelfItem: false)
     }
 }
 
-enum ElementKind {
+public enum ElementKind {
     case Element // A reference to element
     case Link // A link
     case Annontation // Annotation box
+    
+    var commandName : String {
+        switch self {
+        // Use Internationalization, as appropriate.
+        case .Element: return "element";
+        case .Link: return "link";
+        case .Annontation: return "annotation";
+        }
+    }
 }
 
-class DiagramItem: Hashable {
+public class DiagramItem: Hashable {
     var kind: ElementKind
     var name: String?
-    var id: String
+    
+    // id is transient and used only for identity
+    var id: NSUUID
     var visible: Bool = true // Some items could be hided
     
     var x: CGFloat = 0
@@ -37,10 +48,10 @@ class DiagramItem: Hashable {
     var source: DiagramItem? = nil // A direct link to source
     var target: DiagramItem? = nil // A direct link to target in case of Link
     
-    init(kind: ElementKind, name: String? = nil, element: Element? = nil, source: DiagramItem? = nil, target:DiagramItem? = nil) {
+    public init(kind: ElementKind, name: String? = nil, element: Element? = nil, source: DiagramItem? = nil, target:DiagramItem? = nil) {
         self.kind = kind
         
-        self.id = NSUUID().uuidString
+        self.id = NSUUID()
         
         self.name = name
         self.element = element
@@ -52,13 +63,13 @@ class DiagramItem: Hashable {
             return id.hashValue
         }
     }
-    static func ==(lhs: DiagramItem, rhs: DiagramItem) -> Bool {
+    public static func ==(lhs: DiagramItem, rhs: DiagramItem) -> Bool {
         return lhs.id == rhs.id
     }
 }
 
-class Element: Hashable {
-    var id: String
+public class Element: Hashable {
+    var id: NSUUID
     var name: String
     var elements: [Element] = []
     
@@ -77,12 +88,12 @@ class Element: Hashable {
         }
     }
     
-    static func ==(lhs: Element, rhs: Element) -> Bool {
+    public static func ==(lhs: Element, rhs: Element) -> Bool {
         return lhs.id == rhs.id
     }
 
     init(name: String, addSelfItem: Bool = true) {
-        self.id = NSUUID().uuidString
+        self.id = NSUUID()
         self.name = name
         
         // Add self as item
@@ -142,6 +153,78 @@ class Element: Hashable {
     }
     
     // Operations with
+}
+
+/**
+ Allow Mapping of element model to tenn and wise verse.
+ */
+extension ElementModel {
+    public func toTenn( ) -> TennNode {
+        let result = TennNode(kind: TennNodeKind.Statements)
+        
+        let root = TennNode.newCommand("world")
+        result.add(root)
+        
+        let rootBlock = TennNode.newBlockExpr()
+        root.add(rootBlock)
+        
+        elementsToTenn( rootBlock, self )
+        
+        return result
+    }
+    
+    func toTennStr( ) -> String {
+        let ee = toTenn()
+        return ee.toStr(0, false)
+    }
+    func elementsToTenn( _ parent: TennNode, _ elements: Element ) {
+        for e in elements.elements {
+            let enode = TennNode.newCommand("element")
+            let nodeBlock = TennNode.newBlockExpr()
+            enode.add(nodeBlock)
+            
+            nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(e.name)))
+            
+            // Store node parameters
+            parent.add(enode)
+            
+            if e.elements.count > 0 {
+                let elsRoot = TennNode.newCommand("elements")
+                nodeBlock.add(elsRoot)
+                
+                let elsBlock = TennNode.newBlockExpr()
+                elsRoot.add(elsBlock)
+                elementsToTenn(elsBlock, e)
+            }
+            if e.items.count > 0 {
+                let elsRoot = TennNode.newCommand("items")
+                nodeBlock.add(elsRoot)
+                
+                let elsBlock = TennNode.newBlockExpr()
+                elsRoot.add(elsBlock)
+                
+                for ie in e.items {
+                    let enode = TennNode.newCommand(ie.kind.commandName)
+                    let nodeBlock = TennNode.newBlockExpr()
+                    enode.add(nodeBlock)
+                    
+                    if let n = ie.name {
+                        nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(n)))
+                    }
+                    
+//                    if let s = ie.source {
+//                        nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(s.name)))
+//                    }
+                    nodeBlock.add(TennNode.newCommand("x", TennNode.newFloatNode(Double(ie.x))))
+                    nodeBlock.add(TennNode.newCommand("y", TennNode.newFloatNode(Double(ie.y))))
+                    
+                    
+                    // Store node parameters
+                    elsBlock.add(enode)
+                }
+            }
+        }
+    }
 }
 
 public class ElementModelFactory {

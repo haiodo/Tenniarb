@@ -29,7 +29,7 @@ public class TennToken {
     public let line: Int
     public let col: Int
     
-    init( type: TennTokenType, literal: String, line: Int, col:Int) {
+    init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0) {
         self.type = type
         self.literal = literal
         self.line = line

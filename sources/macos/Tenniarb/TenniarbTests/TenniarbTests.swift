@@ -22,36 +22,11 @@ class TenniarbTests: XCTestCase {
         super.tearDown()
     }
     
-    func testParsing() {
-        let parser = TennParser()
-        let nde = parser.parse("""
-            map qwe {
-                elements {
-                    node "Platform" {
-                    }
-                    node ""
-                }
-            }
-            """)
-        let asText:String = nde.toStr()
-        let expected = """
-            map qwe {
-              elements {
-                node "Platform" {
-                }
-                node ""
-              }
-            }
-            """
-        do {
-            try asText.write(toFile: "/tmp/f1.txt", atomically: true, encoding: String.Encoding.utf8)
-            try expected.write(toFile: "/tmp/f2.txt", atomically: true, encoding: String.Encoding.utf8)
-        }
-        catch {
-            
-        }
-        XCTAssertEqual(asText, expected )
+    func testTennToString() {
+        let ef = ElementModelFactory().elementModel
+        
+        let value = ef.toTennStr()
+        Swift.print(value)
     }
-    
     
 }
