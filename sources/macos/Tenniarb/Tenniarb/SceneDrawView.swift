@@ -32,8 +32,6 @@ class SceneDrawView: NSView {
     
     var elementRects:[DiagramItem: CGRect] = [:]
     
-    
-    
     override var mouseDownCanMoveWindow: Bool {
         get {
             return false
@@ -154,111 +152,6 @@ class SceneDrawView: NSView {
 //        }
     }
     
-    class DisplayItem {
-        var rect: CGRect
-        var textFontAttributes: [NSAttributedStringKey:Any]
-        var x: CGFloat
-        var y: CGFloat
-        var textColor: NSColor
-        var active: Bool
-        var text: String
-        var drawUsingCoreText = false
-        var attrString: NSAttributedString
-        
-        init( text: String, x: CGFloat, y: CGFloat, active: Bool) {
-            self.x = x
-            self.y = y
-            self.active = active
-            self.text = text
-            
-            let font = NSFont.systemFont(ofSize: 24)
-            
-            let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-            textStyle.alignment = NSTextAlignment.center
-            
-            self.textColor = NSColor(calibratedRed: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
-            
-            self.textFontAttributes = [
-                NSAttributedStringKey.foregroundColor: textColor,
-                NSAttributedStringKey.paragraphStyle: textStyle,
-                NSAttributedStringKey.font: font
-            ]
-            
-            self.attrString = NSAttributedString(string: text, attributes: textFontAttributes)
-            
-            let fs = CTFramesetterCreateWithAttributedString(attrString)
-            let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 150, height: 45), nil)
-            
-            self.rect = CGRect(x: x, y:y, width: frameSize.width + 10, height: frameSize.height + 8 )
-        }
-        
-        func draw( context: CGContext ) {
-            drawRoundedRect(rect: rect,
-                            inContext: context,
-                            radius: CGFloat(9),
-                            borderColor: CGColor.black,
-                            fillColor: CGColor.white,
-                            text: text,
-                            active: active)
-        }
-        func drawRoundedRect(rect: CGRect, inContext context: CGContext,
-                             radius: CGFloat,
-                             borderColor: CGColor,
-                             fillColor: CGColor,
-                             text: String,
-                             active: Bool = false) {
-            
-            context.saveGState()
-            
-            let path = CGMutablePath()
-            
-            path.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
-            path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
-                         tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
-            path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),
-                         tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
-            path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.maxY ),
-                         tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
-            path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
-                         tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
-            path.closeSubpath()
-            
-            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
-            
-            context.setLineWidth( 0 )
-            context.setStrokeColor(borderColor)
-            context.setFillColor(fillColor)
-            
-            context.addPath(path)
-            context.drawPath(using: .fillStroke)
-            
-            
-            context.setShadow(offset: CGSize(width:0, height:0), blur: CGFloat(0))
-            
-            
-            if ( active ) {
-                context.setLineWidth( 0.75 )
-                context.setStrokeColor(borderColor)
-                context.setFillColor(fillColor)
-                
-                context.addPath(path)
-                context.drawPath(using: .stroke)
-            }
-            
-            if !self.drawUsingCoreText {
-                let q: NSString = text as NSString
-            
-                q.draw(at: CGPoint(x: rect.minX+5, y: rect.minY+4), withAttributes: textFontAttributes)
-            }
-            else {
-                let ctLine = CTLineCreateWithAttributedString(self.attrString)
-                context.textPosition = CGPoint(x: rect.minX+5, y: rect.minY+8)
-                CTLineDraw(ctLine, context)
-            }
-            
-            context.restoreGState()
-        }
-    }
     override func draw(_ dirtyRect: NSRect) {
         
         if( self.elementModel == nil) {
@@ -269,35 +162,31 @@ class SceneDrawView: NSView {
             // Draw background
             context.setFillColor(background)
             context.fill(bounds)
-//
-//            let blurBackground = CGLayer(context, size: bounds.size, auxiliaryInfo: nil)
-//            if let blur = blurBackground {
-//                if let blurCtx = blur.context {
-//                    if let parent = elementModel!.parent {
-//                        drawElements(element: parent, blurCtx, useCoreText: true )
-//                    }
-//
-//                }
-//
-//                context.saveGState()
-//                context.setBlendMode(CGBlendMode.luminosity)
-//                context.draw(blur, in: bounds)
-//                context.restoreGState()
-//
-//            }
+            
+            let scene = DrawableScene()
+            
+            scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
             
             if let element = elementModel {
-                drawElements(element: element, context)
+                scene.append(buildElements(element: element))
             }
+            
+            scene.layout(bounds)
+            
+            context.saveGState()
+            context.saveGState()
+            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
+            scene.drawBox(context: context)
+            context.restoreGState()
+            scene.draw(context: context)
+            context.restoreGState()
         }
     }
-    func drawElements( element: Element, _ context: CGContext, useCoreText:Bool = false ) {
-        var els: [DisplayItem] = []
+    func buildElements( element: Element )-> Drawable {
+        let elementDrawable = DrawableElement()
         
+        var links: [DiagramItem] = []
         for e in element.items {
-            let yy: CGFloat = CGFloat(e.y) + bounds.midY + oy
-            let xx: CGFloat = CGFloat(e.x) + bounds.midX + ox
-            
             var active = false
             if let ae = activeElement {
                 if ae.id == e.id {
@@ -305,50 +194,44 @@ class SceneDrawView: NSView {
                 }
             }
             
+            
             if e.kind == .Element && e.element != nil {
-                let de = DisplayItem( text: e.element!.name,  x: xx, y: yy, active: active )
+                let textBox = TextBox( text: e.element!.name,  textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)  )
                 
-                els.append(de)
-                elementRects[e] = de.rect
+                let textBounds = textBox.getBounds()
+                
+                let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: textBounds.width, height: textBounds.height),
+                                        fillColor: CGColor.white,
+                                        borderColor: CGColor.black)
+                
+                if active {
+                    rectBox.lineWidth = 1
+                }
+                rectBox.append(textBox)
+                
+                elementDrawable.append(rectBox)
+                
+                let rectBounds = rectBox.getBounds()
+                
+                elementRects[e] = CGRect(origin: CGPoint(x: rectBounds.origin.x + self.ox, y: rectBounds.origin.y + self.oy), size: rectBounds.size)
+            }
+            else if e.kind == .Link  {
+                links.append(e)
             }
         }
-        
-        // Draw links after all item positions are known.
-        for e in element.items {
-            if e.kind == .Link {
-                if let s = e.source, let t = e.target {
-                    let sourceRect = elementRects[s]
-                    let targetRect = elementRects[t]
-                    
-                    if let sr = sourceRect, let tr = targetRect {
-                        //
-                        context.saveGState()
-                        
-                        context.setLineWidth( 1 )
-                        context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
-                        context.setStrokeColor(CGColor.black)
-                        context.setFillColor(CGColor.black)
-                        
-                        let aPath = CGMutablePath()
-                        
-                        aPath.move(to: CGPoint(x: sr.midX, y: sr.midY))
-                        
-                        aPath.addLine(to: CGPoint(x:tr.midX, y: tr.midY))
-                        
-                        //Keep using the method addLineToPoint until you get to the one where about to close the path
-                        aPath.closeSubpath()
-                        context.addPath(aPath)
-                        context.drawPath(using: .fillStroke)
-                        
-                        context.restoreGState()
-                    }
+        for e in links {
+            if let s = e.source, let t = e.target {
+                let sourceRect = elementRects[s]
+                let targetRect = elementRects[t]
+                
+                if let sr = sourceRect, let tr = targetRect {
+                    elementDrawable.insert(
+                        DrawableLine(
+                            source: CGPoint( x: sr.midX, y:sr.midY),
+                            target: CGPoint( x: tr.midX, y:tr.midY)), at: 0)
                 }
             }
         }
-        
-        for de in els {
-            de.drawUsingCoreText = useCoreText
-            de.draw(context: context)
-        }
+        return elementDrawable
     }
 }
