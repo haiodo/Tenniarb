@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string></string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -11,6 +13,8 @@
 			<array>
 				<string>tenn</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Icon.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>text/plain</string>
@@ -60,6 +64,8 @@
 			<array>
 				<string>public.text</string>
 			</array>
+			<key>UTTypeIconFile</key>
+			<string>Icon.icns</string>
 			<key>UTTypeIdentifier</key>
 			<string>tenniarb.tenn</string>
 			<key>UTTypeTagSpecification</key>
@@ -86,6 +92,8 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Tenn Brain Map</string>
+			<key>UTTypeIconFile</key>
+			<string>Icon.icns</string>
 			<key>UTTypeIdentifier</key>
 			<string>tenniarb.tenn</string>
 			<key>UTTypeTagSpecification</key>
