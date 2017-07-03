@@ -158,17 +158,19 @@ public class Element: Hashable {
 /**
  Allow Mapping of element model to tenn and wise verse.
  */
-extension ElementModel {
+extension Element {
     public func toTenn( ) -> TennNode {
         let result = TennNode(kind: TennNodeKind.Statements)
         
-        let root = TennNode.newCommand("world")
-        result.add(root)
+        var lvl = 0
         
-        let rootBlock = TennNode.newBlockExpr()
-        root.add(rootBlock)
+        var p = self
+        while p.parent != nil {
+            p = p.parent!
+            lvl += 1
+        }
         
-        elementsToTenn( rootBlock, self )
+        elementsToTenn( result, [self], level: lvl )
         
         return result
     }
@@ -177,51 +179,34 @@ extension ElementModel {
         let ee = toTenn()
         return ee.toStr(0, false)
     }
-    func elementsToTenn( _ parent: TennNode, _ elements: Element ) {
-        for e in elements.elements {
-            let enode = TennNode.newCommand("element")
-            let nodeBlock = TennNode.newBlockExpr()
-            enode.add(nodeBlock)
+    func elementsToTenn( _ parent: TennNode, _ elements: [Element], level: Int ) {
+        for e in elements {
+            let enode = TennNode.newHashNode(e.name, level: level)
             
-            nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(e.name)))
-            
-            // Store node parameters
             parent.add(enode)
             
-            if e.elements.count > 0 {
-                let elsRoot = TennNode.newCommand("elements")
-                nodeBlock.add(elsRoot)
-                
-                let elsBlock = TennNode.newBlockExpr()
-                elsRoot.add(elsBlock)
-                elementsToTenn(elsBlock, e)
-            }
             if e.items.count > 0 {
-                let elsRoot = TennNode.newCommand("items")
-                nodeBlock.add(elsRoot)
+                let elsRoot = TennNode.newCommand(".items")
+                parent.add(elsRoot)
                 
                 let elsBlock = TennNode.newBlockExpr()
                 elsRoot.add(elsBlock)
                 
                 for ie in e.items {
-                    let enode = TennNode.newCommand(ie.kind.commandName)
-                    let nodeBlock = TennNode.newBlockExpr()
-                    enode.add(nodeBlock)
-                    
+                    let enode = TennNode.newCommand("." + ie.kind.commandName)
                     if let n = ie.name {
-                        nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(n)))
+                        enode.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(n))
                     }
                     
-//                    if let s = ie.source {
-//                        nodeBlock.add(TennNode.newCommand("name", TennNode.newStrNode(s.name)))
-//                    }
-                    nodeBlock.add(TennNode.newCommand("x", TennNode.newFloatNode(Double(ie.x))))
-                    nodeBlock.add(TennNode.newCommand("y", TennNode.newFloatNode(Double(ie.y))))
-                    
+                    enode.addAll(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(ie.x)))
+                    enode.addAll(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(ie.y)))
                     
                     // Store node parameters
                     elsBlock.add(enode)
                 }
+            }
+            if e.elements.count > 0 {
+                elementsToTenn(parent, e.elements, level: level + 1)
             }
         }
     }

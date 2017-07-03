@@ -10,17 +10,17 @@ import Foundation
 
 // A printing extension
 extension TennNode {
-    private func makeSpaces(_ sb: inout String, pattern: String, count: Int ) {
+    private func makeSeq(_ sb: inout String, pattern: String, count: Int ) {
         if count > 0 {
-            for _ in 0...count {
+            for _ in 0..<count {
                 sb.append(pattern)
             }
         }
     }
-    private func getSpaces(pattern: String, count: Int ) -> String {
+    private func getSeq(pattern: String, count: Int ) -> String {
         var sb = ""
         if count > 0 {
-            for _ in 0...count {
+            for _ in 0..<count {
                 sb.append(pattern)
             }
         }
@@ -30,12 +30,14 @@ extension TennNode {
         var result = ""
         
         if self.kind == .Command {
-            makeSpaces(&result, pattern: "  ", count: indent)
+            makeSeq(&result, pattern: "  ", count: indent)
         }
         if let tok = self.token {
             switch self.kind {
             case .CharLit, .IntLit, .Ident, .FloatLit:
                 result.append(tok.literal)
+            case .Hash:
+                result.append("\(getSeq(pattern: "#", count: self.level))\(tok.literal)\n")
             case .StringLit:
                 if clean {
                     result.append(tok.literal)
@@ -52,10 +54,10 @@ extension TennNode {
         if self.kind == .BlockExpr {
             result.append("{\n")
             if self.count > 0 {
-                postfix = "\n\(getSpaces(pattern: "  ", count: indent))}"
+                postfix = "\n\(getSeq(pattern: "  ", count: indent))}"
             }
             else {
-                postfix = "\(getSpaces(pattern: "  ", count: indent))}"
+                postfix = "\(getSeq(pattern: "  ", count: indent))}"
             }
             ind += 1
         }

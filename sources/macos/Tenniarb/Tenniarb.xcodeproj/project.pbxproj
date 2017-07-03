@@ -45,6 +45,7 @@
 		0C2375FA1ED838D900ECB516 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
+		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
@@ -80,6 +81,7 @@
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
+				0C3130601F0A9D0100FA5624 /* Documentation */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C2375EC1ED838D900ECB516 /* Products */,
@@ -122,6 +124,14 @@
 				0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */,
 			);
 			name = model;
+			sourceTree = "<group>";
+		};
+		0C3130601F0A9D0100FA5624 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				0C3130611F0A9D2600FA5624 /* examples.md */,
+			);
+			name = Documentation;
 			sourceTree = "<group>";
 		};
 		0C44D7571EE316F8001B7D01 /* views */ = {

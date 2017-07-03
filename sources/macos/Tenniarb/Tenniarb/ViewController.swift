@@ -16,16 +16,50 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var textArea: NSScrollView!
     
+    @IBOutlet var textView: NSTextView!
+    
     var elementModel:ElementModel?
+    
+    var selectedElement: Element?
+    var activeElement: Element?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        scene.onSelection.append({( element ) -> Void in
+//            self.setActiveElement(element)
+        })
     }
     
 
     override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.
+        }
+    }
+    
+    func onElementSelected(_ element: Element?) {
+        if selectedElement != element {
+            self.selectedElement = element
+            
+            if let el = element {
+                self.scene.setElementModel(el)
+            
+                self.setActiveElement(el)
+            }
+        }
+    }
+    
+    func setActiveElement( _ element: Element? ) {
+        if let el = element {
+            self.activeElement = el
+        }
+        else {
+            self.activeElement = selectedElement
+        }
+        if let e = self.activeElement {
+            let strContent = e.toTennStr()
+            textView.string = strContent
         }
     }
     
@@ -91,7 +125,6 @@ extension ViewController: NSOutlineViewDataSource {
             return el.name
         }
         return nil
-
     }
     
     
@@ -99,8 +132,10 @@ extension ViewController: NSOutlineViewDataSource {
         
         let selectedIndex = worldTree.selectedRow
         if let el = worldTree.item(atRow: selectedIndex) as? Element {
-            //3
-            self.scene.setElementModel(el)
+            self.onElementSelected(el)
+        }
+        else {
+            self.onElementSelected(elementModel)
         }
     }
     

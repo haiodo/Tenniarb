@@ -32,6 +32,8 @@ class SceneDrawView: NSView {
     
     var elementRects:[DiagramItem: CGRect] = [:]
     
+    var onSelection: [( Element? ) -> Void] = []
+    
     override var mouseDownCanMoveWindow: Bool {
         get {
             return false
@@ -49,6 +51,22 @@ class SceneDrawView: NSView {
     
     public func setActiveElement( _ element: DiagramItem? ) {
         activeElement = element
+        
+        if element == nil {
+            for f in onSelection {
+                f(nil)
+            }
+        }
+        else if let e = element {
+            if e.kind == .Element {
+                if let ee = e.element {
+                    for f in onSelection {
+                        f(ee)
+                    }
+                }
+            }
+        }
+        
         needsDisplay = true
     }
     
@@ -83,12 +101,12 @@ class SceneDrawView: NSView {
         if let em = elementModel {
             let item = findElement(el: em, x: self.x, y: self.y)
             if( item != nil) {
-                activeElement = item
+                self.setActiveElement(item)
                 
                 self.dragElement = item
             }
             else {
-                activeElement = nil
+                self.setActiveElement(nil)
             }
         }
         needsDisplay = true
@@ -227,8 +245,8 @@ class SceneDrawView: NSView {
                 if let sr = sourceRect, let tr = targetRect {
                     elementDrawable.insert(
                         DrawableLine(
-                            source: CGPoint( x: sr.midX, y:sr.midY),
-                            target: CGPoint( x: tr.midX, y:tr.midY)), at: 0)
+                            source: CGPoint( x: sr.midX - self.ox, y:sr.midY - self.oy),
+                            target: CGPoint( x: tr.midX - self.ox, y:tr.midY - self.oy)), at: 0)
                 }
             }
         }

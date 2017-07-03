@@ -21,6 +21,7 @@ public enum TennTokenType {
     case comma
     case colon
     case semiColon
+    case hash
 }
 
 public class TennToken {
@@ -199,7 +200,7 @@ public class TennLexer {
         }
     }
     
-    private func processHashComment(_ r: inout String) {
+    private func processHash(_ r: inout String) {
         self.add(check: &r)
         
         while self.pos < self.buffer.count {
@@ -207,8 +208,11 @@ public class TennLexer {
                 self.currentLine += 1
                 self.currentChar = 0
             }
+            r.append(charAt())
             self.inc()
         }
+        self.add(type: .hash, literal: r)
+        r.removeAll(keepingCapacity: true)
     }
     
     private func processComment( _ r: inout String, _ cc: Character) {
@@ -283,7 +287,7 @@ public class TennLexer {
                     return self.tokenBuffer.removeFirst()
                 }
             case "#":
-                self.processHashComment(&r)
+                self.processHash(&r)
             default:
                 r.append(cc)
                 self.inc()
