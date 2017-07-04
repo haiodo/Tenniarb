@@ -178,8 +178,12 @@ public class RoundBox: DrawableElement {
     }
     
     public override func draw(context: CGContext, at point: CGPoint) {
+        context.saveGState()
         self.doDraw(context, at: point)
+        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
+        context.restoreGState()
     }
     
     func doDraw(_ context:CGContext, at point: CGPoint) {
@@ -229,7 +233,7 @@ public class TextBox: Drawable {
         let attrString = NSAttributedString(string: text, attributes: textFontAttributes)
         
         let fs = CTFramesetterCreateWithAttributedString(attrString)
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 150, height: 45), nil)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 300, height: 45), nil)
         
         self.size = CGSize(width: frameSize.width + 10, height: frameSize.height + 8 )
     }

@@ -70,6 +70,28 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
+    override func keyDown(with event: NSEvent) {
+        if event.characters == "\t" {
+            if let active = self.activeElement {
+                if active.kind == .Element {
+                    if let el = active.element {
+                        let newEl = Element(name: "Untitled")
+                        let item = el.add(item: newEl)
+                        item.x = active.x + 100
+                        item.y = active.y
+                        
+                        
+                        if self.elementModel != el {
+                            self.elementModel?.add(from: active, to: newEl)
+                        }
+                        
+                        needsDisplay = true
+                    }
+                }
+            }
+        }
+    }
+    
     public func findElement(el: Element, x: CGFloat, y: CGFloat) -> DiagramItem? {
         for item in el.items {
             if let r = elementRects[item] {

@@ -37,7 +37,7 @@ extension TennNode {
             case .CharLit, .IntLit, .Ident, .FloatLit:
                 result.append(tok.literal)
             case .Hash:
-                result.append("\(getSeq(pattern: "#", count: self.level))\(tok.literal)\n")
+                result.append("\n\(getSeq(pattern: "#", count: self.level)) \(tok.literal)\n\n")
             case .StringLit:
                 if clean {
                     result.append(tok.literal)

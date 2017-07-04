@@ -13,8 +13,23 @@ import Foundation
  A root of element map
  */
 public class ElementModel: Element {
+    
+    public var onUpdate: [() -> Void] = []
+    
     init() {
         super.init(name: "Root", addSelfItem: false)
+    }
+    override func updateModel( _ el: Element) {
+        el.model = self
+    }
+    override func updateModel( _ item: DiagramItem) {
+        item.model = self
+    }
+    
+    func modified() {
+        for op in onUpdate {
+            op()
+        }
     }
 }
 
@@ -41,12 +56,22 @@ public class DiagramItem: Hashable {
     var id: NSUUID
     var visible: Bool = true // Some items could be hided
     
-    var x: CGFloat = 0
-    var y: CGFloat = 0
+    var x: CGFloat = 0 {
+        didSet {
+            self.model?.modified()
+        }
+    }
+    var y: CGFloat = 0 {
+        didSet {
+            self.model?.modified()
+        }
+    }
     
     var element: Element? = nil
     var source: DiagramItem? = nil // A direct link to source
     var target: DiagramItem? = nil // A direct link to target in case of Link
+    
+    var model: ElementModel?
     
     public init(kind: ElementKind, name: String? = nil, element: Element? = nil, source: DiagramItem? = nil, target:DiagramItem? = nil) {
         self.kind = kind
@@ -82,6 +107,8 @@ public class Element: Hashable {
     
     var selfItem: DiagramItem? = nil
     
+    var model: ElementModel?
+    
     public var hashValue: Int {
         get {
             return id.hashValue
@@ -101,34 +128,70 @@ public class Element: Hashable {
         if addSelfItem {
             // Since it is .Element name will be taken from Element itself.
             let si = DiagramItem(kind: .Element, name: nil, element: self)
+            
+            self.updateModel(si)
             self.selfItem = si
             self.backItems.append(si)
             self.items.append(si)
         }
     }
     
+    func updateModel( _ el: Element) {
+        el.model = self.model
+    }
+    
+    func updateModel( _ item: DiagramItem) {
+        item.model = self.model
+    }
+    
     // Operations with containment elements
     func add( _ el: Element ) {
         el.parent = self
+        
+        self.updateModel(el)
         self.elements.append(el)
         
         // We also automatically need to add a diagramElement's
         
         // Since it is .Element name will be taken from Element itself.
         let de = DiagramItem(kind: .Element, name: nil, element: el )
+        self.updateModel(de)
         el.backItems.append(de)
         self.items.append(de)
         
         // We also need to add link from self to this item
         
         let li = DiagramItem(kind: .Link, name: nil, source: selfItem, target: de)
+        self.updateModel(li)
         self.items.append(li)
+        
+        self.model?.modified()
     }
     
-
+    func add( from source: DiagramItem, to element: Element ) {
+        // Since it is .Element name will be taken from Element itself.
+        
+        let de = DiagramItem(kind: .Element, name: nil, element: element )
+        self.updateModel(de)
+        element.backItems.append(de)
+        self.items.append(de)
+        
+        // We also need to add link from self to this item
+        
+        let li = DiagramItem(kind: .Link, name: nil, source: source, target: de)
+        self.updateModel(li)
+        self.items.append(li)
+        
+        self.model?.modified()
+    }
+    
     func add(get: Element) -> Element {
         self.add(get)
         return get
+    }
+    
+    func add(item: Element) -> DiagramItem {
+        return self.add(get: item).backItems[0]
     }
     
     var x: CGFloat {

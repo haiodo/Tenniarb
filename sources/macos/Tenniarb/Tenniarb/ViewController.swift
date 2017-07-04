@@ -14,8 +14,6 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var worldTree: NSOutlineView!
     
-    @IBOutlet weak var textArea: NSScrollView!
-    
     @IBOutlet var textView: NSTextView!
     
     var elementModel:ElementModel?
@@ -23,12 +21,18 @@ class ViewController: NSViewController {
     var selectedElement: Element?
     var activeElement: Element?
     
+    var updateScheduled: Int = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         scene.onSelection.append({( element ) -> Void in
 //            self.setActiveElement(element)
         })
+        
+        if elementModel != nil && self.scene != nil {
+            setElementModel(elementModel: elementModel!)
+        }
     }
     
 
@@ -59,12 +63,38 @@ class ViewController: NSViewController {
         }
         if let e = self.activeElement {
             let strContent = e.toTennStr()
+            
+            let style = NSMutableParagraphStyle()
+            style.headIndent = 50
+            style.alignment = .justified
+            style.firstLineHeadIndent = 50
+            
+            textView.font = NSFont.systemFont(ofSize: 15.0)
+            
             textView.string = strContent
         }
     }
     
     public func setElementModel(elementModel: ElementModel) {
         self.elementModel = elementModel
+        if self.scene == nil {
+            return
+        }
+        
+        elementModel.onUpdate.append {
+            //TODO: Add optimizations based on particular element
+            
+            if self.updateScheduled == 0 {
+                self.updateScheduled = 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                    self.worldTree.reloadData()
+                    //# Update text
+                    self.setActiveElement(self.activeElement)
+                    
+                    self.updateScheduled = 0
+                })
+            }
+        }
         scene.setElementModel(elementModel)
         
         worldTree.reloadData()
