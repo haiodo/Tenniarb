@@ -712,7 +712,7 @@
                                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                     </tableHeaderCell>
-                                                                    <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
+                                                                    <textFieldCell key="dataCell" selectable="YES" editable="YES" continuous="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" drawsBackground="YES" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
                                                                         <font key="font" size="20" name="ArialMT"/>
                                                                         <color key="textColor" red="0.76078431372549016" green="0.76862745098039209" blue="0.792156862745098" alpha="1" colorSpace="calibratedRGB"/>
                                                                         <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="0.0" colorSpace="calibratedRGB"/>
