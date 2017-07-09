@@ -692,18 +692,18 @@
                                     <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x0W-xq-fhv">
                                         <rect key="frame" x="0.0" y="0.0" width="977" height="628"/>
                                         <subviews>
-                                            <scrollView wantsLayer="YES" fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="26" horizontalPageScroll="10" verticalLineScroll="26" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="VUW-I9-jfQ">
+                                            <scrollView wantsLayer="YES" fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="VUW-I9-jfQ">
                                                 <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                                <clipView key="contentView" copiesOnScroll="NO" id="8bW-96-csO">
+                                                <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="8bW-96-csO">
                                                     <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
-                                                        <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" typeSelect="NO" rowHeight="24" rowSizeStyle="systemDefault" indentationPerLevel="16" autoresizesOutlineColumn="YES" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb" customClass="WordsView" customModule="Tenniarb" customModuleProvider="target">
+                                                        <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" typeSelect="NO" rowHeight="24" rowSizeStyle="systemDefault" indentationPerLevel="16" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb" customClass="WordsView" customModule="Tenniarb" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                             <autoresizingMask key="autoresizingMask"/>
-                                                            <size key="intercellSpacing" width="4" height="2"/>
-                                                            <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <size key="intercellSpacing" width="2" height="3"/>
+                                                            <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="0.74678938360000002" colorSpace="calibratedRGB"/>
                                                             <color key="gridColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                             <tableColumns>
                                                                 <tableColumn identifier="" width="218" minWidth="40" maxWidth="1000" id="YFI-la-VX8" userLabel="WorldElement" colorLabel="IBBuiltInLabel-Yellow">
@@ -712,10 +712,10 @@
                                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                     </tableHeaderCell>
-                                                                    <textFieldCell key="dataCell" selectable="YES" editable="YES" continuous="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" drawsBackground="YES" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
+                                                                    <textFieldCell key="dataCell" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" id="aB0-mP-Luf">
                                                                         <font key="font" size="20" name="ArialMT"/>
                                                                         <color key="textColor" red="0.76078431372549016" green="0.76862745098039209" blue="0.792156862745098" alpha="1" colorSpace="calibratedRGB"/>
-                                                                        <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="0.0" colorSpace="calibratedRGB"/>
+                                                                        <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                     </textFieldCell>
                                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                                 </tableColumn>

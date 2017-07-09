@@ -16,9 +16,9 @@ class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.7)
     var elementModel: Element?
     
-    var activeElement: DiagramItem?
+    var activeElement: Element?
     
-    var dragElement: DiagramItem?
+    var dragElement: Element?
     
     var x: CGFloat = 0
     var y: CGFloat = 0
@@ -30,7 +30,7 @@ class SceneDrawView: NSView {
     
     var mouseDownState = false
     
-    var elementRects:[DiagramItem: CGRect] = [:]
+    var elementRects:[Element: CGRect] = [:]
     
     var onSelection: [( Element? ) -> Void] = []
     
@@ -49,7 +49,7 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
-    public func setActiveElement( _ element: DiagramItem? ) {
+    public func setActiveElement( _ element: Element? ) {
         activeElement = element
         
         if element == nil {
@@ -59,10 +59,8 @@ class SceneDrawView: NSView {
         }
         else if let e = element {
             if e.kind == .Element {
-                if let ee = e.element {
-                    for f in onSelection {
-                        f(ee)
-                    }
+                for f in onSelection {
+                    f(e)
                 }
             }
         }
@@ -74,11 +72,13 @@ class SceneDrawView: NSView {
         if event.characters == "\t" {
             if let active = self.activeElement {
                 if active.kind == .Element {
-                    if let el = active.element {
+                    if let el = self.elementModel {
                         let newEl = Element(name: "Untitled")
-                        let item = el.add(item: newEl)
-                        item.x = active.x + 100
-                        item.y = active.y
+                        el.add(newEl)
+                        newEl.x = active.x + 100
+                        newEl.y = active.y
+                        
+                        el.add(from: active, to: newEl)
                         
                         
                         if self.elementModel != el {
@@ -89,11 +89,20 @@ class SceneDrawView: NSView {
                     }
                 }
             }
+            else {
+                // Add top element
+                let newEl = Element(name: "Root")
+                self.elementModel?.add(newEl)
+                newEl.x = 0
+                newEl.y = 0
+                
+                needsDisplay = true
+            }
         }
     }
     
-    public func findElement(el: Element, x: CGFloat, y: CGFloat) -> DiagramItem? {
-        for item in el.items {
+    public func findElement(el: Element, x: CGFloat, y: CGFloat) -> Element? {
+        for item in el.elements {
             if let r = elementRects[item] {
                 if( item.x < x && x < item.x + r.width &&
                     item.y < y && y < item.y + r.height ) {
@@ -225,8 +234,8 @@ class SceneDrawView: NSView {
     func buildElements( element: Element )-> Drawable {
         let elementDrawable = DrawableElement()
         
-        var links: [DiagramItem] = []
-        for e in element.items {
+        var links: [Element] = []
+        for e in element.elements {
             var active = false
             if let ae = activeElement {
                 if ae.id == e.id {
@@ -235,8 +244,17 @@ class SceneDrawView: NSView {
             }
             
             
-            if e.kind == .Element && e.element != nil {
-                let textBox = TextBox( text: e.element!.name,  textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)  )
+            if e.kind == .Element {
+                
+                var name = e.name
+                
+                // Referenced element name should be from reference
+                if e.data != nil && e.data?.refElement != nil {
+                    name = e.data!.refElement!.name
+                }
+                
+                
+                let textBox = TextBox( text: name,  textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)  )
                 
                 let textBounds = textBox.getBounds()
                 
@@ -254,15 +272,16 @@ class SceneDrawView: NSView {
                 let rectBounds = rectBox.getBounds()
                 
                 elementRects[e] = CGRect(origin: CGPoint(x: rectBounds.origin.x + self.ox, y: rectBounds.origin.y + self.oy), size: rectBounds.size)
+                
             }
             else if e.kind == .Link  {
                 links.append(e)
             }
         }
         for e in links {
-            if let s = e.source, let t = e.target {
-                let sourceRect = elementRects[s]
-                let targetRect = elementRects[t]
+            if let data = e.data as? LinkElementData {
+                let sourceRect = elementRects[data.source]
+                let targetRect = elementRects[data.target]
                 
                 if let sr = sourceRect, let tr = targetRect {
                     elementDrawable.insert(

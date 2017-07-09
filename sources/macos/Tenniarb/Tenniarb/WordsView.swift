@@ -15,6 +15,7 @@ class WordsView:NSOutlineView {
             return false
         }
     }
+    
 //    override func drawBackground(inClipRect clipRect: NSRect) {
 //        // No code here
 //        clipRect.fill(using: .clear)

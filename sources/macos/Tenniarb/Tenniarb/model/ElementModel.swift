@@ -17,13 +17,10 @@ public class ElementModel: Element {
     public var onUpdate: [() -> Void] = []
     
     init() {
-        super.init(name: "Root", addSelfItem: false)
+        super.init(kind: .Root, name: "Root")
     }
     override func updateModel( _ el: Element) {
         el.model = self
-    }
-    override func updateModel( _ item: DiagramItem) {
-        item.model = self
     }
     
     func modified() {
@@ -35,113 +32,118 @@ public class ElementModel: Element {
 
 public enum ElementKind {
     case Element // A reference to element
+    case Diagram // A reference to element
+    case Root // A reference to element
     case Link // A link
     case Annontation // Annotation box
     
     var commandName : String {
         switch self {
         // Use Internationalization, as appropriate.
+        case .Root: return "_root_";
         case .Element: return "element";
+        case .Diagram: return "diagram";
         case .Link: return "link";
         case .Annontation: return "annotation";
         }
     }
 }
 
-public class DiagramItem: Hashable {
-    var kind: ElementKind
-    var name: String?
-    
-    // id is transient and used only for identity
-    var id: NSUUID
+public class ElementData {
+    var refElement: Element? = nil // A reference to some other element
     var visible: Bool = true // Some items could be hided
-    
-    var x: CGFloat = 0 {
-        didSet {
-            self.model?.modified()
-        }
-    }
-    var y: CGFloat = 0 {
-        didSet {
-            self.model?.modified()
-        }
+    init( ) {
     }
     
-    var element: Element? = nil
-    var source: DiagramItem? = nil // A direct link to source
-    var target: DiagramItem? = nil // A direct link to target in case of Link
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+}
+public class LinkElementData: ElementData {
+    var source: Element // A direct link to source
+    var target: Element // A direct link to target in case of Link
     
-    var model: ElementModel?
-    
-    public init(kind: ElementKind, name: String? = nil, element: Element? = nil, source: DiagramItem? = nil, target:DiagramItem? = nil) {
-        self.kind = kind
-        
-        self.id = NSUUID()
-        
-        self.name = name
-        self.element = element
+    init( source:Element, target:Element) {
         self.source = source
         self.target = target
-    }
-    public var hashValue: Int {
-        get {
-            return id.hashValue
-        }
-    }
-    public static func ==(lhs: DiagramItem, rhs: DiagramItem) -> Bool {
-        return lhs.id == rhs.id
+        super.init()
     }
 }
 
 public class Element: Hashable {
+    var kind: ElementKind
     var id: NSUUID
     var name: String
     var elements: [Element] = []
     
-    var backItems: [DiagramItem] = []
-    
-    // Elements drawn on diagram
-    var items: [DiagramItem] = []
-    
+    var backReferences: [Element] = []
     var parent: Element? = nil
-    
-    var selfItem: DiagramItem? = nil
-    
     var model: ElementModel?
+    
+    var data: ElementData?
     
     public var hashValue: Int {
         get {
             return id.hashValue
+        }
+    }
+    
+    var x: CGFloat {
+        get {
+            if let d = data {
+                return d.x
+            }
+            return 0
+        }
+        set {
+            if let d = data {
+                d.x = newValue
+            }
+            self.model?.modified()
+        }
+    }
+    var y: CGFloat {
+        get {
+            if let d = data {
+                return d.y
+            }
+            return 0
+        }
+        set {
+            if let d = data {
+                d.y = newValue
+            }
+            self.model?.modified()
         }
     }
     
     public static func ==(lhs: Element, rhs: Element) -> Bool {
         return lhs.id == rhs.id
     }
-
-    init(name: String, addSelfItem: Bool = true) {
+    
+    init( kind: ElementKind, name: String) {
         self.id = NSUUID()
         self.name = name
+        self.kind = kind
         
-        // Add self as item
-        
-        if addSelfItem {
-            // Since it is .Element name will be taken from Element itself.
-            let si = DiagramItem(kind: .Element, name: nil, element: self)
-            
-            self.updateModel(si)
-            self.selfItem = si
-            self.backItems.append(si)
-            self.items.append(si)
+        if kind == .Link {
+            Swift.debugPrint("Invalid element kind for this constructor")
         }
+        else {
+            self.data = ElementData()
+        }
+    }
+    
+    convenience init( name: String) {
+        self.init( kind: .Element, name: name)
+    }
+    
+    convenience init( name: String, source: Element, target: Element ) {
+        self.init(kind: .Link, name: name)
+        self.data = LinkElementData(source: source, target: target)
     }
     
     func updateModel( _ el: Element) {
         el.model = self.model
-    }
-    
-    func updateModel( _ item: DiagramItem) {
-        item.model = self.model
     }
     
     // Operations with containment elements
@@ -151,36 +153,14 @@ public class Element: Hashable {
         self.updateModel(el)
         self.elements.append(el)
         
-        // We also automatically need to add a diagramElement's
-        
-        // Since it is .Element name will be taken from Element itself.
-        let de = DiagramItem(kind: .Element, name: nil, element: el )
-        self.updateModel(de)
-        el.backItems.append(de)
-        self.items.append(de)
-        
-        // We also need to add link from self to this item
-        
-        let li = DiagramItem(kind: .Link, name: nil, source: selfItem, target: de)
-        self.updateModel(li)
-        self.items.append(li)
-        
         self.model?.modified()
     }
     
-    func add( from source: DiagramItem, to element: Element ) {
-        // Since it is .Element name will be taken from Element itself.
-        
-        let de = DiagramItem(kind: .Element, name: nil, element: element )
-        self.updateModel(de)
-        element.backItems.append(de)
-        self.items.append(de)
-        
-        // We also need to add link from self to this item
-        
-        let li = DiagramItem(kind: .Link, name: nil, source: source, target: de)
+    func add( from source: Element, to target: Element ) {
+        // Check for self element, create if necessesary
+        let li = Element(name: source.name + ":" + target.name, source:source, target: target )
         self.updateModel(li)
-        self.items.append(li)
+        self.elements.append(li)
         
         self.model?.modified()
     }
@@ -189,33 +169,6 @@ public class Element: Hashable {
         self.add(get)
         return get
     }
-    
-    func add(item: Element) -> DiagramItem {
-        return self.add(get: item).backItems[0]
-    }
-    
-    var x: CGFloat {
-        set(newx) {
-            for de in backItems {
-                de.x = newx
-            }
-        }
-        get {
-            return 0
-        }
-    }
-    var y: CGFloat {
-        set(newy) {
-            for de in backItems {
-                de.y = newy
-            }
-        }
-        get {
-            return 0
-        }
-    }
-    
-    // Operations with
 }
 
 /**
@@ -248,24 +201,19 @@ extension Element {
             
             parent.add(enode)
             
-            if e.items.count > 0 {
-                let elsRoot = TennNode.newCommand(".items")
+            if let data = e.data {
+                let elsRoot = TennNode.newCommand(".data")
                 parent.add(elsRoot)
                 
                 let elsBlock = TennNode.newBlockExpr()
                 elsRoot.add(elsBlock)
                 
-                for ie in e.items {
-                    let enode = TennNode.newCommand("." + ie.kind.commandName)
-                    if let n = ie.name {
-                        enode.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(n))
-                    }
-                    
-                    enode.addAll(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(ie.x)))
-                    enode.addAll(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(ie.y)))
-                    
-                    // Store node parameters
-                    elsBlock.add(enode)
+                elsBlock.add( TennNode.newCommand("kind", TennNode.newIdent(e.kind.commandName)))
+                elsBlock.add( TennNode.newCommand("pos", TennNode.newCommand("-x"), TennNode.newFloatNode(Double(data.x)), TennNode.newCommand("-y"), TennNode.newFloatNode(Double(data.y)) ))
+                
+                if let linkData = data as? LinkElementData {
+                    elsBlock.add( TennNode.newCommand("source", TennNode.newIdent(linkData.source.name)))
+                    elsBlock.add( TennNode.newCommand("target", TennNode.newIdent(linkData.target.name)))
                 }
             }
             if e.elements.count > 0 {
@@ -279,33 +227,47 @@ public class ElementModelFactory {
     var elementModel: ElementModel
     public init() {
         self.elementModel = ElementModel()
-            
-            
-        let pl = elementModel.add(get: Element(name: "Platform"))
+        
+        let pe = self.elementModel.add(get: Element(kind: .Diagram, name: "Platform"))
+        
+        let pl = pe.add(get: Element(name: "Platform"))
         pl.x = 0
         pl.y = 0
         
-        let index = pl.add( get: Element(name: "Index"))
+        let index = pe.add( get: Element(name: "Index"))
             index.x = 50
             index.y = 50
-        let st = pl.add( get: Element(name: "StateTracker"))
+        
+        pe.add(from: pl, to: index)
+        
+        let st = pe.add( get: Element(name: "StateTracker"))
             st.x = -50
             st.y = -50
+        
+        pe.add(from: pl, to: st)
             
-        let dt = pl.add( get: Element(name: "DeviceTracker"))
+        let dt = pe.add( get: Element(name: "DeviceTracker"))
             dt.x = 100
             dt.y = -50
         
-        let dev = dt.add( get: Element(name: "Device"))
+        pe.add(from: pl, to: dt)
+        
+        let dev = pe.add( get: Element(name: "Device"))
             dev.x = -50
             dev.y = 50
+        
+        pe.add(from: dt, to: dev)
             
-        let repo = pl.add( get: Element(name: "Repository"))
+        let repo = pe.add( get: Element(name: "Repository"))
             repo.x = 50
             repo.y = -100
-        let db = repo.add( get: Element(name: "Database"))
+        
+        pe.add(from: pl, to: repo)
+        let db = pe.add( get: Element(name: "Database"))
             db.x = 40
             db.y = 50
+        
+        pe.add(from: repo, to: db)
             
     
 

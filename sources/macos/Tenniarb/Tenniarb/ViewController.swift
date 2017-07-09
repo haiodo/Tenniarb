@@ -86,7 +86,7 @@ class ViewController: NSViewController {
             
             if self.updateScheduled == 0 {
                 self.updateScheduled = 1
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
                     self.worldTree.reloadData()
                     //# Update text
                     self.setActiveElement(self.activeElement)
@@ -120,11 +120,17 @@ extension ViewController: NSOutlineViewDataSource {
     
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        //1
+        // Elements and diagram items
         if let el = item as? Element {
-            return el.elements.count
+            var count = 0
+            for e in el.elements {
+                if e.kind == .Element {
+                    count += 1
+                }
+            }
+            return count
         }
-        //2
+        // Root has only elements
         if let em = elementModel {
             return em.elements.count
         }
@@ -132,6 +138,15 @@ extension ViewController: NSOutlineViewDataSource {
     }
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let el = item as? Element {
+            var i = 0
+            for e in el.elements {
+                if e.kind == .Element {
+                    if i == index {
+                        return e
+                    }
+                    i += 1
+                }
+            }
             return el.elements[index]
         }
         
