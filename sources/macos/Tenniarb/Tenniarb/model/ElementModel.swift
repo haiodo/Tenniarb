@@ -14,7 +14,7 @@ import Foundation
  */
 public class ElementModel: Element {
     
-    public var onUpdate: [() -> Void] = []
+    public var onUpdate: [(_ item:Element) -> Void] = []
     
     init() {
         super.init(kind: .Root, name: "Root")
@@ -23,9 +23,9 @@ public class ElementModel: Element {
         el.model = self
     }
     
-    func modified() {
+    func modified(_ el: Element) {
         for op in onUpdate {
-            op()
+            op(el)
         }
     }
 }
@@ -98,7 +98,7 @@ public class Element: Hashable {
             if let d = data {
                 d.x = newValue
             }
-            self.model?.modified()
+            self.model?.modified(self)
         }
     }
     var y: CGFloat {
@@ -112,7 +112,7 @@ public class Element: Hashable {
             if let d = data {
                 d.y = newValue
             }
-            self.model?.modified()
+            self.model?.modified(self)
         }
     }
     
@@ -153,7 +153,7 @@ public class Element: Hashable {
         self.updateModel(el)
         self.elements.append(el)
         
-        self.model?.modified()
+        self.model?.modified(self)
     }
     
     func add( from source: Element, to target: Element ) {
@@ -162,7 +162,7 @@ public class Element: Hashable {
         self.updateModel(li)
         self.elements.append(li)
         
-        self.model?.modified()
+        self.model?.modified(self)
     }
     
     func add(get: Element) -> Element {

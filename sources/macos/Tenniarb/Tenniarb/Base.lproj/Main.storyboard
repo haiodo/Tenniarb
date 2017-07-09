@@ -4,6 +4,7 @@
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13122.19"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="system font weights other than Regular or Bold" minToolsVersion="7.0"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -692,32 +693,70 @@
                                     <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x0W-xq-fhv">
                                         <rect key="frame" x="0.0" y="0.0" width="977" height="628"/>
                                         <subviews>
-                                            <scrollView wantsLayer="YES" fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="VUW-I9-jfQ">
+                                            <scrollView wantsLayer="YES" fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="29" horizontalPageScroll="10" verticalLineScroll="29" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="VUW-I9-jfQ">
                                                 <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="8bW-96-csO">
                                                     <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
-                                                        <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" typeSelect="NO" rowHeight="24" rowSizeStyle="systemDefault" indentationPerLevel="16" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb" customClass="WordsView" customModule="Tenniarb" customModuleProvider="target">
+                                                        <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="sequential" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" typeSelect="NO" rowHeight="24" rowSizeStyle="systemDefault" viewBased="YES" indentationPerLevel="15" autoresizesOutlineColumn="YES" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb">
                                                             <rect key="frame" x="0.0" y="0.0" width="227" height="628"/>
                                                             <autoresizingMask key="autoresizingMask"/>
-                                                            <size key="intercellSpacing" width="2" height="3"/>
-                                                            <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="0.74678938360000002" colorSpace="calibratedRGB"/>
+                                                            <size key="intercellSpacing" width="5" height="5"/>
+                                                            <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="1" colorSpace="calibratedRGB"/>
                                                             <color key="gridColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                             <tableColumns>
-                                                                <tableColumn identifier="" width="218" minWidth="40" maxWidth="1000" id="YFI-la-VX8" userLabel="WorldElement" colorLabel="IBBuiltInLabel-Yellow">
-                                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Word">
-                                                                        <font key="font" size="20" name="ArialMT"/>
+                                                                <tableColumn identifier="" width="219" minWidth="40" maxWidth="1000" id="YFI-la-VX8" userLabel="Table Column" colorLabel="IBBuiltInLabel-Yellow">
+                                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Element">
+                                                                        <font key="font" metaFont="smallSystem"/>
                                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                     </tableHeaderCell>
-                                                                    <textFieldCell key="dataCell" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" id="aB0-mP-Luf">
+                                                                    <textFieldCell key="dataCell" selectable="YES" editable="YES" continuous="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
                                                                         <font key="font" size="20" name="ArialMT"/>
                                                                         <color key="textColor" red="0.76078431372549016" green="0.76862745098039209" blue="0.792156862745098" alpha="1" colorSpace="calibratedRGB"/>
                                                                         <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                     </textFieldCell>
                                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
+                                                                    <prototypeCellViews>
+                                                                        <tableCellView identifier="ItemCell" id="wCm-He-3sR">
+                                                                            <rect key="frame" x="2" y="2" width="219" height="17"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                            <subviews>
+                                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XGI-aq-4wA" userLabel="ItemCell">
+                                                                                    <rect key="frame" x="18" y="0.0" width="169" height="18"/>
+                                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="GXh-Ub-nEp" userLabel="ItemCell">
+                                                                                        <font key="font" metaFont="systemSemibold" size="13"/>
+                                                                                        <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                        <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                    </textFieldCell>
+                                                                                </textField>
+                                                                            </subviews>
+                                                                            <connections>
+                                                                                <outlet property="textField" destination="XGI-aq-4wA" id="cVa-5j-I3y"/>
+                                                                            </connections>
+                                                                        </tableCellView>
+                                                                        <tableCellView identifier="ElementCell" id="1s1-h2-r6o">
+                                                                            <rect key="frame" x="2" y="24" width="219" height="17"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                            <subviews>
+                                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jFu-YY-ZbH" userLabel="ItemCell">
+                                                                                    <rect key="frame" x="18" y="0.0" width="169" height="18"/>
+                                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="BRQ-qz-Nrb" userLabel="ItemCell">
+                                                                                        <font key="font" metaFont="system" size="12"/>
+                                                                                        <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                        <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                    </textFieldCell>
+                                                                                </textField>
+                                                                            </subviews>
+                                                                            <connections>
+                                                                                <outlet property="textField" destination="jFu-YY-ZbH" id="vrJ-45-qwD"/>
+                                                                            </connections>
+                                                                        </tableCellView>
+                                                                    </prototypeCellViews>
                                                                 </tableColumn>
                                                             </tableColumns>
                                                             <connections>

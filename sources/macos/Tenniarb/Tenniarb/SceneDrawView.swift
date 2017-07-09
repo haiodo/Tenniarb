@@ -41,7 +41,7 @@ class SceneDrawView: NSView {
     }
     
     
-    public func setElementModel(_ elementModel: Element ) {
+    public func setDiagram(_ elementModel: Element ) {
         self.elementModel = elementModel
         self.activeElement = nil
         elementRects.removeAll()

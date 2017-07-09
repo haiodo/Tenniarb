@@ -23,6 +23,8 @@ class ViewController: NSViewController {
     
     var updateScheduled: Int = 0
     
+    var updateElements:[Element] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -47,7 +49,7 @@ class ViewController: NSViewController {
             self.selectedElement = element
             
             if let el = element {
-                self.scene.setElementModel(el)
+                self.scene.setDiagram(el)
             
                 self.setActiveElement(el)
             }
@@ -81,13 +83,19 @@ class ViewController: NSViewController {
             return
         }
         
-        elementModel.onUpdate.append {
+        elementModel.onUpdate.append { (element) in
             //TODO: Add optimizations based on particular element
             
+            self.updateElements.append(element)
             if self.updateScheduled == 0 {
                 self.updateScheduled = 1
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-                    self.worldTree.reloadData()
+                    
+                    for el in self.updateElements {
+                        self.worldTree.reloadItem(el, reloadChildren: true)
+                    }
+                    
                     //# Update text
                     self.setActiveElement(self.activeElement)
                     
@@ -95,7 +103,7 @@ class ViewController: NSViewController {
                 })
             }
         }
-        scene.setElementModel(elementModel)
+        scene.setDiagram(elementModel)
         
         worldTree.reloadData()
         // Expand all top level elements
@@ -116,7 +124,7 @@ class ViewController: NSViewController {
     }
 }
 
-extension ViewController: NSOutlineViewDataSource {
+extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -163,11 +171,43 @@ extension ViewController: NSOutlineViewDataSource {
         return false
     }
     
-    // Using "Cell Based" content mode
+//    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
+//        if let el = item as? Element {
+//            return (el.parent as? ElementModel) != nil
+//        }
+//
+//        return false
+//    }
+    
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
         //1
         if let el = item as? Element {
             return el.name
+        }
+        return nil
+    }
+    
+//    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
+//        if let el = item as? Element {
+//            return el.elements.count > 0
+//        }
+//        return false
+//    }
+    
+    func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
+        Swift.debugPrint("viewfortable column")
+        if let el = item as? Element {
+            var value = "ElementCell"
+            
+            if el.elements.count > 0 {
+                value = "ItemCell"
+            }
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: value), owner: self) as? NSTableCellView {
+                if let textField = view.textField {
+                    textField.stringValue = el.name
+                }
+                return view
+            }
         }
         return nil
     }
@@ -182,6 +222,10 @@ extension ViewController: NSOutlineViewDataSource {
         else {
             self.onElementSelected(elementModel)
         }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        Swift.debugPrint("Keydown pressed")
     }
     
     override func controlTextDidEndEditing(_ obj: Notification) {
