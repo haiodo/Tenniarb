@@ -64,16 +64,18 @@ class ViewController: NSViewController {
             self.activeElement = selectedElement
         }
         if let e = self.activeElement {
-            let strContent = e.toTennStr()
-            
-            let style = NSMutableParagraphStyle()
-            style.headIndent = 50
-            style.alignment = .justified
-            style.firstLineHeadIndent = 50
-            
-            textView.font = NSFont.systemFont(ofSize: 15.0)
-            
-            textView.string = strContent
+            DispatchQueue.main.async(execute: {
+                let strContent = e.toTennStr()
+                
+                let style = NSMutableParagraphStyle()
+                style.headIndent = 50
+                style.alignment = .justified
+                style.firstLineHeadIndent = 50
+                
+                self.textView.font = NSFont.systemFont(ofSize: 15.0)
+                
+                self.textView.string = strContent
+            })
         }
     }
     
@@ -92,9 +94,11 @@ class ViewController: NSViewController {
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
                     
+                    self.worldTree.beginUpdates()
                     for el in self.updateElements {
                         self.worldTree.reloadItem(el, reloadChildren: true)
                     }
+                    self.worldTree.endUpdates()
                     
                     //# Update text
                     self.setActiveElement(self.activeElement)
@@ -195,16 +199,15 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
 //    }
     
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
-        Swift.debugPrint("viewfortable column")
         if let el = item as? Element {
-            var value = "ElementCell"
-            
-            if el.elements.count > 0 {
-                value = "ItemCell"
-            }
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: value), owner: self) as? NSTableCellView {
+            Swift.debugPrint("viewfortable column:" + el.name)
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name
+//                    textField.font = NSFont.labelFont(ofSize: 10)
+                }
+                if let imageView = view.imageView {
+//                    imageView.image =
                 }
                 return view
             }
