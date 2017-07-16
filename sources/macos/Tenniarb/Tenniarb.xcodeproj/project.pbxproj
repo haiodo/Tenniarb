@@ -35,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0C2375F01ED838D900ECB516 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -125,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				0C3130611F0A9D2600FA5624 /* examples.md */,
+				0C235ED21F13F4B9004E37AC /* readme.md */,
 			);
 			name = Documentation;
 			sourceTree = "<group>";

@@ -98,6 +98,7 @@ class ViewController: NSViewController {
                     for el in self.updateElements {
                         self.worldTree.reloadItem(el, reloadChildren: true)
                     }
+                    self.updateElements.removeAll()
                     self.worldTree.endUpdates()
                     
                     //# Update text
@@ -229,6 +230,10 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     override func keyDown(with event: NSEvent) {
         Swift.debugPrint("Keydown pressed")
+    }
+    
+    override func commitEditing(withDelegate delegate: Any?, didCommit didCommitSelector: Selector?, contextInfo: UnsafeMutableRawPointer?) {
+        Swift.debugPrint("commit editing")
     }
     
     override func controlTextDidEndEditing(_ obj: Notification) {
