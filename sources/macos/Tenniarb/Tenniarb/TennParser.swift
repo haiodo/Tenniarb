@@ -377,6 +377,9 @@ extension TennNode {
     public static func newFloatNode(_ value: Double ) -> TennNode {
         return TennNode(kind: .FloatLit, tok: TennToken(type: .floatLit, literal: String(value)) )
     }
+    public static func newIntNode(_ value: Int ) -> TennNode {
+        return TennNode(kind: .IntLit, tok: TennToken(type: .intLit, literal: String(value)) )
+    }
     public static func newNode(kind: TennNodeKind, _ token: TennToken? = nil) -> TennNode {
         return TennNode(kind: kind, tok: token )
     }

@@ -85,6 +85,10 @@ public class DiagramItem {
         self.kind = kind
         self.data = data
     }
+    convenience init( kind: ElementKind, name: String) {
+        self.init(kind: kind, data: ElementData())
+        self.name = name
+    }
     var x: CGFloat {
         get {
             return data.x
@@ -117,21 +121,30 @@ public class Element {
     // A list of items on diagram
     var items: [DiagramItem] = []
     
+    var description: String = ""
+    
     
     // Item on self diagram of this element
     var selfItem: DiagramItem?
     
-    init( kind: ElementKind, name: String) {
+    init( kind: ElementKind, name: String, createSelf: Bool = false) {
         self.id = NSUUID()
         self.name = name
         self.kind = kind
         
-        self.selfItem = DiagramItem(kind: .Element, data: ElementData(refElement: self))
-        self.items.append(self.selfItem!)
+        if createSelf {
+            self.createSelfItem()
+        }
     }
     
-    convenience init( name: String) {
-        self.init( kind: .Element, name: name)
+    func createSelfItem() {
+        let item = DiagramItem(kind: .Element, data: ElementData(refElement: self))
+        self.selfItem = item
+        self.items.append(item)
+    }
+    
+    convenience init( name: String, createSelf: Bool = false) {
+        self.init( kind: .Element, name: name, createSelf: createSelf)
     }
     
     func updateModel( _ el: Element) {
@@ -157,13 +170,29 @@ public class Element {
         self.items.append(item)
         
         // We also need to add link from self to this one
-        if createLink {
+        if createLink && self.selfItem != nil {
             let link = DiagramItem(kind: .Link, data: LinkElementData(source: self.selfItem!, target: item))
             self.items.append(link)
         }
         
         self.model?.modified(self)
         return item
+    }
+    
+    // Add a child element to current diagram
+    func add( source: DiagramItem, target: DiagramItem ) {
+        // We also need to add link from self to this one        
+        let link = DiagramItem(kind: .Link, data: LinkElementData(source: source, target: target))
+        self.items.append(link)
+        
+        if !self.items.contains(source) {
+            self.items.append(source)
+        }
+        if !self.items.contains(target) {
+            self.items.append(target)
+        }
+        
+        self.model?.modified(self)
     }
     
     func getItem( _ el: Element) -> DiagramItem? {
@@ -182,11 +211,14 @@ public class Element {
     func add( source: Element, target: Element ) -> DiagramItem?  {
         if let sourceItem = getItem( source ) {
             // Update current diagram to have a link between a self and new added item.
-            let item = DiagramItem(kind: .Element, data: ElementData(refElement: target))
-            self.items.append(item)
+            var item = getItem(target)
+            if item == nil {
+                item = DiagramItem(kind: .Element, data: ElementData(refElement: target))
+                self.items.append(item!)
+            }
             // We also need to add link from self to this one
             
-            let link = DiagramItem(kind: .Link, data: LinkElementData(source: sourceItem, target: item))
+            let link = DiagramItem(kind: .Link, data: LinkElementData(source: sourceItem, target: item!))
             self.items.append(link)
             
             self.model?.modified(self)
@@ -242,7 +274,7 @@ extension Element {
     
     func toTennStr( ) -> String {
         let ee = toTenn()
-        return ee.toStr(0, false)
+        return ee.toStr(1, false)
     }
     func elementsToTenn( _ parent: TennNode, _ elements: [Element], level: Int ) {
         for e in elements {
@@ -250,28 +282,52 @@ extension Element {
             
             parent.add(enode)
             
-            let elsRoot = TennNode.newCommand(".data")
-            parent.add(elsRoot)
+            if e.description.count > 0 {
+                let elDescr = TennNode.newCommand("description", TennNode.newStrNode(e.description))
+                parent.add(elDescr)
+            }
             
-            let elsBlock = TennNode.newBlockExpr()
-            elsRoot.add(elsBlock)
+            if e.items.count == 0 {
+                continue
+            }
             
-            for item in self.items {
-                let itemRoot = TennNode.newCommand(".item")
-                elsBlock.add(itemRoot)
+            for item in e.items {
+                let itemRoot = TennNode.newCommand(item.kind.commandName)
+                parent.add(itemRoot)
+                
+                if let refEl = item.data.refElement {
+                    itemRoot.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(refEl.name))
+                }
+                else {
+                    if let nn = item.name {
+                        itemRoot.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(nn))
+                    }
+                }
+                
+                let nx = item.data.x != 0
+                let ny = item.data.y != 0
+
+                if nx {
+                    itemRoot.addAll(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(item.data.x)))
+                }
+                if ny {
+                    itemRoot.addAll(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(item.data.y)))
+                }
                 
                 let itemBlock = TennNode.newBlockExpr()
-                itemRoot.add(itemBlock)
-                itemBlock.add( TennNode.newCommand("kind", TennNode.newIdent(item.kind.commandName)))
-                itemBlock.add( TennNode.newCommand("pos", TennNode.newCommand("-x"), TennNode.newFloatNode(Double(item.data.x)), TennNode.newCommand("-y"), TennNode.newFloatNode(Double(item.data.y)) ))
                 
+                itemBlock.addAll(TennNode.newCommand("uuid", TennNode.newStrNode(item.id.uuidString)))
+            
                 if let linkData = item.data as? LinkElementData {
                     if let sourceName = linkData.source.name {
-                        elsBlock.add( TennNode.newCommand("source", TennNode.newIdent(sourceName)))
+                        itemBlock.add( TennNode.newCommand("source", TennNode.newIdent(sourceName)))
                     }
                     if let targetName = linkData.target.name {
-                        elsBlock.add( TennNode.newCommand("target", TennNode.newIdent(targetName)))
+                        itemBlock.add( TennNode.newCommand("target", TennNode.newIdent(targetName)))
                     }
+                }
+                if itemBlock.count > 0 {
+                    itemRoot.add(itemBlock)
                 }
             }
             if e.elements.count > 0 {
@@ -286,33 +342,39 @@ public class ElementModelFactory {
     public init() {
         self.elementModel = ElementModel()
         
-        let pl = Element(name: "platform")
+        let pl = Element(name: "platform", createSelf: true)
         _ = self.elementModel.add(pl)
         
+        pl.selfItem?.x = -84
+        pl.selfItem?.y = 0
+    
         let index = pl.add( Element(name: "Index"))
-            index.x = 50
-            index.y = 50
+            index.x = -84
+            index.y = 102
         
         let st = pl.add( Element(name: "StateTracker"))
-            st.x = -50
-            st.y = -50
+            st.x = -189
+            st.y = -99
         
-        let dt = Element(name: "DeviceTracker")
+        let dt = Element(name: "DeviceTracker", createSelf: true)
         let dte = pl.add( dt )
-            dte.x = 100
-            dte.y = -50
+            dte.x = 129
+            dte.y = 48
     
         let dev = dt.add( Element(name: "Device"))
             dev.x = -50
             dev.y = 50
         
-        let repo = Element(name: "Repository")
+        let repo = Element(name: "Repository", createSelf: true)
         let repoe = pl.add( repo )
-            repoe.x = 50
-            repoe.y = -100
+            repoe.x = 56
+            repoe.y = -109
         
-        let db = repo.add( Element(name: "Database"))
-            db.x = 40
-            db.y = 50
+        let dbe = Element(name: "Database")
+        _ = repo.add( dbe )
+        
+        let dbi = pl.add(source: repo, target: dbe)
+            dbi?.x = 126
+            dbi?.y = -216
     }
 }

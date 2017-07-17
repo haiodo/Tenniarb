@@ -28,8 +28,6 @@ class SceneDrawView: NSView {
     var ox: CGFloat = 0
     var oy: CGFloat = 0
     
-    var trackingArea: NSTrackingArea? = nil
-    
     var mouseDownState = false
     
     var elementRects:[DiagramItem: CGRect] = [:]
@@ -42,6 +40,13 @@ class SceneDrawView: NSView {
         }
     }
     
+    func onLoad() {
+//        let pan = NSPanGestureRecognizer()
+//        pan.numberOfTouchesRequired = 2
+//        self.addGestureRecognizer(pan)
+        
+//        self.acceptsTouchEvents = true
+    }
     
     public func setDiagram(_ elementModel: Element ) {
         self.elementModel = elementModel
@@ -74,24 +79,18 @@ class SceneDrawView: NSView {
         if event.characters == "\t" {
             if let active = self.activeElement {
                 if active.kind == .Element {
-                    if let activeEl = active.data.refElement {
-                        // Create and add to activeEl
-                        let newEl = Element(name: "Untitled \(createIndex)")
-                        self.createIndex += 1
-                        let di = activeEl.add(newEl)
-                        di.x = active.x + 100
-                        di.y = active.y
-                        
-                        // No we need to create alink on current diagram
-                        if self.elementModel != activeEl {
-                            if let dil = self.elementModel?.add(source: activeEl, target: newEl) {
-                                dil.x = active.x + 100
-                                dil.y = active.y
-                            }
-                        }
-                        
-                        needsDisplay = true
-                    }
+                    // Create and add to activeEl
+                    let newEl = DiagramItem(kind: .Element, name: "Untitled \(createIndex)")
+                    self.createIndex += 1
+                    newEl.x = active.x + 100
+                    newEl.y = active.y
+                    
+                    self.elementModel?.add(newEl)
+                    
+                    self.elementModel?.add(source: active, target: newEl)
+                    
+                
+                    needsDisplay = true
                 }
             }
             else {
@@ -121,7 +120,6 @@ class SceneDrawView: NSView {
     
     
     override func mouseUp(with event: NSEvent) {
-        Swift.debugPrint("mouseUp")
         self.updateMousePosition(event)
         
         self.mouseDownState = false
@@ -129,7 +127,6 @@ class SceneDrawView: NSView {
     }
     
     override func mouseDown(with event: NSEvent) {
-        Swift.debugPrint("mouseDown")
         self.updateMousePosition(event)
         
         self.mouseDownState = true
@@ -162,6 +159,10 @@ class SceneDrawView: NSView {
             de.x += event.deltaX
             de.y -= event.deltaY
             
+            if let em = self.elementModel {
+                em.model?.modified(em)
+            }
+            
             needsDisplay = true
         }
         else {
@@ -188,7 +189,6 @@ class SceneDrawView: NSView {
         self.x = (wloc.x - treeBounds!.width - bounds.midX) - ox
         self.y = (wloc.y - bounds.midY - textarea!.height) - oy
     }
-    
     
     override func mouseMoved(with event: NSEvent) {
         self.updateMousePosition(event)

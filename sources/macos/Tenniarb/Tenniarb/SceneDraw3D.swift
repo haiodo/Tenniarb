@@ -8,7 +8,7 @@
 
 import Cocoa
 import CoreText
-import SceneKit
+//import SceneKit
 
 /*
 class SceneDrawView: SCNView {

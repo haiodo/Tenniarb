@@ -28,6 +28,8 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        scene.onLoad()
+        
         scene.onSelection.append({( element ) -> Void in
 //            self.setActiveElement(element)
         })
@@ -201,7 +203,6 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
-            Swift.debugPrint("viewfortable column:" + el.name)
             if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name
