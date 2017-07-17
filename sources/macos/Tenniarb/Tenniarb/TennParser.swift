@@ -43,7 +43,7 @@ public class TennNode {
         self.token = tok
     }
     
-    public func addAll( _ nodes: TennNode...) {
+    public func add( _ nodes: TennNode...) {
         for n in nodes {
             self.add(n)
         }

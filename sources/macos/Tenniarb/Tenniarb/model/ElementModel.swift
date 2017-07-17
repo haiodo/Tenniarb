@@ -13,13 +13,16 @@ import Foundation
  A root of element map
  */
 public class ElementModel: Element {
-    
     public var onUpdate: [(_ item:Element) -> Void] = []
     
     init() {
         super.init(kind: .Root, name: "Root")
     }
-    override func updateModel( _ el: Element) {
+    override func assignModel( _ el: Element) {
+        el.model = self
+    }
+    
+    override func assignModel( _ el: DiagramItem) {
         el.model = self
     }
     
@@ -78,10 +81,11 @@ public class DiagramItem {
     var kind: ElementKind
     var data: ElementData
     var name: String?
-    var id: NSUUID
+    var id: UUID
+    var model: ElementModel?
     
     init(kind: ElementKind, data: ElementData) {
-        self.id = NSUUID()
+        self.id = UUID()
         self.kind = kind
         self.data = data
     }
@@ -109,7 +113,7 @@ public class DiagramItem {
 
 public class Element {
     var kind: ElementKind
-    var id: NSUUID
+    var id: UUID
     var name: String
     var elements: [Element] = []
     
@@ -128,7 +132,7 @@ public class Element {
     var selfItem: DiagramItem?
     
     init( kind: ElementKind, name: String, createSelf: Bool = false) {
-        self.id = NSUUID()
+        self.id = UUID()
         self.name = name
         self.kind = kind
         
@@ -147,14 +151,19 @@ public class Element {
         self.init( kind: .Element, name: name, createSelf: createSelf)
     }
     
-    func updateModel( _ el: Element) {
-        el.model = self.model
+    func assignModel( _ el: Element) {
+        self.model?.assignModel(el)
+    }
+    
+    func assignModel( _ el: DiagramItem) {
+        self.model?.assignModel(el)
     }
     
     /// Add a diagram item to current diagram
     func add( _ item: DiagramItem) {
         self.items.append(item)
-    
+        
+        assignModel(item)
         self.model?.modified(self)
     }
     
@@ -162,17 +171,19 @@ public class Element {
     func add( _ el: Element, createLink: Bool = true ) -> DiagramItem {
         el.parent = self
         
-        self.updateModel(el)
+        self.assignModel(el)
         self.elements.append(el)
         
         // Update current diagram to have a link between a self and new added item.
         let item = DiagramItem(kind: .Element, data: ElementData(refElement: el))
         self.items.append(item)
+        assignModel(item)
         
         // We also need to add link from self to this one
         if createLink && self.selfItem != nil {
             let link = DiagramItem(kind: .Link, data: LinkElementData(source: self.selfItem!, target: item))
             self.items.append(link)
+            assignModel(link)
         }
         
         self.model?.modified(self)
@@ -184,12 +195,15 @@ public class Element {
         // We also need to add link from self to this one        
         let link = DiagramItem(kind: .Link, data: LinkElementData(source: source, target: target))
         self.items.append(link)
+        assignModel(link)
         
         if !self.items.contains(source) {
             self.items.append(source)
+            assignModel(source)
         }
         if !self.items.contains(target) {
             self.items.append(target)
+            assignModel(target)
         }
         
         self.model?.modified(self)
@@ -215,11 +229,13 @@ public class Element {
             if item == nil {
                 item = DiagramItem(kind: .Element, data: ElementData(refElement: target))
                 self.items.append(item!)
+                self.assignModel(item!)
             }
             // We also need to add link from self to this one
             
             let link = DiagramItem(kind: .Link, data: LinkElementData(source: sourceItem, target: item!))
             self.items.append(link)
+            assignModel(link)
             
             self.model?.modified(self)
             return item
@@ -291,43 +307,70 @@ extension Element {
                 continue
             }
             
-            for item in e.items {
-                let itemRoot = TennNode.newCommand(item.kind.commandName)
-                parent.add(itemRoot)
-                
-                if let refEl = item.data.refElement {
-                    itemRoot.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(refEl.name))
-                }
-                else {
-                    if let nn = item.name {
-                        itemRoot.addAll(TennNode.newIdent("-name"), TennNode.newStrNode(nn))
-                    }
-                }
-                
-                let nx = item.data.x != 0
-                let ny = item.data.y != 0
-
-                if nx {
-                    itemRoot.addAll(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(item.data.x)))
-                }
-                if ny {
-                    itemRoot.addAll(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(item.data.y)))
-                }
-                
-                let itemBlock = TennNode.newBlockExpr()
-                
-                itemBlock.addAll(TennNode.newCommand("uuid", TennNode.newStrNode(item.id.uuidString)))
+            // Put all links from element where it is source.
             
-                if let linkData = item.data as? LinkElementData {
-                    if let sourceName = linkData.source.name {
-                        itemBlock.add( TennNode.newCommand("source", TennNode.newIdent(sourceName)))
-                    }
-                    if let targetName = linkData.target.name {
-                        itemBlock.add( TennNode.newCommand("target", TennNode.newIdent(targetName)))
+            var links: [DiagramItem:[DiagramItem]] = [:]
+            for item in e.items {
+                if item.kind == .Link  {
+                    if let linkData = item.data as? LinkElementData {
+                        var targets = links[linkData.source]
+                        if targets == nil {
+                            targets = []
+                        }
+                        targets?.append(item)
+                        links[linkData.source] = targets
                     }
                 }
-                if itemBlock.count > 0 {
-                    itemRoot.add(itemBlock)
+            }
+            
+            for item in e.items {
+                if item.kind == .Element {
+                    let itemRoot = TennNode.newCommand(item.kind.commandName)
+                    parent.add(itemRoot)
+                    
+                    if let refEl = item.data.refElement {
+                        itemRoot.add(TennNode.newIdent("-name"), TennNode.newStrNode(refEl.name))
+                    }
+                    else {
+                        if let nn = item.name {
+                            itemRoot.add(TennNode.newIdent("-name"), TennNode.newStrNode(nn))
+                        }
+                    }
+                    
+                    let nx = item.data.x != 0
+                    let ny = item.data.y != 0
+
+                    if nx {
+                        itemRoot.add(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(item.data.x)))
+                    }
+                    if ny {
+                        itemRoot.add(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(item.data.y)))
+                    }
+                    
+                    let itemBlock = TennNode.newBlockExpr()
+                    
+//                    itemBlock.add(TennNode.newCommand("uuid", TennNode.newStrNode(item.id.uuidString)))
+                    
+                    if let elLinks = links[item] {
+                        for lnk in elLinks {
+                            if let linkData = lnk.data as? LinkElementData {
+                                var targetName = linkData.target.name
+                                if let el = linkData.target.data.refElement {
+                                    targetName = el.name
+                                }
+                                if let tName = targetName {
+                                    let linkCmd = TennNode.newCommand("link")
+                                    linkCmd.add(TennNode.newIdent("-to"), TennNode.newStrNode(tName))
+                                    itemBlock.add(linkCmd)
+                                }
+                            }
+                        }
+                    }
+                    
+                    
+                    if itemBlock.count > 0 {
+                        itemRoot.add(itemBlock)
+                    }
                 }
             }
             if e.elements.count > 0 {
