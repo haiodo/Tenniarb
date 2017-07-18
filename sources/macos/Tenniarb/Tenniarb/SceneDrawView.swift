@@ -260,7 +260,10 @@ class SceneDrawView: NSView {
                 }
                 
                 
-                let textBox = TextBox( text: name ?? "empty",  textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)  )
+                let textBox = TextBox(
+                    text: name ?? "empty",
+                    textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
+                    fontSize: 18)
                 
                 let textBounds = textBox.getBounds()
                 
