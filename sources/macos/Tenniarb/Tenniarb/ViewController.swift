@@ -203,7 +203,8 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? NSTableCellView {
+            let elRaw = el.elements.count > 0 ? "DiagramCell": "ItemCell"
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: elRaw), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name
 //                    textField.font = NSFont.labelFont(ofSize: 10)
