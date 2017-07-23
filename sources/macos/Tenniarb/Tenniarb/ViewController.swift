@@ -51,7 +51,7 @@ class ViewController: NSViewController {
             self.selectedElement = element
             
             if let el = element {
-                self.scene.setDiagram(el)
+                self.scene.setActiveElement(el)
             
                 self.setActiveElement(el)
             }
@@ -110,7 +110,8 @@ class ViewController: NSViewController {
                 })
             }
         }
-        scene.setDiagram(elementModel)
+        scene.setModel(model: elementModel)
+        scene.setActiveElement(elementModel)
         
         worldTree.reloadData()
         // Expand all top level elements

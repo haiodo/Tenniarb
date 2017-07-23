@@ -16,7 +16,7 @@ open class Drawable {
     var visible: Bool = true
     
     /// A reference to editable element
-    var element: Element? = nil
+    var item: DiagramItem? = nil
     
     public init() {
         
@@ -43,7 +43,7 @@ open class Drawable {
     }
 }
 
-open class DrawableElement: Drawable {
+open class DrawableContainer: Drawable {
     public var children: [Drawable]? = nil
     
     public var x: CGFloat = 0 // A x position of this element
@@ -60,6 +60,32 @@ open class DrawableElement: Drawable {
     
     convenience init( _ childs: Drawable...) {
         self.init(childs)
+    }
+    
+    public func find( _ point: CGPoint ) -> Drawable? {
+        if let childs = children {
+            for c in childs {
+                if let drEl = c as? DrawableContainer {
+                    let res = drEl.find(point)
+                    if res != nil && res?.item != nil {
+                        return res
+                    }
+                }
+                else {
+                    // Just regular drawable check for bounds
+                    if c.getBounds().contains(point) && c.item != nil {
+                        return c
+                    }
+                }
+            }
+        }
+        if self.item != nil {
+            // Check self coords
+            if getBounds().contains(point) {
+                return self
+            }
+        }
+        return nil
     }
     
     public func append( _ child: Drawable ) {
@@ -122,7 +148,7 @@ open class DrawableElement: Drawable {
 }
 
 
-open class DrawableScene: DrawableElement {
+open class DrawableScene: DrawableContainer {
     public var bounds: CGRect = CGRect(x:0, y:0, width: 0, height: 0)
     
     public var offset = CGPoint(x:0, y:0)
@@ -140,7 +166,7 @@ open class DrawableScene: DrawableElement {
     }
 }
 
-public class RoundBox: DrawableElement {
+public class RoundBox: DrawableContainer {
     public var bounds: CGRect
     public var fillColor: CGColor
     public var borderColor: CGColor

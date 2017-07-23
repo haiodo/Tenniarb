@@ -14,7 +14,10 @@ import CoreImage
 
 class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.7)
-    var elementModel: Element?
+    
+    var model:ElementModel?
+    
+    var element: Element?
     
     var activeElement: DiagramItem?
     
@@ -30,9 +33,9 @@ class SceneDrawView: NSView {
     
     var mouseDownState = false
     
-    var elementRects:[DiagramItem: CGRect] = [:]
-    
     var onSelection: [( Element? ) -> Void] = []
+    
+    var scene: DrawableScene?
     
     override var mouseDownCanMoveWindow: Bool {
         get {
@@ -41,22 +44,41 @@ class SceneDrawView: NSView {
     }
     
     func onLoad() {
-//        let pan = NSPanGestureRecognizer()
-//        pan.numberOfTouchesRequired = 2
-//        self.addGestureRecognizer(pan)
-        
-//        self.acceptsTouchEvents = true
     }
     
-    public func setDiagram(_ elementModel: Element ) {
-        self.elementModel = elementModel
+    public func setModel( model:ElementModel ) {
+        self.model = model
+        
+        self.model?.onUpdate.append( {(element) in
+                // We should be smart anought to not rebuild all drawable scene every time
+                self.buildScene()
+            })
+    }
+    
+    public func setActiveElement(_ elementModel: Element ) {
+        self.element = elementModel
         self.activeElement = nil
-        elementRects.removeAll()
+        
+        self.buildScene()
         
         needsDisplay = true
     }
     
+    private func buildScene() {
+        let scene = DrawableScene()
+        
+        if let element = self.element {
+            scene.append(buildElementScene(element))
+        }
+        
+        
+        self.scene = scene
+    }
+    
     public func setActiveElement( _ element: DiagramItem? ) {
+        if activeElement == nil && element == nil {
+            return
+        }
         activeElement = element
         
         if element == nil {
@@ -72,6 +94,9 @@ class SceneDrawView: NSView {
             }
         }
         
+        // We need to rebuild scene as active element is changed
+        buildScene()
+        
         needsDisplay = true
     }
     
@@ -85,9 +110,9 @@ class SceneDrawView: NSView {
                     newEl.x = active.x + 100
                     newEl.y = active.y
                     
-                    self.elementModel?.add(newEl)
+                    self.element?.add(newEl)
                     
-                    self.elementModel?.add(source: active, target: newEl)
+                    self.element?.add(source: active, target: newEl)
                     
                 
                     needsDisplay = true
@@ -96,7 +121,7 @@ class SceneDrawView: NSView {
             else {
                 // Add top element
                 let newEl = Element(name: "Root")
-                if let di = self.elementModel?.add(newEl, createLink: false) {
+                if let di = self.element?.add(newEl, createLink: false) {
                     di.x = 0
                     di.y = 0
                 }
@@ -106,15 +131,12 @@ class SceneDrawView: NSView {
         }
     }
     
-    public func findElement(el: Element, x: CGFloat, y: CGFloat) -> DiagramItem? {
-        for item in el.items {
-            if let r = elementRects[item] {
-                if( item.x < x && x < item.x + r.width &&
-                    item.y < y && y < item.y + r.height ) {
-                    return item
-                }
-            }
+    public func findElement(x: CGFloat, y: CGFloat) -> Drawable? {
+        let point = CGPoint(x: x, y: y)
+        if let drawable = self.scene?.find(point) {
+            return drawable
         }
+        
         return nil
     }
     
@@ -132,18 +154,14 @@ class SceneDrawView: NSView {
         self.mouseDownState = true
         
         
-        if let em = elementModel {
-            let item = findElement(el: em, x: self.x, y: self.y)
-            if( item != nil) {
-                self.setActiveElement(item)
-                
-                self.dragElement = item
-            }
-            else {
-                self.setActiveElement(nil)
-            }
+        if let drawable = findElement(x: self.x, y: self.y) {
+            self.setActiveElement(drawable.item)
+            
+            self.dragElement = drawable.item
         }
-        needsDisplay = true
+        else {
+            self.setActiveElement(nil)
+        }
     }
     
     override var acceptsFirstResponder: Bool {
@@ -159,7 +177,7 @@ class SceneDrawView: NSView {
             de.x += event.deltaX
             de.y -= event.deltaY
             
-            if let em = self.elementModel {
+            if let em = self.element {
                 em.model?.modified(em)
             }
             
@@ -192,40 +210,20 @@ class SceneDrawView: NSView {
     
     override func mouseMoved(with event: NSEvent) {
         self.updateMousePosition(event)
-
-//        if !mouseDownState {
-//            if let em = elementModel {
-//                let el = findElement(el: em, x: self.x, y: self.y)
-//                if( el != nil) {
-//                    activeElement = el
-//                }
-//                else {
-//                    activeElement = nil
-//                }
-//            }
-//            needsDisplay = true
-//        }
     }
     
     override func draw(_ dirtyRect: NSRect) {
         
-        if( self.elementModel == nil) {
+        if( self.element == nil) {
             return
         }
         
-        if let context = NSGraphicsContext.current?.cgContext {
+        if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             // Draw background
             context.setFillColor(background)
             context.fill(bounds)
             
-            let scene = DrawableScene()
-            
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-            
-            if let element = elementModel {
-                scene.append(buildElements(element: element))
-            }
-            
             scene.layout(bounds)
             
             context.saveGState()
@@ -237,66 +235,84 @@ class SceneDrawView: NSView {
             context.restoreGState()
         }
     }
-    func buildElements( element: Element )-> Drawable {
-        let elementDrawable = DrawableElement()
+    fileprivate func buildItemDrawable(_ e: DiagramItem, _ active: Bool, _ drawables: inout [DiagramItem : Drawable], _ elementDrawable: DrawableContainer) {
+        var name = e.name
         
-        var links: [DiagramItem] = []
-        for e in element.items {
-            var active = false
-            if let ae = activeElement {
-                if ae.id == e.id {
-                    active = true
-                }
+        // Referenced element name should be from reference
+        if e.data.refElement != nil {
+            name = e.data.refElement!.name
+        }
+        
+        let textBox = TextBox(
+            text: name ?? "empty",
+            textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
+            fontSize: 18)
+        
+        let textBounds = textBox.getBounds()
+        
+        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: textBounds.width, height: textBounds.height),
+                                fillColor: CGColor.white,
+                                borderColor: CGColor.black)
+        
+        if active {
+            rectBox.lineWidth = 1
+        }
+        rectBox.append(textBox)
+        
+        rectBox.item = e
+        
+        drawables[e] = rectBox
+        
+        elementDrawable.append(rectBox)
+    }
+    
+    func isActive(_ item: DiagramItem) -> Bool {
+        var active = false
+        if let ae = activeElement {
+            if ae.id == item.id {
+                active = true
             }
-            
-            
+        }
+        return active
+    }
+    
+    fileprivate func buildItems(_ items: [DiagramItem], _ drawables: inout [DiagramItem : Drawable], _ elementDrawable: DrawableContainer, _ links: inout [DiagramItem]) {
+        for e in items {
             if e.kind == .Element {
+                buildItemDrawable(e, self.isActive(e), &drawables, elementDrawable)
                 
-                var name = e.name
-                
-                // Referenced element name should be from reference
-                if e.data.refElement != nil {
-                    name = e.data.refElement!.name
+                if let itms = e.items {
+                    buildItems(itms, &drawables, elementDrawable, &links)
+                    // Also need to add a linkes to any if items from e
+                    for itm in itms {
+                        let linkItem = DiagramItem(kind: .Link, data: LinkElementData(source: e, target: itm ))
+                        links.append(linkItem)
+                    }
                 }
-                
-                
-                let textBox = TextBox(
-                    text: name ?? "empty",
-                    textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
-                    fontSize: 18)
-                
-                let textBounds = textBox.getBounds()
-                
-                let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: textBounds.width, height: textBounds.height),
-                                        fillColor: CGColor.white,
-                                        borderColor: CGColor.black)
-                
-                if active {
-                    rectBox.lineWidth = 1
-                }
-                rectBox.append(textBox)
-                
-                elementDrawable.append(rectBox)
-                
-                let rectBounds = rectBox.getBounds()
-                
-                elementRects[e] = CGRect(origin: CGPoint(x: rectBounds.origin.x + self.ox, y: rectBounds.origin.y + self.oy), size: rectBounds.size)
-                
             }
             else if e.kind == .Link  {
                 links.append(e)
             }
         }
+    }
+    
+    func buildElementScene( _ element: Element )-> Drawable {
+        let elementDrawable = DrawableContainer()
+        
+        var links: [DiagramItem] = []
+        
+        var drawables: [DiagramItem: Drawable] = [:]
+        buildItems(element.items, &drawables, elementDrawable, &links)
         for e in links {
             if let data = e.data as? LinkElementData {
-                let sourceRect = elementRects[data.source]
-                let targetRect = elementRects[data.target]
+                let sourceRect = drawables[data.source]?.getBounds()
+                let targetRect = drawables[data.target]?.getBounds()
                 
                 if let sr = sourceRect, let tr = targetRect {
                     elementDrawable.insert(
                         DrawableLine(
-                            source: CGPoint( x: sr.midX - self.ox, y:sr.midY - self.oy),
-                            target: CGPoint( x: tr.midX - self.ox, y:tr.midY - self.oy)), at: 0)
+                            source: CGPoint( x: sr.midX, y:sr.midY),
+                            target: CGPoint( x: tr.midX, y:tr.midY)), at: 0)
                 }
             }
         }

@@ -22,10 +22,6 @@ public class ElementModel: Element {
         el.model = self
     }
     
-    override func assignModel( _ el: DiagramItem) {
-        el.model = self
-    }
-    
     func modified(_ el: Element) {
         for op in onUpdate {
             op(el)
@@ -82,7 +78,10 @@ public class DiagramItem {
     var data: ElementData
     var name: String?
     var id: UUID
-    var model: ElementModel?
+    var parent: Element?
+    
+    // Add sub elemnts are linked to parent one
+    var items:[DiagramItem]?
     
     init(kind: ElementKind, data: ElementData) {
         self.id = UUID()
@@ -92,6 +91,23 @@ public class DiagramItem {
     convenience init( kind: ElementKind, name: String) {
         self.init(kind: kind, data: ElementData())
         self.name = name
+    }
+    
+    private func checkItems() {
+        if self.items == nil {
+            self.items = []
+        }
+    }
+    
+    /// Add a diagram item to current diagram
+    func add( _ item: DiagramItem) {
+        checkItems()
+        self.items?.append(item)
+        
+        if let p = parent {
+            p.model?.assignModel(item)
+            p.model?.modified(p)
+        }
     }
     var x: CGFloat {
         get {
@@ -156,7 +172,7 @@ public class Element {
     }
     
     func assignModel( _ el: DiagramItem) {
-        self.model?.assignModel(el)
+        el.parent = self
     }
     
     /// Add a diagram item to current diagram
@@ -388,7 +404,7 @@ public class ElementModelFactory {
         let pl = Element(name: "platform", createSelf: true)
         _ = self.elementModel.add(pl)
         
-        pl.selfItem?.x = -84
+        pl.selfItem?.x = 0
         pl.selfItem?.y = 0
     
         let index = pl.add( Element(name: "Index"))
@@ -419,5 +435,19 @@ public class ElementModelFactory {
         let dbi = pl.add(source: repo, target: dbe)
             dbi?.x = 126
             dbi?.y = -216
+        
+        
+        // Add small just platform diagram.
+        
+        let dm = DiagramItem(kind:.Element, name: "DataModel")
+        dm.x = -100
+        dm.y = -200
+        pl.add( dm)
+        
+        let str = DiagramItem(kind:.Element, name: "Structure")
+        dm.add( str )
+        str.add( DiagramItem(kind:.Element, name: "Elements"))
+        str.add( DiagramItem(kind:.Element, name: "DiagramItems"))
+        
     }
 }
