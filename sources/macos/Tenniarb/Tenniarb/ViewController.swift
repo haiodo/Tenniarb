@@ -210,9 +210,9 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
                     textField.stringValue = el.name
 //                    textField.font = NSFont.labelFont(ofSize: 10)
                 }
-                if let imageView = view.imageView {
+//                if let imageView = view.imageView {
 //                    imageView.image =
-                }
+//                }
                 return view
             }
         }

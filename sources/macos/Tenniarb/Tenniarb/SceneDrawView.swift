@@ -37,6 +37,86 @@ class SceneDrawView: NSView {
     
     var scene: DrawableScene?
     
+    override init(frame:CGRect) {
+        super.init(frame: frame)
+        
+//        let panRecognizer = NSPanGestureRecognizer(target:self, action:#selector(SceneDrawView.detectPan(_:)))
+//        self.gestureRecognizers = [panRecognizer]
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+//        let panRecognizer = NSPanGestureRecognizer(target:self, action:#selector(SceneDrawView.detectPan(_:)))
+//        panRecognizer.buttonMask = NSClickGestureRecognizer.
+//        self.gestureRecognizers = [panRecognizer]
+        
+        self.acceptsTouchEvents=true
+    }
+    
+    var prevTouch: NSTouch? = nil
+    
+    @objc override func touchesBegan(with event: NSEvent) {
+        let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
+        if touches.count == 2 {
+            prevTouch = touches.first
+        }
+    }
+    
+//    override func scrollWheel(with event: NSEvent) {
+//        ox += event.deltaX*2
+//        oy -= event.deltaY*2
+//        sheduleRedraw()
+//    }
+    
+    
+    fileprivate func sheduleRedraw() {
+        if !self.needsDisplay {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
+                self.needsDisplay = true
+            })
+        }
+    }
+    
+    @objc override func touchesMoved(with event: NSEvent) {
+        let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
+        if touches.count == 2 {
+            if prevTouch == nil {
+                prevTouch = touches.first
+                return
+            }
+            var touch: NSTouch? = nil
+            for t in touches {
+                if t.identity.isEqual(prevTouch?.identity) {
+                    touch = t
+                    break
+                }
+            }
+            if touch != nil {
+                let np1 = prevTouch!.normalizedPosition
+                let np2 = touch!.normalizedPosition
+                
+                self.ox += (np2.x-np1.x)*prevTouch!.deviceSize.width*2.5
+                self.oy += (np2.y-np1.y)*prevTouch!.deviceSize.height*2.5
+                
+                sheduleRedraw()
+            }
+            prevTouch = touch
+        }
+    }
+    
+    @objc override func touchesEnded(with event: NSEvent) {
+        prevTouch = nil
+    }
+    
+//    @objc func detectPan(_ recognizer:NSPanGestureRecognizer) {
+//        let translation  = recognizer.translation(in: self.superview)
+//
+//        ox += translation.x / 2
+//        oy -= translation.y / 2
+//        needsDisplay = true
+//    }
+    
     override var mouseDownCanMoveWindow: Bool {
         get {
             return false
@@ -180,14 +260,13 @@ class SceneDrawView: NSView {
             if let em = self.element {
                 em.model?.modified(em)
             }
-            
-            needsDisplay = true
         }
         else {
             ox += event.deltaX
             oy -= event.deltaY
-            needsDisplay = true
         }
+        
+        sheduleRedraw()
     }
     
     func updateMousePosition(_ event: NSEvent) {
