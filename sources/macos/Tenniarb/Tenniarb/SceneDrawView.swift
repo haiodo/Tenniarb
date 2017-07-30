@@ -37,20 +37,16 @@ class SceneDrawView: NSView {
     
     var scene: DrawableScene?
     
-    override init(frame:CGRect) {
-        super.init(frame: frame)
-        
-//        let panRecognizer = NSPanGestureRecognizer(target:self, action:#selector(SceneDrawView.detectPan(_:)))
-//        self.gestureRecognizers = [panRecognizer]
-    }
+    var dirty: Bool = false
     
+    
+//    override init(frame:CGRect) {
+//        super.init(frame: frame)
+//    }
+//
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        
-//        let panRecognizer = NSPanGestureRecognizer(target:self, action:#selector(SceneDrawView.detectPan(_:)))
-//        panRecognizer.buttonMask = NSClickGestureRecognizer.
-//        self.gestureRecognizers = [panRecognizer]
-        
+
         self.acceptsTouchEvents=true
     }
     
@@ -299,9 +295,6 @@ class SceneDrawView: NSView {
         
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             // Draw background
-            context.setFillColor(background)
-            context.fill(bounds)
-            
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
             scene.layout(bounds)
             
