@@ -300,8 +300,8 @@ class SceneDrawView: NSView {
             
             context.saveGState()
             context.saveGState()
-            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
-            scene.drawBox(context: context)
+//            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
+//            scene.drawBox(context: context)
             context.restoreGState()
             scene.draw(context: context)
             context.restoreGState()
@@ -315,6 +315,8 @@ class SceneDrawView: NSView {
             name = e.data.refElement!.name
         }
         
+        let bgColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+        
         let textBox = TextBox(
             text: name ?? "empty",
             textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
@@ -323,7 +325,7 @@ class SceneDrawView: NSView {
         let textBounds = textBox.getBounds()
         
         let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: textBounds.width, height: textBounds.height),
-                                fillColor: CGColor.white,
+                                fillColor: bgColor,
                                 borderColor: CGColor.black)
         
         if active {
@@ -368,6 +370,51 @@ class SceneDrawView: NSView {
         }
     }
     
+    /**
+         Calc point to cross two lines.
+     */
+    func crossLine( _ p1: CGPoint, _ p2: CGPoint, _ p3: CGPoint, _ p4: CGPoint) -> CGPoint? {
+        let d = (p1.x - p2.x) * (p4.y - p3.y) - (p1.y - p2.y) * (p4.x - p3.x)
+        let da = (p1.x - p3.x) * (p4.y - p3.y) - (p1.y - p3.y) * (p4.x - p3.x)
+        let db = (p1.x - p2.x) * (p1.y - p3.y) - (p1.y - p2.y) * (p1.x - p3.x)
+        
+        let ta = da / d;
+        let tb = db / d;
+        
+        if ta >= 0 && ta <= 1 && tb >= 0 && tb <= 1
+        {
+            let dx = p1.x + ta * (p2.x - p1.x)
+            let dy = p1.y + ta * (p2.y - p1.y)
+            
+            return CGPoint(x: dx, y: dy)
+        }
+        
+        return nil
+    }
+    func crossBox( _ p1:CGPoint, _ p2: CGPoint, _ rect: CGRect)-> CGPoint? {
+        let op = rect.origin
+        
+        //0,0 -> 1,0
+        if let cp = crossLine( p1, p2, CGPoint(x: op.x, y: op.y), CGPoint( x: op.x + rect.width, y: op.y) ) {
+            return cp
+        }
+        
+        // 0,0 -> 0, 1
+        if let cp = crossLine( p1, p2, CGPoint(x: op.x, y: op.y), CGPoint( x: op.x, y: op.y + rect.height) ) {
+            return cp
+        }
+        
+        // 0,1 -> 1, 1
+        if let cp = crossLine( p1, p2, CGPoint(x: op.x, y: op.y + rect.height), CGPoint( x: op.x + rect.width, y: op.y + rect.height) ) {
+            return cp
+        }
+        // 1,0 -> 1,1
+        if let cp = crossLine( p1, p2, CGPoint(x: op.x + rect.width, y: op.y), CGPoint( x: op.x + rect.width, y: op.y + rect.height) ) {
+            return cp
+        }
+        return nil
+    }
+    
     func buildElementScene( _ element: Element )-> Drawable {
         let elementDrawable = DrawableContainer()
         
@@ -381,10 +428,17 @@ class SceneDrawView: NSView {
                 let targetRect = drawables[data.target]?.getBounds()
                 
                 if let sr = sourceRect, let tr = targetRect {
-                    elementDrawable.insert(
-                        DrawableLine(
-                            source: CGPoint( x: sr.midX, y:sr.midY),
-                            target: CGPoint( x: tr.midX, y:tr.midY)), at: 0)
+                    
+                    let p1 = CGPoint( x: sr.midX, y:sr.midY )
+                    let p2 = CGPoint( x: tr.midX, y:tr.midY )
+                    
+                    
+                    if let cp1 = crossBox(p1, p2, sr), let cp2 = crossBox(p1, p2, tr) {
+                        elementDrawable.insert(
+                            DrawableLine(
+                                source: cp1,
+                                target: cp2), at: 0)
+                    }
                 }
             }
         }

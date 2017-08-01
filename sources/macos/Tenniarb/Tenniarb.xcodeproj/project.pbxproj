@@ -15,6 +15,7 @@
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
+		0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4C16071F2E369A000C5410 /* LayoutBase.swift */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
@@ -48,6 +49,7 @@
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
+		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
 		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -141,6 +143,14 @@
 			name = views;
 			sourceTree = "<group>";
 		};
+		0C4C16061F2E3685000C5410 /* layout */ = {
+			isa = PBXGroup;
+			children = (
+				0C4C16071F2E369A000C5410 /* LayoutBase.swift */,
+			);
+			path = layout;
+			sourceTree = "<group>";
+		};
 		0C5C6D1B1EFF655B00714971 /* TenniarbTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -164,6 +174,7 @@
 		0CFBC7A41F0CAF190072E4FF /* document */ = {
 			isa = PBXGroup;
 			children = (
+				0C4C16061F2E3685000C5410 /* layout */,
 				0C2375F21ED838D900ECB516 /* Document.swift */,
 				0C27F05C1EDC223E006CD2A2 /* model */,
 			);
@@ -275,6 +286,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,
+				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
