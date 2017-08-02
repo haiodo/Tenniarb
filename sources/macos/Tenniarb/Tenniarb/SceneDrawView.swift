@@ -271,9 +271,9 @@ class SceneDrawView: NSView {
         
         let wloc = event.locationInWindow
         
-        let sv = self.superview as? NSSplitView
+        let sv = self.superview?.superview
         
-        let sv2 = sv?.superview as? NSSplitView
+        let sv2 = sv?.superview
         
         let treeBounds = sv2?.subviews[0].bounds
         
