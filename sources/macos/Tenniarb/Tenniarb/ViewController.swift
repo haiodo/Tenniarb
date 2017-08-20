@@ -19,19 +19,22 @@ class ViewController: NSViewController {
     var elementModel:ElementModel?
     
     var selectedElement: Element?
-    var activeElement: Element?
+
+    var activeElement: DiagramItem?
     
     var updateScheduled: Int = 0
+    var updateKindScheduled: UpdateEventKind = .Layout
+    
     
     var updateElements:[Element] = []
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
         scene.onLoad()
         
         scene.onSelection.append({( element ) -> Void in
-//            self.setActiveElement(element)
+            self.activeElement = element
         })
         
         if elementModel != nil && self.scene != nil {
@@ -49,25 +52,20 @@ class ViewController: NSViewController {
     func onElementSelected(_ element: Element?) {
         if selectedElement != element {
             self.selectedElement = element
+            self.activeElement = nil
             
             if let el = element {
                 self.scene.setActiveElement(el)
             
-                self.setActiveElement(el)
+                self.updateData()
             }
         }
     }
     
-    func setActiveElement( _ element: Element? ) {
-        if let el = element {
-            self.activeElement = el
-        }
-        else {
-            self.activeElement = selectedElement
-        }
-        if let e = self.activeElement {
+    func updateData( ) {
+        if let element = self.selectedElement {
             DispatchQueue.main.async(execute: {
-                let strContent = e.toTennStr()
+                let strContent = element.toTennStr()
                 
                 let style = NSMutableParagraphStyle()
                 style.headIndent = 50
@@ -75,8 +73,8 @@ class ViewController: NSViewController {
                 style.firstLineHeadIndent = 50
                 
                 self.textView.font = NSFont.systemFont(ofSize: 15.0)
-                
                 self.textView.string = strContent
+                self.textView.scrollToBeginningOfDocument(self)
             })
         }
     }
@@ -87,11 +85,12 @@ class ViewController: NSViewController {
             return
         }
         
-        elementModel.onUpdate.append { (element) in
+        elementModel.onUpdate.append { (element, kind) in
             //TODO: Add optimizations based on particular element
             
             self.updateElements.append(element)
-            if self.updateScheduled == 0 {
+            if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && kind == .Structure ) {
+                self.updateKindScheduled = kind
                 self.updateScheduled = 1
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
@@ -104,7 +103,7 @@ class ViewController: NSViewController {
                     self.worldTree.endUpdates()
                     
                     //# Update text
-                    self.setActiveElement(self.activeElement)
+                    self.updateData()
                     
                     self.updateScheduled = 0
                 })

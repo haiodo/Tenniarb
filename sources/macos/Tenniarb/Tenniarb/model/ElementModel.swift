@@ -9,11 +9,16 @@
 import Foundation
 
 
+public enum UpdateEventKind {
+    case Structure
+    case Layout
+}
+
 /**
  A root of element map
  */
 public class ElementModel: Element {
-    public var onUpdate: [(_ item:Element) -> Void] = []
+    public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
     
     init() {
         super.init(kind: .Root, name: "Root")
@@ -22,9 +27,9 @@ public class ElementModel: Element {
         el.model = self
     }
     
-    func modified(_ el: Element) {
+    func modified(_ el: Element, _ kind: UpdateEventKind ) {
         for op in onUpdate {
-            op(el)
+            op(el, kind)
         }
     }
 }
@@ -106,7 +111,7 @@ public class DiagramItem {
         
         if let p = parent {
             p.model?.assignModel(item)
-            p.model?.modified(p)
+            p.model?.modified(p, .Structure)
         }
     }
     var x: CGFloat {
@@ -180,7 +185,7 @@ public class Element {
         self.items.append(item)
         
         assignModel(item)
-        self.model?.modified(self)
+        self.model?.modified(self, .Structure)
     }
     
     // Add a child element to current diagram
@@ -202,7 +207,7 @@ public class Element {
             assignModel(link)
         }
         
-        self.model?.modified(self)
+        self.model?.modified(self, .Structure)
         return item
     }
     
@@ -222,7 +227,7 @@ public class Element {
             assignModel(target)
         }
         
-        self.model?.modified(self)
+        self.model?.modified(self, .Structure)
     }
     
     func getItem( _ el: Element) -> DiagramItem? {
@@ -253,7 +258,7 @@ public class Element {
             self.items.append(link)
             assignModel(link)
             
-            self.model?.modified(self)
+            self.model?.modified(self, .Structure)
             return item
         }
         return nil

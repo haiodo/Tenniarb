@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
 		0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375EE1ED838D900ECB516 /* AppDelegate.swift */; };
 		0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F01ED838D900ECB516 /* ViewController.swift */; };
 		0C2375F31ED838D900ECB516 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F21ED838D900ECB516 /* Document.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -167,6 +169,7 @@
 				0C34564D1ED88E9100341F1C /* SceneDrawView.swift */,
 				0C86047E1EF040F70009B205 /* SceneDraw3D.swift */,
 				0C3E41D11F07EC48009C2A2E /* ElementScene.swift */,
+				0C07F9541F4151250042C9F5 /* SceneMath.swift */,
 			);
 			name = scene;
 			sourceTree = "<group>";
@@ -288,6 +291,7 @@
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
+				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
