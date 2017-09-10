@@ -337,17 +337,8 @@ open class DrawableScene: DrawableContainer {
     }
     func buildItems(_ items: [DiagramItem], _ elementDrawable: DrawableContainer, _ links: inout [DiagramItem]) {
         for e in items {
-            if e.kind == .Element {
+            if e.kind == .Item {
                 buildItemDrawable(e, elementDrawable)
-                
-                if let itms = e.items {
-                    buildItems(itms, elementDrawable, &links)
-                    // Also need to add a linkes to any if items from e
-                    for itm in itms {
-                        let linkItem = DiagramItem(kind: .Link, data: LinkElementData(source: e, target: itm ))
-                        links.append(linkItem)
-                    }
-                }
             }
             else if e.kind == .Link  {
                 links.append(e)

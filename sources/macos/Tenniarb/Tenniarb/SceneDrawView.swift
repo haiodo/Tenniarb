@@ -151,14 +151,16 @@ class SceneDrawView: NSView {
     override func keyDown(with event: NSEvent) {
         if event.characters == "\t" {
             if let active = self.activeElement {
-                if active.kind == .Element {
+                if active.kind == .Item {
                     // Create and add to activeEl
-                    let newEl = DiagramItem(kind: .Element, name: "Untitled \(createIndex)")
+                    let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
                     self.createIndex += 1
                     newEl.x = active.x + 100
                     newEl.y = active.y
                     
-                    active.add(newEl)
+                    self.element?.add(source: active, target: newEl)
+                    
+//                    active.add(newEl)
 //                    self.element?.add(source: active, target: newEl)
                     
                     needsDisplay = true
@@ -166,18 +168,19 @@ class SceneDrawView: NSView {
             }
             else {
                 // Add top element
-                let newEl = Element(name: "Root")
-                if let di = self.element?.add(newEl, createLink: false) {
-                    di.x = 0
-                    di.y = 0
-                }
+                let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
+                self.createIndex += 1
+                
+                newEl.x = 0
+                newEl.y = 0
+                self.element?.add(newEl)
                 
                 needsDisplay = true
             }
         }
         else if event.characters == " " {
             if let active = self.activeElement {
-                if active.kind == .Element {
+                if active.kind == .Item {
                     
 
                 }

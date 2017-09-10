@@ -35,18 +35,29 @@ public class ElementModel: Element {
 }
 
 public enum ElementKind {
+    case Root
     case Element // A reference to element
     case Diagram // A reference to element
-    case Root // A reference to element
+    
+    var commandName : String {
+        switch self {
+        // Use Internationalization, as appropriate.
+        case .Root: return "model";
+        case .Element: return "element";
+        case .Diagram: return "diagram";
+        }
+    }
+}
+
+public enum ItemKind {
+    case Item // A reference to element
     case Link // A link
     case Annontation // Annotation box
     
     var commandName : String {
         switch self {
         // Use Internationalization, as appropriate.
-        case .Root: return "_root_";
-        case .Element: return "element";
-        case .Diagram: return "diagram";
+        case .Item: return "item";
         case .Link: return "link";
         case .Annontation: return "annotation";
         }
@@ -79,40 +90,20 @@ public class LinkElementData: ElementData {
 }
 
 public class DiagramItem {
-    var kind: ElementKind
+    var kind: ItemKind
     var data: ElementData
     var name: String?
     var id: UUID
     var parent: Element?
     
-    // Add sub elemnts are linked to parent one
-    var items:[DiagramItem]?
-    
-    init(kind: ElementKind, data: ElementData) {
+    init(kind: ItemKind, data: ElementData) {
         self.id = UUID()
         self.kind = kind
         self.data = data
     }
-    convenience init( kind: ElementKind, name: String) {
+    convenience init( kind: ItemKind, name: String) {
         self.init(kind: kind, data: ElementData())
         self.name = name
-    }
-    
-    private func checkItems() {
-        if self.items == nil {
-            self.items = []
-        }
-    }
-    
-    /// Add a diagram item to current diagram
-    func add( _ item: DiagramItem) {
-        checkItems()
-        self.items?.append(item)
-        
-        if let p = parent {
-            p.model?.assignModel(item)
-            p.model?.modified(p, .Structure)
-        }
     }
     var x: CGFloat {
         get {
@@ -163,7 +154,7 @@ public class Element {
     }
     
     func createSelfItem() {
-        let item = DiagramItem(kind: .Element, data: ElementData(refElement: self))
+        let item = DiagramItem(kind: .Item, data: ElementData(refElement: self))
         self.selfItem = item
         self.items.append(item)
     }
@@ -196,7 +187,7 @@ public class Element {
         self.elements.append(el)
         
         // Update current diagram to have a link between a self and new added item.
-        let item = DiagramItem(kind: .Element, data: ElementData(refElement: el))
+        let item = DiagramItem(kind: .Item, data: ElementData(refElement: el))
         self.items.append(item)
         assignModel(item)
         
@@ -233,7 +224,7 @@ public class Element {
     func getItem( _ el: Element) -> DiagramItem? {
         // find a item for source
         for i in self.items {
-            if i.kind == .Element && i.data.refElement == el {
+            if i.kind == .Item && i.data.refElement == el {
                 return i
             }
         }
@@ -248,7 +239,7 @@ public class Element {
             // Update current diagram to have a link between a self and new added item.
             var item = getItem(target)
             if item == nil {
-                item = DiagramItem(kind: .Element, data: ElementData(refElement: target))
+                item = DiagramItem(kind: .Item, data: ElementData(refElement: target))
                 self.items.append(item!)
                 self.assignModel(item!)
             }
@@ -290,7 +281,7 @@ extension DiagramItem: Hashable {
 }
 
 /**
- Allow Mapping of element model to tenn and wise verse.
+     Allow Mapping of element model to tenn and wise verse.
  */
 extension Element {
     public func toTenn( ) -> TennNode {
@@ -311,17 +302,73 @@ extension Element {
     
     func toTennStr( ) -> String {
         let ee = toTenn()
-        return ee.toStr(1, false)
+        return ee.toStr(0, false)
     }
-    func elementsToTenn( _ parent: TennNode, _ elements: [Element], level: Int ) {
-        for e in elements {
-            let enode = TennNode.newHashNode(e.name, level: level)
+    fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ links: inout [DiagramItem : Array<DiagramItem>]) {
+        for item in items {
+            if item.kind == .Item {
+                var name: String = ""
+                if let refEl = item.data.refElement {
+                    name = refEl.name
+                }
+                else {
+                    if let nn = item.name {
+                        name = nn
+                    }
+                }
+                
+                let itemRoot = TennNode.newCommand(item.kind.commandName, TennNode.newStrNode(name))
+                
+                enodeBlock.add(itemRoot)
+                
+                let nx = item.data.x != 0
+                let ny = item.data.y != 0
+                
+                let itemBlock = TennNode.newBlockExpr()
+                if nx || ny {
+                    itemBlock.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(item.data.x)), TennNode.newFloatNode(Double(item.data.y))))
+                }
+                if itemBlock.count > 0 {
+                    itemRoot.add(itemBlock)
+                }
+            }
+            else if item.kind == .Link {
+                if let linkData = item.data as? LinkElementData {
+                    var targetName = linkData.target.name
+                    if let el = linkData.target.data.refElement {
+                        targetName = el.name
+                    }
+                    
+                    var sourceName = linkData.source.name
+                    if let el = linkData.source.data.refElement {
+                        sourceName = el.name
+                    }
+                    
+                    if let tName = targetName, let sName = sourceName {
+                        let linkCmd = TennNode.newCommand("link")
+                        linkCmd.add(TennNode.newStrNode(sName))
+                        linkCmd.add(TennNode.newStrNode(tName))
+                        enodeBlock.add(linkCmd)
+                    }
+                }
+            }
             
-            parent.add(enode)
+        }
+    }
+    
+    func elementsToTenn( _ topParent: TennNode, _ elements: [Element], level: Int ) {
+        for e in elements {
+            let enode = TennNode.newCommand(e.kind.commandName, TennNode.newIdent(e.name))
+            
+            topParent.add(enode)
+            
+            let enodeBlock = TennNode.newBlockExpr()
+            
+            enode.add(enodeBlock)
             
             if e.description.count > 0 {
                 let elDescr = TennNode.newCommand("description", TennNode.newStrNode(e.description))
-                parent.add(elDescr)
+                enodeBlock.add(elDescr)
             }
             
             if e.items.count == 0 {
@@ -344,58 +391,9 @@ extension Element {
                 }
             }
             
-            for item in e.items {
-                if item.kind == .Element {
-                    let itemRoot = TennNode.newCommand(item.kind.commandName)
-                    parent.add(itemRoot)
-                    
-                    if let refEl = item.data.refElement {
-                        itemRoot.add(TennNode.newIdent("-name"), TennNode.newStrNode(refEl.name))
-                    }
-                    else {
-                        if let nn = item.name {
-                            itemRoot.add(TennNode.newIdent("-name"), TennNode.newStrNode(nn))
-                        }
-                    }
-                    
-                    let nx = item.data.x != 0
-                    let ny = item.data.y != 0
-
-                    if nx {
-                        itemRoot.add(TennNode.newIdent("-x"), TennNode.newFloatNode(Double(item.data.x)))
-                    }
-                    if ny {
-                        itemRoot.add(TennNode.newIdent("-y"), TennNode.newFloatNode(Double(item.data.y)))
-                    }
-                    
-                    let itemBlock = TennNode.newBlockExpr()
-                    
-//                    itemBlock.add(TennNode.newCommand("uuid", TennNode.newStrNode(item.id.uuidString)))
-                    
-                    if let elLinks = links[item] {
-                        for lnk in elLinks {
-                            if let linkData = lnk.data as? LinkElementData {
-                                var targetName = linkData.target.name
-                                if let el = linkData.target.data.refElement {
-                                    targetName = el.name
-                                }
-                                if let tName = targetName {
-                                    let linkCmd = TennNode.newCommand("link")
-                                    linkCmd.add(TennNode.newIdent("-to"), TennNode.newStrNode(tName))
-                                    itemBlock.add(linkCmd)
-                                }
-                            }
-                        }
-                    }
-                    
-                    
-                    if itemBlock.count > 0 {
-                        itemRoot.add(itemBlock)
-                    }
-                }
-            }
+            buildItems(e.items, enodeBlock, &links)
             if e.elements.count > 0 {
-                elementsToTenn(parent, e.elements, level: level + 1)
+                elementsToTenn(enodeBlock, e.elements, level: level + 1)
             }
         }
     }
@@ -444,15 +442,15 @@ public class ElementModelFactory {
         
         // Add small just platform diagram.
         
-        let dm = DiagramItem(kind:.Element, name: "DataModel")
+        let dm = DiagramItem(kind:.Item, name: "DataModel")
         dm.x = -100
         dm.y = -200
-        pl.add( dm)
+        pl.add( dm )
         
-        let str = DiagramItem(kind:.Element, name: "Structure")
-        dm.add( str )
-        str.add( DiagramItem(kind:.Element, name: "Elements"))
-        str.add( DiagramItem(kind:.Element, name: "DiagramItems"))
+        let str = DiagramItem(kind:.Item, name: "Structure")
+        pl.add( source: dm, target: str )
+        pl.add( source: str, target: DiagramItem(kind:.Item, name: "Elements"))
+        pl.add( source: str, target: DiagramItem(kind:.Item, name: "DiagramItems"))
         
     }
 }

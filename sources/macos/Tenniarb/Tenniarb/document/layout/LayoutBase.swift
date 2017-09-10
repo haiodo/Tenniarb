@@ -46,32 +46,28 @@ public class LayoutContext {
         }
     }
     
-    func getAllItems(kind: ElementKind) -> [DiagramItem] {
+    func getNodes() -> [DiagramItem] {
         var result: [DiagramItem] = []
         
-        var queue: [DiagramItem] = []
-        
         for itm in self.element.items {
-            queue.append(itm)
-        }
-        
-        while !queue.isEmpty {
-            let item = queue.removeFirst()
-            if item.kind == kind {
-                result.append(item)
-            }
-            if let childItems = item.items {
-                for ci in childItems {
-                    queue.append(ci)
-                }
+            if itm.kind == .Item {
+                result.append(itm)
             }
         }
         
         return result
     }
     
-    public func getNodes() -> [DiagramItem] {
-        return []
+    public func getEdges() -> [DiagramItem] {
+        var result: [DiagramItem] = []
+        
+        for itm in self.element.items {
+            if itm.kind == .Link {
+                result.append(itm)
+            }
+        }
+        
+        return result
     }
     
 }
