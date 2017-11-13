@@ -25,7 +25,6 @@ class ViewController: NSViewController {
     var updateScheduled: Int = 0
     var updateKindScheduled: UpdateEventKind = .Layout
     
-    
     var updateElements:[Element] = []
         
     override func viewDidLoad() {
@@ -35,6 +34,8 @@ class ViewController: NSViewController {
         
         scene.onSelection.append({( element ) -> Void in
             self.activeElement = element
+            
+            self.updateTextProperties()
         })
         
         if elementModel != nil && self.scene != nil {
@@ -57,15 +58,15 @@ class ViewController: NSViewController {
             if let el = element {
                 self.scene.setActiveElement(el)
             
-                self.updateData()
+                self.updateTextProperties()
             }
         }
     }
     
-    func updateData( ) {
+    func updateTextProperties( ) {
         if let element = self.selectedElement {
             DispatchQueue.main.async(execute: {
-                let strContent = element.toTennStr()
+                let strContent = (self.activeElement == nil) ? element.toTennProps(): self.activeElement!.toTennProps()
                 
                 let style = NSMutableParagraphStyle()
                 style.headIndent = 50
@@ -103,7 +104,7 @@ class ViewController: NSViewController {
                     self.worldTree.endUpdates()
                     
                     //# Update text
-                    self.updateData()
+                    self.updateTextProperties()
                     
                     self.updateScheduled = 0
                 })

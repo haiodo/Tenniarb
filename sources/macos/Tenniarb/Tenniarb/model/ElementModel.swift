@@ -21,7 +21,8 @@ public class ElementModel: Element {
     public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
     
     init() {
-        super.init(kind: .Root, name: "Root")
+        super.init(name: "Root")
+        self.kind = .Root
     }
     override func assignModel( _ el: Element) {
         el.model = self
@@ -37,14 +38,12 @@ public class ElementModel: Element {
 public enum ElementKind {
     case Root
     case Element // A reference to element
-    case Diagram // A reference to element
     
     var commandName : String {
         switch self {
         // Use Internationalization, as appropriate.
         case .Root: return "model";
         case .Element: return "element";
-        case .Diagram: return "diagram";
         }
     }
 }
@@ -143,10 +142,10 @@ public class Element {
     // Item on self diagram of this element
     var selfItem: DiagramItem?
     
-    init( kind: ElementKind, name: String, createSelf: Bool = false) {
+    init( name: String = "", createSelf: Bool = false) {
         self.id = UUID()
         self.name = name
-        self.kind = kind
+        self.kind = .Element
         
         if createSelf {
             self.createSelfItem()
@@ -157,10 +156,6 @@ public class Element {
         let item = DiagramItem(kind: .Item, data: ElementData(refElement: self))
         self.selfItem = item
         self.items.append(item)
-    }
-    
-    convenience init( name: String, createSelf: Bool = false) {
-        self.init( kind: .Element, name: name, createSelf: createSelf)
     }
     
     func assignModel( _ el: Element) {
@@ -280,6 +275,21 @@ extension DiagramItem: Hashable {
     }
 }
 
+extension DiagramItem {
+    /// Convert items to list of properties
+    func toTennProps() -> String {
+        let items = TennNode.newNode(kind: .Statements)
+        
+        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name ?? "")))
+        
+        if self.kind == .Item {
+            items.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(self.data.x)), TennNode.newFloatNode(Double(self.data.y))))
+        }
+        
+        return items.toStr()
+    }
+}
+
 /**
      Allow Mapping of element model to tenn and wise verse.
  */
@@ -304,6 +314,17 @@ extension Element {
         let ee = toTenn()
         return ee.toStr(0, false)
     }
+    
+    /// Convert items to list of properties
+    func toTennProps() -> String {
+        let items = TennNode.newNode(kind: .Statements)
+        
+        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
+        items.add(TennNode.newCommand("description", TennNode.newStrNode(self.description)))
+        
+        return items.toStr()
+    }
+    
     fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ links: inout [DiagramItem : Array<DiagramItem>]) {
         for item in items {
             if item.kind == .Item {
@@ -396,6 +417,79 @@ extension Element {
                 elementsToTenn(enodeBlock, e.elements, level: level + 1)
             }
         }
+    }
+}
+
+/// Extension to parse tenn models.
+extension Element {
+    /// Parser tenn model into current element state
+    ///
+    public static func parseTenn(node: TennNode) -> Element? {
+        if node.kind == .Statements {
+            if let childs = node.children {
+                for childElement in childs {
+                    if childElement.kind == .Command {
+                        return parseCommand(node: childElement)
+                    }
+                }
+            }
+        }
+        else if node.kind == .Command {
+            return parseCommand(node: node)
+        }
+        return nil
+    }
+    
+    fileprivate static func parseElement(target: Element, node: TennNode) {
+        let el = Element(name: "")
+        if node.count == 3 {
+            if let name = node.getIdent(1) {
+                el.name = name
+            }
+            
+            if let block = node.getChild([2]) {
+                if block.kind == .Statements, let blChilds = block.children {
+                    for blChild in blChilds {
+                        if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
+                            switch cmdName  {
+                            case "item":
+                                if let item = parseItem(node) {
+                                    el.items.append(item)
+                                }
+                            case "element":
+                                let el = Element(name: "")
+                                parseElement(target: el, node: node)
+                                el.elements.append(el)
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fileprivate static func parseItem(_ node: TennNode) -> DiagramItem? {
+        let el = DiagramItem(kind: .Item, name: "")
+        return el
+    }
+    
+    fileprivate static func parseCommand( node: TennNode) -> Element? {
+        if let cmdName = node.getIdent(0) {
+            switch cmdName  {
+            case "model":
+                let model = ElementModel()
+                parseElement(target: model, node: node)
+                return model
+            case "element":
+                let model = Element(name: "")
+                parseElement(target: model, node: node)
+                return model
+            default:
+                break;
+            }
+        }
+        return nil
     }
 }
 
