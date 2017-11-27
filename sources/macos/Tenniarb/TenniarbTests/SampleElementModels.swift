@@ -20,30 +20,30 @@ public class TestElementFactory {
         pl.selfItem?.x = 0
         pl.selfItem?.y = 0
         
-        let index = pl.add( Element(name: "Index"))
+        let index = pl.add( makeItem: Element(name: "Index"))
         index.x = -84
         index.y = 102
         
-        let st = pl.add( Element(name: "StateTracker"))
+        let st = pl.add( makeItem: Element(name: "StateTracker"))
         st.x = -189
         st.y = -99
         
         let dt = Element(name: "DeviceTracker", createSelf: true)
-        let dte = pl.add( dt )
+        let dte = pl.add( makeItem: dt )
         dte.x = 129
         dte.y = 48
         
-        let dev = dt.add( Element(name: "Device"))
+        let dev = dt.add( makeItem: Element(name: "Device"))
         dev.x = -50
         dev.y = 50
         
         let repo = Element(name: "Repository", createSelf: true)
-        let repoe = pl.add( repo )
+        let repoe = pl.add( makeItem: repo )
         repoe.x = 56
         repoe.y = -109
         
         let dbe = Element(name: "Database")
-        _ = repo.add( dbe )
+        _ = repo.add( makeItem: dbe )
         
         let dbi = pl.add(source: repo, target: dbe)
         dbi?.x = 126

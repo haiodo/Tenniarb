@@ -128,7 +128,6 @@ public class Element {
     var name: String
     var elements: [Element] = []
     
-    var backReferences: [Element] = []
     var parent: Element? = nil
     
     var model: ElementModel?
@@ -174,13 +173,16 @@ public class Element {
         self.model?.modified(self, .Structure)
     }
     
-    // Add a child element to current diagram
-    func add( _ el: Element, createLink: Bool = true ) -> DiagramItem {
+    func add( _ el: Element ) {
         el.parent = self
         
         self.assignModel(el)
         self.elements.append(el)
-        
+    }
+    
+    // Add a child element to current diagram
+    func add( makeItem el: Element, createLink: Bool = true ) -> DiagramItem {
+        self.add(el)
         // Update current diagram to have a link between a self and new added item.
         let item = DiagramItem(kind: .Item, data: ElementData(refElement: el))
         self.items.append(item)
@@ -290,209 +292,6 @@ extension DiagramItem {
     }
 }
 
-/**
-     Allow Mapping of element model to tenn and wise verse.
- */
-extension Element {
-    public func toTenn( ) -> TennNode {
-        let result = TennNode(kind: TennNodeKind.Statements)
-        
-        var lvl = 0
-        
-        var p = self
-        while p.parent != nil {
-            p = p.parent!
-            lvl += 1
-        }
-        
-        elementsToTenn( result, [self], level: lvl )
-        
-        return result
-    }
-    
-    func toTennStr( ) -> String {
-        let ee = toTenn()
-        return ee.toStr(0, false)
-    }
-    
-    /// Convert items to list of properties
-    func toTennProps() -> String {
-        let items = TennNode.newNode(kind: .Statements)
-        
-        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
-        items.add(TennNode.newCommand("description", TennNode.newStrNode(self.description)))
-        
-        return items.toStr()
-    }
-    
-    fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ links: inout [DiagramItem : Array<DiagramItem>]) {
-        for item in items {
-            if item.kind == .Item {
-                var name: String = ""
-                if let refEl = item.data.refElement {
-                    name = refEl.name
-                }
-                else {
-                    if let nn = item.name {
-                        name = nn
-                    }
-                }
-                
-                let itemRoot = TennNode.newCommand(item.kind.commandName, TennNode.newStrNode(name))
-                
-                enodeBlock.add(itemRoot)
-                
-                let nx = item.data.x != 0
-                let ny = item.data.y != 0
-                
-                let itemBlock = TennNode.newBlockExpr()
-                if nx || ny {
-                    itemBlock.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(item.data.x)), TennNode.newFloatNode(Double(item.data.y))))
-                }
-                if itemBlock.count > 0 {
-                    itemRoot.add(itemBlock)
-                }
-            }
-            else if item.kind == .Link {
-                if let linkData = item.data as? LinkElementData {
-                    var targetName = linkData.target.name
-                    if let el = linkData.target.data.refElement {
-                        targetName = el.name
-                    }
-                    
-                    var sourceName = linkData.source.name
-                    if let el = linkData.source.data.refElement {
-                        sourceName = el.name
-                    }
-                    
-                    if let tName = targetName, let sName = sourceName {
-                        let linkCmd = TennNode.newCommand("link")
-                        linkCmd.add(TennNode.newStrNode(sName))
-                        linkCmd.add(TennNode.newStrNode(tName))
-                        enodeBlock.add(linkCmd)
-                    }
-                }
-            }
-            
-        }
-    }
-    
-    func elementsToTenn( _ topParent: TennNode, _ elements: [Element], level: Int ) {
-        for e in elements {
-            let enode = TennNode.newCommand(e.kind.commandName, TennNode.newIdent(e.name))
-            
-            topParent.add(enode)
-            
-            let enodeBlock = TennNode.newBlockExpr()
-            
-            enode.add(enodeBlock)
-            
-            if e.description.count > 0 {
-                let elDescr = TennNode.newCommand("description", TennNode.newStrNode(e.description))
-                enodeBlock.add(elDescr)
-            }
-            
-            if e.items.count == 0 {
-                continue
-            }
-            
-            // Put all links from element where it is source.
-            
-            var links: [DiagramItem:[DiagramItem]] = [:]
-            for item in e.items {
-                if item.kind == .Link  {
-                    if let linkData = item.data as? LinkElementData {
-                        var targets = links[linkData.source]
-                        if targets == nil {
-                            targets = []
-                        }
-                        targets?.append(item)
-                        links[linkData.source] = targets
-                    }
-                }
-            }
-            
-            buildItems(e.items, enodeBlock, &links)
-            if e.elements.count > 0 {
-                elementsToTenn(enodeBlock, e.elements, level: level + 1)
-            }
-        }
-    }
-}
-
-/// Extension to parse tenn models.
-extension Element {
-    /// Parser tenn model into current element state
-    ///
-    public static func parseTenn(node: TennNode) -> Element? {
-        if node.kind == .Statements {
-            if let childs = node.children {
-                for childElement in childs {
-                    if childElement.kind == .Command {
-                        return parseCommand(node: childElement)
-                    }
-                }
-            }
-        }
-        else if node.kind == .Command {
-            return parseCommand(node: node)
-        }
-        return nil
-    }
-    
-    fileprivate static func parseElement(target: Element, node: TennNode) {
-        let el = Element(name: "")
-        if node.count == 3 {
-            if let name = node.getIdent(1) {
-                el.name = name
-            }
-            
-            if let block = node.getChild([2]) {
-                if block.kind == .Statements, let blChilds = block.children {
-                    for blChild in blChilds {
-                        if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
-                            switch cmdName  {
-                            case "item":
-                                if let item = parseItem(node) {
-                                    el.items.append(item)
-                                }
-                            case "element":
-                                let el = Element(name: "")
-                                parseElement(target: el, node: node)
-                                el.elements.append(el)
-                            default:
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    fileprivate static func parseItem(_ node: TennNode) -> DiagramItem? {
-        let el = DiagramItem(kind: .Item, name: "")
-        return el
-    }
-    
-    fileprivate static func parseCommand( node: TennNode) -> Element? {
-        if let cmdName = node.getIdent(0) {
-            switch cmdName  {
-            case "model":
-                let model = ElementModel()
-                parseElement(target: model, node: node)
-                return model
-            case "element":
-                let model = Element(name: "")
-                parseElement(target: model, node: node)
-                return model
-            default:
-                break;
-            }
-        }
-        return nil
-    }
-}
-
 public class ElementModelFactory {
     var elementModel: ElementModel
     public init() {
@@ -504,25 +303,25 @@ public class ElementModelFactory {
         pl.selfItem?.x = 0
         pl.selfItem?.y = 0
     
-        let index = pl.add( Element(name: "Index"))
+        let index = pl.add( makeItem: Element(name: "Index"))
             index.x = -84
             index.y = 102
         
-        let st = pl.add( Element(name: "StateTracker"))
+        let st = pl.add( makeItem: Element(name: "StateTracker"))
             st.x = -189
             st.y = -99
         
         let dt = Element(name: "DeviceTracker", createSelf: true)
-        let dte = pl.add( dt )
+        let dte = pl.add( makeItem: dt )
             dte.x = 129
             dte.y = 48
     
-        let dev = dt.add( Element(name: "Device"))
+        let dev = dt.add( makeItem: Element(name: "Device"))
             dev.x = -50
             dev.y = 50
         
         let repo = Element(name: "Repository", createSelf: true)
-        let repoe = pl.add( repo )
+        let repoe = pl.add( makeItem: repo )
             repoe.x = 56
             repoe.y = -109
         
