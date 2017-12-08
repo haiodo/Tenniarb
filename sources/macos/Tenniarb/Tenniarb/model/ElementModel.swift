@@ -91,18 +91,18 @@ public class LinkElementData: ElementData {
 public class DiagramItem {
     var kind: ItemKind
     var data: ElementData
-    var name: String?
+    var name: String
     var id: UUID
     var parent: Element?
     
-    init(kind: ItemKind, data: ElementData) {
+    init(kind: ItemKind, name: String, data: ElementData) {
         self.id = UUID()
         self.kind = kind
+        self.name = name
         self.data = data
     }
     convenience init( kind: ItemKind, name: String) {
-        self.init(kind: kind, data: ElementData())
-        self.name = name
+        self.init(kind: kind, name: name, data: ElementData())
     }
     var x: CGFloat {
         get {
@@ -151,8 +151,20 @@ public class Element {
         }
     }
     
+    var count: Int {
+        get {
+            return elements.count
+        }
+    }
+    
+    var itemCount: Int {
+        get {
+            return items.count
+        }
+    }
+    
     func createSelfItem() {
-        let item = DiagramItem(kind: .Item, data: ElementData(refElement: self))
+        let item = DiagramItem(kind: .Item, name:self.name, data: ElementData(refElement: self))
         self.selfItem = item
         self.items.append(item)
     }
@@ -184,13 +196,13 @@ public class Element {
     func add( makeItem el: Element, createLink: Bool = true ) -> DiagramItem {
         self.add(el)
         // Update current diagram to have a link between a self and new added item.
-        let item = DiagramItem(kind: .Item, data: ElementData(refElement: el))
+        let item = DiagramItem(kind: .Item, name: el.name, data: ElementData(refElement: el))
         self.items.append(item)
         assignModel(item)
         
         // We also need to add link from self to this one
         if createLink && self.selfItem != nil {
-            let link = DiagramItem(kind: .Link, data: LinkElementData(source: self.selfItem!, target: item))
+            let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: self.selfItem!, target: item))
             self.items.append(link)
             assignModel(link)
         }
@@ -202,7 +214,7 @@ public class Element {
     // Add a child element to current diagram
     func add( source: DiagramItem, target: DiagramItem ) {
         // We also need to add link from self to this one        
-        let link = DiagramItem(kind: .Link, data: LinkElementData(source: source, target: target))
+        let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: source, target: target))
         self.items.append(link)
         assignModel(link)
         
@@ -236,13 +248,13 @@ public class Element {
             // Update current diagram to have a link between a self and new added item.
             var item = getItem(target)
             if item == nil {
-                item = DiagramItem(kind: .Item, data: ElementData(refElement: target))
+                item = DiagramItem(kind: .Item, name:target.name, data: ElementData(refElement: target))
                 self.items.append(item!)
                 self.assignModel(item!)
             }
             // We also need to add link from self to this one
             
-            let link = DiagramItem(kind: .Link, data: LinkElementData(source: sourceItem, target: item!))
+            let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: sourceItem, target: item!))
             self.items.append(link)
             assignModel(link)
             
@@ -250,6 +262,9 @@ public class Element {
             return item
         }
         return nil
+    }
+    func remove(_ element: Element) {
+        self.elements = self.elements.filter {$0.id != element.id }
     }
 }
 
@@ -292,58 +307,18 @@ extension DiagramItem {
     }
 }
 
+/*
+ Default element factory.
+ */
 public class ElementModelFactory {
     var elementModel: ElementModel
     public init() {
         self.elementModel = ElementModel()
         
-        let pl = Element(name: "platform", createSelf: true)
+        let pl = Element(name: "Unnamed diagram", createSelf: false)
         _ = self.elementModel.add(pl)
         
         pl.selfItem?.x = 0
         pl.selfItem?.y = 0
-    
-        let index = pl.add( makeItem: Element(name: "Index"))
-            index.x = -84
-            index.y = 102
-        
-        let st = pl.add( makeItem: Element(name: "StateTracker"))
-            st.x = -189
-            st.y = -99
-        
-        let dt = Element(name: "DeviceTracker", createSelf: true)
-        let dte = pl.add( makeItem: dt )
-            dte.x = 129
-            dte.y = 48
-    
-        let dev = dt.add( makeItem: Element(name: "Device"))
-            dev.x = -50
-            dev.y = 50
-        
-        let repo = Element(name: "Repository", createSelf: true)
-        let repoe = pl.add( makeItem: repo )
-            repoe.x = 56
-            repoe.y = -109
-        
-        let dbe = Element(name: "Database")
-        _ = repo.add( dbe )
-        
-        let dbi = pl.add(source: repo, target: dbe)
-            dbi?.x = 126
-            dbi?.y = -216
-        
-        
-        // Add small just platform diagram.
-        
-        let dm = DiagramItem(kind:.Item, name: "DataModel")
-        dm.x = -100
-        dm.y = -200
-        pl.add( dm )
-        
-        let str = DiagramItem(kind:.Item, name: "Structure")
-        pl.add( source: dm, target: str )
-        pl.add( source: str, target: DiagramItem(kind:.Item, name: "Elements"))
-        pl.add( source: str, target: DiagramItem(kind:.Item, name: "DiagramItems"))
-        
     }
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="13770" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13770"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
         <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
@@ -666,7 +666,7 @@
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController storyboardIdentifier="Document Window Controller" id="jGA-0Y-lOj" customClass="WindowController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" titlebarAppearsTransparent="YES" id="Ckk-yw-fiv">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="Ckk-yw-fiv">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
@@ -707,17 +707,20 @@
                                                             <rect key="frame" x="0.0" y="0.0" width="217" height="26"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <segmentedControl hidden="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="145" y="1" width="67" height="23"/>
+                                                                <segmentedControl verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
+                                                                    <rect key="frame" x="150" y="0.0" width="62" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
-                                                                            <segment image="NSAddTemplate" width="20"/>
-                                                                            <segment image="NSRemoveTemplate" width="20" tag="1"/>
-                                                                            <segment image="NSActionTemplate" width="19">
+                                                                            <segment image="NSAddTemplate" width="18"/>
+                                                                            <segment image="NSRemoveTemplate" width="18" tag="1"/>
+                                                                            <segment image="NSActionTemplate" width="18">
                                                                                 <nil key="label"/>
                                                                             </segment>
                                                                         </segments>
+                                                                        <connections>
+                                                                            <action selector="elementToolbarAction:" target="5gI-5U-AMq" id="FxD-Ul-OBH"/>
+                                                                        </connections>
                                                                     </segmentedCell>
                                                                 </segmentedControl>
                                                             </subviews>
@@ -731,46 +734,46 @@
                                                         </constraints>
                                                         <color key="fillColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                     </box>
-                                                    <scrollView wantsLayer="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="35" horizontalPageScroll="10" verticalLineScroll="35" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VUW-I9-jfQ">
+                                                    <scrollView wantsLayer="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VUW-I9-jfQ">
                                                         <rect key="frame" x="0.0" y="0.0" width="217" height="698"/>
                                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="8bW-96-csO">
                                                             <rect key="frame" x="0.0" y="0.0" width="217" height="698"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="sequential" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" rowHeight="25" viewBased="YES" floatsGroupRows="NO" indentationPerLevel="5" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb">
+                                                                <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="sequential" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" rowHeight="22" viewBased="YES" floatsGroupRows="NO" indentationPerLevel="10" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb">
                                                                     <rect key="frame" x="0.0" y="0.0" width="217" height="698"/>
                                                                     <autoresizingMask key="autoresizingMask"/>
-                                                                    <size key="intercellSpacing" width="0.0" height="10"/>
+                                                                    <size key="intercellSpacing" width="0.0" height="5"/>
                                                                     <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <color key="gridColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <tableColumns>
-                                                                        <tableColumn identifier="" width="217" minWidth="40" maxWidth="1000" id="YFI-la-VX8" userLabel="Table Column" colorLabel="IBBuiltInLabel-Yellow">
+                                                                        <tableColumn identifier="" width="217" minWidth="140" maxWidth="300" id="YFI-la-VX8" userLabel="Table Column" colorLabel="IBBuiltInLabel-Yellow">
                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Element">
-                                                                                <font key="font" size="20" name="ArialMT"/>
+                                                                                <font key="font" metaFont="system" size="14"/>
                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                             </tableHeaderCell>
                                                                             <textFieldCell key="dataCell" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
-                                                                                <font key="font" size="20" name="ArialMT"/>
+                                                                                <font key="font" metaFont="system" size="14"/>
                                                                                 <color key="textColor" red="0.76078431372549016" green="0.76862745098039209" blue="0.792156862745098" alpha="1" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                             </textFieldCell>
                                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                                             <prototypeCellViews>
                                                                                 <tableCellView identifier="ItemCell" id="wCm-He-3sR">
-                                                                                    <rect key="frame" x="0.0" y="5" width="217" height="22"/>
+                                                                                    <rect key="frame" x="0.0" y="2" width="217" height="22"/>
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                     <subviews>
                                                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Voe-qM-8ec">
-                                                                                            <rect key="frame" x="10" y="4" width="20" height="20"/>
+                                                                                            <rect key="frame" x="0.0" y="2" width="20" height="20"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="element_logo_white" id="Fh7-bi-C1x"/>
                                                                                         </imageView>
                                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XGI-aq-4wA" userLabel="ItemCell">
-                                                                                            <rect key="frame" x="28" y="0.0" width="219" height="22"/>
+                                                                                            <rect key="frame" x="22" y="0.0" width="219" height="20"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                                             <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="GXh-Ub-nEp" userLabel="ItemCell">
-                                                                                                <font key="font" size="17" name="ArialMT"/>
+                                                                                                <font key="font" metaFont="system" size="14"/>
                                                                                                 <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
                                                                                                 <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                                             </textFieldCell>
@@ -781,21 +784,30 @@
                                                                                     </connections>
                                                                                 </tableCellView>
                                                                                 <tableCellView identifier="DiagramCell" id="2R3-5I-u5I">
-                                                                                    <rect key="frame" x="0.0" y="37" width="217" height="22"/>
+                                                                                    <rect key="frame" x="0.0" y="29" width="217" height="22"/>
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                     <subviews>
                                                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OG8-FI-RaE">
-                                                                                            <rect key="frame" x="6" y="2" width="25" height="19"/>
+                                                                                            <rect key="frame" x="0.0" y="2" width="25" height="20"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="small_logo_white" id="4ES-eF-r0E"/>
                                                                                         </imageView>
                                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EXQ-kC-sC2" userLabel="ItemCell">
-                                                                                            <rect key="frame" x="28" y="0.0" width="219" height="22"/>
+                                                                                            <rect key="frame" x="22" y="0.0" width="219" height="20"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                                             <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="yRb-l7-UOn" userLabel="ItemCell">
-                                                                                                <font key="font" size="17" name="ArialMT"/>
+                                                                                                <font key="font" metaFont="system" size="14"/>
                                                                                                 <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
                                                                                                 <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                            </textFieldCell>
+                                                                                        </textField>
+                                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TUg-06-QQb">
+                                                                                            <rect key="frame" x="150" y="-4" width="30" height="22"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
+                                                                                            <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" alignment="right" title="Label" allowsEditingTextAttributes="YES" id="dZt-Ci-WcI">
+                                                                                                <font key="font" metaFont="system" size="9"/>
+                                                                                                <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
                                                                                     </subviews>

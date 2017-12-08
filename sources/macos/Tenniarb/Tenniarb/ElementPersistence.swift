@@ -24,10 +24,10 @@ extension Element {
         }
         
         if self.kind == .Root {
-            elementsToTenn( result, self.elements, level: lvl )
+            buildElements( result, self.elements, lvl )
         }
         else {
-            elementsToTenn( result, [self], level: lvl )
+            buildElements( result, [self], lvl )
         }
         
         return result
@@ -54,9 +54,7 @@ extension Element {
             name = refEl.name
         }
         else {
-            if let nn = item.name {
-                name = nn
-            }
+            name = item.name
         }
         
         let itemRoot = TennNode.newCommand(item.kind.commandName, TennNode.newStrNode(name))
@@ -78,22 +76,10 @@ extension Element {
     
     fileprivate func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode) {
         if let linkData = item.data as? LinkElementData {
-            var targetName = linkData.target.name
-            if let el = linkData.target.data.refElement {
-                targetName = el.name
-            }
-            
-            var sourceName = linkData.source.name
-            if let el = linkData.source.data.refElement {
-                sourceName = el.name
-            }
-            
-            if let tName = targetName, let sName = sourceName {
-                let linkCmd = TennNode.newCommand("link")
-                linkCmd.add(TennNode.newStrNode(sName))
-                linkCmd.add(TennNode.newStrNode(tName))
-                enodeBlock.add(linkCmd)
-            }
+            let linkCmd = TennNode.newCommand("link")
+            linkCmd.add(TennNode.newStrNode(linkData.source.name))
+            linkCmd.add(TennNode.newStrNode(linkData.target.name))
+            enodeBlock.add(linkCmd)
         }
     }
     
@@ -108,7 +94,7 @@ extension Element {
         }
     }
     
-    func elementsToTenn( _ topParent: TennNode, _ elements: [Element], level: Int ) {
+    func buildElements( _ topParent: TennNode, _ elements: [Element], _ level: Int ) {
         for e in elements {
             let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
             
@@ -129,7 +115,7 @@ extension Element {
             
             buildItems(e.items, enodeBlock)
             if e.elements.count > 0 {
-                elementsToTenn(enodeBlock, e.elements, level: level + 1)
+                buildElements(enodeBlock, e.elements, level + 1)
             }
         }
     }
@@ -160,57 +146,61 @@ extension Element {
         return result
     }
     
-    fileprivate static func parseElement(target: Element, node: TennNode) {
+    fileprivate static func parseElement(node: TennNode) -> Element? {
         let el = Element(name: "")
-        if node.count == 3 {
+        if node.count >= 2 {
             if let name = node.getIdent(1) {
                 el.name = name
             }
             
-            if let block = node.getChild([2]) {
-                if block.kind == .Statements, let blChilds = block.children {
-                    for blChild in blChilds {
-                        if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
-                            switch cmdName  {
-                            case "item":
-                                if let item = parseItem(node) {
-                                    el.items.append(item)
+            if node.count == 3 {
+                if let block = node.getChild([2]) {
+                    if [.Statements, .BlockExpr].contains(block.kind), let blChilds = block.children {
+                        for blChild in blChilds {
+                            if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
+                                switch cmdName  {
+                                case "item":
+                                    if let item = parseItem(blChild) {
+                                        el.items.append(item)
+                                    }
+                                case "element":
+                                    if let child = parseElement(node: blChild) {
+                                        el.elements.append(child)
+                                    }
+                                default:
+                                    break;
                                 }
-                            case "element":
-                                let el = Element(name: "")
-                                parseElement(target: el, node: node)
-                                el.elements.append(el)
-                            default:
-                                break;
                             }
                         }
                     }
                 }
             }
+            return el
         }
+        
+        // Return nil
+        //TODo: need to report error
+        return nil
     }
     fileprivate static func parseItem(_ node: TennNode) -> DiagramItem? {
         let el = DiagramItem(kind: .Item, name: "")
+        
+        if node.count >= 2 {
+            if let name = node.getIdent(1) {
+                el.name = name
+            }
+            
+            if node.count == 3 {
+            }
+        }
         return el
     }
     
     fileprivate static func parseCommand( node: TennNode) -> Element? {
         if let cmdName = node.getIdent(0) {
             switch cmdName  {
-            case "model":
-                let model = ElementModel()
-                parseElement(target: model, node: node)
-                return model
             case "element":
-                if node.count >= 2 {
-                    if let nname = node.getIdent(1) {
-                        let model = Element(name: nname )
-                        parseElement(target: model, node: node)
-                        return model
-                    }
-                }
-                // Report parse error
-                return nil
+                return parseElement(node: node)
             default:
                 break;
             }

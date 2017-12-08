@@ -26,6 +26,8 @@ class ViewController: NSViewController {
     var updateKindScheduled: UpdateEventKind = .Layout
     
     var updateElements:[Element] = []
+    
+    var itemIndex = 0
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +45,55 @@ class ViewController: NSViewController {
         }
     }
     
+    @IBAction func elementToolbarAction(_ sender: NSSegmentedCell) {
+        switch(sender.selectedSegment) {
+        case 0: // This is add of new element.
+            handleAddElement()
+        case 1: // This is remove of selected element.
+            handleRemoveElement()
+        case 2: // This is options for selected element.
+            handleElementOptions()
+        default:
+            break
+        }
+    }
+    private func handleAddElement() {
+        let newEl = Element(name: "Unnamed element: " + String(itemIndex))
+        self.itemIndex += 1
+        var active: Element?
+        if let sel = self.selectedElement {
+            active = sel
+        }
+        else {
+            // Add root item
+            active = self.elementModel
+        }
+        if let act = active {
+            act.add(newEl)
+            DispatchQueue.main.async(execute: {
+                self.worldTree.reloadItem(act, reloadChildren: true )
+                self.worldTree.expandItem(act)
+            })
+        }
+        
+    }
+    private func handleRemoveElement() {
+        if let active = self.selectedElement {
+            if let parent = active.parent {
+                parent.remove(active)
+                selectedElement = parent
+                
+                DispatchQueue.main.async(execute: {
+                    self.worldTree.reloadItem(parent)
+                })
 
+            }
+        }
+    }
+    private func handleElementOptions() {
+        
+    }
+    
     override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.
@@ -204,7 +254,7 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
-            let elRaw = el.elements.count > 0 ? "DiagramCell": "ItemCell"
+            let elRaw = el.itemCount > 0 ? "DiagramCell": "ItemCell"
             if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: elRaw), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name

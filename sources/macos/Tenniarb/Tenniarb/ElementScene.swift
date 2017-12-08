@@ -251,25 +251,26 @@ open class DrawableScene: DrawableContainer {
     }
     
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
-        var name = e.name
+        let name = e.name
         
         // Referenced element name should be from reference
-        if e.data.refElement != nil {
-            name = e.data.refElement!.name
-        }
+//        if e.data.refElement != nil {
+//            name = e.data.refElement!.name
+//        }
         
         let bgColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
         
         let textBox = TextBox(
-            text: name ?? "empty",
+            text: name.count > 0 ? name :  " ",
             textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
             fontSize: 18)
         
         let textBounds = textBox.getBounds()
         
-        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: textBounds.width, height: textBounds.height),
+        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: max(20, textBounds.width), height: textBounds.height),
                                 fillColor: bgColor,
                                 borderColor: CGColor.black)
+        
         
         if self.activeElement == e {
             rectBox.lineWidth = 1

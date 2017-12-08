@@ -55,11 +55,16 @@ class SceneDrawView: NSView {
         }
     }
     
-    fileprivate func sheduleRedraw() {
+    fileprivate func sheduleRedraw( invalidRect: CGRect? = nil ) {
         if !self.drawScheduled {
             drawScheduled = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
-                self.needsDisplay = true
+                if let rect = invalidRect {
+                    self.setNeedsDisplay(rect)
+                }
+                else {
+                    self.needsDisplay = true
+                }
                 self.drawScheduled = false
             })
         }
@@ -163,7 +168,7 @@ class SceneDrawView: NSView {
 //                    active.add(newEl)
 //                    self.element?.add(source: active, target: newEl)
                     
-                    needsDisplay = true
+                    sheduleRedraw()
                 }
             }
             else {
@@ -175,17 +180,42 @@ class SceneDrawView: NSView {
                 newEl.y = 0
                 self.element?.add(newEl)
                 
-                needsDisplay = true
+                sheduleRedraw()
             }
         }
-        else if event.characters == " " {
-            if let active = self.activeElement {
-                if active.kind == .Item {
-                    
-
+        else if event.characters == "\u{7f}" { // Backspace character
+            if let active = self.activeElement, active.name.count > 0 {
+                active.name.removeLast()
+                self.model?.modified(element!, .Structure)
+                if let drawable = scene?.drawables[active] {
+                    let drBounds = drawable.getBounds()
+                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                    let rect = CGRect(x: drBounds.minX + off.x-10, y: drBounds.minY + off.y-10, width: drBounds.width + 50, height: drBounds.height+20)
+                    sheduleRedraw(invalidRect: rect)
+                }
+                else {
+                    sheduleRedraw()
                 }
             }
         }
+        else {
+            if let active = self.activeElement, let chars = event.characters  {
+                active.name += chars
+                self.model?.modified(element!, .Structure)
+  
+                //TODO: Need to add associated links to invalid rect bounds
+                if let drawable = scene?.drawables[active] {
+                    let drBounds = drawable.getBounds()
+                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                    let rect = CGRect(x: drBounds.minX + off.x-10, y: drBounds.minY + off.y-10, width: drBounds.width + 50, height: drBounds.height+20)
+                    sheduleRedraw(invalidRect: rect)
+                }
+                else {
+                    sheduleRedraw()
+                }
+            }
+        }
+        //Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
     }
     
     public func findElement(x: CGFloat, y: CGFloat) -> ItemDrawable? {
@@ -289,6 +319,8 @@ class SceneDrawView: NSView {
 //            scene.drawBox(context: context)
             context.restoreGState()
             scene.layout(bounds)
+            
+            // TODO: Add dirty rect filteting
             scene.draw(context: context)
             context.restoreGState()
         }
