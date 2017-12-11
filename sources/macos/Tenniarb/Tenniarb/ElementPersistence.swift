@@ -181,7 +181,7 @@ class IndexedName: Hashable {
 extension Element {
     /// Parser tenn model into current element state
     ///
-    public static func parseTenn(node: TennNode) -> Element? {
+    public static func parseTenn(node: TennNode) -> ElementModel {
         let result = ElementModel()
         if node.kind == .Statements {
             if let childs = node.children {
@@ -250,16 +250,16 @@ extension Element {
                 switch cmdName  {
                 case "item":
                     if let item = parseItem(blChild) {
-                        el.items.append(item)
+                        el.add(item)
                     }
                 case "link":
                     if let item = parseLink(blChild) {
-                        el.items.append(item)
+                        el.add(item)
                         linkElements.append((blChild, item))
                     }
                 case "element":
                     if let child = parseElement(node: blChild) {
-                        el.elements.append(child)
+                        el.add(child)
                     }
                 default:
                     break;

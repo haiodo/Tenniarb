@@ -26,6 +26,11 @@ public class ElementModel: Element {
     }
     override func assignModel( _ el: Element) {
         el.model = self
+        
+        // Assign all childs a proper model
+        for child in el.elements {
+            assignModel(child)
+        }
     }
     
     func modified(_ el: Element, _ kind: UpdateEventKind ) {
@@ -177,6 +182,11 @@ public class Element {
     
     func assignModel( _ el: Element) {
         self.model?.assignModel(el)
+        
+        // Assign all childs a proper model
+        for child in el.elements {
+            assignModel(child)
+        }
     }
     
     func assignModel( _ el: DiagramItem) {

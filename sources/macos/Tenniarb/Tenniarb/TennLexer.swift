@@ -41,14 +41,14 @@ public class TennToken {
 public class TennLexer {
     var currentLine: Int = 0
     var currentChar: Int = 0
-    var buffer: String
+    var buffer: Array<Character>
     var pos: Int = 0
     
     var tokenBuffer: [TennToken] = []
     var blockState:[TennTokenType] = []
     
     init( _ code: String) {
-        self.buffer = code
+        self.buffer = Array(code)
     }
     
     public func revert(tok: TennToken) {
@@ -105,7 +105,7 @@ public class TennLexer {
     
     private func charAt(_ offset:Int = 0)-> Character {
         if self.pos + offset < self.buffer.count {
-            return self.buffer[self.buffer.index(self.buffer.startIndex, offsetBy: self.pos + offset)]
+            return self.buffer[self.pos + offset]
         }
         return Character("\0")
     }

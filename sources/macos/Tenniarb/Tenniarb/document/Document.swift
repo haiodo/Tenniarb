@@ -29,8 +29,6 @@ class Document: NSDocument {
         
         
         vc = windowController.contentViewController as? ViewController
-        
-        
         vc?.setElementModel(elementModel: self.elementModel!)
         
     }
@@ -38,12 +36,17 @@ class Document: NSDocument {
     override func read(from url: URL, ofType typeName: String) throws {
         
         do {
-            var s = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            var storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
             
+            let parser = TennParser()
+            let node = parser.parse(storedValue)
             
+            if parser.errors.hasErrors() {
+                return
+            }
             
-            
-            Swift.print("Readed: " + s)
+            elementModel = ElementModel.parseTenn(node: node)
+            vc?.setElementModel(elementModel: self.elementModel!)
         }
         catch {
             Swift.print("Failed to load file")
@@ -59,9 +62,11 @@ class Document: NSDocument {
 //    }
     
     override func write(to url: URL, ofType typeName: String) throws {
-        Swift.print("Write of file called:", url.absoluteString)
         do {
-            try "Demo".write(to: url, atomically: true, encoding: String.Encoding.utf8)
+            if let em = elementModel {
+                let value = em.toTennStr()
+                try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
+            }
         }
         catch {
             Swift.print("Some error happen")

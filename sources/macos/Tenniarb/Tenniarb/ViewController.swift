@@ -34,12 +34,6 @@ class ViewController: NSViewController {
         
         scene.onLoad()
         
-        scene.onSelection.append({( element ) -> Void in
-            self.activeElement = element
-            
-            self.updateTextProperties()
-        })
-        
         if elementModel != nil && self.scene != nil {
             setElementModel(elementModel: elementModel!)
         }
@@ -131,6 +125,9 @@ class ViewController: NSViewController {
     }
     
     public func setElementModel(elementModel: ElementModel) {
+        if let oldModel = self.elementModel {
+            oldModel.onUpdate.removeAll()
+        }
         self.elementModel = elementModel
         if self.scene == nil {
             return
@@ -161,6 +158,13 @@ class ViewController: NSViewController {
             }
         }
         scene.setModel(model: elementModel)
+        scene.onSelection.removeAll()
+        scene.onSelection.append({( element ) -> Void in
+            self.activeElement = element
+            
+            self.updateTextProperties()
+        })
+
         scene.setActiveElement(elementModel)
         
         worldTree.reloadData()

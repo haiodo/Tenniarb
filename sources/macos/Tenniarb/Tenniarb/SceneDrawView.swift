@@ -111,6 +111,9 @@ class SceneDrawView: NSView {
     }
     
     public func setModel( model:ElementModel ) {
+        if let oldModel = self.model {
+            oldModel.onUpdate.removeAll()
+        }
         self.model = model
         
         self.model?.onUpdate.append( {(element, kind) in
