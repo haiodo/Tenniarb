@@ -80,7 +80,7 @@ class ViewController: NSViewController {
                 selectedElement = parent
                 
                 DispatchQueue.main.async(execute: {
-                    self.worldTree.reloadItem(parent)
+                    self.worldTree.reloadItem(parent, reloadChildren: true)
                 })
 
             }

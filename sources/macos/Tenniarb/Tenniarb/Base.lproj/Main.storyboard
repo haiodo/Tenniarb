@@ -801,15 +801,6 @@
                                                                                                 <color key="backgroundColor" red="0.15686274510000001" green="0.19215686269999999" blue="0.25882352939999997" alpha="1" colorSpace="calibratedRGB"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TUg-06-QQb">
-                                                                                            <rect key="frame" x="150" y="-4" width="30" height="22"/>
-                                                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
-                                                                                            <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" alignment="right" title="Label" allowsEditingTextAttributes="YES" id="dZt-Ci-WcI">
-                                                                                                <font key="font" metaFont="miniSystem"/>
-                                                                                                <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
-                                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                                            </textFieldCell>
-                                                                                        </textField>
                                                                                     </subviews>
                                                                                     <connections>
                                                                                         <outlet property="textField" destination="EXQ-kC-sC2" id="gb7-ak-rxL"/>
