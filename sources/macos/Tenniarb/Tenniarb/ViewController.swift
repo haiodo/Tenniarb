@@ -29,6 +29,8 @@ class ViewController: NSViewController {
     
     var itemIndex = 0
         
+    @IBOutlet weak var windowTitle: NSTextField!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -124,6 +126,10 @@ class ViewController: NSViewController {
         }
     }
     
+    func updateWindowTitle() {
+        self.windowTitle.stringValue = (self.elementModel?.modelName ?? "Unnamed model") + ((self.elementModel?.modified ?? true) ? "*":"")
+    }
+    
     public func setElementModel(elementModel: ElementModel) {
         if let oldModel = self.elementModel {
             oldModel.onUpdate.removeAll()
@@ -154,6 +160,8 @@ class ViewController: NSViewController {
                     self.updateTextProperties()
                     
                     self.updateScheduled = 0
+                    
+                    self.updateWindowTitle()
                 })
             }
         }
@@ -169,6 +177,8 @@ class ViewController: NSViewController {
         
         worldTree.reloadData()
         // Expand all top level elements
+        
+        self.updateWindowTitle()
         
         var firstChild:Element? = nil
         

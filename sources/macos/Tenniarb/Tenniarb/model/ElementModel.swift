@@ -20,6 +20,9 @@ public enum UpdateEventKind {
 public class ElementModel: Element {
     public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
     
+    public var modelName: String = ""
+    public var modified: Bool = false
+    
     init() {
         super.init(name: "Root")
         self.kind = .Root
@@ -33,7 +36,12 @@ public class ElementModel: Element {
         }
     }
     
+    func makeNonModified() {
+        modified = false
+    }
+    
     func modified(_ el: Element, _ kind: UpdateEventKind ) {
+        modified = true
         for op in onUpdate {
             op(el, kind)
         }

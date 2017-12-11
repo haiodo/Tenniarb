@@ -863,6 +863,14 @@
                                                                     <rect key="frame" x="0.0" y="0.0" width="709" height="32"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xxj-wV-uFj">
+                                                                            <rect key="frame" x="13" y="8" width="89" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Window title" id="8wb-6d-knf">
+                                                                                <font key="font" metaFont="system" size="15"/>
+                                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
                                                                             <rect key="frame" x="632" y="2" width="67" height="27"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
@@ -881,6 +889,8 @@
                                                                         <constraint firstAttribute="trailing" secondItem="zbO-zz-O9G" secondAttribute="trailing" constant="10" id="7HA-II-0g0"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="top" secondItem="s5a-YQ-Uz7" secondAttribute="top" constant="3" id="LAt-0m-Q3T"/>
                                                                         <constraint firstAttribute="bottom" secondItem="zbO-zz-O9G" secondAttribute="bottom" constant="3" id="RD1-08-8GM"/>
+                                                                        <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xxj-wV-uFj" secondAttribute="trailing" constant="41" id="te2-Op-awM"/>
+                                                                        <constraint firstItem="xxj-wV-uFj" firstAttribute="leading" secondItem="s5a-YQ-Uz7" secondAttribute="leading" constant="15" id="v51-Iq-FW6"/>
                                                                     </constraints>
                                                                 </view>
                                                                 <constraints>
@@ -974,6 +984,7 @@
                     <connections>
                         <outlet property="scene" destination="oxI-2Z-wAL" id="gqX-pA-f3S"/>
                         <outlet property="textView" destination="LDJ-EQ-s6n" id="88L-Cj-weB"/>
+                        <outlet property="windowTitle" destination="xxj-wV-uFj" id="5iJ-Zz-uTD"/>
                         <outlet property="worldTree" destination="IgX-uM-dvb" id="UnG-yX-hx3"/>
                     </connections>
                 </viewController>

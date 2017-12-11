@@ -36,7 +36,7 @@ class Document: NSDocument {
     override func read(from url: URL, ofType typeName: String) throws {
         
         do {
-            var storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            let storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
             
             let parser = TennParser()
             let node = parser.parse(storedValue)
@@ -46,10 +46,17 @@ class Document: NSDocument {
             }
             
             elementModel = ElementModel.parseTenn(node: node)
+            elementModel?.modelName = url.lastPathComponent
             vc?.setElementModel(elementModel: self.elementModel!)
         }
         catch {
             Swift.print("Failed to load file")
+        }
+    }
+    
+    override var isDocumentEdited: Bool {
+        get {
+            return elementModel?.modified ?? true
         }
     }
     
@@ -66,6 +73,8 @@ class Document: NSDocument {
             if let em = elementModel {
                 let value = em.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
+                em.modified = false
+                vc?.updateWindowTitle()
             }
         }
         catch {
