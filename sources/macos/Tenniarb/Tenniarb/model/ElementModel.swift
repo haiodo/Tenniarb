@@ -95,6 +95,10 @@ public class DiagramItem {
     var id: UUID
     var parent: Element?
     
+    var description: String? = nil
+    
+    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
+    
     init(kind: ItemKind, name: String, data: ElementData) {
         self.id = UUID()
         self.kind = kind
@@ -135,7 +139,9 @@ public class Element {
     // A list of items on diagram
     var items: [DiagramItem] = []
     
-    var description: String = ""
+    var description: String? = nil
+    
+    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
     
     
     // Item on self diagram of this element
@@ -183,6 +189,12 @@ public class Element {
         
         assignModel(item)
         self.model?.modified(self, .Structure)
+    }
+    
+    /// Add a diagram item to current diagram
+    func add( get item: DiagramItem) -> DiagramItem {
+        self.add(item)
+        return item
     }
     
     func add( _ el: Element ) {

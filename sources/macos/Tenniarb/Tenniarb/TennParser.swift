@@ -84,10 +84,33 @@ public class TennNode {
         }
         return nil
     }
+    
+    public func getInt(_ childIndex: Int...) -> Int? {
+        let nde = getChild(childIndex)
+        if let n = nde {
+            if let val = n.getIdentText() {
+                return Int(val)
+            }
+        }
+        return nil
+    }
+    public func getFloat(_ childIndex: Int...) -> Float? {
+        let nde = getChild(childIndex)
+        if let n = nde {
+            if let val = n.getIdentText() {
+                return Float(val)
+            }
+        }
+        return nil
+    }
+    
     public func isNamedElement( )-> Bool {
         return kind == .Command && count > 0 && self.children?[0].kind == .Ident
     }
     
+    public func getChild(_ childIndex: Int) -> TennNode? {
+        return getChild([childIndex])
+    }
     public func getChild(_ childIndex: [Int]) -> TennNode? {
         var nde = self
         for i in 0..<childIndex.count {

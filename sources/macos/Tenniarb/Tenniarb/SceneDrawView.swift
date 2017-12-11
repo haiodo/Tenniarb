@@ -198,6 +198,16 @@ class SceneDrawView: NSView {
                 }
             }
         }
+        else if event.characters == " " {
+            if let active = self.activeElement  {
+                if let drawable = scene?.drawables[active] {
+                    let drBounds = drawable.getBounds()
+                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
+                    showPopover(bounds: rect)
+                }
+            }
+        }
         else {
             if let active = self.activeElement, let chars = event.characters  {
                 active.name += chars
@@ -215,7 +225,27 @@ class SceneDrawView: NSView {
                 }
             }
         }
-        //Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
+        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
+    }
+    
+    private func showPopover(bounds: CGRect) {
+        let controller = NSViewController()
+        controller.view = NSView(frame: CGRect(x: CGFloat(100), y: CGFloat(50), width: CGFloat(100), height: CGFloat(50)))
+        
+        let popover = NSPopover()
+        popover.contentViewController = controller
+        popover.contentSize = controller.view.frame.size
+        
+        popover.behavior = .transient
+        popover.animates = true
+        
+        // let txt = NSTextField(frame: NSMakeRect(100,50,50,22))
+        let txt = NSTextField(frame: controller.view.frame)
+        txt.stringValue = "Hello world"
+        txt.textColor = NSColor.black.withAlphaComponent(0.95)
+        controller.view.addSubview(txt)
+        txt.sizeToFit()
+        popover.show(relativeTo: bounds, of: self as! NSView, preferredEdge: NSRectEdge.maxY)
     }
     
     public func findElement(x: CGFloat, y: CGFloat) -> ItemDrawable? {

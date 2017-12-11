@@ -43,7 +43,9 @@ extension Element {
         let items = TennNode.newNode(kind: .Statements)
         
         items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
-        items.add(TennNode.newCommand("description", TennNode.newStrNode(self.description)))
+        if let descr = self.description {
+            items.add(TennNode.newCommand("description", TennNode.newStrNode(descr)))
+        }
         
         return items.toStr()
     }
@@ -74,26 +76,59 @@ extension Element {
         }
     }
     
-    fileprivate func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode) {
+    fileprivate func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int]) {
         if let linkData = item.data as? LinkElementData {
             let linkCmd = TennNode.newCommand("link")
             linkCmd.add(TennNode.newStrNode(linkData.source.name))
             linkCmd.add(TennNode.newStrNode(linkData.target.name))
+            
+            let linkDataBlock = TennNode.newBlockExpr()
+            
+            if let sourceIndex = indexes[linkData.source], sourceIndex != 0 {
+                linkDataBlock.add(TennNode.newCommand("source-index", TennNode.newIntNode(sourceIndex)))
+            }
+            if let targetIndex = indexes[linkData.target], targetIndex != 0 {
+                linkDataBlock.add(TennNode.newCommand("target-index", TennNode.newIntNode(targetIndex)))
+            }
+            
+            if linkDataBlock.count > 0 {
+                linkCmd.add(linkDataBlock)
+            }
+            
             enodeBlock.add(linkCmd)
         }
     }
     
-    fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode) {
+    fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ itemIndexes: [DiagramItem:Int]) {
         for item in items {
             if item.kind == .Item {
                 buildItem(item, enodeBlock)
             }
             else if item.kind == .Link {
-                buildLink(item, enodeBlock)
+                buildLink(item, enodeBlock, itemIndexes)
             }
         }
     }
     
+    func prepareItemRefs( _ items: [DiagramItem] ) -> [DiagramItem:Int] {
+        // Prepare element index map
+        var itemRefNames:[DiagramItem:Int] = [:]
+        
+        var strToIndex:[String:Int] = [:]
+        
+        for item in items {
+            if let index = strToIndex[item.name] {
+                itemRefNames[item] = index + 1
+                strToIndex[item.name] = index + 1
+            }
+            else {
+                strToIndex[item.name] = 0
+                itemRefNames[item] = 0
+            }
+        }
+
+        return itemRefNames
+    }
     func buildElements( _ topParent: TennNode, _ elements: [Element], _ level: Int ) {
         for e in elements {
             let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
@@ -104,8 +139,8 @@ extension Element {
             
             enode.add(enodeBlock)
             
-            if e.description.count > 0 {
-                let elDescr = TennNode.newCommand("description", TennNode.newStrNode(e.description))
+            if let descr = e.description, descr.count > 0 {
+                let elDescr = TennNode.newCommand("description", TennNode.newStrNode(descr))
                 enodeBlock.add(elDescr)
             }
             
@@ -113,11 +148,32 @@ extension Element {
                 continue
             }
             
-            buildItems(e.items, enodeBlock)
+            let itemIndexes = self.prepareItemRefs(e.items)
+            
+            buildItems(e.items, enodeBlock, itemIndexes)
+            
             if e.elements.count > 0 {
                 buildElements(enodeBlock, e.elements, level + 1)
             }
         }
+    }
+}
+
+class IndexedName: Hashable {
+    var hashValue: Int {
+        get {
+            return name.hashValue + index.hashValue
+        }
+    }
+    var name: String = ""
+    var index: Int = 0
+    
+    init(_ name: String, _ index: Int) {
+        self.name = name
+        self.index = index
+    }
+    static func ==(lhs: IndexedName, rhs: IndexedName) -> Bool {
+        return lhs.name == rhs.name && lhs.index == rhs.index
     }
 }
 
@@ -146,35 +202,76 @@ extension Element {
         return result
     }
     
+    static func parseChildCommands( _ node: TennNode, _ blockIndex: Int, _ visitor: (_ cmdName: String, _ child: TennNode) -> Void) {
+        if node.count > blockIndex {
+            if let block = node.getChild([blockIndex]) {
+                if [.Statements, .BlockExpr].contains(block.kind), let blChilds = block.children {
+                    for blChild in blChilds {
+                        if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
+                            visitor(cmdName, blChild)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    fileprivate static func prepareRefs( _ items: [DiagramItem] ) -> [IndexedName:DiagramItem] {
+        // Prepare element index map
+        var itemRefNames:[IndexedName:DiagramItem] = [:]
+        
+        var strToIndex:[String:Int] = [:]
+        
+        for item in items {
+            if let index = strToIndex[item.name] {
+                itemRefNames[IndexedName(item.name, index + 1)] = item
+                strToIndex[item.name] = index + 1
+            }
+            else {
+                strToIndex[item.name] = 0
+                itemRefNames[IndexedName(item.name, 0)] = item
+            }
+        }
+        
+        return itemRefNames
+    }
+    
     fileprivate static func parseElement(node: TennNode) -> Element? {
         let el = Element(name: "")
+        
+        var linkElements: [(TennNode, DiagramItem)] = []
+        
         if node.count >= 2 {
             if let name = node.getIdent(1) {
                 el.name = name
             }
             
-            if node.count == 3 {
-                if let block = node.getChild([2]) {
-                    if [.Statements, .BlockExpr].contains(block.kind), let blChilds = block.children {
-                        for blChild in blChilds {
-                            if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
-                                switch cmdName  {
-                                case "item":
-                                    if let item = parseItem(blChild) {
-                                        el.items.append(item)
-                                    }
-                                case "element":
-                                    if let child = parseElement(node: blChild) {
-                                        el.elements.append(child)
-                                    }
-                                default:
-                                    break;
-                                }
-                            }
-                        }
+            parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
+                switch cmdName  {
+                case "item":
+                    if let item = parseItem(blChild) {
+                        el.items.append(item)
                     }
+                case "link":
+                    if let item = parseLink(blChild) {
+                        el.items.append(item)
+                        linkElements.append((blChild, item))
+                    }
+                case "element":
+                    if let child = parseElement(node: blChild) {
+                        el.elements.append(child)
+                    }
+                default:
+                    break;
                 }
+            })
+            
+            let refs = prepareRefs(el.items)
+            
+            for (node, link) in linkElements {
+                processLink(link, node, refs)
             }
+            
             return el
         }
         
@@ -190,10 +287,72 @@ extension Element {
                 el.name = name
             }
             
-            if node.count == 3 {
-            }
+            parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
+                switch cmdName  {
+                case "pos":
+                    if blChild.count == 3 {
+                        if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {
+                            el.x = CGFloat(x)
+                            el.y = CGFloat(y)
+                        }
+                    }
+                case "description":
+                    el.description = blChild.getIdent(1)
+                default:
+                    break;
+                }
+            })
         }
         return el
+    }
+    
+    fileprivate static func parseLink(_ node: TennNode) -> DiagramItem? {
+        let el = DiagramItem(kind: .Link, name: "")
+        
+        // Source & Target will be post processed at the end of parsing
+        
+        if node.count >= 3 {
+            parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
+                switch cmdName  {
+                case "description":
+                    break;
+                default:
+                    break;
+                }
+            })
+        }
+        return el
+    }
+    
+    fileprivate static func processLink( _ link: DiagramItem, _ node: TennNode, _ links: [IndexedName: DiagramItem]) {
+        
+        if node.count >= 2 {
+            var sourceIndex = 0
+            var targetIndex = 0
+            parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
+                switch cmdName  {
+                case "source-index":
+                    if let index = blChild.getInt(1) {
+                        sourceIndex = index
+                    }
+                case "target-index":
+                    if let index = blChild.getInt(1) {
+                        targetIndex = index
+                    }
+                default:
+                    break;
+                }
+            })
+            
+            if let source = node.getIdent(1), let target = node.getIdent(2) {
+                let sIndex = IndexedName( source, sourceIndex)
+                let tIndex = IndexedName( target, targetIndex)
+                
+                if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
+                    link.data = LinkElementData(source: sourceElement, target: targetElement)
+                }
+            }
+        }
     }
     
     fileprivate static func parseCommand( node: TennNode) -> Element? {
