@@ -28,8 +28,32 @@ class SceneDrawView: NSView {
     var x: CGFloat = 0
     var y: CGFloat = 0
     
-    var ox: CGFloat = 0
-    var oy: CGFloat = 0
+    var ox: CGFloat {
+        set {
+            if let active = element {
+                active.ox = Double(newValue)
+            }
+        }
+        get {
+            if let active = element {
+                return CGFloat(active.ox)
+            }
+            return 0
+        }
+    }
+    var oy: CGFloat {
+        set {
+            if let  active = element {
+                active.oy = Double(newValue)
+            }
+        }
+        get {
+            if let active = element {
+                return CGFloat(active.oy)
+            }
+            return 0
+        }
+    }
     
     var mouseDownState = false
     

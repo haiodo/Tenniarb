@@ -160,6 +160,12 @@ public class Element {
     // Item on self diagram of this element
     var selfItem: DiagramItem?
     
+    
+    // Transient data values
+    
+    var ox: Double = 0
+    var oy: Double = 0
+    
     init( name: String = "", createSelf: Bool = false) {
         self.id = UUID()
         self.name = name
@@ -220,6 +226,8 @@ public class Element {
         
         self.assignModel(el)
         self.elements.append(el)
+        
+        self.model?.modified(self, .Structure)
     }
     
     // Add a child element to current diagram
@@ -295,6 +303,7 @@ public class Element {
     }
     func remove(_ element: Element) {
         self.elements = self.elements.filter {$0.id != element.id }
+        self.model?.modified(self, .Structure)
     }
 }
 
