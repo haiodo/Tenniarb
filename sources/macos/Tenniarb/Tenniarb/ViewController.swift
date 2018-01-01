@@ -28,8 +28,23 @@ class ViewController: NSViewController {
     var updateElements:[Element] = []
     
     var itemIndex = 0
-        
+    
+    @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
+    
+    @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
+        switch(sender.selectedSegment) {
+        case 0: break;
+        default: break;
+        }
+    }
     @IBOutlet weak var windowTitle: NSTextField!
+    
+    @IBAction func outlineTextChanged(_ sender: Any) {
+        if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
+            active.name = newValue
+            elementModel?.modified(active, .Structure)
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,6 +108,15 @@ class ViewController: NSViewController {
     override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.
+        }
+    }
+    
+    override func presentViewController(_ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge, behavior: NSPopover.Behavior) {
+        if let vc = viewController as? SourcePopoverViewController {
+            if let active = self.selectedElement {
+                vc.setElement(element: active)
+                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+            }
         }
     }
     
@@ -243,13 +267,6 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
         return false
     }
     
-//    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
-//        if let el = item as? Element {
-//            return (el.parent as? ElementModel) != nil
-//        }
-//
-//        return false
-//    }
     
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
         //1
@@ -268,15 +285,19 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
-            let elRaw = el.itemCount > 0 ? "DiagramCell": "ItemCell"
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: elRaw), owner: self) as? NSTableCellView {
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name
-//                    textField.font = NSFont.labelFont(ofSize: 10)
                 }
-//                if let imageView = view.imageView {
-//                    imageView.image =
-//                }
+                
+                if let imageField = view.viewWithTag(0) as? NSImageView {
+                    if el.itemCount > 0 {
+                        imageField.image = NSImage.init(named: NSImage.Name.init("small_logo_white"))
+                    }
+                    else {
+                        imageField.image = NSImage.init(named: NSImage.Name.init("element_logo_white"))
+                    }
+                }
                 return view
             }
         }
@@ -298,24 +319,5 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     override func keyDown(with event: NSEvent) {
         Swift.debugPrint("Keydown pressed")
     }
-    
-    override func commitEditing(withDelegate delegate: Any?, didCommit didCommitSelector: Selector?, contextInfo: UnsafeMutableRawPointer?) {
-        Swift.debugPrint("commit editing")
-    }
-    
-    override func controlTextDidEndEditing(_ obj: Notification) {
-        let selectedIndex = worldTree.selectedRow
-        let cell = worldTree.selectedCell() as? NSTextFieldCell
-        
-        let strValue = cell?.stringValue
-        if let el = worldTree.item(atRow: selectedIndex) as? Element {
-            if let str = strValue  {
-                el.name = str
-                scene.needsDisplay = true
-            }
-        }
-
-    }
-    
 }
 

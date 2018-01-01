@@ -18,6 +18,11 @@ class Document: NSDocument {
         
         // By default create with sample scene.
         self.elementModel = ElementModelFactory().elementModel
+        
+        self.elementModel?.onUpdate.append( onUpdate )
+    }
+    func onUpdate(element: Element, updateEvent: UpdateEventKind) {
+        updateChangeCount(.changeDone)
     }
     
     override func makeWindowControllers() {
@@ -30,7 +35,6 @@ class Document: NSDocument {
         
         vc = windowController.contentViewController as? ViewController
         vc?.setElementModel(elementModel: self.elementModel!)
-        
     }
     
     override func read(from url: URL, ofType typeName: String) throws {
@@ -44,10 +48,13 @@ class Document: NSDocument {
             if parser.errors.hasErrors() {
                 return
             }
-            
+            if let oldModel = elementModel {
+                oldModel.onUpdate.removeAll()
+            }
             elementModel = ElementModel.parseTenn(node: node)
             elementModel?.modelName = url.lastPathComponent
             vc?.setElementModel(elementModel: self.elementModel!)
+            elementModel?.onUpdate.append( onUpdate )
         }
         catch {
             Swift.print("Failed to load file")
@@ -60,20 +67,14 @@ class Document: NSDocument {
         }
     }
     
-//    override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
-//        Swift.debugPrint("read from file wrapper")
-//    }
-    
-//    override class var autosavesInPlace: Bool {
-//        return true
-//    }
-    
     override func write(to url: URL, ofType typeName: String) throws {
         do {
             if let em = elementModel {
                 let value = em.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 em.modified = false
+                
+                updateChangeCount(.changeCleared)
                 vc?.updateWindowTitle()
             }
         }

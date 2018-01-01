@@ -12,7 +12,7 @@ import Foundation
  Allow Mapping of element model to tenn and wise verse.
  */
 extension Element {
-    public func toTenn( ) -> TennNode {
+    public func toTenn( includeSubElements: Bool = true ) -> TennNode {
         let result = TennNode(kind: TennNodeKind.Statements)
         
         var lvl = 0
@@ -24,17 +24,17 @@ extension Element {
         }
         
         if self.kind == .Root {
-            buildElements( result, self.elements, lvl )
+            buildElements( result, self.elements, lvl, includeSubElements )
         }
         else {
-            buildElements( result, [self], lvl )
+            buildElements( result, [self], lvl, includeSubElements )
         }
         
         return result
     }
     
-    func toTennStr( ) -> String {
-        let ee = toTenn()
+    func toTennStr( includeSubElements: Bool = true ) -> String {
+        let ee = toTenn( includeSubElements: includeSubElements )
         return ee.toStr(0, false)
     }
     
@@ -129,7 +129,7 @@ extension Element {
 
         return itemRefNames
     }
-    func buildElements( _ topParent: TennNode, _ elements: [Element], _ level: Int ) {
+    func buildElements( _ topParent: TennNode, _ elements: [Element], _ level: Int, _ includeSubElements: Bool ) {
         for e in elements {
             let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
             
@@ -144,16 +144,12 @@ extension Element {
                 enodeBlock.add(elDescr)
             }
             
-            if e.items.count == 0 {
-                continue
-            }
-            
             let itemIndexes = self.prepareItemRefs(e.items)
             
             buildItems(e.items, enodeBlock, itemIndexes)
             
-            if e.elements.count > 0 {
-                buildElements(enodeBlock, e.elements, level + 1)
+            if e.elements.count > 0 && includeSubElements {
+                buildElements(enodeBlock, e.elements, level + 1, includeSubElements)
             }
         }
     }
