@@ -852,7 +852,7 @@
                                                                             </segmentedCell>
                                                                             <connections>
                                                                                 <action selector="clickExtraButton:" target="5gI-5U-AMq" id="bm8-Ao-Ywn"/>
-                                                                                <segue destination="5uG-yi-xCn" kind="popover" popoverAnchorView="zbO-zz-O9G" popoverBehavior="semitransient" preferredEdge="minX" id="3cu-cn-G1q"/>
+                                                                                <segue destination="5uG-yi-xCn" kind="popover" popoverAnchorView="zbO-zz-O9G" popoverBehavior="t" preferredEdge="minX" id="3cu-cn-G1q"/>
                                                                             </connections>
                                                                         </segmentedControl>
                                                                     </subviews>
@@ -969,23 +969,23 @@
             <objects>
                 <viewController id="5uG-yi-xCn" customClass="SourcePopoverViewController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Y5s-io-BTt">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="536"/>
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="566"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wJ5-W5-Ns8">
-                                <rect key="frame" x="5" y="5" width="440" height="526"/>
+                                <rect key="frame" x="5" y="5" width="440" height="556"/>
                                 <subviews>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pxn-aB-GBZ">
-                                        <rect key="frame" x="0.0" y="30" width="440" height="496"/>
+                                        <rect key="frame" x="0.0" y="30" width="440" height="526"/>
                                         <clipView key="contentView" id="Xx1-cm-uJe">
-                                            <rect key="frame" x="1" y="1" width="438" height="494"/>
+                                            <rect key="frame" x="1" y="1" width="438" height="524"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <textView importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2Ed-qs-fqF">
-                                                    <rect key="frame" x="0.0" y="0.0" width="438" height="494"/>
+                                                <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2Ed-qs-fqF">
+                                                    <rect key="frame" x="0.0" y="0.0" width="438" height="524"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <size key="minSize" width="438" height="494"/>
+                                                    <size key="minSize" width="438" height="524"/>
                                                     <size key="maxSize" width="463" height="10000000"/>
                                                     <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                                 </textView>
@@ -1010,12 +1010,12 @@
                                                 <endViews>
                                                     <button verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1CS-LS-r4w">
                                                         <rect key="frame" x="360" y="-2" width="81" height="32"/>
-                                                        <buttonCell key="cell" type="push" title="Apply" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="akW-Ji-FYB">
+                                                        <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="akW-Ji-FYB">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
                                                         <connections>
-                                                            <action selector="applyClick:" target="5uG-yi-xCn" id="NKC-di-raP"/>
+                                                            <action selector="applyClose:" target="5uG-yi-xCn" id="sug-Vv-yiq"/>
                                                         </connections>
                                                     </button>
                                                 </endViews>

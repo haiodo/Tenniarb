@@ -169,25 +169,12 @@ open class DrawableScene: DrawableContainer {
     
     var itemToLink:[DiagramItem: [DiagramItem]] = [:]
     
-    var activeElementValue: DiagramItem?
+    var activeDrawable: Drawable?
     var activeElement: DiagramItem? {
-        set {
-            if let ae =  activeDrawable {
-                ae.lineWidth = RoundBox.DEFAULT_LINE_WIDTH
-            }
-            self.activeElementValue = newValue
-            if let ae = newValue {
-                if let de = drawables[ae] as? RoundBox {
-                    de.lineWidth = 0.7
-                    activeDrawable = de
-                }
-            }
-        }
-        get {
-            return activeElementValue
+        didSet {
+            self.updateActiveElement()
         }
     }
-    var activeDrawable: RoundBox?
     
     init( _ element: Element) {
         super.init([])
@@ -196,7 +183,22 @@ open class DrawableScene: DrawableContainer {
         self.append(buildElementScene(element))
     }
     
+    func updateActiveElement() {
+        if let ae = activeElement {
+            if let de = drawables[ae] as? RoundBox {
+                let deBounds = de.getBounds()
+                activeDrawable = SelectorBox(
+                    pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
+                    size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ) )
+            }
+        }
+        else {
+            activeDrawable = nil
+        }
+    }
+    
     func updateLayout(_ item: DiagramItem) {
+        updateActiveElement()
         if let box = drawables[item] as? RoundBox {
             box.setPath(CGRect(origin:CGPoint(x: item.data.x, y: item.data.y), size: box.bounds.size))
             
@@ -241,9 +243,17 @@ open class DrawableScene: DrawableContainer {
     
     open func draw(context: CGContext) {
         draw(context: context, at: offset)
+        
+        if let selBox = self.activeDrawable {
+            selBox.draw(context: context, at: offset)
+        }
     }
     open func drawBox(context: CGContext) {
         drawBox(context: context, at: offset)
+        
+        if let selBox = self.activeDrawable {
+            selBox.drawBox(context: context, at: offset)
+        }
     }
     
     public override func update() {
@@ -523,6 +533,73 @@ public class DrawableLine: Drawable {
         let maxY = max( source.y, target.y)
         
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:(maxY-minY))
+    }
+    public func update() {
+    }
+}
+
+public class SelectorBox: Drawable {
+    var pos: CGPoint
+    var size: CGSize
+    
+    var color: CGColor
+    
+    var lineWidth: CGFloat = 1
+    
+    init( pos: CGPoint, size: CGSize, color: CGColor = CGColor.black) {
+        self.pos = pos
+        self.size = size
+        self.color = color
+    }
+    
+    public func drawBox(context: CGContext, at point: CGPoint) {
+        self.draw(context: context, at: point)
+    }
+    
+    public func draw(context: CGContext, at point: CGPoint) {
+        //
+        context.saveGState()
+        
+        context.setStrokeColor( self.color )
+        context.setFillColor( self.color )
+        context.setLineWidth( 1 )
+        
+        context.setShadow(offset: CGSize(width: 0.0, height: 0.0), blur: 5.0, color: CGColor(red: 0, green: 0, blue: 1, alpha: 1))
+        
+        context.setLineDash(phase: 5, lengths: [5])
+        
+        let rect = CGRect(origin: CGPoint(x: pos.x + point.x, y: pos.y + point.y), size: self.size)
+//        context.addRect(rect)
+        
+        let path = CGMutablePath()
+        
+        path.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
+        let radius:CGFloat = 9.0
+        path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
+        path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),
+                           tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
+        path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.maxY ),
+                           tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
+        path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
+        path.closeSubpath()
+        context.addPath(path)
+        
+        context.drawPath(using: .stroke)
+        
+        context.restoreGState()
+    }
+    
+    public func layout(_ bounds: CGRect) {
+        
+    }
+    
+    public func isVisible() -> Bool {
+        return true
+    }
+    public func getBounds() -> CGRect {
+        return CGRect(origin: self.pos, size: self.size)
     }
     public func update() {
     }

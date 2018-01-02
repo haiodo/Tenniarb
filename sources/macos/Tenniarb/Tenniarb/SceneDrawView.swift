@@ -12,6 +12,14 @@ import CoreText
 import CoreImage
 
 
+enum SceneMode {
+    case Normal // A usual selection mode
+    case Editing  // Title editing mode
+    case Dragging // Dragging mode
+    case DiagramMove
+    case LineDrawing // Line dragging mode
+}
+
 class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
@@ -27,6 +35,8 @@ class SceneDrawView: NSView {
     
     var x: CGFloat = 0
     var y: CGFloat = 0
+    
+    var mode: SceneMode = .Normal
     
     var ox: CGFloat {
         set {
@@ -60,8 +70,6 @@ class SceneDrawView: NSView {
     var onSelection: [( DiagramItem? ) -> Void] = []
     
     var scene: DrawableScene?
-    
-    var dirty: Bool = false
     
     var drawScheduled: Bool = false
     
@@ -158,7 +166,18 @@ class SceneDrawView: NSView {
     }
     
     private func buildScene() {
+        // We need preserve selection of previous scene
+        
+        var oldActiveItem: DiagramItem? = nil
+        if let oldScene = self.scene {
+            oldActiveItem = oldScene.activeElement
+        }
+        
         let scene = DrawableScene(self.element!)
+        
+        if let active = oldActiveItem {
+            scene.activeElement = active
+        }
     
         self.scene = scene
     }
@@ -175,7 +194,6 @@ class SceneDrawView: NSView {
         
         // We need to rebuild scene as active element is changed
         scene?.activeElement = element
-        scene?.update()
         
         needsDisplay = true
     }
@@ -217,7 +235,7 @@ class SceneDrawView: NSView {
                 if let drawable = scene?.drawables[active] {
                     let drBounds = drawable.getBounds()
                     let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x-10, y: drBounds.minY + off.y-10, width: drBounds.width + 50, height: drBounds.height+20)
+                    let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
                     sheduleRedraw(invalidRect: rect)
                 }
                 else {
@@ -244,7 +262,7 @@ class SceneDrawView: NSView {
                 if let drawable = scene?.drawables[active] {
                     let drBounds = drawable.getBounds()
                     let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x-10, y: drBounds.minY + off.y-10, width: drBounds.width + 50, height: drBounds.height+20)
+                    let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
                     sheduleRedraw(invalidRect: rect)
                 }
                 else {
@@ -288,23 +306,38 @@ class SceneDrawView: NSView {
     override func mouseUp(with event: NSEvent) {
         self.updateMousePosition(event)
         
+        if let de = self.dragElement{
+            self.setActiveElement(de)
+            needsDisplay = true
+        }
+        
         self.mouseDownState = false
         self.dragElement = nil
+        
+        self.mode = .Normal
     }
     
     override func mouseDown(with event: NSEvent) {
         self.updateMousePosition(event)
         
-        self.mouseDownState = true
+        if self.mode == .Editing {
+            // No dragging allowed until editing is not done
+            return
+        }
         
+        self.mouseDownState = true
         
         if let drawable = findElement(x: self.x, y: self.y) {
             self.setActiveElement(drawable.item)
+            scene?.activeElement = nil
             
             self.dragElement = drawable.item
+            
+            self.mode = .Dragging
         }
         else {
             self.setActiveElement(nil)
+            self.mode = .DiagramMove
         }
     }
     
@@ -315,6 +348,10 @@ class SceneDrawView: NSView {
     }
     
     override func mouseDragged(with event: NSEvent) {
+        if self.mode != .Dragging && self.mode != .DiagramMove {
+            return
+        }
+        
         self.updateMousePosition(event)
         
         if let de = dragElement {

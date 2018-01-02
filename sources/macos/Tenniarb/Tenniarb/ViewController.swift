@@ -115,6 +115,7 @@ class ViewController: NSViewController {
         if let vc = viewController as? SourcePopoverViewController {
             if let active = self.selectedElement {
                 vc.setElement(element: active)
+                
                 super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
             }
         }

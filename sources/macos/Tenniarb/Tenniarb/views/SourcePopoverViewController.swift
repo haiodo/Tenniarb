@@ -21,7 +21,8 @@ class SourcePopoverViewController: NSViewController {
             textViewer.textStorage?.append(NSAttributedString(string: txtValue))
         }
     }
-    @IBAction func applyClick(_ sender: NSButton) {
+    @IBAction func applyClose(_ sender: NSButton) {
+        dismissViewController(self)
     }
     
     public func setElement(element: Element) {
