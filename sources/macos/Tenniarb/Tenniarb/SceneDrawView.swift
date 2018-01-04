@@ -169,14 +169,17 @@ class SceneDrawView: NSView {
         // We need preserve selection of previous scene
         
         var oldActiveItem: DiagramItem? = nil
+        var oldEditMode: Bool = false
         if let oldScene = self.scene {
             oldActiveItem = oldScene.activeElement
+            oldEditMode = oldScene.editingMode
         }
         
         let scene = DrawableScene(self.element!)
         
         if let active = oldActiveItem {
             scene.activeElement = active
+            scene.editingMode = oldEditMode
         }
     
         self.scene = scene
@@ -237,15 +240,15 @@ class SceneDrawView: NSView {
                 if let active = self.activeElement, active.name.count > 0 {
                     active.name.removeLast()
                     self.model?.modified(element!, .Structure)
-                    if let drawable = scene?.drawables[active] {
-                        let drBounds = drawable.getBounds()
-                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-                        sheduleRedraw(invalidRect: rect)
-                    }
-                    else {
+//                    if let drawable = scene?.drawables[active] {
+//                        let drBounds = drawable.getBounds()
+//                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+//                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
+//                        sheduleRedraw(invalidRect: rect)
+//                    }
+//                    else {
                         sheduleRedraw()
-                    }
+//                    }
                 }
             }
             else {
@@ -254,15 +257,15 @@ class SceneDrawView: NSView {
                     self.model?.modified(element!, .Structure)
       
                     //TODO: Need to add associated links to invalid rect bounds
-                    if let drawable = scene?.drawables[active] {
-                        let drBounds = drawable.getBounds()
-                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-                        sheduleRedraw(invalidRect: rect)
-                    }
-                    else {
+//                    if let drawable = scene?.drawables[active] {
+//                        let drBounds = drawable.getBounds()
+//                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+//                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
+//                        sheduleRedraw(invalidRect: rect)
+//                    }
+//                    else {
                         sheduleRedraw()
-                    }
+//                    }
                 }
             }
         }
