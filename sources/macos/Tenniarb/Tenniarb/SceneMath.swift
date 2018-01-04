@@ -53,3 +53,25 @@ func crossBox( _ p1:CGPoint, _ p2: CGPoint, _ rect: CGRect)-> CGPoint? {
     }
     return nil
 }
+
+/*
+ Will return -1 in case point is not in box of p1,p2.
+ */
+func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> CGFloat {
+    let r = CGRect(origin: CGPoint(x: min(p1.x, p2.x), y: min(p1.y, p2.y)), size: CGSize(width: abs(p1.x-p2.x), height: abs(p1.y-p2.y) ))
+    
+    if !r.contains(p) {
+        // Point not in boundaries of line
+        return -1
+    }
+    if p1.x == p2.x && p1.y == p2.y {
+        return -1.0
+    }
+    
+    let A = p2.y - p1.y
+    let B = p1.x - p2.x
+    let C = -( p1.x*A + p1.y * B )
+    
+    let d = abs(A*p.x+B*p.y+C)/sqrt(A*A+B*B)
+    return d
+}

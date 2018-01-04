@@ -305,6 +305,23 @@ public class Element {
         self.elements = self.elements.filter {$0.id != element.id }
         self.model?.modified(self, .Structure)
     }
+    
+    func remove(_ item: DiagramItem) {
+        self.items = self.items.filter {
+            // Need to check if item is Link and source or target is our client
+            if $0.kind == .Link, let lData = $0.data as? LinkElementData {
+                if lData.source.id == item.id || lData.target.id == item.id {
+                    return false
+                }
+            }
+            if $0.id != item.id {
+                return true
+            }
+
+            return false
+        }
+        self.model?.modified(self, .Structure)
+    }
 }
 
 extension Element: Hashable {

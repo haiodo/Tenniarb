@@ -210,9 +210,6 @@ class SceneDrawView: NSView {
                     
                     self.element?.add(source: active, target: newEl)
                     
-//                    active.add(newEl)
-//                    self.element?.add(source: active, target: newEl)
-                    
                     sheduleRedraw()
                 }
             }
@@ -228,45 +225,69 @@ class SceneDrawView: NSView {
                 sheduleRedraw()
             }
         }
-        else if event.characters == "\u{7f}" { // Backspace character
-            if let active = self.activeElement, active.name.count > 0 {
-                active.name.removeLast()
-                self.model?.modified(element!, .Structure)
-                if let drawable = scene?.drawables[active] {
-                    let drBounds = drawable.getBounds()
-                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-                    sheduleRedraw(invalidRect: rect)
-                }
-                else {
-                    sheduleRedraw()
+        
+        if self.mode == .Editing {
+            if event.characters == "\u{0D}" {
+                self.mode = .Normal
+                scene?.editingMode = false
+                needsDisplay = true
+                return;
+            }
+            if event.characters == "\u{7f}" { // Backspace character
+                if let active = self.activeElement, active.name.count > 0 {
+                    active.name.removeLast()
+                    self.model?.modified(element!, .Structure)
+                    if let drawable = scene?.drawables[active] {
+                        let drBounds = drawable.getBounds()
+                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
+                        sheduleRedraw(invalidRect: rect)
+                    }
+                    else {
+                        sheduleRedraw()
+                    }
                 }
             }
-        }
-        else if event.characters == " " {
-            if let active = self.activeElement  {
-                if let drawable = scene?.drawables[active] {
-                    let drBounds = drawable.getBounds()
-                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
-                    showPopover(bounds: rect)
+            else {
+                if let active = self.activeElement, let chars = event.characters  {
+                    active.name += chars
+                    self.model?.modified(element!, .Structure)
+      
+                    //TODO: Need to add associated links to invalid rect bounds
+                    if let drawable = scene?.drawables[active] {
+                        let drBounds = drawable.getBounds()
+                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
+                        sheduleRedraw(invalidRect: rect)
+                    }
+                    else {
+                        sheduleRedraw()
+                    }
                 }
             }
         }
         else {
-            if let active = self.activeElement, let chars = event.characters  {
-                active.name += chars
-                self.model?.modified(element!, .Structure)
-  
-                //TODO: Need to add associated links to invalid rect bounds
-                if let drawable = scene?.drawables[active] {
-                    let drBounds = drawable.getBounds()
-                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-                    sheduleRedraw(invalidRect: rect)
-                }
-                else {
+            if event.characters == "\u{0D}" {
+                if let active = self.activeElement, active.kind == .Item  {
+                    self.mode = .Editing
+                    scene?.editingMode = true
                     sheduleRedraw()
+                }
+            }
+            else if event.characters == "\u{7f}" { // Backspace character
+                if let active = self.activeElement  {
+                    active.parent?.remove(active)
+                    sheduleRedraw()
+                }
+            }
+            else if event.characters == " " {
+                if let active = self.activeElement  {
+                    if let drawable = scene?.drawables[active] {
+                        let drBounds = drawable.getBounds()
+                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                        let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
+                        showPopover(bounds: rect)
+                    }
                 }
             }
         }
@@ -275,14 +296,15 @@ class SceneDrawView: NSView {
     
     private func showPopover(bounds: CGRect) {
         let controller = NSViewController()
-        controller.view = NSView(frame: CGRect(x: CGFloat(100), y: CGFloat(50), width: CGFloat(100), height: CGFloat(50)))
+        controller.view = NSView(frame: CGRect(x: CGFloat(0), y: CGFloat(0), width: CGFloat(100), height: CGFloat(50)))
+        controller.view.autoresizesSubviews = true
         
         let popover = NSPopover()
         popover.contentViewController = controller
         popover.contentSize = controller.view.frame.size
         
         popover.behavior = .transient
-        popover.animates = true
+        popover.animates = false
         
         // let txt = NSTextField(frame: NSMakeRect(100,50,50,22))
         let txt = NSTextField(frame: controller.view.frame)
@@ -290,7 +312,7 @@ class SceneDrawView: NSView {
         txt.textColor = NSColor.black.withAlphaComponent(0.95)
         controller.view.addSubview(txt)
         txt.sizeToFit()
-        popover.show(relativeTo: bounds, of: self as! NSView, preferredEdge: NSRectEdge.maxY)
+        popover.show(relativeTo: bounds, of: self, preferredEdge: NSRectEdge.maxY)
     }
     
     public func findElement(x: CGFloat, y: CGFloat) -> ItemDrawable? {
@@ -305,6 +327,11 @@ class SceneDrawView: NSView {
     
     override func mouseUp(with event: NSEvent) {
         self.updateMousePosition(event)
+        
+        if self.mode == .Editing {
+            // No dragging allowed until editing is not done
+            return
+        }
         
         if let de = self.dragElement{
             self.setActiveElement(de)

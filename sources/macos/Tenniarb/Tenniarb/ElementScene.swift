@@ -81,14 +81,24 @@ open class DrawableContainer: ItemDrawable {
             for c in childs {
                 if let drEl = c as? DrawableContainer {
                     let res = drEl.find(point)
-                    if res != nil && res?.item != nil {
+                    if res != nil && res!.item != nil {
                         return res
                     }
                 }
                 else if let cc = c as? ItemDrawable {
-                    // Just regular drawable check for bounds
-                    if cc.getBounds().contains(point) && cc.item != nil {
-                        return cc
+                    if let ccl = c as? DrawableLine {
+                        let d = crossPointLine(ccl.source, ccl.target, point)
+                        
+                        if d > 0 {
+                            Swift.debugPrint("distance: ", d)
+                            return cc
+                        }
+                    }
+                    else {
+                        // Just regular drawable check for bounds
+                        if cc.getBounds().contains(point) && cc.item != nil {
+                            return cc
+                        }
                     }
                 }
             }
@@ -170,6 +180,12 @@ open class DrawableScene: DrawableContainer {
     var itemToLink:[DiagramItem: [DiagramItem]] = [:]
     
     var activeDrawable: Drawable?
+    var editingMode: Bool = false {
+        didSet {
+            self.updateActiveElement()
+        }
+    }
+    
     var activeElement: DiagramItem? {
         didSet {
             self.updateActiveElement()
@@ -185,11 +201,18 @@ open class DrawableScene: DrawableContainer {
     
     func updateActiveElement() {
         if let ae = activeElement {
-            if let de = drawables[ae] as? RoundBox {
-                let deBounds = de.getBounds()
-                activeDrawable = SelectorBox(
-                    pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
-                    size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ) )
+            if let de = drawables[ae] as? ItemDrawable {
+                if let line =  de as? DrawableLine {
+                    activeDrawable = SelectorLine(source: line.source, target: line.target)
+                }
+                else {
+                    let deBounds = de.getBounds()
+                    activeDrawable = SelectorBox(
+                        pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
+                        size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ),
+                        color: !self.editingMode ? SelectorBox.normalColor: SelectorBox.editingColor
+                    )
+                }
             }
         }
         else {
@@ -317,6 +340,8 @@ open class DrawableScene: DrawableContainer {
                     let linkDr = DrawableLine(
                         source: p1,
                         target: p2)
+                    
+                    linkDr.item = e
                     drawables[e] = linkDr
                     elementDrawable.insert(
                         linkDr, at: 0)
@@ -481,7 +506,7 @@ public class TextBox: Drawable {
     }
 }
 
-public class DrawableLine: Drawable {
+public class DrawableLine: ItemDrawable {
     var source: CGPoint
     var target: CGPoint
     var color: CGColor
@@ -493,11 +518,11 @@ public class DrawableLine: Drawable {
         self.color = color
     }
     
-    public func drawBox(context: CGContext, at point: CGPoint) {
+    public override func drawBox(context: CGContext, at point: CGPoint) {
         self.draw(context: context, at: point)
     }
     
-    public func draw(context: CGContext, at point: CGPoint) {
+    public override func draw(context: CGContext, at point: CGPoint) {
         //
         context.saveGState()
         
@@ -518,14 +543,14 @@ public class DrawableLine: Drawable {
         context.restoreGState()
     }
     
-    public func layout(_ bounds: CGRect) {
+    public override func layout(_ bounds: CGRect) {
         
     }
     
-    public func isVisible() -> Bool {
+    public override func isVisible() -> Bool {
         return true
     }
-    public func getBounds() -> CGRect {
+    public override func getBounds() -> CGRect {
         
         let minX = min( source.x, target.x)
         let maxX = max( source.x, target.x)
@@ -534,7 +559,7 @@ public class DrawableLine: Drawable {
         
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:(maxY-minY))
     }
-    public func update() {
+    public override func update() {
     }
 }
 
@@ -546,7 +571,10 @@ public class SelectorBox: Drawable {
     
     var lineWidth: CGFloat = 1
     
-    init( pos: CGPoint, size: CGSize, color: CGColor = CGColor.black) {
+    static let normalColor = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
+    static let editingColor = CGColor(red: 0, green: 1, blue: 0, alpha: 1)
+    
+    init( pos: CGPoint, size: CGSize, color: CGColor = normalColor) {
         self.pos = pos
         self.size = size
         self.color = color
@@ -564,8 +592,7 @@ public class SelectorBox: Drawable {
         context.setFillColor( self.color )
         context.setLineWidth( 1 )
         
-        context.setShadow(offset: CGSize(width: 0.0, height: 0.0), blur: 5.0, color: CGColor(red: 0, green: 0, blue: 1, alpha: 1))
-        
+        context.setShadow(offset: CGSize(width: 0.0, height: 0.0), blur: 5.0, color: self.color)
         context.setLineDash(phase: 5, lengths: [5])
         
         let rect = CGRect(origin: CGPoint(x: pos.x + point.x, y: pos.y + point.y), size: self.size)
@@ -574,6 +601,7 @@ public class SelectorBox: Drawable {
         let path = CGMutablePath()
         
         path.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
+        
         let radius:CGFloat = 9.0
         path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
                            tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
@@ -584,6 +612,7 @@ public class SelectorBox: Drawable {
         path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
                            tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
         path.closeSubpath()
+        
         context.addPath(path)
         
         context.drawPath(using: .stroke)
@@ -604,3 +633,66 @@ public class SelectorBox: Drawable {
     public func update() {
     }
 }
+
+public class SelectorLine: ItemDrawable {
+    var source: CGPoint
+    var target: CGPoint
+    var color: CGColor
+    var lineWidth: CGFloat = 1
+    
+    static let normalColor = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
+    
+    init( source: CGPoint, target: CGPoint, color: CGColor = normalColor) {
+        self.source = source
+        self.target = target
+        self.color = color
+    }
+    
+    public override func drawBox(context: CGContext, at point: CGPoint) {
+        self.draw(context: context, at: point)
+    }
+    
+    public override func draw(context: CGContext, at point: CGPoint) {
+        //
+        context.saveGState()
+        
+        context.setLineWidth( self.lineWidth )
+        context.setStrokeColor(self.color)
+        context.setFillColor(self.color)
+        
+        context.setShadow(offset: CGSize(width: 0.0, height: 0.0), blur: 5.0, color: self.color)
+        context.setLineDash(phase: 5, lengths: [5])
+
+        let aPath = CGMutablePath()
+        
+        aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
+        aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
+        
+        //Keep using the method addLineToPoint until you get to the one where about to close the path
+        aPath.closeSubpath()
+        context.addPath(aPath)
+        context.drawPath(using: .stroke)
+        
+        context.restoreGState()
+    }
+    
+    public override func layout(_ bounds: CGRect) {
+        
+    }
+    
+    public override func isVisible() -> Bool {
+        return true
+    }
+    public override func getBounds() -> CGRect {
+        
+        let minX = min( source.x, target.x)
+        let maxX = max( source.x, target.x)
+        let minY = min( source.y, target.y)
+        let maxY = max( source.y, target.y)
+        
+        return CGRect(x:minX, y:minY, width:(maxX-minX), height:(maxY-minY))
+    }
+    public override func update() {
+    }
+}
+
