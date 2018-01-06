@@ -16,6 +16,7 @@
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
+		0C439D201FFFFAD20031AE78 /* OutlineViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* OutlineViewController.swift */; };
 		0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4C16071F2E369A000C5410 /* LayoutBase.swift */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
@@ -55,6 +56,7 @@
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
+		0C439D1F1FFFFAD20031AE78 /* OutlineViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineViewController.swift; sourceTree = "<group>"; };
 		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
 		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		0C2375ED1ED838D900ECB516 /* Tenniarb */ = {
 			isa = PBXGroup;
 			children = (
+				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
 				0C44D7571EE316F8001B7D01 /* views */,
 				0C2375EE1ED838D900ECB516 /* AppDelegate.swift */,
@@ -144,6 +147,14 @@
 			name = Documentation;
 			sourceTree = "<group>";
 		};
+		0C439D1E1FFFFA7F0031AE78 /* Experiments */ = {
+			isa = PBXGroup;
+			children = (
+				0C86047E1EF040F70009B205 /* SceneDraw3D.swift */,
+			);
+			path = Experiments;
+			sourceTree = "<group>";
+		};
 		0C44D7571EE316F8001B7D01 /* views */ = {
 			isa = PBXGroup;
 			children = (
@@ -151,6 +162,7 @@
 				0CBF20D31EF98F0200FE17D5 /* WindowController.swift */,
 				0C2375F01ED838D900ECB516 /* ViewController.swift */,
 				0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */,
+				0C439D1F1FFFFAD20031AE78 /* OutlineViewController.swift */,
 			);
 			name = views;
 			sourceTree = "<group>";
@@ -179,7 +191,6 @@
 			isa = PBXGroup;
 			children = (
 				0C34564D1ED88E9100341F1C /* SceneDrawView.swift */,
-				0C86047E1EF040F70009B205 /* SceneDraw3D.swift */,
 				0C3E41D11F07EC48009C2A2E /* ElementScene.swift */,
 				0C07F9541F4151250042C9F5 /* SceneMath.swift */,
 			);
@@ -304,6 +315,7 @@
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
+				0C439D201FFFFAD20031AE78 /* OutlineViewController.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
