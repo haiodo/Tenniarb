@@ -20,7 +20,7 @@ enum SceneMode {
     case LineDrawing // Line dragging mode
 }
 
-class SceneDrawView: NSView {
+class SceneDrawView: NSView, NSTextFieldDelegate {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
     var model:ElementModel?
@@ -37,6 +37,8 @@ class SceneDrawView: NSView {
     var y: CGFloat = 0
     
     var mode: SceneMode = .Normal
+    
+    var editBox: NSTextField? = nil
     
     var ox: CGFloat {
         set {
@@ -81,6 +83,9 @@ class SceneDrawView: NSView {
     var prevTouch: NSTouch? = nil
     
     @objc override func touchesBegan(with event: NSEvent) {
+        if self.mode == .Editing {
+            return
+        }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
         if touches.count == 2 {
             prevTouch = touches.first
@@ -103,6 +108,9 @@ class SceneDrawView: NSView {
     }
     
     @objc override func touchesMoved(with event: NSEvent) {
+        if self.mode == .Editing {
+            return
+        }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
         if touches.count == 2 {
             if prevTouch == nil {
@@ -201,96 +209,125 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
-    override func keyDown(with event: NSEvent) {
-        if event.characters == "\t" {
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(cancelOperation(_:)) {
+            self.setNormalMode()
+            editBox?.removeFromSuperview()
+            editBox = nil
+            self.window?.makeFirstResponder(self)
+            needsDisplay = true
+            return true
+        }
+        if commandSelector == #selector(insertNewline(_:)) {
             if let active = self.activeElement {
-                if active.kind == .Item {
-                    // Create and add to activeEl
-                    let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
-                    self.createIndex += 1
-                    newEl.x = active.x + 100
-                    newEl.y = active.y
-                    
-                    self.element?.add(source: active, target: newEl)
-                    
-                    sheduleRedraw()
+                let textValue = textView.string
+                if textValue.count > 0 {
+                    active.name = textValue
+                    self.model?.modified(element!, .Structure)
                 }
             }
-            else {
-                // Add top element
+            
+            self.setNormalMode()
+            editBox?.removeFromSuperview()
+            editBox = nil
+            self.window?.makeFirstResponder(self)
+            needsDisplay = true
+            return true
+        }
+        // TODO: Resize both text and drawed item to fit value smoothly.
+        
+        return false
+    }
+    
+    fileprivate func editTitle(_ active: DiagramItem) {
+        self.mode = .Editing
+        scene?.editingMode = true
+        if let de = scene?.drawables[active] {
+            if editBox != nil {
+                editBox!.removeFromSuperview()
+            }
+            let deBounds = de.getBounds()
+            let bounds = CGRect(
+                x: deBounds.origin.x + scene!.offset.x,
+                y: deBounds.origin.y + scene!.offset.y,
+                width: deBounds.width,
+                height: deBounds.height
+            )
+            Swift.debugPrint(bounds)
+            editBox = NSTextField(frame: bounds)
+            editBox?.delegate = self
+            editBox?.stringValue = active.name
+            editBox?.drawsBackground = true
+            editBox?.isBordered = true
+            editBox?.focusRingType = .none
+            editBox?.font = NSFont.systemFont(ofSize: 18)
+            
+            self.addSubview(editBox!)
+            
+            self.window?.makeFirstResponder(editBox!)
+        }
+        
+        sheduleRedraw()
+    }
+    
+    fileprivate func setNormalMode() {
+        self.mode = .Normal
+        scene?.editingMode = false
+        needsDisplay = true
+    }
+    
+    fileprivate func addNewItem() {
+        if let active = self.activeElement {
+            if active.kind == .Item {
+                // Create and add to activeEl
                 let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
                 self.createIndex += 1
+                newEl.x = active.x + 100
+                newEl.y = active.y
                 
-                newEl.x = 0
-                newEl.y = 0
-                self.element?.add(newEl)
+                self.element?.add(source: active, target: newEl)
+                
+                self.setActiveElement(newEl)
                 
                 sheduleRedraw()
             }
         }
-        
-        if self.mode == .Editing {
-            if event.characters == "\u{0D}" {
-                self.mode = .Normal
-                scene?.editingMode = false
-                needsDisplay = true
-                return;
-            }
-            if event.characters == "\u{7f}" { // Backspace character
-                if let active = self.activeElement, active.name.count > 0 {
-                    active.name.removeLast()
-                    self.model?.modified(element!, .Structure)
-//                    if let drawable = scene?.drawables[active] {
-//                        let drBounds = drawable.getBounds()
-//                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-//                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-//                        sheduleRedraw(invalidRect: rect)
-//                    }
-//                    else {
-                        sheduleRedraw()
-//                    }
-                }
-            }
-            else {
-                if let active = self.activeElement, let chars = event.characters  {
-                    active.name += chars
-                    self.model?.modified(element!, .Structure)
-      
-                    //TODO: Need to add associated links to invalid rect bounds
-//                    if let drawable = scene?.drawables[active] {
-//                        let drBounds = drawable.getBounds()
-//                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-//                        let rect = CGRect(x: drBounds.minX + off.x-20, y: drBounds.minY + off.y-20, width: drBounds.width + 60, height: drBounds.height+30)
-//                        sheduleRedraw(invalidRect: rect)
-//                    }
-//                    else {
-                        sheduleRedraw()
-//                    }
-                }
+        else {
+            // Add top element
+            let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
+            self.createIndex += 1
+            
+            newEl.x = 0
+            newEl.y = 0
+            self.element?.add(newEl)
+            
+            sheduleRedraw()
+        }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        if event.characters == "\t" {
+            addNewItem()
+        }
+    
+        if event.characters == "\u{0D}" {
+            if let active = self.activeElement, active.kind == .Item  {
+                editTitle(active)
             }
         }
-        else {
-            if event.characters == "\u{0D}" {
-                if let active = self.activeElement, active.kind == .Item  {
-                    self.mode = .Editing
-                    scene?.editingMode = true
-                    sheduleRedraw()
-                }
+        else if event.characters == "\u{7f}" { // Backspace character
+            if let active = self.activeElement  {
+                active.parent?.remove(active)
+                sheduleRedraw()
             }
-            else if event.characters == "\u{7f}" { // Backspace character
-                if let active = self.activeElement  {
-                    active.parent?.remove(active)
-                    sheduleRedraw()
-                }
-            }
-            else if event.characters == " " {
-                if let active = self.activeElement  {
-                    if let drawable = scene?.drawables[active] {
-                        let drBounds = drawable.getBounds()
-                        let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                        let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
-                        showPopover(bounds: rect)
-                    }
+        }
+        else if event.characters == " " {
+            if let active = self.activeElement  {
+                if let drawable = scene?.drawables[active] {
+                    let drBounds = drawable.getBounds()
+                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
+                    showPopover(bounds: rect)
                 }
             }
         }
@@ -402,7 +439,6 @@ class SceneDrawView: NSView {
     }
     
     func updateMousePosition(_ event: NSEvent) {
-        
         //TODO: It is so dirty hack. Also devider positions are missied few pixel
         
         let wloc = event.locationInWindow
@@ -420,6 +456,9 @@ class SceneDrawView: NSView {
     }
     
     override func mouseMoved(with event: NSEvent) {
+        if self.mode == .Editing {
+            return
+        }
         self.updateMousePosition(event)
     }
     
