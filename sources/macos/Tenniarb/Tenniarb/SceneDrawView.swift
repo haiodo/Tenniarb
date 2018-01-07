@@ -31,6 +31,9 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     
     var dragElement: DiagramItem?
     
+    var lineToPoint: CGPoint?
+    var lineTarget: DiagramItem?
+    
     var createIndex: Int = 1
     
     var x: CGFloat = 0
@@ -83,7 +86,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     var prevTouch: NSTouch? = nil
     
     @objc override func touchesBegan(with event: NSEvent) {
-        if self.mode == .Editing {
+        if self.mode == .Editing || self.mode == .LineDrawing {
             return
         }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
@@ -108,7 +111,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     }
     
     @objc override func touchesMoved(with event: NSEvent) {
-        if self.mode == .Editing {
+        if self.mode == .Editing || self.mode == .LineDrawing {
             return
         }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
@@ -373,8 +376,35 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
             return
         }
         
-        if let de = self.dragElement{
-            self.setActiveElement(de)
+        if let de = self.dragElement {
+            if self.mode == .LineDrawing {
+                
+                if let source = self.dragElement, let target = self.lineTarget {
+                    // Create a new line if not yet pressent between elements
+                    
+                    // Check if line already exists
+                    if element?.items.first(where: { (item) -> Bool in
+                        if item.kind == .Link, let data = item.data as? LinkElementData {
+                            if (data.source == source && data.target == target) ||
+                                (data.source == target && data.target == source) {
+                                // Existing item found
+                                return true
+                            }
+                        }
+                        return false
+                    }) == nil {
+                        // Add item since not pressent
+                        element?.add(source: source, target: target)
+                    }
+                }
+                
+                scene?.removeLineTo()
+                self.lineToPoint = nil
+                self.lineTarget = nil
+            }
+            else {
+                self.setActiveElement(de)
+            }
             needsDisplay = true
         }
         
@@ -400,7 +430,13 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
             
             self.dragElement = drawable.item
             
-            self.mode = .Dragging
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
+                self.mode = .LineDrawing
+                self.lineToPoint = CGPoint(x: self.x, y: self.y )
+            }
+            else {
+                self.mode = .Dragging
+            }
         }
         else {
             self.setActiveElement(nil)
@@ -415,19 +451,28 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     }
     
     override func mouseDragged(with event: NSEvent) {
-        if self.mode != .Dragging && self.mode != .DiagramMove {
+        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing  {
             return
         }
         
         self.updateMousePosition(event)
         
         if let de = dragElement {
-            de.x += event.deltaX
-            de.y -= event.deltaY
-                        
-            if let em = self.element {
-                em.model?.modified(em, .Layout)
-                self.scene?.updateLayout(de)
+            
+            if self.mode == .LineDrawing {
+                self.lineToPoint = CGPoint(x: self.x, y: self.y )
+                self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
+                
+                needsDisplay = true
+            }
+            else {
+                de.x += event.deltaX
+                de.y -= event.deltaY
+                
+                if let em = self.element {
+                    em.model?.modified(em, .Layout)
+                    self.scene?.updateLayout(de)
+                }
             }
         }
         else {

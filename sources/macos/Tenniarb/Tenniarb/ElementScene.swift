@@ -180,6 +180,9 @@ open class DrawableScene: DrawableContainer {
     var itemToLink:[DiagramItem: [DiagramItem]] = [:]
     
     var activeDrawable: Drawable?
+    
+    var lineToDrawable: Drawable?
+    
     var editingMode: Bool = false {
         didSet {
             self.updateActiveElement()
@@ -197,6 +200,46 @@ open class DrawableScene: DrawableContainer {
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
         
         self.append(buildElementScene(element))
+    }
+    
+    func updateLineTo(_ de: DiagramItem, _ point: CGPoint ) -> DiagramItem? {
+        var result: DiagramItem?
+        if let de = self.drawables[de] {
+            let bounds = de.getBounds()
+            
+            var mid = CGPoint( x: bounds.midX, y: bounds.midY)
+            
+            var targetPoint = point
+            
+            var tBounds: CGRect?
+            
+            if let targetDe = self.find(point) {
+                if targetDe.item?.kind == .Item {
+                    tBounds = targetDe.getBounds()
+                    targetPoint = CGPoint( x: tBounds!.midX, y: tBounds!.midY)
+                    self.activeElement = targetDe.item
+                    result = targetDe.item
+                }
+            }
+            
+            if let cp1 = crossBox(mid, targetPoint, bounds) {
+                mid = cp1
+            }
+            
+            if let tb = tBounds {
+                if let cp2 = crossBox(mid, targetPoint, tb) {
+                    targetPoint = cp2
+                }
+            }
+
+            
+            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint )
+        }
+        return result
+    }
+    
+    func removeLineTo() {
+        self.lineToDrawable = nil
     }
     
     func updateActiveElement() {
@@ -270,12 +313,20 @@ open class DrawableScene: DrawableContainer {
         if let selBox = self.activeDrawable {
             selBox.draw(context: context, at: offset)
         }
+        
+        if let lineTo = self.lineToDrawable {
+            lineTo.draw(context: context, at: offset)
+        }
     }
     open func drawBox(context: CGContext) {
         drawBox(context: context, at: offset)
         
         if let selBox = self.activeDrawable {
             selBox.drawBox(context: context, at: offset)
+        }
+        
+        if let lineTo = self.lineToDrawable {
+            lineTo.draw(context: context, at: offset)
         }
     }
     
