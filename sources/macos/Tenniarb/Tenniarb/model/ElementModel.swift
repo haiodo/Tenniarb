@@ -339,21 +339,6 @@ extension DiagramItem: Hashable {
     }
 }
 
-extension DiagramItem {
-    /// Convert items to list of properties
-    func toTennProps() -> String {
-        let items = TennNode.newNode(kind: .Statements)
-        
-        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
-        
-        if self.kind == .Item {
-            items.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(self.x)), TennNode.newFloatNode(Double(self.y))))
-        }
-        
-        return items.toStr()
-    }
-}
-
 /*
  Default element factory.
  */

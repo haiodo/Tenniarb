@@ -12,45 +12,20 @@ import Foundation
  Allow Mapping of element model to tenn and wise verse.
  */
 extension Element {
-    public func toTenn( includeSubElements: Bool = true ) -> TennNode {
+    public func toTenn( includeSubElements: Bool = true, includeAll: Bool = false ) -> TennNode {
         let result = TennNode(kind: TennNodeKind.Statements)
         
-        var lvl = 0
-        
-        var p = self
-        while p.parent != nil {
-            p = p.parent!
-            lvl += 1
-        }
-        
-        if self.kind == .Root {
-            buildElements( result, self.elements, lvl, includeSubElements )
-        }
-        else {
-            buildElements( result, [self], lvl, includeSubElements )
-        }
+        buildElement(self, result, includeAll, includeSubElements)
         
         return result
     }
     
-    func toTennStr( includeSubElements: Bool = true ) -> String {
-        let ee = toTenn( includeSubElements: includeSubElements )
+    func toTennStr( includeSubElements: Bool = true, includeAll: Bool = false ) -> String {
+        let ee = toTenn( includeSubElements: includeSubElements, includeAll: includeAll )
         return ee.toStr(0, false)
     }
     
-    /// Convert items to list of properties
-    func toTennProps() -> String {
-        let items = TennNode.newNode(kind: .Statements)
-        
-        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
-        if let descr = self.description {
-            items.add(TennNode.newCommand("description", TennNode.newStrNode(descr)))
-        }
-        
-        return items.toStr()
-    }
-    
-    fileprivate func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
+    static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode, _ includeAll: Bool) {
         var name: String = ""
         if let refEl:Element = item.getData(.RefElement) {
             name = refEl.name
@@ -76,7 +51,7 @@ extension Element {
         }
     }
     
-    fileprivate func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int]) {
+    static func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int], _ includeAll: Bool) {
         if let linkData: LinkElementData = item.getData(.LinkData) {
             let linkCmd = TennNode.newCommand("link")
             linkCmd.add(TennNode.newStrNode(linkData.source.name))
@@ -99,13 +74,13 @@ extension Element {
         }
     }
     
-    fileprivate func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ itemIndexes: [DiagramItem:Int]) {
+    static func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ itemIndexes: [DiagramItem:Int], _ includeAll: Bool) {
         for item in items {
             if item.kind == .Item {
-                buildItem(item, enodeBlock)
+                Element.buildItem(item, enodeBlock, includeAll)
             }
             else if item.kind == .Link {
-                buildLink(item, enodeBlock, itemIndexes)
+                Element.buildLink(item, enodeBlock, itemIndexes, includeAll)
             }
         }
     }
@@ -129,28 +104,34 @@ extension Element {
 
         return itemRefNames
     }
-    func buildElements( _ topParent: TennNode, _ elements: [Element], _ level: Int, _ includeSubElements: Bool ) {
+    fileprivate func buildElement(_ e: Element, _ topParent: TennNode, _ includeAll: Bool, _ includeSubElements: Bool) {
+        let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
+        
+        topParent.add(enode)
+        
+        let enodeBlock = TennNode.newBlockExpr()
+        
+        enode.add(enodeBlock)
+        
+        if let descr = e.description, descr.count > 0 {
+            let elDescr = TennNode.newCommand("description", TennNode.newStrNode(descr))
+            enodeBlock.add(elDescr)
+        }
+        
+        let itemIndexes = self.prepareItemRefs(e.items)
+        
+        if includeSubElements {
+            Element.buildItems(e.items, enodeBlock, itemIndexes, includeAll)
+        }
+        
+        if e.elements.count > 0 && includeSubElements {
+            buildElements(enodeBlock, e.elements, includeSubElements, includeAll)
+        }
+    }
+    
+    func buildElements( _ topParent: TennNode, _ elements: [Element], _ includeSubElements: Bool, _ includeAll: Bool ) {
         for e in elements {
-            let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
-            
-            topParent.add(enode)
-            
-            let enodeBlock = TennNode.newBlockExpr()
-            
-            enode.add(enodeBlock)
-            
-            if let descr = e.description, descr.count > 0 {
-                let elDescr = TennNode.newCommand("description", TennNode.newStrNode(descr))
-                enodeBlock.add(elDescr)
-            }
-            
-            let itemIndexes = self.prepareItemRefs(e.items)
-            
-            buildItems(e.items, enodeBlock, itemIndexes)
-            
-            if e.elements.count > 0 && includeSubElements {
-                buildElements(enodeBlock, e.elements, level + 1, includeSubElements)
-            }
+            buildElement(e, topParent, includeAll, includeSubElements)
         }
     }
 }
