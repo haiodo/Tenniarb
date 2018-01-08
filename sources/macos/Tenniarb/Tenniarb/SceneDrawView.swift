@@ -171,7 +171,22 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
         self.element = elementModel
         self.activeElement = nil
         
+        // Center diagram to fit all items
+        
         self.buildScene()
+        
+        if let bounds = scene?.getBounds() {
+            var freeX = self.frame.width - bounds.width
+            var freeY = self.frame.height - bounds.height
+            if freeX < 0 {
+                freeX = 0
+            }
+            if freeY < 0 {
+                freeY = 0
+            }
+            self.ox = -1 * bounds.midX
+            self.oy = -1 * bounds.midY
+        }
         
         needsDisplay = true
     }
