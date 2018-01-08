@@ -375,6 +375,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     
     public func findElement(x: CGFloat, y: CGFloat) -> ItemDrawable? {
         let point = CGPoint(x: x, y: y)
+        
         if let drawable = self.scene?.find(point) {
             return drawable
         }

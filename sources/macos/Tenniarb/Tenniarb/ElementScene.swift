@@ -77,6 +77,9 @@ open class DrawableContainer: ItemDrawable {
     }
     
     public func find( _ point: CGPoint ) -> ItemDrawable? {
+        var lines:[DrawableLine] = []
+        
+        // Check activeDrawable first
         if let childs = children {
             for c in childs {
                 if let drEl = c as? DrawableContainer {
@@ -87,12 +90,7 @@ open class DrawableContainer: ItemDrawable {
                 }
                 else if let cc = c as? ItemDrawable {
                     if let ccl = c as? DrawableLine {
-                        let d = crossPointLine(ccl.source, ccl.target, point)
-                        
-                        if d > 0 {
-                            Swift.debugPrint("distance: ", d)
-                            return cc
-                        }
+                       lines.append(ccl)
                     }
                     else {
                         // Just regular drawable check for bounds
@@ -101,6 +99,13 @@ open class DrawableContainer: ItemDrawable {
                         }
                     }
                 }
+            }
+        }
+        for ccl in lines {
+            let d = crossPointLine(ccl.source, ccl.target, point)
+            
+            if d > 0 && d < 20 {
+                return ccl
             }
         }
         if self.item != nil {
@@ -200,6 +205,15 @@ open class DrawableScene: DrawableContainer {
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
         
         self.append(buildElementScene(element))
+    }
+    
+    public override func find( _ point: CGPoint ) -> ItemDrawable? {
+        if let active = activeElement, let activeDr = drawables[active] {
+            if activeDr.getBounds().contains(point) {
+                return activeDr as? ItemDrawable
+            }
+        }
+        return super.find(point)
     }
     
     func updateLineTo(_ de: DiagramItem, _ point: CGPoint ) -> DiagramItem? {
