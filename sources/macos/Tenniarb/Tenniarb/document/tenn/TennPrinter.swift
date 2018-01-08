@@ -10,6 +10,7 @@ import Foundation
 
 // A printing extension
 extension TennNode {
+    private static let spaces = "    "
     private func makeSeq(_ sb: inout String, pattern: String, count: Int ) {
         if count > 0 {
             for _ in 0..<count {
@@ -30,7 +31,7 @@ extension TennNode {
         var result = ""
         
         if self.kind == .Command {
-            makeSeq(&result, pattern: "  ", count: indent)
+            makeSeq(&result, pattern: TennNode.spaces, count: indent)
         }
         if let tok = self.token {
             switch self.kind {
@@ -54,10 +55,10 @@ extension TennNode {
         if self.kind == .BlockExpr {
             result.append("{\n")
             if self.count > 0 {
-                postfix = "\n\(getSeq(pattern: "  ", count: indent))}"
+                postfix = "\n\(getSeq(pattern: TennNode.spaces, count: indent))}"
             }
             else {
-                postfix = "\(getSeq(pattern: "  ", count: indent))}"
+                postfix = "\(getSeq(pattern: TennNode.spaces, count: indent))}"
             }
             ind += 1
         }
