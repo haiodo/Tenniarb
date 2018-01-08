@@ -14,40 +14,6 @@ public enum UpdateEventKind {
     case Layout
 }
 
-/**
- A root of element map
- */
-public class ElementModel: Element {
-    public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
-    
-    public var modelName: String = ""
-    public var modified: Bool = false
-    
-    init() {
-        super.init(name: "Root")
-        self.kind = .Root
-    }
-    override func assignModel( _ el: Element) {
-        el.model = self
-        
-        // Assign all childs a proper model
-        for child in el.elements {
-            assignModel(child)
-        }
-    }
-    
-    func makeNonModified() {
-        modified = false
-    }
-    
-    func modified(_ el: Element, _ kind: UpdateEventKind ) {
-        modified = true
-        for op in onUpdate {
-            op(el, kind)
-        }
-    }
-}
-
 public enum ElementKind {
     case Root
     case Element // A reference to element
@@ -57,84 +23,6 @@ public enum ElementKind {
         // Use Internationalization, as appropriate.
         case .Root: return "model";
         case .Element: return "element";
-        }
-    }
-}
-
-public enum ItemKind {
-    case Item // A reference to element
-    case Link // A link
-    case Annontation // Annotation box
-    
-    var commandName : String {
-        switch self {
-        // Use Internationalization, as appropriate.
-        case .Item: return "item";
-        case .Link: return "link";
-        case .Annontation: return "annotation";
-        }
-    }
-}
-
-public class ElementData {
-    var refElement: Element? = nil // A reference to some other element
-    var visible: Bool = true // Some items could be hided
-    init( ) {
-    }
-    
-    convenience init( refElement: Element) {
-        self.init()
-        self.refElement = refElement
-    }
-    
-    var x: CGFloat = 0
-    var y: CGFloat = 0
-}
-public class LinkElementData: ElementData {
-    var source: DiagramItem // A direct link to source
-    var target: DiagramItem // A direct link to target in case of Link
-    
-    init( source:DiagramItem, target:DiagramItem) {
-        self.source = source
-        self.target = target
-        super.init()
-    }
-}
-
-public class DiagramItem {
-    var kind: ItemKind
-    var data: ElementData
-    var name: String
-    var id: UUID
-    var parent: Element?
-    
-    var description: String? = nil
-    
-    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
-    
-    init(kind: ItemKind, name: String, data: ElementData) {
-        self.id = UUID()
-        self.kind = kind
-        self.name = name
-        self.data = data
-    }
-    convenience init( kind: ItemKind, name: String) {
-        self.init(kind: kind, name: name, data: ElementData())
-    }
-    var x: CGFloat {
-        get {
-            return data.x
-        }
-        set {
-            data.x = newValue
-        }
-    }
-    var y: CGFloat {
-        get {
-            return data.y
-        }
-        set {
-            data.y = newValue
         }
     }
 }
@@ -189,7 +77,8 @@ public class Element {
     }
     
     func createSelfItem() {
-        let item = DiagramItem(kind: .Item, name:self.name, data: ElementData(refElement: self))
+        let item = DiagramItem(kind: .Item, name:self.name)
+        item.setData(.RefElement, self)
         self.selfItem = item
         self.items.append(item)
     }
@@ -234,13 +123,15 @@ public class Element {
     func add( makeItem el: Element, createLink: Bool = true ) -> DiagramItem {
         self.add(el)
         // Update current diagram to have a link between a self and new added item.
-        let item = DiagramItem(kind: .Item, name: el.name, data: ElementData(refElement: el))
+        let item = DiagramItem(kind: .Item, name: el.name)
+        item.setData(.RefElement, el)
         self.items.append(item)
         assignModel(item)
         
         // We also need to add link from self to this one
         if createLink && self.selfItem != nil {
-            let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: self.selfItem!, target: item))
+            let link = DiagramItem(kind: .Link, name:"")
+            link.setData(.RefElement, LinkElementData(source: self.selfItem!, target: item))
             self.items.append(link)
             assignModel(link)
         }
@@ -251,8 +142,9 @@ public class Element {
     
     // Add a child element to current diagram
     func add( source: DiagramItem, target: DiagramItem ) {
-        // We also need to add link from self to this one        
-        let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: source, target: target))
+        // We also need to add link from self to this one
+        let link = DiagramItem(kind: .Link, name:"")
+        link.setData(.LinkData, LinkElementData(source: source, target: target))
         self.items.append(link)
         assignModel(link)
         
@@ -271,7 +163,7 @@ public class Element {
     func getItem( _ el: Element) -> DiagramItem? {
         // find a item for source
         for i in self.items {
-            if i.kind == .Item && i.data.refElement == el {
+            if i.kind == .Item && i.getData(.RefElement) == el {
                 return i
             }
         }
@@ -286,13 +178,15 @@ public class Element {
             // Update current diagram to have a link between a self and new added item.
             var item = getItem(target)
             if item == nil {
-                item = DiagramItem(kind: .Item, name:target.name, data: ElementData(refElement: target))
+                item = DiagramItem(kind: .Item, name:target.name)
+                item!.setData(.RefElement, target)
                 self.items.append(item!)
                 self.assignModel(item!)
             }
             // We also need to add link from self to this one
             
-            let link = DiagramItem(kind: .Link, name:"", data: LinkElementData(source: sourceItem, target: item!))
+            let link = DiagramItem(kind: .Link, name:"")
+            link.setData(.LinkData, LinkElementData(source: sourceItem, target: item!))
             self.items.append(link)
             assignModel(link)
             
@@ -309,7 +203,7 @@ public class Element {
     func remove(_ item: DiagramItem) {
         self.items = self.items.filter {
             // Need to check if item is Link and source or target is our client
-            if $0.kind == .Link, let lData = $0.data as? LinkElementData {
+            if $0.kind == .Link, let lData: LinkElementData = $0.getData(.LinkData) {
                 if lData.source.id == item.id || lData.target.id == item.id {
                     return false
                 }
@@ -317,11 +211,108 @@ public class Element {
             if $0.id != item.id {
                 return true
             }
-
+            
             return false
         }
         self.model?.modified(self, .Structure)
     }
+}
+
+/**
+ A root of element map
+ */
+public class ElementModel: Element {
+    public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
+    
+    public var modelName: String = ""
+    public var modified: Bool = false
+    
+    init() {
+        super.init(name: "Root")
+        self.kind = .Root
+    }
+    override func assignModel( _ el: Element) {
+        el.model = self
+        
+        // Assign all childs a proper model
+        for child in el.elements {
+            assignModel(child)
+        }
+    }
+    
+    func makeNonModified() {
+        modified = false
+    }
+    
+    func modified(_ el: Element, _ kind: UpdateEventKind ) {
+        modified = true
+        for op in onUpdate {
+            op(el, kind)
+        }
+    }
+}
+
+public enum ItemKind {
+    case Item // A reference to element
+    case Link // A link
+    case Annontation // Annotation box
+    
+    var commandName : String {
+        switch self {
+        // Use Internationalization, as appropriate.
+        case .Item: return "item";
+        case .Link: return "link";
+        case .Annontation: return "annotation";
+        }
+    }
+}
+
+enum ElementDataKind {
+    case Visible
+    case RefElement
+    case LinkData
+}
+public class LinkElementData {
+    var source: DiagramItem // A direct link to source
+    var target: DiagramItem // A direct link to target in case of Link
+    
+    init( source:DiagramItem, target:DiagramItem) {
+        self.source = source
+        self.target = target
+    }
+}
+
+public class DiagramItem {
+    var kind: ItemKind
+    var name: String
+    var id: UUID
+    var parent: Element?
+    
+    var description: String? = nil
+    
+    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
+    
+    var itemData: [ElementDataKind: Any] = [:]
+    
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+    
+    init(kind: ItemKind, name: String) {
+        self.id = UUID()
+        self.kind = kind
+        self.name = name
+    }
+    
+    func setData<T>(_ kind: ElementDataKind, _ value: T) {
+        itemData[kind] = value
+    }
+    func getData<T>(_ kind: ElementDataKind) -> T? {
+        if let value = itemData[kind] as? T {
+            return value
+        }
+        return nil
+    }
+    
 }
 
 extension Element: Hashable {
@@ -353,10 +344,10 @@ extension DiagramItem {
     func toTennProps() -> String {
         let items = TennNode.newNode(kind: .Statements)
         
-        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name ?? "")))
+        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
         
         if self.kind == .Item {
-            items.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(self.data.x)), TennNode.newFloatNode(Double(self.data.y))))
+            items.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(self.x)), TennNode.newFloatNode(Double(self.y))))
         }
         
         return items.toStr()

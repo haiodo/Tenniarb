@@ -384,7 +384,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
                     
                     // Check if line already exists
                     if element?.items.first(where: { (item) -> Bool in
-                        if item.kind == .Link, let data = item.data as? LinkElementData {
+                        if item.kind == .Link, let data: LinkElementData = item.getData(.LinkData) {
                             if (data.source == source && data.target == target) ||
                                 (data.source == target && data.target == source) {
                                 // Existing item found

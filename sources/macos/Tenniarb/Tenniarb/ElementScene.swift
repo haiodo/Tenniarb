@@ -266,12 +266,12 @@ open class DrawableScene: DrawableContainer {
     func updateLayout(_ item: DiagramItem) {
         updateActiveElement()
         if let box = drawables[item] as? RoundBox {
-            box.setPath(CGRect(origin:CGPoint(x: item.data.x, y: item.data.y), size: box.bounds.size))
+            box.setPath(CGRect(origin:CGPoint(x: item.x, y: item.y), size: box.bounds.size))
             
             // Update links
             if let links = itemToLink[item] {
                 for l in links {
-                    if let data = l.data as? LinkElementData {
+                    if let data: LinkElementData = l.getData(.LinkData) {
                         if let lnkDr = drawables[l] as? DrawableLine {
                             let sourceRect = drawables[data.source]?.getBounds()
                             let targetRect = drawables[data.target]?.getBounds()
@@ -374,7 +374,7 @@ open class DrawableScene: DrawableContainer {
         
         buildItems(element.items, elementDrawable, &links)
         for e in links {
-            if let data = e.data as? LinkElementData {
+            if let data: LinkElementData = e.getData(.LinkData) {
                 
                 self.addLink( data.source, e )
                 self.addLink( data.target, e )

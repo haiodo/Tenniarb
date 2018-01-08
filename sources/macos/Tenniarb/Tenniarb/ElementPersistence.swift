@@ -52,7 +52,7 @@ extension Element {
     
     fileprivate func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
         var name: String = ""
-        if let refEl = item.data.refElement {
+        if let refEl:Element = item.getData(.RefElement) {
             name = refEl.name
         }
         else {
@@ -63,12 +63,12 @@ extension Element {
         
         enodeBlock.add(itemRoot)
         
-        let nx = item.data.x != 0
-        let ny = item.data.y != 0
+        let nx = item.x != 0
+        let ny = item.y != 0
         
         let itemBlock = TennNode.newBlockExpr()
         if nx || ny {
-            itemBlock.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(item.data.x)), TennNode.newFloatNode(Double(item.data.y))))
+            itemBlock.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
         }
         
         if itemBlock.count > 0 {
@@ -77,7 +77,7 @@ extension Element {
     }
     
     fileprivate func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int]) {
-        if let linkData = item.data as? LinkElementData {
+        if let linkData: LinkElementData = item.getData(.LinkData) {
             let linkCmd = TennNode.newCommand("link")
             linkCmd.add(TennNode.newStrNode(linkData.source.name))
             linkCmd.add(TennNode.newStrNode(linkData.target.name))
@@ -345,7 +345,7 @@ extension Element {
                 let tIndex = IndexedName( target, targetIndex)
                 
                 if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
-                    link.data = LinkElementData(source: sourceElement, target: targetElement)
+                    link.setData(.LinkData, LinkElementData(source: sourceElement, target: targetElement))
                 }
             }
         }
