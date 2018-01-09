@@ -11,7 +11,7 @@ import Foundation
 extension Element {
     /// Convert items to list of properties
     func toTennProps() -> String {
-        return self.toTennStr(includeSubElements: false, includeAll: true)
+        return self.toTennStr(includeSubElements: false, includeAll: true, includeItems: false)
     }
 }
 

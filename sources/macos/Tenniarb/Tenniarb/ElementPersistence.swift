@@ -12,16 +12,21 @@ import Foundation
  Allow Mapping of element model to tenn and wise verse.
  */
 extension Element {
-    public func toTenn( includeSubElements: Bool = true, includeAll: Bool = false ) -> TennNode {
+    public func toTenn( includeSubElements: Bool = true, includeAll: Bool = false, includeItems: Bool = true ) -> TennNode {
         let result = TennNode(kind: TennNodeKind.Statements)
         
-        buildElement(self, result, includeAll, includeSubElements)
+        if self.kind == .Root {
+            buildElements(topParent: result, elements: self.elements, includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
+        }
+        else {
+            buildElements(topParent: result, elements: [self], includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
+        }
         
         return result
     }
     
-    func toTennStr( includeSubElements: Bool = true, includeAll: Bool = false ) -> String {
-        let ee = toTenn( includeSubElements: includeSubElements, includeAll: includeAll )
+    func toTennStr( includeSubElements: Bool = true, includeAll: Bool = false, includeItems: Bool = true ) -> String {
+        let ee = toTenn( includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems )
         return ee.toStr(0, false)
     }
     
@@ -104,7 +109,7 @@ extension Element {
 
         return itemRefNames
     }
-    fileprivate func buildElement(_ e: Element, _ topParent: TennNode, _ includeAll: Bool, _ includeSubElements: Bool) {
+    fileprivate func buildElement(e: Element, topParent: TennNode, includeAll: Bool, includeSubElements: Bool,  includeItems: Bool) {
         let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
         
         topParent.add(enode)
@@ -120,18 +125,18 @@ extension Element {
         
         let itemIndexes = self.prepareItemRefs(e.items)
         
-        if includeSubElements {
+        if includeItems {
             Element.buildItems(e.items, enodeBlock, itemIndexes, includeAll)
         }
         
         if e.elements.count > 0 && includeSubElements {
-            buildElements(enodeBlock, e.elements, includeSubElements, includeAll)
+            buildElements(topParent: enodeBlock, elements: e.elements, includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
         }
     }
     
-    func buildElements( _ topParent: TennNode, _ elements: [Element], _ includeSubElements: Bool, _ includeAll: Bool ) {
+    func buildElements( topParent: TennNode, elements: [Element], includeSubElements: Bool, includeAll: Bool,  includeItems: Bool ) {
         for e in elements {
-            buildElement(e, topParent, includeAll, includeSubElements)
+            buildElement(e: e, topParent: topParent, includeAll: includeAll, includeSubElements: includeSubElements, includeItems: includeItems)
         }
     }
 }
@@ -335,7 +340,7 @@ extension Element {
     fileprivate static func parseCommand( node: TennNode) -> Element? {
         if let cmdName = node.getIdent(0) {
             switch cmdName  {
-            case "element":
+            case "element", "model":
                 return parseElement(node: node)
             default:
                 break;

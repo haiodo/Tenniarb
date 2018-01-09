@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "SceneDrawView.setActiveElement(_:):SceneDrawView.swift">
+      </ContextState>
+      <ContextState
+         contextName = "SceneDrawView.keyDown(with:):SceneDrawView.swift">
+      </ContextState>
+      <ContextState
+         contextName = "Element.toTennStr(includeSubElements:includeAll:includeItems:):ElementPersistence.swift">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
