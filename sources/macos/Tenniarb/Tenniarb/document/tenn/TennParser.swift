@@ -237,11 +237,6 @@ extension TennNode {
     public static func newStrNode(_ literal: String) -> TennNode {
         return TennNode(kind: .StringLit, tok: TennToken(type: .stringLit, literal: literal) )
     }
-    public static func newHashNode(_ literal: String, level: Int) -> TennNode {
-        let nde = TennNode(kind: .Hash, tok: TennToken(type: .hash, literal: literal) )
-        nde.level = level
-        return nde
-    }
     public static func newFloatNode(_ value: Double ) -> TennNode {
         return TennNode(kind: .FloatLit, tok: TennToken(type: .floatLit, literal: String(value)) )
     }

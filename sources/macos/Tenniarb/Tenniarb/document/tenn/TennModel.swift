@@ -15,7 +15,6 @@ public enum TennNodeKind {
     case IntLit
     case FloatLit
     case StringLit
-    case Hash
     case Command
     case Statements
     case BlockExpr
@@ -25,7 +24,6 @@ public class TennNode {
     public let kind: TennNodeKind
     public let token: TennToken?
     public var children: [TennNode]?
-    public var level: Int = 0
     
     var named: [String:TennNode]?
     
@@ -36,6 +34,17 @@ public class TennNode {
             }
             return 0
         }
+    }
+    
+    public func clone() -> TennNode {
+        let result = TennNode(kind: self.kind, tok: self.token)
+        if children != nil {
+            result.children = []
+            for c in self.children! {
+                result.children?.append(c.clone())
+            }
+        }
+        return result
     }
     
     public init(kind: TennNodeKind, tok: TennToken? = nil) {

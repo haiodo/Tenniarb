@@ -268,7 +268,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
             let bounds = CGRect(
                 x: deBounds.origin.x + scene!.offset.x,
                 y: deBounds.origin.y + scene!.offset.y,
-                width: deBounds.width,
+                width: max(deBounds.width, 100),
                 height: deBounds.height
             )
             Swift.debugPrint(bounds)

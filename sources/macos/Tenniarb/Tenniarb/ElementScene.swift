@@ -369,6 +369,8 @@ open class DrawableScene: DrawableContainer {
                                 fillColor: bgColor,
                                 borderColor: CGColor.black)
         
+        processStyle(item: e, boxDrawable: rectBox)
+        
         
         if self.activeElement == e {
             rectBox.lineWidth = 1
@@ -381,6 +383,88 @@ open class DrawableScene: DrawableContainer {
         
         elementDrawable.append(rectBox)
     }
+    
+    func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
+        let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        let scanner = Scanner(string: hexString)
+        if (hexString.hasPrefix("#")) {
+            scanner.scanLocation = 1
+        }
+        var color: UInt32 = 0
+        scanner.scanHexInt32(&color)
+        let mask = 0x000000FF
+        let r = Int(color >> 16) & mask
+        let g = Int(color >> 8) & mask
+        let b = Int(color) & mask
+        let red   = CGFloat(r) / 255.0
+        let green = CGFloat(g) / 255.0
+        let blue  = CGFloat(b) / 255.0
+        return CGColor(red:red, green:green, blue:blue, alpha:alpha)
+    }
+    
+    func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
+        if color.starts(with: "#") {
+            return hexStringToUIColor(hexString: color, alpha: alpha)
+        }
+        if let cl = ColorNames[color] {
+            return hexStringToUIColor(hexString: cl, alpha: alpha)
+        }
+        
+        return CGColor.black.copy(alpha: alpha)!
+    }
+    
+    func processStyle( link: DiagramItem, drawable: DrawableLine ) {
+        for child in link.properties {
+            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
+                switch cmdName {
+                case "color":
+                    if let color = child.getIdent(1) {
+                        drawable.color = parseColor(color.lowercased())
+                    }
+                    break;
+                    
+                case "style":
+                    if let value = child.getIdent(1) {
+                        switch value.lowercased() {
+                        case "solid":
+                            drawable.style = .Solid;
+                        case "dotted":
+                            drawable.style = .Dotted;
+                        case "dashed":
+                            drawable.style = .Dashed;
+                        default:
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    
+    func processStyle( item: DiagramItem, boxDrawable: RoundBox ) {
+        for child in item.properties {
+            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
+                switch cmdName {
+                case "color":
+                    if let color = child.getIdent(1) {
+                        boxDrawable.fillColor = parseColor(color.lowercased(), alpha: 0.7)
+                    }
+                    break;
+                case "borderColor":
+                    if let color = child.getIdent(1) {
+                        boxDrawable.borderColor = parseColor(color.lowercased())
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    
     func buildElementScene( _ element: Element)-> Drawable {
         let elementDrawable = DrawableContainer()
         
@@ -405,6 +489,8 @@ open class DrawableScene: DrawableContainer {
                     let linkDr = DrawableLine(
                         source: p1,
                         target: p2)
+                    
+                    processStyle(link: e, drawable: linkDr )
                     
                     linkDr.item = e
                     drawables[e] = linkDr
@@ -571,11 +657,18 @@ public class TextBox: Drawable {
     }
 }
 
+public enum LineDrawStyle {
+    case Solid
+    case Dashed
+    case Dotted
+}
+
 public class DrawableLine: ItemDrawable {
     var source: CGPoint
     var target: CGPoint
     var color: CGColor
     var lineWidth: CGFloat = 1
+    var style: LineDrawStyle = .Solid
     
     init( source: CGPoint, target: CGPoint, color: CGColor = CGColor.black) {
         self.source = source
@@ -594,6 +687,14 @@ public class DrawableLine: ItemDrawable {
         context.setLineWidth( self.lineWidth )
         context.setStrokeColor(self.color)
         context.setFillColor(self.color)
+        
+        switch self.style {
+        case .Solid: break;
+        case .Dotted:
+            context.setLineDash(phase: 1, lengths: [2, 1])
+        case .Dashed:
+            context.setLineDash(phase: 1, lengths: [5,1])
+        }
         
         let aPath = CGMutablePath()
         

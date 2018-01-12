@@ -161,7 +161,7 @@ public class TennLexer {
             }
             else if (self.charAt() == "\\" && self.next() == lit) {
                 // Pass escaped
-                r.append(self.charAt())
+//                r.append(self.charAt())
                 r.append(self.next())
                 self.inc(1)
             } else {
@@ -170,7 +170,6 @@ public class TennLexer {
             self.inc()
         }
         if (r.count > 0) {
-            // Add last value in case of end of file happen.
             self.add(literal: r)
             r.removeAll(keepingCapacity: true)
         }

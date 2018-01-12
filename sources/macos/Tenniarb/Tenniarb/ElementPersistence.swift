@@ -8,6 +8,36 @@
 
 import Foundation
 
+
+public enum PersistenceItemKind {
+    case Item // A reference to element
+    case Link // A link
+    case Element
+    case Model
+    case Annontation // Annotation box
+    case Description
+    case SourceIndex
+    case TargetIndex
+    case Name
+    case Position
+    
+    var commandName : String {
+        switch self {
+        // Use Internationalization, as appropriate.
+        case .Item: return "item";
+        case .Link: return "link";
+        case .Element: return "element";
+        case .Model: return "model";
+        case .Annontation: return "annotation";
+        case .Description: return "desription";
+        case .SourceIndex: return "source-index";
+        case .TargetIndex: return "target-index";
+        case .Position: return "pos";
+        case .Name: return "name";
+        }
+    }
+}
+
 /**
  Allow Mapping of element model to tenn and wise verse.
  */
@@ -39,7 +69,7 @@ extension Element {
             name = item.name
         }
         
-        let itemRoot = TennNode.newCommand(item.kind.commandName, TennNode.newStrNode(name))
+        let itemRoot = TennNode.newCommand(PersistenceItemKind.Item.commandName, TennNode.newStrNode(name))
         
         enodeBlock.add(itemRoot)
         
@@ -48,7 +78,11 @@ extension Element {
         
         let itemBlock = TennNode.newBlockExpr()
         if nx || ny {
-            itemBlock.add(TennNode.newCommand("pos", TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+            itemBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+        }
+        
+        for p in item.properties {
+            itemBlock.add(p.clone())
         }
         
         if itemBlock.count > 0 {
@@ -58,17 +92,25 @@ extension Element {
     
     static func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int], _ includeAll: Bool) {
         if let linkData: LinkElementData = item.getData(.LinkData) {
-            let linkCmd = TennNode.newCommand("link")
+            let linkCmd = TennNode.newCommand(PersistenceItemKind.Link.commandName)
             linkCmd.add(TennNode.newStrNode(linkData.source.name))
             linkCmd.add(TennNode.newStrNode(linkData.target.name))
             
             let linkDataBlock = TennNode.newBlockExpr()
             
             if let sourceIndex = indexes[linkData.source], sourceIndex != 0 {
-                linkDataBlock.add(TennNode.newCommand("source-index", TennNode.newIntNode(sourceIndex)))
+                linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.SourceIndex.commandName, TennNode.newIntNode(sourceIndex)))
             }
             if let targetIndex = indexes[linkData.target], targetIndex != 0 {
-                linkDataBlock.add(TennNode.newCommand("target-index", TennNode.newIntNode(targetIndex)))
+                linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.TargetIndex.commandName, TennNode.newIntNode(targetIndex)))
+            }
+            
+            if let descr = item.description {
+                linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
+            }
+            
+            for p in item.properties {
+                linkDataBlock.add(p.clone())
             }
             
             if linkDataBlock.count > 0 {
@@ -110,7 +152,7 @@ extension Element {
         return itemRefNames
     }
     fileprivate func buildElement(e: Element, topParent: TennNode, includeAll: Bool, includeSubElements: Bool,  includeItems: Bool) {
-        let enode = TennNode.newCommand(e.kind.commandName, TennNode.newStrNode(e.name))
+        let enode = TennNode.newCommand(PersistenceItemKind.Element.commandName, TennNode.newStrNode(e.name))
         
         topParent.add(enode)
         
@@ -119,7 +161,7 @@ extension Element {
         enode.add(enodeBlock)
         
         if let descr = e.description, descr.count > 0 {
-            let elDescr = TennNode.newCommand("description", TennNode.newStrNode(descr))
+            let elDescr = TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr))
             enodeBlock.add(elDescr)
         }
         
@@ -128,6 +170,11 @@ extension Element {
         if includeItems {
             Element.buildItems(e.items, enodeBlock, itemIndexes, includeAll)
         }
+        
+        for p in e.properties {
+            enodeBlock.add(p.clone())
+        }
+        
         
         if e.elements.count > 0 && includeSubElements {
             buildElements(topParent: enodeBlock, elements: e.elements, includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
@@ -172,6 +219,12 @@ extension Element {
                         if let cmd = parseCommand(node: childElement) {
                             result.add(cmd)
                         }
+                        else {
+                            result.properties.append(childElement)
+                        }
+                    }
+                    else {
+                        result.properties.append(childElement)
                     }
                 }
             }
@@ -180,6 +233,9 @@ extension Element {
             if let cmd = parseCommand(node: node) {
                 result.add(cmd)
             }
+        }
+        else {
+            result.properties.append(node)
         }
         return result
     }
@@ -230,20 +286,30 @@ extension Element {
             
             parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
                 switch cmdName  {
-                case "item":
+                case PersistenceItemKind.Item.commandName:
                     if let item = parseItem(blChild) {
                         el.add(item)
                     }
-                case "link":
+                    else {
+                        el.properties.append(blChild)
+                    }
+                case PersistenceItemKind.Link.commandName:
                     if let item = parseLink(blChild) {
                         el.add(item)
                         linkElements.append((blChild, item))
                     }
-                case "element":
+                    else {
+                        el.properties.append(blChild)
+                    }
+                case PersistenceItemKind.Element.commandName:
                     if let child = parseElement(node: blChild) {
                         el.add(child)
                     }
+                    else {
+                        el.properties.append(blChild)
+                    }
                 default:
+                    el.properties.append(blChild)
                     break;
                 }
             })
@@ -271,16 +337,23 @@ extension Element {
             
             parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
                 switch cmdName  {
-                case "pos":
+                case PersistenceItemKind.Position.commandName:
                     if blChild.count == 3 {
                         if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {
                             el.x = CGFloat(x)
                             el.y = CGFloat(y)
                         }
+                        else {
+                            el.properties.append(blChild);
+                        }
                     }
-                case "description":
+                    else {
+                        el.properties.append(blChild);
+                    }
+                case PersistenceItemKind.Description.commandName:
                     el.description = blChild.getIdent(1)
                 default:
+                    el.properties.append(blChild);
                     break;
                 }
             })
@@ -289,50 +362,46 @@ extension Element {
     }
     
     fileprivate static func parseLink(_ node: TennNode) -> DiagramItem? {
-        let el = DiagramItem(kind: .Link, name: "")
-        
-        // Source & Target will be post processed at the end of parsing
-        
-        if node.count >= 3 {
-            parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
-                switch cmdName  {
-                case "description":
-                    break;
-                default:
-                    break;
-                }
-            })
+        if node.count >= 2 {
+            let el = DiagramItem(kind: .Link, name: "")
+            return el
         }
-        return el
+        return nil
     }
     
     fileprivate static func processLink( _ link: DiagramItem, _ node: TennNode, _ links: [IndexedName: DiagramItem]) {
+        var sourceIndex = 0
+        var targetIndex = 0
+        parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
+            switch cmdName  {
+            case PersistenceItemKind.Description.commandName:
+                link.description = blChild.getIdent(1)
+            case PersistenceItemKind.SourceIndex.commandName:
+                if let index = blChild.getInt(1) {
+                    sourceIndex = index
+                }
+                else {
+                    link.properties.append(blChild)
+                }
+            case PersistenceItemKind.TargetIndex.commandName:
+                if let index = blChild.getInt(1) {
+                    targetIndex = index
+                }
+                else {
+                    link.properties.append(blChild)
+                }
+            default:
+                link.properties.append(blChild)
+                break;
+            }
+        })
         
-        if node.count >= 2 {
-            var sourceIndex = 0
-            var targetIndex = 0
-            parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
-                switch cmdName  {
-                case "source-index":
-                    if let index = blChild.getInt(1) {
-                        sourceIndex = index
-                    }
-                case "target-index":
-                    if let index = blChild.getInt(1) {
-                        targetIndex = index
-                    }
-                default:
-                    break;
-                }
-            })
+        if let source = node.getIdent(1), let target = node.getIdent(2) {
+            let sIndex = IndexedName( source, sourceIndex)
+            let tIndex = IndexedName( target, targetIndex)
             
-            if let source = node.getIdent(1), let target = node.getIdent(2) {
-                let sIndex = IndexedName( source, sourceIndex)
-                let tIndex = IndexedName( target, targetIndex)
-                
-                if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
-                    link.setData(.LinkData, LinkElementData(source: sourceElement, target: targetElement))
-                }
+            if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
+                link.setData(.LinkData, LinkElementData(source: sourceElement, target: targetElement))
             }
         }
     }
@@ -340,7 +409,7 @@ extension Element {
     fileprivate static func parseCommand( node: TennNode) -> Element? {
         if let cmdName = node.getIdent(0) {
             switch cmdName  {
-            case "element", "model":
+            case PersistenceItemKind.Element.commandName, PersistenceItemKind.Model.commandName:
                 return parseElement(node: node)
             default:
                 break;

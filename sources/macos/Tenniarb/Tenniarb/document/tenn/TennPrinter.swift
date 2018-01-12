@@ -27,6 +27,9 @@ extension TennNode {
         }
         return sb
     }
+    private func quote(_ val: String) -> String {
+        return val.replacingOccurrences(of: "\"", with: "\\\"", options: .literal, range: nil)
+    }
     public func toStr( _ indent: Int = 0, _ clean: Bool = false) -> String {
         var result = ""
         
@@ -37,14 +40,12 @@ extension TennNode {
             switch self.kind {
             case .CharLit, .IntLit, .Ident, .FloatLit:
                 result.append(tok.literal)
-            case .Hash:
-                result.append("\n\(getSeq(pattern: "#", count: self.level)) \(tok.literal)\n\n")
             case .StringLit:
                 if clean {
                     result.append(tok.literal)
                 }
                 else {
-                    result.append("\"\(tok.literal)\"")
+                    result.append("\"\(quote(tok.literal))\"")
                 }
             default:
                 break
