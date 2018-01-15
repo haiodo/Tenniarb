@@ -862,3 +862,72 @@ public class SelectorLine: ItemDrawable {
     }
 }
 
+public class DrawableMultiLine: ItemDrawable {
+    var source: CGPoint
+    var target: CGPoint
+    var middle: CGPoint
+    var color: CGColor
+    var lineWidth: CGFloat = 1
+    var style: LineDrawStyle = .Solid
+    
+    init( source: CGPoint, middle:CGPoint, target: CGPoint, color: CGColor = CGColor.black) {
+        self.source = source
+        self.middle = middle
+        self.target = target
+        self.color = color
+    }
+    
+    public override func drawBox(context: CGContext, at point: CGPoint) {
+        self.draw(context: context, at: point)
+    }
+    
+    public override func draw(context: CGContext, at point: CGPoint) {
+        //
+        context.saveGState()
+        
+        context.setLineWidth( self.lineWidth )
+        context.setStrokeColor(self.color)
+        context.setFillColor(self.color)
+        
+        switch self.style {
+        case .Solid: break;
+        case .Dotted:
+            context.setLineDash(phase: 1, lengths: [2, 1])
+        case .Dashed:
+            context.setLineDash(phase: 1, lengths: [5,1])
+        }
+        
+        let aPath = CGMutablePath()
+        
+        aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
+        aPath.addLine(to: CGPoint( x: middle.x + point.x, y: middle.y + point.y))
+        aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
+        
+        //Keep using the method addLineToPoint until you get to the one where about to close the path
+        aPath.closeSubpath()
+        context.addPath(aPath)
+        context.drawPath(using: .stroke)
+        
+        context.restoreGState()
+    }
+    
+    public override func layout(_ bounds: CGRect) {
+        
+    }
+    
+    public override func isVisible() -> Bool {
+        return true
+    }
+    public override func getBounds() -> CGRect {
+        
+        let minX = min( source.x, target.x)
+        let maxX = max( source.x, target.x)
+        let minY = min( source.y, target.y)
+        let maxY = max( source.y, target.y)
+        
+        return CGRect(x:minX, y:minY, width:(maxX-minX), height:(maxY-minY))
+    }
+    public override func update() {
+    }
+}
+

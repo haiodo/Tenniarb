@@ -29,8 +29,11 @@ class ViewController: NSViewController {
     
     var itemIndex = 0
     
-    @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
+    var outlineViewDelegate: OutlineViewControllerDelegate?
+    var textViewDelegate: TextPropertiesDelegate?
     
+    @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
+        
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
         case 0: break;
@@ -48,6 +51,12 @@ class ViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.outlineViewDelegate = OutlineViewControllerDelegate(self)
+        worldTree.delegate = self.outlineViewDelegate
+        worldTree.dataSource = self.outlineViewDelegate
+        
+        self.textViewDelegate = TextPropertiesDelegate(self, self.textView!)
         
         scene.onLoad()
         
@@ -139,14 +148,7 @@ class ViewController: NSViewController {
             DispatchQueue.main.async(execute: {
                 let strContent = (self.activeElement == nil) ? element.toTennProps(): self.activeElement!.toTennProps()
                 
-                let style = NSMutableParagraphStyle()
-                style.headIndent = 50
-                style.alignment = .justified
-                style.firstLineHeadIndent = 50
-                
-                self.textView.font = NSFont.systemFont(ofSize: 15.0)
-                self.textView.string = strContent
-                self.textView.scrollToBeginningOfDocument(self)
+                self.textViewDelegate?.setTextValue(strContent)
             })
         }
     }

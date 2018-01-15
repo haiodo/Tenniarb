@@ -789,10 +789,6 @@
                                                                             </prototypeCellViews>
                                                                         </tableColumn>
                                                                     </tableColumns>
-                                                                    <connections>
-                                                                        <outlet property="dataSource" destination="5gI-5U-AMq" id="qil-Wt-BTG"/>
-                                                                        <outlet property="delegate" destination="5gI-5U-AMq" id="GYx-me-572"/>
-                                                                    </connections>
                                                                 </outlineView>
                                                             </subviews>
                                                             <nil key="backgroundColor"/>

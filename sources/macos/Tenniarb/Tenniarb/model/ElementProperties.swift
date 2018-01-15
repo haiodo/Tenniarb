@@ -11,7 +11,9 @@ import Foundation
 extension Element {
     /// Convert items to list of properties
     func toTennProps() -> String {
-        return self.toTennStr(includeSubElements: false, includeAll: true, includeItems: false)
+        let items = TennNode.newNode(kind: .Statements)
+        buildElementData(self, items)
+        return items.toStr()
     }
 }
 
@@ -20,7 +22,12 @@ extension DiagramItem {
     func toTennProps() -> String {
         let items = TennNode.newNode(kind: .Statements)
         
-        Element.buildItems([self], items, [:], true)
+        if self.kind == .Item {
+            Element.buildItemData(self, items)
+        }
+        else if self.kind == .Link {
+            Element.buildLinkData(self, items)        
+        }
         
         return items.toStr()
     }

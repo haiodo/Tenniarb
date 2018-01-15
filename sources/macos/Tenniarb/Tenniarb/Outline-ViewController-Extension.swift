@@ -36,7 +36,11 @@ class OutlineNSTableRowView: NSTableRowView {
     }
 }
 
-extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
+class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
+    let controller: ViewController
+    init(_ controller: ViewController ) {
+        self.controller = controller
+    }
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         // Elements and diagram items
         if let el = item as? Element {
@@ -49,7 +53,7 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
             return count
         }
         // Root has only elements
-        if let em = elementModel {
+        if let em = controller.elementModel {
             return em.elements.count
         }
         return 0
@@ -68,7 +72,7 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
             return el.elements[index]
         }
         
-        if let em = elementModel {
+        if let em = controller.elementModel {
             return em.elements[index]
         }
         return ""
@@ -124,17 +128,13 @@ extension ViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
-        let selectedIndex = worldTree.selectedRow
-        if let el = worldTree.item(atRow: selectedIndex) as? Element {
-            self.onElementSelected(el)
+        let selectedIndex = controller.worldTree.selectedRow
+        if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
+            self.controller.onElementSelected(el)
         }
         else {
-            self.onElementSelected(elementModel)
+            self.controller.onElementSelected(controller.elementModel)
         }
-    }
-    
-    override func keyDown(with event: NSEvent) {
-        Swift.debugPrint("Keydown pressed")
     }
 }
 

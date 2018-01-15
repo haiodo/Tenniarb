@@ -42,25 +42,38 @@ public enum PersistenceItemKind {
  Allow Mapping of element model to tenn and wise verse.
  */
 extension Element {
-    public func toTenn( includeSubElements: Bool = true, includeAll: Bool = false, includeItems: Bool = true ) -> TennNode {
+    public func toTenn( includeSubElements: Bool = true, includeItems: Bool = true ) -> TennNode {
         let result = TennNode(kind: TennNodeKind.Statements)
         
         if self.kind == .Root {
-            buildElements(topParent: result, elements: self.elements, includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
+            buildElements(topParent: result, elements: self.elements, includeSubElements: includeSubElements, includeItems: includeItems)
         }
         else {
-            buildElements(topParent: result, elements: [self], includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
+            buildElements(topParent: result, elements: [self], includeSubElements: includeSubElements, includeItems: includeItems)
         }
         
         return result
     }
     
-    func toTennStr( includeSubElements: Bool = true, includeAll: Bool = false, includeItems: Bool = true ) -> String {
-        let ee = toTenn( includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems )
+    func toTennStr( includeSubElements: Bool = true, includeItems: Bool = true ) -> String {
+        let ee = toTenn( includeSubElements: includeSubElements, includeItems: includeItems )
         return ee.toStr(0, false)
     }
     
-    static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode, _ includeAll: Bool) {
+    static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode) {
+        let nx = item.x != 0
+        let ny = item.y != 0
+        
+        if nx || ny {
+            itemBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+        }
+        
+        for p in item.properties {
+            itemBlock.add(p.clone())
+        }
+    }
+    
+    static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
         var name: String = ""
         if let refEl:Element = item.getData(.RefElement) {
             name = refEl.name
@@ -73,24 +86,26 @@ extension Element {
         
         enodeBlock.add(itemRoot)
         
-        let nx = item.x != 0
-        let ny = item.y != 0
-        
         let itemBlock = TennNode.newBlockExpr()
-        if nx || ny {
-            itemBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
-        }
         
-        for p in item.properties {
-            itemBlock.add(p.clone())
-        }
+        buildItemData(item, itemBlock)
         
         if itemBlock.count > 0 {
             itemRoot.add(itemBlock)
         }
     }
     
-    static func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int], _ includeAll: Bool) {
+    static func buildLinkData(_ item: DiagramItem, _ linkDataBlock: TennNode) {
+        if let descr = item.description {
+            linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
+        }
+        
+        for p in item.properties {
+            linkDataBlock.add(p.clone())
+        }
+    }
+    
+    static func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int]) {
         if let linkData: LinkElementData = item.getData(.LinkData) {
             let linkCmd = TennNode.newCommand(PersistenceItemKind.Link.commandName)
             linkCmd.add(TennNode.newStrNode(linkData.source.name))
@@ -105,13 +120,7 @@ extension Element {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.TargetIndex.commandName, TennNode.newIntNode(targetIndex)))
             }
             
-            if let descr = item.description {
-                linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
-            }
-            
-            for p in item.properties {
-                linkDataBlock.add(p.clone())
-            }
+            buildLinkData(item, linkDataBlock)
             
             if linkDataBlock.count > 0 {
                 linkCmd.add(linkDataBlock)
@@ -121,13 +130,13 @@ extension Element {
         }
     }
     
-    static func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ itemIndexes: [DiagramItem:Int], _ includeAll: Bool) {
+    static func buildItems(_ items: [DiagramItem], _ enodeBlock: TennNode, _ itemIndexes: [DiagramItem:Int]) {
         for item in items {
             if item.kind == .Item {
-                Element.buildItem(item, enodeBlock, includeAll)
+                Element.buildItem(item, enodeBlock)
             }
             else if item.kind == .Link {
-                Element.buildLink(item, enodeBlock, itemIndexes, includeAll)
+                Element.buildLink(item, enodeBlock, itemIndexes)
             }
         }
     }
@@ -151,7 +160,18 @@ extension Element {
 
         return itemRefNames
     }
-    fileprivate func buildElement(e: Element, topParent: TennNode, includeAll: Bool, includeSubElements: Bool,  includeItems: Bool) {
+    func buildElementData(_ e: Element, _ enodeBlock: TennNode) {
+        if let descr = e.description, descr.count > 0 {
+            let elDescr = TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr))
+            enodeBlock.add(elDescr)
+        }
+        
+        for p in e.properties {
+            enodeBlock.add(p.clone())
+        }
+    }
+    
+    fileprivate func buildElement(e: Element, topParent: TennNode, includeSubElements: Bool,  includeItems: Bool) {
         let enode = TennNode.newCommand(PersistenceItemKind.Element.commandName, TennNode.newStrNode(e.name))
         
         topParent.add(enode)
@@ -160,30 +180,22 @@ extension Element {
         
         enode.add(enodeBlock)
         
-        if let descr = e.description, descr.count > 0 {
-            let elDescr = TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr))
-            enodeBlock.add(elDescr)
-        }
+        buildElementData(e, enodeBlock)
         
         let itemIndexes = self.prepareItemRefs(e.items)
         
         if includeItems {
-            Element.buildItems(e.items, enodeBlock, itemIndexes, includeAll)
+            Element.buildItems(e.items, enodeBlock, itemIndexes)
         }
-        
-        for p in e.properties {
-            enodeBlock.add(p.clone())
-        }
-        
         
         if e.elements.count > 0 && includeSubElements {
-            buildElements(topParent: enodeBlock, elements: e.elements, includeSubElements: includeSubElements, includeAll: includeAll, includeItems: includeItems)
+            buildElements(topParent: enodeBlock, elements: e.elements, includeSubElements: includeSubElements, includeItems: includeItems)
         }
     }
     
-    func buildElements( topParent: TennNode, elements: [Element], includeSubElements: Bool, includeAll: Bool,  includeItems: Bool ) {
+    func buildElements( topParent: TennNode, elements: [Element], includeSubElements: Bool, includeItems: Bool ) {
         for e in elements {
-            buildElement(e: e, topParent: topParent, includeAll: includeAll, includeSubElements: includeSubElements, includeItems: includeItems)
+            buildElement(e: e, topParent: topParent, includeSubElements: includeSubElements, includeItems: includeItems)
         }
     }
 }

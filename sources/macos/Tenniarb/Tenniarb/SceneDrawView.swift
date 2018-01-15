@@ -20,7 +20,27 @@ enum SceneMode {
     case LineDrawing // Line dragging mode
 }
 
-class SceneDrawView: NSView, NSTextFieldDelegate {
+class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
+    var view: SceneDrawView
+    init( _ view: SceneDrawView) {
+        self.view = view
+    }
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(NSView.cancelOperation(_:)) {
+            self.view.commitTitleEditing(nil)
+            return true
+        }
+        if commandSelector == #selector(NSView.insertNewline(_:)) {
+            self.view.commitTitleEditing(textView)
+            return true
+        }
+        // TODO: Resize both text and drawed item to fit value smoothly.
+        
+        return false
+    }
+}
+
+class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
     var model:ElementModel?
@@ -42,6 +62,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
     var mode: SceneMode = .Normal
     
     var editBox: NSTextField? = nil
+    var editBoxDelegate: EditTitleDelegate?
     
     var ox: CGFloat {
         set {
@@ -165,11 +186,18 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
                     self.buildScene()
                 }
             })
+        
     }
     
     public func setActiveElement(_ elementModel: Element ) {
+        
+        // Discard any editing during switch
+        self.commitTitleEditing(nil)
+        
         self.element = elementModel
         self.activeElement = nil
+        
+        
         
         // Center diagram to fit all items
         
@@ -227,34 +255,24 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
         needsDisplay = true
     }
     
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        if commandSelector == #selector(cancelOperation(_:)) {
-            self.setNormalMode()
-            editBox?.removeFromSuperview()
-            editBox = nil
-            self.window?.makeFirstResponder(self)
-            needsDisplay = true
-            return true
-        }
-        if commandSelector == #selector(insertNewline(_:)) {
+    fileprivate func commitTitleEditing(_ textView: NSTextView?) {
+        if let textBox = self.editBox {
             if let active = self.activeElement {
-                let textValue = textView.string
-                if textValue.count > 0 {
-                    active.name = textValue
-                    self.model?.modified(element!, .Structure)
+                if let tv = textView {
+                    let textValue = tv.string
+                    if textValue.count > 0 {
+                        active.name = textValue
+                        self.model?.modified(element!, .Structure)
+                    }
                 }
             }
             
             self.setNormalMode()
-            editBox?.removeFromSuperview()
-            editBox = nil
+            textBox.removeFromSuperview()
+            self.editBox = nil
             self.window?.makeFirstResponder(self)
             needsDisplay = true
-            return true
         }
-        // TODO: Resize both text and drawed item to fit value smoothly.
-        
-        return false
     }
     
     fileprivate func editTitle(_ active: DiagramItem) {
@@ -273,7 +291,10 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
             )
             Swift.debugPrint(bounds)
             editBox = NSTextField(frame: bounds)
-            editBox?.delegate = self
+            if self.editBoxDelegate == nil {
+                self.editBoxDelegate = EditTitleDelegate(self)
+            }
+            editBox?.delegate = self.editBoxDelegate
             editBox?.stringValue = active.name
             editBox?.drawsBackground = true
             editBox?.isBordered = true
@@ -349,7 +370,7 @@ class SceneDrawView: NSView, NSTextFieldDelegate {
                 }
             }
         }
-        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
+//        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
     }
     
     private func showPopover(bounds: CGRect) {
