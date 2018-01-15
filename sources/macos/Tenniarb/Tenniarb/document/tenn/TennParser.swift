@@ -15,6 +15,7 @@ public enum TennErrorCode {
     case unexpectedInput
     case invalidCommandStart
     case wrongBlockTerminator
+    case EndOfFileDuringStringRead
 }
 
 public class TennError {
@@ -60,6 +61,11 @@ public class TennParser {
     
     func reset( _ source: String) {
         self.lexer = TennLexer( source )
+        self.lexer?.errorHandler = { (_ code: LexerError, _ stPos: Int, _ pos:Int) -> Void in
+            if code == .EndOfLineReadString {
+                self.errors.report(code: .EndOfFileDuringStringRead, msg: "Unclosed string terminal", token: nil)
+            }
+        }
         
     }
     

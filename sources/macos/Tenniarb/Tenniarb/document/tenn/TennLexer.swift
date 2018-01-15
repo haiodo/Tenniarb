@@ -38,6 +38,10 @@ public class TennToken {
     }
 }
 
+public enum LexerError {
+    case EndOfLineReadString
+}
+
 public class TennLexer {
     var currentLine: Int = 0
     var currentChar: Int = 0
@@ -46,6 +50,8 @@ public class TennLexer {
     
     var tokenBuffer: [TennToken] = []
     var blockState:[TennTokenType] = []
+    
+    var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
         self.buffer = Array(code)
@@ -71,7 +77,7 @@ public class TennLexer {
     }
     private func detectSymbolType( pattern: String ) -> TennTokenType {
         var value = pattern
-        if value.count > 0 && Character("-") == value.characters.first {
+        if value.count > 0 && value.hasPrefix("-") {
             value.remove(at: value.index(value.startIndex, offsetBy: 0))
         }
         var dot = false
@@ -114,6 +120,8 @@ public class TennLexer {
         self.add(check: &r)
         self.inc()
         
+        var foundEnd = false
+        let stPos = self.pos
         while self.pos < self.buffer.count {
             let curChar = self.charAt()
             if  curChar == "\n" {
@@ -153,6 +161,7 @@ public class TennLexer {
                     self.inc()
                     continue
                 }
+                foundEnd = true
                 
                 self.add(literal: r);
                 r.removeAll(keepingCapacity: true)
@@ -172,6 +181,12 @@ public class TennLexer {
         if (r.count > 0) {
             self.add(literal: r)
             r.removeAll(keepingCapacity: true)
+        }
+        if !foundEnd {
+            Swift.debugPrint("Unclosed end")
+            if let h = self.errorHandler {
+                h(.EndOfLineReadString, stPos, pos)
+            }
         }
     }
     private func skipCComment(_ r: inout String) {
