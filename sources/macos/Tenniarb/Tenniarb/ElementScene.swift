@@ -704,7 +704,7 @@ public class DrawableLine: ItemDrawable {
         //Keep using the method addLineToPoint until you get to the one where about to close the path
         aPath.closeSubpath()
         context.addPath(aPath)
-        context.drawPath(using: .fillStroke)
+        context.drawPath(using: .stroke)
         
         context.restoreGState()
     }

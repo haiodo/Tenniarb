@@ -211,7 +211,7 @@ class ViewController: NSViewController {
             if firstChild == nil {
                 firstChild = e
             }
-            worldTree.expandItem(e, expandChildren: false)
+            worldTree.expandItem(e, expandChildren: true)
         }
 //        if firstChild != nil {
 //            let selectedIndex = worldTree.selectedRow
