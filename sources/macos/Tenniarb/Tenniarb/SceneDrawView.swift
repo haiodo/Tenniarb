@@ -360,16 +360,16 @@ class SceneDrawView: NSView {
                 sheduleRedraw()
             }
         }
-        else if event.characters == " " {
-            if let active = self.activeElement  {
-                if let drawable = scene?.drawables[active] {
-                    let drBounds = drawable.getBounds()
-                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
-                    showPopover(bounds: rect)
-                }
-            }
-        }
+//        else if event.characters == " " {
+//            if let active = self.activeElement  {
+//                if let drawable = scene?.drawables[active] {
+//                    let drBounds = drawable.getBounds()
+//                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+//                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
+//                    showPopover(bounds: rect)
+//                }
+//            }
+//        }
 //        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
     }
     
