@@ -183,7 +183,6 @@ public class TennLexer {
             r.removeAll(keepingCapacity: true)
         }
         if !foundEnd {
-            Swift.debugPrint("Unclosed end")
             if let h = self.errorHandler {
                 h(.EndOfLineReadString, stPos, pos)
             }

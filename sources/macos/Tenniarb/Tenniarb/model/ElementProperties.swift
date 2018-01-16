@@ -15,6 +15,16 @@ extension Element {
         buildElementData(self, items)
         return items.toStr()
     }
+    
+    func fromTennProps(_ node: TennNode ) {
+        self.properties = []
+        
+        var linkElements:[(TennNode, DiagramItem)] = []
+        Element.traverseBlock(node, {(cmdName, blChild) -> Void in
+            Element.parseElementData(self, cmdName, blChild, &linkElements)
+        })
+        self.model?.modified(self, .Structure)
+    }
 }
 
 extension DiagramItem {
@@ -30,5 +40,24 @@ extension DiagramItem {
         }
         
         return items.toStr()
+    }
+    func fromTennProps(_ node: TennNode ) {
+        if self.kind == .Item {
+            self.properties = []
+            Element.traverseBlock(node, {(cmdName, blChild) -> Void in
+                Element.parseItemData(self, cmdName, blChild)
+            })
+        }
+        else if self.kind == .Link {
+            var sourceIndex = 0
+            var targetIndex = 0
+            self.properties = []
+            Element.traverseBlock(node, {(cmdName, blChild) -> Void in
+                Element.parseLinkData(self, cmdName, blChild, &sourceIndex, &targetIndex)
+            })
+        }
+        if let p = self.parent {
+            p.model?.modified(p, .Structure)
+        }
     }
 }

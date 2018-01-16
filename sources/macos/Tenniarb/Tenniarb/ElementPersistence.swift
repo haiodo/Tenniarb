@@ -252,16 +252,20 @@ extension Element {
         return result
     }
     
+    static func traverseBlock(_ block: TennNode, _ visitor: (String, TennNode) -> Void) {
+        if [.Statements, .BlockExpr].contains(block.kind), let blChilds = block.children {
+            for blChild in blChilds {
+                if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
+                    visitor(cmdName, blChild)
+                }
+            }
+        }
+    }
+    
     static func parseChildCommands( _ node: TennNode, _ blockIndex: Int, _ visitor: (_ cmdName: String, _ child: TennNode) -> Void) {
         if node.count > blockIndex {
             if let block = node.getChild([blockIndex]) {
-                if [.Statements, .BlockExpr].contains(block.kind), let blChilds = block.children {
-                    for blChild in blChilds {
-                        if blChild.kind == .Command, blChild.count > 0, let cmdName = blChild.getIdent(0) {
-                            visitor(cmdName, blChild)
-                        }
-                    }
-                }
+                traverseBlock(block, visitor)
             }
         }
     }
@@ -286,6 +290,36 @@ extension Element {
         return itemRefNames
     }
     
+    static func parseElementData(_ el:Element, _ cmdName: String, _ blChild: TennNode,_ linkElements: inout [(TennNode, DiagramItem)]) {
+        switch cmdName  {
+        case PersistenceItemKind.Item.commandName:
+            if let item = parseItem(blChild) {
+                el.add(item)
+            }
+            else {
+                el.properties.append(blChild)
+            }
+        case PersistenceItemKind.Link.commandName:
+            if let item = parseLink(blChild) {
+                el.add(item)
+                linkElements.append((blChild, item))
+            }
+            else {
+                el.properties.append(blChild)
+            }
+        case PersistenceItemKind.Element.commandName:
+            if let child = parseElement(node: blChild) {
+                el.add(child)
+            }
+            else {
+                el.properties.append(blChild)
+            }
+        default:
+            el.properties.append(blChild)
+            break;
+        }
+    }
+    
     fileprivate static func parseElement(node: TennNode) -> Element? {
         let el = Element(name: "")
         
@@ -297,33 +331,7 @@ extension Element {
             }
             
             parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
-                switch cmdName  {
-                case PersistenceItemKind.Item.commandName:
-                    if let item = parseItem(blChild) {
-                        el.add(item)
-                    }
-                    else {
-                        el.properties.append(blChild)
-                    }
-                case PersistenceItemKind.Link.commandName:
-                    if let item = parseLink(blChild) {
-                        el.add(item)
-                        linkElements.append((blChild, item))
-                    }
-                    else {
-                        el.properties.append(blChild)
-                    }
-                case PersistenceItemKind.Element.commandName:
-                    if let child = parseElement(node: blChild) {
-                        el.add(child)
-                    }
-                    else {
-                        el.properties.append(blChild)
-                    }
-                default:
-                    el.properties.append(blChild)
-                    break;
-                }
+                parseElementData(el, cmdName, blChild, &linkElements)
             })
             
             let refs = prepareRefs(el.items)
@@ -339,6 +347,29 @@ extension Element {
         //TODo: need to report error
         return nil
     }
+    static func parseItemData(_ el: DiagramItem, _ cmdName: String, _ blChild: TennNode) {
+        switch cmdName  {
+        case PersistenceItemKind.Position.commandName:
+            if blChild.count == 3 {
+                if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {
+                    el.x = CGFloat(x)
+                    el.y = CGFloat(y)
+                }
+                else {
+                    el.properties.append(blChild);
+                }
+            }
+            else {
+                el.properties.append(blChild);
+            }
+        case PersistenceItemKind.Description.commandName:
+            el.description = blChild.getIdent(1)
+        default:
+            el.properties.append(blChild);
+            break;
+        }
+    }
+    
     fileprivate static func parseItem(_ node: TennNode) -> DiagramItem? {
         let el = DiagramItem(kind: .Item, name: "")
         
@@ -348,26 +379,7 @@ extension Element {
             }
             
             parseChildCommands( node, 2, { (cmdName, blChild) -> Void in
-                switch cmdName  {
-                case PersistenceItemKind.Position.commandName:
-                    if blChild.count == 3 {
-                        if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {
-                            el.x = CGFloat(x)
-                            el.y = CGFloat(y)
-                        }
-                        else {
-                            el.properties.append(blChild);
-                        }
-                    }
-                    else {
-                        el.properties.append(blChild);
-                    }
-                case PersistenceItemKind.Description.commandName:
-                    el.description = blChild.getIdent(1)
-                default:
-                    el.properties.append(blChild);
-                    break;
-                }
+                parseItemData(el, cmdName, blChild)
             })
         }
         return el
@@ -381,31 +393,35 @@ extension Element {
         return nil
     }
     
+    static func parseLinkData(_ link: DiagramItem, _ cmdName: String, _ blChild: TennNode, _ sourceIndex: inout Int, _ targetIndex: inout Int) {
+        switch cmdName  {
+        case PersistenceItemKind.Description.commandName:
+            link.description = blChild.getIdent(1)
+        case PersistenceItemKind.SourceIndex.commandName:
+            if let index = blChild.getInt(1) {
+                sourceIndex = index
+            }
+            else {
+                link.properties.append(blChild)
+            }
+        case PersistenceItemKind.TargetIndex.commandName:
+            if let index = blChild.getInt(1) {
+                targetIndex = index
+            }
+            else {
+                link.properties.append(blChild)
+            }
+        default:
+            link.properties.append(blChild)
+            break;
+        }
+    }
+    
     fileprivate static func processLink( _ link: DiagramItem, _ node: TennNode, _ links: [IndexedName: DiagramItem]) {
         var sourceIndex = 0
         var targetIndex = 0
         parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
-            switch cmdName  {
-            case PersistenceItemKind.Description.commandName:
-                link.description = blChild.getIdent(1)
-            case PersistenceItemKind.SourceIndex.commandName:
-                if let index = blChild.getInt(1) {
-                    sourceIndex = index
-                }
-                else {
-                    link.properties.append(blChild)
-                }
-            case PersistenceItemKind.TargetIndex.commandName:
-                if let index = blChild.getInt(1) {
-                    targetIndex = index
-                }
-                else {
-                    link.properties.append(blChild)
-                }
-            default:
-                link.properties.append(blChild)
-                break;
-            }
+            parseLinkData(link, cmdName, blChild, &sourceIndex, &targetIndex)
         })
         
         if let source = node.getIdent(1), let target = node.getIdent(2) {

@@ -48,14 +48,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
             if curChanges == self.changes {
                 let parser = TennParser()
-                let node = parser.parse(self.view.textStorage!.string)
+                let textContent = self.view.textStorage!.string
+                let node = parser.parse(textContent)
                 if parser.errors.hasErrors() {
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }
                 else {
                     self.view.textColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.8)
+                    self.controller.mergeProperties(node)
                 }
-                Swift.debugPrint(node.toStr())
                 self.view.needsDisplay = true
             }
         })

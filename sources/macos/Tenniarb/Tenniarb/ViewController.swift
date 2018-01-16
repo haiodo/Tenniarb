@@ -32,6 +32,8 @@ class ViewController: NSViewController {
     var outlineViewDelegate: OutlineViewControllerDelegate?
     var textViewDelegate: TextPropertiesDelegate?
     
+    var updatingProperties: Bool = false
+    
     @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
         
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
@@ -167,6 +169,10 @@ class ViewController: NSViewController {
         }
         
         elementModel.onUpdate.append { (element, kind) in
+            ""
+            if self.updatingProperties {
+                return
+            }
             //TODO: Add optimizations based on particular element
             
             self.updateElements.append(element)
@@ -220,5 +226,15 @@ class ViewController: NSViewController {
 //            worldTree.
 //        }
         
+    }
+    func mergeProperties(_ node: TennNode ) {
+        updatingProperties = true
+        if let active = activeElement {
+            active.fromTennProps(node)
+        }
+        else if let element = self.selectedElement {
+            element.fromTennProps(node)
+        }
+        updatingProperties = false
     }
 }

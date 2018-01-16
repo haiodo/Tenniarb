@@ -181,11 +181,12 @@ class SceneDrawView: NSView {
         self.model = model
         
         self.model?.onUpdate.append( {(element, kind) in
-                // We should be smart anought to not rebuild all drawable scene every time
-                if kind == .Structure  {
-                    self.buildScene()
-                }
-            })
+            // We should be smart anought to not rebuild all drawable scene every time
+            if kind == .Structure  {
+                self.buildScene()
+                self.needsDisplay = true
+            }
+        })
         
     }
     
@@ -196,7 +197,6 @@ class SceneDrawView: NSView {
         
         self.element = elementModel
         self.activeElement = nil
-        
         
         
         // Center diagram to fit all items
