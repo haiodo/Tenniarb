@@ -1,0 +1,266 @@
+element "Tenniarb" {
+    element "Naming" {
+        item "Procuct naming" {
+            pos -262.0 169.0
+        }
+        link "Procuct naming" "Net"
+        item "Net" {
+            pos -260.0 44.0
+        }
+        link "Procuct naming" "Brain"
+        item "Brain" {
+            pos -134.0 102.0
+        }
+        link "Brain" "Niarb"
+        item "Niarb" {
+            pos -85.0 21.0
+        }
+        link "Net" "Ten"
+        item "Ten" {
+            pos -126.0 20.0
+        }
+        link "Ten" "Tenn"
+        item "Tenn" {
+            pos -136.0 -45.0
+        }
+        link "Niarb" "Iarb"
+        item "Iarb" {
+            pos -68.0 -44.0
+        }
+        link "Iarb" "Brai"
+        item "Brai" {
+            pos -64.0 -94.0
+        }
+        link "Tenn" "Nnet"
+        item "Nnet" {
+            pos -115.0 -93.0
+        }
+    }
+    element "MVP" {
+        item "MVP" {
+            pos -188.0 111.0
+            color "#0022ee"
+        }
+        item "Hirarchy of maps" {
+            pos -477.0 164.0
+            color green
+        }
+        link "MVP" "UI"
+        item "UI" {
+            pos -238.0 -14.0
+        }
+        link "UI" "Scene Draw"
+        item "Scene Draw" {
+            pos -491.0 -120.0
+            color green
+        }
+        link "UI" "Editing"
+        item "Editing" {
+            pos -128.0 -42.0
+            color "#00ee00"
+        }
+        link "Editing" "Titles"
+        item "Titles" {
+            pos -81.0 -93.0
+            color green
+        }
+        link "Editing" "Properties"
+        item "Properties" {
+            pos -8.0 -87.0
+            color green
+        }
+        link "Properties" "Content assist"
+        item "Content assist" {
+            pos 45.0 -133.0
+            color yellow
+        }
+        link "Scene Draw" "Layout positions"
+        item "Layout positions" {
+            pos -591.0 -72.0
+            color red
+            description "
+	Allow to  draw items to show a position of items on selected diagram. Planed to be dots with different size showing a current structure.
+"
+        }
+        link "Scene Draw" "Items"
+        item "Items" {
+            pos -567.0 -133.0
+            color green
+        }
+        link "Scene Draw" "Links"
+        item "Links" {
+            pos -555.0 -210.0
+            color green
+        }
+        link "Editing" "Movements"
+        item "Movements" {
+            pos 71.0 -37.0
+            color green
+        }
+        link "Movements" "Items" {
+            target-index 1
+        }
+        item "Items" {
+            pos 185.0 -14.0
+            color green
+        }
+        link "Movements" "Draw links"
+        item "Draw links" {
+            pos 152.0 -77.0
+            color green
+        }
+        link "Hirarchy of maps" "Outline"
+        item "Outline" {
+            pos -481.0 276.0
+        }
+        link "Outline" "Edit titles"
+        item "Edit titles" {
+            pos -422.0 339.0
+            color green
+        }
+        link "Outline" "+/-"
+        item "+/-" {
+            pos -501.0 337.0
+            color green
+        }
+        link "Outline" "D&D"
+        item "D&D" {
+            pos -594.0 300.0
+            color red
+        }
+        link "Scene Draw" "Classes"
+        item "Classes" {
+            pos -469.0 -202.0
+            color red
+        }
+        link "Scene Draw" "Draw DSL"
+        item "Draw DSL" {
+            pos -382.0 -201.0
+        }
+        link "Scene Draw" "Colors"
+        item "Colors" {
+            pos -438.0 -30.0
+            color green
+        }
+        link "UI" "Undo&Redo"
+        item "Undo&Redo" {
+            pos -116.0 23.0
+            color red
+            status must-have
+            description "A very must-have feature"
+        }
+        link "MVP" "Presentation materials"
+        item "Presentation materials" {
+            pos -238.0 253.0
+            color purple
+        }
+        link "Presentation materials" "Site"
+        item "Site" {
+            pos -151.0 340.0
+        }
+        link "Presentation materials" "App Store"
+        item "App Store" {
+            pos -47.0 339.0
+        }
+        link "Site" "Domain"
+        item "Domain" {
+            pos -225.0 407.0
+        }
+        item "Registration" {
+            pos -28.0 434.0
+            color green
+        }
+        link "Registration" "App Store"
+        link "App Store" "Publication"
+        item "Publication" {
+            pos 107.0 360.0
+        }
+        link "MVP" "Quality"
+        item "Quality" {
+            pos -65.0 107.0
+        }
+        link "Quality" "Testing"
+        item "Testing" {
+            pos 10.0 173.0
+        }
+        link "Quality" "Functional testing"
+        item "Functional testing" {
+            pos 45.0 121.0
+        }
+        link "Quality" "Performance"
+        item "Performance" {
+            pos 47.0 78.0
+        }
+        link "Quality" "Durability"
+        item "Durability" {
+            pos 47.0 32.0
+        }
+        link "MVP" "Model"
+        item "Model" {
+            pos -371.0 81.0
+        }
+        link "Model" "Hirarchy of maps"
+        link "Model" "Cross diagram links"
+        item "Cross diagram links" {
+            pos -598.0 98.0
+        }
+        link "Outline" "Copy/paste"
+        item "Copy/paste" {
+            pos -381.0 276.0
+            color red
+        }
+        link "Model" "Persistence"
+        item "Persistence" {
+            pos -539.0 45.0
+            color green
+        }
+        link "Persistence" "Duplicate names"
+        item "Duplicate names" {
+            pos -711.0 41.0
+            color green
+        }
+        link "UI" "Layout"
+        item "Layout" {
+            pos -265.0 -272.0
+        }
+        link "Layout" "Automatic"
+        item "Automatic" {
+            pos -361.0 -343.0
+        }
+        link "Layout" "Manual"
+        item "Manual" {
+            pos -156.0 -296.0
+            color green
+        }
+        link "Editing" "Selection"
+        item "Selection" {
+            pos -165.0 -144.0
+            color green
+        }
+        link "Selection" "Multiple"
+        item "Multiple" {
+            pos -182.0 -201.0
+        }
+        link "Selection" "Duplicate"
+        item "Duplicate" {
+            pos -102.0 -230.0
+        }
+        link "Selection" "Copy to new"
+        item "Copy to new" {
+            pos -59.0 -184.0
+            description "Copy selected elements  as a new child diagram"
+        }
+        link "App Store" "Images"
+        item "Images" {
+            pos 68.0 281.0
+        }
+        link "App Store" "Description"
+        item "Description" {
+            pos 153.0 316.0
+        }
+        link "Site" "Hosting"
+        item "Hosting" {
+            pos -165.0 471.0
+        }
+    }
+}

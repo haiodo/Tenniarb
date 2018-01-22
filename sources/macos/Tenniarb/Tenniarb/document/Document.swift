@@ -18,6 +18,7 @@ class Document: NSDocument {
         
         // By default create with sample scene.
         self.elementModel = ElementModelFactory().elementModel
+        self.elementModel?.modelName = "Unnamed"
         
         self.elementModel?.onUpdate.append( onUpdate )
     }
@@ -74,6 +75,7 @@ class Document: NSDocument {
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 em.modified = false
                 
+                em.modelName = url.lastPathComponent
                 updateChangeCount(.changeCleared)
                 vc?.updateWindowTitle()
             }
