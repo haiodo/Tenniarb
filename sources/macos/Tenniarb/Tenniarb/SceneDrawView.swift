@@ -51,6 +51,8 @@ class SceneDrawView: NSView {
     
     var dragElement: DiagramItem?
     
+    var dragMap:[DiagramItem: CGPoint] = [:]
+    
     var lineToPoint: CGPoint?
     var lineTarget: DiagramItem?
     
@@ -79,7 +81,7 @@ class SceneDrawView: NSView {
     }
     var oy: CGFloat {
         set {
-            if let  active = element {
+            if let active = element {
                 active.oy = Double(newValue)
             }
         }
@@ -105,6 +107,8 @@ class SceneDrawView: NSView {
     }
     
     var prevTouch: NSTouch? = nil
+    
+    var actionExecutor: UndoActionExecutor?
     
     @objc override func touchesBegan(with event: NSEvent) {
         if self.mode == .Editing || self.mode == .LineDrawing {
@@ -178,6 +182,12 @@ class SceneDrawView: NSView {
         if let oldModel = self.model {
             oldModel.onUpdate.removeAll()
         }
+        
+        if let um = self.undoManager, self.actionExecutor == nil {
+            um.removeAllActions()
+            actionExecutor = UndoActionExecutor(um, self)
+        }
+        
         self.model = model
         
         self.model?.onUpdate.append( {(element, kind) in
@@ -440,12 +450,25 @@ class SceneDrawView: NSView {
                 self.lineTarget = nil
             }
             else {
+                if let newPos = self.dragMap.removeValue(forKey: de), let parent = de.parent {
+                    if let ae = actionExecutor {
+                        ae.execute(UpdatePosition(self.model!, parent, de, old: CGPoint(x: de.x, y: de.y), new: newPos))
+                    }
+                    else {
+                        de.x = newPos.x
+                        de.y = newPos.y
+                        parent.model?.modified(parent, .Layout)
+                    }
+                }
                 self.setActiveElement(de)
             }
             needsDisplay = true
         }
         
         self.mouseDownState = false
+        if let de = self.dragElement {
+            self.dragMap.removeValue(forKey: de)
+        }
         self.dragElement = nil
         
         self.mode = .Normal
@@ -473,6 +496,7 @@ class SceneDrawView: NSView {
             }
             else {
                 self.mode = .Dragging
+                self.dragMap[self.dragElement!] = CGPoint(x: self.dragElement!.x, y: self.dragElement!.y)
             }
         }
         else {
@@ -503,12 +527,14 @@ class SceneDrawView: NSView {
                 needsDisplay = true
             }
             else {
-                de.x += event.deltaX
-                de.y -= event.deltaY
+                if let pos = self.dragMap[de] {
+                    var newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
+                    self.dragMap[de] = newPos
                 
-                if let em = self.element {
-                    em.model?.modified(em, .Layout)
-                    self.scene?.updateLayout(de)
+                    if let em = self.element {
+                        em.model?.modified(em, .Layout)
+                        self.scene?.updateLayout(de, newPos)
+                    }
                 }
             }
         }

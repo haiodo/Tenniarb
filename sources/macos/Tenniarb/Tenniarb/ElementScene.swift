@@ -277,10 +277,10 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func updateLayout(_ item: DiagramItem) {
+    func updateLayout(_ item: DiagramItem, _ pos: CGPoint) {
         updateActiveElement()
         if let box = drawables[item] as? RoundBox {
-            box.setPath(CGRect(origin:CGPoint(x: item.x, y: item.y), size: box.bounds.size))
+            box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
             
             // Update links
             if let links = itemToLink[item] {

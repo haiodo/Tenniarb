@@ -26,6 +26,7 @@
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
+		0C9C9411201F749800E67794 /* ModelActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ModelActions.swift */; };
 		0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */; };
 		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
@@ -72,6 +73,7 @@
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
+		0C9C9410201F749800E67794 /* ModelActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModelActions.swift; path = model/ModelActions.swift; sourceTree = "<group>"; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */,
 				0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */,
 				0C439D24200337AB0031AE78 /* ElementProperties.swift */,
+				0C9C9410201F749800E67794 /* ModelActions.swift */,
 			);
 			name = model;
 			path = ..;
@@ -336,6 +339,7 @@
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
+				0C9C9411201F749800E67794 /* ModelActions.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
