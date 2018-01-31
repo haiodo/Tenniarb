@@ -284,7 +284,7 @@ public class TennLexer {
                 if self.processCurlyClose(&r, cc) {
                     return self.tokenBuffer.removeFirst()
                 }
-            case ",", ";":
+            case ";":
                 self.add(check: &r)
                 
                 self.add(type: .semiColon, literal: String(cc))
