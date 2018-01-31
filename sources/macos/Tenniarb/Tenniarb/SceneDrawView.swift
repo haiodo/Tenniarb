@@ -304,12 +304,16 @@ class SceneDrawView: NSView {
             if self.editBoxDelegate == nil {
                 self.editBoxDelegate = EditTitleDelegate(self)
             }
+            
+            let style = DrawableItemStyle.parseStyle(item: active)
+            
+            
             editBox?.delegate = self.editBoxDelegate
             editBox?.stringValue = active.name
             editBox?.drawsBackground = true
             editBox?.isBordered = true
             editBox?.focusRingType = .none
-            editBox?.font = NSFont.systemFont(ofSize: 18)
+            editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
             
             self.addSubview(editBox!)
             

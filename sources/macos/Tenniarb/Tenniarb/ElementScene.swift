@@ -176,6 +176,81 @@ open class DrawableContainer: ItemDrawable {
     }
 }
 
+class DrawableItemStyle {
+    var color: CGColor?
+    var borderColor: CGColor?
+    var fontSize:CGFloat = 18.0
+    
+    var width:CGFloat?
+    
+    init() {
+        
+    }
+    
+    static func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
+        let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        let scanner = Scanner(string: hexString)
+        if (hexString.hasPrefix("#")) {
+            scanner.scanLocation = 1
+        }
+        var color: UInt32 = 0
+        scanner.scanHexInt32(&color)
+        let mask = 0x000000FF
+        let r = Int(color >> 16) & mask
+        let g = Int(color >> 8) & mask
+        let b = Int(color) & mask
+        let red   = CGFloat(r) / 255.0
+        let green = CGFloat(g) / 255.0
+        let blue  = CGFloat(b) / 255.0
+        return CGColor(red:red, green:green, blue:blue, alpha:alpha)
+    }
+    
+    static func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
+        if color.starts(with: "#") {
+            return hexStringToUIColor(hexString: color, alpha: alpha)
+        }
+        if let cl = ColorNames[color] {
+            return hexStringToUIColor(hexString: cl, alpha: alpha)
+        }
+        
+        return CGColor.black.copy(alpha: alpha)!
+    }
+    
+    static func parseStyle( item: DiagramItem ) -> DrawableItemStyle {
+        let result = DrawableItemStyle()
+        
+        for child in item.properties {
+            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
+                switch cmdName {
+                case "color":
+                    if let color = child.getIdent(1) {
+                        result.color = parseColor(color.lowercased(), alpha: 0.7)
+                    }
+                    break;
+                case "font-size":
+                    if let value = child.getFloat(1) {
+                        result.fontSize = CGFloat(value)
+                    }
+                    break;
+                case "width":
+                    if let value = child.getFloat(1) {
+                        result.width = CGFloat(value)
+                    }
+                    break;
+                case "borderColor":
+                    if let color = child.getIdent(1) {
+                        result.borderColor = parseColor(color.lowercased())
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        return result
+    }
+}
+
 
 open class DrawableScene: DrawableContainer {
     public var offset = CGPoint(x:0, y:0)
@@ -356,20 +431,26 @@ open class DrawableScene: DrawableContainer {
 //            name = e.data.refElement!.name
 //        }
         
-        let bgColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+        let style = DrawableItemStyle.parseStyle(item: e)
+        
+        let bgColor = style.color ?? CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+        let borderColor = style.borderColor ?? CGColor.black
         
         let textBox = TextBox(
             text: name.count > 0 ? name :  " ",
             textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
-            fontSize: 18)
+            fontSize: style.fontSize)
         
         let textBounds = textBox.getBounds()
         
-        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: max(20, textBounds.width), height: textBounds.height),
-                                fillColor: bgColor,
-                                borderColor: CGColor.black)
+        var width = max(20, textBounds.width)
+        if let styleWidth = style.width {
+            width = max(width, styleWidth)
+        }
         
-        processStyle(item: e, boxDrawable: rectBox)
+        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: width, height: textBounds.height),
+                                fillColor: bgColor,
+                                borderColor: borderColor)
         
         
         if self.activeElement == e {
@@ -382,87 +463,6 @@ open class DrawableScene: DrawableContainer {
         drawables[e] = rectBox
         
         elementDrawable.append(rectBox)
-    }
-    
-    func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
-        let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        let scanner = Scanner(string: hexString)
-        if (hexString.hasPrefix("#")) {
-            scanner.scanLocation = 1
-        }
-        var color: UInt32 = 0
-        scanner.scanHexInt32(&color)
-        let mask = 0x000000FF
-        let r = Int(color >> 16) & mask
-        let g = Int(color >> 8) & mask
-        let b = Int(color) & mask
-        let red   = CGFloat(r) / 255.0
-        let green = CGFloat(g) / 255.0
-        let blue  = CGFloat(b) / 255.0
-        return CGColor(red:red, green:green, blue:blue, alpha:alpha)
-    }
-    
-    func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
-        if color.starts(with: "#") {
-            return hexStringToUIColor(hexString: color, alpha: alpha)
-        }
-        if let cl = ColorNames[color] {
-            return hexStringToUIColor(hexString: cl, alpha: alpha)
-        }
-        
-        return CGColor.black.copy(alpha: alpha)!
-    }
-    
-    func processStyle( link: DiagramItem, drawable: DrawableLine ) {
-        for child in link.properties {
-            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
-                switch cmdName {
-                case "color":
-                    if let color = child.getIdent(1) {
-                        drawable.color = parseColor(color.lowercased())
-                    }
-                    break;
-                    
-                case "style":
-                    if let value = child.getIdent(1) {
-                        switch value.lowercased() {
-                        case "solid":
-                            drawable.style = .Solid;
-                        case "dotted":
-                            drawable.style = .Dotted;
-                        case "dashed":
-                            drawable.style = .Dashed;
-                        default:
-                            break;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-    
-    func processStyle( item: DiagramItem, boxDrawable: RoundBox ) {
-        for child in item.properties {
-            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
-                switch cmdName {
-                case "color":
-                    if let color = child.getIdent(1) {
-                        boxDrawable.fillColor = parseColor(color.lowercased(), alpha: 0.7)
-                    }
-                    break;
-                case "borderColor":
-                    if let color = child.getIdent(1) {
-                        boxDrawable.borderColor = parseColor(color.lowercased())
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
     }
     
     func buildElementScene( _ element: Element)-> Drawable {
@@ -490,7 +490,11 @@ open class DrawableScene: DrawableContainer {
                         source: p1,
                         target: p2)
                     
-                    processStyle(link: e, drawable: linkDr )
+                    
+                    let style = DrawableItemStyle.parseStyle(item: e)
+                    if let color = style.color {
+                        linkDr.color = color
+                    }
                     
                     linkDr.item = e
                     drawables[e] = linkDr

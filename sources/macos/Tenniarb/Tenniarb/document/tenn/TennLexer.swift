@@ -98,7 +98,7 @@ public class TennLexer {
         if dot {
             return .floatLit
         }
-        return TennTokenType.stringLit
+        return TennTokenType.intLit
     }
     
     private func inc(_ pos: Int = 1) {
