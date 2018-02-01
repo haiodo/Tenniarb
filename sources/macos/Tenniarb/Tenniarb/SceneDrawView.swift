@@ -532,7 +532,7 @@ class SceneDrawView: NSView {
             }
             else {
                 if let pos = self.dragMap[de] {
-                    var newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
+                    let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
                     self.dragMap[de] = newPos
                 
                     if let em = self.element {

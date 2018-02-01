@@ -180,12 +180,26 @@ class DrawableItemStyle {
     var color: CGColor?
     var borderColor: CGColor?
     var fontSize:CGFloat = 18.0
-    
     var width:CGFloat?
+    var height:CGFloat?
     
-    init() {
-        
-    }
+    
+    /**
+     One of values:
+        * default, not specified - just item box
+        * text - as a just text box
+        * etc
+     
+     */
+    var display: String?
+    
+    /*
+        A child layout specification
+     Values:
+        * manual, not specified - just as placed
+        * auto - managed layout
+     */
+    var layout: String?
     
     static func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
         let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
@@ -226,22 +240,30 @@ class DrawableItemStyle {
                     if let color = child.getIdent(1) {
                         result.color = parseColor(color.lowercased(), alpha: 0.7)
                     }
-                    break;
                 case "font-size":
                     if let value = child.getFloat(1) {
                         result.fontSize = CGFloat(value)
                     }
-                    break;
+                case "display":
+                    if let value = child.getIdent(1) {
+                        result.display = value
+                    }
+                case "layout":
+                    if let value = child.getIdent(1) {
+                        result.layout = value
+                    }
                 case "width":
                     if let value = child.getFloat(1) {
                         result.width = CGFloat(value)
                     }
-                    break;
+                case "height":
+                    if let value = child.getFloat(1) {
+                        result.height = CGFloat(value)
+                    }
                 case "borderColor":
                     if let color = child.getIdent(1) {
                         result.borderColor = parseColor(color.lowercased())
                     }
-                    break;
                 default:
                     break;
                 }
@@ -356,33 +378,35 @@ open class DrawableScene: DrawableContainer {
         updateActiveElement()
         if let box = drawables[item] as? RoundBox {
             box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
-            
-            // Update links
-            if let links = itemToLink[item] {
-                for l in links {
-                    if let data: LinkElementData = l.getData(.LinkData) {
-                        if let lnkDr = drawables[l] as? DrawableLine {
-                            let sourceRect = drawables[data.source]?.getBounds()
-                            let targetRect = drawables[data.target]?.getBounds()
+        }
+        if let box = drawables[item] as? EmptyBox {
+            box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+        }
+        // Update links
+        if let links = itemToLink[item] {
+            for l in links {
+                if let data: LinkElementData = l.getData(.LinkData) {
+                    if let lnkDr = drawables[l] as? DrawableLine {
+                        let sourceRect = drawables[data.source]?.getBounds()
+                        let targetRect = drawables[data.target]?.getBounds()
+                        
+                        if let sr = sourceRect, let tr = targetRect {
                             
-                            if let sr = sourceRect, let tr = targetRect {
-                                
-                                let p1 = CGPoint( x: sr.midX, y:sr.midY )
-                                let p2 = CGPoint( x: tr.midX, y:tr.midY )
-                                
-                                
-                                if let cp1 = crossBox(p1, p2, sr) {
-                                    lnkDr.source = cp1
-                                }
-                                else {
-                                    lnkDr.source = p1
-                                }
-                                if let cp2 = crossBox(p1, p2, tr) {
-                                    lnkDr.target = cp2
-                                }
-                                else {
-                                    lnkDr.target = p2
-                                }
+                            let p1 = CGPoint( x: sr.midX, y:sr.midY )
+                            let p2 = CGPoint( x: tr.midX, y:tr.midY )
+                            
+                            
+                            if let cp1 = crossBox(p1, p2, sr) {
+                                lnkDr.source = cp1
+                            }
+                            else {
+                                lnkDr.source = p1
+                            }
+                            if let cp2 = crossBox(p1, p2, tr) {
+                                lnkDr.target = cp2
+                            }
+                            else {
+                                lnkDr.target = p2
                             }
                         }
                     }
@@ -423,13 +447,31 @@ open class DrawableScene: DrawableContainer {
         
     }
     
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
+        let rectBox = RoundBox( bounds: bounds,
+                                fillColor: bgColor,
+                                borderColor: borderColor)
+        if self.activeElement == e {
+            rectBox.lineWidth = 1
+        }
+        rectBox.append(textBox)
+        
+        rectBox.item = e
+        
+        drawables[e] = rectBox
+        elementDrawable.append(rectBox)
+    }
+    fileprivate func buildEmptyRect(_ bounds: CGRect, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
+        let rectBox = EmptyBox( bounds: bounds )
+        rectBox.append(textBox)
+        rectBox.item = e
+        
+        drawables[e] = rectBox
+        elementDrawable.append(rectBox)
+    }
+    
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
         let name = e.name
-        
-        // Referenced element name should be from reference
-//        if e.data.refElement != nil {
-//            name = e.data.refElement!.name
-//        }
         
         let style = DrawableItemStyle.parseStyle(item: e)
         
@@ -448,21 +490,20 @@ open class DrawableScene: DrawableContainer {
             width = max(width, styleWidth)
         }
         
-        let rectBox = RoundBox( bounds: CGRect(x: e.x, y:e.y, width: width, height: textBounds.height),
-                                fillColor: bgColor,
-                                borderColor: borderColor)
+        let bounds = CGRect(x: e.x, y:e.y, width: width, height: textBounds.height)
         
-        
-        if self.activeElement == e {
-            rectBox.lineWidth = 1
+        if let display = style.display {
+            switch display {
+            case "text":
+                buildEmptyRect(bounds, e, textBox, elementDrawable)
+                
+            default:
+                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+            }
         }
-        rectBox.append(textBox)
-        
-        rectBox.item = e
-        
-        drawables[e] = rectBox
-        
-        elementDrawable.append(rectBox)
+        else {
+            buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+        }
     }
     
     func buildElementScene( _ element: Element)-> Drawable {
@@ -595,6 +636,32 @@ public class RoundBox: DrawableContainer {
         context.addPath(self.path!)
         context.drawPath(using: .fillStroke)
         
+        context.restoreGState()
+    }
+    
+    public override func getBounds() -> CGRect {
+        return bounds
+    }
+}
+
+public class EmptyBox: DrawableContainer {
+    init( bounds: CGRect) {
+        super.init([])
+        self.bounds = bounds
+    }
+    
+    func setPath( _ rect: CGRect) {
+        self.bounds = rect
+    }
+    public override func drawBox(context: CGContext, at point: CGPoint) {
+        // We only need to draw rect for shadow
+    }
+    
+    public override func draw(context: CGContext, at point: CGPoint) {
+        context.saveGState()
+        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        context.clip(to: clipBounds )
+        super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
     
