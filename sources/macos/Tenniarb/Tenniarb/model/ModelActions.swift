@@ -47,40 +47,58 @@ class UndoActionExecutor {
     
 }
 
-class UpdatePosition: ModelAction {
+class AbstractUpdateValue<ValueType>: ModelAction {
     let element: Element
     let item: DiagramItem
-    let oldPos: CGPoint
-    let newPos: CGPoint
+    let oldValue: ValueType
+    let newValue: ValueType
     var undoCounter: Int = 0
     
-    init( _ model: ElementModel, _ element: Element, _ item: DiagramItem, old: CGPoint, new: CGPoint) {
+    init( _ model: ElementModel, _ element: Element, _ item: DiagramItem, old: ValueType, new: ValueType) {
         self.element = element
         self.item = item
-        self.oldPos = old
-        self.newPos = new
+        self.oldValue = old
+        self.newValue = new
         
         super.init(model)
     }
+    func getEventKind() -> UpdateEventKind {
+        return .Structure
+    }
+    
     fileprivate func doModify() {
         undoCounter += 1
-        model.modified(self.element, undoCounter > 1 ? .Structure :.Layout)
+        model.modified(self.element, getEventKind())
+    }
+    
+    func apply(_ item: DiagramItem, _ value: ValueType) {
     }
     
     override func apply() {
-        self.item.x = self.newPos.x
-        self.item.y = self.newPos.y
+        self.apply(self.item, newValue)
         doModify()
         
         super.apply()
     }
     override func undo() {
-        self.item.x = self.oldPos.x
-        self.item.y = self.oldPos.y
-        
+        self.apply(self.item, oldValue)
         doModify()
-        
         super.undo()
     }
+}
 
+class UpdatePosition: AbstractUpdateValue<CGPoint> {
+    override func apply(_ item: DiagramItem, _ value: CGPoint) {
+        item.x = value.x
+        item.y = value.y
+    }
+    override func getEventKind() -> UpdateEventKind {
+        return undoCounter > 1 ? .Structure :.Layout
+    }
+}
+
+class UpdateName: AbstractUpdateValue<String> {
+    override func apply(_ item: DiagramItem, _ value: String) {
+        item.name = value
+    }
 }

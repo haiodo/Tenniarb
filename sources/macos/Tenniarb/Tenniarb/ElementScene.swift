@@ -495,7 +495,7 @@ open class DrawableScene: DrawableContainer {
         if let display = style.display {
             switch display {
             case "text":
-                buildEmptyRect(bounds, e, textBox, elementDrawable)
+                buildEmptyRect(bounds,  e, textBox, elementDrawable)
                 
             default:
                 buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
