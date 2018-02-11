@@ -56,6 +56,7 @@ class Document: NSDocument {
             elementModel?.modelName = url.lastPathComponent
             vc?.setElementModel(elementModel: self.elementModel!)
             elementModel?.onUpdate.append( onUpdate )
+            self.fileURL = url
         }
         catch {
             Swift.print("Failed to load file")
@@ -78,6 +79,7 @@ class Document: NSDocument {
                 em.modelName = url.lastPathComponent
                 updateChangeCount(.changeCleared)
                 vc?.updateWindowTitle()
+                self.fileURL = url
             }
         }
         catch {
