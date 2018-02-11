@@ -490,7 +490,12 @@ open class DrawableScene: DrawableContainer {
             width = max(width, styleWidth)
         }
         
-        let bounds = CGRect(x: e.x, y:e.y, width: width, height: textBounds.height)
+        var height = max(20, textBounds.height)
+        if let styleHeight = style.height {
+            height = max(height, styleHeight)
+        }
+        
+        let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
         
         if let display = style.display {
             switch display {
