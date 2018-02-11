@@ -183,9 +183,9 @@ class SceneDrawView: NSView {
             oldModel.onUpdate.removeAll()
         }
         
-        if let um = self.undoManager, self.actionExecutor == nil {
+        if let um = self.undoManager {
             um.removeAllActions()
-            actionExecutor = UndoActionExecutor(um, self)
+            actionExecutor = UndoActionExecutor(um, self, model)
         }
         
         self.model = model
@@ -271,9 +271,7 @@ class SceneDrawView: NSView {
                 if let tv = textView {
                     let textValue = tv.string
                     if textValue.count > 0 {
-//                        active.name = textValue
                         self.actionExecutor?.execute(UpdateName(self.model!, self.element!, active, old: active.name, new: textValue))
-//                        self.model?.modified(element!, .Structure)
                     }
                 }
             }

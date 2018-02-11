@@ -34,6 +34,8 @@ class ViewController: NSViewController {
     
     var updatingProperties: Bool = false
     
+    var actionExecutor: UndoActionExecutor?
+    
     @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
         
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
@@ -46,6 +48,8 @@ class ViewController: NSViewController {
     
     @IBAction func outlineTextChanged(_ sender: Any) {
         if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
+            
+//            self.actionExecutor?.execute(Update)
             active.name = newValue
             elementModel?.modified(active, .Structure)
         }
@@ -93,8 +97,13 @@ class ViewController: NSViewController {
         if let act = active {
             act.add(newEl)
             DispatchQueue.main.async(execute: {
-                self.worldTree.reloadItem(act, reloadChildren: true )
-                self.worldTree.expandItem(act)
+                if act.kind == .Root {
+                    self.worldTree.reloadData()
+                }
+                else {
+                    self.worldTree.reloadItem(act, reloadChildren: true )
+                    self.worldTree.expandItem(act)
+                }
             })
         }
         
@@ -103,10 +112,21 @@ class ViewController: NSViewController {
         if let active = self.selectedElement {
             if let parent = active.parent {
                 parent.remove(active)
-                selectedElement = parent
+                
+                if parent.kind == .Root {
+                    selectedElement = nil
+                }
+                else {
+                    selectedElement = parent
+                }
                 
                 DispatchQueue.main.async(execute: {
-                    self.worldTree.reloadItem(parent, reloadChildren: true)
+                    if parent.kind == .Root {
+                        self.worldTree.reloadData()
+                    }
+                    else {
+                        self.worldTree.reloadItem(parent, reloadChildren: true)
+                    }
                 })
 
             }
@@ -164,12 +184,20 @@ class ViewController: NSViewController {
             oldModel.onUpdate.removeAll()
         }
         self.elementModel = elementModel
+        
+        if let um = self.undoManager{
+            um.removeAllActions()
+            actionExecutor = UndoActionExecutor(um, self.view, elementModel)
+        }
         if self.scene == nil {
             return
         }
+        // Cleanup Undo stack
+        if let um = self.undoManager, self.actionExecutor == nil {
+            um.removeAllActions()
+        }
         
         elementModel.onUpdate.append { (element, kind) in
-            ""
             if self.updatingProperties {
                 return
             }

@@ -50,7 +50,7 @@ class PersistenceTests: XCTestCase {
         
         let model2 = ElementModel.parseTenn(node: node)
         XCTAssertNotNil(model2)
-        XCTAssertEqual(model.name, model2?.name)
+        XCTAssertEqual(model.name, model2.name)
     }
     func testSaveOneElement() {
         let model = ElementModel()
@@ -68,7 +68,7 @@ class PersistenceTests: XCTestCase {
         
         let model2 = ElementModel.parseTenn(node: node)
         XCTAssertNotNil(model2)
-        XCTAssertEqual(model.name, model2?.name)
+        XCTAssertEqual(model.name, model2.name)
     }
     func testSaveTwoElementWithPos() {
         let model = ElementModel()
@@ -85,7 +85,7 @@ class PersistenceTests: XCTestCase {
         diagram.add(DiagramItem(kind: .Item, name: "Demo element 2" ))
         
         let storedValue = model.toTennStr()
-        XCTAssertEqual("element \"Diagram 1\" {\n  item \"Demo element 1\" {\n    pos 10.5 30.0\n  }\n  item \"Demo element 2\"\n}", storedValue)
+        XCTAssertEqual("element \"Diagram 1\" {\n    item \"Demo element 1\" {\n        pos 10.5 30.0\n    }\n    item \"Demo element 2\"\n}", storedValue)
         Swift.print(storedValue)
         
         let parser = TennParser()
@@ -95,11 +95,11 @@ class PersistenceTests: XCTestCase {
         
         let model2 = ElementModel.parseTenn(node: node)
         XCTAssertNotNil(model2)
-        XCTAssertEqual(model.name, model2?.name)
+        XCTAssertEqual(model.name, model2.name)
         
-        XCTAssertEqual(model2!.count, 1)
+        XCTAssertEqual(model2.count, 1)
         
-        let diagramL = model2!.elements[0]
+        let diagramL = model2.elements[0]
         XCTAssertEqual(diagramL.itemCount, 2)
         let item0 = diagramL.items[0]
         let item1 = diagramL.items[1]
@@ -126,7 +126,7 @@ class PersistenceTests: XCTestCase {
         diagram.add(source: originalItem1, target: originalItem2)
         
         let storedValue = model.toTennStr()
-        XCTAssertEqual("element \"Diagram 1\" {\n  item \"Demo element 1\"\n  item \"Demo element 2\"\n  link \"Demo element 1\" \"Demo element 2\"\n}"    , storedValue)
+        XCTAssertEqual("element \"Diagram 1\" {\n    item \"Demo element 1\"\n    item \"Demo element 2\"\n    link \"Demo element 1\" \"Demo element 2\"\n}"    , storedValue)
         Swift.print(storedValue)
         
         let parser = TennParser()
@@ -136,11 +136,11 @@ class PersistenceTests: XCTestCase {
         
         let model2 = ElementModel.parseTenn(node: node)
         XCTAssertNotNil(model2)
-        XCTAssertEqual(model.name, model2?.name)
+        XCTAssertEqual(model.name, model2.name)
         
-        XCTAssertEqual(model2!.count, 1)
+        XCTAssertEqual(model2.count, 1)
         
-        let diagramL = model2!.elements[0]
+        let diagramL = model2.elements[0]
         XCTAssertEqual(diagramL.itemCount, 3)
         let item0 = diagramL.items[0]
         let item1 = diagramL.items[1]

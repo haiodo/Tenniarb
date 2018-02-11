@@ -27,9 +27,11 @@ class ModelAction {
 class UndoActionExecutor {
     let manager: UndoManager
     let view: NSView
-    init( _ undoManager: UndoManager, _ view: NSView ) {
+    let model: ElementModel
+    init( _ undoManager: UndoManager, _ view: NSView, _ model: ElementModel ) {
         self.manager = undoManager
         self.view = view
+        self.model = model
     }
     func execute( _ action: ModelAction) {
         self.manager.registerUndo(withTarget: self, handler: {(ae: UndoActionExecutor) -> Void in
@@ -44,7 +46,12 @@ class UndoActionExecutor {
         }
         self.view.needsDisplay = true
     }
-    
+    func updateName( item: DiagramItem, _ newName: String) {
+        execute(UpdateName(self.model, item.parent!, item, old: item.name, new: newName))
+    }
+    func updatePosition( item: DiagramItem, _ newPos: CGPoint) {
+        execute(UpdatePosition(self.model, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos))
+    }
 }
 
 class AbstractUpdateValue<ValueType>: ModelAction {
@@ -71,26 +78,27 @@ class AbstractUpdateValue<ValueType>: ModelAction {
         model.modified(self.element, getEventKind())
     }
     
-    func apply(_ item: DiagramItem, _ value: ValueType) {
+    func apply(_ value: ValueType) {
     }
     
     override func apply() {
-        self.apply(self.item, newValue)
+        self.apply(newValue)
         doModify()
         
         super.apply()
     }
     override func undo() {
-        self.apply(self.item, oldValue)
+        self.apply(oldValue)
         doModify()
         super.undo()
     }
 }
 
+
 class UpdatePosition: AbstractUpdateValue<CGPoint> {
-    override func apply(_ item: DiagramItem, _ value: CGPoint) {
-        item.x = value.x
-        item.y = value.y
+    override func apply(_ value: CGPoint) {
+        self.item.x = value.x
+        self.item.y = value.y
     }
     override func getEventKind() -> UpdateEventKind {
         return undoCounter > 1 ? .Structure :.Layout
@@ -98,7 +106,7 @@ class UpdatePosition: AbstractUpdateValue<CGPoint> {
 }
 
 class UpdateName: AbstractUpdateValue<String> {
-    override func apply(_ item: DiagramItem, _ value: String) {
-        item.name = value
+    override func apply(_ value: String) {
+        self.item.name = value
     }
 }
