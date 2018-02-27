@@ -782,33 +782,45 @@ public class DrawableLine: ItemDrawable {
         context.setStrokeColor(self.style.color ?? CGColor.black)
         context.setFillColor(self.style.color ?? CGColor.black)
         
-        let drawArrow = self.style.display == "arrow"
+        let drawArrow = self.style.display == "arrow" ||
+                        self.style.display == "arrow-source" ||
+                        self.style.display == "arrows"
         
         if let dash = self.style.lineDash {
             switch dash {
             case "dotted":
-                context.setLineDash(phase: 1, lengths: [2, 1])
+                context.setLineDash(phase: 1, lengths: [1, 4])
             case "dashed":
-                context.setLineDash(phase: 1, lengths: [5,1])
+                context.setLineDash(phase: 5, lengths: [5])
             case "solid": break;
             default:break;
             }
         }
         
         var fillType: CGPathDrawingMode = .stroke
+        
+        let fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
+        let toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
+        
         if drawArrow {
             fillType = .fillStroke
-            context.addPath(
-                arrow(
-                    from: CGPoint(x: source.x + point.x, y: source.y + point.y),
-                    to: CGPoint( x: target.x + point.x, y: target.y + point.y),
-                    tailWidth: 0, headWidth: 10, headLength: 10))
+            
+            if self.style.display == "arrow" || self.style.display == "arrows" {
+                context.addPath(
+                    arrow(from: fromPt, to: toPt,
+                        tailWidth: 0, headWidth: 10, headLength: 10))
+            }
+            if self.style.display == "arrow-source" || self.style.display == "arrows" {
+                context.addPath(
+                    arrow(from: toPt, to: fromPt,
+                          tailWidth: 0, headWidth: 10, headLength: 10))
+            }
         }
         else {
             let aPath = CGMutablePath()
             
-            aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
-            aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
+            aPath.move(to: fromPt)
+            aPath.addLine(to: toPt)
             
             //Keep using the method addLineToPoint until you get to the one where about to close the path
             aPath.closeSubpath()
