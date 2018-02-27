@@ -183,6 +183,8 @@ class DrawableItemStyle {
     var width:CGFloat?
     var height:CGFloat?
     
+    var lineDash:String?
+    
     
     /**
      One of values:
@@ -251,6 +253,10 @@ class DrawableItemStyle {
                 case "layout":
                     if let value = child.getIdent(1) {
                         result.layout = value
+                    }
+                case "line-dash":
+                    if let value = child.getIdent(1) {
+                        result.lineDash = value
                     }
                 case "width":
                     if let value = child.getFloat(1) {
@@ -342,9 +348,8 @@ open class DrawableScene: DrawableContainer {
                     targetPoint = cp2
                 }
             }
-
             
-            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint )
+            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint, style: DrawableItemStyle() )
         }
         return result
     }
@@ -534,13 +539,8 @@ open class DrawableScene: DrawableContainer {
                     
                     let linkDr = DrawableLine(
                         source: p1,
-                        target: p2)
-                    
-                    
-                    let style = DrawableItemStyle.parseStyle(item: e)
-                    if let color = style.color {
-                        linkDr.color = color
-                    }
+                        target: p2,
+                        style: DrawableItemStyle.parseStyle(item: e))
                     
                     linkDr.item = e
                     drawables[e] = linkDr
@@ -675,6 +675,31 @@ public class EmptyBox: DrawableContainer {
     }
 }
 
+func arrow(from start: CGPoint, to end: CGPoint, tailWidth: CGFloat, headWidth: CGFloat, headLength: CGFloat) -> CGMutablePath {
+    let length = hypot(end.x - start.x, end.y - start.y)
+    let tailLength = length - headLength
+    
+    func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint { return CGPoint(x: x, y: y) }
+    let points: [CGPoint] = [
+        p(0, tailWidth / 2.0),
+        p(tailLength, tailWidth / 2.0),
+        p(tailLength, headWidth / 2.0),
+        p(length, 0),
+        p(tailLength, -headWidth / 2.0),
+        p(tailLength, -tailWidth / 2.0),
+        p(0, -tailWidth / 2.0)
+    ]
+    
+    let cosine = (end.x - start.x) / length
+    let sine = (end.y - start.y) / length
+    let transform = CGAffineTransform(a: cosine, b: sine, c: -sine, d: cosine, tx: start.x, ty: start.y)
+    
+    let path = CGMutablePath()
+    path.addLines(between: points, transform: transform )
+    path.closeSubpath()
+    return path
+}
+
 
 public class TextBox: Drawable {
     var size: CGSize = CGSize(width: 0, height:0)
@@ -733,23 +758,16 @@ public class TextBox: Drawable {
     }
 }
 
-public enum LineDrawStyle {
-    case Solid
-    case Dashed
-    case Dotted
-}
-
 public class DrawableLine: ItemDrawable {
     var source: CGPoint
     var target: CGPoint
-    var color: CGColor
     var lineWidth: CGFloat = 1
-    var style: LineDrawStyle = .Solid
+    var style: DrawableItemStyle
     
-    init( source: CGPoint, target: CGPoint, color: CGColor = CGColor.black) {
+    init( source: CGPoint, target: CGPoint, style: DrawableItemStyle) {
         self.source = source
         self.target = target
-        self.color = color
+        self.style = style
     }
     
     public override func drawBox(context: CGContext, at point: CGPoint) {
@@ -761,26 +779,43 @@ public class DrawableLine: ItemDrawable {
         context.saveGState()
         
         context.setLineWidth( self.lineWidth )
-        context.setStrokeColor(self.color)
-        context.setFillColor(self.color)
+        context.setStrokeColor(self.style.color ?? CGColor.black)
+        context.setFillColor(self.style.color ?? CGColor.black)
         
-        switch self.style {
-        case .Solid: break;
-        case .Dotted:
-            context.setLineDash(phase: 1, lengths: [2, 1])
-        case .Dashed:
-            context.setLineDash(phase: 1, lengths: [5,1])
+        let drawArrow = self.style.display == "arrow"
+        
+        if let dash = self.style.lineDash {
+            switch dash {
+            case "dotted":
+                context.setLineDash(phase: 1, lengths: [2, 1])
+            case "dashed":
+                context.setLineDash(phase: 1, lengths: [5,1])
+            case "solid": break;
+            default:break;
+            }
         }
         
-        let aPath = CGMutablePath()
+        var fillType: CGPathDrawingMode = .stroke
+        if drawArrow {
+            fillType = .fillStroke
+            context.addPath(
+                arrow(
+                    from: CGPoint(x: source.x + point.x, y: source.y + point.y),
+                    to: CGPoint( x: target.x + point.x, y: target.y + point.y),
+                    tailWidth: 0, headWidth: 10, headLength: 10))
+        }
+        else {
+            let aPath = CGMutablePath()
+            
+            aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
+            aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
+            
+            //Keep using the method addLineToPoint until you get to the one where about to close the path
+            aPath.closeSubpath()
+            context.addPath(aPath)
+        }
         
-        aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
-        aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
-        
-        //Keep using the method addLineToPoint until you get to the one where about to close the path
-        aPath.closeSubpath()
-        context.addPath(aPath)
-        context.drawPath(using: .stroke)
+        context.drawPath(using: fillType)
         
         context.restoreGState()
     }
@@ -799,7 +834,7 @@ public class DrawableLine: ItemDrawable {
         let minY = min( source.y, target.y)
         let maxY = max( source.y, target.y)
         
-        return CGRect(x:minX, y:minY, width:(maxX-minX), height:(maxY-minY))
+        return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
     }
     public override func update() {
     }
@@ -944,7 +979,6 @@ public class DrawableMultiLine: ItemDrawable {
     var middle: CGPoint
     var color: CGColor
     var lineWidth: CGFloat = 1
-    var style: LineDrawStyle = .Solid
     
     init( source: CGPoint, middle:CGPoint, target: CGPoint, color: CGColor = CGColor.black) {
         self.source = source
@@ -964,14 +998,6 @@ public class DrawableMultiLine: ItemDrawable {
         context.setLineWidth( self.lineWidth )
         context.setStrokeColor(self.color)
         context.setFillColor(self.color)
-        
-        switch self.style {
-        case .Solid: break;
-        case .Dotted:
-            context.setLineDash(phase: 1, lengths: [2, 1])
-        case .Dashed:
-            context.setLineDash(phase: 1, lengths: [5,1])
-        }
         
         let aPath = CGMutablePath()
         

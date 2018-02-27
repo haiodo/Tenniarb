@@ -10,7 +10,7 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-    
+    var terminateOnLastWindowClose = true
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
     }
@@ -19,7 +19,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
+        return terminateOnLastWindowClose
     }
-}
+    
+    public func setTerminateWindows(_ value: Bool ) {
+        self.terminateOnLastWindowClose = value
+    }
+ }
 

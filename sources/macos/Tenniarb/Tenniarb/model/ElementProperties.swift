@@ -41,9 +41,8 @@ extension DiagramItem {
     func toTennProps() -> String {
         let items = TennNode.newNode(kind: .Statements)
         
-        items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
-        
         if self.kind == .Item {
+            items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
             Element.buildItemData(self, items)
         }
         else if self.kind == .Link {
@@ -70,6 +69,12 @@ extension DiagramItem {
             var targetIndex = 0
             self.properties = []
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
+                if cmdName == "name" {
+                    if let newName = blChild.getIdent(1) {
+                        self.name = newName
+                    }
+                    return
+                }
                 Element.parseLinkData(self, cmdName, blChild, &sourceIndex, &targetIndex)
             })
         }

@@ -108,8 +108,6 @@ class SceneDrawView: NSView {
     
     var prevTouch: NSTouch? = nil
     
-    var actionExecutor: UndoActionExecutor?
-    
     @objc override func touchesBegan(with event: NSEvent) {
         if self.mode == .Editing || self.mode == .LineDrawing {
             return
@@ -120,7 +118,10 @@ class SceneDrawView: NSView {
         }
     }
     
-    fileprivate func sheduleRedraw( invalidRect: CGRect? = nil ) {
+    func sheduleRedraw() {
+        sheduleRedraw(invalidRect: nil)
+    }
+    fileprivate func sheduleRedraw( invalidRect: CGRect? ) {
         if !self.drawScheduled {
             drawScheduled = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
@@ -185,7 +186,6 @@ class SceneDrawView: NSView {
         
         if let um = self.undoManager {
             um.removeAllActions()
-            actionExecutor = UndoActionExecutor(um, self, model)
         }
         
         self.model = model
@@ -271,7 +271,8 @@ class SceneDrawView: NSView {
                 if let tv = textView {
                     let textValue = tv.string
                     if textValue.count > 0 {
-                        self.actionExecutor?.execute(UpdateName(self.model!, self.element!, active, old: active.name, new: textValue))
+                        self.model?.operations.updateName(item: active, textValue, undoManager: self.undoManager, refresh: sheduleRedraw)
+//                        self.actionExecutor?.execute(UpdateName(self.model!, self.element!, active, old: active.name, new: textValue))
                     }
                 }
             }
@@ -453,15 +454,8 @@ class SceneDrawView: NSView {
                 self.lineTarget = nil
             }
             else {
-                if let newPos = self.dragMap.removeValue(forKey: de), let parent = de.parent {
-                    if let ae = actionExecutor {
-                        ae.execute(UpdatePosition(self.model!, parent, de, old: CGPoint(x: de.x, y: de.y), new: newPos))
-                    }
-                    else {
-                        de.x = newPos.x
-                        de.y = newPos.y
-                        parent.model?.modified(parent, .Layout)
-                    }
+                if let newPos = self.dragMap.removeValue(forKey: de) {
+                    self.model?.operations.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
                 }
                 self.setActiveElement(de)
             }

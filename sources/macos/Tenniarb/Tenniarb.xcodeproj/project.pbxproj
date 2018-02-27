@@ -26,7 +26,7 @@
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
-		0C9C9411201F749800E67794 /* ModelActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ModelActions.swift */; };
+		0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ElementOperations.swift */; };
 		0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */; };
 		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
@@ -38,13 +38,6 @@
 
 /* Begin PBXContainerItemProxy section */
 		0C5C6D1F1EFF655B00714971 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0C2375E31ED838D900ECB516 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0C2375EA1ED838D900ECB516;
-			remoteInfo = Tenniarb;
-		};
-		0C6A4014202F301800690A0A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0C2375E31ED838D900ECB516 /* Project object */;
 			proxyType = 1;
@@ -66,6 +59,8 @@
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
 		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
+		0C3AA4342041582F0054DCDF /* TenniarbUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbUITests.swift; sourceTree = "<group>"; };
+		0C3AA4362041582F0054DCDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
@@ -78,10 +73,9 @@
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
-		0C6A400F202F301800690A0A /* TenniarbUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
-		0C9C9410201F749800E67794 /* ModelActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModelActions.swift; path = model/ModelActions.swift; sourceTree = "<group>"; };
+		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -106,13 +100,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0C6A400C202F301800690A0A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -122,6 +109,7 @@
 				0C3130601F0A9D0100FA5624 /* Documentation */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
+				0C3AA4332041582F0054DCDF /* TenniarbUITests */,
 				0C2375EC1ED838D900ECB516 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,7 +119,6 @@
 			children = (
 				0C2375EB1ED838D900ECB516 /* Tenniarb.app */,
 				0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */,
-				0C6A400F202F301800690A0A /* TenniarbUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -157,7 +144,7 @@
 				0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */,
 				0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */,
 				0C439D24200337AB0031AE78 /* ElementProperties.swift */,
-				0C9C9410201F749800E67794 /* ModelActions.swift */,
+				0C9C9410201F749800E67794 /* ElementOperations.swift */,
 			);
 			name = model;
 			path = ..;
@@ -170,6 +157,15 @@
 				0C235ED21F13F4B9004E37AC /* readme.md */,
 			);
 			name = Documentation;
+			sourceTree = "<group>";
+		};
+		0C3AA4332041582F0054DCDF /* TenniarbUITests */ = {
+			isa = PBXGroup;
+			children = (
+				0C3AA4342041582F0054DCDF /* TenniarbUITests.swift */,
+				0C3AA4362041582F0054DCDF /* Info.plist */,
+			);
+			path = TenniarbUITests;
 			sourceTree = "<group>";
 		};
 		0C439D1E1FFFFA7F0031AE78 /* Experiments */ = {
@@ -284,24 +280,6 @@
 			productReference = 0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		0C6A400E202F301800690A0A /* TenniarbUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0C6A4016202F301800690A0A /* Build configuration list for PBXNativeTarget "TenniarbUITests" */;
-			buildPhases = (
-				0C6A400B202F301800690A0A /* Sources */,
-				0C6A400C202F301800690A0A /* Frameworks */,
-				0C6A400D202F301800690A0A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0C6A4015202F301800690A0A /* PBXTargetDependency */,
-			);
-			name = TenniarbUITests;
-			productName = TenniarbUITests;
-			productReference = 0C6A400F202F301800690A0A /* TenniarbUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -322,11 +300,6 @@
 						DevelopmentTeam = 594YM2Y457;
 						TestTargetID = 0C2375EA1ED838D900ECB516;
 					};
-					0C6A400E202F301800690A0A = {
-						CreatedOnToolsVersion = 9.3;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 0C2375EA1ED838D900ECB516;
-					};
 				};
 			};
 			buildConfigurationList = 0C2375E61ED838D900ECB516 /* Build configuration list for PBXProject "Tenniarb" */;
@@ -344,7 +317,6 @@
 			targets = (
 				0C2375EA1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D191EFF655B00714971 /* TenniarbTests */,
-				0C6A400E202F301800690A0A /* TenniarbUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -366,13 +338,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0C6A400D202F301800690A0A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -386,7 +351,7 @@
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
-				0C9C9411201F749800E67794 /* ModelActions.swift in Sources */,
+				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
@@ -415,13 +380,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0C6A400B202F301800690A0A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -429,11 +387,6 @@
 			isa = PBXTargetDependency;
 			target = 0C2375EA1ED838D900ECB516 /* Tenniarb */;
 			targetProxy = 0C5C6D1F1EFF655B00714971 /* PBXContainerItemProxy */;
-		};
-		0C6A4015202F301800690A0A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0C2375EA1ED838D900ECB516 /* Tenniarb */;
-			targetProxy = 0C6A4014202F301800690A0A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -641,51 +594,6 @@
 			};
 			name = Release;
 		};
-		0C6A4017202F301800690A0A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = 594YM2Y457;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = TenniarbUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TEST_TARGET_NAME = Tenniarb;
-			};
-			name = Debug;
-		};
-		0C6A4018202F301800690A0A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = 594YM2Y457;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = TenniarbUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 4.0;
-				TEST_TARGET_NAME = Tenniarb;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -712,15 +620,6 @@
 			buildConfigurations = (
 				0C5C6D221EFF655B00714971 /* Debug */,
 				0C5C6D231EFF655B00714971 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0C6A4016202F301800690A0A /* Build configuration list for PBXNativeTarget "TenniarbUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0C6A4017202F301800690A0A /* Debug */,
-				0C6A4018202F301800690A0A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

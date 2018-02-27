@@ -34,8 +34,6 @@ class ViewController: NSViewController {
     
     var updatingProperties: Bool = false
     
-    var actionExecutor: UndoActionExecutor?
-    
     @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
         
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
@@ -48,10 +46,7 @@ class ViewController: NSViewController {
     
     @IBAction func outlineTextChanged(_ sender: Any) {
         if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
-            
-//            self.actionExecutor?.execute(Update)
-            active.name = newValue
-            elementModel?.modified(active, .Structure)
+            elementModel?.operations.updateName(element: active, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
         }
     }
     
@@ -95,15 +90,17 @@ class ViewController: NSViewController {
             active = self.elementModel
         }
         if let act = active {
-            act.add(newEl)
-            DispatchQueue.main.async(execute: {
-                if act.kind == .Root {
-                    self.worldTree.reloadData()
-                }
-                else {
-                    self.worldTree.reloadItem(act, reloadChildren: true )
-                    self.worldTree.expandItem(act)
-                }
+//            act.add(newEl)
+            elementModel?.operations.add(act, newEl, undoManager: self.undoManager, refresh: {()->Void in
+                DispatchQueue.main.async(execute: {
+                    if act.kind == .Root {
+                        self.worldTree.reloadData()
+                    }
+                    else {
+                        self.worldTree.reloadItem(act, reloadChildren: true )
+                        self.worldTree.expandItem(act)
+                    }
+                })
             })
         }
         
@@ -176,7 +173,9 @@ class ViewController: NSViewController {
     }
     
     func updateWindowTitle() {
-        self.windowTitle.stringValue = (self.elementModel?.modelName ?? "Unnamed model") + ((self.elementModel?.modified ?? true) ? "*":"")
+        let value = (self.elementModel?.modelName ?? "Unnamed model") + ((self.elementModel?.modified ?? true) ? "*":"")
+        self.title = value
+        self.windowTitle.stringValue = value
     }
     
     public func setElementModel(elementModel: ElementModel) {
@@ -187,13 +186,12 @@ class ViewController: NSViewController {
         
         if let um = self.undoManager{
             um.removeAllActions()
-            actionExecutor = UndoActionExecutor(um, self.view, elementModel)
         }
         if self.scene == nil {
             return
         }
         // Cleanup Undo stack
-        if let um = self.undoManager, self.actionExecutor == nil {
+        if let um = self.undoManager {
             um.removeAllActions()
         }
         

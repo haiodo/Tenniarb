@@ -110,11 +110,16 @@ public class Element {
         return item
     }
     
-    func add( _ el: Element ) {
+    func add( _ el: Element, at: Int? = nil ) {
         el.parent = self
         
         self.assignModel(el)
-        self.elements.append(el)
+        if let index = at {
+            self.elements.insert(el, at: index)
+        }
+        else {
+            self.elements.append(el)
+        }
         
         self.model?.modified(self, .Structure)
     }
@@ -195,9 +200,13 @@ public class Element {
         }
         return nil
     }
-    func remove(_ element: Element) {
-        self.elements = self.elements.filter {$0.id != element.id }
-        self.model?.modified(self, .Structure)
+    func remove(_ element: Element) -> Int {
+        if let index = self.elements.index(of: element) {
+            self.elements.remove(at: index)
+            self.model?.modified(self, .Structure)
+            return index
+        }
+        return -1
     }
     
     func remove(_ item: DiagramItem) {
@@ -227,8 +236,12 @@ public class ElementModel: Element {
     public var modelName: String = ""
     public var modified: Bool = false
     
+    public var operations: ElementOperations
+    
     init() {
+        self.operations = ElementOperations()
         super.init(name: "Root")
+        self.operations.setModel(self)
         self.kind = .Root
     }
     override func assignModel( _ el: Element) {
