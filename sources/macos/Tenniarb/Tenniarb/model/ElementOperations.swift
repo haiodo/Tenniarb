@@ -24,18 +24,16 @@ public class ElementOperation {
     }
 }
 
-public class ElementOperations {
-    var model: ElementModel?
+public class ElementModelStore {
+    public let model: ElementModel
     
-    init( ) {
-    }
-    
-    func setModel(_ model: ElementModel ) {
+    init(_ model:ElementModel ) {
         self.model = model
     }
+    
     func execute( _ action: ElementOperation, _ undoManager: UndoManager?, _ refresh: @escaping () -> Void) {
         if let manager = undoManager {
-            manager.registerUndo(withTarget: self, handler: {(ae: ElementOperations) -> Void in
+            manager.registerUndo(withTarget: self, handler: {(ae: ElementModelStore) -> Void in
                 ae.execute(action, manager, refresh)
             })
         }
@@ -52,26 +50,18 @@ public class ElementOperations {
     }
     
     public func updateName( item: DiagramItem, _ newName: String, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-        if let mdl = self.model {
-            execute(UpdateName(mdl, item.parent!, item, old: item.name, new: newName), undoManager, refresh)
-        }
+        execute(UpdateName(self.model, item.parent!, item, old: item.name, new: newName), undoManager, refresh)
     }
     
     public func updateName( element: Element, _ newName: String, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-        if let mdl = self.model {
-            execute(UpdateElementName(mdl, element, old: element.name, new: newName), undoManager, refresh)
-        }
+        execute(UpdateElementName(self.model, element, old: element.name, new: newName), undoManager, refresh)
     }
     
     public func updatePosition( item: DiagramItem, newPos: CGPoint, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-        if let mdl = self.model {
-            execute(UpdatePosition(mdl, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos), undoManager, refresh)
-        }
+        execute(UpdatePosition(self.model, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos), undoManager, refresh)
     }
     public func add( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
-        if let mdl = self.model {
-            execute(AddElement(mdl, parent, child), undoManager, refresh)
-        }
+        execute(AddElement(self.model, parent, child), undoManager, refresh)
     }
 }
 

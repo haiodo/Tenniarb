@@ -16,7 +16,7 @@ class ViewController: NSViewController {
     
     @IBOutlet var textView: NSTextView!
     
-    var elementModel:ElementModel?
+    var elementStore: ElementModelStore?
     
     var selectedElement: Element?
 
@@ -46,7 +46,7 @@ class ViewController: NSViewController {
     
     @IBAction func outlineTextChanged(_ sender: Any) {
         if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
-            elementModel?.operations.updateName(element: active, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
+            self.elementStore?.updateName(element: active, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
         }
     }
     
@@ -61,8 +61,8 @@ class ViewController: NSViewController {
         
         scene.onLoad()
         
-        if elementModel != nil && self.scene != nil {
-            setElementModel(elementModel: elementModel!)
+        if elementStore != nil && self.scene != nil {
+            setElementModel(elementStore: elementStore!)
         }
     }
     
@@ -87,11 +87,10 @@ class ViewController: NSViewController {
         }
         else {
             // Add root item
-            active = self.elementModel
+            active = self.elementStore?.model
         }
         if let act = active {
-//            act.add(newEl)
-            elementModel?.operations.add(act, newEl, undoManager: self.undoManager, refresh: {()->Void in
+            self.elementStore?.add(act, newEl, undoManager: self.undoManager, refresh: {()->Void in
                 DispatchQueue.main.async(execute: {
                     if act.kind == .Root {
                         self.worldTree.reloadData()
@@ -108,7 +107,7 @@ class ViewController: NSViewController {
     private func handleRemoveElement() {
         if let active = self.selectedElement {
             if let parent = active.parent {
-                parent.remove(active)
+                _ = parent.remove(active)
                 
                 if parent.kind == .Root {
                     selectedElement = nil
@@ -173,16 +172,16 @@ class ViewController: NSViewController {
     }
     
     func updateWindowTitle() {
-        let value = (self.elementModel?.modelName ?? "Unnamed model") + ((self.elementModel?.modified ?? true) ? "*":"")
+        let value = (self.elementStore?.model.modelName ?? "Unnamed model") + ((self.elementStore?.model.modified ?? true) ? "*":"")
         self.title = value
         self.windowTitle.stringValue = value
     }
     
-    public func setElementModel(elementModel: ElementModel) {
-        if let oldModel = self.elementModel {
-            oldModel.onUpdate.removeAll()
+    public func setElementModel(elementStore: ElementModelStore) {
+        if let oldModel = self.elementStore {
+            oldModel.model.onUpdate.removeAll()
         }
-        self.elementModel = elementModel
+        self.elementStore = elementStore
         
         if let um = self.undoManager{
             um.removeAllActions()
@@ -195,7 +194,7 @@ class ViewController: NSViewController {
             um.removeAllActions()
         }
         
-        elementModel.onUpdate.append { (element, kind) in
+        elementStore.model.onUpdate.append { (element, kind) in
             if self.updatingProperties {
                 return
             }
@@ -224,7 +223,7 @@ class ViewController: NSViewController {
                 })
             }
         }
-        scene.setModel(model: elementModel)
+        scene.setModel(store: self.elementStore!)
         scene.onSelection.removeAll()
         scene.onSelection.append({( element ) -> Void in
             self.activeElement = element
@@ -232,7 +231,7 @@ class ViewController: NSViewController {
             self.updateTextProperties()
         })
 
-        scene.setActiveElement(elementModel)
+        scene.setActiveElement(elementStore.model)
         
         worldTree.reloadData()
         // Expand all top level elements
@@ -241,17 +240,12 @@ class ViewController: NSViewController {
         
         var firstChild:Element? = nil
         
-        for e in elementModel.elements {
+        for e in elementStore.model.elements {
             if firstChild == nil {
                 firstChild = e
             }
             worldTree.expandItem(e, expandChildren: true)
-        }
-//        if firstChild != nil {
-//            let selectedIndex = worldTree.selectedRow
-//            worldTree.
-//        }
-        
+        }        
     }
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true

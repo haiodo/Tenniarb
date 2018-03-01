@@ -13,6 +13,6 @@ import Cocoa
 class WindowController: NSWindowController {
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
-        return "Brain Map:" + displayName
+        return displayName
     }
 }

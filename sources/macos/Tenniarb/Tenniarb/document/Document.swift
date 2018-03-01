@@ -9,19 +9,29 @@
 import Cocoa
 
 class Document: NSDocument {
-    var elementModel: ElementModel?
+    var store: ElementModelStore?
     
     var vc: ViewController?
+    
     
     override init() {
         super.init()
         
         // By default create with sample scene.
-        self.elementModel = ElementModelFactory().elementModel
-        self.elementModel?.modelName = "Unnamed"
+        let elementModel = ElementModelFactory().elementModel
+        elementModel.modelName = "Unnamed"
         
-        self.elementModel?.onUpdate.append( onUpdate )
+        updateStore(elementModel)
     }
+    
+    fileprivate func updateStore(_ elementModel: ElementModel) {
+        if let oldStore = store {
+            oldStore.model.onUpdate.removeAll()
+        }
+        elementModel.onUpdate.append( onUpdate )
+        self.store = ElementModelStore(elementModel)
+    }
+
     func onUpdate(element: Element, updateEvent: UpdateEventKind) {
         updateChangeCount(.changeDone)
     }
@@ -35,7 +45,7 @@ class Document: NSDocument {
         
         
         vc = windowController.contentViewController as? ViewController
-        vc?.setElementModel(elementModel: self.elementModel!)
+        vc?.setElementModel(elementStore: self.store!)
     }
     
     override func read(from url: URL, ofType typeName: String) throws {
@@ -49,13 +59,13 @@ class Document: NSDocument {
             if parser.errors.hasErrors() {
                 return
             }
-            if let oldModel = elementModel {
-                oldModel.onUpdate.removeAll()
-            }
-            elementModel = ElementModel.parseTenn(node: node)
-            elementModel?.modelName = url.lastPathComponent
-            vc?.setElementModel(elementModel: self.elementModel!)
-            elementModel?.onUpdate.append( onUpdate )
+            
+            let elementModel = ElementModel.parseTenn(node: node)
+            elementModel.modelName = url.lastPathComponent
+            
+            vc?.setElementModel(elementStore: self.store!)
+            
+            self.updateStore(elementModel)
             self.fileURL = url
         }
         catch {
@@ -65,18 +75,18 @@ class Document: NSDocument {
     
     override var isDocumentEdited: Bool {
         get {
-            return elementModel?.modified ?? true
+            return store?.model.modified ?? true
         }
     }
     
     override func write(to url: URL, ofType typeName: String) throws {
         do {
-            if let em = elementModel {
-                let value = em.toTennStr()
+            if let es = self.store {
+                let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
-                em.modified = false
+                es.model.modified = false
                 
-                em.modelName = url.lastPathComponent
+                es.model.modelName = url.lastPathComponent
                 updateChangeCount(.changeCleared)
                 vc?.updateWindowTitle()
                 self.fileURL = url

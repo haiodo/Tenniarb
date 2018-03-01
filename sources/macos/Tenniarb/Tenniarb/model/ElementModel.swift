@@ -236,12 +236,8 @@ public class ElementModel: Element {
     public var modelName: String = ""
     public var modified: Bool = false
     
-    public var operations: ElementOperations
-    
     init() {
-        self.operations = ElementOperations()
         super.init(name: "Root")
-        self.operations.setModel(self)
         self.kind = .Root
     }
     override func assignModel( _ el: Element) {

@@ -43,7 +43,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
 class SceneDrawView: NSView {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
-    var model:ElementModel?
+    var store: ElementModelStore?
     
     var element: Element?
     
@@ -179,25 +179,26 @@ class SceneDrawView: NSView {
     func onLoad() {
     }
     
-    public func setModel( model:ElementModel ) {
-        if let oldModel = self.model {
-            oldModel.onUpdate.removeAll()
+    func onUpdate(_ element: Element, kind: UpdateEventKind) {
+        // We should be smart anought to not rebuild all drawable scene every time
+        if kind == .Structure  {
+            self.buildScene()
+            self.needsDisplay = true
+        }
+    }
+    
+    public func setModel( store: ElementModelStore ) {
+        if let oldStore = self.store {
+            oldStore.model.onUpdate.removeAll()
         }
         
         if let um = self.undoManager {
             um.removeAllActions()
         }
         
-        self.model = model
+        self.store = store
         
-        self.model?.onUpdate.append( {(element, kind) in
-            // We should be smart anought to not rebuild all drawable scene every time
-            if kind == .Structure  {
-                self.buildScene()
-                self.needsDisplay = true
-            }
-        })
-        
+        self.store?.model.onUpdate.append( self.onUpdate )
     }
     
     public func setActiveElement(_ elementModel: Element ) {
@@ -271,8 +272,7 @@ class SceneDrawView: NSView {
                 if let tv = textView {
                     let textValue = tv.string
                     if textValue.count > 0 {
-                        self.model?.operations.updateName(item: active, textValue, undoManager: self.undoManager, refresh: sheduleRedraw)
-//                        self.actionExecutor?.execute(UpdateName(self.model!, self.element!, active, old: active.name, new: textValue))
+                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: sheduleRedraw)
                     }
                 }
             }
@@ -455,7 +455,7 @@ class SceneDrawView: NSView {
             }
             else {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
-                    self.model?.operations.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
+                    self.store?.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
                 }
                 self.setActiveElement(de)
             }

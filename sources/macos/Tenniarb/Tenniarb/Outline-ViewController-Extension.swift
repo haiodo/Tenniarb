@@ -53,8 +53,8 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             return count
         }
         // Root has only elements
-        if let em = controller.elementModel {
-            return em.elements.count
+        if let es = controller.elementStore {
+            return es.model.elements.count
         }
         return 0
     }
@@ -72,8 +72,8 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             return el.elements[index]
         }
         
-        if let em = controller.elementModel {
-            return em.elements[index]
+        if let es = controller.elementStore {
+            return es.model.elements[index]
         }
         return ""
     }
@@ -133,7 +133,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             self.controller.onElementSelected(el)
         }
         else {
-            self.controller.onElementSelected(controller.elementModel)
+            self.controller.onElementSelected(controller.elementStore?.model)
         }
     }
 }
