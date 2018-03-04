@@ -299,7 +299,6 @@ class SceneDrawView: NSView {
                 width: max(deBounds.width, 100),
                 height: deBounds.height
             )
-            Swift.debugPrint(bounds)
             editBox = NSTextField(frame: bounds)
             if self.editBoxDelegate == nil {
                 self.editBoxDelegate = EditTitleDelegate(self)
@@ -329,7 +328,7 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
-    fileprivate func addNewItem() {
+    func addNewItem() {
         if let active = self.activeElement {
             if active.kind == .Item {
                 // Create and add to activeEl
@@ -358,6 +357,26 @@ class SceneDrawView: NSView {
         }
     }
     
+    func showAlert(question: String, _ button1: String = "Yes", _ button2: String = "Cancel", _ text: String = "") -> Bool {
+        let alert = NSAlert()
+        alert.messageText = question
+        alert.informativeText = text
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: button1)
+        alert.addButton(withTitle: button2)
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+    
+    func removeItem() {
+        // Backspace character
+        if let active = self.activeElement  {
+            if showAlert(question: "Would you like to remove selected item?") {
+                active.parent?.remove(active)
+                sheduleRedraw()
+            }
+        }
+    }
+    
     override func keyDown(with event: NSEvent) {
         if event.characters == "\t" {
             addNewItem()
@@ -368,11 +387,7 @@ class SceneDrawView: NSView {
                 editTitle(active)
             }
         }
-        else if event.characters == "\u{7f}" { // Backspace character
-            if let active = self.activeElement  {
-                active.parent?.remove(active)
-                sheduleRedraw()
-            }
+        else if event.characters == "\u{7f}" { removeItem()
         }
 //        else if event.characters == " " {
 //            if let active = self.activeElement  {

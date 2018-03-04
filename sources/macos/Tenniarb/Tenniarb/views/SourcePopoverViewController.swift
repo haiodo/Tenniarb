@@ -14,12 +14,16 @@ class SourcePopoverViewController: NSViewController {
     
     @IBOutlet var textViewer: NSTextView!
     
-    override func viewDidLoad() {
+    fileprivate func updateContent() {
         // Update source content.
         if let active = self.element {
             let txtValue = active.toTennStr(includeSubElements: false, includeItems: true)
             textViewer.textStorage?.append(NSAttributedString(string: txtValue))
         }
+    }
+    
+    override func viewDidLoad() {
+        updateContent()
     }
     @IBAction func applyClose(_ sender: NSButton) {
         dismissViewController(self)
@@ -27,5 +31,6 @@ class SourcePopoverViewController: NSViewController {
     
     public func setElement(element: Element) {
         self.element = element
+        self.updateContent()
     }
 }

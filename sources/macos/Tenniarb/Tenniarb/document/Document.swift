@@ -45,6 +45,7 @@ class Document: NSDocument {
         
         
         vc = windowController.contentViewController as? ViewController
+        
         vc?.setElementModel(elementStore: self.store!)
     }
     

@@ -839,16 +839,21 @@
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="673" y="2" width="26" height="27"/>
-                                                                            <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
+                                                                            <rect key="frame" x="610" y="2" width="89" height="27"/>
+                                                                            <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
-                                                                                    <segment image="NSTouchBarListViewTemplate" width="20"/>
+                                                                                    <segment toolTip="Add item(Tab key)" image="NSAddTemplate" width="20"/>
+                                                                                    <segment toolTip="Remove item(Backspace key)" image="NSRemoveTemplate" tag="1">
+                                                                                        <nil key="label"/>
+                                                                                    </segment>
+                                                                                    <segment image="NSTouchBarListViewTemplate" tag="2">
+                                                                                        <nil key="label"/>
+                                                                                    </segment>
                                                                                 </segments>
                                                                             </segmentedCell>
                                                                             <connections>
                                                                                 <action selector="clickExtraButton:" target="5gI-5U-AMq" id="bm8-Ao-Ywn"/>
-                                                                                <segue destination="5uG-yi-xCn" kind="popover" popoverAnchorView="zbO-zz-O9G" popoverBehavior="t" preferredEdge="minX" id="3cu-cn-G1q"/>
                                                                             </connections>
                                                                         </segmentedControl>
                                                                     </subviews>
@@ -963,7 +968,7 @@
         <!--Source Popover View Controller-->
         <scene sceneID="rag-Qm-wj7">
             <objects>
-                <viewController id="5uG-yi-xCn" customClass="SourcePopoverViewController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SourcePopup" id="5uG-yi-xCn" customClass="SourcePopoverViewController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Y5s-io-BTt">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="566"/>
                         <autoresizingMask key="autoresizingMask"/>

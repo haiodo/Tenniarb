@@ -38,7 +38,12 @@ class ViewController: NSViewController {
         
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
-        case 0: break;
+        case 0:
+            self.scene.addNewItem()
+        case 1:
+            self.scene.removeItem()
+        case 2:
+            self.showElementSource()
         default: break;
         }
     }
@@ -77,6 +82,25 @@ class ViewController: NSViewController {
         default:
             break
         }
+    }
+    
+    private func showElementSource() {
+        let popupController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SourcePopup")) as! SourcePopoverViewController
+        
+        let popover = NSPopover()
+        popover.contentViewController = popupController
+        popover.contentSize = popupController.view.frame.size
+        
+        popover.behavior = .transient
+        popover.animates = false
+        
+        
+        if let active = self.selectedElement {
+            popupController.setElement(element: active)
+        }
+        
+        self.presentViewController(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .minX, behavior: .transient)
+        
     }
     private func handleAddElement() {
         let newEl = Element(name: "Unnamed element: " + String(itemIndex))
