@@ -900,7 +900,7 @@
                                                             <rect key="frame" x="1" y="1" width="701" height="98"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textView drawsBackground="NO" verticallyResizable="YES" findStyle="panel" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" smartInsertDelete="YES" id="LDJ-EQ-s6n">
+                                                                <textView drawsBackground="NO" verticallyResizable="YES" findStyle="bar" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" smartInsertDelete="YES" id="LDJ-EQ-s6n">
                                                                     <rect key="frame" x="0.0" y="0.0" width="701" height="98"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <color key="backgroundColor" white="1" alpha="0.80091502568493156" colorSpace="calibratedWhite"/>

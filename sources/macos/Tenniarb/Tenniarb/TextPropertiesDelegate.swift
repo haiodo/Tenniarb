@@ -63,7 +63,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
     }
     
     func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        Swift.debugPrint("Selector:" + commandSelector.description)
+//        Swift.debugPrint("Selector:" + commandSelector.description)
         return false
     }
     

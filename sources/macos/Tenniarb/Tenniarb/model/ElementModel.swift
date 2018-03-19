@@ -101,7 +101,6 @@ public class Element {
         self.items.append(item)
         
         assignModel(item)
-        self.model?.modified(self, .Structure)
     }
     
     /// Add a diagram item to current diagram
@@ -120,8 +119,6 @@ public class Element {
         else {
             self.elements.append(el)
         }
-        
-        self.model?.modified(self, .Structure)
     }
     
     // Add a child element to current diagram
@@ -140,8 +137,6 @@ public class Element {
             self.items.append(link)
             assignModel(link)
         }
-        
-        self.model?.modified(self, .Structure)
         return item
     }
     
@@ -161,8 +156,6 @@ public class Element {
             self.items.append(target)
             assignModel(target)
         }
-        
-        self.model?.modified(self, .Structure)
     }
     
     func getItem( _ el: Element) -> DiagramItem? {
@@ -195,7 +188,6 @@ public class Element {
             self.items.append(link)
             assignModel(link)
             
-            self.model?.modified(self, .Structure)
             return item
         }
         return nil
@@ -203,7 +195,6 @@ public class Element {
     func remove(_ element: Element) -> Int {
         if let index = self.elements.index(of: element) {
             self.elements.remove(at: index)
-            self.model?.modified(self, .Structure)
             return index
         }
         return -1
@@ -223,7 +214,6 @@ public class Element {
             
             return false
         }
-        self.model?.modified(self, .Structure)
     }
 }
 

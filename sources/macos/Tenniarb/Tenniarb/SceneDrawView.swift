@@ -121,18 +121,26 @@ class SceneDrawView: NSView {
     func sheduleRedraw() {
         sheduleRedraw(invalidRect: nil)
     }
+    var lastInvalidRect: CGRect? = nil
     fileprivate func sheduleRedraw( invalidRect: CGRect? ) {
         if !self.drawScheduled {
             drawScheduled = true
+            lastInvalidRect = invalidRect
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
                 if let rect = invalidRect {
                     self.setNeedsDisplay(rect)
+                    self.lastInvalidRect = nil
                 }
                 else {
                     self.needsDisplay = true
                 }
                 self.drawScheduled = false
             })
+        }
+        else {
+            if lastInvalidRect != nil && invalidRect != nil {
+                lastInvalidRect = lastInvalidRect!.union(invalidRect!)
+            }
         }
     }
     
@@ -334,13 +342,22 @@ class SceneDrawView: NSView {
                 // Create and add to activeEl
                 let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
                 self.createIndex += 1
-                newEl.x = active.x + 100
+                
+                var offset = CGFloat(100.0)
+                if let dr = scene?.drawables[active] {
+                    offset = CGFloat(dr.getBounds().width + 10)
+                }
+                
+                newEl.x = active.x + offset
                 newEl.y = active.y
                 
-                self.element?.add(source: active, target: newEl)
+                // Copy parent properties
+                for p in active.properties {
+                    newEl.properties.append(p.clone())
+                }
                 
+                self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
                 self.setActiveElement(newEl)
-                
                 sheduleRedraw()
             }
         }
@@ -351,9 +368,7 @@ class SceneDrawView: NSView {
             
             newEl.x = 0
             newEl.y = 0
-            self.element?.add(newEl)
-            
-            sheduleRedraw()
+            self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
         }
     }
     
@@ -370,10 +385,8 @@ class SceneDrawView: NSView {
     func removeItem() {
         // Backspace character
         if let active = self.activeElement  {
-            if showAlert(question: "Would you like to remove selected item?") {
-                active.parent?.remove(active)
-                sheduleRedraw()
-            }
+            self.store?.remove(active.parent!, item: active, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+            sheduleRedraw()
         }
     }
     
@@ -460,7 +473,7 @@ class SceneDrawView: NSView {
                         return false
                     }) == nil {
                         // Add item since not pressent
-                        element?.add(source: source, target: target)
+                        store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.sheduleRedraw)
                     }
                 }
                 
@@ -536,7 +549,7 @@ class SceneDrawView: NSView {
                 self.lineToPoint = CGPoint(x: self.x, y: self.y )
                 self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
                 
-                needsDisplay = true
+                sheduleRedraw()
             }
             else {
                 if let pos = self.dragMap[de] {
@@ -545,7 +558,10 @@ class SceneDrawView: NSView {
                 
                     if let em = self.element {
                         em.model?.modified(em, .Layout)
-                        self.scene?.updateLayout(de, newPos)
+                        let dirtyRegion = self.scene!.updateLayout(de, newPos)
+                        
+                        let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
+                        sheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
                     }
                 }
             }
@@ -554,8 +570,6 @@ class SceneDrawView: NSView {
             ox += event.deltaX
             oy -= event.deltaY
         }
-        
-        sheduleRedraw()
     }
     
     func updateMousePosition(_ event: NSEvent) {
@@ -596,11 +610,11 @@ class SceneDrawView: NSView {
             
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
             
-            context.saveGState()
+//            context.saveGState()
             context.saveGState()
 //            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
 //            scene.drawBox(context: context)
-            context.restoreGState()
+//            context.restoreGState()
             scene.layout(bounds)
             
             // TODO: Add dirty rect filteting

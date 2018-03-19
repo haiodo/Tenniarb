@@ -379,12 +379,21 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func updateLayout(_ item: DiagramItem, _ pos: CGPoint) {
+    func updateLayout(_ item: DiagramItem, _ pos: CGPoint) -> CGRect {
         updateActiveElement()
+        
+        var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
+        
+        if let ad = activeDrawable {
+            result = ad.getBounds()
+        }
+        
         if let box = drawables[item] as? RoundBox {
+            result = result.union(box.getBounds())
             box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
         }
         if let box = drawables[item] as? EmptyBox {
+            result = result.union(box.getBounds())
             box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
         }
         // Update links
@@ -392,6 +401,8 @@ open class DrawableScene: DrawableContainer {
             for l in links {
                 if let data: LinkElementData = l.getData(.LinkData) {
                     if let lnkDr = drawables[l] as? DrawableLine {
+                        result = result.union(lnkDr.getBounds())
+                        
                         let sourceRect = drawables[data.source]?.getBounds()
                         let targetRect = drawables[data.target]?.getBounds()
                         
@@ -414,10 +425,12 @@ open class DrawableScene: DrawableContainer {
                                 lnkDr.target = p2
                             }
                         }
+                        result = result.union(lnkDr.getBounds())
                     }
                 }
             }
         }
+        return result
     }
     
     open override func layout( _ bounds: CGRect ) {

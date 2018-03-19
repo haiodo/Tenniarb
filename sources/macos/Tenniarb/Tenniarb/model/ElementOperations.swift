@@ -12,6 +12,7 @@ import Cocoa
 public class ElementOperation {
     var model: ElementModel
     var isUndoCalled: Bool = true
+    var sendEvent: Bool = true
     
     init( _ model: ElementModel ) {
         self.model = model
@@ -21,6 +22,36 @@ public class ElementOperation {
     }
     func undo() {
         
+    }
+}
+
+/*
+    A composite operation for Element inside changes.
+*/
+public class CompositeOperation: ElementOperation {
+    var operations: [ElementOperation]
+    var notifier: Element
+    
+    init(_ model:ElementModel, notifier: Element, _ ops: ElementOperation...) {
+        self.operations = ops
+        self.notifier = notifier
+        for op in self.operations {
+            op.sendEvent = false
+        }
+        super.init(model)
+    }
+    
+    override func apply() {
+        for op in self.operations {
+            op.apply()
+        }
+        model.modified(self.notifier, .Structure )
+    }
+    override func undo() {
+        for op in self.operations.reversed() {
+            op.apply()
+        }
+        model.modified(self.notifier, .Structure )
     }
 }
 
@@ -62,6 +93,29 @@ public class ElementModelStore {
     }
     public func add( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
         execute(AddElement(self.model, parent, child), undoManager, refresh)
+    }
+    
+    public func remove( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void  ) {
+        execute(RemoveElement(self.model, parent, child), undoManager, refresh)
+    }
+    
+    public func add( _ element: Element, _ item: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+        //TODO: Need do via command
+        element.add(item)
+        self.model.modified(element, .Structure)
+    }
+    
+    public func add( _ element: Element, source: DiagramItem, target: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+        //TODO: Need do via command
+        element.add(source: source, target: target)
+        
+        self.model.modified(element, .Structure)
+    }
+    
+    public func remove( _ element: Element, item: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+        //TODO: Need do via command
+        element.remove(item)
+        self.model.modified(element, .Structure)
     }
 }
 
@@ -179,6 +233,7 @@ class AddElement: ElementOperation {
         _ = self.parent.remove(child)
     }
 }
+
 
 class RemoveElement: ElementOperation {
     let parent: Element
