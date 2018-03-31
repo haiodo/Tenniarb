@@ -19,22 +19,13 @@ element "Tenniarb" {
         item "Ten" {
             pos -126.0 20.0
         }
-        link "Ten" "Tenn"
-        item "Tenn" {
-            pos -136.0 -45.0
+        item "Notes" {
+            pos -86.0 -23.0
         }
-        link "Niarb" "Iarb"
-        item "Iarb" {
-            pos -68.0 -44.0
+        item "10" {
+            pos -117.85546875 -23.0
         }
-        link "Iarb" "Brai"
-        item "Brai" {
-            pos -64.0 -94.0
-        }
-        link "Tenn" "Nnet"
-        item "Nnet" {
-            pos -115.0 -93.0
-        }
+        link "Ten" "10"
     }
     element "MVP" {
         item "MVP" {
