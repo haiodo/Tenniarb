@@ -26,13 +26,13 @@ class Document: NSDocument {
     
     fileprivate func updateStore(_ elementModel: ElementModel) {
         if let oldStore = store {
-            oldStore.model.onUpdate.removeAll()
+            oldStore.onUpdate.removeAll()
         }
-        elementModel.onUpdate.append( onUpdate )
+        self.store?.onUpdate.append( onUpdate )
         self.store = ElementModelStore(elementModel)
     }
 
-    func onUpdate(element: Element, updateEvent: UpdateEventKind) {
+    func onUpdate(element: Element, updateEvent: ModelEventKind) {
         updateChangeCount(.changeDone)
     }
     
@@ -76,7 +76,7 @@ class Document: NSDocument {
     
     override var isDocumentEdited: Bool {
         get {
-            return store?.model.modified ?? true
+            return store?.modified ?? true
         }
     }
     
@@ -85,7 +85,7 @@ class Document: NSDocument {
             if let es = self.store {
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
-                es.model.modified = false
+                es.modified = false
                 
                 es.model.modelName = url.lastPathComponent
                 updateChangeCount(.changeCleared)

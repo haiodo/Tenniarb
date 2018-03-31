@@ -68,6 +68,7 @@
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
 		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
 		0C4F1471200889CC009C9EC5 /* ColorNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorNames.swift; sourceTree = "<group>"; };
+		0C571C59206A069600ACDC6D /* Tenniarb.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tenniarb.entitlements; sourceTree = "<group>"; };
 		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -126,6 +127,7 @@
 		0C2375ED1ED838D900ECB516 /* Tenniarb */ = {
 			isa = PBXGroup;
 			children = (
+				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
 				0C44D7571EE316F8001B7D01 /* views */,
@@ -294,6 +296,11 @@
 						CreatedOnToolsVersion = 8.3.2;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+						};
 					};
 					0C5C6D191EFF655B00714971 = {
 						CreatedOnToolsVersion = 9.0;

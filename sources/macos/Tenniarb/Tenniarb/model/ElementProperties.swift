@@ -18,7 +18,7 @@ extension Element {
         return items.toStr()
     }
     
-    func fromTennProps(_ node: TennNode ) {
+    func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         self.properties = []
         
         var linkElements:[(TennNode, DiagramItem)] = []
@@ -32,7 +32,7 @@ extension Element {
             
             Element.parseElementData(self, cmdName, blChild, &linkElements)
         })
-        self.model?.modified(self, .Structure)
+        store.modified(self, .Structure)
     }
 }
 
@@ -51,7 +51,7 @@ extension DiagramItem {
         
         return items.toStr()
     }
-    func fromTennProps(_ node: TennNode ) {
+    func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {
             self.properties = []
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
@@ -79,7 +79,7 @@ extension DiagramItem {
             })
         }
         if let p = self.parent {
-            p.model?.modified(p, .Structure)
+            store.modified(p, .Structure)
         }
     }
 }

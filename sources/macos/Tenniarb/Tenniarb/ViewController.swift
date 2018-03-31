@@ -23,7 +23,7 @@ class ViewController: NSViewController {
     var activeElement: DiagramItem?
     
     var updateScheduled: Int = 0
-    var updateKindScheduled: UpdateEventKind = .Layout
+    var updateKindScheduled: ModelEventKind = .Layout
     
     var updateElements:[Element] = []
     
@@ -196,14 +196,14 @@ class ViewController: NSViewController {
     }
     
     func updateWindowTitle() {
-        let value = (self.elementStore?.model.modelName ?? "Unnamed model") + ((self.elementStore?.model.modified ?? true) ? "*":"")
+        let value = (self.elementStore?.model.modelName ?? "Unnamed model") + ((self.elementStore?.modified ?? true) ? "*":"")
         self.title = value
         self.windowTitle.stringValue = value
     }
     
     public func setElementModel(elementStore: ElementModelStore) {
-        if let oldModel = self.elementStore {
-            oldModel.model.onUpdate.removeAll()
+        if let oldStore = self.elementStore {
+            oldStore.onUpdate.removeAll()
         }
         self.elementStore = elementStore
         
@@ -218,7 +218,7 @@ class ViewController: NSViewController {
             um.removeAllActions()
         }
         
-        elementStore.model.onUpdate.append { (element, kind) in
+        elementStore.onUpdate.append { (element, kind) in
             if self.updatingProperties {
                 return
             }
@@ -274,10 +274,10 @@ class ViewController: NSViewController {
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
         if let active = activeElement {
-            active.fromTennProps(node)
+            active.fromTennProps(self.elementStore!, node)
         }
         else if let element = self.selectedElement {
-            element.fromTennProps(node)
+            element.fromTennProps(self.elementStore!,  node)
         }
         updatingProperties = false
     }

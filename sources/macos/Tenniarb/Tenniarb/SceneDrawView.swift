@@ -109,7 +109,7 @@ class SceneDrawView: NSView {
     var prevTouch: NSTouch? = nil
     
     @objc override func touchesBegan(with event: NSEvent) {
-        if self.mode == .Editing || self.mode == .LineDrawing {
+        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
         }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
@@ -145,7 +145,7 @@ class SceneDrawView: NSView {
     }
     
     @objc override func touchesMoved(with event: NSEvent) {
-        if self.mode == .Editing || self.mode == .LineDrawing {
+        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
         }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
@@ -187,17 +187,20 @@ class SceneDrawView: NSView {
     func onLoad() {
     }
     
-    func onUpdate(_ element: Element, kind: UpdateEventKind) {
+    func onUpdate(_ element: Element, kind: ModelEventKind) {
         // We should be smart anought to not rebuild all drawable scene every time
         if kind == .Structure  {
             self.buildScene()
-            self.needsDisplay = true
+            sheduleRedraw()
+        }
+        else {
+            sheduleRedraw()
         }
     }
     
     public func setModel( store: ElementModelStore ) {
         if let oldStore = self.store {
-            oldStore.model.onUpdate.removeAll()
+            oldStore.onUpdate.removeAll()
         }
         
         if let um = self.undoManager {
@@ -206,7 +209,7 @@ class SceneDrawView: NSView {
         
         self.store = store
         
-        self.store?.model.onUpdate.append( self.onUpdate )
+        self.store?.onUpdate.append( self.onUpdate )
     }
     
     public func setActiveElement(_ elementModel: Element ) {
@@ -557,7 +560,7 @@ class SceneDrawView: NSView {
                     self.dragMap[de] = newPos
                 
                     if let em = self.element {
-                        em.model?.modified(em, .Layout)
+                        self.store?.modified(em, .Layout)
                         let dirtyRegion = self.scene!.updateLayout(de, newPos)
                         
                         let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
@@ -569,6 +572,7 @@ class SceneDrawView: NSView {
         else {
             ox += event.deltaX
             oy -= event.deltaY
+            sheduleRedraw()
         }
     }
     
@@ -597,7 +601,6 @@ class SceneDrawView: NSView {
     }
     
     override func draw(_ dirtyRect: NSRect) {
-        
         if( self.element == nil) {
             return
         }
@@ -610,12 +613,17 @@ class SceneDrawView: NSView {
             
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
             
+            let sceneDirty = CGRect(
+                origin: CGPoint(x: dirtyRect.origin.x - scene.offset.x, y: dirtyRect.origin.y-scene.offset.y),
+                size:dirtyRect.size
+            )
+            
 //            context.saveGState()
             context.saveGState()
 //            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
 //            scene.drawBox(context: context)
 //            context.restoreGState()
-            scene.layout(bounds)
+            scene.layout(bounds, sceneDirty)
             
             // TODO: Add dirty rect filteting
             scene.draw(context: context)

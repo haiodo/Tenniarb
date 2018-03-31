@@ -8,12 +8,6 @@
 
 import Foundation
 
-
-public enum UpdateEventKind {
-    case Structure
-    case Layout
-}
-
 public enum ElementKind {
     case Root
     case Element // A reference to element
@@ -97,10 +91,16 @@ public class Element {
     }
     
     /// Add a diagram item to current diagram
-    func add( _ item: DiagramItem) {
-        self.items.append(item)
+    func add( _ item: DiagramItem, at: Int? =  nil) {
         
         assignModel(item)
+        
+        if let index = at {
+            self.items.insert(item, at: index)
+        }
+        else {
+            self.items.append(item)
+        }
     }
     
     /// Add a diagram item to current diagram
@@ -141,7 +141,7 @@ public class Element {
     }
     
     // Add a child element to current diagram
-    func add( source: DiagramItem, target: DiagramItem ) {
+    fileprivate func add( source: DiagramItem, target: DiagramItem ) {
         // We also need to add link from self to this one
         let link = DiagramItem(kind: .Link, name:"")
         link.setData(.LinkData, LinkElementData(source: source, target: target))
@@ -200,18 +200,38 @@ public class Element {
         return -1
     }
     
-    func remove(_ item: DiagramItem) {
-        self.items = self.items.filter {
+    func findLinks(_ item: DiagramItem) -> [DiagramItem] {
+        var result:[DiagramItem] = []
+        for itm in self.items {
+            // Need to check if item is Link and source or target is our client
+            if itm.kind == .Link, let lData: LinkElementData = itm.getData(.LinkData) {
+                if lData.source.id == item.id || lData.target.id == item.id {
+                    result.append(itm)
+                }
+            }
+        }
+        return result
+    }
+    
+    func remove(_ item: DiagramItem) -> Int {
+        if let index = self.items.index(of: item) {
+            self.items.remove(at: index)
+            return index
+        }
+        return -1
+    }
+    
+    func getRelatedItems(_ item: DiagramItem ) -> [DiagramItem] {
+        return self.items.filter {
             // Need to check if item is Link and source or target is our client
             if $0.kind == .Link, let lData: LinkElementData = $0.getData(.LinkData) {
                 if lData.source.id == item.id || lData.target.id == item.id {
-                    return false
+                    return true
                 }
             }
-            if $0.id != item.id {
+            if $0.id == item.id {
                 return true
             }
-            
             return false
         }
     }
@@ -221,10 +241,7 @@ public class Element {
  A root of element map
  */
 public class ElementModel: Element {
-    public var onUpdate: [(_ item:Element, _ kind: UpdateEventKind) -> Void] = []
-    
     public var modelName: String = ""
-    public var modified: Bool = false
     
     init() {
         super.init(name: "Root")
@@ -236,17 +253,6 @@ public class ElementModel: Element {
         // Assign all childs a proper model
         for child in el.elements {
             assignModel(child)
-        }
-    }
-    
-    func makeNonModified() {
-        modified = false
-    }
-    
-    func modified(_ el: Element, _ kind: UpdateEventKind ) {
-        modified = true
-        for op in onUpdate {
-            op(el, kind)
         }
     }
 }

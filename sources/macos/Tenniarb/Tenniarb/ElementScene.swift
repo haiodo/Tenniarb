@@ -22,7 +22,7 @@ public protocol Drawable {
     func draw( context: CGContext, at point: CGPoint)
     
     /// Layout children
-    func layout( _ bounds: CGRect )
+    func layout( _ bounds: CGRect, _ dirty: CGRect )
     
     /// Return bounds of element
     func getBounds() -> CGRect
@@ -44,7 +44,8 @@ open class ItemDrawable: Drawable {
     open func draw(context: CGContext, at point: CGPoint) {
     }
     
-    open func layout(_ bounds: CGRect) {
+    open func layout(_ bounds: CGRect, _ dirty: CGRect) {
+        visible = true
     }
     public func getBounds() -> CGRect {
         return bounds
@@ -53,7 +54,6 @@ open class ItemDrawable: Drawable {
         return visible
     }
     public func update() {
-        
     }
 }
 
@@ -139,15 +139,16 @@ open class DrawableContainer: ItemDrawable {
             }
         }
     }
-    open override func layout( _ bounds: CGRect ) {
+    open override func layout( _ bounds: CGRect, _ dirty: CGRect ) {
         let selfBounds = self.getBounds()
+
         if let ch = self.children {
             for c in ch {
-                if c.isVisible() {
-                    c.layout( selfBounds  )
-                }
+                c.layout( selfBounds, dirty )
             }
         }
+        let newBounds = self.getBounds()
+        visible = dirty.intersects(newBounds)
     }
     
     open override func draw(context: CGContext, at point: CGPoint) {
@@ -433,9 +434,9 @@ open class DrawableScene: DrawableContainer {
         return result
     }
     
-    open override func layout( _ bounds: CGRect ) {
+    open override func layout( _ bounds: CGRect, _ dirty: CGRect ) {
         self.bounds = bounds
-        super.layout(self.bounds)
+        super.layout(self.bounds, dirty)
     }
     
     open func draw(context: CGContext) {
@@ -759,7 +760,7 @@ public class TextBox: Drawable {
         q.draw(at: CGPoint(x: point.x + self.point.x + 5, y: point.y + self.point.y+4), withAttributes: textFontAttributes)
     }
     
-    public func layout(_ bounds: CGRect) {
+    public func layout(_ bounds: CGRect, _ dirty: CGRect) {
         // Put in centre of bounds
         self.point = CGPoint(x: (bounds.width-size.width)/2 , y: (bounds.height-size.height)/2)
     }
@@ -845,7 +846,7 @@ public class DrawableLine: ItemDrawable {
         context.restoreGState()
     }
     
-    public override func layout(_ bounds: CGRect) {
+    public override func layout(_ bounds: CGRect, _ dirty: CGRect) {
         
     }
     
@@ -922,7 +923,7 @@ public class SelectorBox: Drawable {
         context.restoreGState()
     }
     
-    public func layout(_ bounds: CGRect) {
+    public func layout(_ bounds: CGRect, _ dirty: CGRect) {
         
     }
     
@@ -978,7 +979,7 @@ public class SelectorLine: ItemDrawable {
         context.restoreGState()
     }
     
-    public override func layout(_ bounds: CGRect) {
+    public override func layout(_ bounds: CGRect, _ dirty: CGRect) {
         
     }
     
@@ -1038,7 +1039,7 @@ public class DrawableMultiLine: ItemDrawable {
         context.restoreGState()
     }
     
-    public override func layout(_ bounds: CGRect) {
+    public override func layout(_ bounds: CGRect, _ dirty: CGRect) {
         
     }
     
