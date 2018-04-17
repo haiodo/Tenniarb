@@ -105,6 +105,7 @@ class ViewController: NSViewController {
             searchBox!.parentView = self.view
             
             searchBox!.closeAction = {() in self.hideSearchBox()}
+            searchBox!.setActive = {(item) in self.scene.setActiveElement(item)}
             
             self.presentViewController(searchBox!, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
         }

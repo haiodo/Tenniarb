@@ -24,6 +24,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     var currentItems: [DiagramItem] = []
     
     var closeAction: (() -> Void)?
+    var setActive: ((_ item: DiagramItem) -> Void)?
     
     var searchResultDelegate: SearchBoxResultDelegate?
     
@@ -163,12 +164,10 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
-//        let selectedIndex = controller.worldTree.selectedRow
-//        if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
-//            self.controller.onElementSelected(el)
-//        }
-//        else {
-//            self.controller.onElementSelected(controller.elementStore?.model)
-//        }
+        let selectedIndex = controller.resultView.selectedRow
+        if let el = controller.resultView.item(atRow: selectedIndex) as? DiagramItem {
+            self.controller.setActive!(el)
+            self.controller.close()
+        }
     }
 }
