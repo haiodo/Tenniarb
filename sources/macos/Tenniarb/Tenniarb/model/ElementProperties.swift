@@ -32,7 +32,7 @@ extension Element {
             
             Element.parseElementData(self, cmdName, blChild, &linkElements)
         })
-        store.modified(self, .Structure)
+        store.modified(ModelEvent(kind: .Structure, element: self))
     }
 }
 
@@ -79,7 +79,7 @@ extension DiagramItem {
             })
         }
         if let p = self.parent {
-            store.modified(p, .Structure)
+            store.modified( ModelEvent(kind: .Structure, element: p))
         }
     }
 }

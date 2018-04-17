@@ -38,9 +38,13 @@ class OutlineNSTableRowView: NSTableRowView {
 
 class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
     let controller: ViewController
+    var draggingItem: Element? = nil
+    
     init(_ controller: ViewController ) {
         self.controller = controller
+        controller.worldTree.registerForDraggedTypes([NSPasteboard.PasteboardType.string])
     }
+    
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         // Elements and diagram items
         if let el = item as? Element {
@@ -136,5 +140,46 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             self.controller.onElementSelected(controller.elementStore?.model)
         }
     }
+    
+    func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any) -> NSPasteboardWriting? {
+        
+        let pp = NSPasteboardItem()
+        
+        // working as expected here
+        if let fi = item as? Element {
+            if fi.kind == .Root {
+                return nil
+            }
+            draggingItem = fi
+            pp.setString( fi.toTennStr(), forType: NSPasteboard.PasteboardType.string )
+        }
+        
+        return pp
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+        
+        if let element = item as? Element, let dragItem = self.draggingItem {
+            // Check if not moving item into one of its parents.
+//            if element == dragItem {
+//                return NSDragOperation.
+//            }
+//
+            print( "validate: \(element.name) at \(index)")
+        }
+        
+        
+        
+        return NSDragOperation.move
+        //
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
+        
+        print( "accept drop: \((item as? Element)?.name) at \(index)")
+        draggingItem = nil
+        return true
+    }
+    
 }
 

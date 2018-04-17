@@ -29,28 +29,28 @@ element "Tenniarb" {
     }
     element "MVP" {
         item "MVP" {
-            pos -218.0 110.0
+            pos -247.0 126.0
             color "#0022ee"
             font-size 25
             color red
         }
         link "MVP" "UI"
         item "UI" {
-            pos -238.0 -14.0
+            pos -240.0 -43.0
         }
         link "UI" "Scene Draw"
         item "Scene Draw" {
-            pos -491.0 -120.0
+            pos -492.0 -55.0
             color green
         }
         link "UI" "Editing"
         item "Editing" {
-            pos -130.0 -42.0
+            pos -61.0 -35.0
             color "#00ee00"
         }
         link "Editing" "Titles"
         item "Titles" {
-            pos -81.0 -93.0
+            pos -64.0 -95.0
             color green
             font-size 12
         }
@@ -64,22 +64,23 @@ element "Tenniarb" {
         item "Content assist" {
             pos 45.0 -133.0
             color yellow
+            font-size 12
         }
         link "Scene Draw" "Layout positions"
         item "Layout positions" {
-            pos -591.0 -71.0
+            pos -614.0 -48.0
             color green
             font-size 12
         }
         link "Scene Draw" "Items"
         item "Items" {
-            pos -567.0 -133.0
+            pos -559.0 -92.0
             color green
             font-size 12
         }
         link "Scene Draw" "Links"
         item "Links" {
-            pos -555.0 -210.0
+            pos -535.0 -139.0
             color green
             font-size 12
         }
@@ -121,20 +122,20 @@ element "Tenniarb" {
         link "Outline" "D&D"
         item "D&D" {
             pos -594.0 300.0
-            color red
+            color cyan
         }
         link "Scene Draw" "Classes"
         item "Classes" {
-            pos -469.0 -202.0
+            pos -475.0 -156.0
             color red
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
-            pos -382.0 -201.0
+            pos -406.0 -111.0
         }
         link "Scene Draw" "Colors"
         item "Colors" {
-            pos -457.0 -30.0
+            pos -471.0 7.0
             color green
             font-size 12
         }
@@ -146,137 +147,143 @@ element "Tenniarb" {
         }
         link "MVP" "Presentation materials"
         item "Presentation materials" {
-            pos -242.0 256.0
+            pos -333.0 266.0
             color purple
             font-size 12
         }
         link "Presentation materials" "Site"
         item "Site" {
-            pos -272.0 318.0
+            pos -351.0 426.0
             font-size 12
         }
         link "Presentation materials" "App Store"
         item "App Store" {
-            pos -118.0 387.0
+            pos -254.0 386.0
             font-size 12
         }
         link "Site" "Domain"
         item "Domain" {
-            pos -354.0 391.0
+            pos -407.0 450.0
             font-size 12
         }
         item "Registration" {
-            pos -192.0 446.0
+            pos -298.0 519.0
             color green
+            font-size 12
         }
         link "Registration" "App Store"
         link "App Store" "Publication"
         item "Publication" {
-            pos -56.0 456.0
+            pos -234.0 492.0
             font-size 12
         }
         link "MVP" "Quality"
         item "Quality" {
-            pos -65.0 270.0
+            pos -156.0 322.0
             font-size 12
         }
         link "Quality" "Testing"
         item "Testing" {
-            pos -78.0 316.0
+            pos -157.0 369.0
             font-size 12
         }
         link "Quality" "Functional testing"
         item "Functional testing" {
-            pos -14.0 305.0
+            pos -158.0 425.0
             font-size 12
         }
         link "Quality" "Performance"
         item "Performance" {
-            pos 5.0 260.0
+            pos -87.0 356.0
             font-size 12
         }
         link "Quality" "Durability"
         item "Durability" {
-            pos -31.0 338.0
+            pos -103.0 393.0
             font-size 12
         }
         link "MVP" "Model"
         item "Model" {
-            pos -371.0 81.0
+            pos -400.0 156.0
             color green
         }
         link "Model" "Cross diagram links"
         item "Cross diagram links" {
-            pos -644.0 107.0
+            pos -617.0 153.0
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
             pos -619.0 237.0
             color red
+            font-size 12
         }
         link "Model" "Persistence"
         item "Persistence" {
-            pos -573.0 47.0
+            pos -591.0 87.0
             color green
             font-size 12
         }
         link "Persistence" "Duplicate names"
         item "Duplicate names" {
-            pos -711.0 41.0
+            pos -713.0 110.0
             color green
             font-size 12
         }
         link "UI" "Layout"
         item "Layout" {
-            pos -265.0 -272.0
+            pos -263.0 -229.0
         }
         link "Layout" "Automatic"
         item "Automatic" {
-            pos -361.0 -343.0
+            pos -293.0 -277.0
+            font-size 12
         }
         link "Layout" "Manual"
         item "Manual" {
-            pos -210.0 -328.0
+            pos -199.0 -271.0
             color green
+            font-size 12
         }
         link "Editing" "Selection"
         item "Selection" {
-            pos -156.0 -128.0
+            pos -147.0 -120.0
             color green
             font-size 12
         }
         link "Selection" "Duplicate"
         item "Duplicate" {
-            pos -195.0 -203.0
+            pos -180.0 -165.0
+            font-size 12
         }
         link "Selection" "Copy to new"
         item "Copy to new" {
-            pos -91.0 -189.0
+            pos -102.0 -158.0
             description "Copy selected elements  as a new child diagram"
+            font-size 12
         }
         link "App Store" "Images"
         item "Images" {
-            pos -10.0 371.0
+            pos -163.0 459.0
             font-size 12
         }
         link "App Store" "Description"
         item "Description" {
-            pos -14.0 416.0
+            pos -162.0 525.0
             font-size 12
         }
         link "Site" "Hosting"
         item "Hosting" {
-            pos -275.0 421.0
+            pos -351.0 466.0
             font-size 12
         }
         item "Multiple" {
-            pos 43.634765625 18.0
+            pos 30.634765625 32.0
             color "red"
             font-size 12
         }
         link "Editing" "Multiple"
         item "Selection" {
-            pos 113.658203125 84.0
+            pos 78.658203125 88.0
             color "red"
             font-size 12
         }
@@ -292,24 +299,45 @@ element "Tenniarb" {
             target-index 1
         }
         item "Parsing" {
-            pos -690.087890625 -7.0
+            pos -662.087890625 63.0
             color green
             font-size 12
         }
         link "Persistence" "Parsing"
         link "Model" "Outline"
         item "Undo/Redo" {
-            pos 149.7080078125 -210.0
-            color red
+            pos -96.2919921875 113.0
+            color green
         }
-        link "Content assist" "Undo/Redo"
         item "Calculation
 Engine" {
-            pos -57.0 137.0
+            pos -95.0 223.0
             color red
         }
         link "MVP" "Calculation
 Engine"
+        link "MVP" "Undo/Redo"
+        item "Basic operations" {
+            pos -28.1142578125 166.0
+            color green
+            font-size 12
+        }
+        link "Undo/Redo" "Basic operations"
+        item "var" {
+            pos -8.228515625 314.0
+        }
+        link "Calculation
+Engine" "var"
+        item "expressions" {
+            pos 37.771484375 308.0
+        }
+        link "Calculation
+Engine" "expressions"
+        item "expr dsl" {
+            pos 37.771484375 250.0
+        }
+        link "Calculation
+Engine" "expr dsl"
     }
     element "Process" {
         item "Делай для себя" {

@@ -9,6 +9,8 @@
 import Foundation
 import Cocoa
 
+var DEBUG_OPERATION_TRACKING=true
+
 public enum ModelEventKind {
     case Structure
     case Layout
@@ -23,23 +25,26 @@ public class ModelEvent {
         self.element = element
     }
     
-    func addItem( _ item: DiagramItem ) {
-        self.items.append(item)
+    func addItem( _ items: [DiagramItem] ) {
+        self.items.append(contentsOf: items)
     }
 }
 
 public class ElementOperation {
     var store: ElementModelStore
     var isUndoCalled: Bool = true
+    var name:String {
+        get {
+            return "Unnamed"
+        }
+    }
     
     init( _ store: ElementModelStore ) {
         self.store = store
     }
     func apply() {
-        
     }
     func undo() {
-        
     }
     
     func getNotifier() -> Element {
@@ -47,6 +52,8 @@ public class ElementOperation {
     }
     func getEventKind() -> ModelEventKind {
         return .Structure
+    }
+    func collect( _ items: inout [DiagramItem] ) {
     }
 }
 
@@ -67,6 +74,19 @@ public class CompositeOperation: ElementOperation {
         self.operations.append(contentsOf: ops)
     }
     
+    override var name:String {
+        get {
+            var r = ""
+            for op in self.operations {
+                r.append(op.name + ",")
+            }
+            if r.count > 0 {
+                r.removeLast()
+            }
+            return r
+        }
+    }
+    
     override func apply() {
         for op in self.operations {
             op.apply()
@@ -80,12 +100,17 @@ public class CompositeOperation: ElementOperation {
     override func getNotifier() -> Element {
         return self.notifier
     }
+    override func collect( _ items: inout [DiagramItem] ) {
+        for op in self.operations {
+            op.collect(&items)
+        }
+    }
 }
 
 public class ElementModelStore {
     public let model: ElementModel
     
-    public var onUpdate: [(_ item:Element, _ kind: ModelEventKind) -> Void] = []
+    public var onUpdate: [(_ evt: ModelEvent) -> Void] = []
     public var modified: Bool = false
 
     
@@ -100,6 +125,11 @@ public class ElementModelStore {
             })
         }
         
+        
+        if DEBUG_OPERATION_TRACKING {
+            Swift.debugPrint("Calling operation:",action.name," state:",action.isUndoCalled)
+        }
+        
         if !action.isUndoCalled {
             action.undo()
             action.isUndoCalled = true
@@ -109,7 +139,13 @@ public class ElementModelStore {
             action.isUndoCalled = false
         }
         refresh()
-        self.modified(action.getNotifier(), action.getEventKind())
+        
+        let evt = ModelEvent(kind: action.getEventKind(), element: action.getNotifier())
+        var itms: [DiagramItem] = []
+        action.collect(&itms)
+        evt.addItem(itms)
+        
+        self.modified(evt)
     }
     
     public func updateName( item: DiagramItem, _ newName: String, undoManager: UndoManager?, refresh: @escaping () -> Void) {
@@ -171,10 +207,10 @@ public class ElementModelStore {
         modified = false
     }
     
-    func modified(_ el: Element, _ kind: ModelEventKind ) {
+    func modified(_ event: ModelEvent ) {
         modified = true
         for op in onUpdate {
-            op(el, kind)
+            op(event)
         }
     }
 }
@@ -204,6 +240,12 @@ class AbstractUpdateValue<ValueType>: ElementOperation {
     override func undo() {
         self.apply(oldValue)
         super.undo()
+    }
+    override func collect( _ items: inout [DiagramItem] ) {
+        items.append(item)
+    }
+    override func getNotifier() -> Element {
+        return element
     }
 }
 
@@ -239,6 +281,8 @@ class AbstractUpdateElementValue<ValueType>: ElementOperation {
 
 
 class UpdatePosition: AbstractUpdateValue<CGPoint> {
+    override var name:String { get { return "UpdatePosition"} }
+    
     override func apply(_ value: CGPoint) {
         self.item.x = value.x
         self.item.y = value.y
@@ -249,12 +293,16 @@ class UpdatePosition: AbstractUpdateValue<CGPoint> {
 }
 
 class UpdateName: AbstractUpdateValue<String> {
+    override var name:String { get { return "UpdateName"} }
+    
     override func apply(_ value: String) {
         self.item.name = value
     }
 }
 
 class UpdateElementName: AbstractUpdateElementValue<String> {
+    override var name:String { get { return "UpdateElementName"} }
+    
     override func apply(_ value: String) {
         self.element.name = value
     }
@@ -267,8 +315,9 @@ class AddElement: ElementOperation {
         self.parent = element
         self.child = child
         super.init(store)
-        
     }
+    
+    override var name:String { get { return "AddElement"} }
     override func apply() {
         self.parent.add(child)
     }
@@ -287,8 +336,8 @@ class AddItem: ElementOperation {
         self.parent = element
         self.item = item
         super.init(store)
-        
     }
+    override var name:String { get { return "AddItem"} }
     override func apply() {
         self.parent.add(item)
     }
@@ -297,6 +346,9 @@ class AddItem: ElementOperation {
     }
     override func getNotifier() -> Element {
         return self.parent
+    }
+    override func collect( _ items: inout [DiagramItem] ) {
+        items.append(item)
     }
 }
 
@@ -309,8 +361,8 @@ class RemoveElement: ElementOperation {
         self.parent = element
         self.child = child
         super.init(store)
-        
     }
+    override var name:String { get { return "RemoveElement"} }
     override func apply() {
         self.removeIndex = self.parent.remove(child)
     }
@@ -330,8 +382,8 @@ class RemoveItem: ElementOperation {
         self.parent = element
         self.child = child
         super.init(store)
-        
     }
+    override var name:String { get { return "RemoveItem"} }
     override func apply() {
         self.removeIndex = self.parent.remove(child)
     }
@@ -340,5 +392,8 @@ class RemoveItem: ElementOperation {
     }
     override func getNotifier() -> Element {
         return self.parent
+    }
+    override func collect( _ items: inout [DiagramItem] ) {
+        items.append(child)
     }
 }

@@ -35,6 +35,8 @@ class ViewController: NSViewController {
     var updatingProperties: Bool = false
     
     @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
+    
+    var searchBox: SearchBoxViewController?
         
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
@@ -84,6 +86,30 @@ class ViewController: NSViewController {
         }
     }
     
+    fileprivate func hideSearchBox() {
+        if let sb = searchBox {
+            if sb.view.window != nil {
+                dismissViewController(sb)
+            }
+        }
+    }
+    
+    @IBAction func showSearchBox(_ sender: NSMenuItem ) {
+        if let active = self.selectedElement {
+            hideSearchBox()
+            
+            self.searchBox = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SearchBox")) as! SearchBoxViewController
+            
+            searchBox!.setElement(active)
+            
+            searchBox!.parentView = self.view
+            
+            searchBox!.closeAction = {() in self.hideSearchBox()}
+            
+            self.presentViewController(searchBox!, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+        }
+    }
+    
     private func showElementSource() {
         let popupController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SourcePopup")) as! SourcePopoverViewController
         
@@ -99,7 +125,7 @@ class ViewController: NSViewController {
             popupController.setElement(element: active)
         }
         
-        self.presentViewController(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .minX, behavior: .transient)
+        self.presentViewController(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .maxY, behavior: .transient)
         
     }
     private func handleAddElement() {
@@ -163,13 +189,17 @@ class ViewController: NSViewController {
     }
     
     override func presentViewController(_ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge, behavior: NSPopover.Behavior) {
+        
         if let vc = viewController as? SourcePopoverViewController {
             if let active = self.selectedElement {
                 vc.setElement(element: active)
                 
                 super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                return
             }
         }
+        
+        super.presentViewController(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
     }
     
     func onElementSelected(_ element: Element?) {
@@ -218,20 +248,24 @@ class ViewController: NSViewController {
             um.removeAllActions()
         }
         
-        elementStore.onUpdate.append { (element, kind) in
+        elementStore.onUpdate.append { (evt) in
             if self.updatingProperties {
                 return
             }
             //TODO: Add optimizations based on particular element
             
-            self.updateElements.append(element)
-            if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && kind == .Structure ) {
-                self.updateKindScheduled = kind
+            self.updateElements.append(evt.element)
+            if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && evt.kind == .Structure ) {
+                self.updateKindScheduled = evt.kind
                 self.updateScheduled = 1
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
                     
                     self.worldTree.beginUpdates()
+                    
+                    if self.selectedElement != evt.element {
+                        self.onElementSelected(evt.element)
+                    }
                     for el in self.updateElements {
                         self.worldTree.reloadItem(el, reloadChildren: true)
                     }
@@ -281,4 +315,7 @@ class ViewController: NSViewController {
         }
         updatingProperties = false
     }
+    
+    
+    
 }

@@ -64,6 +64,7 @@ class SceneDrawView: NSView {
     var mode: SceneMode = .Normal
     
     var editBox: NSTextField? = nil
+    var editBoxItem: Drawable? = nil
     var editBoxDelegate: EditTitleDelegate?
     
     var ox: CGFloat {
@@ -117,6 +118,10 @@ class SceneDrawView: NSView {
             prevTouch = touches.first
         }
     }
+    
+//    override func scrollWheel(with event: NSEvent) {
+//        Swift.debugPrint("Scroll", event)
+//    }
     
     func sheduleRedraw() {
         sheduleRedraw(invalidRect: nil)
@@ -187,9 +192,20 @@ class SceneDrawView: NSView {
     func onLoad() {
     }
     
-    func onUpdate(_ element: Element, kind: ModelEventKind) {
+    func onUpdate(_ evt: ModelEvent) {
         // We should be smart anought to not rebuild all drawable scene every time
-        if kind == .Structure  {
+        
+        if evt.items.count > 0 {
+            if let firstItem = evt.items.first(where: { (itm) in itm.kind == .Item } ) {
+                if evt.element.items.contains(firstItem) {
+                    setActiveElement(firstItem)
+                }
+                else {
+                    setActiveElement(nil)
+                }
+            }
+        }
+        if evt.kind == .Structure  {
             self.buildScene()
             sheduleRedraw()
         }
@@ -214,6 +230,9 @@ class SceneDrawView: NSView {
     
     public func setActiveElement(_ elementModel: Element ) {
         
+        if self.element == elementModel {
+            return
+        }
         // Discard any editing during switch
         self.commitTitleEditing(nil)
         
@@ -291,11 +310,22 @@ class SceneDrawView: NSView {
             self.setNormalMode()
             textBox.removeFromSuperview()
             self.editBox = nil
+            self.editBoxItem = nil
             self.window?.makeFirstResponder(self)
             needsDisplay = true
         }
     }
     
+    fileprivate func getEditBoxBounds( item: Drawable ) -> CGRect {
+        let deBounds = self.editBoxItem!.getBounds()
+        let bounds = CGRect(
+            x: deBounds.origin.x + scene!.offset.x,
+            y: deBounds.origin.y + scene!.offset.y,
+            width: max(deBounds.width, 100),
+            height: deBounds.height
+        )
+        return bounds
+    }
     fileprivate func editTitle(_ active: DiagramItem) {
         self.mode = .Editing
         scene?.editingMode = true
@@ -303,13 +333,9 @@ class SceneDrawView: NSView {
             if editBox != nil {
                 editBox!.removeFromSuperview()
             }
-            let deBounds = de.getBounds()
-            let bounds = CGRect(
-                x: deBounds.origin.x + scene!.offset.x,
-                y: deBounds.origin.y + scene!.offset.y,
-                width: max(deBounds.width, 100),
-                height: deBounds.height
-            )
+            self.editBoxItem = de
+            
+            let bounds = getEditBoxBounds(item: de)
             editBox = NSTextField(frame: bounds)
             if self.editBoxDelegate == nil {
                 self.editBoxDelegate = EditTitleDelegate(self)
@@ -336,10 +362,11 @@ class SceneDrawView: NSView {
     fileprivate func setNormalMode() {
         self.mode = .Normal
         scene?.editingMode = false
+        self.editBoxItem = nil
         needsDisplay = true
     }
     
-    func addNewItem() {
+    func addNewItem(copyProps:Bool = false) {
         if let active = self.activeElement {
             if active.kind == .Item {
                 // Create and add to activeEl
@@ -354,9 +381,12 @@ class SceneDrawView: NSView {
                 newEl.x = active.x + offset
                 newEl.y = active.y
                 
-                // Copy parent properties
-                for p in active.properties {
-                    newEl.properties.append(p.clone())
+                
+                if copyProps {
+                    // Copy parent properties
+                    for p in active.properties {
+                        newEl.properties.append(p.clone())
+                    }
                 }
                 
                 self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
@@ -393,9 +423,11 @@ class SceneDrawView: NSView {
         }
     }
     
+    
+    
     override func keyDown(with event: NSEvent) {
         if event.characters == "\t" {
-            addNewItem()
+            addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
         }
     
         if event.characters == "\u{0D}" {
@@ -403,7 +435,8 @@ class SceneDrawView: NSView {
                 editTitle(active)
             }
         }
-        else if event.characters == "\u{7f}" { removeItem()
+        else if event.characters == "\u{7f}" {
+            removeItem()
         }
 //        else if event.characters == " " {
 //            if let active = self.activeElement  {
@@ -486,7 +519,9 @@ class SceneDrawView: NSView {
             }
             else {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
-                    self.store?.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
+                    if newPos.x != de.x && newPos.y != de.y {
+                        self.store?.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
+                    }
                 }
                 self.setActiveElement(de)
             }
@@ -560,7 +595,7 @@ class SceneDrawView: NSView {
                     self.dragMap[de] = newPos
                 
                     if let em = self.element {
-                        self.store?.modified(em, .Layout)
+                        self.store?.modified(ModelEvent(kind: .Layout, element: em))
                         let dirtyRegion = self.scene!.updateLayout(de, newPos)
                         
                         let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
@@ -598,6 +633,12 @@ class SceneDrawView: NSView {
             return
         }
         self.updateMousePosition(event)
+    }
+    
+    override func viewWillStartLiveResize() {
+        if self.mode == .Editing {
+            commitTitleEditing(nil)
+        }
     }
     
     override func draw(_ dirtyRect: NSRect) {

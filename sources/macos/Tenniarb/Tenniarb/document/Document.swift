@@ -32,7 +32,7 @@ class Document: NSDocument {
         self.store = ElementModelStore(elementModel)
     }
 
-    func onUpdate(element: Element, updateEvent: ModelEventKind) {
+    func onUpdate(_ evt: ModelEvent ) {
         updateChangeCount(.changeDone)
     }
     
