@@ -47,6 +47,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     override func viewWillAppear() {
         self.view.window?.hidesOnDeactivate = true
         
+//        self.searc
         self.searchBox.becomeFirstResponder()
         
         self.view.window?.center()
@@ -84,10 +85,8 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
                 
                 if let el = self.element {
                     self.currentItems = el.items.filter({(item) in
-                        return item.name.contains(textContent)
-                    })
-                    
-                    Swift.debugPrint("Found", self.currentItems)
+                        return item.name.lowercased().contains(textContent.lowercased())
+                    }).sorted(by: {(a,b) in a.name.lexicographicallyPrecedes(b.name)})
                     
                     self.resultView.reloadData()
                 }

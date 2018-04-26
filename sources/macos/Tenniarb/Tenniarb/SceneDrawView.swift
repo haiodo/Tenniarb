@@ -519,7 +519,7 @@ class SceneDrawView: NSView {
             }
             else {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
-                    if newPos.x != de.x && newPos.y != de.y {
+                    if newPos.x != de.x || newPos.y != de.y {
                         self.store?.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
                     }
                 }
@@ -546,13 +546,15 @@ class SceneDrawView: NSView {
         }
         
         self.mouseDownState = true
+        self.dragMap.removeAll()
+        self.dragElement = nil
         
         if let drawable = findElement(x: self.x, y: self.y) {
             self.setActiveElement(drawable.item)
             scene?.activeElement = nil
             
             self.dragElement = drawable.item
-            
+                        
             if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
                 self.mode = .LineDrawing
                 self.lineToPoint = CGPoint(x: self.x, y: self.y )

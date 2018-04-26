@@ -309,10 +309,12 @@ class ViewController: NSViewController {
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
         if let active = activeElement {
-            active.fromTennProps(self.elementStore!, node)
+//            active.fromTennProps(self.elementStore!, node)
+            self.elementStore?.setProperties(active, node)
         }
         else if let element = self.selectedElement {
-            element.fromTennProps(self.elementStore!,  node)
+//            element.fromTennProps(self.elementStore!,  node)
+            self.elementStore?.setProperties(element, node)
         }
         updatingProperties = false
     }

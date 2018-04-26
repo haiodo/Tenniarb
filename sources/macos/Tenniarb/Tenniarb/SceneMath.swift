@@ -62,6 +62,9 @@ func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> CGFloat {
     if r.height < 10 {
         r = CGRect(origin: CGPoint(x: r.origin.x, y: r.origin.y-5), size: CGSize(width: r.width, height: r.height+10 ))
     }
+    if r.width < 10 {
+        r = CGRect(origin: CGPoint(x: r.origin.x-5, y: r.origin.y), size: CGSize(width: r.width+5, height: r.height ))
+    }
     
     if !r.contains(p) {
         // Point not in boundaries of line

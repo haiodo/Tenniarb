@@ -104,7 +104,7 @@ open class DrawableContainer: ItemDrawable {
         for ccl in lines {
             let d = crossPointLine(ccl.source, ccl.target, point)
             
-            if d > 0 && d < 20 {
+            if d >= 0 && d < 20 {
                 return ccl
             }
         }
@@ -408,23 +408,7 @@ open class DrawableScene: DrawableContainer {
                         let targetRect = drawables[data.target]?.getBounds()
                         
                         if let sr = sourceRect, let tr = targetRect {
-                            
-                            let p1 = CGPoint( x: sr.midX, y:sr.midY )
-                            let p2 = CGPoint( x: tr.midX, y:tr.midY )
-                            
-                            
-                            if let cp1 = crossBox(p1, p2, sr) {
-                                lnkDr.source = cp1
-                            }
-                            else {
-                                lnkDr.source = p1
-                            }
-                            if let cp2 = crossBox(p1, p2, tr) {
-                                lnkDr.target = cp2
-                            }
-                            else {
-                                lnkDr.target = p2
-                            }
+                            lnkDr.updateLayout(source: sr, target: tr)
                         }
                         result = result.union(lnkDr.getBounds())
                     }
@@ -546,33 +530,17 @@ open class DrawableScene: DrawableContainer {
                 let targetRect = drawables[data.target]?.getBounds()
                 
                 if let sr = sourceRect, let tr = targetRect {
-                    
-                    let p1 = CGPoint( x: sr.midX, y:sr.midY )
-                    let p2 = CGPoint( x: tr.midX, y:tr.midY )
-                    
+                    let linkStyle = DrawableItemStyle.parseStyle(item: e)
                     
                     let linkDr = DrawableLine(
-                        source: p1,
-                        target: p2,
-                        style: DrawableItemStyle.parseStyle(item: e))
+                        source: sr,
+                        target: tr,
+                        style: linkStyle)
                     
                     linkDr.item = e
                     drawables[e] = linkDr
                     elementDrawable.insert(
                         linkDr, at: 0)
-                    
-                    if let cp1 = crossBox(p1, p2, sr) {
-                        linkDr.source = cp1
-                    }
-                    else {
-                        linkDr.source = p1
-                    }
-                    if let cp2 = crossBox(p1, p2, tr) {
-                        linkDr.target = cp2
-                    }
-                    else {
-                        linkDr.target = p2
-                    }
                 }
             }
         }
@@ -773,15 +741,97 @@ public class TextBox: Drawable {
 }
 
 public class DrawableLine: ItemDrawable {
-    var source: CGPoint
-    var target: CGPoint
+    var source: CGPoint = CGPoint.zero
+    var target: CGPoint = CGPoint.zero
+    
+    var sourceOrder = true
+    var targetOrder = true
+    
+    var sourceRect: CGRect = CGRect.zero
+    var targetRect: CGRect = CGRect.zero
     var lineWidth: CGFloat = 1
     var style: DrawableItemStyle
+    
+    init( source: CGRect, target: CGRect, style: DrawableItemStyle) {
+        self.sourceRect = source
+        self.targetRect = target
+        self.style = style
+        super.init()
+        
+        self.updateLayout(source: source, target: target)
+    }
     
     init( source: CGPoint, target: CGPoint, style: DrawableItemStyle) {
         self.source = source
         self.target = target
         self.style = style
+    }
+    
+    func correctMiddle( point: inout CGPoint, rect: CGRect, order: inout Bool ) {
+        if point.x == rect.origin.x {
+            // Left part
+            point.y = rect.origin.y + rect.height / 2
+            order = true
+        }
+        else if point.x == (rect.origin.x + rect.width) {
+            // Right part
+            point.y = rect.origin.y + rect.height / 2
+            order = true
+        }
+        else if point.y == rect.origin.y {
+            // Bottom part
+            point.x = rect.origin.x + rect.width / 2
+            order = false
+        }
+        else {
+            // Top part
+            point.x = rect.origin.x + rect.width / 2
+            order = false
+        }
+    }
+    
+    public func updateLayout(source sr: CGRect, target tr: CGRect) {
+        let p1 = CGPoint( x: sr.midX, y:sr.midY )
+        let p2 = CGPoint( x: tr.midX, y:tr.midY )
+        
+        
+        if let layout = self.style.layout, layout.starts(with: "middle") {
+            if let cp1 = crossBox(p1, p2, sr) {
+                self.source = cp1
+            }
+            else {
+                self.source = sr.origin
+            }
+            
+            if let cp2 = crossBox(p1, p2, tr) {
+                self.target = cp2
+            }
+            else {
+                self.target = tr.origin
+            }
+            
+            // Correct point to be in middle
+            if layout == "middle" || layout == "middle:source" {
+                correctMiddle(point: &self.source, rect: sr, order: &sourceOrder)
+            }
+            if layout == "middle" || layout == "middle:target" {
+                correctMiddle(point: &self.target, rect: tr, order: &targetOrder)
+            }
+        }
+        else {
+            if let cp1 = crossBox(p1, p2, sr) {
+                self.source = cp1
+            }
+            else {
+                self.source = p1
+            }
+            if let cp2 = crossBox(p1, p2, tr) {
+                self.target = cp2
+            }
+            else {
+                self.target = p2
+            }
+        }
     }
     
     public override func drawBox(context: CGContext, at point: CGPoint) {
@@ -816,29 +866,75 @@ public class DrawableLine: ItemDrawable {
         let fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
         let toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
         
+        let w = fromPt.x - toPt.x
+        let h = fromPt.y - toPt.y
+        
+        
+        let fromP = sourceOrder ? CGPoint(x: fromPt.x - w / 2, y: fromPt.y ) : CGPoint(x: fromPt.x, y: fromPt.y - h / 2 )
+        let toP = targetOrder ? CGPoint(x: toPt.x + w / 2, y: toPt.y ) : CGPoint(x: toPt.x, y: toPt.y + h / 2 )
+        
         if drawArrow {
             fillType = .fillStroke
             
-            if self.style.display == "arrow" || self.style.display == "arrows" {
-                context.addPath(
-                    arrow(from: fromPt, to: toPt,
-                        tailWidth: 0, headWidth: 10, headLength: 10))
+            if let layout = self.style.layout, layout == "middle" {
+                if self.style.display == "arrow" || self.style.display == "arrows" {
+                    context.addPath(
+                        arrow(from: fromP, to: fromPt,
+                              tailWidth: 0, headWidth: 10, headLength: 10))
+                }
+                else {
+                    let aPath = CGMutablePath()
+                    aPath.move(to: fromPt)
+                    aPath.addLine(to: fromP)
+                    context.addPath(aPath)
+                }
+                
+                let aPath = CGMutablePath()
+                aPath.move(to: fromP)
+                aPath.addLine(to: toP)
+                context.addPath(aPath)
+                
+                if self.style.display == "arrow-source" || self.style.display == "arrows" {
+                    context.addPath(
+                        arrow(from: toP, to: toPt,
+                              tailWidth: 0, headWidth: 10, headLength: 10))
+                }
+                else {
+                    let aPath = CGMutablePath()
+                    aPath.move(to: toPt)
+                    aPath.addLine(to: toP)
+                    context.addPath(aPath)
+                }
             }
-            if self.style.display == "arrow-source" || self.style.display == "arrows" {
-                context.addPath(
-                    arrow(from: toPt, to: fromPt,
-                          tailWidth: 0, headWidth: 10, headLength: 10))
+            else {
+                if self.style.display == "arrow" || self.style.display == "arrows" {
+                    context.addPath(
+                        arrow(from: fromPt, to: toPt,
+                            tailWidth: 0, headWidth: 10, headLength: 10))
+                }
+                if self.style.display == "arrow-source" || self.style.display == "arrows" {
+                    context.addPath(
+                        arrow(from: toPt, to: fromPt,
+                              tailWidth: 0, headWidth: 10, headLength: 10))
+                }
             }
         }
         else {
-            let aPath = CGMutablePath()
-            
-            aPath.move(to: fromPt)
-            aPath.addLine(to: toPt)
-            
-            //Keep using the method addLineToPoint until you get to the one where about to close the path
-            aPath.closeSubpath()
-            context.addPath(aPath)
+            if let layout = self.style.layout, layout == "middle" {
+                let aPath = CGMutablePath()
+                aPath.move(to: fromPt)
+                aPath.addLine(to: fromP)
+                aPath.addLine(to: toP)
+                aPath.addLine(to: toPt)
+                context.addPath(aPath)
+            }
+            else {
+                let aPath = CGMutablePath()
+                aPath.move(to: fromPt)
+                aPath.addLine(to: toPt)
+                context.addPath(aPath)
+            }
+//            aPath.closeSubpath()
         }
         
         context.drawPath(using: fillType)

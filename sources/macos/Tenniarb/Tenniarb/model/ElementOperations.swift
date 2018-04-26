@@ -213,6 +213,13 @@ public class ElementModelStore {
             op(event)
         }
     }
+    
+    func setProperties( _ element: Element, _ node: TennNode) {
+        element.fromTennProps(self, node)
+    }
+    func setProperties( _ item: DiagramItem, _ node: TennNode) {
+        item.fromTennProps(self, node)
+    }
 }
 
 class AbstractUpdateValue<ValueType>: ElementOperation {
@@ -281,15 +288,18 @@ class AbstractUpdateElementValue<ValueType>: ElementOperation {
 
 
 class UpdatePosition: AbstractUpdateValue<CGPoint> {
-    override var name:String { get { return "UpdatePosition"} }
+    override var name:String { get {
+        return "UpdatePosition: \(self.item.name) OLD:( \(self.oldValue.x), \(self.oldValue.y)" +
+        "NEW:( \(self.newValue.x), \(self.newValue.y) " }
+    }
     
     override func apply(_ value: CGPoint) {
         self.item.x = value.x
         self.item.y = value.y
     }
-    override func getEventKind() -> ModelEventKind {
-        return isUndoCalled ? .Structure:  .Layout
-    }
+//    override func getEventKind() -> ModelEventKind {
+//        return isUndoCalled ? .Structure:  .Layout
+//    }
 }
 
 class UpdateName: AbstractUpdateValue<String> {
