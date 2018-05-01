@@ -943,7 +943,9 @@ public class DrawableLine: ItemDrawable {
             let fTo = CGPoint(x: (p2.x-p1.x)/fromToLen, y: (p2.y-p1.y)/fromToLen)
             let ctrlPoint = CGPoint(x: p1.x + control.x + fTo.x*fromToLen/2, y: p1.y + fTo.y*fromToLen/2 + control.y)
             
-            self.extraPoints.append(ctrlPoint)
+            if hasControl {
+                self.extraPoints.append(ctrlPoint)
+            }
             if let cp1 = crossBox(p1, hasControl ? ctrlPoint : p2, sr) {
                 self.source = cp1
             }
@@ -996,13 +998,7 @@ public class DrawableLine: ItemDrawable {
         
         for ep in self.extraPoints {
             aPath.addLine(to: CGPoint(x: ep.x + point.x, y: ep.y + point.y))
-        }
-        
-//        aPath.addCurve(to: toPt, control1: CGPoint(x: toPt.x+control.x, y: toPt.y+control.y), control2: CGPoint(x: toPt.x , y: toPt.y))
-        
-//        let fromToLen = sqrt(pow(fromPt.x-toPt.x,2)+pow(fromPt.y-toPt.y,2))
-//        let fTo = CGPoint(x: (toPt.x-fromPt.x)/fromToLen, y: (toPt.y-fromPt.y)/fromToLen)
-//        aPath.addLine(to: CGPoint(x: fromPt.x + control.x + fTo.x*fromToLen/2, y: fromPt.y + fTo.y*fromToLen/2 + control.y))
+        }    
         
         aPath.addLine(to: toPt)
 //        aPath.closeSubpath()

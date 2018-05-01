@@ -54,6 +54,8 @@ extension DiagramItem {
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {
             self.properties = []
+            self.x = 0 // In case pos was deleted
+            self.y = 0
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
                 if cmdName == "name" {
                     if let newName = blChild.getIdent(1) {
@@ -68,6 +70,8 @@ extension DiagramItem {
             var sourceIndex = 0
             var targetIndex = 0
             self.properties = []
+            self.x = 0 // In case pos was deleted
+            self.y = 0
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
                 if cmdName == "name" {
                     if let newName = blChild.getIdent(1) {
