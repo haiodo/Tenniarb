@@ -18,7 +18,7 @@ class SourcePopoverViewController: NSViewController {
         // Update source content.
         if let active = self.element {
             let txtValue = active.toTennStr(includeSubElements: false, includeItems: true)
-            textViewer.textStorage?.append(NSAttributedString(string: txtValue))
+            textViewer.textStorage?.setAttributedString(NSAttributedString(string: txtValue))
         }
     }
     

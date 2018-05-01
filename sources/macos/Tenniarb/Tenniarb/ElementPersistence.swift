@@ -100,6 +100,13 @@ extension Element {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
         }
         
+        let nx = item.x != 0
+        let ny = item.y != 0
+        
+        if nx || ny {
+            linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+        }
+        
         for p in item.properties {
             linkDataBlock.add(p.clone())
         }
@@ -397,6 +404,19 @@ extension Element {
         switch cmdName  {
         case PersistenceItemKind.Description.commandName:
             link.description = blChild.getIdent(1)
+        case PersistenceItemKind.Position.commandName:
+            if blChild.count == 3 {
+                if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {
+                    link.x = CGFloat(x)
+                    link.y = CGFloat(y)
+                }
+                else {
+                    link.properties.append(blChild);
+                }
+            }
+            else {
+                link.properties.append(blChild);
+            }
         case PersistenceItemKind.SourceIndex.commandName:
             if let index = blChild.getInt(1) {
                 sourceIndex = index
