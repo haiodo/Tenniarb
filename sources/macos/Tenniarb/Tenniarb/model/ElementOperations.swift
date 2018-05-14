@@ -214,11 +214,12 @@ public class ElementModelStore {
         }
     }
     
-    func setProperties( _ element: Element, _ node: TennNode) {
-        element.fromTennProps(self, node)
+    func setProperties( _ element: Element, _ node: TennNode, undoManager: UndoManager?, refresh: @escaping () -> Void) {
+        execute(ComplexUpdateElement(self, element, old: element.toTennAsProps(), new: node), undoManager, refresh)
     }
-    func setProperties( _ item: DiagramItem, _ node: TennNode) {
-        item.fromTennProps(self, node)
+    func setProperties( _ element: Element, _ item: DiagramItem, _ node: TennNode, undoManager: UndoManager?, refresh: @escaping () -> Void) {
+//        item.fromTennProps(self, node)
+        execute(ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node ), undoManager, refresh)
     }
 }
 
@@ -307,6 +308,22 @@ class UpdateName: AbstractUpdateValue<String> {
     
     override func apply(_ value: String) {
         self.item.name = value
+    }
+}
+
+class ComplexUpdateItem: AbstractUpdateValue<TennNode> {
+    override var name:String { get { return "UpdateItem" } }
+    
+    override func apply(_ value: TennNode) {
+        self.item.fromTennProps(self.store, value)
+    }
+}
+
+class ComplexUpdateElement: AbstractUpdateElementValue<TennNode> {
+    override var name:String { get { return "UpdateElement"} }
+    
+    override func apply(_ value: TennNode) {
+        self.element.fromTennProps(self.store, value)
     }
 }
 

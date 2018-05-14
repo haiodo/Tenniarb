@@ -217,12 +217,14 @@ class ViewController: NSViewController {
     }
     
     func updateTextProperties( ) {
-        if let element = self.selectedElement {
-            DispatchQueue.main.async(execute: {
-                let strContent = (self.activeElement == nil) ? element.toTennProps(): self.activeElement!.toTennProps()
-                
-                self.textViewDelegate?.setTextValue(strContent)
-            })
+        if let element = self.selectedElement, let delegate = self.textViewDelegate {
+            if delegate.needUpdate() {
+                DispatchQueue.main.async(execute: {
+                    let strContent = (self.activeElement == nil) ? element.toTennProps(): self.activeElement!.toTennProps()
+                    
+                    delegate.setTextValue(strContent)
+                })
+            }
         }
     }
     
@@ -309,12 +311,12 @@ class ViewController: NSViewController {
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
         if let active = activeElement {
-//            active.fromTennProps(self.elementStore!, node)
-            self.elementStore?.setProperties(active, node)
+            if let element = self.selectedElement {
+                self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: {()->Void in} )
+            }
         }
         else if let element = self.selectedElement {
-//            element.fromTennProps(self.elementStore!,  node)
-            self.elementStore?.setProperties(element, node)
+            self.elementStore?.setProperties(element, node, undoManager: undoManager!,  refresh: {()->Void in})
         }
         updatingProperties = false
     }

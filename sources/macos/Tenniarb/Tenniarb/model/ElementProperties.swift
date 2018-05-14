@@ -10,12 +10,15 @@ import Foundation
 
 extension Element {
     /// Convert items to list of properties
-    func toTennProps() -> String {
+    func toTennAsProps() -> TennNode {
         let items = TennNode.newNode(kind: .Statements)
         items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
         
         buildElementData(self, items)
-        return items.toStr()
+        return items
+    }
+    func toTennProps() -> String {
+        return toTennAsProps().toStr()
     }
     
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
@@ -32,13 +35,12 @@ extension Element {
             
             Element.parseElementData(self, cmdName, blChild, &linkElements)
         })
-        store.modified(ModelEvent(kind: .Structure, element: self))
     }
 }
 
 extension DiagramItem {
     /// Convert items to list of properties
-    func toTennProps() -> String {
+    func toTennAsProps() -> TennNode {
         let items = TennNode.newNode(kind: .Statements)
         
         if self.kind == .Item {
@@ -46,10 +48,13 @@ extension DiagramItem {
             Element.buildItemData(self, items)
         }
         else if self.kind == .Link {
-            Element.buildLinkData(self, items)        
+            Element.buildLinkData(self, items)
         }
         
-        return items.toStr()
+        return items
+    }
+    func toTennProps() -> String {
+        return toTennAsProps().toStr()
     }
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {
@@ -81,9 +86,6 @@ extension DiagramItem {
                 }
                 Element.parseLinkData(self, cmdName, blChild, &sourceIndex, &targetIndex)
             })
-        }
-        if let p = self.parent {
-            store.modified( ModelEvent(kind: .Structure, element: p))
         }
     }
 }

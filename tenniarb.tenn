@@ -3,19 +3,25 @@ element "Tenniarb" {
         item "Procuct naming" {
             pos -262.0 169.0
         }
-        link "Procuct naming" "Net"
+        link "Procuct naming" "Net" {
+            pos -21.0 -4.0
+        }
         item "Net" {
             pos -260.0 44.0
         }
-        link "Procuct naming" "Brain"
+        link "Procuct naming" "Brain" {
+            pos 63.0 22.0
+        }
         item "Brain" {
-            pos -134.0 102.0
+            pos -70.0 103.0
         }
         link "Brain" "Niarb"
         item "Niarb" {
             pos -85.0 21.0
         }
-        link "Net" "Ten"
+        link "Net" "Ten" {
+            pos -3.0 -13.0
+        }
         item "Ten" {
             pos -126.0 20.0
         }
@@ -29,7 +35,7 @@ element "Tenniarb" {
     }
     element "MVP" {
         item "MVP" {
-            pos -247.0 126.0
+            pos -248.0 126.0
             color "#0022ee"
             font-size 25
             color red
@@ -62,7 +68,7 @@ element "Tenniarb" {
         }
         link "Properties" "Content assist"
         item "Content assist" {
-            pos 45.0 -133.0
+            pos 12.0 -157.0
             color yellow
             font-size 12
         }
@@ -105,24 +111,24 @@ element "Tenniarb" {
             font-size 12
         }
         item "Outline" {
-            pos -494.0 263.0
+            pos -663.0 291.0
             color green
         }
         link "Outline" "Edit titles"
         item "Edit titles" {
-            pos -422.0 339.0
+            pos -571.0 324.0
             color green
             font-size 12
         }
         link "Outline" "+/-"
         item "+/-" {
-            pos -501.0 337.0
+            pos -700.0 378.0
             color green
         }
         link "Outline" "D&D"
         item "D&D" {
-            pos -594.0 300.0
-            color cyan
+            pos -645.0 351.0
+            color yellow
         }
         link "Scene Draw" "Classes"
         item "Classes" {
@@ -139,9 +145,8 @@ element "Tenniarb" {
             color green
             font-size 12
         }
-        link "UI" "Undo&Redo"
         item "Undo&Redo" {
-            pos -116.0 23.0
+            pos -130.0 27.0
             color green
             font-size 12
         }
@@ -207,40 +212,42 @@ element "Tenniarb" {
             pos -400.0 156.0
             color green
         }
-        link "Model" "Cross diagram links"
+        link "Model" "Cross diagram links" {
+            pos -76.0 35.0
+        }
         item "Cross diagram links" {
-            pos -617.0 153.0
+            pos -948.0 284.0
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
-            pos -619.0 237.0
+            pos -747.0 330.0
             color red
             font-size 12
         }
         link "Model" "Persistence"
         item "Persistence" {
-            pos -591.0 87.0
+            pos -679.0 153.0
             color green
             font-size 12
         }
         link "Persistence" "Duplicate names"
         item "Duplicate names" {
-            pos -713.0 110.0
+            pos -735.0 208.0
             color green
             font-size 12
         }
         link "UI" "Layout"
         item "Layout" {
-            pos -263.0 -229.0
+            pos -311.0 -231.0
         }
         link "Layout" "Automatic"
         item "Automatic" {
-            pos -293.0 -277.0
+            pos -374.0 -273.0
             font-size 12
         }
         link "Layout" "Manual"
         item "Manual" {
-            pos -199.0 -271.0
+            pos -284.0 -290.0
             color green
             font-size 12
         }
@@ -278,51 +285,42 @@ element "Tenniarb" {
         }
         item "Multiple" {
             pos 30.634765625 32.0
-            color "red"
+            color yellow
             font-size 12
         }
         link "Editing" "Multiple"
         item "Selection" {
             pos 78.658203125 88.0
-            color "red"
+            color yellow
             font-size 12
         }
         link "Multiple" "Selection" {
             target-index 1
         }
         item "Movements" {
-            pos 120.658203125 37.0
-            color "red"
+            pos 119.658203125 37.0
+            color yellow
             font-size 12
         }
         link "Multiple" "Movements" {
             target-index 1
         }
         item "Parsing" {
-            pos -662.087890625 63.0
+            pos -761.087890625 162.0
             color green
             font-size 12
         }
         link "Persistence" "Parsing"
-        link "Model" "Outline"
-        item "Undo/Redo" {
-            pos -96.2919921875 113.0
-            color green
+        link "Model" "Outline" {
+            pos 26.0 23.0
         }
         item "Calculation
 Engine" {
-            pos -95.0 223.0
-            color red
+            pos -94.0 223.0
+            color yellow
         }
         link "MVP" "Calculation
 Engine"
-        link "MVP" "Undo/Redo"
-        item "Basic operations" {
-            pos -28.1142578125 166.0
-            color green
-            font-size 12
-        }
-        link "Undo/Redo" "Basic operations"
         item "var" {
             pos -8.228515625 314.0
         }
@@ -338,6 +336,66 @@ Engine" "expressions"
         }
         link "Calculation
 Engine" "expr dsl"
+        item "Undo/Redo" {
+            pos 126.646484375 -138.0
+            color red
+        }
+        link "Properties" "Undo/Redo"
+        item "Corrections" {
+            pos -622.66796875 -184.0
+            font-size 12
+            color green
+        }
+        link "Links" "Corrections"
+        item "Keyboard\nshortcuts" {
+            pos -758.94921875 -50.0
+            color red
+        }
+        link "MVP" "Keyboard\nshortcuts"
+        link "Editing" "Undo&Redo"
+        item "Copy/Paste" {
+            pos -64.365234375 99.0
+            color red
+        }
+        link "Editing" "Copy/Paste"
+        item "Diagram \nPosition widget" {
+            pos -201.650390625 -264.0
+            color red
+        }
+        link "UI" "Diagram \nPosition widget" {
+            pos -25.0 -52.0
+        }
+        item "Export" {
+            pos -511.650390625 -310.0
+        }
+        link "UI" "Export" {
+            pos 27.0 -12.0
+        }
+        item "Import" {
+            pos -950.9111328125 108.0
+        }
+        link "Model" "Import" {
+            pos 51.0 -49.0
+        }
+        item "Xmind" {
+            pos -993.4912109375 159.0
+        }
+        link "Import" "Xmind"
+        item "Other" {
+            pos -1031.4912109375 123.0
+        }
+        link "Import" "Other"
+        item "JIRA CSV import" {
+            pos -1047.4912109375 16.0
+        }
+        link "Import" "JIRA CSV import"
+        item "Zoom?" {
+            pos -732.2587890625 -143.0
+            color yellow
+        }
+        link "Scene Draw" "Zoom?" {
+            pos -26.0 19.0
+        }
     }
     element "Process" {
         item "Делай для себя" {
@@ -346,18 +404,24 @@ Engine" "expr dsl"
         }
         item "Не смотри
 на авторитетов" {
-            pos -157.9990234375 177.0
+            pos -161.9990234375 171.0
             color red
         }
         link "Делай для себя" "Не смотри
-на авторитетов"
+на авторитетов" {
+            pos -139.0 63.0
+            display arrows
+        }
         item "Не останавливайся
 пока не закончишь." {
             pos -159.9990234375 -68.0
             color blue
         }
         link "Делай для себя" "Не останавливайся
-пока не закончишь."
+пока не закончишь." {
+            pos -151.0 -60.0
+            display arrows
+        }
         item "делай
 то что интересно" {
             pos 95.0 66.0
@@ -365,9 +429,15 @@ Engine" "expr dsl"
         }
         link "Не смотри
 на авторитетов" "делай
-то что интересно"
+то что интересно" {
+            pos 131.0 55.0
+            display arrows
+        }
         link "Не останавливайся
 пока не закончишь." "делай
-то что интересно"
+то что интересно" {
+            pos 124.0 -63.0
+            display arrows
+        }
     }
 }

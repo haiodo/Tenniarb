@@ -13,6 +13,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
     var controller: ViewController
     var view: NSTextView
     var changes:Int = 0
+    var doMerge:Bool = false
     
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
@@ -20,9 +21,18 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         super.init()
         
         self.view.delegate = self
+        self.view.allowsUndo=false
     }
     
+    func needUpdate()-> Bool {
+        return !doMerge
+    }
+    
+    
     func setTextValue(_ value: String) {
+        if view.string == value || doMerge {
+            return; // Same value
+        }
         let style = NSMutableParagraphStyle()
         style.headIndent = 50
         
@@ -35,12 +45,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         self.view.textColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.8)
         
         self.view.scrollToBeginningOfDocument(self)
-        
-//        self.view.delegate = self
     }
+    
     func textDidChange(_ notification: Notification) {
         changes += 1
         sheduleUpdate()
+    }
+    
+    func textDidEndEditing(_ notification: Notification) {
+        Swift.debugPrint("End editing")
     }
     
     fileprivate func sheduleUpdate( ) {
@@ -55,7 +68,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
                 }
                 else {
                     self.view.textColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.8)
+                    self.doMerge = true
                     self.controller.mergeProperties(node)
+                    self.doMerge = false
                 }
                 self.view.needsDisplay = true
             }

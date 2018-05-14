@@ -494,7 +494,7 @@ open class DrawableScene: DrawableContainer {
         let borderColor = style.borderColor ?? CGColor.black
         
         let textBox = TextBox(
-            text: name.count > 0 ? name :  " ",
+            text: (name.count > 0 ? name :  " ").replacingOccurrences(of: "\\n", with: "\n"),
             textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
             fontSize: style.fontSize)
         
