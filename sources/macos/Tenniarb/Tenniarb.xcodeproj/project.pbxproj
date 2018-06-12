@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -321,7 +321,7 @@
 				};
 			};
 			buildConfigurationList = 0C2375E61ED838D900ECB516 /* Build configuration list for PBXProject "Tenniarb" */;
-			compatibilityVersion = "Xcode 8.0";
+			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -475,6 +475,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
@@ -526,7 +527,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -542,7 +544,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				INFOPLIST_FILE = Tenniarb/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -563,7 +568,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				INFOPLIST_FILE = Tenniarb/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -585,7 +593,11 @@
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = TenniarbTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -606,7 +618,11 @@
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = TenniarbTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

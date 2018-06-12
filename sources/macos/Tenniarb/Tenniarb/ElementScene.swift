@@ -245,6 +245,12 @@ class DrawableItemStyle {
                 case "font-size":
                     if let value = child.getFloat(1) {
                         result.fontSize = CGFloat(value)
+                        if result.fontSize > 37 {
+                           result.fontSize = 36
+                        }
+                        else if result.fontSize < 4 {
+                            result.fontSize = 4
+                        }
                     }
                 case "display":
                     if let value = child.getIdent(1) {
@@ -502,12 +508,12 @@ open class DrawableScene: DrawableContainer {
         
         var width = max(20, textBounds.width)
         if let styleWidth = style.width {
-            width = max(width, styleWidth)
+            width = styleWidth //max(width, styleWidth)
         }
         
         var height = max(20, textBounds.height)
         if let styleHeight = style.height {
-            height = max(height, styleHeight)
+            height = styleHeight//max(height, styleHeight)
         }
         
         let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
@@ -725,7 +731,7 @@ public class TextBox: Drawable {
         let attrString = NSAttributedString(string: text, attributes: textFontAttributes)
         
         let fs = CTFramesetterCreateWithAttributedString(attrString)
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 300, height: 45), nil)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
         
         self.size = CGSize(width: frameSize.width + 10, height: frameSize.height + 8 )
     }

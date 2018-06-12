@@ -210,7 +210,7 @@ extension Element {
 class IndexedName: Hashable {
     var hashValue: Int {
         get {
-            return name.hashValue + index.hashValue
+            return name.hashValue + index != 0 ? index.hashValue : 0
         }
     }
     var name: String = ""

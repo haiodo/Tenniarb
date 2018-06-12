@@ -171,12 +171,13 @@ public class ElementModelStore {
         execute(AddItem(self, element, item), undoManager, refresh)
     }
     
-    public func add( _ element: Element, source: DiagramItem, target: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+    public func add( _ element: Element, source: DiagramItem, target: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void, props: [TennNode] = [] ) {
         //TODO: Need do via command\
         
         let op = CompositeOperation(self, element)
         
         let link = DiagramItem(kind: .Link, name:"")
+        link.properties.append(contentsOf: props)
         link.setData(.LinkData, LinkElementData(source: source, target: target))
         
         if !element.items.contains(source) {

@@ -111,6 +111,70 @@ class ViewController: NSViewController {
         }
     }
     
+    @IBAction func addLinkedItem(_ sender: NSMenuItem ) {
+        scene?.addNewItem()
+    }
+    
+    @IBAction func addLinkedStyledItem(_ sender: NSMenuItem ) {
+        scene?.addNewItem(copyProps: true)
+    }
+    
+    @IBAction func addFreeItem(_ sender: NSMenuItem ) {
+        scene?.addTopItem()
+    }
+    
+    @IBAction func duplicateItem( _ sender: NSMenuItem ) {
+        var target = 0
+        if let responder = self.view.window?.firstResponder {
+            if responder == self.worldTree {
+                target = 1
+            }
+            else if responder == self.scene {
+                target = 2
+            }
+            else {
+                // Check if first responsed has super view of worldTree
+                if let view = responder as? NSView {
+                    
+                    var p: NSView? = view
+                    while p != nil {
+                        if p == self.worldTree {
+                            target = 1
+                            break
+                        }
+                        p = p?.superview
+                    }
+                }
+                
+            }
+        }
+        
+        switch target {
+        case 1:
+            if let active = self.selectedElement {
+                let mdl = active.toTenn()
+                let model = Element.parseTenn(node: mdl)
+                let elementCopy = model.elements[0]
+                
+                self.elementStore?.add(active.parent!, elementCopy, undoManager: self.undoManager, refresh: {()->Void in
+                    DispatchQueue.main.async(execute: {
+                        if active.parent!.kind == .Root {
+                            self.worldTree.reloadData()
+                        }
+                        else {
+                            self.worldTree.reloadItem(active.parent!, reloadChildren: true )
+                            self.worldTree.expandItem(active.parent!)
+                        }
+                    })
+                })
+            }
+        case 2:
+            scene?.duplicateItem()
+        default:
+            break
+        }
+    }
+    
     private func showElementSource() {
         let popupController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SourcePopup")) as! SourcePopoverViewController
         
@@ -288,7 +352,6 @@ class ViewController: NSViewController {
         scene.onSelection.removeAll()
         scene.onSelection.append({( element ) -> Void in
             self.activeElement = element
-            
             self.updateTextProperties()
         })
 

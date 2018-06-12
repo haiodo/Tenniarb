@@ -366,6 +366,15 @@ class SceneDrawView: NSView {
         needsDisplay = true
     }
     
+    func addTopItem() {
+        // Add top element
+        let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
+        self.createIndex += 1
+        
+        newEl.x = 0
+        newEl.y = 0
+        self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+    }
     func addNewItem(copyProps:Bool = false) {
         if let active = self.activeElement {
             if active.kind == .Item {
@@ -395,13 +404,35 @@ class SceneDrawView: NSView {
             }
         }
         else {
-            // Add top element
-            let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
-            self.createIndex += 1
-            
-            newEl.x = 0
-            newEl.y = 0
-            self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+           self.addTopItem()
+        }
+    }
+    
+    func duplicateItem() {
+        if let active = self.activeElement {
+            if active.kind == .Item {
+                // Create and add to activeEl
+                let newEl = DiagramItem(kind: .Item, name: active.name )
+                newEl.description = active.description
+                
+                var offset = CGFloat(100.0)
+                if let dr = scene?.drawables[active] {
+                    offset = CGFloat(dr.getBounds().width + 10)
+                }
+                
+                newEl.x = active.x + offset
+                newEl.y = active.y
+                
+                
+                // Copy parent properties
+                for p in active.properties {
+                    newEl.properties.append(p.clone())
+                }
+                
+                self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+                self.setActiveElement(newEl)
+                sheduleRedraw()
+            }
         }
     }
     
@@ -509,7 +540,7 @@ class SceneDrawView: NSView {
                         return false
                     }) == nil {
                         // Add item since not pressent
-                        store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+                        store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.sheduleRedraw, props: [TennNode.newCommand("display", TennNode.newStrNode("arrow"))])
                     }
                 }
                 
@@ -542,7 +573,7 @@ class SceneDrawView: NSView {
         
         if self.mode == .Editing {
             // No dragging allowed until editing is not done
-            return
+            self.commitTitleEditing(nil)
         }
         
         self.mouseDownState = true
