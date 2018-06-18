@@ -15,4 +15,17 @@ class WindowController: NSWindowController {
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
         return displayName
     }
+    override func windowDidLoad() {
+        
+        Swift.debugPrint(ProcessInfo.processInfo.operatingSystemVersion)
+        
+        let ver = ProcessInfo.processInfo.operatingSystemVersion
+        
+        if ver.majorVersion == 10 && ver.minorVersion == 12 {    
+            self.window?.titleVisibility = .visible
+            self.window?.titlebarAppearsTransparent = true
+            self.window?.styleMask.remove(NSWindow.StyleMask.fullSizeContentView)
+            self.window?.styleMask.remove(NSWindow.StyleMask.unifiedTitleAndToolbar)
+        }
+    }
 }
