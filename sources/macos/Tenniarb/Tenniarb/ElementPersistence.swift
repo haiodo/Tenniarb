@@ -16,6 +16,7 @@ public enum PersistenceItemKind {
     case Model
     case Annontation // Annotation box
     case Description
+    case Label
     case SourceIndex
     case TargetIndex
     case Name
@@ -34,6 +35,7 @@ public enum PersistenceItemKind {
         case .TargetIndex: return "target-index";
         case .Position: return "pos";
         case .Name: return "name";
+        case .Label: return "label";
         }
     }
 }
@@ -97,6 +99,10 @@ extension Element {
         let nx = item.x != 0
         let ny = item.y != 0
         
+        if !item.name.isEmpty {
+            linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Label.commandName, TennNode.newStrNode(item.name)))
+        }
+        
         if nx || ny {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
         }
@@ -123,7 +129,7 @@ extension Element {
             }
             
             let linkDataBlock = TennNode.newBlockExpr()
-            
+                        
             if let src = linkData.source, let sourceIndex = indexes[src], sourceIndex != 0 {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.SourceIndex.commandName, TennNode.newIntNode(sourceIndex)))
             }
@@ -408,6 +414,8 @@ extension Element {
         switch cmdName  {
         case PersistenceItemKind.Description.commandName:
             link.description = blChild.getIdent(1)
+        case PersistenceItemKind.Label.commandName:
+            link.name = blChild.getIdent(1) ?? ""
         case PersistenceItemKind.Position.commandName:
             if blChild.count == 3 {
                 if let x = blChild.getFloat(1), let y = blChild.getFloat(2) {

@@ -232,9 +232,7 @@ class DrawableItemStyle {
         return CGColor.black.copy(alpha: alpha)!
     }
     
-    static func parseStyle( item: DiagramItem ) -> DrawableItemStyle {
-        let result = DrawableItemStyle()
-        
+    static func parseStyle( item: DiagramItem, default result: DrawableItemStyle = DrawableItemStyle() ) -> DrawableItemStyle {
         for child in item.properties {
             if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
                 switch cmdName {
@@ -282,6 +280,11 @@ class DrawableItemStyle {
             }
         }
         return result
+    }
+    
+    func fontSize( _ size: CGFloat) -> DrawableItemStyle {
+        self.fontSize = size
+        return self
     }
 }
 
@@ -551,13 +554,18 @@ open class DrawableScene: DrawableContainer {
                     let targetRect = drawables[dst]?.getBounds()
                     
                     if let sr = sourceRect, let tr = targetRect {
-                        let linkStyle = DrawableItemStyle.parseStyle(item: e)
+                        let defaultLinkStyle = DrawableItemStyle().fontSize(12)
+                        let linkStyle = DrawableItemStyle.parseStyle(item: e, default: defaultLinkStyle)
                         
                         let linkDr = DrawableLine(
                             source: sr,
                             target: tr,
                             style: linkStyle,
                             control: CGPoint(x: e.x, y: e.y ))
+                        
+                        if data.name.count > 0 {
+                            linkDr.addLabel(data.name)
+                        }
                         
                         linkDr.item = e
                         drawables[e] = linkDr
@@ -778,6 +786,8 @@ public class DrawableLine: ItemDrawable {
     var style: DrawableItemStyle
     var control: CGPoint
     
+    var label: TextBox?
+    
     init( source: CGRect, target: CGRect, style: DrawableItemStyle, control: CGPoint = CGPoint.zero) {
         self.sourceRect = source
         self.targetRect = target
@@ -793,6 +803,12 @@ public class DrawableLine: ItemDrawable {
         self.target = target
         self.style = style
         self.control = CGPoint.zero
+    }
+    
+    func addLabel(_ label: String) {
+        self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
+                             textColor: self.style.color ?? CGColor(red: 0, green: 0, blue: 0, alpha: 1),
+                             fontSize: self.style.fontSize)
     }
     
     func find( _ point: CGPoint)-> Bool {
@@ -1008,7 +1024,17 @@ public class DrawableLine: ItemDrawable {
         
         for ep in self.extraPoints {
             aPath.addLine(to: CGPoint(x: ep.x + point.x, y: ep.y + point.y))
-        }    
+            
+            if let lbl = self.label {
+                lbl.point = CGPoint(x: ep.x, y: ep.y - lbl.getBounds().height)
+            }
+        }
+        
+        if self.extraPoints.isEmpty {
+            if let lbl = self.label {
+                lbl.point = CGPoint(x: (source.x + target.x)/2, y: (source.y + target.y)/2)
+            }
+        }
         
         aPath.addLine(to: toPt)
 //        aPath.closeSubpath()
@@ -1036,6 +1062,10 @@ public class DrawableLine: ItemDrawable {
                 }
             }
             context.drawPath(using: fillType)
+        }
+        
+        if let lbl = self.label {
+            lbl.draw(context: context, at: point)
         }
         
         

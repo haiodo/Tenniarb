@@ -44,7 +44,9 @@ extension DiagramItem {
         let items = TennNode.newNode(kind: .Statements)
         
         if self.kind == .Item {
-            items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
+            if !self.name.isEmpty {
+                items.add(TennNode.newCommand(PersistenceItemKind.Name.commandName, TennNode.newStrNode(self.name)))
+            }
             Element.buildItemData(self, items)
         }
         else if self.kind == .Link {
@@ -62,7 +64,7 @@ extension DiagramItem {
             self.x = 0 // In case pos was deleted
             self.y = 0
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
-                if cmdName == "name" {
+                if cmdName == PersistenceItemKind.Name.commandName {
                     if let newName = blChild.getIdent(1) {
                         self.name = newName
                     }
@@ -77,8 +79,9 @@ extension DiagramItem {
             self.properties = []
             self.x = 0 // In case pos was deleted
             self.y = 0
+            self.name = ""
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
-                if cmdName == "name" {
+                if cmdName == PersistenceItemKind.Label.commandName {
                     if let newName = blChild.getIdent(1) {
                         self.name = newName
                     }

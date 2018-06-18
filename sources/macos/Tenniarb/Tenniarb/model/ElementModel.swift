@@ -298,6 +298,7 @@ public class DiagramItem {
 class LinkItem: DiagramItem {
     var source: DiagramItem? // A direct link to source
     var target: DiagramItem? // A direct link to target in case of Link
+    
     init( kind: ItemKind, name: String, source: DiagramItem?, target: DiagramItem? ) {
         self.source = source
         self.target = target

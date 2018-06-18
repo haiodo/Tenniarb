@@ -550,8 +550,14 @@ class SceneDrawView: NSView {
             }
             else {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
-                    if newPos.x != de.x || newPos.y != de.y {
-                        self.store?.updatePosition(item: de, newPos: newPos, undoManager: self.undoManager, refresh: sheduleRedraw)
+                    var pos = newPos
+//                    if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+//                        // This is snap to grid of 5/5
+//                        pos = CGPoint(x: Int(pos.x) - Int(pos.x) % 5,
+//                                         y: Int(pos.y) - Int(pos.y) % 5)
+//                    }
+                    if pos.x != de.x || pos.y != de.y {
+                        self.store?.updatePosition(item: de, newPos: pos, undoManager: self.undoManager, refresh: sheduleRedraw)
                     }
                 }
                 self.setActiveElement(de)
