@@ -74,13 +74,7 @@ extension Element {
     }
     
     static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
-        var name: String = ""
-        if let refEl:Element = item.getData(.RefElement) {
-            name = refEl.name
-        }
-        else {
-            name = item.name
-        }
+        var name: String = item.name
         
         let itemRoot = TennNode.newCommand(PersistenceItemKind.Item.commandName, TennNode.newStrNode(name))
         
@@ -113,17 +107,27 @@ extension Element {
     }
     
     static func buildLink(_ item: DiagramItem, _ enodeBlock: TennNode, _ indexes: [DiagramItem:Int]) {
-        if let linkData: LinkElementData = item.getData(.LinkData) {
+        if let linkData = item as? LinkItem {
             let linkCmd = TennNode.newCommand(PersistenceItemKind.Link.commandName)
-            linkCmd.add(TennNode.newStrNode(linkData.source.name))
-            linkCmd.add(TennNode.newStrNode(linkData.target.name))
+            if let src = linkData.source {
+                linkCmd.add(TennNode.newStrNode(src.name))
+            }
+            else {
+                linkCmd.add(TennNode.newStrNode(""))
+            }
+            if let dst = linkData.target {
+                linkCmd.add(TennNode.newStrNode(dst.name))
+            }
+            else {
+                linkCmd.add(TennNode.newStrNode(""))
+            }
             
             let linkDataBlock = TennNode.newBlockExpr()
             
-            if let sourceIndex = indexes[linkData.source], sourceIndex != 0 {
+            if let src = linkData.source, let sourceIndex = indexes[src], sourceIndex != 0 {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.SourceIndex.commandName, TennNode.newIntNode(sourceIndex)))
             }
-            if let targetIndex = indexes[linkData.target], targetIndex != 0 {
+            if let dst = linkData.target, let targetIndex = indexes[dst], targetIndex != 0 {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.TargetIndex.commandName, TennNode.newIntNode(targetIndex)))
             }
             
@@ -297,7 +301,7 @@ extension Element {
         return itemRefNames
     }
     
-    static func parseElementData(_ el:Element, _ cmdName: String, _ blChild: TennNode,_ linkElements: inout [(TennNode, DiagramItem)]) {
+    static func parseElementData(_ el:Element, _ cmdName: String, _ blChild: TennNode,_ linkElements: inout [(TennNode, LinkItem)]) {
         switch cmdName  {
         case PersistenceItemKind.Item.commandName:
             if let item = parseItem(blChild) {
@@ -330,7 +334,7 @@ extension Element {
     fileprivate static func parseElement(node: TennNode) -> Element? {
         let el = Element(name: "")
         
-        var linkElements: [(TennNode, DiagramItem)] = []
+        var linkElements: [(TennNode, LinkItem)] = []
         
         if node.count >= 2 {
             if let name = node.getIdent(1) {
@@ -392,9 +396,9 @@ extension Element {
         return el
     }
     
-    fileprivate static func parseLink(_ node: TennNode) -> DiagramItem? {
+    fileprivate static func parseLink(_ node: TennNode) -> LinkItem? {
         if node.count >= 2 {
-            let el = DiagramItem(kind: .Link, name: "")
+            let el = LinkItem(kind: .Link, name: "", source: nil, target: nil)
             return el
         }
         return nil
@@ -437,7 +441,7 @@ extension Element {
         }
     }
     
-    fileprivate static func processLink( _ link: DiagramItem, _ node: TennNode, _ links: [IndexedName: DiagramItem]) {
+    fileprivate static func processLink( _ link: LinkItem, _ node: TennNode, _ links: [IndexedName: DiagramItem]) {
         var sourceIndex = 0
         var targetIndex = 0
         parseChildCommands( node, 3, { (cmdName, blChild) -> Void in
@@ -449,7 +453,8 @@ extension Element {
             let tIndex = IndexedName( target, targetIndex)
             
             if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
-                link.setData(.LinkData, LinkElementData(source: sourceElement, target: targetElement))
+                link.source = sourceElement
+                link.target = targetElement
             }
         }
     }

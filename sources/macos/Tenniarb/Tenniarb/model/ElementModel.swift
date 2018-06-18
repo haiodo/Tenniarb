@@ -38,11 +38,6 @@ public class Element {
     
     var properties: [TennNode] = [] // Extra nodes not supported directly by model.
     
-    
-    // Item on self diagram of this element
-    var selfItem: DiagramItem?
-    
-    
     // Transient data values
     
     var ox: Double = 0
@@ -52,10 +47,51 @@ public class Element {
         self.id = UUID()
         self.name = name
         self.kind = .Element
+    }
+    
+    // Doing a full clone of this element with all childrens.
+    func clone(cloneItems:Bool = true, cloneElement:Bool = true) -> Element {
+        let cloneEl = Element(name: self.name)
         
-        if createSelf {
-            self.createSelfItem()
+        cloneEl.ox = self.ox
+        cloneEl.oy = self.oy
+        cloneEl.description = self.description
+        
+        cloneEl.properties.append(contentsOf: self.properties.map({(itm) in itm.clone()}))
+        
+        if cloneItems {
+            var itemsMap: [DiagramItem: DiagramItem] = [:]
+            
+            var linksToProcess: [LinkItem] = []
+            
+            cloneEl.items.append(contentsOf: self.items.map({(itm) in
+                let copy = itm.clone()
+                copy.parent = cloneEl
+                itemsMap[itm] = copy
+                if let link =  copy as? LinkItem {
+                    linksToProcess.append(link)
+                }
+                return copy
+            }))
+            
+            // We need to process links with right items
+            for link in linksToProcess {
+                if let src = link.source {
+                    link.source = itemsMap[src]
+                }
+                if let dst = link.target {
+                    link.target = itemsMap[dst]
+                }
+            }
         }
+        
+        if cloneElement {
+            cloneEl.elements.append(contentsOf: self.elements.map({
+                (el) in el.clone(cloneItems: true, cloneElement: true)
+            }))
+        }
+        
+        return cloneEl
     }
     
     var count: Int {
@@ -68,13 +104,6 @@ public class Element {
         get {
             return items.count
         }
-    }
-    
-    func createSelfItem() {
-        let item = DiagramItem(kind: .Item, name:self.name)
-        item.setData(.RefElement, self)
-        self.selfItem = item
-        self.items.append(item)
     }
     
     func assignModel( _ el: Element) {
@@ -126,25 +155,16 @@ public class Element {
         self.add(el)
         // Update current diagram to have a link between a self and new added item.
         let item = DiagramItem(kind: .Item, name: el.name)
-        item.setData(.RefElement, el)
         self.items.append(item)
         assignModel(item)
         
-        // We also need to add link from self to this one
-        if createLink && self.selfItem != nil {
-            let link = DiagramItem(kind: .Link, name:"")
-            link.setData(.RefElement, LinkElementData(source: self.selfItem!, target: item))
-            self.items.append(link)
-            assignModel(link)
-        }
         return item
     }
     
     // Add a child element to current diagram
-    fileprivate func add( source: DiagramItem, target: DiagramItem ) {
+    func add( source: DiagramItem, target: DiagramItem ) {
         // We also need to add link from self to this one
-        let link = DiagramItem(kind: .Link, name:"")
-        link.setData(.LinkData, LinkElementData(source: source, target: target))
+        let link = LinkItem(kind: .Link, name:"", source: source, target: target)
         self.items.append(link)
         assignModel(link)
         
@@ -156,42 +176,7 @@ public class Element {
             self.items.append(target)
             assignModel(target)
         }
-    }
-    
-    func getItem( _ el: Element) -> DiagramItem? {
-        // find a item for source
-        for i in self.items {
-            if i.kind == .Item && i.getData(.RefElement) == el {
-                return i
-            }
-        }
-        return nil
-    }
-    
-    /// Create a link between two elements
-    /// source should be already on current diagram
-    /// Target item will be added
-    func add( source: Element, target: Element ) -> DiagramItem?  {
-        if let sourceItem = getItem( source ) {
-            // Update current diagram to have a link between a self and new added item.
-            var item = getItem(target)
-            if item == nil {
-                item = DiagramItem(kind: .Item, name:target.name)
-                item!.setData(.RefElement, target)
-                self.items.append(item!)
-                self.assignModel(item!)
-            }
-            // We also need to add link from self to this one
-            
-            let link = DiagramItem(kind: .Link, name:"")
-            link.setData(.LinkData, LinkElementData(source: sourceItem, target: item!))
-            self.items.append(link)
-            assignModel(link)
-            
-            return item
-        }
-        return nil
-    }
+    }    
     func remove(_ element: Element) -> Int {
         if let index = self.elements.index(of: element) {
             self.elements.remove(at: index)
@@ -204,8 +189,8 @@ public class Element {
         var result:[DiagramItem] = []
         for itm in self.items {
             // Need to check if item is Link and source or target is our client
-            if itm.kind == .Link, let lData: LinkElementData = itm.getData(.LinkData) {
-                if lData.source.id == item.id || lData.target.id == item.id {
+            if itm.kind == .Link, let lData = itm as? LinkItem {
+                if lData.source?.id == item.id || lData.target?.id == item.id {
                     result.append(itm)
                 }
             }
@@ -224,8 +209,8 @@ public class Element {
     func getRelatedItems(_ item: DiagramItem ) -> [DiagramItem] {
         return self.items.filter {
             // Need to check if item is Link and source or target is our client
-            if $0.kind == .Link, let lData: LinkElementData = $0.getData(.LinkData) {
-                if lData.source.id == item.id || lData.target.id == item.id {
+            if $0.kind == .Link, let lData = $0 as? LinkItem {
+                if lData.source?.id == item.id || lData.target?.id == item.id {
                     return true
                 }
             }
@@ -277,15 +262,6 @@ enum ElementDataKind {
     case RefElement
     case LinkData
 }
-public class LinkElementData {
-    var source: DiagramItem // A direct link to source
-    var target: DiagramItem // A direct link to target in case of Link
-    
-    init( source:DiagramItem, target:DiagramItem) {
-        self.source = source
-        self.target = target
-    }
-}
 
 public class DiagramItem {
     var kind: ItemKind
@@ -297,8 +273,6 @@ public class DiagramItem {
     
     var properties: [TennNode] = [] // Extra nodes not supported directly by model.
     
-    var itemData: [ElementDataKind: Any] = [:]
-    
     var x: CGFloat = 0
     var y: CGFloat = 0
     
@@ -308,14 +282,37 @@ public class DiagramItem {
         self.name = name
     }
     
-    func setData<T>(_ kind: ElementDataKind, _ value: T) {
-        itemData[kind] = value
+    func clone() -> DiagramItem {
+        let cloneItm = DiagramItem(kind: self.kind, name: self.name)
+        
+        cloneItm.x = self.x
+        cloneItm.y = self.y
+        cloneItm.description = self.description
+        
+        cloneItm.properties.append(contentsOf: self.properties.map({ (nde) in nde.clone()}))
+        
+        return cloneItm
     }
-    func getData<T>(_ kind: ElementDataKind) -> T? {
-        if let value = itemData[kind] as? T {
-            return value
-        }
-        return nil
+}
+
+class LinkItem: DiagramItem {
+    var source: DiagramItem? // A direct link to source
+    var target: DiagramItem? // A direct link to target in case of Link
+    init( kind: ItemKind, name: String, source: DiagramItem?, target: DiagramItem? ) {
+        self.source = source
+        self.target = target
+        super.init(kind: kind, name: name)
+    }
+    override func clone() -> LinkItem {
+        let cloneItm = LinkItem(kind: self.kind, name: self.name, source: self.source, target: self.target)
+        
+        cloneItm.x = self.x
+        cloneItm.y = self.y
+        cloneItm.description = self.description
+        
+        cloneItm.properties.append(contentsOf: self.properties.map({ (nde) in nde.clone()}))
+        
+        return cloneItm
     }
     
 }
@@ -353,9 +350,6 @@ public class ElementModelFactory {
         self.elementModel = ElementModel()
         
         let pl = Element(name: "Unnamed diagram", createSelf: false)
-        _ = self.elementModel.add(pl)
-        
-        pl.selfItem?.x = 0
-        pl.selfItem?.y = 0
+        _ = self.elementModel.add(pl)        
     }
 }

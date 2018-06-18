@@ -152,9 +152,7 @@ class ViewController: NSViewController {
         switch target {
         case 1:
             if let active = self.selectedElement {
-                let mdl = active.toTenn()
-                let model = Element.parseTenn(node: mdl)
-                let elementCopy = model.elements[0]
+                let elementCopy = active.clone()
                 
                 self.elementStore?.add(active.parent!, elementCopy, undoManager: self.undoManager, refresh: {()->Void in
                     DispatchQueue.main.async(execute: {

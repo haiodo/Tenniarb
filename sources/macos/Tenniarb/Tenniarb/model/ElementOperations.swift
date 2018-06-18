@@ -176,9 +176,8 @@ public class ElementModelStore {
         
         let op = CompositeOperation(self, element)
         
-        let link = DiagramItem(kind: .Link, name:"")
+        let link = LinkItem(kind: .Link, name:"", source: source, target: target)
         link.properties.append(contentsOf: props)
-        link.setData(.LinkData, LinkElementData(source: source, target: target))
         
         if !element.items.contains(source) {
             op.add(AddItem(self, element, source))

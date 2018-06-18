@@ -418,17 +418,19 @@ open class DrawableScene: DrawableContainer {
         // Update links
         if let links = itemToLink[item] {
             for l in links {
-                if let data: LinkElementData = l.getData(.LinkData) {
+                if let data = l as? LinkItem {
                     if let lnkDr = drawables[l] as? DrawableLine {
                         result = result.union(lnkDr.getBounds())
                         
-                        let sourceRect = drawables[data.source]?.getBounds()
-                        let targetRect = drawables[data.target]?.getBounds()
-                        
-                        if let sr = sourceRect, let tr = targetRect {
-                            lnkDr.updateLayout(source: sr, target: tr)
+                        if let src = data.source, let dst = data.target {
+                            let sourceRect = drawables[src]?.getBounds()
+                            let targetRect = drawables[dst]?.getBounds()
+                            
+                            if let sr = sourceRect, let tr = targetRect {
+                                lnkDr.updateLayout(source: sr, target: tr)
+                            }
+                            result = result.union(lnkDr.getBounds())
                         }
-                        result = result.union(lnkDr.getBounds())
                     }
                 }
             }
@@ -539,27 +541,29 @@ open class DrawableScene: DrawableContainer {
         
         buildItems(element.items, elementDrawable, &links)
         for e in links {
-            if let data: LinkElementData = e.getData(.LinkData) {
+            if let data = e as? LinkItem {
                 
-                self.addLink( data.source, e )
-                self.addLink( data.target, e )
+                if let src = data.source, let dst = data.target {
+                    self.addLink( src, e )
+                    self.addLink( dst, e )
                 
-                let sourceRect = drawables[data.source]?.getBounds()
-                let targetRect = drawables[data.target]?.getBounds()
-                
-                if let sr = sourceRect, let tr = targetRect {
-                    let linkStyle = DrawableItemStyle.parseStyle(item: e)
+                    let sourceRect = drawables[src]?.getBounds()
+                    let targetRect = drawables[dst]?.getBounds()
                     
-                    let linkDr = DrawableLine(
-                        source: sr,
-                        target: tr,
-                        style: linkStyle,
-                        control: CGPoint(x: e.x, y: e.y ))
-                    
-                    linkDr.item = e
-                    drawables[e] = linkDr
-                    elementDrawable.insert(
-                        linkDr, at: 0)
+                    if let sr = sourceRect, let tr = targetRect {
+                        let linkStyle = DrawableItemStyle.parseStyle(item: e)
+                        
+                        let linkDr = DrawableLine(
+                            source: sr,
+                            target: tr,
+                            style: linkStyle,
+                            control: CGPoint(x: e.x, y: e.y ))
+                        
+                        linkDr.item = e
+                        drawables[e] = linkDr
+                        elementDrawable.insert(
+                            linkDr, at: 0)
+                    }
                 }
             }
         }

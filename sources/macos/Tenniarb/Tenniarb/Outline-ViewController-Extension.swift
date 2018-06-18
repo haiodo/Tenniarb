@@ -157,18 +157,27 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return pp
     }
     
+    func isParentOf(_ rootElement: Element, _ element: Element) -> Bool {
+        var e:Element? = element
+        
+        while e != nil {
+            if e == rootElement {
+                return true
+            }
+            e = e!.parent
+        }
+        return false
+    }
+    
     func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
         
         if let element = item as? Element, let dragItem = self.draggingItem {
             // Check if not moving item into one of its parents.
-//            if element == dragItem {
-//                return NSDragOperation.
-//            }
-//
-            print( "validate: \(element.name) at \(index)")
+            
+            if self.isParentOf(dragItem, element) {
+                return NSDragOperation.copy
+            }
         }
-        
-        
         
         return NSDragOperation.move
         //
@@ -176,7 +185,20 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     
     func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
         
-        print( "accept drop: \((item as? Element)?.name) at \(index)")
+//        print( "accept drop: \((item as? Element)?.name) at \(index)")
+        
+        if let element = item as? Element, let dragItem = self.draggingItem {
+            // Check if not moving item into one of its parents.
+            
+            if self.isParentOf(dragItem, element) {
+                // Do copy of element diagram only
+            }
+            else {
+                // Do move of element
+            }
+        }
+        
+        
         draggingItem = nil
         return true
     }

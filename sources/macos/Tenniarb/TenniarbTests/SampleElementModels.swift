@@ -17,9 +17,6 @@ public class TestElementFactory {
         let pl = Element(name: "platform", createSelf: true)
         _ = elementModel.add(pl)
         
-        pl.selfItem?.x = 0
-        pl.selfItem?.y = 0
-        
         let index = pl.add( makeItem: Element(name: "Index"))
         index.x = -84
         index.y = 102
@@ -43,11 +40,11 @@ public class TestElementFactory {
         repoe.y = -109
         
         let dbe = Element(name: "Database")
-        _ = repo.add( makeItem: dbe )
+        let dbei = repo.add( makeItem: dbe )
         
-        let dbi = pl.add(source: repo, target: dbe)
-        dbi?.x = 126
-        dbi?.y = -216
+        pl.add(source: repoe, target: dbei)
+        dbei.x = 126
+        dbei.y = -216
         
         
         // Add small just platform diagram.

@@ -530,7 +530,7 @@ class SceneDrawView: NSView {
                     
                     // Check if line already exists
                     if element?.items.first(where: { (item) -> Bool in
-                        if item.kind == .Link, let data: LinkElementData = item.getData(.LinkData) {
+                        if item.kind == .Link, let data = item as? LinkItem {
                             if (data.source == source && data.target == target) ||
                                 (data.source == target && data.target == source) {
                                 // Existing item found

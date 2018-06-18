@@ -24,7 +24,7 @@ extension Element {
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         self.properties = []
         
-        var linkElements:[(TennNode, DiagramItem)] = []
+        var linkElements:[(TennNode, LinkItem)] = []
         Element.traverseBlock(node, {(cmdName, blChild) -> Void in
             if cmdName == "name" {
                 if let newName = blChild.getIdent(1) {
