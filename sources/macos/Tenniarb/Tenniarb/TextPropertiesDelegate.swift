@@ -42,7 +42,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         self.view.textStorage?.setAttributedString(NSAttributedString(string: value))
         self.view.isAutomaticQuoteSubstitutionEnabled = false
         self.view.font = NSFont.systemFont(ofSize: 15.0)
-        self.view.textColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.8)
+        self.view.textColor = NSColor.textColor
         
         self.view.scrollToBeginningOfDocument(self)
     }
