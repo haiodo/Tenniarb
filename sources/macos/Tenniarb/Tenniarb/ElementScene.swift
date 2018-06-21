@@ -102,7 +102,6 @@ open class DrawableContainer: ItemDrawable {
             }
         }
         for ccl in lines {
-            
             if ccl.find(point) {
                 return ccl
             }
@@ -473,10 +472,10 @@ open class DrawableScene: DrawableContainer {
         
     }
     
-    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) {
         let rectBox = RoundBox( bounds: bounds,
                                 fillColor: bgColor,
-                                borderColor: borderColor)
+                                borderColor: borderColor, fill: fill)
         if self.activeElement == e {
             rectBox.lineWidth = 1
         }
@@ -527,7 +526,8 @@ open class DrawableScene: DrawableContainer {
             switch display {
             case "text":
                 buildEmptyRect(bounds,  e, textBox, elementDrawable)
-                
+            case "no-fill":
+                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
             default:
                 buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
             }
@@ -602,13 +602,15 @@ public class RoundBox: DrawableContainer {
     public var fillColor: CGColor
     public var borderColor: CGColor
     public var radius: CGFloat = 8
+    public var fill: Bool = true
     public static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
     public var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
     var path: CGMutablePath?
     
-    init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor ) {
+    init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor, fill: Bool ) {
         self.fillColor = fillColor
         self.borderColor = borderColor
+        self.fill = fill
         
         super.init([])
         self.setPath(bounds)
@@ -652,7 +654,13 @@ public class RoundBox: DrawableContainer {
         context.translateBy(x: point.x, y: point.y)
         
         context.addPath(self.path!)
-        context.drawPath(using: .fillStroke)
+        
+        if self.fill {
+            context.drawPath(using: .fillStroke)
+        }
+        else {
+            context.drawPath(using: .stroke)
+        }
         
         context.restoreGState()
     }
@@ -821,6 +829,13 @@ public class DrawableLine: ItemDrawable {
         for i in 0...(ln.count-2) {
             let d = crossPointLine(ln[i], ln[i+1], point)
             if d >= 0 && d < 20 {
+                return true
+            }
+        }
+        
+        for pt in ln {
+            let dist = sqrt((pt.x-point.x)*(pt.x-point.x) + (pt.y-point.y)*(pt.y-point.y))
+            if dist < 7 {
                 return true
             }
         }
@@ -1032,7 +1047,17 @@ public class DrawableLine: ItemDrawable {
         
         if self.extraPoints.isEmpty {
             if let lbl = self.label {
-                lbl.point = CGPoint(x: (source.x + target.x)/2, y: (source.y + target.y)/2)
+                let lblBounds = lbl.getBounds()
+                var nx = (source.x + target.x)/2
+                
+                if abs(source.y-target.y) < 10 {
+                    nx -= lblBounds.width/2
+                }
+                var ny = (source.y + target.y)/2
+                if abs(source.x-target.x) < 10 {
+                    ny -= lblBounds.height/2
+                }
+                lbl.point = CGPoint(x: nx, y: ny)
             }
         }
         

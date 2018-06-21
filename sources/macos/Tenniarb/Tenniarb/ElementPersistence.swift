@@ -76,9 +76,7 @@ extension Element {
     }
     
     static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
-        var name: String = item.name
-        
-        let itemRoot = TennNode.newCommand(PersistenceItemKind.Item.commandName, TennNode.newStrNode(name))
+        let itemRoot = TennNode.newCommand(PersistenceItemKind.Item.commandName, TennNode.newStrNode(item.name))
         
         enodeBlock.add(itemRoot)
         

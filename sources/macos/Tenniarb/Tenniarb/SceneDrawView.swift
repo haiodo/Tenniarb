@@ -529,19 +529,18 @@ class SceneDrawView: NSView {
                     // Create a new line if not yet pressent between elements
                     
                     // Check if line already exists
-                    if element?.items.first(where: { (item) -> Bool in
-                        if item.kind == .Link, let data = item as? LinkItem {
-                            if (data.source == source && data.target == target) ||
-                                (data.source == target && data.target == source) {
-                                // Existing item found
-                                return true
-                            }
-                        }
-                        return false
-                    }) == nil {
+//                    if element?.items.first(where: { (item) -> Bool in
+//                        if item.kind == .Link, let data = item as? LinkItem {
+//                            if (data.source == source && data.target == target) {
+//                                // Existing item found
+//                                return true
+//                            }
+//                        }
+//                        return false
+//                    }) == nil {
                         // Add item since not pressent
                         store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.sheduleRedraw, props: [TennNode.newCommand("display", TennNode.newStrNode("arrow"))])
-                    }
+//                    }
                 }
                 
                 scene?.removeLineTo()
