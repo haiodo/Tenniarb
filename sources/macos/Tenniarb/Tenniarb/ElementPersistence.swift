@@ -40,6 +40,30 @@ public enum PersistenceItemKind {
     }
 }
 
+public enum PersistenceStyleKind {
+    case Color // A reference to element
+    case FontSize
+    case Display
+    case Layout
+    case LineStyle
+    case Width
+    case Height
+    case BorderColor
+    var name : String {
+        switch self {
+        // Use Internationalization, as appropriate.
+        case .Color: return "color";
+        case .FontSize: return "font-size";
+        case .Display: return "display";
+        case .Layout: return "layout";
+        case .LineStyle: return "line-dash";
+        case .Width: return "width";
+        case .Height: return "height";
+        case .BorderColor: return "borderColor";
+        }
+    }
+}
+
 /**
  Allow Mapping of element model to tenn and wise verse.
  */

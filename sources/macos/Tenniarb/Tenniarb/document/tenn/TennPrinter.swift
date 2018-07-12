@@ -45,7 +45,26 @@ extension TennNode {
                     result.append(tok.literal)
                 }
                 else {
+//                    let parts = tok.literal.components(separatedBy: "\n")
+//                    if parts.count > 1 {
+//                        var c = 0
+//                        for p in parts {
+//                            if c == parts.count - 1 {
+//                                makeSeq(&result, pattern: TennNode.spaces, count: indent+1)
+//                                result.append("\"\(quote(p))\"")
+//                            }
+//                            else {
+//                                if c != 0 {
+//                                    makeSeq(&result, pattern: TennNode.spaces, count: indent+1)
+//                                }
+//                                result.append("\"\(quote(p))\\n\" + \n")
+//                            }
+//                            c += 1
+//                        }
+//                    }
+//                    else {
                     result.append("\"\(quote(tok.literal))\"")
+//                    }
                 }
             default:
                 break

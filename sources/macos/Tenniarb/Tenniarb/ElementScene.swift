@@ -235,11 +235,11 @@ class DrawableItemStyle {
         for child in item.properties {
             if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
                 switch cmdName {
-                case "color":
+                case PersistenceStyleKind.Color.name:
                     if let color = child.getIdent(1) {
                         result.color = parseColor(color.lowercased(), alpha: 0.7)
                     }
-                case "font-size":
+                case PersistenceStyleKind.FontSize.name:
                     if let value = child.getFloat(1) {
                         result.fontSize = CGFloat(value)
                         if result.fontSize > 37 {
@@ -249,27 +249,27 @@ class DrawableItemStyle {
                             result.fontSize = 4
                         }
                     }
-                case "display":
+                case PersistenceStyleKind.Display.name:
                     if let value = child.getIdent(1) {
                         result.display = value
                     }
-                case "layout":
+                case PersistenceStyleKind.Layout.name:
                     if let value = child.getIdent(1) {
                         result.layout = value
                     }
-                case "line-dash":
+                case PersistenceStyleKind.LineStyle.name:
                     if let value = child.getIdent(1) {
                         result.lineDash = value
                     }
-                case "width":
+                case PersistenceStyleKind.Width.name:
                     if let value = child.getFloat(1) {
                         result.width = CGFloat(value)
                     }
-                case "height":
+                case PersistenceStyleKind.Height.name:
                     if let value = child.getFloat(1) {
                         result.height = CGFloat(value)
                     }
-                case "borderColor":
+                case PersistenceStyleKind.BorderColor.name:
                     if let color = child.getIdent(1) {
                         result.borderColor = parseColor(color.lowercased())
                     }

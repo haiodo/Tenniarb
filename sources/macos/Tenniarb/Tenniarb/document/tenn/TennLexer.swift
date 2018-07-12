@@ -29,12 +29,16 @@ public class TennToken {
     public let literal: String
     public let line: Int
     public let col: Int
+    public let pos: Int
+    public let size: Int
     
-    init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0) {
+    init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0, pos:Int = 0, size:Int = 0) {
         self.type = type
         self.literal = literal
         self.line = line
         self.col = col
+        self.pos = pos
+        self.size = size
     }
 }
 
@@ -62,7 +66,7 @@ public class TennLexer {
     }
     private func add(type: TennTokenType, literal: String) {
         self.tokenBuffer.append(
-            TennToken(type: type, literal: literal, line: currentLine, col: currentChar)
+            TennToken(type: type, literal: literal, line: currentLine, col: currentChar, pos: self.pos-literal.count, size: literal.count)
         )
     }
     private func add(check pattern: inout String) {
