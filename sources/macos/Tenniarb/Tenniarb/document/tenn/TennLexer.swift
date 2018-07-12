@@ -333,6 +333,10 @@ public class TennLexer {
         self.add(type: .curlyRi, literal: String(cc))
         self.inc()
         
+        if self.blockState.count == 0 {
+            Swift.debugPrint("Invalid open close tokens expected .curlyLe but found \(cc)")
+            return false
+        }
         let openToken = self.blockState.removeFirst()
         // Check for token crossing here.
         if openToken != .curlyLe {

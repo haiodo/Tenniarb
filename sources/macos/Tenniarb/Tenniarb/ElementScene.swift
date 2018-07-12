@@ -472,10 +472,11 @@ open class DrawableScene: DrawableContainer {
         
     }
     
-    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) {
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) {
         let rectBox = RoundBox( bounds: bounds,
                                 fillColor: bgColor,
                                 borderColor: borderColor, fill: fill)
+        rectBox.stack = stack
         if self.activeElement == e {
             rectBox.lineWidth = 1
         }
@@ -528,6 +529,8 @@ open class DrawableScene: DrawableContainer {
                 buildEmptyRect(bounds,  e, textBox, elementDrawable)
             case "no-fill":
                 buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
+            case "stack":
+                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, stack: 3)
             default:
                 buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
             }
@@ -605,6 +608,9 @@ public class RoundBox: DrawableContainer {
     public var fill: Bool = true
     public static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
     public var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
+    public var stack: Int = 0
+    public var stackStep = CGPoint(x:5, y:5)
+    
     var path: CGMutablePath?
     
     init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor, fill: Bool ) {
@@ -653,6 +659,19 @@ public class RoundBox: DrawableContainer {
         
         context.translateBy(x: point.x, y: point.y)
         
+        if self.stack > 0 {
+            for i in 1...self.stack {
+                context.saveGState()
+                
+                context.translateBy(x: self.stackStep.x * CGFloat(self.stack-i),
+                                    y: self.stackStep.y * CGFloat(self.stack-i))
+                context.addPath(self.path!.copy()!)
+                context.drawPath(using: .fill)
+
+                context.restoreGState()
+            }
+        }
+        
         context.addPath(self.path!)
         
         if self.fill {
@@ -665,7 +684,26 @@ public class RoundBox: DrawableContainer {
         context.restoreGState()
     }
     
+    public override func layout(_ bounds: CGRect, _ dirty: CGRect) {
+        let selfBounds = self.bounds
+        
+        if let ch = self.children {
+            for c in ch {
+                c.layout( selfBounds, dirty )
+            }
+        }
+        let newBounds = self.bounds
+        visible = dirty.intersects(newBounds)
+    }
+    
     public override func getBounds() -> CGRect {
+//        if self.stack > 0 {
+//            return CGRect(origin: bounds.origin,
+//                          size: CGSize(
+//                            width: bounds.width + CGFloat(self.stack-1)*self.stackStep.x,
+//                            height: bounds.height + CGFloat(self.stack-1)*self.stackStep.y
+//            ))
+//        }
         return bounds
     }
 }
@@ -827,17 +865,10 @@ public class DrawableLine: ItemDrawable {
         ln.append(self.target)
         
         for i in 0...(ln.count-2) {
-            let d = crossPointLine(ln[i], ln[i+1], point)
-            if d >= 0 && d < 20 {
+            if crossPointLine(ln[i], ln[i+1], point) {
                 return true
             }
-        }
-        
-        for pt in ln {
-            let dist = sqrt((pt.x-point.x)*(pt.x-point.x) + (pt.y-point.y)*(pt.y-point.y))
-            if dist < 7 {
-                return true
-            }
+            
         }
         
         return false

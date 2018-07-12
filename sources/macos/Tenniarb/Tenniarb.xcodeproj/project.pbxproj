@@ -47,6 +47,19 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		0C35FF1120DC09BD00BE3B2C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
@@ -60,6 +73,7 @@
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
 		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
+		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		0C3A36BD2085B41100CC646C /* SearchBoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchBoxController.swift; path = views/SearchBoxController.swift; sourceTree = "<group>"; };
 		0C3AA4342041582F0054DCDF /* TenniarbUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbUITests.swift; sourceTree = "<group>"; };
 		0C3AA4362041582F0054DCDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -113,6 +127,7 @@
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C3AA4332041582F0054DCDF /* TenniarbUITests */,
+				0C35FF0020DC09BD00BE3B2C /* Frameworks */,
 				0C2375EC1ED838D900ECB516 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -161,6 +176,14 @@
 				0C235ED21F13F4B9004E37AC /* readme.md */,
 			);
 			name = Documentation;
+			sourceTree = "<group>";
+		};
+		0C35FF0020DC09BD00BE3B2C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0C35FF0120DC09BD00BE3B2C /* Quartz.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		0C3A36BC2085B3D500CC646C /* controllers */ = {
@@ -265,6 +288,7 @@
 				0C2375E71ED838D900ECB516 /* Sources */,
 				0C2375E81ED838D900ECB516 /* Frameworks */,
 				0C2375E91ED838D900ECB516 /* Resources */,
+				0C35FF1120DC09BD00BE3B2C /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -299,7 +323,7 @@
 		0C2375E31ED838D900ECB516 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0930;
+				LastSwiftUpdateCheck = 1000;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Andrey Sobolev";
 				TargetAttributes = {
@@ -478,6 +502,7 @@
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -530,6 +555,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 3.0;
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};

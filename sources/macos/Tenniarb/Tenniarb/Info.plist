@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string></string>
+	<string>Tenniarb</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -27,6 +27,8 @@
 			<array>
 				<string>tenniarb.tenn</string>
 			</array>
+			<key>LSTypeIsPackage</key>
+			<integer>1</integer>
 			<key>NSDocumentClass</key>
 			<string>Tenniarb.Document</string>
 		</dict>
@@ -46,7 +48,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>5</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
@@ -57,6 +59,16 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict/>
+			<key>NSMessage</key>
+			<string></string>
+		</dict>
+		<dict/>
+	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

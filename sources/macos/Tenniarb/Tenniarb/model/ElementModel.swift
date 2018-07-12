@@ -142,7 +142,7 @@ public class Element {
         el.parent = self
         
         self.assignModel(el)
-        if let index = at {
+        if let index = at, self.elements.count > index {
             self.elements.insert(el, at: index)
         }
         else {

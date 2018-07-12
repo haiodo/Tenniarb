@@ -98,16 +98,18 @@ class ViewController: NSViewController {
         if let active = self.selectedElement {
             hideSearchBox()
             
-            self.searchBox = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SearchBox")) as! SearchBoxViewController
+            self.searchBox = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SearchBox")) as? SearchBoxViewController
             
-            searchBox!.setElement(active)
-            
-            searchBox!.parentView = self.view
-            
-            searchBox!.closeAction = {() in self.hideSearchBox()}
-            searchBox!.setActive = {(item) in self.scene.setActiveElement(item)}
-            
-            self.presentViewController(searchBox!, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+            if let sb = searchBox {
+                sb.setElement(active)
+                
+                sb.parentView = self.view
+                
+                sb.closeAction = {() in self.hideSearchBox()}
+                sb.setActive = {(item) in self.scene.setActiveElement(item)}
+                
+                self.presentViewController(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+            }
         }
     }
     

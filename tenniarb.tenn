@@ -40,7 +40,9 @@ element "Tenniarb" {
             font-size 25
             color red
         }
-        link "MVP" "UI"
+        link "MVP" "UI" {
+            pos 0.0 2.0
+        }
         item "UI" {
             pos -240.0 -43.0
         }
@@ -141,7 +143,7 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Colors"
         item "Colors" {
-            pos -471.0 7.0
+            pos -492.0 7.0
             color green
             font-size 12
         }
@@ -338,11 +340,11 @@ Engine" "expressions"
 Engine" "expr dsl"
         item "Undo/Redo" {
             pos 126.646484375 -138.0
-            color red
+            color green
         }
         link "Properties" "Undo/Redo"
         item "Corrections" {
-            pos -622.66796875 -184.0
+            pos -631.66796875 -154.0
             font-size 12
             color green
         }
@@ -350,6 +352,7 @@ Engine" "expr dsl"
         item "Keyboard\nshortcuts" {
             pos -758.94921875 -50.0
             color red
+            color green
         }
         link "MVP" "Keyboard\nshortcuts"
         link "Editing" "Undo&Redo"
@@ -396,6 +399,23 @@ Engine" "expr dsl"
         link "Scene Draw" "Zoom?" {
             pos -26.0 19.0
         }
+        item "PDF" {
+            pos -585.546875 -342.0
+        }
+        link "Export" "PDF"
+        item "PNG" {
+            pos -549.546875 -380.0
+        }
+        link "Export" "PNG"
+        item "HTML" {
+            pos -485.546875 -368.0
+        }
+        link "Export" "HTML"
+        item "Easy Properties" {
+            pos -36.365234375 -268.0
+            color yellow
+        }
+        link "Editing" "Easy Properties"
     }
     element "Process" {
         item "Делай для себя" {

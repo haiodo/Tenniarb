@@ -33,7 +33,7 @@ class PersistenceTests: XCTestCase {
         
         XCTAssertTrue(!parser.errors.hasErrors())
         
-        let model = ElementModel.parseTenn(node: node)
+        _ = ElementModel.parseTenn(node: node)
     }
     
     func testSaveEmptyModel() {
@@ -144,7 +144,7 @@ class PersistenceTests: XCTestCase {
         XCTAssertEqual(diagramL.itemCount, 3)
         let item0 = diagramL.items[0]
         let item1 = diagramL.items[1]
-        let linkItem = diagramL.items[2]
+//        let linkItem = diagramL.items[2]
         
         XCTAssertEqual("Demo element 1", item0.name )
         XCTAssertEqual("Demo element 2", item1.name )

@@ -9,7 +9,7 @@
 import Foundation
 import Cocoa
 
-var DEBUG_OPERATION_TRACKING=true
+var DEBUG_OPERATION_TRACKING=false
 
 public enum ModelEventKind {
     case Structure
@@ -159,8 +159,18 @@ public class ElementModelStore {
     public func updatePosition( item: DiagramItem, newPos: CGPoint, undoManager: UndoManager?, refresh: @escaping () -> Void) {
         execute(UpdatePosition(self, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos), undoManager, refresh)
     }
-    public func add( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
-        execute(AddElement(self, parent, child), undoManager, refresh)
+    public func add( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int? = nil ) {
+        execute(AddElement(self, parent, child, index: index), undoManager, refresh)
+    }
+    
+    public func move( _ element: Element, _ newParent: Element, undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int ) {
+        
+        let op = CompositeOperation(self, element)
+        
+        op.add(RemoveElement(self, element.parent!, element))
+        op.add(AddElement(self, newParent, element, index: index))
+        
+        execute(op, undoManager, refresh)
     }
     
     public func remove( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void  ) {
@@ -338,15 +348,22 @@ class UpdateElementName: AbstractUpdateElementValue<String> {
 class AddElement: ElementOperation {
     let parent: Element
     let child: Element
-    init( _ store: ElementModelStore, _ element: Element, _ child: Element ) {
+    let index: Int?
+    init( _ store: ElementModelStore, _ element: Element, _ child: Element, index: Int? = nil ) {
         self.parent = element
         self.child = child
+        self.index = index
         super.init(store)
     }
     
     override var name:String { get { return "AddElement"} }
     override func apply() {
-        self.parent.add(child)
+        if let idx = index, idx == -1 {
+            self.parent.add(child)
+        }
+        else {
+            self.parent.add(child, at: index)
+        }
     }
     override func undo() {
         _ = self.parent.remove(child)

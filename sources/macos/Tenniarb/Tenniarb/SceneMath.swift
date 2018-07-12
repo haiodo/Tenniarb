@@ -57,21 +57,20 @@ func crossBox( _ p1:CGPoint, _ p2: CGPoint, _ rect: CGRect)-> CGPoint? {
 /*
  Will return -1 in case point is not in box of p1,p2.
  */
-func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> CGFloat {
-    var r = CGRect(origin: CGPoint(x: min(p1.x, p2.x), y: min(p1.y, p2.y)), size: CGSize(width: abs(p1.x-p2.x), height: abs(p1.y-p2.y) ))
-    if r.height < 10 {
-        r = CGRect(origin: CGPoint(x: r.origin.x, y: r.origin.y-5), size: CGSize(width: r.width, height: r.height+10 ))
-    }
-    if r.width < 10 {
-        r = CGRect(origin: CGPoint(x: r.origin.x-5, y: r.origin.y), size: CGSize(width: r.width+5, height: r.height ))
+func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> Bool {
+    
+    let dist1 = sqrt((p1.x-p.x)*(p1.x-p.x) + (p1.y-p.y)*(p1.y-p.y))
+    if dist1 < 7 {
+        return true
     }
     
-    if !r.contains(p) {
-        // Point not in boundaries of line
-        return -1
+    let dist2 = sqrt((p2.x-p.x)*(p2.x-p.x) + (p2.y-p.y)*(p2.y-p.y))
+    if dist2 < 7 {
+        return true
     }
+
     if p1.x == p2.x && p1.y == p2.y {
-        return -1.0
+        return false
     }
     
     let A = p2.y - p1.y
@@ -79,5 +78,20 @@ func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> CGFloat {
     let C = -( p1.x*A + p1.y * B )
     
     let d = abs(A*p.x+B*p.y+C)/sqrt(A*A+B*B)
-    return d
+    if d >= 0 && d < 7 {
+        
+        // We need to check if in boundaries of line.
+        let r = CGRect(origin: CGPoint(x: min(p1.x, p2.x), y: min(p1.y, p2.y)), size: CGSize(width: abs(p1.x-p2.x), height: abs(p1.y-p2.y) ))
+        
+        let lineP =  CGPoint(x: (B*(B*p.x-A*p.y) - A*C) / (A*A+B*B),
+                             y: (A*(-1*B*p.x+A*p.y) - B*C) / (A*A+B*B))
+        
+        if !r.contains(lineP) {
+            // Point not in boundaries of line
+            return false
+        }
+        
+        return true
+    }
+    return false
 }

@@ -73,6 +73,9 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                     i += 1
                 }
             }
+            if el.elements.count <= index {
+                return ""
+            }
             return el.elements[index]
         }
         
@@ -187,14 +190,24 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         
 //        print( "accept drop: \((item as? Element)?.name) at \(index)")
         
-        if let element = item as? Element, let dragItem = self.draggingItem {
-            // Check if not moving item into one of its parents.
-            
-            if self.isParentOf(dragItem, element) {
-                // Do copy of element diagram only
+        if let dragItem = self.draggingItem {
+            if let element = item as? Element {
+                // Check if not moving item into one of its parents.
+                
+                if self.isParentOf(dragItem, element) {
+                    // Do copy of element diagram only
+                    let diCopy = dragItem.clone(cloneItems: true, cloneElement: false)
+                    
+                    controller.elementStore?.add(element, diCopy, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadItem(element)}, index: index)
+                    
+                }
+                else {
+                    // Do move of element
+                    controller.elementStore?.move(dragItem, element, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadData()}, index: index)
+                }
             }
             else {
-                // Do move of element
+                controller.elementStore?.move(dragItem, controller.elementStore!.model, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadData()}, index: index)
             }
         }
         
