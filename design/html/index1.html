@@ -6,69 +6,15 @@
         overflow: hidden;
     }
     
-    .main-layout {
-        display: grid;
-        height: 100%;
-        margin: 0 0 0 0;
-        padding: 0 0 0 0;
-        grid-template-columns: 220px auto;
-        grid-template-rows: 35px auto 180px 20px;
-        grid-template-areas: 'title title' 'nav main' 'nav props' 'footer footer'
-    }
-    
-    .title-bar {
-        /* Window Bar: */
-        background-image: linear-gradient(-180deg, #E7E6E7 0%, #D1D0D1 100%);
-        box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0.60), inset 0 0 0 0 rgba(0, 0, 0, 0.20);
-        border-radius: 5px 5px 0 0;
-        grid-area: title;
-    }
-    
-    .nav-panel {
-        /* Rectangle: */
-        background: #FFFFFF;
-        border: 1px solid #93A1A1;
-        grid-area: nav;
-    }
-    
     .scene-panel {
-        grid-area: main;
         /* Rectangle: */
-        background: #FDF6E3;
+        /* background: #FDF6E3 transparent 100%; */
         border: 1px solid #93A1A1;
         position: relative;
         left: 0px;
         top: 0px;
-    }
-    
-    .props-panel {
-        /* Rectangle: */
-        background: #FFFFFF;
-        border: 1px solid #93A1A1;
-        grid-area: props;
-    }
-    
-    .status-panel {
-        /* Rectangle: */
-        background: #FFFFFF;
-        border: 1px solid #93A1A1;
-        grid-area: footer;
-    }
-    
-    .scene-item-active {
-        /* Rectangle 2: */
-        background: #FFFFFF;
-        border: 2px solid #073642;
-        padding: -1px -1px;
-        box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.50);
-        border-radius: 9px;
-        position: absolute;
-        height: 50px;
-        line-height: 48px;
-        width: 131px;
-        vertical-align: middle;
-        user-select: none;
-        cursor: pointer;
+        width: 400px;
+        height: 350px;
     }
     
     .scene-item {
@@ -79,10 +25,9 @@
         height: 50px;
         line-height: 50px;
         width: 131px;
-        position: absolute;
+        position: relative;
         vertical-align: middle;
-        user-select: none;
-        cursor: pointer;
+        /* cursor: pointer; */
     }
     
     .scene-item-text {
@@ -96,7 +41,7 @@
 
 <body>
     <div class="main-layout">
-        <div class="title-bar">
+        <!-- <div class="title-bar">
             Top bar
         </div>
         <div class="nav-panel">
@@ -109,31 +54,31 @@
 
         <div class="status-panel">
             Status bar
-        </div>
+        </div> -->
 
         <div class="scene-panel">
-            <div class="scene-item-active" style="left:102px;top:144px;">
+            <div class="scene-item" style="left:202px;top:144px;">
                 <div class="scene-item-text">Platform</div>
             </div>
 
-            <div class="scene-item" style="left:300px;top:46px;">
+            <div class="scene-item" style="left:10px;top:46px;">
                 <div class="scene-item-text">Repository</div>
             </div>
-            <div class="scene-item" style="left:300px;top:143px;">
+            <div class="scene-item" style="left:10px;top:143px;">
                 <div class="scene-item-text">Device</div>
             </div>
 
-            <div class="scene-item" style="left:500px;top:089px;">
+            <div class="scene-item" style="left:200px;top:089px;">
                 <div class="scene-item-text">Driver</div>
             </div>
 
-            <svg class="arrsvg" style="position:relative; top:0; left:0; margin:0; width:99.8%; height:99.9%;">
+            <!-- <svg class="arrsvg" style="position:relative; top:0; left:0; margin:0; width:99.8%; height:99.9%;">
                 <defs>
                     <marker id="arrow" markerWidth="8" markerHeight="8" refx="3" refy="4" orient="auto">
                         <path d="M1,1 L1,7 L7,4 L1,1" style="fill:#979797;" />
                     </marker></defs>
                     <path d="M235,150 L290,105" style="stroke:#979797; stroke-width: 2.3px; fill: none; marker-end: url(#arrow)"/>
-            </svg>
+            </svg> -->
         </div>
     </div>
 

@@ -16,6 +16,7 @@
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A36BD2085B41100CC646C /* SearchBoxController.swift */; };
+		0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportViewController.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
 		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
@@ -77,6 +78,7 @@
 		0C3A36BD2085B41100CC646C /* SearchBoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchBoxController.swift; path = views/SearchBoxController.swift; sourceTree = "<group>"; };
 		0C3AA4342041582F0054DCDF /* TenniarbUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbUITests.swift; sourceTree = "<group>"; };
 		0C3AA4362041582F0054DCDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0C3E178620FD053A00AB9D3D /* ExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportViewController.swift; path = views/ExportViewController.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 				0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */,
 				0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */,
 				0C3A36BD2085B41100CC646C /* SearchBoxController.swift */,
+				0C3E178620FD053A00AB9D3D /* ExportViewController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -393,6 +396,7 @@
 				0C4F1472200889CC009C9EC5 /* ColorNames.swift in Sources */,
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
+				0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,

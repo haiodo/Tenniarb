@@ -287,13 +287,13 @@ element "Tenniarb" {
         }
         item "Multiple" {
             pos 30.634765625 32.0
-            color yellow
+            color red
             font-size 12
         }
         link "Editing" "Multiple"
         item "Selection" {
             pos 78.658203125 88.0
-            color yellow
+            color red
             font-size 12
         }
         link "Multiple" "Selection" {
@@ -301,7 +301,7 @@ element "Tenniarb" {
         }
         item "Movements" {
             pos 119.658203125 37.0
-            color yellow
+            color red
             font-size 12
         }
         link "Multiple" "Movements" {

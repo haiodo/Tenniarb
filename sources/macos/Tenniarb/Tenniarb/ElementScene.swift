@@ -164,10 +164,8 @@ open class DrawableContainer: ItemDrawable {
         
         if let ch = self.children {
             for c in ch {
-                if c.isVisible() {
-                    let cbounds = c.getBounds()
-                    rect = rect.union(cbounds)
-                }
+                let cbounds = c.getBounds()
+                rect = rect.union(cbounds)
             }
         }
         
@@ -805,7 +803,8 @@ public class TextBox: Drawable {
     public func draw(context: CGContext, at point: CGPoint) {
         let q: NSString = self.text as NSString
         
-        q.draw(at: CGPoint(x: point.x + self.point.x + 5, y: point.y + self.point.y+4), withAttributes: textFontAttributes)
+        let atp = CGPoint(x: point.x + self.point.x + 5, y: point.y + self.point.y+4)
+        q.draw(at: atp , withAttributes: textFontAttributes)        
     }
     
     public func layout(_ bounds: CGRect, _ dirty: CGRect) {

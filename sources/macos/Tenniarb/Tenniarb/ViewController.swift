@@ -264,6 +264,17 @@ class ViewController: NSViewController {
             }
         }
         
+        if let vc = viewController as? ExportViewController {
+            if let active = self.selectedElement {
+                vc.setElement(element: active)
+                vc.setScene(scene: self.scene.scene)
+                vc.setViewController(self)
+                
+                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                return
+            }
+        }
+        
         super.presentViewController(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
     }
     
