@@ -230,7 +230,6 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                     }
                 }
             }
-            
         }
     }
     

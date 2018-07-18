@@ -758,7 +758,7 @@ CQ
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="150" y="1" width="62" height="23"/>
+                                                                    <rect key="frame" x="150.5" y="1" width="62" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
@@ -887,11 +887,11 @@ CQ
                                                             <box borderType="none" title="Editor Title" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Xdg-bT-e2l">
                                                                 <rect key="frame" x="-3" y="593" width="709" height="35"/>
                                                                 <view key="contentView" id="s5a-YQ-Uz7">
-                                                                    <rect key="frame" x="3" y="3" width="703" height="29"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="709" height="35"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
                                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xxj-wV-uFj">
-                                                                            <rect key="frame" x="13" y="6" width="89" height="18"/>
+                                                                            <rect key="frame" x="13" y="10" width="89" height="20"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Window title" id="8wb-6d-knf">
                                                                                 <font key="font" metaFont="system" size="15"/>
                                                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -899,7 +899,7 @@ CQ
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="604" y="2" width="89" height="24"/>
+                                                                            <rect key="frame" x="610.5" y="2" width="89" height="30"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -917,7 +917,7 @@ CQ
                                                                             </connections>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SXa-LX-SJ4" userLabel="Export_printing">
-                                                                            <rect key="frame" x="558" y="3" width="26" height="23"/>
+                                                                            <rect key="frame" x="565.5" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="po3-ln-0Dn">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -932,13 +932,12 @@ CQ
                                                                     </subviews>
                                                                     <constraints>
                                                                         <constraint firstAttribute="trailing" secondItem="zbO-zz-O9G" secondAttribute="trailing" constant="10" id="7HA-II-0g0"/>
+                                                                        <constraint firstItem="zbO-zz-O9G" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="9SF-tu-Av0"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" secondItem="SXa-LX-SJ4" secondAttribute="trailing" constant="20" id="Hte-zE-mg2"/>
+                                                                        <constraint firstItem="SXa-LX-SJ4" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="IPv-Xh-tkU"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="top" secondItem="s5a-YQ-Uz7" secondAttribute="top" constant="3" id="LAt-0m-Q3T"/>
                                                                         <constraint firstAttribute="bottom" secondItem="zbO-zz-O9G" secondAttribute="bottom" constant="3" id="RD1-08-8GM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="top" secondItem="s5a-YQ-Uz7" secondAttribute="top" constant="5" id="TUp-TC-3wB"/>
-                                                                        <constraint firstItem="SXa-LX-SJ4" firstAttribute="centerY" secondItem="xxj-wV-uFj" secondAttribute="centerY" id="URJ-AG-vLL"/>
-                                                                        <constraint firstItem="SXa-LX-SJ4" firstAttribute="baseline" secondItem="zbO-zz-O9G" secondAttribute="firstBaseline" id="e2r-9P-fWm"/>
-                                                                        <constraint firstItem="SXa-LX-SJ4" firstAttribute="firstBaseline" secondItem="zbO-zz-O9G" secondAttribute="firstBaseline" id="ggz-h0-doA"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xxj-wV-uFj" secondAttribute="trailing" constant="41" id="te2-Op-awM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="leading" secondItem="s5a-YQ-Uz7" secondAttribute="leading" constant="15" id="v51-Iq-FW6"/>
                                                                     </constraints>
