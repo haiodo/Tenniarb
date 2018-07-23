@@ -11,6 +11,7 @@ import Cocoa
 
 enum ExportKing {
     case png
+    case pngCopy
     case html
     case htmlCopy
     case json
@@ -46,10 +47,11 @@ class ExportViewController: NSViewController {
     var viewController: ViewController?
     
     var exportTypes: [ExportType] = [
-        ExportType(name:"Copy as HTML", exportType: .htmlCopy, imgName: "html_logo"),
         ExportType(name:"Export as HTML", exportType: .html, imgName: "html_logo"),
         ExportType(name:"Export as PNG", exportType: .png, imgName: "png_logo"),
-        ExportType(name:"Export as JSON", exportType: .json, imgName: "json_logo")
+//        ExportType(name:"Export as JSON", exportType: .json, imgName: "json_logo"),
+        ExportType(name:"Copy as HTML", exportType: .htmlCopy, imgName: "html_logo"),
+        ExportType(name:"Copy as PNG", exportType: .pngCopy, imgName: "png_logo"),
     ]
     
     func setElement(element: Element) {
@@ -210,29 +212,38 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
         
     }
     
-    fileprivate func exportPng() {
+    fileprivate func exportPng(_ writeFile: Bool) {
         if let scene = self.controller.scene {
             let img = renderImage(scene)
-
-            let mySave = NSSavePanel()
-            mySave.allowedFileTypes = ["png"]
-            mySave.allowsOtherFileTypes = false
-            mySave.isExtensionHidden = true
-            mySave.nameFieldStringValue = self.controller.element!.name + ".png"
-            mySave.title = "Export diagram as PNG"
             
-            mySave.begin { (result) -> Void in
-                
-                if result.rawValue == NSFileHandlingPanelOKButton {
-                    if let filename = mySave.url {
-                        if let tiff = img.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiff) {
-                            do {
-                                try bitmapImage.representation(using: .png, properties: [:])?.write(to: filename)
-                            }
-                            catch {
-                                Swift.debugPrint("Error saving file")
+            if let tiff = img.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiff) {
+                if let pngData = bitmapImage.representation(using: .png, properties: [:]) {
+                    if writeFile {
+                        let mySave = NSSavePanel()
+                        mySave.allowedFileTypes = ["png"]
+                        mySave.allowsOtherFileTypes = false
+                        mySave.isExtensionHidden = true
+                        mySave.nameFieldStringValue = self.controller.element!.name + ".png"
+                        mySave.title = "Export diagram as PNG"
+                        
+                        mySave.begin { (result) -> Void in
+                            
+                            if result.rawValue == NSFileHandlingPanelOKButton {
+                                if let filename = mySave.url {
+                                    do {
+                                        try pngData.write(to: filename)
+                                    }
+                                    catch {
+                                        Swift.debugPrint("Error saving file")
+                                    }
+                                }
                             }
                         }
+                    }
+                    else {
+                        let pb = NSPasteboard.general
+                        pb.clearContents()
+                        pb.setData(pngData, forType: .png)
                     }
                 }
             }
@@ -299,7 +310,9 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
         if let el = controller.exportOutline.item(atRow: selectedIndex) as? ExportType {
             switch el.exportType {
             case .png:
-                exportPng()
+                exportPng(true)
+            case .pngCopy:
+                exportPng(false)
             case .html:
                 exportHtml(true)
             case .htmlCopy:
