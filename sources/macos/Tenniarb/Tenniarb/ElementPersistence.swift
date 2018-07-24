@@ -49,6 +49,7 @@ public enum PersistenceStyleKind {
     case Width
     case Height
     case BorderColor
+    case ZoomLevel
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -60,6 +61,7 @@ public enum PersistenceStyleKind {
         case .Width: return "width";
         case .Height: return "height";
         case .BorderColor: return "borderColor";
+        case .ZoomLevel: return "zoom";
         }
     }
 }

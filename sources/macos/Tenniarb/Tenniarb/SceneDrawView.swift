@@ -40,7 +40,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     }
 }
 
-class SceneDrawView: NSView {
+class SceneDrawView: NSView, IElementModelListener {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
     var store: ElementModelStore?
@@ -192,9 +192,8 @@ class SceneDrawView: NSView {
     func onLoad() {
     }
     
-    func onUpdate(_ evt: ModelEvent) {
+    func notifyChanges(_ evt: ModelEvent) {
         // We should be smart anought to not rebuild all drawable scene every time
-        
         if evt.items.count > 0 {
             if let firstItem = evt.items.first(where: { (itm) in itm.kind == .Item } ) {
                 if evt.element.items.contains(firstItem) {
@@ -215,17 +214,15 @@ class SceneDrawView: NSView {
     }
     
     public func setModel( store: ElementModelStore ) {
-        if let oldStore = self.store {
-            oldStore.onUpdate.removeAll()
-        }
-        
         if let um = self.undoManager {
             um.removeAllActions()
         }
         
-        self.store = store
-        
-        self.store?.onUpdate.append( self.onUpdate )
+        if self.store?.model != store.model {
+            self.store = store
+            
+            self.store?.onUpdate.append( self )
+        }
     }
     
     public func setActiveElement(_ elementModel: Element ) {
@@ -341,7 +338,7 @@ class SceneDrawView: NSView {
                 self.editBoxDelegate = EditTitleDelegate(self)
             }
             
-            let style = DrawableItemStyle.parseStyle(item: active)
+            let style = DrawableItemStyle(item: active)
             
             
             editBox?.delegate = self.editBoxDelegate
@@ -549,7 +546,7 @@ class SceneDrawView: NSView {
             }
             else {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
-                    var pos = newPos
+                    let pos = newPos
 //                    if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
 //                        // This is snap to grid of 5/5
 //                        pos = CGPoint(x: Int(pos.x) - Int(pos.x) % 5,

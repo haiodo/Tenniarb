@@ -107,10 +107,14 @@ public class CompositeOperation: ElementOperation {
     }
 }
 
+public protocol IElementModelListener {
+    func notifyChanges(_ event: ModelEvent )
+}
+
 public class ElementModelStore {
     public let model: ElementModel
     
-    public var onUpdate: [(_ evt: ModelEvent) -> Void] = []
+    public var onUpdate: [IElementModelListener] = []
     public var modified: Bool = false
 
     
@@ -220,7 +224,7 @@ public class ElementModelStore {
     func modified(_ event: ModelEvent ) {
         modified = true
         for op in onUpdate {
-            op(event)
+            op.notifyChanges(event)
         }
     }
     

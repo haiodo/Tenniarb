@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class Document: NSDocument {
+class Document: NSDocument, IElementModelListener {
     var store: ElementModelStore?
     
     var vc: ViewController?
@@ -25,15 +25,13 @@ class Document: NSDocument {
     }
     
     fileprivate func updateStore(_ elementModel: ElementModel) {
-        if let oldStore = store {
-            oldStore.onUpdate.removeAll()
-        }
-        self.store?.onUpdate.append( onUpdate )
+        self.store?.onUpdate.append( self )
         self.store = ElementModelStore(elementModel)
     }
 
-    func onUpdate(_ evt: ModelEvent ) {
+    func notifyChanges(_ evt: ModelEvent ) {
         updateChangeCount(.changeDone)
+        vc?.updateWindowTitle()
     }
     
     override func makeWindowControllers() {

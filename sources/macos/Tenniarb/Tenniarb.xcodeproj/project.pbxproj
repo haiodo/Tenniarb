@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
+		0C11552721064822007FD827 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C11552621064822007FD827 /* StoreKit.framework */; };
 		0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375EE1ED838D900ECB516 /* AppDelegate.swift */; };
 		0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F01ED838D900ECB516 /* ViewController.swift */; };
 		0C2375F31ED838D900ECB516 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F21ED838D900ECB516 /* Document.swift */; };
@@ -63,6 +64,7 @@
 
 /* Begin PBXFileReference section */
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
+		0C11552621064822007FD827 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C11552721064822007FD827 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,6 +186,7 @@
 		0C35FF0020DC09BD00BE3B2C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0C11552621064822007FD827 /* StoreKit.framework */,
 				0C35FF0120DC09BD00BE3B2C /* Quartz.framework */,
 			);
 			name = Frameworks;
@@ -335,6 +339,9 @@
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
 							com.apple.Sandbox = {
 								enabled = 1;
 							};

@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class ViewController: NSViewController {
+class ViewController: NSViewController, IElementModelListener {
 
     @IBOutlet weak var scene: SceneDrawView!
     
@@ -310,8 +310,9 @@ class ViewController: NSViewController {
     }
     
     public func setElementModel(elementStore: ElementModelStore) {
-        if let oldStore = self.elementStore {
-            oldStore.onUpdate.removeAll()
+        
+        if let es = self.elementStore,  es.model == elementStore.model {
+            return
         }
         self.elementStore = elementStore
         
@@ -326,39 +327,8 @@ class ViewController: NSViewController {
             um.removeAllActions()
         }
         
-        elementStore.onUpdate.append { (evt) in
-            if self.updatingProperties {
-                return
-            }
-            //TODO: Add optimizations based on particular element
-            
-            self.updateElements.append(evt.element)
-            if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && evt.kind == .Structure ) {
-                self.updateKindScheduled = evt.kind
-                self.updateScheduled = 1
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-                    
-                    self.worldTree.beginUpdates()
-                    
-                    if self.selectedElement != evt.element {
-                        self.onElementSelected(evt.element)
-                    }
-                    for el in self.updateElements {
-                        self.worldTree.reloadItem(el, reloadChildren: true)
-                    }
-                    self.updateElements.removeAll()
-                    self.worldTree.endUpdates()
-                    
-                    //# Update text
-                    self.updateTextProperties()
-                    
-                    self.updateScheduled = 0
-                    
-                    self.updateWindowTitle()
-                })
-            }
-        }
+        elementStore.onUpdate.append(self)
+
         scene.setModel(store: self.elementStore!)
         scene.onSelection.removeAll()
         scene.onSelection.append({( element ) -> Void in
@@ -382,6 +352,42 @@ class ViewController: NSViewController {
             worldTree.expandItem(e, expandChildren: true)
         }        
     }
+
+    func notifyChanges(_ evt: ModelEvent) {
+        if self.updatingProperties {
+            self.updateWindowTitle()
+            return
+        }
+        //TODO: Add optimizations based on particular element
+        
+        self.updateElements.append(evt.element)
+        if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && evt.kind == .Structure ) {
+            self.updateKindScheduled = evt.kind
+            self.updateScheduled = 1
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                
+                self.worldTree.beginUpdates()
+                
+                if self.selectedElement != evt.element {
+                    self.onElementSelected(evt.element)
+                }
+                for el in self.updateElements {
+                    self.worldTree.reloadItem(el, reloadChildren: true)
+                }
+                self.updateElements.removeAll()
+                self.worldTree.endUpdates()
+                
+                //# Update text
+                self.updateTextProperties()
+                
+                self.updateScheduled = 0
+                
+                self.updateWindowTitle()
+            })
+        }
+    }
+
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
         if let active = activeElement {

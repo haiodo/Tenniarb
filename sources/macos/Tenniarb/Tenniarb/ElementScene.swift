@@ -173,15 +173,12 @@ open class DrawableContainer: ItemDrawable {
     }
 }
 
-class DrawableItemStyle {
+class DrawableStyle {
     var color: CGColor?
     var borderColor: CGColor?
     var fontSize:CGFloat = 18.0
     var width:CGFloat?
     var height:CGFloat?
-    
-    var lineDash:String?
-    
     
     /**
      One of values:
@@ -200,7 +197,47 @@ class DrawableItemStyle {
      */
     var layout: String?
     
-    static func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
+    init( ) {
+        reset()
+    }
+    init( item: DiagramItem ) {
+        reset()
+        self.parseStyle(item.properties)
+    }
+    
+    init( properties: [TennNode] ) {
+        reset()
+        self.parseStyle( properties )
+    }
+    
+    func newCopy() -> DrawableStyle {
+        return DrawableStyle()
+    }
+    func copy() -> DrawableStyle {
+        let result: DrawableStyle = newCopy()
+        result.color = self.color
+        result.borderColor = self.borderColor
+        result.fontSize = self.fontSize
+        result.width = self.width
+        result.height = self.height
+        result.display = self.display
+        result.layout = self.layout
+        return result
+    }
+    
+    func reset() {
+        // Reset to default values
+        self.color = nil
+        self.borderColor = nil
+        self.fontSize = 18
+        self.width = nil
+        self.height = nil
+        self.display = nil
+        self.layout = nil
+    }
+
+    
+    func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
         let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         let scanner = Scanner(string: hexString)
         if (hexString.hasPrefix("#")) {
@@ -218,7 +255,7 @@ class DrawableItemStyle {
         return CGColor(red:red, green:green, blue:blue, alpha:alpha)
     }
     
-    static func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
+    func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
         if color.starts(with: "#") {
             return hexStringToUIColor(hexString: color, alpha: alpha)
         }
@@ -229,59 +266,138 @@ class DrawableItemStyle {
         return CGColor.black.copy(alpha: alpha)!
     }
     
-    static func parseStyle( item: DiagramItem, default result: DrawableItemStyle = DrawableItemStyle() ) -> DrawableItemStyle {
-        for child in item.properties {
-            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
-                switch cmdName {
-                case PersistenceStyleKind.Color.name:
-                    if let color = child.getIdent(1) {
-                        result.color = parseColor(color.lowercased(), alpha: 0.7)
-                    }
-                case PersistenceStyleKind.FontSize.name:
-                    if let value = child.getFloat(1) {
-                        result.fontSize = CGFloat(value)
-                        if result.fontSize > 37 {
-                           result.fontSize = 36
-                        }
-                        else if result.fontSize < 4 {
-                            result.fontSize = 4
-                        }
-                    }
-                case PersistenceStyleKind.Display.name:
-                    if let value = child.getIdent(1) {
-                        result.display = value
-                    }
-                case PersistenceStyleKind.Layout.name:
-                    if let value = child.getIdent(1) {
-                        result.layout = value
-                    }
-                case PersistenceStyleKind.LineStyle.name:
-                    if let value = child.getIdent(1) {
-                        result.lineDash = value
-                    }
-                case PersistenceStyleKind.Width.name:
-                    if let value = child.getFloat(1) {
-                        result.width = CGFloat(value)
-                    }
-                case PersistenceStyleKind.Height.name:
-                    if let value = child.getFloat(1) {
-                        result.height = CGFloat(value)
-                    }
-                case PersistenceStyleKind.BorderColor.name:
-                    if let color = child.getIdent(1) {
-                        result.borderColor = parseColor(color.lowercased())
-                    }
-                default:
-                    break;
+    func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+        switch cmdName {
+        case PersistenceStyleKind.Color.name:
+            if let color = child.getIdent(1) {
+                self.color = self.parseColor(color.lowercased(), alpha: 0.7)
+            }
+        case PersistenceStyleKind.FontSize.name:
+            if let value = child.getFloat(1) {
+                self.fontSize = CGFloat(value)
+                if self.fontSize > 37 {
+                    self.fontSize = 36
+                }
+                else if self.fontSize < 4 {
+                    self.fontSize = 4
                 }
             }
+        case PersistenceStyleKind.Display.name:
+            if let value = child.getIdent(1) {
+                self.display = value
+            }
+        case PersistenceStyleKind.Layout.name:
+            if let value = child.getIdent(1) {
+                self.layout = value
+            }
+        case PersistenceStyleKind.Width.name:
+            if let value = child.getFloat(1) {
+                self.width = CGFloat(value)
+            }
+        case PersistenceStyleKind.Height.name:
+            if let value = child.getFloat(1) {
+                self.height = CGFloat(value)
+            }
+        case PersistenceStyleKind.BorderColor.name:
+            if let color = child.getIdent(1) {
+                self.borderColor = self.parseColor(color.lowercased())
+            }
+        default:
+            break;
         }
-        return result
     }
     
-    func fontSize( _ size: CGFloat) -> DrawableItemStyle {
-        self.fontSize = size
-        return self
+    func parseStyle( _ properties: [TennNode] ) {
+        for child in properties {
+            if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
+                self.parseStyleLine(cmdName, child)
+            }
+        }
+    }
+}
+
+
+class DrawableLineStyle: DrawableStyle {
+    var lineDash:String?
+    
+    override func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+        switch cmdName {
+        case PersistenceStyleKind.LineStyle.name:
+            if let value = child.getIdent(1) {
+                self.lineDash = value
+            }
+        default:
+            super.parseStyleLine(cmdName, child)
+        }
+    }
+    override func newCopy() -> DrawableStyle {
+        return DrawableLineStyle()
+    }
+    override func copy() -> DrawableLineStyle {
+        let result = super.copy() as! DrawableLineStyle
+        result.lineDash = self.lineDash
+        return result
+    }
+    override func reset() {
+        super.reset()
+        self.lineDash = nil
+    }
+}
+
+class DrawableItemStyle: DrawableStyle {
+    override func newCopy() -> DrawableStyle {
+        return DrawableItemStyle()
+    }
+    override func copy() -> DrawableItemStyle {
+        let result = super.copy() as! DrawableItemStyle
+        return result
+    }
+}
+
+
+class SceneStyle: DrawableStyle {
+    var zoomLevel: CGFloat = 1
+    
+    var defaultItemStyle: DrawableItemStyle = DrawableItemStyle()
+    var defaultLineStyle: DrawableLineStyle = DrawableLineStyle()
+    
+    override init() {
+        super.init()
+        defaultLineStyle.fontSize = 12
+    }
+    
+    override func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+        switch cmdName {
+        case PersistenceStyleKind.ZoomLevel.name:
+            if let value = child.getFloat(1) {
+                self.zoomLevel = CGFloat(value)
+            }
+        case "styles":
+            // Default styles for entire diagram
+            if let childBlock = child.getChild(1), childBlock.kind == .BlockExpr, let children = childBlock.children {
+                for styleChild in children {
+                    if styleChild.kind == .Command, styleChild.count > 0, let styleName = styleChild.getIdent(0) {
+                        switch styleName {
+                        case "item":
+                            if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
+                                defaultItemStyle.reset()
+                                defaultItemStyle.parseStyle(styles)
+                            }
+                        case "line":
+                            if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
+                                defaultLineStyle.reset()
+                                defaultLineStyle.parseStyle(styles)
+                            }
+                        default:
+                            break;
+                        }
+                    }
+                }
+            }
+            break
+        default:
+            super.parseStyleLine(cmdName, child)
+        }
     }
 }
 
@@ -296,6 +412,8 @@ open class DrawableScene: DrawableContainer {
     var activeDrawable: Drawable?
     
     var lineToDrawable: Drawable?
+    
+    var sceneStyle: SceneStyle = SceneStyle()
     
     var editingMode: Bool = false {
         didSet {
@@ -362,7 +480,7 @@ open class DrawableScene: DrawableContainer {
                 }
             }
             
-            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint, style: DrawableItemStyle() )
+            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint, style: DrawableLineStyle() )
         }
         return result
     }
@@ -444,6 +562,8 @@ open class DrawableScene: DrawableContainer {
     }
     
     open func draw(context: CGContext) {
+        
+        context.scaleBy(x: self.sceneStyle.zoomLevel, y: self.sceneStyle.zoomLevel)
         draw(context: context, at: offset)
         
         if let selBox = self.activeDrawable {
@@ -497,7 +617,8 @@ open class DrawableScene: DrawableContainer {
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
         let name = e.name
         
-        let style = DrawableItemStyle.parseStyle(item: e)
+        let style = self.sceneStyle.defaultItemStyle.copy()
+        style.parseStyle(e.properties)
         
         let bgColor = style.color ?? CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
         let borderColor = style.borderColor ?? CGColor.black
@@ -541,6 +662,9 @@ open class DrawableScene: DrawableContainer {
     func buildElementScene( _ element: Element)-> Drawable {
         let elementDrawable = DrawableContainer()
         
+        self.sceneStyle = SceneStyle()
+        self.sceneStyle.parseStyle(element.properties)
+        
         var links: [DiagramItem] = []
         
         buildItems(element.items, elementDrawable, &links)
@@ -555,8 +679,8 @@ open class DrawableScene: DrawableContainer {
                     let targetRect = drawables[dst]?.getBounds()
                     
                     if let sr = sourceRect, let tr = targetRect {
-                        let defaultLinkStyle = DrawableItemStyle().fontSize(12)
-                        let linkStyle = DrawableItemStyle.parseStyle(item: e, default: defaultLinkStyle)
+                        let linkStyle = self.sceneStyle.defaultLineStyle.copy()
+                        linkStyle.parseStyle(e.properties)
                         
                         let linkDr = DrawableLine(
                             source: sr,
@@ -828,12 +952,12 @@ public class DrawableLine: ItemDrawable {
     var sourceRect: CGRect = CGRect.zero
     var targetRect: CGRect = CGRect.zero
     var lineWidth: CGFloat = 1
-    var style: DrawableItemStyle
+    var style: DrawableLineStyle
     var control: CGPoint
     
     var label: TextBox?
     
-    init( source: CGRect, target: CGRect, style: DrawableItemStyle, control: CGPoint = CGPoint.zero) {
+    init( source: CGRect, target: CGRect, style: DrawableLineStyle, control: CGPoint = CGPoint.zero) {
         self.sourceRect = source
         self.targetRect = target
         self.style = style
@@ -843,7 +967,7 @@ public class DrawableLine: ItemDrawable {
         self.updateLayout(source: source, target: target)
     }
     
-    init( source: CGPoint, target: CGPoint, style: DrawableItemStyle) {
+    init( source: CGPoint, target: CGPoint, style: DrawableLineStyle) {
         self.source = source
         self.target = target
         self.style = style
