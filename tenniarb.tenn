@@ -45,6 +45,7 @@ element "Tenniarb" {
         }
         item "UI" {
             pos -240.0 -43.0
+            color lightgreen
         }
         link "UI" "Scene Draw"
         item "Scene Draw" {
@@ -370,6 +371,7 @@ Engine" "expr dsl"
         }
         item "Export" {
             pos -511.650390625 -310.0
+            color lightgreen
         }
         link "UI" "Export" {
             pos 27.0 -12.0
@@ -405,10 +407,12 @@ Engine" "expr dsl"
         link "Export" "PDF"
         item "PNG" {
             pos -549.546875 -380.0
+            color green
         }
         link "Export" "PNG"
         item "HTML" {
             pos -485.546875 -368.0
+            color green
         }
         link "Export" "HTML"
         item "Easy Properties" {
@@ -416,6 +420,17 @@ Engine" "expr dsl"
             color yellow
         }
         link "Editing" "Easy Properties"
+        item "Sync Engine" {
+            pos -19.94921875 161.0
+            color yellow
+        }
+        link "MVP" "Sync Engine"
+        item "Call Python" {
+            pos 175.6220703125 223.0
+        }
+        link "Sync Engine" "Call Python" {
+            label "json"
+        }
     }
     element "Process" {
         item "Делай для себя" {
