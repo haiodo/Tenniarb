@@ -9,7 +9,37 @@
 import Foundation
 import Cocoa
 
-class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
+let defaultFontSize = CGFloat(15)
+
+class TennTextView: NSTextView {
+    override func insertNewline(_ sender: Any?) {
+        let loc = self.selectedRange().location
+        let parser = TennParser()
+        var insertPart = "\n"
+        
+        let node = parser.parse(self.textStorage!.string)
+        if !parser.errors.hasErrors() {
+            // No errors found
+            
+//            self.textStorage.string
+//            node.find(loc)
+        }
+        
+        let str = NSAttributedString(
+            string:insertPart,
+            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)]
+        )
+        self.textStorage?.insert(str, at: loc)
+    }
+    override func insertTab(_ sender: Any?) {
+        let str = NSAttributedString(
+            string:"    ",
+            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)])
+        self.textStorage?.insert(str, at: self.selectedRange().location)
+    }
+}
+
+class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     var controller: ViewController
     var view: NSTextView
     var changes:Int = 0
@@ -21,6 +51,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         super.init()
         
         self.view.delegate = self
+        self.view.importsGraphics = false
         self.view.allowsUndo=false
     }
     
@@ -28,27 +59,20 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTouchBarDelegate {
         return !doMerge
     }
     
-    
     func setTextValue(_ value: String) {
         if view.string == value || doMerge {
             return; // Same value
         }
-        let style = NSMutableParagraphStyle()
-        style.headIndent = 50
-        
-        style.alignment = .justified
-        style.firstLineHeadIndent = 50
-        
         self.view.textStorage?.setAttributedString(NSAttributedString(string: value))
         self.view.isAutomaticQuoteSubstitutionEnabled = false
-        self.view.font = NSFont.systemFont(ofSize: 15.0)
+        self.view.font = NSFont.systemFont(ofSize: defaultFontSize)
         self.view.textColor = NSColor.textColor
         
         highlight()
         
         self.view.scrollToBeginningOfDocument(self)
     }
-    
+
     func textDidChange(_ notification: Notification) {
         changes += 1
         sheduleUpdate()

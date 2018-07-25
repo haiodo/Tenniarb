@@ -15,6 +15,7 @@ enum ExportKing {
     case html
     case htmlCopy
     case json
+    case tenn
 }
 
 class ExportType: Hashable {
@@ -49,9 +50,11 @@ class ExportViewController: NSViewController {
     var exportTypes: [ExportType] = [
         ExportType(name:"Export as HTML", exportType: .html, imgName: "html_logo"),
         ExportType(name:"Export as PNG", exportType: .png, imgName: "png_logo"),
+        ExportType(name:"Export current to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Export as JSON", exportType: .json, imgName: "json_logo"),
         ExportType(name:"Copy as HTML", exportType: .htmlCopy, imgName: "html_logo"),
         ExportType(name:"Copy as PNG", exportType: .pngCopy, imgName: "png_logo"),
+        
     ]
     
     func setElement(element: Element) {
@@ -223,7 +226,7 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                         mySave.allowedFileTypes = ["png"]
                         mySave.allowsOtherFileTypes = false
                         mySave.isExtensionHidden = true
-                        mySave.nameFieldStringValue = self.controller.element!.name + ".png"
+                        mySave.nameFieldStringValue = self.controller.element!.name
                         mySave.title = "Export diagram as PNG"
                         
                         mySave.begin { (result) -> Void in
@@ -266,12 +269,24 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
         }
         return nil
     }
+    
+    func hideExtension(_ url: URL ) {
+        do {
+            try FileManager.default.setAttributes(
+                [FileAttributeKey.extensionHidden: NSNumber(value: true)], ofItemAtPath: url.path)
+            
+        }
+        catch _{
+            Swift.print("Unable to hide extension")
+        }
+    }
+    
     fileprivate func exportHtmlFile(_ htmlContent: String) {
         let mySave = NSSavePanel()
         mySave.allowedFileTypes = ["html"]
         mySave.allowsOtherFileTypes = false
         mySave.isExtensionHidden = true
-        mySave.nameFieldStringValue = self.controller.element!.name + ".html"
+        mySave.nameFieldStringValue = self.controller.element!.name
         mySave.title = "Export diagram as HTML with embedded Image"
         
         mySave.begin { (result) -> Void in
@@ -279,6 +294,7 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                 if let filename = mySave.url {
                     do {
                         try htmlContent.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+                        self.hideExtension(filename)
                     }
                     catch {
                         Swift.debugPrint("Error saving file")
@@ -303,6 +319,33 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
             }
         }
     }
+    func exportTenn() {
+        if let element = self.controller.element {
+            
+            let tennSource = element.toTennStr()
+            
+            let mySave = NSSavePanel()
+            mySave.allowedFileTypes = ["tenn"]
+            mySave.allowsOtherFileTypes = false
+            mySave.isExtensionHidden = true
+            mySave.nameFieldStringValue = element.name
+            mySave.title = "Export element to file"
+            
+            mySave.begin { (result) -> Void in
+                if result.rawValue == NSFileHandlingPanelOKButton {
+                    if let filename = mySave.url {
+                        do {
+                            try tennSource.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+                            self.hideExtension(filename)
+                        }
+                        catch {
+                            Swift.debugPrint("Error saving file")
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
@@ -319,6 +362,8 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                 exportHtml(false)
             case .json:
                 break
+            case .tenn:
+                exportTenn()
             }
         }
         self.controller.dismissViewController(self.controller)

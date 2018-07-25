@@ -758,11 +758,11 @@ CQ
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="169.5" y="1" width="43" height="23"/>
+                                                                    <rect key="frame" x="167.5" y="-1" width="45" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
-                                                                            <segment image="NSAddTemplate" width="18"/>
+                                                                            <segment image="NSAddTemplate" width="20"/>
                                                                             <segment image="NSRemoveTemplate" width="18" tag="1"/>
                                                                         </segments>
                                                                         <connections>
@@ -772,7 +772,7 @@ CQ
                                                                 </segmentedControl>
                                                             </subviews>
                                                             <constraints>
-                                                                <constraint firstAttribute="bottom" secondItem="zXZ-t3-Ua5" secondAttribute="bottom" constant="2" id="UfY-2x-8RF"/>
+                                                                <constraint firstAttribute="bottom" secondItem="zXZ-t3-Ua5" secondAttribute="bottom" id="UfY-2x-8RF"/>
                                                                 <constraint firstAttribute="trailing" secondItem="zXZ-t3-Ua5" secondAttribute="trailing" constant="5" id="l19-G4-eeN"/>
                                                             </constraints>
                                                         </view>
@@ -896,7 +896,7 @@ CQ
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="610.5" y="2" width="89" height="30"/>
+                                                                            <rect key="frame" x="610.5" y="6" width="89" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -932,8 +932,6 @@ CQ
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="9SF-tu-Av0"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" secondItem="SXa-LX-SJ4" secondAttribute="trailing" constant="20" id="Hte-zE-mg2"/>
                                                                         <constraint firstItem="SXa-LX-SJ4" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="IPv-Xh-tkU"/>
-                                                                        <constraint firstItem="zbO-zz-O9G" firstAttribute="top" secondItem="s5a-YQ-Uz7" secondAttribute="top" constant="3" id="LAt-0m-Q3T"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="zbO-zz-O9G" secondAttribute="bottom" constant="3" id="RD1-08-8GM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="top" secondItem="s5a-YQ-Uz7" secondAttribute="top" constant="5" id="TUp-TC-3wB"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xxj-wV-uFj" secondAttribute="trailing" constant="41" id="te2-Op-awM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="leading" secondItem="s5a-YQ-Uz7" secondAttribute="leading" constant="15" id="v51-Iq-FW6"/>
@@ -974,7 +972,7 @@ CQ
                                                             <rect key="frame" x="1" y="1" width="701" height="100"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textView drawsBackground="NO" verticallyResizable="YES" findStyle="bar" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" smartInsertDelete="YES" id="LDJ-EQ-s6n">
+                                                                <textView drawsBackground="NO" verticallyResizable="YES" findStyle="panel" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" textReplacement="YES" smartInsertDelete="YES" id="LDJ-EQ-s6n" customClass="TennTextView" customModule="Tenniarb" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="0.0" width="701" height="100"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>

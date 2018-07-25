@@ -47,6 +47,8 @@ public class TennNode {
         return result
     }
     
+    
+    
     public init(kind: TennNodeKind, tok: TennToken? = nil) {
         self.kind = kind
         self.token = tok
