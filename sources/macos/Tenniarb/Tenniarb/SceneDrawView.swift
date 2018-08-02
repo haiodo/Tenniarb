@@ -338,8 +338,8 @@ class SceneDrawView: NSView, IElementModelListener {
                 self.editBoxDelegate = EditTitleDelegate(self)
             }
             
-            let style = DrawableItemStyle(item: active)
-            
+            let style = self.scene!.sceneStyle.defaultItemStyle.copy()
+            style.parseStyle(active.properties)
             
             editBox?.delegate = self.editBoxDelegate
             editBox?.stringValue = active.name

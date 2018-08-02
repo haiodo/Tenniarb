@@ -205,11 +205,6 @@ class DrawableStyle {
         self.parseStyle(item.properties)
     }
     
-    init( properties: [TennNode] ) {
-        reset()
-        self.parseStyle( properties )
-    }
-    
     func newCopy() -> DrawableStyle {
         return DrawableStyle()
     }
@@ -307,8 +302,8 @@ class DrawableStyle {
         }
     }
     
-    func parseStyle( _ properties: [TennNode] ) {
-        for child in properties {
+    func parseStyle( _ properties: ModelProperties ) {
+        for child in properties.node.children ?? [] {
             if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
                 self.parseStyleLine(cmdName, child)
             }
@@ -381,12 +376,12 @@ class SceneStyle: DrawableStyle {
                         case "item":
                             if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
                                 defaultItemStyle.reset()
-                                defaultItemStyle.parseStyle(styles)
+                                defaultItemStyle.parseStyle(ModelProperties(styles))
                             }
                         case "line":
                             if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
                                 defaultLineStyle.reset()
-                                defaultLineStyle.parseStyle(styles)
+                                defaultLineStyle.parseStyle(ModelProperties(styles))
                             }
                         default:
                             break;

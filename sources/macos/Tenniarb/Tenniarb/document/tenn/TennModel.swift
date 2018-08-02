@@ -41,7 +41,7 @@ public class TennNode {
         if children != nil {
             result.children = []
             for c in self.children! {
-                result.children?.append(c.clone())
+                result.add(c.clone())
             }
         }
         return result
@@ -59,17 +59,24 @@ public class TennNode {
             self.add(n)
         }
     }
+    
+    public func add( _ nodes: [TennNode]) {
+        for n in nodes {
+            self.add(n)
+        }
+    }
+    
     public func add( _ node: TennNode) {
         if children == nil {
             children = []
         }
         children?.append(node)
         
-        if kind == .BlockExpr && node.isNamedElement() {
+        if kind == .BlockExpr {
             if named == nil {
                 named = [:]
             }
-            if let name = self.getIdent(0) {
+            if let name = node.getIdent(0) {
                 named?[name] = node
             }
         }
@@ -80,6 +87,13 @@ public class TennNode {
             return nil
         }
         return named?[name]
+    }
+    
+    public func getBlock(_ index: Int) -> [TennNode] {
+        if let bl = getChild(index), let childs = bl.children {
+            return childs
+        }
+        return []
     }
     
     public func getIdentText() -> String? {

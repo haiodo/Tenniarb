@@ -312,6 +312,10 @@ element "Tenniarb" {
             pos -761.087890625 162.0
             color green
             font-size 12
+            test {
+                qwe {
+                }
+            }
         }
         link "Persistence" "Parsing"
         link "Model" "Outline" {

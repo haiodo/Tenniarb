@@ -8,13 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
-		0C11552721064822007FD827 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C11552621064822007FD827 /* StoreKit.framework */; };
+		0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1155292108C92C007FD827 /* SyncExtension.swift */; };
 		0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375EE1ED838D900ECB516 /* AppDelegate.swift */; };
 		0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F01ED838D900ECB516 /* ViewController.swift */; };
 		0C2375F31ED838D900ECB516 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F21ED838D900ECB516 /* Document.swift */; };
 		0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F71ED838D900ECB516 /* Assets.xcassets */; };
 		0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F91ED838D900ECB516 /* Main.storyboard */; };
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
+		0C2E890A2110526F00BAC0CC /* jira-sync.py in Resources */ = {isa = PBXBuildFile; fileRef = 0C2E89092110526F00BAC0CC /* jira-sync.py */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A36BD2085B41100CC646C /* SearchBoxController.swift */; };
 		0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportViewController.swift */; };
@@ -27,6 +28,7 @@
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
+		0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C67960F210E215E00AEED63 /* SyncViewController.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
 		0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ElementOperations.swift */; };
@@ -64,7 +66,7 @@
 
 /* Begin PBXFileReference section */
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
-		0C11552621064822007FD827 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
 		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 		0C2375FA1ED838D900ECB516 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
+		0C2E89092110526F00BAC0CC /* jira-sync.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = "jira-sync.py"; path = "Tenniarb/extensions/jira-sync.py"; sourceTree = SOURCE_ROOT; };
 		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
@@ -94,6 +97,7 @@
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
+		0C67960F210E215E00AEED63 /* SyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncViewController.swift; path = views/SyncViewController.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
@@ -111,7 +115,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C11552721064822007FD827 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +128,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0C1155282108C90E007FD827 /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				0C2E89092110526F00BAC0CC /* jira-sync.py */,
+				0C1155292108C92C007FD827 /* SyncExtension.swift */,
+			);
+			path = extensions;
+			sourceTree = "<group>";
+		};
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
@@ -186,7 +198,6 @@
 		0C35FF0020DC09BD00BE3B2C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0C11552621064822007FD827 /* StoreKit.framework */,
 				0C35FF0120DC09BD00BE3B2C /* Quartz.framework */,
 			);
 			name = Frameworks;
@@ -200,6 +211,7 @@
 				0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */,
 				0C3A36BD2085B41100CC646C /* SearchBoxController.swift */,
 				0C3E178620FD053A00AB9D3D /* ExportViewController.swift */,
+				0C67960F210E215E00AEED63 /* SyncViewController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -277,6 +289,7 @@
 		0CFBC7A41F0CAF190072E4FF /* document */ = {
 			isa = PBXGroup;
 			children = (
+				0C1155282108C90E007FD827 /* extensions */,
 				0C439D23200336BB0031AE78 /* tenn */,
 				0C4C16061F2E3685000C5410 /* layout */,
 				0C27F05C1EDC223E006CD2A2 /* model */,
@@ -340,7 +353,7 @@
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.InAppPurchase = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.Sandbox = {
 								enabled = 1;
@@ -380,6 +393,7 @@
 			files = (
 				0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */,
 				0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */,
+				0C2E890A2110526F00BAC0CC /* jira-sync.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -406,6 +420,7 @@
 				0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
+				0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
@@ -413,6 +428,7 @@
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
+				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
 				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,

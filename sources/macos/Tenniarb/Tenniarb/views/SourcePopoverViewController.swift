@@ -17,7 +17,14 @@ class SourcePopoverViewController: NSViewController {
     fileprivate func updateContent() {
         // Update source content.
         if let active = self.element {
-            let txtValue = active.toTennStr(includeSubElements: false, includeItems: true)
+//            let txtValue = active.toTennStr(includeSubElements: false, includeItems: true)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            
+            let syncModel = active.toSync()
+            let data = try! encoder.encode(syncModel)
+            let txtValue = String( data: data, encoding: .utf8)!
+
             textViewer.textStorage?.setAttributedString(NSAttributedString(string: txtValue))
         }
     }

@@ -21,6 +21,54 @@ public enum ElementKind {
     }
 }
 
+public class ModelProperties: Sequence {
+    public typealias Element = TennNode
+    
+    public typealias Iterator = Array<TennNode>.Iterator
+    var node: TennNode = TennNode.newBlockExpr()
+    
+    init() {
+    }
+    init( _ props: [TennNode]) {
+        node.add(props)
+    }
+    
+    public func makeIterator() -> Iterator {
+        if self.node.count == 0 {
+            let nde: [TennNode] = []
+            return nde.makeIterator()
+        }
+        return self.node.children!.makeIterator()
+    }
+    public func append( _ itm: TennNode) {
+        self.node.add(itm)
+    }
+    public func append(contentsOf: [TennNode]) {
+        for c in contentsOf {
+            append(c)
+        }
+    }
+    
+    public func get(_ name: String) -> TennNode? {
+        return self.node.getNamedElement(name)
+    }
+    
+    var count:Int {
+        get {
+            return self.node.count
+        }
+    }
+    public func clone() -> ModelProperties {
+        let result = ModelProperties()
+        result.node = self.node.clone()
+        
+        return result
+    }
+    public func asNode() -> TennNode {
+        return self.node
+    }
+}
+
 public class Element {
     var kind: ElementKind
     var id: UUID
@@ -36,7 +84,7 @@ public class Element {
     
     var description: String? = nil
     
-    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
+    var properties: ModelProperties = ModelProperties() // Extra nodes not supported directly by model.
     
     // Transient data values
     
@@ -257,12 +305,6 @@ public enum ItemKind {
     }
 }
 
-enum ElementDataKind {
-    case Visible
-    case RefElement
-    case LinkData
-}
-
 public class DiagramItem {
     var kind: ItemKind
     var name: String
@@ -271,7 +313,7 @@ public class DiagramItem {
     
     var description: String? = nil
     
-    var properties: [TennNode] = [] // Extra nodes not supported directly by model.
+    var properties: ModelProperties = ModelProperties() // Extra nodes not supported directly by model.
     
     var x: CGFloat = 0
     var y: CGFloat = 0

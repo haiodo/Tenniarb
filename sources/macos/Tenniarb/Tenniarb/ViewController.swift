@@ -274,6 +274,15 @@ class ViewController: NSViewController, IElementModelListener {
                 return
             }
         }
+        if let vc = viewController as? SyncViewController {
+            if let active = self.selectedElement {
+                vc.setElement(element: active)
+                vc.setViewController(self)
+                
+                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                return
+            }
+        }
         
         super.presentViewController(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
     }

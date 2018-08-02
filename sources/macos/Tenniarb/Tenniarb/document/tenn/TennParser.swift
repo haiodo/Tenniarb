@@ -252,8 +252,10 @@ extension TennNode {
     public static func newNode(kind: TennNodeKind, _ token: TennToken? = nil) -> TennNode {
         return TennNode(kind: kind, tok: token )
     }
-    public static func newBlockExpr() -> TennNode {
-        return TennNode(kind: .BlockExpr, tok: nil )
+    public static func newBlockExpr(_ children: TennNode...) -> TennNode {
+        let nde = TennNode(kind: .BlockExpr, tok: nil )
+        nde.add(children)
+        return nde
     }
     public static func newCommand( _ name: String, _ childNodes: TennNode... ) -> TennNode {
         let nde = TennNode(kind: .Command)

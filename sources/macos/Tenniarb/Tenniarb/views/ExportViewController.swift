@@ -9,12 +9,13 @@
 import Foundation
 import Cocoa
 
-enum ExportKing {
+enum ExportKind {
     case png
     case pngCopy
     case html
     case htmlCopy
     case json
+    case jsonCopy
     case tenn
 }
 
@@ -29,10 +30,10 @@ class ExportType: Hashable {
     }
     
     var name: String
-    var exportType: ExportKing
+    var exportType: ExportKind
     var imgName: String
     
-    init(name: String, exportType: ExportKing, imgName: String) {
+    init(name: String, exportType: ExportKind, imgName: String) {
         self.name = name
         self.exportType = exportType
         self.imgName = imgName
@@ -51,9 +52,10 @@ class ExportViewController: NSViewController {
         ExportType(name:"Export as HTML", exportType: .html, imgName: "html_logo"),
         ExportType(name:"Export as PNG", exportType: .png, imgName: "png_logo"),
         ExportType(name:"Export current to file", exportType: .tenn, imgName: "Icon"),
-//        ExportType(name:"Export as JSON", exportType: .json, imgName: "json_logo"),
+        ExportType(name:"Export as JSON", exportType: .json, imgName: "json_logo"),
         ExportType(name:"Copy as HTML", exportType: .htmlCopy, imgName: "html_logo"),
         ExportType(name:"Copy as PNG", exportType: .pngCopy, imgName: "png_logo"),
+        ExportType(name:"Copy as JSON", exportType: .jsonCopy, imgName: "json_logo"),
         
     ]
     
@@ -96,7 +98,7 @@ class ExportViewController: NSViewController {
 
 class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
     var controller: ExportViewController
-    var items: [ ExportType : NSView ] = [:]
+
     init(_ controller: ExportViewController) {
         self.controller = controller
     }
@@ -135,7 +137,6 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                 if let imageField = view.viewWithTag(0) as? NSImageView {
                     imageField.image = NSImage.init(named: NSImage.Name.init(el.imgName))
                 }
-                self.items[el] = view
                 return view
             }
         }
@@ -346,6 +347,40 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
             }
         }
     }
+    func exportJson(_ saveFile: Bool) {
+        if let element = self.controller.element {
+            
+            let jsonSource = element.toSyncJson()
+            
+            if saveFile {
+                let mySave = NSSavePanel()
+                mySave.allowedFileTypes = ["json"]
+                mySave.allowsOtherFileTypes = false
+                mySave.isExtensionHidden = true
+                mySave.nameFieldStringValue = element.name
+                mySave.title = "Export element to json file"
+                
+                mySave.begin { (result) -> Void in
+                    if result.rawValue == NSFileHandlingPanelOKButton {
+                        if let filename = mySave.url {
+                            do {
+                                try jsonSource.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+                                self.hideExtension(filename)
+                            }
+                            catch {
+                                Swift.debugPrint("Error saving file")
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                let pb = NSPasteboard.general
+                pb.clearContents()
+                pb.setString(jsonSource, forType: .string)
+            }
+        }
+    }
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
@@ -361,7 +396,9 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
             case .htmlCopy:
                 exportHtml(false)
             case .json:
-                break
+                exportJson(true)
+            case .jsonCopy:
+                exportJson(false)
             case .tenn:
                 exportTenn()
             }

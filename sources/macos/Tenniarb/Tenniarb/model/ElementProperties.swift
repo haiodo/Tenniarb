@@ -22,7 +22,7 @@ extension Element {
     }
     
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
-        self.properties = []
+        self.properties = ModelProperties()
         
         var linkElements:[(TennNode, LinkItem)] = []
         Element.traverseBlock(node, {(cmdName, blChild) -> Void in
@@ -60,7 +60,7 @@ extension DiagramItem {
     }
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {
-            self.properties = []
+            self.properties = ModelProperties()
             self.x = 0 // In case pos was deleted
             self.y = 0
             Element.traverseBlock(node, {(cmdName, blChild) -> Void in
@@ -76,7 +76,7 @@ extension DiagramItem {
         else if self.kind == .Link {
             var sourceIndex = 0
             var targetIndex = 0
-            self.properties = []
+            self.properties = ModelProperties()
             self.x = 0 // In case pos was deleted
             self.y = 0
             self.name = ""
