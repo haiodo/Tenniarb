@@ -67,6 +67,8 @@ class SceneDrawView: NSView, IElementModelListener {
     var editBoxItem: Drawable? = nil
     var editBoxDelegate: EditTitleDelegate?
     
+    var pivotPoint: CGPoint = CGPoint(x:0, y:0)
+    
     var ox: CGFloat {
         set {
             if let active = element {
@@ -170,8 +172,8 @@ class SceneDrawView: NSView, IElementModelListener {
                 let np1 = prevTouch!.normalizedPosition
                 let np2 = touch!.normalizedPosition
                 
-                self.ox += (np2.x-np1.x)*prevTouch!.deviceSize.width*2.5
-                self.oy += (np2.y-np1.y)*prevTouch!.deviceSize.height*2.5
+                self.ox += (np2.x-np1.x)*prevTouch!.deviceSize.width*3
+                self.oy += (np2.y-np1.y)*prevTouch!.deviceSize.height*3
                 
                 sheduleRedraw()
             }
@@ -242,17 +244,10 @@ class SceneDrawView: NSView, IElementModelListener {
         self.buildScene()
         
         if let bounds = scene?.getBounds() {
-//            var freeX = self.frame.width - bounds.width
-//            var freeY = self.frame.height - bounds.height
-//            if freeX < 0 {
-//                freeX = 0
-//            }
-//            if freeY < 0 {
-//                freeY = 0
-//            }
             self.ox = -1 * bounds.midX
             self.oy = -1 * bounds.midY
         }
+        self.pivotPoint = CGPoint(x:0, y:0)
         
         needsDisplay = true
     }
@@ -289,6 +284,16 @@ class SceneDrawView: NSView, IElementModelListener {
         
         // We need to rebuild scene as active element is changed
         scene?.activeElement = element
+        
+        // We need to update pivot point
+        
+        if let act = element {
+            var offset = CGFloat(100.0)
+            if let dr = scene?.drawables[act] {
+                offset = CGFloat(dr.getBounds().width + 10)
+            }
+            self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
+        }
         
         needsDisplay = true
     }
@@ -368,9 +373,12 @@ class SceneDrawView: NSView, IElementModelListener {
         let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
         self.createIndex += 1
         
-        newEl.x = 0
-        newEl.y = 0
+        newEl.x = pivotPoint.x
+        newEl.y = pivotPoint.y
         self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+        
+        self.setActiveElement(newEl)
+        sheduleRedraw()
     }
     func addNewItem(copyProps:Bool = false) {
         if let active = self.activeElement {
@@ -379,13 +387,9 @@ class SceneDrawView: NSView, IElementModelListener {
                 let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
                 self.createIndex += 1
                 
-                var offset = CGFloat(100.0)
-                if let dr = scene?.drawables[active] {
-                    offset = CGFloat(dr.getBounds().width + 10)
-                }
                 
-                newEl.x = active.x + offset
-                newEl.y = active.y
+                newEl.x = pivotPoint.x
+                newEl.y = pivotPoint.y
                 
                 
                 if copyProps {

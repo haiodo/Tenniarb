@@ -27,14 +27,14 @@ class TennTextView: NSTextView {
         
         let str = NSAttributedString(
             string:insertPart,
-            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)]
+            attributes:[NSAttributedStringKey.font:NSFont.systemFont(ofSize: defaultFontSize)]
         )
         self.textStorage?.insert(str, at: loc)
     }
     override func insertTab(_ sender: Any?) {
         let str = NSAttributedString(
             string:"    ",
-            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)])
+            attributes:[NSAttributedStringKey.font:NSFont.systemFont(ofSize: defaultFontSize)])
         self.textStorage?.insert(str, at: self.selectedRange().location)
     }
 }
