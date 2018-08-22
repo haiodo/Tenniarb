@@ -47,7 +47,7 @@ class SceneDrawView: NSView, IElementModelListener {
     
     var element: Element?
     
-    var activeElement: DiagramItem?
+    var activeItems: [DiagramItem]  = []
     
     var dragElement: DiagramItem?
     
@@ -98,7 +98,7 @@ class SceneDrawView: NSView, IElementModelListener {
     
     var mouseDownState = false
     
-    var onSelection: [( DiagramItem? ) -> Void] = []
+    var onSelection: [( [DiagramItem] ) -> Void] = []
     
     var scene: DrawableScene?
     
@@ -199,10 +199,10 @@ class SceneDrawView: NSView, IElementModelListener {
         if evt.items.count > 0 {
             if let firstItem = evt.items.first(where: { (itm) in itm.kind == .Item } ) {
                 if evt.element.items.contains(firstItem) {
-                    setActiveElement(firstItem)
+                    setActiveItem(firstItem)
                 }
                 else {
-                    setActiveElement(nil)
+                    setActiveItem(nil)
                 }
             }
         }
@@ -236,7 +236,7 @@ class SceneDrawView: NSView, IElementModelListener {
         self.commitTitleEditing(nil)
         
         self.element = elementModel
-        self.activeElement = nil
+        self.activeItems.removeAll()
         
         
         // Center diagram to fit all items
@@ -255,39 +255,48 @@ class SceneDrawView: NSView, IElementModelListener {
     private func buildScene() {
         // We need preserve selection of previous scene
         
-        var oldActiveItem: DiagramItem? = nil
+        var oldActiveItem: [DiagramItem] = []
         var oldEditMode: Bool = false
         if let oldScene = self.scene {
-            oldActiveItem = oldScene.activeElement
+            oldActiveItem = oldScene.activeElements
             oldEditMode = oldScene.editingMode
         }
         
         let scene = DrawableScene(self.element!)
         
-        if let active = oldActiveItem {
-            scene.activeElement = active
+        if oldActiveItem.count > 0 {
+            scene.updateActiveElements(oldActiveItem)
             scene.editingMode = oldEditMode
         }
     
         self.scene = scene
     }
     
-    public func setActiveElement( _ element: DiagramItem? ) {
-        if activeElement == nil && element == nil {
+    public func setActiveItem( _ element: DiagramItem? ) {
+        var els: [DiagramItem] = []
+        if let act = element {
+            els.append(act)
+        }
+        
+        self.setActiveItems(els)
+    }
+    public func setActiveItems( _ items: [DiagramItem] ) {
+        if items.count == 0 && self.activeItems.count == 0 {
             return
         }
-        activeElement = element
+        activeItems = items
         
         for f in onSelection {
-            f(element)
+            f(items)
         }
         
         // We need to rebuild scene as active element is changed
-        scene?.activeElement = element
+        scene?.updateActiveElements(items)
         
         // We need to update pivot point
         
-        if let act = element {
+        
+        if let act = items.first {
             var offset = CGFloat(100.0)
             if let dr = scene?.drawables[act] {
                 offset = CGFloat(dr.getBounds().width + 10)
@@ -295,12 +304,12 @@ class SceneDrawView: NSView, IElementModelListener {
             self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
         }
         
-        needsDisplay = true
+        sheduleRedraw()
     }
     
     fileprivate func commitTitleEditing(_ textView: NSTextView?) {
         if let textBox = self.editBox {
-            if let active = self.activeElement {
+            if let active = self.activeItems.first {
                 if let tv = textView {
                     let textValue = tv.string
                     if textValue.count > 0 {
@@ -377,11 +386,11 @@ class SceneDrawView: NSView, IElementModelListener {
         newEl.y = pivotPoint.y
         self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
         
-        self.setActiveElement(newEl)
+        self.setActiveItem(newEl)
         sheduleRedraw()
     }
     func addNewItem(copyProps:Bool = false) {
-        if let active = self.activeElement {
+        if let active = self.activeItems.first {
             if active.kind == .Item {
                 // Create and add to activeEl
                 let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
@@ -400,7 +409,7 @@ class SceneDrawView: NSView, IElementModelListener {
                 }
                 
                 self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
-                self.setActiveElement(newEl)
+                self.setActiveItem(newEl)
                 sheduleRedraw()
             }
         }
@@ -410,7 +419,8 @@ class SceneDrawView: NSView, IElementModelListener {
     }
     
     func duplicateItem() {
-        if let active = self.activeElement {
+        var items: [DiagramItem] = []
+        for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
                 let newEl = DiagramItem(kind: .Item, name: active.name )
@@ -430,10 +440,13 @@ class SceneDrawView: NSView, IElementModelListener {
                     newEl.properties.append(p.clone())
                 }
                 
-                self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
-                self.setActiveElement(newEl)
-                sheduleRedraw()
+                items.append(newEl)
             }
+        }
+        if items.count > 0 {
+            self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+            self.setActiveItems(items)
+            sheduleRedraw()
         }
     }
     
@@ -449,8 +462,8 @@ class SceneDrawView: NSView, IElementModelListener {
     
     func removeItem() {
         // Backspace character
-        if let active = self.activeElement  {
-            self.store?.remove(active.parent!, item: active, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+        if self.activeItems.count > 0  {
+            self.store?.remove(self.element!, items: self.activeItems, undoManager: self.undoManager, refresh: self.sheduleRedraw)
             sheduleRedraw()
         }
     }
@@ -463,7 +476,7 @@ class SceneDrawView: NSView, IElementModelListener {
         }
     
         if event.characters == "\u{0D}" {
-            if let active = self.activeElement, active.kind == .Item  {
+            if let active = self.activeItems.first, active.kind == .Item  {
                 editTitle(active)
             }
         }
@@ -560,7 +573,7 @@ class SceneDrawView: NSView, IElementModelListener {
                         self.store?.updatePosition(item: de, newPos: pos, undoManager: self.undoManager, refresh: sheduleRedraw)
                     }
                 }
-                self.setActiveElement(de)
+                self.setActiveItem(de)
             }
             needsDisplay = true
         }
@@ -587,12 +600,27 @@ class SceneDrawView: NSView, IElementModelListener {
         self.dragElement = nil
         
         if let drawable = findElement(x: self.x, y: self.y) {
-            self.setActiveElement(drawable.item)
-            scene?.activeElement = nil
+            
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
+                // This is selection operation
+                if let itm = drawable.item {
+                    if self.activeItems.contains(itm) {
+                        self.activeItems.remove(at: self.activeItems.firstIndex(of: itm)!)
+                    }
+                    else {
+                        self.activeItems.append(itm)
+                    }
+                }
+                setActiveItems(self.activeItems)
+                return
+            }
+            
+            self.setActiveItem(drawable.item)
+            scene?.updateActiveElements([])
             
             self.dragElement = drawable.item
                         
-            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.control) {
                 self.mode = .LineDrawing
                 self.lineToPoint = CGPoint(x: self.x, y: self.y )
             }
@@ -602,7 +630,7 @@ class SceneDrawView: NSView, IElementModelListener {
             }
         }
         else {
-            self.setActiveElement(nil)
+            self.setActiveItem(nil)
             self.mode = .DiagramMove
         }
     }

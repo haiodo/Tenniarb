@@ -404,7 +404,7 @@ open class DrawableScene: DrawableContainer {
     
     var itemToLink:[DiagramItem: [DiagramItem]] = [:]
     
-    var activeDrawable: Drawable?
+    var activeDrawables: [Drawable] = []
     
     var lineToDrawable: Drawable?
     
@@ -412,15 +412,11 @@ open class DrawableScene: DrawableContainer {
     
     var editingMode: Bool = false {
         didSet {
-            self.updateActiveElement()
+            self.updateActiveElements(self.activeElements)
         }
     }
     
-    var activeElement: DiagramItem? {
-        didSet {
-            self.updateActiveElement()
-        }
-    }
+    var activeElements: [DiagramItem] = []
     
     init( _ element: Element) {
         super.init([])
@@ -430,15 +426,17 @@ open class DrawableScene: DrawableContainer {
     }
     
     public override func find( _ point: CGPoint ) -> ItemDrawable? {
-        if let active = activeElement, let activeDr = drawables[active] {
-            if activeDr.getBounds().contains(point) {
-                if let ln = activeDr as? DrawableLine {
-                    if ln.find(point) {
+        for active in self.activeElements {
+            if let activeDr = drawables[active] {
+                if activeDr.getBounds().contains(point) {
+                    if let ln = activeDr as? DrawableLine {
+                        if ln.find(point) {
+                            return activeDr as? ItemDrawable
+                        }
+                    }
+                    else {
                         return activeDr as? ItemDrawable
                     }
-                }
-                else {
-                    return activeDr as? ItemDrawable
                 }
             }
         }
@@ -457,10 +455,10 @@ open class DrawableScene: DrawableContainer {
             var tBounds: CGRect?
             
             if let targetDe = self.find(point) {
-                if targetDe.item?.kind == .Item {
+                if let ti = targetDe.item, ti.kind == .Item {
                     tBounds = targetDe.getBounds()
                     targetPoint = CGPoint( x: tBounds!.midX, y: tBounds!.midY)
-                    self.activeElement = targetDe.item
+                    self.updateActiveElements([ti])
                     result = targetDe.item
                 }
             }
@@ -484,35 +482,39 @@ open class DrawableScene: DrawableContainer {
         self.lineToDrawable = nil
     }
     
-    func updateActiveElement() {
-        if let ae = activeElement {
-            if let de = drawables[ae] as? ItemDrawable {
-                if let line =  de as? DrawableLine {
-                    activeDrawable = SelectorLine(source: line.source, target: line.target, extra: line.extraPoints)
-                    
-                }
-                else {
-                    let deBounds = de.getBounds()
-                    activeDrawable = SelectorBox(
-                        pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
-                        size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ),
-                        color: !self.editingMode ? SelectorBox.normalColor: SelectorBox.editingColor
-                    )
+    func updateActiveElements( _ actives: [DiagramItem]) {
+        activeDrawables.removeAll()
+        self.activeElements = actives
+        if actives.count > 0 {
+            for ae in actives {
+                if let de = drawables[ae] as? ItemDrawable {
+                    if let line =  de as? DrawableLine {
+                        self.activeDrawables.append(
+                            SelectorLine(source: line.source, target: line.target, extra: line.extraPoints)
+                        )
+                    }
+                    else {
+                        let deBounds = de.getBounds()
+                        self.activeDrawables.append(
+                            SelectorBox(
+                                pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
+                                size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ),
+                                color: !self.editingMode ? SelectorBox.normalColor: SelectorBox.editingColor
+                            )
+                        )
+                    }
                 }
             }
-        }
-        else {
-            activeDrawable = nil
         }
     }
     
     func updateLayout(_ item: DiagramItem, _ pos: CGPoint) -> CGRect {
-        updateActiveElement()
+        updateActiveElements(self.activeElements)
         
         var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
         
-        if let ad = activeDrawable {
-            result = ad.getBounds()
+        for ad in activeDrawables {
+            result = result.union(ad.getBounds())
         }
         
         if let box = drawables[item] as? RoundBox {
@@ -561,7 +563,7 @@ open class DrawableScene: DrawableContainer {
         context.scaleBy(x: self.sceneStyle.zoomLevel, y: self.sceneStyle.zoomLevel)
         draw(context: context, at: offset)
         
-        if let selBox = self.activeDrawable {
+        for selBox in self.activeDrawables {
             selBox.draw(context: context, at: offset)
         }
         
@@ -572,7 +574,7 @@ open class DrawableScene: DrawableContainer {
     open func drawBox(context: CGContext) {
         drawBox(context: context, at: offset)
         
-        if let selBox = self.activeDrawable {
+        for selBox in self.activeDrawables {
             selBox.drawBox(context: context, at: offset)
         }
         
@@ -590,7 +592,7 @@ open class DrawableScene: DrawableContainer {
                                 fillColor: bgColor,
                                 borderColor: borderColor, fill: fill)
         rectBox.stack = stack
-        if self.activeElement == e {
+        if self.activeElements.contains(e) {
             rectBox.lineWidth = 1
         }
         rectBox.append(textBox)

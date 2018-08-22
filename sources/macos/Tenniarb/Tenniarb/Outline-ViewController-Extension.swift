@@ -134,8 +134,8 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
-        
         let selectedIndex = controller.worldTree.selectedRow
+        Swift.debugPrint("Selection change:", selectedIndex)
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
             self.controller.onElementSelected(el)
         }

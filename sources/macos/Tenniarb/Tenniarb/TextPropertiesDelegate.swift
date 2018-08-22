@@ -115,7 +115,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     }
     
     func textDidEndEditing(_ notification: Notification) {
-        Swift.debugPrint("End editing")
         highlight()
     }
     
@@ -139,10 +138,5 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 self.view.needsDisplay = true
             }
         })
-    }
-    
-    func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-//        Swift.debugPrint("Selector:" + commandSelector.description)
-        return false
     }
 }

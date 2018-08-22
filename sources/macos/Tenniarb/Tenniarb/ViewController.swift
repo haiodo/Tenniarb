@@ -20,7 +20,7 @@ class ViewController: NSViewController, IElementModelListener {
     
     var selectedElement: Element?
 
-    var activeElement: DiagramItem?
+    var activeElement: [DiagramItem] = []
     
     var updateScheduled: Int = 0
     var updateKindScheduled: ModelEventKind = .Layout
@@ -53,7 +53,16 @@ class ViewController: NSViewController, IElementModelListener {
     
     @IBAction func outlineTextChanged(_ sender: Any) {
         if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
-            self.elementStore?.updateName(element: active, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
+            let selectedRow = self.worldTree.selectedRow
+            if let item = self.worldTree.item(atRow: selectedRow) as? Element {
+                if item != active {
+                    return; // Do not rename in this case
+                }
+                if item.name != newValue {
+                    self.elementStore?.updateName(element: item, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
+                }
+            }
+            
         }
     }
     
@@ -106,7 +115,7 @@ class ViewController: NSViewController, IElementModelListener {
                 sb.parentView = self.view
                 
                 sb.closeAction = {() in self.hideSearchBox()}
-                sb.setActive = {(item) in self.scene.setActiveElement(item)}
+                sb.setActive = {(item) in self.scene.setActiveItem(item)}
                 
                 self.presentViewController(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
             }
@@ -290,7 +299,7 @@ class ViewController: NSViewController, IElementModelListener {
     func onElementSelected(_ element: Element?) {
         if selectedElement != element {
             self.selectedElement = element
-            self.activeElement = nil
+            self.activeElement = []
             
             if let el = element {
                 self.scene.setActiveElement(el)
@@ -304,7 +313,8 @@ class ViewController: NSViewController, IElementModelListener {
         if let element = self.selectedElement, let delegate = self.textViewDelegate {
             if delegate.needUpdate() {
                 DispatchQueue.main.async(execute: {
-                    let strContent = (self.activeElement == nil) ? element.toTennProps(): self.activeElement!.toTennProps()
+                    
+                    let strContent = (self.activeElement.count == 0) ? element.toTennProps(): self.activeElement[0].toTennProps()
                     
                     delegate.setTextValue(strContent)
                 })
@@ -399,7 +409,7 @@ class ViewController: NSViewController, IElementModelListener {
 
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
-        if let active = activeElement {
+        if let active = activeElement.first {
             if let element = self.selectedElement {
                 self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: {()->Void in} )
             }

@@ -70,6 +70,12 @@ public class CompositeOperation: ElementOperation {
         super.init(store)
     }
     
+    init(_ store:ElementModelStore, _ notifier: Element, _ ops: [ElementOperation]) {
+        self.operations = ops
+        self.notifier = notifier
+        super.init(store)
+    }
+    
     func add(_ ops: ElementOperation...) {
         self.operations.append(contentsOf: ops)
     }
@@ -167,6 +173,7 @@ public class ElementModelStore {
         execute(AddElement(self, parent, child, index: index), undoManager, refresh)
     }
     
+    
     public func move( _ element: Element, _ newParent: Element, undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int ) {
         
         let op = CompositeOperation(self, element)
@@ -183,6 +190,12 @@ public class ElementModelStore {
     
     public func add( _ element: Element, _ item: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
         execute(AddItem(self, element, item), undoManager, refresh)
+    }
+    
+    public func add( _ element: Element, _ items: [DiagramItem], undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+        let ops = items.map({(itm) in AddItem(self, element, itm)})
+        let op = CompositeOperation(self, element, ops )
+        execute(op, undoManager, refresh)
     }
     
     public func add( _ element: Element, source: DiagramItem, target: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void, props: [TennNode] = [] ) {
@@ -207,8 +220,6 @@ public class ElementModelStore {
     }
     
     public func remove( _ element: Element, item: DiagramItem, undoManager: UndoManager?, refresh: @escaping () -> Void ) {
-        //TODO: Need do via command
-        
         let op = CompositeOperation(self, element)
         let items = element.getRelatedItems (item)
         
@@ -217,6 +228,28 @@ public class ElementModelStore {
         }
         execute(op, undoManager, refresh)
     }
+    
+    public func remove( _ element: Element, items deleteItems: [DiagramItem], undoManager: UndoManager?, refresh: @escaping () -> Void ) {
+        let op = CompositeOperation(self, element)
+        
+        var items:[DiagramItem] = []
+        
+        for itm in deleteItems {
+            let itmRels = element.getRelatedItems(itm)
+            for rel in itmRels {
+                if !items.contains(rel) {
+                    items.append(rel)
+                }
+            }
+        }
+        
+        for item in items {
+            op.add(RemoveItem(self, element, item ))
+        }
+        execute(op, undoManager, refresh)
+    }
+    
+    
     func makeNonModified() {
         modified = false
     }
@@ -345,6 +378,7 @@ class UpdateElementName: AbstractUpdateElementValue<String> {
     override var name:String { get { return "UpdateElementName"} }
     
     override func apply(_ value: String) {
+        Swift.debugPrint("Update element: " + self.element.name + " name to:" + value )
         self.element.name = value
     }
 }

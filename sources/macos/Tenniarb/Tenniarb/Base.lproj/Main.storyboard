@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14295.6" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.13.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14295.6"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.13.2"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -820,7 +820,7 @@ CQ
                                                                                         </imageView>
                                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="XGI-aq-4wA" userLabel="ItemCell">
                                                                                             <rect key="frame" x="22" y="0.0" width="219" height="20"/>
-                                                                                            <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="GXh-Ub-nEp" userLabel="ItemCell" customClass="OutlineTextFieldCell" customModule="Tenniarb" customModuleProvider="target">
+                                                                                            <textFieldCell key="cell" selectable="YES" editable="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="GXh-Ub-nEp" userLabel="ItemCell" customClass="OutlineTextFieldCell" customModule="Tenniarb" customModuleProvider="target">
                                                                                                 <font key="font" metaFont="system" size="14"/>
                                                                                                 <color key="textColor" red="0.99215686270000003" green="0.96470588239999999" blue="0.89019607840000003" alpha="1" colorSpace="calibratedRGB"/>
                                                                                                 <color key="backgroundColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
@@ -888,7 +888,7 @@ CQ
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
                                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xxj-wV-uFj">
-                                                                            <rect key="frame" x="13" y="8" width="89" height="20"/>
+                                                                            <rect key="frame" x="13" y="8" width="89" height="19"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="Window title" id="8wb-6d-knf">
                                                                                 <font key="font" metaFont="system" size="15"/>
                                                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -926,7 +926,7 @@ CQ
                                                                                 <segue destination="NCy-6J-kPY" kind="popover" popoverAnchorView="SXa-LX-SJ4" popoverBehavior="t" preferredEdge="maxY" id="g6O-9l-pOe"/>
                                                                             </connections>
                                                                         </segmentedControl>
-                                                                        <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Export_printing">
+                                                                        <segmentedControl hidden="YES" verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Sync_actions">
                                                                             <rect key="frame" x="520.5" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="vqf-vq-Awc">
                                                                                 <font key="font" metaFont="system"/>

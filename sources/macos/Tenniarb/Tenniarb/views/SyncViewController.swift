@@ -168,10 +168,10 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
         if let el = controller.syncOutline.item(atRow: selectedIndex) as? SyncInfo {
             if el.operation == .AddSyncConfig {
                 self.controller.addSyncConfig()
-                self.controller.viewController?.scene.setActiveElement(nil)
+                self.controller.viewController?.scene.setActiveItem(nil)
             }
             else if el.operation == .ShowConfig {
-                self.controller.viewController?.scene.setActiveElement(nil)
+                self.controller.viewController?.scene.setActiveItem(nil)
             }
             else if el.operation == .Sync, let nde = el.node {
                 self.controller.doSync(nde)
