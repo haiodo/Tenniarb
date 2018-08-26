@@ -651,7 +651,7 @@ class SceneDrawView: NSView, IElementModelListener {
                         scheduleRedraw()
                     }
                     else {
-                        if let pos = self.dragMap[de], de.kind == .Item {
+                        if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1) {
                             let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
                             self.dragMap[de] = newPos
                     
