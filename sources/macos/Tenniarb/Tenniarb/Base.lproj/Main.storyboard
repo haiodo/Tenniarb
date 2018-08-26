@@ -172,6 +172,18 @@ CQ
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="346-q5-4ng"/>
+                                        <menuItem title="Select All" keyEquivalent="a" allowsKeyEquivalentWhenHidden="YES" id="T08-Xa-q2D">
+                                            <connections>
+                                                <action selector="selectAllItems" target="Ady-hI-5gd" id="s1C-xK-YLt"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Select None" allowsKeyEquivalentWhenHidden="YES" id="RW2-58-UTH">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectNoneItems:" target="Ady-hI-5gd" id="xmF-1a-4Ce"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="RrI-X2-Rsj"/>
                                         <menuItem title="Cut" keyEquivalent="x" id="uRl-iY-unG">
                                             <connections>
                                                 <action selector="cut:" target="Ady-hI-5gd" id="YJe-68-I9s"/>

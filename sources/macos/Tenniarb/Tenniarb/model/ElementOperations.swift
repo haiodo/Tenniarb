@@ -167,8 +167,20 @@ public class ElementModelStore {
     }
     
     public func updatePosition( item: DiagramItem, newPos: CGPoint, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-        execute(UpdatePosition(self, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos), undoManager, refresh)
+        execute(self.createUpdatePosition(item: item, newPos: newPos), undoManager, refresh)
     }
+    
+
+    public func createUpdatePosition( item: DiagramItem, newPos: CGPoint) -> ElementOperation {
+        return UpdatePosition(self, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos)
+    }
+    
+    public func compositeOperation( notifier: Element, undoManaget: UndoManager?, refresh: @escaping () -> Void,
+                                    _ operations: [ElementOperation] ) {
+        let composite = CompositeOperation(self, notifier, operations )
+        execute( composite, undoManaget, refresh)
+    }
+    
     public func add( _ parent: Element, _ child: Element, undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int? = nil ) {
         execute(AddElement(self, parent, child, index: index), undoManager, refresh)
     }

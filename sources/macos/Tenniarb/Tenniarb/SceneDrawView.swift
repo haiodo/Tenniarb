@@ -47,9 +47,9 @@ class SceneDrawView: NSView, IElementModelListener {
     
     var element: Element?
     
-    var activeItems: [DiagramItem]  = []
+    var activeItems: [DiagramItem] = []
     
-    var dragElement: DiagramItem?
+    var dragElements: [DiagramItem] = []
     
     var dragMap:[DiagramItem: CGPoint] = [:]
     
@@ -125,11 +125,11 @@ class SceneDrawView: NSView, IElementModelListener {
 //        Swift.debugPrint("Scroll", event)
 //    }
     
-    func sheduleRedraw() {
-        sheduleRedraw(invalidRect: nil)
+    func scheduleRedraw() {
+        scheduleRedraw(invalidRect: nil)
     }
     var lastInvalidRect: CGRect? = nil
-    fileprivate func sheduleRedraw( invalidRect: CGRect? ) {
+    fileprivate func scheduleRedraw( invalidRect: CGRect? ) {
         if !self.drawScheduled {
             drawScheduled = true
             lastInvalidRect = invalidRect
@@ -175,7 +175,7 @@ class SceneDrawView: NSView, IElementModelListener {
                 self.ox += (np2.x-np1.x)*prevTouch!.deviceSize.width*3
                 self.oy += (np2.y-np1.y)*prevTouch!.deviceSize.height*3
                 
-                sheduleRedraw()
+                scheduleRedraw()
             }
             prevTouch = touch
         }
@@ -208,10 +208,10 @@ class SceneDrawView: NSView, IElementModelListener {
         }
         if evt.kind == .Structure  {
             self.buildScene()
-            sheduleRedraw()
+            scheduleRedraw()
         }
         else {
-            sheduleRedraw()
+            scheduleRedraw()
         }
     }
     
@@ -304,7 +304,7 @@ class SceneDrawView: NSView, IElementModelListener {
             self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
         }
         
-        sheduleRedraw()
+        scheduleRedraw()
     }
     
     fileprivate func commitTitleEditing(_ textView: NSTextView?) {
@@ -313,7 +313,7 @@ class SceneDrawView: NSView, IElementModelListener {
                 if let tv = textView {
                     let textValue = tv.string
                     if textValue.count > 0 {
-                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: sheduleRedraw)
+                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
                     }
                 }
             }
@@ -367,7 +367,7 @@ class SceneDrawView: NSView, IElementModelListener {
             self.window?.makeFirstResponder(editBox!)
         }
         
-        sheduleRedraw()
+        scheduleRedraw()
     }
     
     fileprivate func setNormalMode() {
@@ -384,10 +384,10 @@ class SceneDrawView: NSView, IElementModelListener {
         
         newEl.x = pivotPoint.x
         newEl.y = pivotPoint.y
-        self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+        self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
         
         self.setActiveItem(newEl)
-        sheduleRedraw()
+        scheduleRedraw()
     }
     func addNewItem(copyProps:Bool = false) {
         if let active = self.activeItems.first {
@@ -408,9 +408,9 @@ class SceneDrawView: NSView, IElementModelListener {
                     }
                 }
                 
-                self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+                self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
                 self.setActiveItem(newEl)
-                sheduleRedraw()
+                scheduleRedraw()
             }
         }
         else {
@@ -444,9 +444,9 @@ class SceneDrawView: NSView, IElementModelListener {
             }
         }
         if items.count > 0 {
-            self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.sheduleRedraw)
+            self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
             self.setActiveItems(items)
-            sheduleRedraw()
+            scheduleRedraw()
         }
     }
     
@@ -463,8 +463,8 @@ class SceneDrawView: NSView, IElementModelListener {
     func removeItem() {
         // Backspace character
         if self.activeItems.count > 0  {
-            self.store?.remove(self.element!, items: self.activeItems, undoManager: self.undoManager, refresh: self.sheduleRedraw)
-            sheduleRedraw()
+            self.store?.remove(self.element!, items: self.activeItems, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            scheduleRedraw()
         }
     }
     
@@ -536,53 +536,40 @@ class SceneDrawView: NSView, IElementModelListener {
             return
         }
         
-        if let de = self.dragElement {
-            if self.mode == .LineDrawing {
-                
-                if let source = self.dragElement, let target = self.lineTarget {
+        if self.mode == .LineDrawing {
+            if let source = self.dragElements.first, let target = self.lineTarget {
                     // Create a new line if not yet pressent between elements
                     
-                    // Check if line already exists
-//                    if element?.items.first(where: { (item) -> Bool in
-//                        if item.kind == .Link, let data = item as? LinkItem {
-//                            if (data.source == source && data.target == target) {
-//                                // Existing item found
-//                                return true
-//                            }
-//                        }
-//                        return false
-//                    }) == nil {
-                        // Add item since not pressent
-                        store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.sheduleRedraw, props: [TennNode.newCommand("display", TennNode.newStrNode("arrow"))])
-//                    }
-                }
-                
-                scene?.removeLineTo()
-                self.lineToPoint = nil
-                self.lineTarget = nil
+                store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.scheduleRedraw, props: [TennNode.newCommand("display", TennNode.newStrNode("arrow"))])
             }
-            else {
+                
+            scene?.removeLineTo()
+            self.lineToPoint = nil
+            self.lineTarget = nil
+        }
+        else {
+            var ops: [ElementOperation] = []
+            
+            for de in self.dragElements {
                 if let newPos = self.dragMap.removeValue(forKey: de) {
                     let pos = newPos
-//                    if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
-//                        // This is snap to grid of 5/5
-//                        pos = CGPoint(x: Int(pos.x) - Int(pos.x) % 5,
-//                                         y: Int(pos.y) - Int(pos.y) % 5)
-//                    }
                     if pos.x != de.x || pos.y != de.y {
-                        self.store?.updatePosition(item: de, newPos: pos, undoManager: self.undoManager, refresh: sheduleRedraw)
+                        ops.append(store!.createUpdatePosition(item: de, newPos: newPos))
                     }
                 }
-                self.setActiveItem(de)
             }
-            needsDisplay = true
+            if ops.count > 0 {
+                store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+                self.setActiveItems(self.dragElements)
+                scheduleRedraw()
+            }
         }
         
         self.mouseDownState = false
-        if let de = self.dragElement {
+        for de in self.dragElements {
             self.dragMap.removeValue(forKey: de)
         }
-        self.dragElement = nil
+        self.dragElements.removeAll()
         
         self.mode = .Normal
     }
@@ -596,8 +583,9 @@ class SceneDrawView: NSView, IElementModelListener {
         }
         
         self.mouseDownState = true
+        
         self.dragMap.removeAll()
-        self.dragElement = nil
+        self.dragElements.removeAll()
         
         if let drawable = findElement(x: self.x, y: self.y) {
             
@@ -614,19 +602,24 @@ class SceneDrawView: NSView, IElementModelListener {
                 setActiveItems(self.activeItems)
                 return
             }
+            else {
+                if let di = drawable.item, !self.activeItems.contains(di) {
+                    self.setActiveItem(di)
+                    scene?.updateActiveElements(self.activeItems)
+                }
+            }
             
-            self.setActiveItem(drawable.item)
-            scene?.updateActiveElements([])
-            
-            self.dragElement = drawable.item
+            self.dragElements.append(contentsOf: self.activeItems)
                         
-            if event.modifierFlags.contains(NSEvent.ModifierFlags.control) {
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.control) && self.dragElements.count == 1 {
                 self.mode = .LineDrawing
                 self.lineToPoint = CGPoint(x: self.x, y: self.y )
             }
             else {
                 self.mode = .Dragging
-                self.dragMap[self.dragElement!] = CGPoint(x: self.dragElement!.x, y: self.dragElement!.y)
+                for de in self.dragElements  {
+                    self.dragMap[de] = CGPoint(x: de.x, y: de.y)
+                }
             }
         }
         else {
@@ -648,25 +641,26 @@ class SceneDrawView: NSView, IElementModelListener {
         
         self.updateMousePosition(event)
         
-        if let de = dragElement {
-            
-            if self.mode == .LineDrawing {
-                self.lineToPoint = CGPoint(x: self.x, y: self.y )
-                self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
-                
-                sheduleRedraw()
-            }
-            else {
-                if let pos = self.dragMap[de] {
-                    let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
-                    self.dragMap[de] = newPos
-                
-                    if let em = self.element {
-                        self.store?.modified(ModelEvent(kind: .Layout, element: em))
-                        let dirtyRegion = self.scene!.updateLayout(de, newPos)
+        if self.dragElements.count > 0 {
+            if let em = self.element {
+                for de in dragElements {
+                    if self.mode == .LineDrawing {
+                        self.lineToPoint = CGPoint(x: self.x, y: self.y )
+                        self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
                         
-                        let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
-                        sheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
+                        scheduleRedraw()
+                    }
+                    else {
+                        if let pos = self.dragMap[de], de.kind == .Item {
+                            let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
+                            self.dragMap[de] = newPos
+                    
+                            self.store?.modified(ModelEvent(kind: .Layout, element: em))
+                            let dirtyRegion = self.scene!.updateLayout(de, newPos)
+                            
+                            let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
+                            scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
+                        }
                     }
                 }
             }
@@ -674,7 +668,7 @@ class SceneDrawView: NSView, IElementModelListener {
         else {
             ox += event.deltaX
             oy -= event.deltaY
-            sheduleRedraw()
+            scheduleRedraw()
         }
     }
     
@@ -737,5 +731,14 @@ class SceneDrawView: NSView, IElementModelListener {
             scene.draw(context: context)
             context.restoreGState()
         }
+    }
+    
+    public func selectAllItems() {
+        self.setActiveItems(self.element!.items.filter { (itm) in itm.kind == ItemKind.Item })
+        scheduleRedraw()
+    }
+    public func selectNoneItems() {
+        self.setActiveItems([])
+        scheduleRedraw()
     }
 }

@@ -122,6 +122,14 @@ class ViewController: NSViewController, IElementModelListener {
         }
     }
     
+    @IBAction func selectAllItems(_ sender: NSMenuItem) {
+        self.scene.selectAllItems()
+    }
+    
+    @IBAction func selectNoneItems(_ sender: NSMenuItem) {
+        self.scene.selectNoneItems()
+    }
+    
     @IBAction func addLinkedItem(_ sender: NSMenuItem ) {
         scene?.addNewItem()
     }
