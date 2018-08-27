@@ -20,7 +20,7 @@ class ViewController: NSViewController, IElementModelListener {
     
     var selectedElement: Element?
 
-    var activeElement: [DiagramItem] = []
+    var activeItems: [DiagramItem] = []
     
     var updateScheduled: Int = 0
     var updateKindScheduled: ModelEventKind = .Layout
@@ -140,6 +140,37 @@ class ViewController: NSViewController, IElementModelListener {
     
     @IBAction func addFreeItem(_ sender: NSMenuItem ) {
         scene?.addTopItem()
+    }
+    
+    @IBAction func applyDefaultStyle(_ sender: NSMenuItem ) {
+        
+    }
+    
+    @IBAction func applyStyle( _ sender: NSMenuItem ) {
+        guard let element = self.selectedElement else {
+            return
+        }
+        if self.activeItems.count == 0 {
+            return
+        }
+        guard let activeBounds = scene.getActiveItemBounds() else {
+            return
+        }
+        let ctrl = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "StyleViewPopup"))
+        let popupController = ctrl  as! StyleViewController
+        
+        popupController.setElement(element: element)
+        popupController.setActiveItems(self.activeItems)
+        popupController.setViewController(self)
+        
+        let popover = NSPopover()
+        popover.contentViewController = popupController
+        popover.contentSize = popupController.view.frame.size
+        
+        popover.behavior = .transient
+        popover.animates = false
+        
+        self.presentViewController(popupController, asPopoverRelativeTo: activeBounds, of: self.scene, preferredEdge: .maxX, behavior: .transient)
     }
     
     @IBAction func duplicateItem( _ sender: NSMenuItem ) {
@@ -307,7 +338,7 @@ class ViewController: NSViewController, IElementModelListener {
     func onElementSelected(_ element: Element?) {
         if selectedElement != element {
             self.selectedElement = element
-            self.activeElement = []
+            self.activeItems = []
             
             if let el = element {
                 self.scene.setActiveElement(el)
@@ -322,7 +353,7 @@ class ViewController: NSViewController, IElementModelListener {
             if delegate.needUpdate() {
                 DispatchQueue.main.async(execute: {
                     
-                    let strContent = (self.activeElement.count == 0) ? element.toTennProps(): self.activeElement[0].toTennProps()
+                    let strContent = (self.activeItems.count == 0) ? element.toTennProps(): self.activeItems[0].toTennProps()
                     
                     delegate.setTextValue(strContent)
                 })
@@ -359,7 +390,7 @@ class ViewController: NSViewController, IElementModelListener {
         scene.setModel(store: self.elementStore!)
         scene.onSelection.removeAll()
         scene.onSelection.append({( element ) -> Void in
-            self.activeElement = element
+            self.activeItems = element
             self.updateTextProperties()
         })
 
@@ -417,7 +448,7 @@ class ViewController: NSViewController, IElementModelListener {
 
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
-        if let active = activeElement.first {
+        if let active = activeItems.first {
             if let element = self.selectedElement {
                 self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: {()->Void in} )
             }

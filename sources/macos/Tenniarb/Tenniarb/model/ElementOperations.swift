@@ -280,6 +280,10 @@ public class ElementModelStore {
 //        item.fromTennProps(self, node)
         execute(ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node ), undoManager, refresh)
     }
+    
+    func createProperties(_ element: Element, _ item: DiagramItem, _ node: TennNode) -> ElementOperation {
+        return ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node )
+    }
 }
 
 class AbstractUpdateValue<ValueType>: ElementOperation {

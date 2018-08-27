@@ -308,23 +308,24 @@ class SceneDrawView: NSView, IElementModelListener {
     }
     
     fileprivate func commitTitleEditing(_ textView: NSTextView?) {
-        if let textBox = self.editBox {
-            if let active = self.activeItems.first {
-                if let tv = textView {
-                    let textValue = tv.string
-                    if textValue.count > 0 {
-                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
-                    }
+        guard let textBox = self.editBox else {
+            return
+        }
+        if let active = self.activeItems.first {
+            if let tv = textView {
+                let textValue = tv.string
+                if textValue.count > 0 {
+                    self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
                 }
             }
-            
-            self.setNormalMode()
-            textBox.removeFromSuperview()
-            self.editBox = nil
-            self.editBoxItem = nil
-            self.window?.makeFirstResponder(self)
-            needsDisplay = true
         }
+        
+        self.setNormalMode()
+        textBox.removeFromSuperview()
+        self.editBox = nil
+        self.editBoxItem = nil
+        self.window?.makeFirstResponder(self)
+        scheduleRedraw()
     }
     
     fileprivate func getEditBoxBounds( item: Drawable ) -> CGRect {
@@ -340,32 +341,34 @@ class SceneDrawView: NSView, IElementModelListener {
     fileprivate func editTitle(_ active: DiagramItem) {
         self.mode = .Editing
         scene?.editingMode = true
-        if let de = scene?.drawables[active] {
-            if editBox != nil {
-                editBox!.removeFromSuperview()
-            }
-            self.editBoxItem = de
-            
-            let bounds = getEditBoxBounds(item: de)
-            editBox = NSTextField(frame: bounds)
-            if self.editBoxDelegate == nil {
-                self.editBoxDelegate = EditTitleDelegate(self)
-            }
-            
-            let style = self.scene!.sceneStyle.defaultItemStyle.copy()
-            style.parseStyle(active.properties)
-            
-            editBox?.delegate = self.editBoxDelegate
-            editBox?.stringValue = active.name
-            editBox?.drawsBackground = true
-            editBox?.isBordered = true
-            editBox?.focusRingType = .none
-            editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
-            
-            self.addSubview(editBox!)
-            
-            self.window?.makeFirstResponder(editBox!)
+        guard let de = scene?.drawables[active] else {
+            return
         }
+
+        if editBox != nil {
+            editBox!.removeFromSuperview()
+        }
+        self.editBoxItem = de
+        
+        let bounds = getEditBoxBounds(item: de)
+        editBox = NSTextField(frame: bounds)
+        if self.editBoxDelegate == nil {
+            self.editBoxDelegate = EditTitleDelegate(self)
+        }
+        
+        let style = self.scene!.sceneStyle.defaultItemStyle.copy()
+        style.parseStyle(active.properties)
+        
+        editBox?.delegate = self.editBoxDelegate
+        editBox?.stringValue = active.name
+        editBox?.drawsBackground = true
+        editBox?.isBordered = true
+        editBox?.focusRingType = .none
+        editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
+        
+        self.addSubview(editBox!)
+        
+        self.window?.makeFirstResponder(editBox!)
         
         scheduleRedraw()
     }
@@ -390,31 +393,30 @@ class SceneDrawView: NSView, IElementModelListener {
         scheduleRedraw()
     }
     func addNewItem(copyProps:Bool = false) {
-        if let active = self.activeItems.first {
-            if active.kind == .Item {
-                // Create and add to activeEl
-                let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
-                self.createIndex += 1
-                
-                
-                newEl.x = pivotPoint.x
-                newEl.y = pivotPoint.y
-                
-                
-                if copyProps {
-                    // Copy parent properties
-                    for p in active.properties {
-                        newEl.properties.append(p.clone())
-                    }
-                }
-                
-                self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
-                self.setActiveItem(newEl)
-                scheduleRedraw()
-            }
+        guard let active = self.activeItems.first else {
+            self.addTopItem()
+            return
         }
-        else {
-           self.addTopItem()
+        if active.kind == .Item {
+            // Create and add to activeEl
+            let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
+            self.createIndex += 1
+            
+            
+            newEl.x = pivotPoint.x
+            newEl.y = pivotPoint.y
+            
+            
+            if copyProps {
+                // Copy parent properties
+                for p in active.properties {
+                    newEl.properties.append(p.clone())
+                }
+            }
+            
+            self.store?.add(self.element!, source: active, target: newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            self.setActiveItem(newEl)
+            scheduleRedraw()
         }
     }
     
@@ -494,6 +496,15 @@ class SceneDrawView: NSView, IElementModelListener {
 //            }
 //        }
 //        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
+    }
+    
+    public func getActiveItemBounds() -> CGRect? {
+        if let active = self.activeItems.first, let drawable = scene?.drawables[active] {
+            let drBounds = drawable.getBounds()
+            let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+            return CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
+        }
+        return nil
     }
     
     private func showPopover(bounds: CGRect) {
@@ -587,44 +598,44 @@ class SceneDrawView: NSView, IElementModelListener {
         self.dragMap.removeAll()
         self.dragElements.removeAll()
         
-        if let drawable = findElement(x: self.x, y: self.y) {
-            
-            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
-                // This is selection operation
-                if let itm = drawable.item {
-                    if self.activeItems.contains(itm) {
-                        self.activeItems.remove(at: self.activeItems.firstIndex(of: itm)!)
-                    }
-                    else {
-                        self.activeItems.append(itm)
-                    }
-                }
-                setActiveItems(self.activeItems)
-                return
-            }
-            else {
-                if let di = drawable.item, !self.activeItems.contains(di) {
-                    self.setActiveItem(di)
-                    scene?.updateActiveElements(self.activeItems)
-                }
-            }
-            
-            self.dragElements.append(contentsOf: self.activeItems)
-                        
-            if event.modifierFlags.contains(NSEvent.ModifierFlags.control) && self.dragElements.count == 1 {
-                self.mode = .LineDrawing
-                self.lineToPoint = CGPoint(x: self.x, y: self.y )
-            }
-            else {
-                self.mode = .Dragging
-                for de in self.dragElements  {
-                    self.dragMap[de] = CGPoint(x: de.x, y: de.y)
-                }
-            }
-        }
-        else {
+        guard let drawable = findElement(x: self.x, y: self.y) else {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
+            return
+        }
+            
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
+            // This is selection operation
+            guard let itm = drawable.item else {
+                return
+            }
+            if self.activeItems.contains(itm) {
+                self.activeItems.remove(at: self.activeItems.firstIndex(of: itm)!)
+            }
+            else {
+                self.activeItems.append(itm)
+            }
+            setActiveItems(self.activeItems)
+            return
+        }
+        else {
+            if let di = drawable.item, !self.activeItems.contains(di) {
+                self.setActiveItem(di)
+                scene?.updateActiveElements(self.activeItems)
+            }
+        }
+        
+        self.dragElements.append(contentsOf: self.activeItems)
+        
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.control) && self.dragElements.count == 1 {
+            self.mode = .LineDrawing
+            self.lineToPoint = CGPoint(x: self.x, y: self.y )
+        }
+        else {
+            self.mode = .Dragging
+            for de in self.dragElements  {
+                self.dragMap[de] = CGPoint(x: de.x, y: de.y)
+            }
         }
     }
     

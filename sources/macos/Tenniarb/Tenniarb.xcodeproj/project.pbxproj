@@ -39,6 +39,7 @@
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
 		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
+		0CF8902B2133BDD400F1A6EE /* StyleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,7 @@
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
 		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
+		0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleViewController.swift; path = views/StyleViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,6 +214,7 @@
 				0C3A36BD2085B41100CC646C /* SearchBoxController.swift */,
 				0C3E178620FD053A00AB9D3D /* ExportViewController.swift */,
 				0C67960F210E215E00AEED63 /* SyncViewController.swift */,
+				0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -431,6 +434,7 @@
 				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
 				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
+				0CF8902B2133BDD400F1A6EE /* StyleViewController.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
