@@ -886,7 +886,7 @@ public class TextBox: Drawable {
     var size: CGSize = CGSize(width: 0, height:0)
     var point: CGPoint = CGPoint(x:0, y:0)
     var textColor: NSColor
-    var textFontAttributes: [NSAttributedStringKey:Any]
+    var textFontAttributes: [NSAttributedString.Key:Any]
     let text:String
     var font: NSFont
     var textStyle: NSMutableParagraphStyle
@@ -901,9 +901,9 @@ public class TextBox: Drawable {
         textStyle.alignment = NSTextAlignment.center
         
         self.textFontAttributes = [
-            NSAttributedStringKey.foregroundColor: self.textColor,
-            NSAttributedStringKey.paragraphStyle: self.textStyle,
-            NSAttributedStringKey.font: self.font
+            NSAttributedString.Key.foregroundColor: self.textColor,
+            NSAttributedString.Key.paragraphStyle: self.textStyle,
+            NSAttributedString.Key.font: self.font
         ]
         let attrString = NSAttributedString(string: text, attributes: textFontAttributes)
         

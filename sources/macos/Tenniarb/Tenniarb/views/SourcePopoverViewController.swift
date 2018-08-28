@@ -34,7 +34,7 @@ class SourcePopoverViewController: NSViewController {
         updateContent()
     }
     @IBAction func applyClose(_ sender: NSButton) {
-        dismissViewController(self)
+        dismiss(self)
     }
     
     public func setElement(element: Element) {

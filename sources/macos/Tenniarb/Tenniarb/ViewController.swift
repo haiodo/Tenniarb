@@ -98,7 +98,7 @@ class ViewController: NSViewController, IElementModelListener {
     fileprivate func hideSearchBox() {
         if let sb = searchBox {
             if sb.view.window != nil {
-                dismissViewController(sb)
+                dismiss(sb)
             }
         }
     }
@@ -107,7 +107,7 @@ class ViewController: NSViewController, IElementModelListener {
         if let active = self.selectedElement {
             hideSearchBox()
             
-            self.searchBox = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SearchBox")) as? SearchBoxViewController
+            self.searchBox = self.storyboard?.instantiateController(withIdentifier: "SearchBox") as? SearchBoxViewController
             
             if let sb = searchBox {
                 sb.setElement(active)
@@ -117,17 +117,33 @@ class ViewController: NSViewController, IElementModelListener {
                 sb.closeAction = {() in self.hideSearchBox()}
                 sb.setActive = {(item) in self.scene.setActiveItem(item)}
                 
-                self.presentViewController(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+                self.present(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
             }
         }
     }
     
     @IBAction func selectAllItems(_ sender: NSMenuItem) {
-        self.scene.selectAllItems()
+        guard let responder = self.view.window?.firstResponder else {
+            return
+        }
+        if responder  == self.scene {
+            self.scene.selectAllItems()
+        }
+        else if responder == self.textView {
+            self.textView.selectAll(sender)
+        }
     }
     
     @IBAction func selectNoneItems(_ sender: NSMenuItem) {
-        self.scene.selectNoneItems()
+        guard let responder = self.view.window?.firstResponder else {
+            return
+        }
+        if responder == self.scene {
+            self.scene.selectNoneItems()
+        }
+        else if responder == self.textView {
+            self.textView.setSelectedRange(NSRange(location: 0, length: 0))
+        }
     }
     
     @IBAction func addLinkedItem(_ sender: NSMenuItem ) {
@@ -156,7 +172,7 @@ class ViewController: NSViewController, IElementModelListener {
         guard let activeBounds = scene.getActiveItemBounds() else {
             return
         }
-        let ctrl = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "StyleViewPopup"))
+        let ctrl = self.storyboard?.instantiateController(withIdentifier: "StyleViewPopup")
         let popupController = ctrl  as! StyleViewController
         
         popupController.setElement(element: element)
@@ -170,7 +186,7 @@ class ViewController: NSViewController, IElementModelListener {
         popover.behavior = .transient
         popover.animates = false
         
-        self.presentViewController(popupController, asPopoverRelativeTo: activeBounds, of: self.scene, preferredEdge: .maxX, behavior: .transient)
+        self.present(popupController, asPopoverRelativeTo: activeBounds, of: self.scene, preferredEdge: .maxX, behavior: .transient)
     }
     
     @IBAction func duplicateItem( _ sender: NSMenuItem ) {
@@ -224,7 +240,7 @@ class ViewController: NSViewController, IElementModelListener {
     }
     
     private func showElementSource() {
-        let popupController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "SourcePopup")) as! SourcePopoverViewController
+        let popupController = self.storyboard?.instantiateController(withIdentifier: "SourcePopup") as! SourcePopoverViewController
         
         let popover = NSPopover()
         popover.contentViewController = popupController
@@ -238,7 +254,7 @@ class ViewController: NSViewController, IElementModelListener {
             popupController.setElement(element: active)
         }
         
-        self.presentViewController(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .maxY, behavior: .transient)
+        self.present(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .maxY, behavior: .transient)
         
     }
     private func handleAddElement() {
@@ -301,13 +317,13 @@ class ViewController: NSViewController, IElementModelListener {
         }
     }
     
-    override func presentViewController(_ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge, behavior: NSPopover.Behavior) {
+    override func present(_ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge, behavior: NSPopover.Behavior) {
         
         if let vc = viewController as? SourcePopoverViewController {
             if let active = self.selectedElement {
                 vc.setElement(element: active)
                 
-                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
                 return
             }
         }
@@ -318,7 +334,7 @@ class ViewController: NSViewController, IElementModelListener {
                 vc.setScene(scene: self.scene.scene)
                 vc.setViewController(self)
                 
-                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
                 return
             }
         }
@@ -327,12 +343,12 @@ class ViewController: NSViewController, IElementModelListener {
                 vc.setElement(element: active)
                 vc.setViewController(self)
                 
-                super.presentViewController(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
                 return
             }
         }
         
-        super.presentViewController(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+        super.present(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
     }
     
     func onElementSelected(_ element: Element?) {

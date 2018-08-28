@@ -237,6 +237,26 @@ CQ
                                                 <action selector="showSearchBox:" target="Ady-hI-5gd" id="oPj-cO-OEO"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Move diagram up" keyEquivalent="" id="hor-P9-HeZ">
+                                            <connections>
+                                                <action selector="moveUp:" target="Ady-hI-5gd" id="iQ2-mu-V8C"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Move diagram down" keyEquivalent="" id="GY6-vS-Svq">
+                                            <connections>
+                                                <action selector="moveDown:" target="Ady-hI-5gd" id="63Y-Jp-Ieq"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Move diagram left" keyEquivalent="" id="H6r-hy-nn7">
+                                            <connections>
+                                                <action selector="moveLeft:" target="Ady-hI-5gd" id="4ZT-z9-mdQ"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Move diagram right" keyEquivalent="" id="UGk-NY-K6B">
+                                            <connections>
+                                                <action selector="moveRight:" target="Ady-hI-5gd" id="WGx-hQ-PEL"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -641,7 +661,7 @@ CQ
                 </viewController>
                 <customObject id="2Tp-Fl-jBw" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" id="ia2-ar-MRu">
-                    <rect key="frame" x="0.0" y="0.0" width="89" height="24"/>
+                    <rect key="frame" x="0.5" y="0.0" width="89" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="ORS-vC-Cvy">
                         <font key="font" metaFont="system"/>
@@ -979,7 +999,7 @@ CQ
                         <rect key="frame" x="0.0" y="0.0" width="893" height="180"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="AOd-6Q-mGF">
+                            <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" material="underWindowBackground" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="AOd-6Q-mGF">
                                 <rect key="frame" x="0.0" y="0.0" width="893" height="180"/>
                                 <subviews>
                                     <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wm4-fJ-RCS">

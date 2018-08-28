@@ -10,8 +10,8 @@ import Foundation
 
 extension Element {
     /// Convert items to list of properties
-    func toTennAsProps() -> TennNode {
-        let items = TennNode.newNode(kind: .Statements)
+    func toTennAsProps(_ kind: TennNodeKind = .Statements) -> TennNode {
+        let items = TennNode.newNode(kind: kind)
         items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
         
         buildElementData(self, items)
@@ -40,8 +40,8 @@ extension Element {
 
 extension DiagramItem {
     /// Convert items to list of properties
-    func toTennAsProps() -> TennNode {
-        let items = TennNode.newNode(kind: .Statements)
+    func toTennAsProps(_ kind: TennNodeKind = .Statements ) -> TennNode {
+        let items = TennNode.newNode(kind: kind)
         
         if self.kind == .Item {
             if !self.name.isEmpty {

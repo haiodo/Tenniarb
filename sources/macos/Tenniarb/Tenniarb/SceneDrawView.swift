@@ -192,6 +192,12 @@ class SceneDrawView: NSView, IElementModelListener {
     }
     
     func onLoad() {
+//        let sc1 = NSScroller()
+//        sc1.frame = NSRect(x:0, y:0, width: 5, height: 200)
+//        sc1.controlSize = .regular
+//        sc1.arrowsPosition = .scrollerArrowsMinEnd
+//        sc1.scrollerStyle = .overlay
+//        self.addSubview(sc1)
     }
     
     func notifyChanges(_ evt: ModelEvent) {
@@ -470,9 +476,42 @@ class SceneDrawView: NSView, IElementModelListener {
         }
     }
     
+    @IBAction override public func moveUp(_ sender: Any?) {
+        ox += 0
+        oy -= 200
+        scheduleRedraw()
+    }
+    @IBAction override public func moveDown(_ sender: Any?) {
+        ox += 0
+        oy -= -200
+        scheduleRedraw()
+    }
+    
+    @IBAction override public func moveLeft(_ sender: Any?) {
+        ox += 200
+        oy -= 0
+        scheduleRedraw()
+    }
+    
+    @IBAction override public func moveRight(_ sender: Any?) {
+        ox += -200
+        oy -= 0
+        scheduleRedraw()
+    }
+
+    @IBAction func selectAllItems(_ sender: NSMenuItem) {
+        selectAllItems()
+    }
+    
+    @IBAction func selectNoneItems(_ sender: NSMenuItem) {
+        selectNoneItems()
+    }
     
     
     override func keyDown(with event: NSEvent) {
+        if let chars = event.characters {
+            Swift.debugPrint(chars.unicodeScalars)
+        }
         if event.characters == "\t" {
             addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
         }

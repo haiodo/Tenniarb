@@ -15,26 +15,26 @@ class TennTextView: NSTextView {
     override func insertNewline(_ sender: Any?) {
         let loc = self.selectedRange().location
         let parser = TennParser()
-        var insertPart = "\n"
+        let insertPart = "\n"
         
-        let node = parser.parse(self.textStorage!.string)
-        if !parser.errors.hasErrors() {
+//        let node = parser.parse(self.textStorage!.string)
+//        if !parser.errors.hasErrors() {
             // No errors found
             
 //            self.textStorage.string
 //            node.find(loc)
-        }
+//        }
         
         let str = NSAttributedString(
             string:insertPart,
-            attributes:[NSAttributedStringKey.font:NSFont.systemFont(ofSize: defaultFontSize)]
+            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)]
         )
         self.textStorage?.insert(str, at: loc)
     }
     override func insertTab(_ sender: Any?) {
         let str = NSAttributedString(
             string:"    ",
-            attributes:[NSAttributedStringKey.font:NSFont.systemFont(ofSize: defaultFontSize)])
+            attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)])
         self.textStorage?.insert(str, at: self.selectedRange().location)
     }
 }
@@ -82,10 +82,10 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         //get the range of the entire run of text
         let area = NSMakeRange(0, view.textStorage!.length)
         //remove existing coloring
-        view.textStorage?.removeAttribute(NSAttributedStringKey.foregroundColor, range: area)
+        view.textStorage?.removeAttribute(NSAttributedString.Key.foregroundColor, range: area)
         
         //add new coloring
-        view.textStorage?.addAttribute(NSAttributedStringKey.foregroundColor, value: NSColor.textColor, range: area)
+        view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
         
         let lexer = TennLexer((view.textStorage?.string)!)
         
@@ -93,15 +93,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         while tok != nil {
             switch tok!.type {
             case .symbol:
-                view.textStorage?.addAttribute(NSAttributedStringKey.foregroundColor, value:
+                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     NSColor(red: 41/255.0, green: 66/255.0, blue: 119/255.0, alpha: 1),
                                                range: NSMakeRange(tok!.pos, tok!.size))
             case .stringLit, .charLit:
-                view.textStorage?.addAttribute(NSAttributedStringKey.foregroundColor, value:
+                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     NSColor(red: 195/255.0, green: 116/255.0, blue: 28/255.0, alpha: 1),
                                                range: NSMakeRange(tok!.pos, tok!.size))
             case .floatLit, .intLit:
-                view.textStorage?.addAttribute(NSAttributedStringKey.foregroundColor, value:
+                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     NSColor(red: 41/255.0, green: 66/255.0, blue: 119/255.0, alpha: 1),
                                                range: NSMakeRange(tok!.pos, tok!.size))
             default:

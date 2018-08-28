@@ -72,7 +72,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
         return false
     }
         
-    override func controlTextDidChange(_ notification: Notification) {
+    func controlTextDidChange(_ notification: Notification) {
         changes += 1
         sheduleUpdate()
     }

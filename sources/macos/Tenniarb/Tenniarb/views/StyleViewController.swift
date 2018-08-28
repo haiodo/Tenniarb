@@ -124,7 +124,7 @@ public class StyleViewController: NSViewController {
         var ops: [ElementOperation] = []
         
         for itm in self.items {
-            let newItemProps = itm.toTennAsProps()
+            let newItemProps = itm.toTennAsProps(.BlockExpr)
             
             var changed = 0
             if let named = node.named {
@@ -219,6 +219,6 @@ class StyleViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineV
                 self.controller.doApply(nde)
             }
         }
-        self.controller.dismissViewController(self.controller)
+        self.controller.dismiss(self.controller)
     }
 }

@@ -117,10 +117,10 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                 
                 if let imageField = view.viewWithTag(0) as? NSImageView {
                     if el.itemCount > 0 {
-                        imageField.image = NSImage.init(named: NSImage.Name.init("small_logo_white"))
+                        imageField.image = NSImage.init(named: "small_logo_white")
                     }
                     else {
-                        imageField.image = NSImage.init(named: NSImage.Name.init("element_logo_white"))
+                        imageField.image = NSImage.init(named: "element_logo_white")
                     }
                 }
                 return view

@@ -135,7 +135,7 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                 }
                 
                 if let imageField = view.viewWithTag(0) as? NSImageView {
-                    imageField.image = NSImage.init(named: NSImage.Name.init(el.imgName))
+                    imageField.image = NSImage.init(named: el.imgName)
                 }
                 return view
             }
@@ -403,7 +403,7 @@ class ExportViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutline
                 exportTenn()
             }
         }
-        self.controller.dismissViewController(self.controller)
+        self.controller.dismiss(self.controller)
     }
 
 }

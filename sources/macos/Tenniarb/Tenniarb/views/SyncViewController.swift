@@ -177,6 +177,6 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
                 self.controller.doSync(nde)
             }
         }
-        self.controller.dismissViewController(self.controller)
+        self.controller.dismiss(self.controller)
     }
 }
