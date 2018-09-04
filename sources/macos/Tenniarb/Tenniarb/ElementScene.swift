@@ -482,7 +482,7 @@ open class DrawableScene: DrawableContainer {
         self.lineToDrawable = nil
     }
     
-    func updateActiveElements( _ actives: [DiagramItem]) {
+    func updateActiveElements( _ actives: [DiagramItem], _ positions: [DiagramItem: CGPoint] = [:]) {
         activeDrawables.removeAll()
         self.activeElements = actives
         if actives.count > 0 {
@@ -494,7 +494,10 @@ open class DrawableScene: DrawableContainer {
                         )
                     }
                     else {
-                        let deBounds = de.getBounds()
+                        var deBounds = de.getBounds()
+                        if let newPos = positions[ae] {
+                            deBounds.origin = newPos
+                        }
                         self.activeDrawables.append(
                             SelectorBox(
                                 pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
@@ -508,8 +511,13 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func updateLayout(_ item: DiagramItem, _ pos: CGPoint) -> CGRect {
-        updateActiveElements(self.activeElements)
+    func updateLayout(_ newPositions: [DiagramItem: CGPoint]) -> CGRect {
+        if newPositions.count == 0 {
+            return getBounds()
+        }
+        updateActiveElements(self.activeElements, newPositions)
+        
+        var pos = newPositions.first!.value
         
         var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
         
@@ -517,34 +525,38 @@ open class DrawableScene: DrawableContainer {
             result = result.union(ad.getBounds())
         }
         
-        if let box = drawables[item] as? RoundBox {
-            result = result.union(box.getBounds())
-            box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
-        }
-        if let box = drawables[item] as? EmptyBox {
-            result = result.union(box.getBounds())
-            box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
-        }
-        if let box = drawables[item] as? DrawableLine {
-            result = result.union(box.getBounds())
-            box.control = pos
-            box.updateLayout(source: box.sourceRect, target: box.targetRect)
-        }
-        // Update links
-        if let links = itemToLink[item] {
-            for l in links {
-                if let data = l as? LinkItem {
-                    if let lnkDr = drawables[l] as? DrawableLine {
-                        result = result.union(lnkDr.getBounds())
-                        
-                        if let src = data.source, let dst = data.target {
-                            let sourceRect = drawables[src]?.getBounds()
-                            let targetRect = drawables[dst]?.getBounds()
-                            
-                            if let sr = sourceRect, let tr = targetRect {
-                                lnkDr.updateLayout(source: sr, target: tr)
-                            }
+        for (item, pos)  in newPositions {
+            result = result.union(CGRect(origin: pos, size: CGSize(width:1, height:1)))
+            
+            if let box = drawables[item] as? RoundBox {
+                result = result.union(box.getBounds())
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+            }
+            if let box = drawables[item] as? EmptyBox {
+                result = result.union(box.getBounds())
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+            }
+            if let box = drawables[item] as? DrawableLine {
+                result = result.union(box.getBounds())
+                box.control = pos
+                box.updateLayout(source: box.sourceRect, target: box.targetRect)
+            }
+            // Update links
+            if let links = itemToLink[item] {
+                for l in links {
+                    if let data = l as? LinkItem {
+                        if let lnkDr = drawables[l] as? DrawableLine {
                             result = result.union(lnkDr.getBounds())
+                            
+                            if let src = data.source, let dst = data.target {
+                                let sourceRect = drawables[src]?.getBounds()
+                                let targetRect = drawables[dst]?.getBounds()
+                                
+                                if let sr = sourceRect, let tr = targetRect {
+                                    lnkDr.updateLayout(source: sr, target: tr)
+                                }
+                                result = result.union(lnkDr.getBounds())
+                            }
                         }
                     }
                 }

@@ -500,11 +500,15 @@ class SceneDrawView: NSView, IElementModelListener {
     }
 
     @IBAction func selectAllItems(_ sender: NSMenuItem) {
-        selectAllItems()
+        if self.mode == .Normal {
+            selectAllItems()
+        }
     }
     
     @IBAction func selectNoneItems(_ sender: NSMenuItem) {
-        selectNoneItems()
+        if self.mode == .Normal {
+            selectNoneItems()
+        }
     }
     
     
@@ -596,6 +600,7 @@ class SceneDrawView: NSView, IElementModelListener {
             scene?.removeLineTo()
             self.lineToPoint = nil
             self.lineTarget = nil
+            scheduleRedraw()
         }
         else {
             var ops: [ElementOperation] = []
@@ -693,6 +698,9 @@ class SceneDrawView: NSView, IElementModelListener {
         
         if self.dragElements.count > 0 {
             if let em = self.element {
+                
+                var newPositions: [DiagramItem: CGPoint] = [:]
+                
                 for de in dragElements {
                     if self.mode == .LineDrawing {
                         self.lineToPoint = CGPoint(x: self.x, y: self.y )
@@ -704,14 +712,16 @@ class SceneDrawView: NSView, IElementModelListener {
                         if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1) {
                             let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
                             self.dragMap[de] = newPos
-                    
-                            self.store?.modified(ModelEvent(kind: .Layout, element: em))
-                            let dirtyRegion = self.scene!.updateLayout(de, newPos)
-                            
-                            let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
-                            scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
+                            newPositions[de] = newPos
                         }
                     }
+                }
+                if newPositions.count > 0 {
+                    self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
+                    let dirtyRegion = self.scene!.updateLayout(newPositions)
+                    
+                    let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
+                    scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
                 }
             }
         }
@@ -790,5 +800,53 @@ class SceneDrawView: NSView, IElementModelListener {
     public func selectNoneItems() {
         self.setActiveItems([])
         scheduleRedraw()
+    }
+    
+    @objc public func removeItmAction(_ sender: NSMenuItem) {
+        removeItem()
+    }
+    
+    @objc public func addTopItm(_ sender: NSMenuItem) {
+        addTopItem()
+    }
+    
+    override func menu(for event: NSEvent) -> NSMenu? {
+        if event.buttonNumber != 1 {
+            return nil
+        }
+        self.updateMousePosition(event)
+        
+        self.dragMap.removeAll()
+        self.dragElements.removeAll()
+        
+        if let drawable = findElement(x: self.x, y:  self.y), let itm = drawable.item {
+            if !self.activeItems.contains(itm) {
+                self.setActiveItem(itm)
+            }
+        }
+        else {
+            self.setActiveItem(nil)
+        }
+        
+        if self.activeItems.count > 0 {
+            let menu = NSMenu()
+            
+            let deleteAction = NSMenuItem(title: "Delete", action: #selector(removeItmAction), keyEquivalent: "")
+            
+            menu.addItem(deleteAction)
+            return menu
+        }
+        else {
+            
+            self.pivotPoint = CGPoint(x: self.x, y: self.y)
+            // No items selected.
+            let menu = NSMenu()
+            
+            let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
+            
+            menu.addItem(addAction)
+            return menu
+        }
+        return nil
     }
 }

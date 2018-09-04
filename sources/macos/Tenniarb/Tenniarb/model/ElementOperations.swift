@@ -24,6 +24,10 @@ public class ModelEvent {
         self.kind = kind
         self.element = element
     }
+    init(kind: ModelEventKind, element: Element, items: [DiagramItem]) {
+        self.kind = kind
+        self.element = element
+    }
     
     func addItem( _ items: [DiagramItem] ) {
         self.items.append(contentsOf: items)

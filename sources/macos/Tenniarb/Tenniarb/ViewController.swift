@@ -159,7 +159,22 @@ class ViewController: NSViewController, IElementModelListener {
     }
     
     @IBAction func applyDefaultStyle(_ sender: NSMenuItem ) {
+        guard let element = self.selectedElement else {
+            return
+        }
+        if self.activeItems.count == 0 {
+            return
+        }
+        guard let activeBounds = scene.getActiveItemBounds() else {
+            return
+        }
         
+        let menu = NSMenu()
+        
+        let deleteAction = NSMenuItem(title: "Add item1", action: #selector(addFreeItem(_:)), keyEquivalent: "")
+        
+        menu.addItem(deleteAction)
+        menu.popUp(positioning: menu.item(at: 0), at: activeBounds.origin, in: self.scene)
     }
     
     @IBAction func applyStyle( _ sender: NSMenuItem ) {
