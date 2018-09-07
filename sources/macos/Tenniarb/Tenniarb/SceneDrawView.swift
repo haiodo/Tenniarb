@@ -278,15 +278,15 @@ class SceneDrawView: NSView, IElementModelListener {
         self.scene = scene
     }
     
-    public func setActiveItem( _ element: DiagramItem? ) {
+    public func setActiveItem( _ element: DiagramItem?, immideateDraw: Bool = false ) {
         var els: [DiagramItem] = []
         if let act = element {
             els.append(act)
         }
         
-        self.setActiveItems(els)
+        self.setActiveItems(els, immideateDraw: immideateDraw)
     }
-    public func setActiveItems( _ items: [DiagramItem] ) {
+    public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false ) {
         if items.count == 0 && self.activeItems.count == 0 {
             return
         }
@@ -310,7 +310,12 @@ class SceneDrawView: NSView, IElementModelListener {
             self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
         }
         
-        scheduleRedraw()
+        if immideateDraw {
+            needsDisplay = true
+        }
+        else {
+            scheduleRedraw()
+        }
     }
     
     fileprivate func commitTitleEditing(_ textView: NSTextView?) {
@@ -821,11 +826,11 @@ class SceneDrawView: NSView, IElementModelListener {
         
         if let drawable = findElement(x: self.x, y:  self.y), let itm = drawable.item {
             if !self.activeItems.contains(itm) {
-                self.setActiveItem(itm)
+                self.setActiveItem(itm, immideateDraw: true)
             }
         }
         else {
-            self.setActiveItem(nil)
+            self.setActiveItem(nil, immideateDraw: true)
         }
         
         if self.activeItems.count > 0 {
