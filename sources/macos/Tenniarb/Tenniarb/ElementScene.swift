@@ -175,6 +175,8 @@ open class DrawableContainer: ItemDrawable {
 
 class DrawableStyle {
     var color: CGColor?
+    var textColor: CGColor = CGColor.black
+    
     var borderColor: CGColor?
     var fontSize:CGFloat = 18.0
     var width:CGFloat?
@@ -211,6 +213,7 @@ class DrawableStyle {
     func copy() -> DrawableStyle {
         let result: DrawableStyle = newCopy()
         result.color = self.color
+        result.textColor = self.textColor
         result.borderColor = self.borderColor
         result.fontSize = self.fontSize
         result.width = self.width
@@ -224,6 +227,7 @@ class DrawableStyle {
         // Reset to default values
         self.color = nil
         self.borderColor = nil
+        self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
         self.fontSize = 18
         self.width = nil
         self.height = nil
@@ -267,6 +271,10 @@ class DrawableStyle {
             if let color = child.getIdent(1) {
                 self.color = self.parseColor(color.lowercased(), alpha: 0.7)
             }
+        case PersistenceStyleKind.TextColor.name:
+            if let color = child.getIdent(1) {
+                self.textColor = self.parseColor(color.lowercased(), alpha: 1)
+            }
         case PersistenceStyleKind.FontSize.name:
             if let value = child.getFloat(1) {
                 self.fontSize = CGFloat(value)
@@ -303,7 +311,10 @@ class DrawableStyle {
     }
     
     func parseStyle( _ properties: ModelProperties ) {
-        for child in properties.node.children ?? [] {
+        parseStyle( properties.node )
+    }
+    func parseStyle( _ node: TennNode ) {
+        for child in node.children ?? [] {
             if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
                 self.parseStyleLine(cmdName, child)
             }
@@ -599,7 +610,7 @@ open class DrawableScene: DrawableContainer {
         
     }
     
-    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) {
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) -> RoundBox {
         let rectBox = RoundBox( bounds: bounds,
                                 fillColor: bgColor,
                                 borderColor: borderColor, fill: fill)
@@ -613,14 +624,16 @@ open class DrawableScene: DrawableContainer {
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
+        return rectBox
     }
-    fileprivate func buildEmptyRect(_ bounds: CGRect, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
+    fileprivate func buildEmptyRect(_ bounds: CGRect, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) -> EmptyBox {
         let rectBox = EmptyBox( bounds: bounds )
         rectBox.append(textBox)
         rectBox.item = e
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
+        return rectBox
     }
     
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
@@ -632,14 +645,37 @@ open class DrawableScene: DrawableContainer {
         let bgColor = style.color ?? CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
         let borderColor = style.borderColor ?? CGColor.black
         
+        var bodyTextBox: TextBox? = nil
+        
+        if let bodyNode = e.properties.get( "body") {
+            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            if let bodyBlock = bodyNode.getChild(1) {
+                let bodyStyle = self.sceneStyle.defaultItemStyle.copy()
+                bodyStyle.fontSize -= 2 // Make a bit smaller for body
+                bodyStyle.parseStyle(bodyBlock)
+                if let bodyText = bodyBlock.getNamedElement("text"), let textValue = bodyText.getIdent(1) {
+                    // We have style and text value now.
+                    bodyTextBox = TextBox(
+                        text: textValue.replacingOccurrences(of: "\\n", with: "\n"),
+                        textColor: bodyStyle.textColor,
+                        fontSize: bodyStyle.fontSize,
+                        layout: [.Left, .Bottom]
+                    )
+                }
+            }
+        }
+        
         let textBox = TextBox(
             text: (name.count > 0 ? name :  " ").replacingOccurrences(of: "\\n", with: "\n"),
-            textColor: CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0),
-            fontSize: style.fontSize)
+            textColor: style.textColor,
+            fontSize: style.fontSize,
+            layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Center, .Top])
+
         
         let textBounds = textBox.getBounds()
+        let bodyBounds = bodyTextBox?.getBounds()
         
-        var width = max(20, textBounds.width)
+        var width = max(20, textBounds.width, bodyBounds != nil ? bodyBounds!.width : 0)
         if let styleWidth = style.width, styleWidth != -1 {
             width = styleWidth //max(width, styleWidth)
         }
@@ -648,23 +684,29 @@ open class DrawableScene: DrawableContainer {
         if let styleHeight = style.height, styleHeight != -1 {
             height = styleHeight//max(height, styleHeight)
         }
+        if bodyBounds != nil {
+            height += bodyBounds!.height + 5 // TODO: Put spacing into some configurable area
+        }
         
         let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
-        
+        var box: DrawableContainer? = nil
         if let display = style.display {
             switch display {
             case "text":
                 buildEmptyRect(bounds,  e, textBox, elementDrawable)
             case "no-fill":
-                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
+                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
             case "stack":
-                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, stack: 3)
+                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, stack: 3)
             default:
-                buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
             }
         }
         else {
-            buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+            box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+        }
+        if let parentBox = box, let bbox = bodyTextBox {
+            parentBox.append(bbox)
         }
     }
     
@@ -893,7 +935,14 @@ func arrow(from start: CGPoint, to end: CGPoint, tailWidth: CGFloat, headWidth: 
     return path
 }
 
-
+public enum TextPosition {
+    case Left
+    case Right
+    case Center  // Horizomtal
+    case Top
+    case Bottom
+    case Middle // Vertical
+}
 public class TextBox: Drawable {
     var size: CGSize = CGSize(width: 0, height:0)
     var point: CGPoint = CGPoint(x:0, y:0)
@@ -902,11 +951,13 @@ public class TextBox: Drawable {
     let text:String
     var font: NSFont
     var textStyle: NSMutableParagraphStyle
+    var layout: Set<TextPosition>
     
-    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24) {
+    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>) {
         self.font = NSFont.systemFont(ofSize: fontSize)
         self.text = text
-        
+        self.layout = layout
+
         self.textColor = NSColor(cgColor: textColor)!
         
         self.textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
@@ -942,7 +993,23 @@ public class TextBox: Drawable {
     
     public func layout(_ bounds: CGRect, _ dirty: CGRect) {
         // Put in centre of bounds
-        self.point = CGPoint(x: (bounds.width-size.width)/2 , y: (bounds.height-size.height)/2)
+        var px = self.layout.contains(.Center) ? (bounds.width-size.width)/2 : 0
+        var py = self.layout.contains(.Middle) ? (bounds.height-size.height)/2 : 0
+        
+        if self.layout.contains(.Left) {
+            px = 0;
+        }
+        if self.layout.contains(.Right) {
+            px = bounds.width-size.width;
+        }
+        if self.layout.contains(.Bottom) {
+            py = 0;
+        }
+        if self.layout.contains(.Top) {
+            py = bounds.height-size.height;
+        }
+        
+        self.point = CGPoint(x: px , y: py)
     }
     
     public func getBounds() -> CGRect {
@@ -986,7 +1053,7 @@ public class DrawableLine: ItemDrawable {
     func addLabel(_ label: String) {
         self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
                              textColor: self.style.color ?? CGColor(red: 0, green: 0, blue: 0, alpha: 1),
-                             fontSize: self.style.fontSize)
+                             fontSize: self.style.fontSize, layout: [.Middle, .Center])
     }
     
     func find( _ point: CGPoint)-> Bool {

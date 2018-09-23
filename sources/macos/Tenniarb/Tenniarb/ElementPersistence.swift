@@ -42,6 +42,7 @@ public enum PersistenceItemKind {
 
 public enum PersistenceStyleKind {
     case Color // A reference to element
+    case TextColor
     case FontSize
     case Display
     case Layout
@@ -62,6 +63,7 @@ public enum PersistenceStyleKind {
         case .Height: return "height";
         case .BorderColor: return "borderColor";
         case .ZoomLevel: return "zoom";
+        case .TextColor: return "text-color";
         }
     }
 }

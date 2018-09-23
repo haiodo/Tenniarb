@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.13.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.13.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -235,26 +235,6 @@ CQ
                                         <menuItem title="Goto Item" keyEquivalent="r" id="gfW-8q-tco">
                                             <connections>
                                                 <action selector="showSearchBox:" target="Ady-hI-5gd" id="oPj-cO-OEO"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Move diagram up" keyEquivalent="" id="hor-P9-HeZ">
-                                            <connections>
-                                                <action selector="moveUp:" target="Ady-hI-5gd" id="iQ2-mu-V8C"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Move diagram down" keyEquivalent="" id="GY6-vS-Svq">
-                                            <connections>
-                                                <action selector="moveDown:" target="Ady-hI-5gd" id="63Y-Jp-Ieq"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Move diagram left" keyEquivalent="" id="H6r-hy-nn7">
-                                            <connections>
-                                                <action selector="moveLeft:" target="Ady-hI-5gd" id="4ZT-z9-mdQ"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Move diagram right" keyEquivalent="" id="UGk-NY-K6B">
-                                            <connections>
-                                                <action selector="moveRight:" target="Ady-hI-5gd" id="WGx-hQ-PEL"/>
                                             </connections>
                                         </menuItem>
                                     </items>
