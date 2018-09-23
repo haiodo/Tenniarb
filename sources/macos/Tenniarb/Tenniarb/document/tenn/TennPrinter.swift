@@ -30,6 +30,24 @@ extension TennNode {
     private func quote(_ val: String) -> String {
         return val.replacingOccurrences(of: "\"", with: "\\\"", options: .literal, range: nil)
     }
+    public func childsToStr(_ result: inout String, _ ind: Int, _ clean: Bool) {
+        if let children = self.children {
+            var i = 0
+            for c in children {
+                result.append(c.toStr(ind, clean))
+                if i != children.count - 1 {
+                    if self.kind == .BlockExpr || self.kind == .Statements {
+                        result.append("\n")
+                    }
+                    else {
+                        result.append(" ")
+                    }
+                }
+                i += 1
+            }
+        }
+    }
+    
     public func toStr( _ indent: Int = 0, _ clean: Bool = false) -> String {
         var result = ""
         
@@ -82,21 +100,7 @@ extension TennNode {
             }
             ind += 1
         }
-        if let children = self.children {
-            var i = 0
-            for c in children {
-                result.append(c.toStr(ind, clean))
-                if i != children.count - 1 {
-                    if self.kind == .BlockExpr || self.kind == .Statements {
-                        result.append("\n")
-                    }
-                    else {
-                        result.append(" ")
-                    }
-                }
-                i += 1
-            }
-        }
+        childsToStr(&result, ind, clean)
         if let p = postfix {
             result.append(p)
         }

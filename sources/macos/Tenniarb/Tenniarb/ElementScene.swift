@@ -636,6 +636,11 @@ open class DrawableScene: DrawableContainer {
         return rectBox
     }
     
+    fileprivate func prepareBodyText(_ textValue: String) -> String {
+        let content = textValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
+        return content.split(separator: "\n").map({body in body.trimmingCharacters(in: NSCharacterSet.whitespaces)}).joined(separator: "\n")
+    }
+    
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
         let name = e.name
         
@@ -647,29 +652,43 @@ open class DrawableScene: DrawableContainer {
         
         var bodyTextBox: TextBox? = nil
         
-        if let bodyNode = e.properties.get( "body") {
+        if let bodyNode = e.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            let bodyStyle = self.sceneStyle.defaultItemStyle.copy()
+            bodyStyle.fontSize -= 2 // Make a bit smaller for body
+            var textValue = ""
             if let bodyBlock = bodyNode.getChild(1) {
-                let bodyStyle = self.sceneStyle.defaultItemStyle.copy()
-                bodyStyle.fontSize -= 2 // Make a bit smaller for body
-                bodyStyle.parseStyle(bodyBlock)
-                if let bodyText = bodyBlock.getNamedElement("text"), let textValue = bodyText.getIdent(1) {
-                    // We have style and text value now.
-                    bodyTextBox = TextBox(
-                        text: textValue.replacingOccurrences(of: "\\n", with: "\n"),
-                        textColor: bodyStyle.textColor,
-                        fontSize: bodyStyle.fontSize,
-                        layout: [.Left, .Bottom]
-                    )
+                if bodyBlock.kind == .BlockExpr {
+                    bodyStyle.parseStyle(bodyBlock)
+                    
+                    if let bodyText = bodyBlock.getNamedElement("text") {
+                        if let txtValue = bodyText.getIdent(1) {
+                            textValue = txtValue
+                        }
+                        else if let block = bodyText.getChild(1), block.kind == .BlockExpr {
+                            block.childsToStr(&textValue, 0, true)
+                        }
+                    }
+                }
+                else if bodyBlock.kind == .Ident || bodyBlock.kind == .StringLit, let strVal = bodyBlock.getIdentText() {
+                    textValue = strVal
                 }
             }
+            bodyTextBox = TextBox(
+                text: prepareBodyText(textValue),
+                textColor: bodyStyle.textColor,
+                fontSize: bodyStyle.fontSize,
+                layout: [.Left, .Bottom],
+                padding: CGPoint(x:10, y:4)
+            )
         }
         
         let textBox = TextBox(
-            text: (name.count > 0 ? name :  " ").replacingOccurrences(of: "\\n", with: "\n"),
+            text: (name.count > 0 ? name :  " ").replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces),
             textColor: style.textColor,
             fontSize: style.fontSize,
-            layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Center, .Top])
+            layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
+            padding: CGPoint(x:10, y:8))
 
         
         let textBounds = textBox.getBounds()
@@ -685,7 +704,8 @@ open class DrawableScene: DrawableContainer {
             height = styleHeight//max(height, styleHeight)
         }
         if bodyBounds != nil {
-            height += bodyBounds!.height + 5 // TODO: Put spacing into some configurable area
+            Swift.debugPrint("Body height:", bodyBounds!.height)
+            height += bodyBounds!.height // TODO: Put spacing into some configurable area
         }
         
         let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
@@ -693,7 +713,7 @@ open class DrawableScene: DrawableContainer {
         if let display = style.display {
             switch display {
             case "text":
-                buildEmptyRect(bounds,  e, textBox, elementDrawable)
+                box = buildEmptyRect(bounds,  e, textBox, elementDrawable)
             case "no-fill":
                 box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
             case "stack":
@@ -952,11 +972,13 @@ public class TextBox: Drawable {
     var font: NSFont
     var textStyle: NSMutableParagraphStyle
     var layout: Set<TextPosition>
+    var padding: CGPoint
     
-    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>) {
+    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, padding: CGPoint = CGPoint(x: 10, y:8)) {
         self.font = NSFont.systemFont(ofSize: fontSize)
         self.text = text
         self.layout = layout
+        self.padding = padding
 
         self.textColor = NSColor(cgColor: textColor)!
         
@@ -973,7 +995,7 @@ public class TextBox: Drawable {
         let fs = CTFramesetterCreateWithAttributedString(attrString)
         let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
         
-        self.size = CGSize(width: frameSize.width + 10, height: frameSize.height + 8 )
+        self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
     }
     
     public func isVisible() -> Bool {
