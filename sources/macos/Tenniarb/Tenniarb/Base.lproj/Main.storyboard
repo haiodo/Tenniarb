@@ -139,7 +139,13 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Add" id="HgF-ub-Pgn">
                                                 <items>
-                                                    <menuItem title="Linked item" alternate="YES" id="VPK-8x-ajh">
+                                                    <menuItem title="New item" keyEquivalent="n" id="t9L-ug-UtE">
+                                                        <attributedString key="attributedTitle"/>
+                                                        <connections>
+                                                            <action selector="addFreeItem:" target="Ady-hI-5gd" id="Z2H-gp-xlC"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="New Linked item" alternate="YES" id="VPK-8x-ajh">
                                                         <attributedString key="attributedTitle"/>
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
@@ -154,13 +160,6 @@ CQ
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                                         <connections>
                                                             <action selector="addLinkedStyledItem:" target="Ady-hI-5gd" id="zpJ-7A-Yma"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Free item" id="t9L-ug-UtE">
-                                                        <attributedString key="attributedTitle"/>
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="addFreeItem:" target="Ady-hI-5gd" id="Z2H-gp-xlC"/>
                                                         </connections>
                                                     </menuItem>
                                                 </items>

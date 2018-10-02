@@ -403,6 +403,7 @@ class SceneDrawView: NSView, IElementModelListener {
         self.setActiveItem(newEl)
         scheduleRedraw()
     }
+    
     func addNewItem(copyProps:Bool = false) {
         guard let active = self.activeItems.first else {
             self.addTopItem()
@@ -431,7 +432,7 @@ class SceneDrawView: NSView, IElementModelListener {
         }
     }
     
-    func duplicateItem() {
+    @objc func duplicateItem() {
         var items: [DiagramItem] = []
         for active in self.activeItems {
             if active.kind == .Item {
@@ -702,38 +703,44 @@ class SceneDrawView: NSView, IElementModelListener {
         self.updateMousePosition(event)
         
         if self.dragElements.count > 0 {
-            if let em = self.element {
-                
-                var newPositions: [DiagramItem: CGPoint] = [:]
-                
-                for de in dragElements {
-                    if self.mode == .LineDrawing {
-                        self.lineToPoint = CGPoint(x: self.x, y: self.y )
-                        self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
-                        
-                        scheduleRedraw()
-                    }
-                    else {
-                        if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1) {
-                            let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
-                            self.dragMap[de] = newPos
-                            newPositions[de] = newPos
-                        }
-                    }
-                }
-                if newPositions.count > 0 {
-                    //self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
-                    let dirtyRegion = self.scene!.updateLayout(newPositions)
+            var newPositions: [DiagramItem: CGPoint] = [:]
+            
+            for de in dragElements {
+                if self.mode == .LineDrawing {
+                    self.lineToPoint = CGPoint(x: self.x, y: self.y )
+                    self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
                     
-                    let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
-                    scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
+                    scheduleRedraw()
                 }
+                else {
+                    if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1) {
+                        let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
+                        self.dragMap[de] = newPos
+                        newPositions[de] = newPos
+                    }
+                }
+            }
+            if newPositions.count > 0 {
+                //self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
+                let dirtyRegion = self.scene!.updateLayout(newPositions)
+                
+                let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
+                scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
             }
         }
         else {
+//            let oldPos = CGPoint(x: ox, y:oy)
             ox += event.deltaX
             oy -= event.deltaY
-            scheduleRedraw()
+            
+            if let sc = scene {
+//                let oldBounds = sc.getBounds()
+//                sc.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+//                let newBounds = oldBounds.union(sc.getBounds())
+//                Swift.debugPrint()
+                
+                scheduleRedraw()
+            }
         }
     }
     
@@ -771,6 +778,7 @@ class SceneDrawView: NSView, IElementModelListener {
         if( self.element == nil) {
             return
         }
+        let st = NSDate()
         
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             // Draw background
@@ -796,6 +804,8 @@ class SceneDrawView: NSView, IElementModelListener {
             scene.draw(context: context)
             context.restoreGState()
         }
+        let ed = NSDate()
+        Swift.debugPrint("Draw time: ", ed.timeIntervalSince1970 - st.timeIntervalSince1970, dirtyRect)
     }
     
     public func selectAllItems() {
@@ -807,12 +817,23 @@ class SceneDrawView: NSView, IElementModelListener {
         scheduleRedraw()
     }
     
+    
+    /// Selectors
+    
     @objc public func removeItmAction(_ sender: NSMenuItem) {
         removeItem()
     }
     
     @objc public func addTopItm(_ sender: NSMenuItem) {
         addTopItem()
+    }
+    
+    @objc func addNewItemNoCopy(_ sender: NSMenuItem) {
+        addNewItem(copyProps: false)
+    }
+    // For selector
+    @objc func addNewItemCopy(_ sender: NSMenuItem) {
+        addNewItem(copyProps: true)
     }
     
     override func menu(for event: NSEvent) -> NSMenu? {
@@ -833,11 +854,28 @@ class SceneDrawView: NSView, IElementModelListener {
             self.setActiveItem(nil, immideateDraw: true)
         }
         
+        let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
+        
         if self.activeItems.count > 0 {
             let menu = NSMenu()
             
-            let deleteAction = NSMenuItem(title: "Delete", action: #selector(removeItmAction), keyEquivalent: "")
+            let addLinkedAction = NSMenuItem(
+                title: "New linked item", action: #selector(addNewItemNoCopy), keyEquivalent: "")
+            let addLinkedCopyAction = NSMenuItem(
+                title: "Linked styled item", action: #selector(addNewItemCopy), keyEquivalent: "")
+            let deleteAction = NSMenuItem(
+                title: "Delete", action: #selector(removeItmAction), keyEquivalent: "")
             
+            let duplicateAction = NSMenuItem(
+                title: "Duplicate", action: #selector(duplicateItem), keyEquivalent: "")
+            
+            menu.addItem(addAction)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(addLinkedAction)
+            menu.addItem(addLinkedCopyAction)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(duplicateAction)
+            menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
             return menu
         }
