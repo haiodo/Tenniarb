@@ -722,7 +722,7 @@ class SceneDrawView: NSView, IElementModelListener {
                     }
                 }
                 if newPositions.count > 0 {
-                    self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
+                    //self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
                     let dirtyRegion = self.scene!.updateLayout(newPositions)
                     
                     let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
