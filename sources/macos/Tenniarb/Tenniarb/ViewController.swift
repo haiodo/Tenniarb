@@ -37,7 +37,10 @@ class ViewController: NSViewController, IElementModelListener {
     @IBOutlet weak var toolsSegmentedControl: NSSegmentedControl!
     
     var searchBox: SearchBoxViewController?
+    
+    var exportMgr = ExportManager()
         
+    @IBOutlet weak var exportSegments: NSSegmentedCell!
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
         case 0:
@@ -49,6 +52,7 @@ class ViewController: NSViewController, IElementModelListener {
         default: break;
         }
     }
+    
     @IBOutlet weak var windowTitle: NSTextField!
     
     @IBAction func outlineTextChanged(_ sender: Any) {
@@ -80,6 +84,12 @@ class ViewController: NSViewController, IElementModelListener {
         if elementStore != nil && self.scene != nil {
             setElementModel(elementStore: elementStore!)
         }
+        
+        exportMgr.setViewController(self)
+        
+        let exportMenu = exportMgr.createMenu()
+        
+        exportSegments.setMenu(exportMenu, forSegment: 0)
     }
     
     @IBAction func elementToolbarAction(_ sender: NSSegmentedCell) {
@@ -343,16 +353,6 @@ class ViewController: NSViewController, IElementModelListener {
             }
         }
         
-        if let vc = viewController as? ExportViewController {
-            if let active = self.selectedElement {
-                vc.setElement(element: active)
-                vc.setScene(scene: self.scene.scene)
-                vc.setViewController(self)
-                
-                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
-                return
-            }
-        }
         if let vc = viewController as? SyncViewController {
             if let active = self.selectedElement {
                 vc.setElement(element: active)

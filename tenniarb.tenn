@@ -76,8 +76,8 @@ element "Tenniarb" {
         }
         link "Properties" "Content assist"
         item "Content assist" {
-            pos 70.0 -138.0
-            color yellow
+            pos 83.0 -127.0
+            color white
             font-size 12
         }
         link "Scene Draw" "Layout positions"
@@ -233,7 +233,7 @@ element "Tenniarb" {
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
-            pos -564.0 307.0
+            pos -564.0 308.0
             color red
             font-size 12
         }
@@ -384,7 +384,7 @@ Engine" "expr dsl"
         }
         link "Editing" "Copy/Paste"
         item "Diagram \nPosition widget" {
-            pos -191.650390625 54.0
+            pos -201.650390625 42.0
             color yellow
         }
         link "UI" "Diagram \nPosition widget" {
@@ -440,17 +440,6 @@ Engine" "expr dsl"
             pos -32.365234375 -149.0
             color yellow
         }
-        item "Sync Engine" {
-            pos -125.94921875 139.0
-            color white
-        }
-        link "MVP" "Sync Engine"
-        item "Call Python" {
-            pos -24.3779296875 152.0
-        }
-        link "Sync Engine" "Call Python" {
-            label "json"
-        }
         item "quick actions" {
             pos 39.646484375 -173.0
             color yellow
@@ -486,11 +475,11 @@ Engine" "expr dsl"
             color yellow
         }
         link "Payments" "StoreKit"
-        item "FullFeatures" {
-            pos 102.279296875 143.0
+        item "Features" {
+            pos 102.279296875 144.0
             color yellow
         }
-        link "StoreKit" "FullFeatures"
+        link "StoreKit" "Features"
         item "Subscriptions" {
             pos 109.279296875 109.0
             color yellow
@@ -502,6 +491,18 @@ Engine" "expr dsl"
         link "StoreKit" "Display all for free" {
             pos -11.0 11.0
         }
+        item "Export" {
+            pos 195.443359375 163.0
+            color yellow
+        }
+        link "Features" "Export" {
+            target-index 1
+        }
+        item "Untitled 2" {
+            pos 194.521484375 133.0
+            color yellow
+        }
+        link "Features" "Untitled 2"
     }
     element "Process" {
         item "Делай для себя" {
