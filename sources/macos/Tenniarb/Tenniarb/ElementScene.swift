@@ -161,11 +161,17 @@ open class DrawableContainer: ItemDrawable {
     
     open override func getBounds()-> CGRect {
         var rect = CGRect(x: 0, y:0, width: 0, height: 0)
-        
+        var first = true
         if let ch = self.children {
             for c in ch {
                 let cbounds = c.getBounds()
-                rect = rect.union(cbounds)
+                if first {
+                    rect = cbounds
+                    first = false
+                }
+                else {
+                    rect = rect.union(cbounds)
+                }
             }
         }
         
