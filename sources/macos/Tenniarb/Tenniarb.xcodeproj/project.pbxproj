@@ -15,10 +15,9 @@
 		0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F71ED838D900ECB516 /* Assets.xcassets */; };
 		0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F91ED838D900ECB516 /* Main.storyboard */; };
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
-		0C2E890A2110526F00BAC0CC /* jira-sync.py in Resources */ = {isa = PBXBuildFile; fileRef = 0C2E89092110526F00BAC0CC /* jira-sync.py */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A36BD2085B41100CC646C /* SearchBoxController.swift */; };
-		0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportViewController.swift */; };
+		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
 		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
@@ -39,7 +38,7 @@
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
 		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
-		0CF8902B2133BDD400F1A6EE /* StyleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */; };
+		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,14 +76,13 @@
 		0C2375FA1ED838D900ECB516 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
-		0C2E89092110526F00BAC0CC /* jira-sync.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = "jira-sync.py"; path = "Tenniarb/extensions/jira-sync.py"; sourceTree = SOURCE_ROOT; };
 		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		0C3A36BD2085B41100CC646C /* SearchBoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchBoxController.swift; path = views/SearchBoxController.swift; sourceTree = "<group>"; };
 		0C3AA4342041582F0054DCDF /* TenniarbUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbUITests.swift; sourceTree = "<group>"; };
 		0C3AA4362041582F0054DCDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0C3E178620FD053A00AB9D3D /* ExportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportViewController.swift; path = views/ExportViewController.swift; sourceTree = "<group>"; };
+		0C3E178620FD053A00AB9D3D /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = views/ExportManager.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C3E41D41F0951EC009C2A2E /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
@@ -109,7 +107,7 @@
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
 		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
-		0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleViewController.swift; path = views/StyleViewController.swift; sourceTree = "<group>"; };
+		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,7 +131,6 @@
 		0C1155282108C90E007FD827 /* extensions */ = {
 			isa = PBXGroup;
 			children = (
-				0C2E89092110526F00BAC0CC /* jira-sync.py */,
 				0C1155292108C92C007FD827 /* SyncExtension.swift */,
 			);
 			path = extensions;
@@ -212,9 +209,9 @@
 				0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */,
 				0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */,
 				0C3A36BD2085B41100CC646C /* SearchBoxController.swift */,
-				0C3E178620FD053A00AB9D3D /* ExportViewController.swift */,
+				0C3E178620FD053A00AB9D3D /* ExportManager.swift */,
 				0C67960F210E215E00AEED63 /* SyncViewController.swift */,
-				0CF8902A2133BDD400F1A6EE /* StyleViewController.swift */,
+				0CF8902A2133BDD400F1A6EE /* StyleManager.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -397,7 +394,6 @@
 			files = (
 				0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */,
 				0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */,
-				0C2E890A2110526F00BAC0CC /* jira-sync.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -421,7 +417,7 @@
 				0C4F1472200889CC009C9EC5 /* ColorNames.swift in Sources */,
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
-				0C3E178720FD053A00AB9D3D /* ExportViewController.swift in Sources */,
+				0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
 				0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */,
@@ -435,7 +431,7 @@
 				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
 				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
-				0CF8902B2133BDD400F1A6EE /* StyleViewController.swift in Sources */,
+				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,

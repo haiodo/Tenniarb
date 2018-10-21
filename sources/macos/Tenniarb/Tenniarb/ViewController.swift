@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class ViewController: NSViewController, IElementModelListener {
+class ViewController: NSViewController, IElementModelListener, NSMenuItemValidation {
 
     @IBOutlet weak var scene: SceneDrawView!
     
@@ -168,53 +168,24 @@ class ViewController: NSViewController, IElementModelListener {
         scene?.addTopItem()
     }
     
-    @IBAction func applyDefaultStyle(_ sender: NSMenuItem ) {
-        guard let element = self.selectedElement else {
-            return
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if let action = menuItem.action {
+            if action == #selector(duplicateItem) {
+                switch findTarget() {
+                case 1:
+                    return true
+                case 2:
+                    return !self.scene.activeItems.isEmpty
+                default:
+                    break
+                }
+                
+            }
         }
-        if self.activeItems.count == 0 {
-            return
-        }
-        guard let activeBounds = scene.getActiveItemBounds() else {
-            return
-        }
-        
-        let menu = NSMenu()
-        
-        let deleteAction = NSMenuItem(title: "Add item1", action: #selector(addFreeItem(_:)), keyEquivalent: "")
-        
-        menu.addItem(deleteAction)
-        menu.popUp(positioning: menu.item(at: 0), at: activeBounds.origin, in: self.scene)
+        return true
     }
     
-    @IBAction func applyStyle( _ sender: NSMenuItem ) {
-        guard let element = self.selectedElement else {
-            return
-        }
-        if self.activeItems.count == 0 {
-            return
-        }
-        guard let activeBounds = scene.getActiveItemBounds() else {
-            return
-        }
-        let ctrl = self.storyboard?.instantiateController(withIdentifier: "StyleViewPopup")
-        let popupController = ctrl  as! StyleViewController
-        
-        popupController.setElement(element: element)
-        popupController.setActiveItems(self.activeItems)
-        popupController.setViewController(self)
-        
-        let popover = NSPopover()
-        popover.contentViewController = popupController
-        popover.contentSize = popupController.view.frame.size
-        
-        popover.behavior = .transient
-        popover.animates = false
-        
-        self.present(popupController, asPopoverRelativeTo: activeBounds, of: self.scene, preferredEdge: .maxX, behavior: .transient)
-    }
-    
-    @IBAction func duplicateItem( _ sender: NSMenuItem ) {
+    fileprivate func findTarget() -> Int {
         var target = 0
         if let responder = self.view.window?.firstResponder {
             if responder == self.worldTree {
@@ -239,8 +210,11 @@ class ViewController: NSViewController, IElementModelListener {
                 
             }
         }
-        
-        switch target {
+        return target
+    }
+    
+    @IBAction func duplicateItem( _ sender: NSMenuItem ) {
+        switch findTarget() {
         case 1:
             if let active = self.selectedElement {
                 let elementCopy = active.clone()

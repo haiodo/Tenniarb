@@ -40,7 +40,7 @@ element "Tenniarb" {
             }
         }
         item "MVP" {
-            pos -248.0 126.0
+            pos -259.0 142.0
             color "#0022ee"
             font-size 25
             color red
@@ -372,7 +372,7 @@ Engine" "expr dsl"
         }
         link "Links" "Corrections"
         item "Keyboard\nshortcuts" {
-            pos -376.94921875 79.0
+            pos -341.94921875 83.0
             color red
             color green
         }
@@ -384,7 +384,7 @@ Engine" "expr dsl"
         }
         link "Editing" "Copy/Paste"
         item "Diagram \nPosition widget" {
-            pos -201.650390625 42.0
+            pos -187.650390625 52.0
             color yellow
         }
         link "UI" "Diagram \nPosition widget" {
@@ -498,11 +498,6 @@ Engine" "expr dsl"
         link "Features" "Export" {
             target-index 1
         }
-        item "Untitled 2" {
-            pos 194.521484375 133.0
-            color yellow
-        }
-        link "Features" "Untitled 2"
     }
     element "Process" {
         item "Делай для себя" {

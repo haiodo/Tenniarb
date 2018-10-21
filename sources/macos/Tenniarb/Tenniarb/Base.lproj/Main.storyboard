@@ -170,6 +170,12 @@ CQ
                                                 <action selector="duplicateItem:" target="Ady-hI-5gd" id="fDp-Cl-ozD"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Delete" id="pa3-QI-u2k">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="delete:" target="Ady-hI-5gd" id="0Mk-Ml-PaM"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="346-q5-4ng"/>
                                         <menuItem title="Select All" keyEquivalent="a" allowsKeyEquivalentWhenHidden="YES" id="T08-Xa-q2D">
                                             <connections>
@@ -183,25 +189,6 @@ CQ
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="Pne-68-0u2"/>
-                                        <menuItem title="Quick styles" id="eze-Md-qJH">
-                                            <attributedString key="attributedTitle"/>
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Quick styles" id="km0-mt-Qjt">
-                                                <items>
-                                                    <menuItem title="Apply Default" keyEquivalent="1" id="3bc-P5-BI3">
-                                                        <connections>
-                                                            <action selector="applyDefaultStyle:" target="Ady-hI-5gd" id="AQH-2y-DWd"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Apply style" keyEquivalent="2" id="zue-yl-zIB">
-                                                        <connections>
-                                                            <action selector="applyStyle:" target="Ady-hI-5gd" id="8Ee-hu-cSq"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="RrI-X2-Rsj"/>
                                         <menuItem title="Cut" keyEquivalent="x" id="uRl-iY-unG">
                                             <connections>
                                                 <action selector="cut:" target="Ady-hI-5gd" id="YJe-68-I9s"/>
@@ -215,12 +202,6 @@ CQ
                                         <menuItem title="Paste" keyEquivalent="v" id="gVA-U4-sdL">
                                             <connections>
                                                 <action selector="paste:" target="Ady-hI-5gd" id="UvS-8e-Qdg"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Delete" id="pa3-QI-u2k">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="delete:" target="Ady-hI-5gd" id="0Mk-Ml-PaM"/>
                                             </connections>
                                         </menuItem>
                                     </items>

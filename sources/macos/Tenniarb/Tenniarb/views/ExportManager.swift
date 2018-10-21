@@ -55,7 +55,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         ExportType(name:"Copy as JSON", exportType: .jsonCopy, imgName: "json_logo"),
         ExportType(name:"-", exportType: .separator, imgName: "-"),
         ExportType(name:"Export current to file", exportType: .tenn, imgName: "Icon"),
-        ExportType(name:"Export selection to file", exportType: .tenn, imgName: "Icon"),
+//        ExportType(name:"Export selection to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Preview printable value", exportType: .preview, imgName: "Icon")
     ]
     
@@ -350,18 +350,17 @@ class ExportManager: NSObject, NSMenuDelegate {
                 menu.addItem(NSMenuItem.separator())
                 continue;
             }
-            let exportHtmlItem = NSMenuItem(title: itm.name, action: #selector(exportAction), keyEquivalent: "")
+            let menuItem = NSMenuItem(title: itm.name, action: #selector(exportAction), keyEquivalent: "")
             let img = NSImage.init(named: itm.imgName)
-            exportHtmlItem.image = NSImage.init(size: NSSize(width: 24, height: 24), flipped: false, drawingHandler: {
+            menuItem.image = NSImage.init(size: NSSize(width: 24, height: 24), flipped: false, drawingHandler: {
                 (rect) in img?.draw(in: rect)
                 return true
             })
-            exportHtmlItem.target = self
-            exportHtmlItem.tag = itm.exportType.rawValue
+            menuItem.target = self
+            menuItem.tag = itm.exportType.rawValue
             
-            menu.addItem(exportHtmlItem)
-        }
-        
+            menu.addItem(menuItem)
+        }        
         return menu
     }
     

@@ -40,7 +40,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     }
 }
 
-class SceneDrawView: NSView, IElementModelListener {
+class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
     
     var store: ElementModelStore?
@@ -68,6 +68,8 @@ class SceneDrawView: NSView, IElementModelListener {
     var editBoxDelegate: EditTitleDelegate?
     
     var pivotPoint: CGPoint = CGPoint(x:0, y:0)
+    
+    var styleManager: StyleManager?
     
     var ox: CGFloat {
         set {
@@ -192,12 +194,7 @@ class SceneDrawView: NSView, IElementModelListener {
     }
     
     func onLoad() {
-//        let sc1 = NSScroller()
-//        sc1.frame = NSRect(x:0, y:0, width: 5, height: 200)
-//        sc1.controlSize = .regular
-//        sc1.arrowsPosition = .scrollerArrowsMinEnd
-//        sc1.scrollerStyle = .overlay
-//        self.addSubview(sc1)
+        styleManager = StyleManager(scene: self)
     }
     
     func notifyChanges(_ evt: ModelEvent) {
@@ -250,6 +247,7 @@ class SceneDrawView: NSView, IElementModelListener {
         self.buildScene()
         
         if let bounds = scene?.getBounds() {
+            Swift.debugPrint("bounds:", bounds, " frame:", self.bounds)
             self.ox = -1 * bounds.midX
             self.oy = -1 * bounds.midY
         }
@@ -793,16 +791,13 @@ class SceneDrawView: NSView, IElementModelListener {
                 size:dirtyRect.size
             )
             
-//            context.saveGState()
             context.saveGState()
-//            context.setShadow(offset: CGSize(width: 2, height:-2), blur: 4, color: CGColor(red:0,green:0,blue:0,alpha: 0.5))
-//            scene.drawBox(context: context)
-//            context.restoreGState()
             scene.layout(bounds, sceneDirty)
             
-            // TODO: Add dirty rect filteting
             scene.draw(context: context)
             context.restoreGState()
+            
+            context.setStrokeColor(CGColor.init(red: 1, green: 0, blue: 0, alpha: 0.1))
         }
         let ed = NSDate()
         Swift.debugPrint("Draw time: ", ed.timeIntervalSince1970 - st.timeIntervalSince1970, dirtyRect)
@@ -835,6 +830,42 @@ class SceneDrawView: NSView, IElementModelListener {
     @objc func addNewItemCopy(_ sender: NSMenuItem) {
         addNewItem(copyProps: true)
     }
+    
+    @objc func delete( _ sender: NSObject ) {
+        removeItem()
+    }
+    
+    
+    @objc func cut( _ sender: NSObject ) {
+        
+    }
+    
+    @objc func copy( _ sender: NSObject ) {
+        
+    }
+    
+    @objc func paste( _ sender: NSObject ) {
+        
+    }
+    
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if let action = menuItem.action {
+            if action == #selector(cut) {
+                return !self.activeItems.isEmpty
+            }
+            else if action == #selector(copy(_:)) {
+                return !self.activeItems.isEmpty
+            }
+            else if action == #selector(delete(_:)) {
+                return !self.activeItems.isEmpty
+            }
+            else if action == #selector(duplicateItem) {
+                return !self.activeItems.isEmpty
+            }
+        }
+        return true
+    }
+    
     
     override func menu(for event: NSEvent) -> NSMenu? {
         if event.buttonNumber != 1 {
@@ -873,6 +904,11 @@ class SceneDrawView: NSView, IElementModelListener {
             menu.addItem(NSMenuItem.separator())
             menu.addItem(addLinkedAction)
             menu.addItem(addLinkedCopyAction)
+            menu.addItem(NSMenuItem.separator())
+            let style = NSMenuItem(
+                title: "Style", action: nil, keyEquivalent: "")
+            menu.addItem(style)
+            menu.setSubmenu(styleManager?.createMenu(), for: style)
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
             menu.addItem(NSMenuItem.separator())
