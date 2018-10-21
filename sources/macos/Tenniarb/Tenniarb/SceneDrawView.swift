@@ -642,7 +642,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         self.mouseDownState = true
-        
+                
         self.dragMap.removeAll()
         self.dragElements.removeAll()
         
@@ -719,7 +719,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
             if newPositions.count > 0 {
-                //self.store?.modified(ModelEvent(kind: .Layout, element: em, items: dragElements))
                 let dirtyRegion = self.scene!.updateLayout(newPositions)
                 
                 let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
@@ -727,18 +726,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         else {
-//            let oldPos = CGPoint(x: ox, y:oy)
             ox += event.deltaX
             oy -= event.deltaY
             
-            if let sc = scene {
-//                let oldBounds = sc.getBounds()
-//                sc.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-//                let newBounds = oldBounds.union(sc.getBounds())
-//                Swift.debugPrint()
-                
-                scheduleRedraw()
-            }
+            scheduleRedraw()
         }
     }
     

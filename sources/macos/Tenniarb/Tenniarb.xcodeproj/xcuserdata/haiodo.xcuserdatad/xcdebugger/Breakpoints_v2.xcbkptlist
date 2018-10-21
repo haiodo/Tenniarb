@@ -217,22 +217,6 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "561831524.392873"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "744"
-            endingLineNumber = "744"
-            landmarkName = "SceneDrawView"
-            landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
             timestampString = "561831524.393183"
             startingColumnNumber = "9223372036854775807"
@@ -1390,8 +1374,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "699"
             endingLineNumber = "699"
-            landmarkName = "mouseDragged(with:)"
-            landmarkType = "7">
+            landmarkName = "acceptsFirstResponder"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1406,8 +1390,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "133"
             endingLineNumber = "133"
-            landmarkName = "SceneDrawView"
-            landmarkType = "3">
+            landmarkName = "scheduleRedraw()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1422,8 +1406,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "134"
             endingLineNumber = "134"
-            landmarkName = "scheduleRedraw(invalidRect:)"
-            landmarkType = "7">
+            landmarkName = "SceneDrawView"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1643,8 +1627,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "768"
             endingLineNumber = "768"
-            landmarkName = "SceneDrawView"
-            landmarkType = "3">
+            landmarkName = "viewWillStartLiveResize()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1691,8 +1675,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "233"
             endingLineNumber = "233"
-            landmarkName = "setActiveElement(_:)"
-            landmarkType = "7">
+            landmarkName = "SceneDrawView"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2107,8 +2091,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1010"
             endingLineNumber = "1010"
-            landmarkName = "TextBox"
-            landmarkType = "3">
+            landmarkName = "isVisible()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2843,8 +2827,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "835"
             endingLineNumber = "835"
-            landmarkName = "delete(_:)"
-            landmarkType = "7">
+            landmarkName = "SceneDrawView"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
