@@ -685,7 +685,8 @@ open class DrawableScene: DrawableContainer {
                 textColor: bodyStyle.textColor,
                 fontSize: bodyStyle.fontSize,
                 layout: [.Left, .Bottom],
-                padding: CGPoint(x:10, y:4)
+                bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
+                padding: CGPoint(x:8, y:0)
             )
         }
         
@@ -694,7 +695,8 @@ open class DrawableScene: DrawableContainer {
             textColor: style.textColor,
             fontSize: style.fontSize,
             layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
-            padding: CGPoint(x:10, y:8))
+            bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
+            padding: CGPoint(x:8, y:8))
 
         
         let textBounds = textBox.getBounds()
@@ -715,6 +717,16 @@ open class DrawableScene: DrawableContainer {
         }
         
         let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
+        textBox.setFrame(CGRect(x: 0, y:0, width: width, height: height))
+        
+        if let tb = bodyTextBox {
+            let tbb = tb.getBounds()
+            
+            tb.setFrame(CGRect(x: 0, y:4, width: width, height: tbb.size.height))
+            
+            textBox.setFrame(CGRect(x: 0, y:tbb.height + 4, width: width, height: textBox.size.height ))
+        }
+        
         var box: DrawableContainer? = nil
         if let display = style.display {
             switch display {
@@ -978,12 +990,14 @@ public class TextBox: Drawable {
     var font: NSFont
     var textStyle: NSMutableParagraphStyle
     var layout: Set<TextPosition>
+    var frame: CGRect
     var padding: CGPoint
     
-    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, padding: CGPoint = CGPoint(x: 10, y:8)) {
+    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
         self.font = NSFont.systemFont(ofSize: fontSize)
         self.text = text
         self.layout = layout
+        self.frame = bounds
         self.padding = padding
 
         self.textColor = NSColor(cgColor: textColor)!
@@ -1002,6 +1016,13 @@ public class TextBox: Drawable {
         let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
         
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
+        if( self.size.width > self.frame.width || self.size.height > self.frame.height) {
+            self.frame = CGRect(origin: self.frame.origin, size: self.size)
+        }
+    }
+    
+    public func setFrame(_ bounds: CGRect ) {
+        self.frame = bounds
     }
     
     public func isVisible() -> Bool {
@@ -1015,33 +1036,35 @@ public class TextBox: Drawable {
     public func draw(context: CGContext, at point: CGPoint) {
         let q: NSString = self.text as NSString
         
-        let atp = CGPoint(x: point.x + self.point.x + 5, y: point.y + self.point.y+4)
-        q.draw(at: atp , withAttributes: textFontAttributes)        
+        let atp = CGPoint(x: point.x + self.point.x, y: point.y + self.point.y )
+        q.draw(at: atp , withAttributes: textFontAttributes)
+        
+//        context.stroke(CGRect(origin: CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y), size: self.frame.size))
     }
     
-    public func layout(_ bounds: CGRect, _ dirty: CGRect) {
+    public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
         // Put in centre of bounds
-        var px = self.layout.contains(.Center) ? (bounds.width-size.width)/2 : 0
-        var py = self.layout.contains(.Middle) ? (bounds.height-size.height)/2 : 0
+        var px = self.layout.contains(.Center) ? (frame.width-size.width)/2 : 0
+        var py = self.layout.contains(.Middle) ? (frame.height-size.height)/2 : 0
         
         if self.layout.contains(.Left) {
             px = 0;
         }
         if self.layout.contains(.Right) {
-            px = bounds.width-size.width;
+            px = frame.width - size.width;
         }
         if self.layout.contains(.Bottom) {
             py = 0;
         }
         if self.layout.contains(.Top) {
-            py = bounds.height-size.height;
+            py = frame.height - size.height;
         }
         
-        self.point = CGPoint(x: px , y: py)
+        self.point = CGPoint(x: frame.origin.x + px + padding.x / 2 , y: frame.origin.y + py + padding.y / 2)
     }
     
     public func getBounds() -> CGRect {
-        return CGRect(origin: point, size: size )
+        return frame
     }
     public func update() {
     }
@@ -1081,7 +1104,8 @@ public class DrawableLine: ItemDrawable {
     func addLabel(_ label: String) {
         self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
                              textColor: self.style.color ?? CGColor(red: 0, green: 0, blue: 0, alpha: 1),
-                             fontSize: self.style.fontSize, layout: [.Middle, .Center])
+                             fontSize: self.style.fontSize, layout: [.Middle, .Center],
+                             bounds: CGRect(origin: control, size: CGSize(width:0, height:0)))
     }
     
     func find( _ point: CGPoint)-> Bool {
