@@ -81,7 +81,14 @@ func crossPointLine(_ p1: CGPoint, _ p2: CGPoint, _ p: CGPoint) -> Bool {
     if d >= 0 && d < 7 {
         
         // We need to check if in boundaries of line.
-        let r = CGRect(origin: CGPoint(x: min(p1.x, p2.x), y: min(p1.y, p2.y)), size: CGSize(width: abs(p1.x-p2.x), height: abs(p1.y-p2.y) ))
+        var r = CGRect(origin: CGPoint(x: min(p1.x, p2.x), y: min(p1.y, p2.y)), size: CGSize(width: abs(p1.x-p2.x), height: abs(p1.y-p2.y) ))
+        
+        if r.height < 5 {
+            r = CGRect(origin: CGPoint(x: r.origin.x, y: r.origin.y - 2.5), size: CGSize(width: r.width, height: r.height + 5 ))
+        }
+        if r.width < 5 {
+            r = CGRect(origin: CGPoint(x: r.origin.x - 2.5, y: r.origin.y), size: CGSize(width: r.width + 5, height: r.height))
+        }
         
         let lineP =  CGPoint(x: (B*(B*p.x-A*p.y) - A*C) / (A*A+B*B),
                              y: (A*(-1*B*p.x+A*p.y) - B*C) / (A*A+B*B))
