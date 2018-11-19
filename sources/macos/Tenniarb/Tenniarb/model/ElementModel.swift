@@ -270,6 +270,11 @@ public class Element {
     }
 }
 
+//public class Resource {
+//    public var name: String
+//    public var data: Data
+//}
+
 /**
  A root of element map
  */

@@ -41,7 +41,9 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
 }
 
 class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
-    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:0.3)
+//    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
+    let background = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
+    
     
     var store: ElementModelStore?
     
@@ -455,6 +457,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 items.append(newEl)
             }
         }
+        
         if items.count > 0 {
             self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
             self.setActiveItems(items)
@@ -645,7 +648,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 
         self.dragMap.removeAll()
         self.dragElements.removeAll()
-        
+ 
         guard let drawable = findElement(x: self.x, y: self.y) else {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
@@ -734,20 +737,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     func updateMousePosition(_ event: NSEvent) {
-        //TODO: It is so dirty hack. Also devider positions are missied few pixel
-        
         let wloc = event.locationInWindow
         
-        let sv = self.superview?.superview
+        let vp = self.convert(wloc, from: nil)
+        let pos = CGPoint(x: vp.x - bounds.midX - ox, y: vp.y - bounds.midY - oy )
         
-        let sv2 = sv?.superview
-        
-        let treeBounds = sv2?.subviews[0].bounds
-        
-        let textarea = sv?.subviews[1].bounds
-        
-        self.x = (wloc.x - treeBounds!.width - bounds.midX) - ox
-        self.y = (wloc.y - bounds.midY - textarea!.height) - oy
+        self.x = pos.x
+        self.y = pos.y
     }
     
     override func mouseMoved(with event: NSEvent) {
@@ -857,6 +853,44 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return true
     }
     
+    @objc func attachImage( _ sender: NSObject ) {
+        let myOpen = NSOpenPanel()
+        myOpen.allowedFileTypes = ["png", "jpg", "jpeg"]
+        myOpen.allowsOtherFileTypes = false
+        myOpen.isExtensionHidden = true
+        myOpen.nameFieldStringValue = self.element!.name
+        myOpen.title = "Attach image file..."
+        
+        myOpen.begin { (result) -> Void in
+            if result.rawValue == NSFileHandlingPanelOKButton {
+                if let filename = myOpen.url {
+                    do {
+                        let data:NSData = try NSData(contentsOf: filename)
+                        let encoded = data.base64EncodedString(options: NSData.Base64EncodingOptions.lineLength64Characters)
+                        
+                        if let active = self.activeItems.first {
+                            let newProps = active.properties.clone()
+                            
+                            var imgNode = newProps.get("image")
+                            if imgNode == nil {
+                                imgNode = TennNode.newCommand("image", TennNode.newStrNode(filename.lastPathComponent), TennNode.newStrNode(encoded))
+                                newProps.append(imgNode!)
+                            }
+                            else {
+                                imgNode?.children = [TennNode.newIdent("image"), TennNode.newStrNode(filename.lastPathComponent), TennNode.newStrNode(encoded)]
+                            }
+                            self.store?.setProperties(self.element!, active, newProps.asNode(),
+                                                        undoManager: self.undoManager,  refresh: {()->Void in})
+                        }
+                    }
+                    catch {
+                        Swift.debugPrint("Error saving file")
+                    }
+                }
+            }
+        }
+    }
+    
     
     override func menu(for event: NSEvent) -> NSMenu? {
         if event.buttonNumber != 1 {
@@ -902,6 +936,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.setSubmenu(styleManager?.createMenu(), for: style)
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
+            
+            if self.activeItems.count == 1 {
+                menu.addItem(NSMenuItem.separator())
+                menu.addItem(NSMenuItem(
+                    title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
+            }
+ 
             menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
             return menu
@@ -917,6 +958,5 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(addAction)
             return menu
         }
-        return nil
     }
 }

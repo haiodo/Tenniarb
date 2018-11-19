@@ -116,11 +116,11 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                 }
                 
                 if let imageField = view.viewWithTag(0) as? NSImageView {
-                    if el.itemCount > 0 {
-                        imageField.image = NSImage.init(named: "small_logo_white")
+                    if el.items.count > 0 {
+                        imageField.image = NSImage.init(named: "ico-group")
                     }
                     else {
-                        imageField.image = NSImage.init(named: "element_logo_white")
+                        imageField.image = NSImage.init(named: "ico-component")
                     }
                 }
                 return view

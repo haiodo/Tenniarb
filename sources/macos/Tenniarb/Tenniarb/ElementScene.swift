@@ -712,7 +712,6 @@ open class DrawableScene: DrawableContainer {
             height = styleHeight//max(height, styleHeight)
         }
         if bodyBounds != nil {
-            Swift.debugPrint("Body height:", bodyBounds!.height)
             height += bodyBounds!.height // TODO: Put spacing into some configurable area
         }
         
@@ -1059,6 +1058,8 @@ public class TextBox: Drawable {
         if self.layout.contains(.Top) {
             py = frame.height - size.height;
         }
+        
+        //TODO: If we doesn't fit into parent bounds we need to do something with it.
         
         self.point = CGPoint(x: frame.origin.x + px + padding.x / 2 , y: frame.origin.y + py + padding.y / 2)
     }
@@ -1552,3 +1553,36 @@ public class SelectorLine: ItemDrawable {
 }
 
 
+
+public class ImageBox: Drawable {
+    var pos: CGPoint
+    var size: CGSize
+    var img: CGImage
+    
+    init( pos: CGPoint, size: CGSize, img: CGImage) {
+        self.pos = pos
+        self.size = size
+        self.img = img
+    }
+    
+    public func drawBox(context: CGContext, at point: CGPoint) {
+        self.draw(context: context, at: point)
+    }
+    
+    public func draw(context: CGContext, at point: CGPoint) {
+        context.draw(self.img, in: CGRect(origin: CGPoint(x: pos.x + point.x, y: pos.y + point.y), size: size))
+    }
+    
+    public func layout(_ bounds: CGRect, _ dirty: CGRect) {
+        
+    }
+    
+    public func isVisible() -> Bool {
+        return true
+    }
+    public func getBounds() -> CGRect {
+        return CGRect(origin: self.pos, size: self.size)
+    }
+    public func update() {
+    }
+}
