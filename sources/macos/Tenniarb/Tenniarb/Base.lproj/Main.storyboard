@@ -328,7 +328,7 @@ CQ
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="167.5" y="-1" width="45" height="23"/>
+                                                                    <rect key="frame" x="167" y="-1" width="45" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
@@ -372,7 +372,7 @@ CQ
                                                                             </tableHeaderCell>
                                                                             <textFieldCell key="dataCell" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
                                                                                 <font key="font" metaFont="system" size="14"/>
-                                                                                <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                                                             </textFieldCell>
                                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
@@ -470,15 +470,12 @@ CQ
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="610.5" y="6" width="89" height="23"/>
+                                                                            <rect key="frame" x="645" y="6" width="54" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
                                                                                     <segment toolTip="Add item(Tab key)" image="NSAddTemplate" width="20"/>
                                                                                     <segment toolTip="Remove item(Backspace key)" image="NSRemoveTemplate" tag="1">
-                                                                                        <nil key="label"/>
-                                                                                    </segment>
-                                                                                    <segment image="NSTouchBarListViewTemplate" tag="2">
                                                                                         <nil key="label"/>
                                                                                     </segment>
                                                                                 </segments>
@@ -488,7 +485,7 @@ CQ
                                                                             </connections>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SXa-LX-SJ4" userLabel="Export_printing">
-                                                                            <rect key="frame" x="565.5" y="6" width="26" height="23"/>
+                                                                            <rect key="frame" x="599" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="po3-ln-0Dn">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -497,7 +494,7 @@ CQ
                                                                             </segmentedCell>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Resources_actions">
-                                                                            <rect key="frame" x="520.5" y="6" width="26" height="23"/>
+                                                                            <rect key="frame" x="553" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="vqf-vq-Awc">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>

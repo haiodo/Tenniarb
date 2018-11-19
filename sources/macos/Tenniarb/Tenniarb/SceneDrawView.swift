@@ -40,10 +40,11 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     }
 }
 
+
 class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 //    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
     let background = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
-    
+    let backgroundDark = CGColor(red: 0x2e/255, green: 0x2e/255, blue: 0x2e/255, alpha:1)
     
     var store: ElementModelStore?
     
@@ -268,7 +269,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             oldEditMode = oldScene.editingMode
         }
         
-        let scene = DrawableScene(self.element!)
+        var darkMode = false
+        Swift.debugPrint(self.effectiveAppearance.name)
+        if self.effectiveAppearance.name != .vibrantLight {
+            darkMode = true
+        }
+        
+        let scene = DrawableScene(self.element!, darkMode: darkMode)
         
         if oldActiveItem.count > 0 {
             scene.updateActiveElements(oldActiveItem)
@@ -765,10 +772,29 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         let st = NSDate()
         
+        // Check if apperance changed
+        
+        var nDarkMode = false
+        if self.effectiveAppearance.name != .vibrantLight {
+            nDarkMode = true
+        }
+        if self.scene?.darkMode != nDarkMode {
+            buildScene()
+        }
+        
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             // Draw background
             
-            context.setFillColor(background)
+            if #available(OSX 10.14, *) {
+                if NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark {
+                    context.setFillColor(backgroundDark)
+                }
+                else {
+                    context.setFillColor(background)
+                }
+            } else {
+                context.setFillColor(background)
+            }
             context.fill(dirtyRect)
             
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)

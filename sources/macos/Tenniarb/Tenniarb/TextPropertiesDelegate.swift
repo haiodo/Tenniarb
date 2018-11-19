@@ -14,16 +14,7 @@ let defaultFontSize = CGFloat(15)
 class TennTextView: NSTextView {
     override func insertNewline(_ sender: Any?) {
         let loc = self.selectedRange().location
-        let parser = TennParser()
         let insertPart = "\n"
-        
-//        let node = parser.parse(self.textStorage!.string)
-//        if !parser.errors.hasErrors() {
-            // No errors found
-            
-//            self.textStorage.string
-//            node.find(loc)
-//        }
         
         let str = NSAttributedString(
             string:insertPart,
@@ -44,6 +35,14 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     var view: NSTextView
     var changes:Int = 0
     var doMerge:Bool = false
+    
+    let symbolColorWhite = NSColor(red: 0x81/255.0, green: 0x5f/255.0, blue: 0x03/255.0, alpha: 1)
+    let stringColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
+    let numberColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
+    
+    let symbolColorDark = NSColor(red: 0x75/255.0, green: 0xb4/255.0, blue: 0x92/255.0, alpha: 1)
+    let stringColorDark = NSColor(red: 0xfc/255.0, green: 0x6a/255.0, blue: 0x5d/255.0, alpha: 1)
+    let numberColorDark = NSColor(red: 0x96/255.0, green: 0x86/255.0, blue: 0xf5/255.0, alpha: 1)
     
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
@@ -89,21 +88,29 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         
         let lexer = TennLexer((view.textStorage?.string)!)
         
+        var darkMode = false
+        if #available(OSX 10.14, *) {
+            if NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark {
+                darkMode = true
+            }
+        }
+        
+        let symbolColor = !darkMode ? symbolColorWhite: symbolColorDark
+        let stringColor = !darkMode ? stringColorWhite: stringColorDark
+        let numberColor = !darkMode ? numberColorWhite: numberColorDark
+        
         var tok = lexer.getToken()
         while tok != nil {
             switch tok!.type {
             case .symbol:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    NSColor(red: 41/255.0, green: 66/255.0, blue: 119/255.0, alpha: 1),
-                                               range: NSMakeRange(tok!.pos, tok!.size))
+                    symbolColor, range: NSMakeRange(tok!.pos, tok!.size))
             case .stringLit, .charLit:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    NSColor(red: 195/255.0, green: 116/255.0, blue: 28/255.0, alpha: 1),
-                                               range: NSMakeRange(tok!.pos, tok!.size))
+                    stringColor, range: NSMakeRange(tok!.pos, tok!.size))
             case .floatLit, .intLit:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    NSColor(red: 41/255.0, green: 66/255.0, blue: 119/255.0, alpha: 1),
-                                               range: NSMakeRange(tok!.pos, tok!.size))
+                    numberColor, range: NSMakeRange(tok!.pos, tok!.size))
             default:
                 break
             }
@@ -129,7 +136,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }
                 else {
-//                    self.view.textColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.8)
                     self.highlight()
                     self.doMerge = true
                     self.controller.mergeProperties(node)

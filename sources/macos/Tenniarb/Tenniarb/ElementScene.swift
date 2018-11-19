@@ -180,13 +180,14 @@ open class DrawableContainer: ItemDrawable {
 }
 
 class DrawableStyle {
-    var color: CGColor?
+    var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
     var textColor: CGColor = CGColor.black
     
-    var borderColor: CGColor?
+    var borderColor: CGColor = CGColor.black
     var fontSize:CGFloat = 18.0
     var width:CGFloat?
     var height:CGFloat?
+    var darkMode = false
     
     /**
      One of values:
@@ -205,7 +206,8 @@ class DrawableStyle {
      */
     var layout: String?
     
-    init( ) {
+    init( _ darkMode: Bool ) {
+        self.darkMode = darkMode
         reset()
     }
     init( item: DiagramItem ) {
@@ -214,7 +216,7 @@ class DrawableStyle {
     }
     
     func newCopy() -> DrawableStyle {
-        return DrawableStyle()
+        return DrawableStyle(darkMode)
     }
     func copy() -> DrawableStyle {
         let result: DrawableStyle = newCopy()
@@ -229,11 +231,21 @@ class DrawableStyle {
         return result
     }
     
+    
     func reset() {
         // Reset to default values
-        self.color = nil
-        self.borderColor = nil
-        self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+        
+        if self.darkMode {
+            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
+            self.textColor = CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
+            self.borderColor = CGColor.white
+        }
+        else {
+            self.color = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+            self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+            self.borderColor = CGColor.black
+        }
+        
         self.fontSize = 18
         self.width = nil
         self.height = nil
@@ -343,7 +355,7 @@ class DrawableLineStyle: DrawableStyle {
         }
     }
     override func newCopy() -> DrawableStyle {
-        return DrawableLineStyle()
+        return DrawableLineStyle(darkMode)
     }
     override func copy() -> DrawableLineStyle {
         let result = super.copy() as! DrawableLineStyle
@@ -352,13 +364,26 @@ class DrawableLineStyle: DrawableStyle {
     }
     override func reset() {
         super.reset()
+        
+        
+        if self.darkMode {
+            self.color = CGColor(red: 1, green:1, blue:1, alpha: 0.7)
+            self.textColor = CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
+            self.borderColor = CGColor.white
+        }
+        else {
+            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
+            self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+            self.borderColor = CGColor.black
+        }
+        
         self.lineDash = nil
     }
 }
 
 class DrawableItemStyle: DrawableStyle {
     override func newCopy() -> DrawableStyle {
-        return DrawableItemStyle()
+        return DrawableItemStyle(darkMode)
     }
     override func copy() -> DrawableItemStyle {
         let result = super.copy() as! DrawableItemStyle
@@ -370,12 +395,16 @@ class DrawableItemStyle: DrawableStyle {
 class SceneStyle: DrawableStyle {
     var zoomLevel: CGFloat = 1
     
-    var defaultItemStyle: DrawableItemStyle = DrawableItemStyle()
-    var defaultLineStyle: DrawableLineStyle = DrawableLineStyle()
+    var defaultItemStyle: DrawableItemStyle
+    var defaultLineStyle: DrawableLineStyle
     
-    override init() {
-        super.init()
-        defaultLineStyle.fontSize = 12
+    override init(_ darkMode: Bool) {
+        self.defaultItemStyle =  DrawableItemStyle( darkMode )
+        self.defaultLineStyle = DrawableLineStyle( darkMode )
+        
+        super.init( darkMode )
+        
+        self.defaultLineStyle.fontSize = 12
     }
     
     override func parseStyleLine(_ cmdName: String, _ child: TennNode) {
@@ -425,7 +454,9 @@ open class DrawableScene: DrawableContainer {
     
     var lineToDrawable: Drawable?
     
-    var sceneStyle: SceneStyle = SceneStyle()
+    var sceneStyle: SceneStyle
+    
+    var darkMode: Bool
     
     var editingMode: Bool = false {
         didSet {
@@ -435,11 +466,15 @@ open class DrawableScene: DrawableContainer {
     
     var activeElements: [DiagramItem] = []
     
-    init( _ element: Element) {
-        super.init([])
+    init( _ element: Element, darkMode: Bool) {
+        self.sceneStyle = SceneStyle(darkMode)
+        self.darkMode = darkMode
+        
+        super.init([])        
+        
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
         
-        self.append(buildElementScene(element))
+        self.append(buildElementScene(element, self.darkMode))
     }
     
     public override func find( _ point: CGPoint ) -> ItemDrawable? {
@@ -490,7 +525,7 @@ open class DrawableScene: DrawableContainer {
                 }
             }
             
-            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint, style: DrawableLineStyle() )
+            self.lineToDrawable = DrawableLine( source: mid, target: targetPoint, style: DrawableLineStyle(self.darkMode) )
         }
         return result
     }
@@ -653,8 +688,8 @@ open class DrawableScene: DrawableContainer {
         let style = self.sceneStyle.defaultItemStyle.copy()
         style.parseStyle(e.properties)
         
-        let bgColor = style.color ?? CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
-        let borderColor = style.borderColor ?? CGColor.black
+        let bgColor = style.color
+        let borderColor = style.borderColor
         
         var bodyTextBox: TextBox? = nil
         
@@ -747,10 +782,10 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func buildElementScene( _ element: Element)-> Drawable {
+    func buildElementScene( _ element: Element, _ darkMode: Bool)-> Drawable {
         let elementDrawable = DrawableContainer()
         
-        self.sceneStyle = SceneStyle()
+        self.sceneStyle = SceneStyle(darkMode)
         self.sceneStyle.parseStyle(element.properties)
         
         var links: [DiagramItem] = []
@@ -1104,7 +1139,7 @@ public class DrawableLine: ItemDrawable {
     
     func addLabel(_ label: String) {
         self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
-                             textColor: self.style.color ?? CGColor(red: 0, green: 0, blue: 0, alpha: 1),
+                             textColor: self.style.borderColor,
                              fontSize: self.style.fontSize, layout: [.Middle, .Center],
                              bounds: CGRect(origin: control, size: CGSize(width:0, height:0)))
     }
@@ -1294,8 +1329,8 @@ public class DrawableLine: ItemDrawable {
         context.saveGState()
         
         context.setLineWidth( self.lineWidth )
-        context.setStrokeColor(self.style.color ?? CGColor.black)
-        context.setFillColor(self.style.color ?? CGColor.black)
+        context.setStrokeColor(self.style.color)
+        context.setFillColor(self.style.color)
         
         let drawArrow = self.style.display == "arrow" ||
                         self.style.display == "arrow-source" ||

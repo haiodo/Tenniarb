@@ -86,7 +86,7 @@ public class TennLexer {
         }
         var dot = false
         var i = 0
-        for c in pattern {
+        for c in value {
             if c == "." {
                 if i == 0  || dot {
                     return .symbol
