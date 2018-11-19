@@ -105,9 +105,14 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
             case .symbol:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     symbolColor, range: NSMakeRange(tok!.pos, tok!.size))
-            case .stringLit, .charLit:
+            case .stringLit:
+                // Check to include ", ' as part of sumbols.
+                let start = tok!.pos - 1 // Since we have ' or "
+                let size = tok!.size + 2
+                
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    stringColor, range: NSMakeRange(tok!.pos, tok!.size))
+                    stringColor, range: NSMakeRange(start, size))
+                
             case .floatLit, .intLit:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     numberColor, range: NSMakeRange(tok!.pos, tok!.size))

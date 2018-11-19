@@ -15,7 +15,6 @@ public enum TennTokenType {
     case floatLit
     case intLit
     case stringLit
-    case charLit
     case curlyLe
     case curlyRi
     case comma
