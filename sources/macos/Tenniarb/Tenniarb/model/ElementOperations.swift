@@ -16,10 +16,16 @@ public enum ModelEventKind {
     case Layout
 }
 
+public enum ModelEventItemOperation {
+    case Append
+    case Remove
+    case Update
+}
+
 public class ModelEvent {
     let kind: ModelEventKind
     var element: Element
-    var items: [DiagramItem] = []
+    var items: [DiagramItem:ModelEventItemOperation] = [:]
     init(kind: ModelEventKind, element: Element) {
         self.kind = kind
         self.element = element
@@ -27,10 +33,6 @@ public class ModelEvent {
     init(kind: ModelEventKind, element: Element, items: [DiagramItem]) {
         self.kind = kind
         self.element = element
-    }
-    
-    func addItem( _ items: [DiagramItem] ) {
-        self.items.append(contentsOf: items)
     }
 }
 
@@ -57,7 +59,7 @@ public class ElementOperation {
     func getEventKind() -> ModelEventKind {
         return .Structure
     }
-    func collect( _ items: inout [DiagramItem] ) {
+    func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
     }
 }
 
@@ -110,7 +112,7 @@ public class CompositeOperation: ElementOperation {
     override func getNotifier() -> Element {
         return self.notifier
     }
-    override func collect( _ items: inout [DiagramItem] ) {
+    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
         for op in self.operations {
             op.collect(&items)
         }
@@ -155,9 +157,7 @@ public class ElementModelStore {
         refresh()
         
         let evt = ModelEvent(kind: action.getEventKind(), element: action.getNotifier())
-        var itms: [DiagramItem] = []
-        action.collect(&itms)
-        evt.addItem(itms)
+        action.collect(&evt.items)
         
         self.modified(evt)
     }
@@ -281,7 +281,6 @@ public class ElementModelStore {
         execute(ComplexUpdateElement(self, element, old: element.toTennAsProps(), new: node), undoManager, refresh)
     }
     func setProperties( _ element: Element, _ item: DiagramItem, _ node: TennNode, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-//        item.fromTennProps(self, node)
         execute(ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node ), undoManager, refresh)
     }
     
@@ -316,8 +315,8 @@ class AbstractUpdateValue<ValueType>: ElementOperation {
         self.apply(oldValue)
         super.undo()
     }
-    override func collect( _ items: inout [DiagramItem] ) {
-        items.append(item)
+    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+        items[item] = .Update
     }
     override func getNotifier() -> Element {
         return element
@@ -398,7 +397,6 @@ class UpdateElementName: AbstractUpdateElementValue<String> {
     override var name:String { get { return "UpdateElementName"} }
     
     override func apply(_ value: String) {
-        Swift.debugPrint("Update element: " + self.element.name + " name to:" + value )
         self.element.name = value
     }
 }
@@ -449,8 +447,8 @@ class AddItem: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
-    override func collect( _ items: inout [DiagramItem] ) {
-        items.append(item)
+    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+        items[item] = .Append
     }
 }
 
@@ -495,7 +493,7 @@ class RemoveItem: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
-    override func collect( _ items: inout [DiagramItem] ) {
-        items.append(child)
+    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+        items[child] = .Remove
     }
 }
