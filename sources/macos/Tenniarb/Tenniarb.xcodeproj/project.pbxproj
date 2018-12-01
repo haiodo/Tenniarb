@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
 		0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1155292108C92C007FD827 /* SyncExtension.swift */; };
+		0C185AA821B263DF00D174B6 /* ExecutionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C185AA721B263DF00D174B6 /* ExecutionModel.swift */; };
+		0C185AAA21B2647C00D174B6 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */; };
 		0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375EE1ED838D900ECB516 /* AppDelegate.swift */; };
 		0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F01ED838D900ECB516 /* ViewController.swift */; };
 		0C2375F31ED838D900ECB516 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2375F21ED838D900ECB516 /* Document.swift */; };
@@ -68,6 +70,8 @@
 /* Begin PBXFileReference section */
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
+		0C185AA721B263DF00D174B6 /* ExecutionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExecutionModel.swift; path = model/ExecutionModel.swift; sourceTree = "<group>"; };
+		0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -117,6 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C185AAA21B2647C00D174B6 /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +187,7 @@
 				0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */,
 				0C439D24200337AB0031AE78 /* ElementProperties.swift */,
 				0C9C9410201F749800E67794 /* ElementOperations.swift */,
+				0C185AA721B263DF00D174B6 /* ExecutionModel.swift */,
 			);
 			name = model;
 			path = ..;
@@ -199,6 +205,7 @@
 		0C35FF0020DC09BD00BE3B2C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */,
 				0C35FF0120DC09BD00BE3B2C /* Quartz.framework */,
 			);
 			name = Frameworks;
@@ -414,6 +421,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C185AA821B263DF00D174B6 /* ExecutionModel.swift in Sources */,
 				0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */,
 				0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */,
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,

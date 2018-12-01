@@ -15,10 +15,7 @@ class WindowController: NSWindowController {
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
         return displayName
     }
-    override func windowDidLoad() {
-        
-        Swift.debugPrint(ProcessInfo.processInfo.operatingSystemVersion)
-        
+    override func windowDidLoad() {                
         let ver = ProcessInfo.processInfo.operatingSystemVersion
         
         if ver.majorVersion == 10 && ver.minorVersion == 12 {    

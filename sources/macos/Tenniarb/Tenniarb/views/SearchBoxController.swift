@@ -59,12 +59,10 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             return true
         }
         if commandSelector == #selector(NSView.insertNewline(_:)) {
-            Swift.debugPrint("Enter presset")
             return true
         }
         
         if commandSelector == #selector(NSView.keyDown(with:)) {
-            Swift.debugPrint("Keydown")
             return true
         }
         // TODO: Resize both text and drawed item to fit value smoothly.
@@ -97,7 +95,6 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     }
     
     override func keyDown(with event: NSEvent) {
-        Swift.debugPrint(event.keyCode)
     }
     
     @IBAction func applyClose(_ sender: NSButton) {

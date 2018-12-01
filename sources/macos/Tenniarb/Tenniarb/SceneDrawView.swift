@@ -202,13 +202,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     func notifyChanges(_ evt: ModelEvent) {
         // We should be smart anought to not rebuild all drawable scene every time
-        if evt.items.count > 0 {
-            if let firstItem = evt.items.first(where: { (itm) in itm.kind == .Item } ) {
-                if evt.element.items.contains(firstItem) {
-                    setActiveItem(firstItem)
-                }
-                else {
-                    setActiveItem(nil)
+        if evt.items.count > 0, let el = self.element {
+            for (k, v) in evt.items {
+                if k.kind == .Item || Set([.Append, .Update]).contains(v)  {
+                    if el.items.contains(k) {
+                        setActiveItem(k)
+                        break
+                    }
+                    else {
+                        setActiveItem(nil)
+                    }
                 }
             }
         }
@@ -250,7 +253,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.buildScene()
         
         if let bounds = scene?.getBounds() {
-            Swift.debugPrint("bounds:", bounds, " frame:", self.bounds)
             self.ox = -1 * bounds.midX
             self.oy = -1 * bounds.midY
         }
@@ -270,7 +272,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         var darkMode = false
-        Swift.debugPrint(self.effectiveAppearance.name)
+
         if self.effectiveAppearance.name != .vibrantLight {
             darkMode = true
         }
@@ -526,10 +528,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     
-    override func keyDown(with event: NSEvent) {
-        if let chars = event.characters {
-            Swift.debugPrint(chars.unicodeScalars)
-        }
+    override func keyDown(with event: NSEvent) {        
         if event.characters == "\t" {
             addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
         }
@@ -770,7 +769,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if( self.element == nil) {
             return
         }
-        let st = NSDate()
+//        let st = NSDate()
         
         // Check if apperance changed
         
@@ -812,8 +811,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.setStrokeColor(CGColor.init(red: 1, green: 0, blue: 0, alpha: 0.1))
         }
-        let ed = NSDate()
-        Swift.debugPrint("Draw time: ", ed.timeIntervalSince1970 - st.timeIntervalSince1970, dirtyRect)
+//        let ed = NSDate()
+//        Swift.debugPrint("Draw time: ", ed.timeIntervalSince1970 - st.timeIntervalSince1970, dirtyRect)
     }
     
     public func selectAllItems() {

@@ -470,7 +470,7 @@ open class DrawableScene: DrawableContainer {
         self.sceneStyle = SceneStyle(darkMode)
         self.darkMode = darkMode
         
-        super.init([])        
+        super.init([])
         
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
         
@@ -1434,6 +1434,14 @@ public class DrawableLine: ItemDrawable {
             maxX = max(ep.x, maxX)
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
+        }
+        
+        if let lbl = self.label {
+            let lblBounds = lbl.getBounds()
+            minX = min( minX, lblBounds.minX)
+            minY = min( minY, lblBounds.minY)
+            maxX = max( maxX, lblBounds.maxX)
+            maxY = max( maxY, lblBounds.maxY)
         }
         
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
