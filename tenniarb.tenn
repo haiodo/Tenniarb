@@ -1,15 +1,15 @@
 element "Tenniarb" {
     element "Naming" {
-        item "Procuct naming" {
-            pos -262.0 169.0
+        item "Product naming" {
+            pos -262.0 170.0
         }
-        link "Procuct naming" "Net" {
+        link "Product naming" "Net" {
             pos -21.0 -4.0
         }
         item "Net" {
             pos -260.0 44.0
         }
-        link "Procuct naming" "Brain" {
+        link "Product naming" "Brain" {
             pos 63.0 22.0
         }
         item "Brain" {
@@ -497,6 +497,45 @@ Engine" "expr dsl"
         }
         link "Features" "Export" {
             target-index 1
+        }
+        element "Plans" {
+            item "Tenniarb Server" {
+                pos -415.0 183.0
+            }
+            item "Account" {
+                pos -407.015625 65.0
+            }
+            link "Tenniarb Server" "Account"
+            item "Projects" {
+                pos -406.212890625 -33.0
+            }
+            link "Account" "Projects"
+            item "Maps" {
+                pos -397.9970703125 -109.0
+            }
+            link "Projects" "Maps"
+            item "Tenniarb" {
+                pos 37.984375 182.0
+            }
+            item "Tenniarb Web" {
+                pos -261.015625 56.0
+            }
+            link "Tenniarb Server" "Tenniarb Web"
+            link "Tenniarb" "Tenniarb Server" {
+                display "arrow"
+            }
+            item "Edit maps" {
+                pos -136.248046875 169.0
+                font-size 12
+            }
+            item "Collaborative work" {
+                pos -158.373046875 141.0
+                font-size 12
+            }
+            item "Publish" {
+                pos -129.314453125 113.0
+                font-size 12
+            }
         }
     }
     element "Process" {
