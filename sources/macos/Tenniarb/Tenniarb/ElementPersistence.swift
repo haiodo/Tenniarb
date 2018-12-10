@@ -191,6 +191,9 @@ extension Element {
         var strToIndex:[String:Int] = [:]
         
         for item in items {
+            if item.kind != .Item {
+                continue
+            }
             if let index = strToIndex[item.name] {
                 itemRefNames[item] = index + 1
                 strToIndex[item.name] = index + 1
@@ -320,6 +323,9 @@ extension Element {
         var strToIndex:[String:Int] = [:]
         
         for item in items {
+            if item.kind != .Item {
+                continue
+            }
             if let index = strToIndex[item.name] {
                 itemRefNames[IndexedName(item.name, index + 1)] = item
                 strToIndex[item.name] = index + 1
@@ -486,8 +492,10 @@ extension Element {
             let sIndex = IndexedName( source, sourceIndex)
             let tIndex = IndexedName( target, targetIndex)
             
-            if let sourceElement = links[sIndex], let targetElement = links[tIndex] {
+            if let sourceElement = links[sIndex] {
                 link.source = sourceElement
+            }
+            if let targetElement = links[tIndex] {
                 link.target = targetElement
             }
         }

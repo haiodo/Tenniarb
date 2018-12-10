@@ -794,33 +794,33 @@ open class DrawableScene: DrawableContainer {
         for e in links {
             if let data = e as? LinkItem {
                 
-                if let src = data.source, let dst = data.target {
-                    self.addLink( src, e )
-                    self.addLink( dst, e )
+                let linkStyle = self.sceneStyle.defaultLineStyle.copy()
+                linkStyle.parseStyle(e.properties)
+                var sr: CGRect = CGRect(x: 0, y: 0, width: 5, height: 5)
+                var tr: CGRect = CGRect(x: 0, y: 5, width: 5, height: 5)
                 
-                    let sourceRect = drawables[src]?.getBounds()
-                    let targetRect = drawables[dst]?.getBounds()
-                    
-                    if let sr = sourceRect, let tr = targetRect {
-                        let linkStyle = self.sceneStyle.defaultLineStyle.copy()
-                        linkStyle.parseStyle(e.properties)
-                        
-                        let linkDr = DrawableLine(
-                            source: sr,
-                            target: tr,
-                            style: linkStyle,
-                            control: CGPoint(x: e.x, y: e.y ))
-                        
-                        if data.name.count > 0 {
-                            linkDr.addLabel(data.name)
-                        }
-                        
-                        linkDr.item = e
-                        drawables[e] = linkDr
-                        elementDrawable.insert(
-                            linkDr, at: 0)
-                    }
+                if let src = data.source, let srr = (drawables[src]?.getBounds()) {
+                    self.addLink( src, e )
+                    sr = srr
                 }
+                if let dst = data.target, let trr = drawables[dst]?.getBounds() {
+                    self.addLink( dst, e )
+                    tr = trr
+                }
+                let linkDr = DrawableLine(
+                    source: sr,
+                    target: tr,
+                    style: linkStyle,
+                    control: CGPoint(x: e.x, y: e.y ))
+                
+                if data.name.count > 0 {
+                    linkDr.addLabel(data.name)
+                }
+                
+                linkDr.item = e
+                drawables[e] = linkDr
+                elementDrawable.insert(
+                    linkDr, at: 0)
             }
         }
         return elementDrawable

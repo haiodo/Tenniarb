@@ -328,7 +328,7 @@ CQ
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="167" y="-1" width="45" height="23"/>
+                                                                    <rect key="frame" x="167.5" y="-1" width="45" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
@@ -470,7 +470,7 @@ CQ
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="645" y="6" width="54" height="23"/>
+                                                                            <rect key="frame" x="645.5" y="6" width="54" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -485,7 +485,7 @@ CQ
                                                                             </connections>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SXa-LX-SJ4" userLabel="Export_printing">
-                                                                            <rect key="frame" x="599" y="6" width="26" height="23"/>
+                                                                            <rect key="frame" x="600.5" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="po3-ln-0Dn">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -493,8 +493,8 @@ CQ
                                                                                 </segments>
                                                                             </segmentedCell>
                                                                         </segmentedControl>
-                                                                        <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Resources_actions">
-                                                                            <rect key="frame" x="553" y="6" width="26" height="23"/>
+                                                                        <segmentedControl hidden="YES" verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Resources_actions">
+                                                                            <rect key="frame" x="555.5" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="vqf-vq-Awc">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
