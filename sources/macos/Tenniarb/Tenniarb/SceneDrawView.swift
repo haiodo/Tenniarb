@@ -271,11 +271,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             oldEditMode = oldScene.editingMode
         }
         
-        var darkMode = false
-
-        if self.effectiveAppearance.name != .vibrantLight {
-            darkMode = true
-        }
+        let darkMode = isDarkMode()
         
         let scene = DrawableScene(self.element!, darkMode: darkMode)
         
@@ -765,6 +761,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    fileprivate func isDarkMode() -> Bool {
+        if #available(OSX 10.14, *) {
+            return NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark
+        }
+        return false
+    }
+    
     override func draw(_ dirtyRect: NSRect) {
         if( self.element == nil) {
             return
@@ -773,27 +776,20 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         // Check if apperance changed
         
-        var nDarkMode = false
-        if self.effectiveAppearance.name != .vibrantLight {
-            nDarkMode = true
-        }
+        let nDarkMode = isDarkMode()
         if self.scene?.darkMode != nDarkMode {
             buildScene()
         }
         
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             // Draw background
-            
-            if #available(OSX 10.14, *) {
-                if NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark {
-                    context.setFillColor(backgroundDark)
-                }
-                else {
-                    context.setFillColor(background)
-                }
-            } else {
+            if nDarkMode {
+                context.setFillColor(backgroundDark)
+            }
+            else {
                 context.setFillColor(background)
             }
+
             context.fill(dirtyRect)
             
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
@@ -811,8 +807,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.setStrokeColor(CGColor.init(red: 1, green: 0, blue: 0, alpha: 0.1))
         }
-//        let ed = NSDate()
-//        Swift.debugPrint("Draw time: ", ed.timeIntervalSince1970 - st.timeIntervalSince1970, dirtyRect)
     }
     
     public func selectAllItems() {

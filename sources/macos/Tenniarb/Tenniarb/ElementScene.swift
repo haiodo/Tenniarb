@@ -695,7 +695,7 @@ open class DrawableScene: DrawableContainer {
         
         if let bodyNode = e.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
-            let bodyStyle = self.sceneStyle.defaultItemStyle.copy()
+            let bodyStyle = style.copy()
             bodyStyle.fontSize -= 2 // Make a bit smaller for body
             var textValue = ""
             if let bodyBlock = bodyNode.getChild(1) {
