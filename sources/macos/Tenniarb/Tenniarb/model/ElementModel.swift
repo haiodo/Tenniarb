@@ -135,7 +135,10 @@ public class Element {
         
         if cloneElement {
             cloneEl.elements.append(contentsOf: self.elements.map({
-                (el) in el.clone(cloneItems: true, cloneElement: true)
+                (el) in
+                let copy = el.clone(cloneItems: true, cloneElement: true)
+                copy.parent = cloneEl
+                return copy
             }))
         }
         
