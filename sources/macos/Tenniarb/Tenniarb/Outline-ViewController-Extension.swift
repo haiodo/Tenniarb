@@ -22,6 +22,7 @@ class OutlineTextFieldCell: NSTextFieldCell {
         textObj.textColor = NSColor.black
         textObj.backgroundColor = NSColor.white
     }
+    
 }
 class OutlineNSTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
@@ -36,13 +37,125 @@ class OutlineNSTableRowView: NSTableRowView {
     }
 }
 
-class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
+class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate {
+    override func menu(for event: NSEvent) -> NSMenu? {
+        if event.buttonNumber != 1 {
+            return nil
+        }
+        
+        if let delegate = self.delegate as? OutlineViewControllerDelegate {
+            abortEditing()
+            if let menu = delegate.menu(for: event, self) {
+                menu.autoenablesItems = true
+                menu.delegate = self
+                return menu
+            }
+        }
+        return nil
+    }
+    
+    override func rightMouseDown(with event: NSEvent) {
+        Swift.debugPrint("Right mouse down")
+//        super.rightMouseDown(with: event)
+    }
+    
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        return true
+    }
+    func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
+        item.isEnabled = true
+        return true
+    }
+    override func keyDown(with event: NSEvent) {
+        if let delegate = self.delegate as? OutlineViewControllerDelegate {
+            if delegate.keyDown(for: event, self) {
+               return
+            }
+        }
+        super.keyDown(with: event)
+    }
+    override func editColumn(_ column: Int, row: Int, with event: NSEvent?, select: Bool) {
+        if let evt = event, evt.characters == "\u{0D}" {
+            super.editColumn(column, row: row, with: event, select: select)
+        }
+    }
+}
+
+class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate,NSMenuItemValidation {
     let controller: ViewController
     var draggingItem: Element? = nil
     
     init(_ controller: ViewController ) {
         self.controller = controller
         controller.worldTree.registerForDraggedTypes([NSPasteboard.PasteboardType.string])
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, shouldEdit tableColumn: NSTableColumn?, item: Any) -> Bool {
+        return false
+    }
+    
+    func control(_ control: NSControl, textShouldBeginEditing fieldEditor: NSText) -> Bool {
+        Swift.debugPrint("HI")
+        return true
+    }
+    
+    func keyDown( for event: NSEvent, _ outline: OutlineNSOutlineView ) -> Bool {
+        if event.characters == "\u{0D}" {
+            let selectedIndex = controller.worldTree.selectedRow
+            
+            if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
+                outline.editColumn(0, row: selectedIndex, with: event, select: true)
+                return true
+            }
+        }
+        return false
+    }
+    @objc  func addElementAction(_ sender: NSMenuItem) {
+        
+    }
+    
+    @objc  func duplicateElementAction(_ sender: NSMenuItem) {
+        
+    }
+    
+    @objc  func deleteElementAction(_ sender: NSMenuItem) {
+        
+    }
+    
+     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        return true
+    }
+    
+    func menu(for event: NSEvent, _ outline: OutlineNSOutlineView) -> NSMenu? {
+        Swift.debugPrint("Menu")
+        
+        let selectedIndex = controller.worldTree.selectedRow
+        
+        if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
+            let menu = NSMenu()
+            let addAction = NSMenuItem(
+                title: "New element", action: #selector(addElementAction), keyEquivalent: "")
+            
+            let duplicateAction = NSMenuItem(
+                title: "Duplicate", action: #selector(duplicateElementAction), keyEquivalent: "")
+            
+            let deleteAction = NSMenuItem(
+                title: "Delete", action: #selector(deleteElementAction), keyEquivalent: "")
+            menu.addItem(addAction)
+            menu.addItem(duplicateAction)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(deleteAction)
+            return menu
+        }
+        else {
+            // No element selected
+            let menu = NSMenu()
+            let addLinkedAction = NSMenuItem(
+                title: "New element", action: #selector(addElementAction), keyEquivalent: "")
+            
+            return menu
+        }
+        return nil
     }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -188,8 +301,6 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     
     func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
         
-//        print( "accept drop: \((item as? Element)?.name) at \(index)")
-        
         if let dragItem = self.draggingItem {
             if let element = item as? Element {
                 // Check if not moving item into one of its parents.
@@ -215,6 +326,5 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         draggingItem = nil
         return true
     }
-    
 }
 

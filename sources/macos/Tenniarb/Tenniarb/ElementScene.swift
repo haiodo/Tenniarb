@@ -394,6 +394,7 @@ class DrawableItemStyle: DrawableStyle {
 
 class SceneStyle: DrawableStyle {
     var zoomLevel: CGFloat = 1
+    var gridSpan = CGPoint( x: 5, y: 5)
     
     var defaultItemStyle: DrawableItemStyle
     var defaultLineStyle: DrawableLineStyle
@@ -413,7 +414,7 @@ class SceneStyle: DrawableStyle {
             if let value = child.getFloat(1) {
                 self.zoomLevel = CGFloat(value)
             }
-        case "styles":
+        case PersistenceStyleKind.Styles.name:
             // Default styles for entire diagram
             if let childBlock = child.getChild(1), childBlock.kind == .BlockExpr, let children = childBlock.children {
                 for styleChild in children {
@@ -435,7 +436,12 @@ class SceneStyle: DrawableStyle {
                     }
                 }
             }
-            break
+            break;
+        case PersistenceStyleKind.Grid.name:
+            if let x = child.getFloat(1), let y = child.getFloat(2) {
+                self.gridSpan = CGPoint(x: CGFloat(x), y: CGFloat(y))
+            }
+            break;
         default:
             super.parseStyleLine(cmdName, child)
         }

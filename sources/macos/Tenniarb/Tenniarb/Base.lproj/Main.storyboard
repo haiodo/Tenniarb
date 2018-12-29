@@ -357,7 +357,7 @@ CQ
                                                             <rect key="frame" x="0.0" y="0.0" width="217" height="734"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="sequential" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" rowHeight="22" viewBased="YES" floatsGroupRows="NO" indentationPerLevel="10" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb">
+                                                                <outlineView identifier="WorldTree" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="sequential" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" rowHeight="22" viewBased="YES" floatsGroupRows="NO" indentationPerLevel="10" outlineTableColumn="YFI-la-VX8" id="IgX-uM-dvb" customClass="OutlineNSOutlineView" customModule="Tenniarb" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="0.0" width="217" height="734"/>
                                                                     <autoresizingMask key="autoresizingMask"/>
                                                                     <size key="intercellSpacing" width="0.0" height="5"/>
@@ -370,7 +370,7 @@ CQ
                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                             </tableHeaderCell>
-                                                                            <textFieldCell key="dataCell" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
+                                                                            <textFieldCell key="dataCell" alignment="left" title="Text Cell" allowsEditingTextAttributes="YES" id="aB0-mP-Luf">
                                                                                 <font key="font" metaFont="system" size="14"/>
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -390,7 +390,7 @@ CQ
                                                                                         </imageView>
                                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="XGI-aq-4wA" userLabel="ItemCell">
                                                                                             <rect key="frame" x="22" y="0.0" width="219" height="18"/>
-                                                                                            <textFieldCell key="cell" selectable="YES" editable="YES" alignment="left" title="ItemCell" allowsEditingTextAttributes="YES" id="GXh-Ub-nEp" userLabel="ItemCell" customClass="OutlineTextFieldCell" customModule="Tenniarb" customModuleProvider="target">
+                                                                                            <textFieldCell key="cell" selectable="YES" editable="YES" allowsUndo="NO" alignment="left" title="ItemCell" usesSingleLineMode="YES" id="GXh-Ub-nEp" userLabel="ItemCell" customClass="OutlineTextFieldCell" customModule="Tenniarb" customModuleProvider="target">
                                                                                                 <font key="font" metaFont="system" size="14"/>
                                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>

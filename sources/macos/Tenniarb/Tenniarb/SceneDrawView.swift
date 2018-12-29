@@ -539,16 +539,48 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         else if event.characters == "\u{7f}" {
             removeItem()
         }
-//        else if event.characters == " " {
-//            if let active = self.activeElement  {
-//                if let drawable = scene?.drawables[active] {
-//                    let drBounds = drawable.getBounds()
-//                    let off = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
-//                    let rect = CGRect(x: drBounds.minX + off.x, y: drBounds.minY + off.y, width: drBounds.width, height: drBounds.height)
-//                    showPopover(bounds: rect)
-//                }
-//            }
-//        }
+        
+        
+        
+        
+        if let sk = event.specialKey, let sc = self.scene {
+            var ops: [ElementOperation] = []
+            for active in self.activeItems {
+                switch sk {
+                case NSEvent.SpecialKey.leftArrow:
+                    var x = roundf(Float(active.x - sc.sceneStyle.gridSpan.x))
+                    x = x - Float(Int(x) % Int(sc.sceneStyle.gridSpan.x))
+                    let y = active.y
+                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+                case NSEvent.SpecialKey.rightArrow:
+                    var x = roundf(Float(active.x + sc.sceneStyle.gridSpan.x))
+                    x = x - Float(Int(x) % Int(sc.sceneStyle.gridSpan.x))
+                    let y = active.y
+                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+                case NSEvent.SpecialKey.upArrow:
+                    let x = active.x
+                    var y = roundf(Float(active.y + sc.sceneStyle.gridSpan.y))
+                    y = y - Float(Int(y) % Int(sc.sceneStyle.gridSpan.y))
+                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+                case NSEvent.SpecialKey.downArrow:
+                    let x = active.x
+                    var y = roundf(Float(active.y - sc.sceneStyle.gridSpan.y))
+                    y = y - Float(Int(y) % Int(sc.sceneStyle.gridSpan.y))
+                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+                default:
+                    break;
+                }
+            }
+            if ops.count > 0 {
+                store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+                self.setActiveItems(self.activeItems)
+                scheduleRedraw()
+            }
+        }
 //        Swift.debugPrint("Keycode:", event.keyCode, " characters: ", event.characters)
     }
     
@@ -913,6 +945,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     
+    fileprivate func createStylesMenu(_ menu: NSMenu) {
+        let style = NSMenuItem(
+            title: "Style", action: nil, keyEquivalent: "")
+        menu.addItem(style)
+        menu.setSubmenu(styleManager?.createMenu(), for: style)
+    }
+    
     override func menu(for event: NSEvent) -> NSMenu? {
         if event.buttonNumber != 1 {
             return nil
@@ -951,10 +990,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(addLinkedAction)
             menu.addItem(addLinkedCopyAction)
             menu.addItem(NSMenuItem.separator())
-            let style = NSMenuItem(
-                title: "Style", action: nil, keyEquivalent: "")
-            menu.addItem(style)
-            menu.setSubmenu(styleManager?.createMenu(), for: style)
+            createStylesMenu(menu)
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
             
@@ -975,8 +1011,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let menu = NSMenu()
             
             let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
-            
             menu.addItem(addAction)
+            
+            menu.addItem(NSMenuItem.separator())
+            createStylesMenu(menu)
+            
             return menu
         }
     }
