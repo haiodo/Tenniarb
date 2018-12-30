@@ -19,6 +19,7 @@ enum ExportKind: Int {
     case tenn
     case separator
     case preview
+    case pdf
 }
 
 class ExportType: Hashable {
@@ -57,6 +58,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         ExportType(name:"Export current to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Export selection to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Preview printable value", exportType: .preview, imgName: "Icon")
+        ExportType(name:"Export as PDF", exportType: .pdf, imgName: "Icon"),
     ]
     
     var scene: DrawableScene? {
@@ -95,9 +97,10 @@ class ExportManager: NSObject, NSMenuDelegate {
             space: colorSpace,
             bitmapInfo: bitmapInfo.rawValue)
         
+        
         let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
-        //                scene.offset = bounds.origin
         NSGraphicsContext.current = nsContext
+        
         context?.scaleBy(x: scaleFactor, y: scaleFactor)
         context?.saveGState()
         scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
@@ -331,6 +334,8 @@ class ExportManager: NSObject, NSMenuDelegate {
                 exportJson(false)
             case .tenn:
                 exportTenn()
+            case .pdf:
+                exportPdf()
             case .preview:
                 if let scene = scene {
                     let img = renderImage(scene)
@@ -364,4 +369,42 @@ class ExportManager: NSObject, NSMenuDelegate {
         return menu
     }
     
+    func exportPdf() {
+        if let scene = self.scene {
+            if let element = self.element {
+                let panel = NSPDFPanel()
+                panel.defaultFileName = element.name
+                
+                let info = NSPDFInfo()
+                panel.beginSheet( with: info, modalFor: nil, completionHandler: { (result) -> Void in
+                    if result == 1 {
+                        let bounds = scene.getBounds()
+                        let ox = CGFloat(15)
+                        let oy = CGFloat(15)
+                        
+//                        let scaleFactor = self.viewController!.view.window!.backingScaleFactor
+                        
+                        var imgBounds = bounds.insetBy(dx: CGFloat((-1 * ox) * 2), dy: CGFloat((-1 * oy) * 2))
+                        
+                        imgBounds.origin = CGPoint(x:0, y:0)
+                        let context = CGContext(info.url! as CFURL, mediaBox: &imgBounds, nil)
+                        context?.beginPDFPage(nil)
+                        
+                        let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
+                        NSGraphicsContext.current = nsContext
+                        
+//                        context?.scaleBy(x: scaleFactor, y: scaleFactor)
+                        context?.saveGState()
+                        scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
+                        scene.layout(bounds, bounds)
+                        scene.draw(context: context!)
+                        context?.endPDFPage()
+                        context?.closePDF()
+                        
+                    }
+                }
+                )
+            }
+        }
+    }
 }

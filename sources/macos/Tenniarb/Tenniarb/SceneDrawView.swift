@@ -203,17 +203,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     func notifyChanges(_ evt: ModelEvent) {
         // We should be smart anought to not rebuild all drawable scene every time
         if evt.items.count > 0, let el = self.element {
+            var newActive: [DiagramItem] = []
             for (k, v) in evt.items {
                 if k.kind == .Item || Set([.Append, .Update]).contains(v)  {
                     if el.items.contains(k) {
-                        setActiveItem(k)
-                        break
-                    }
-                    else {
-                        setActiveItem(nil)
+                        newActive.append(k)
                     }
                 }
             }
+            setActiveItems(newActive)
         }
         if evt.kind == .Structure  {
             self.buildScene()
@@ -577,7 +575,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if ops.count > 0 {
                 store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
-                self.setActiveItems(self.activeItems)
+//                self.setActiveItems(self.activeItems)
                 scheduleRedraw()
             }
         }
