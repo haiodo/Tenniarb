@@ -514,6 +514,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     @IBAction func selectAllItems(_ sender: NSMenuItem) {
         if self.mode == .Normal {
             selectAllItems()
+        } else if self.mode == .Editing, let eb = self.editBox {
+            eb.selectAll(sender)
         }
     }
     
