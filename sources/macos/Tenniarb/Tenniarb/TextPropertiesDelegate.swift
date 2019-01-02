@@ -39,10 +39,12 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     let symbolColorWhite = NSColor(red: 0x81/255.0, green: 0x5f/255.0, blue: 0x03/255.0, alpha: 1)
     let stringColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
     let numberColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
+    let expressionColorWhite = NSColor(red: 100/255.0, green: 100/255.0, blue: 133/255.0, alpha: 1)
     
     let symbolColorDark = NSColor(red: 0x75/255.0, green: 0xb4/255.0, blue: 0x92/255.0, alpha: 1)
     let stringColorDark = NSColor(red: 0xfc/255.0, green: 0x6a/255.0, blue: 0x5d/255.0, alpha: 1)
     let numberColorDark = NSColor(red: 0x96/255.0, green: 0x86/255.0, blue: 0xf5/255.0, alpha: 1)
+    let expressionColorDark = NSColor(red: 198/255.0, green: 124/255.0, blue: 72/255.0, alpha: 1)
     
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
@@ -98,6 +100,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         let symbolColor = !darkMode ? symbolColorWhite: symbolColorDark
         let stringColor = !darkMode ? stringColorWhite: stringColorDark
         let numberColor = !darkMode ? numberColorWhite: numberColorDark
+        let expressionColor = !darkMode ? expressionColorWhite: expressionColorDark
         
         var tok = lexer.getToken()
         while tok != nil {
@@ -112,6 +115,13 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     stringColor, range: NSMakeRange(start, size))
+            case .expression, .expressionBlock:
+                // Check to include "${' or $( as part of sumbols.
+                let start = tok!.pos - 2 // Since we have } or ) at end
+                let size = tok!.size + 3
+                
+                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
+                    expressionColor, range: NSMakeRange(start, size))
                 
             case .floatLit, .intLit:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:

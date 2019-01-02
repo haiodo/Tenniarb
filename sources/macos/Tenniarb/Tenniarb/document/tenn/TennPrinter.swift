@@ -67,9 +67,11 @@ extension TennNode {
                     result.append("\"\(quote(tok.literal))\"")
                 }
             case .Expression:
-                result.append("$(\(quote(tok.literal, ")")))")
+                result.append("$(\(tok.literal)))")
             case .ExpressionBlock:
-                result.append("${\(quote(tok.literal, "}"))}")
+                result.append("${")
+                result.append("\(tok.literal)")
+                result.append("\(getSeq(pattern: TennNode.spaces, count: indent + 1))}")
             default:
                 break
             }

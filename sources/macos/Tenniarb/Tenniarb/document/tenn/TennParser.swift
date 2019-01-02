@@ -62,7 +62,10 @@ public class TennParser {
     func reset( _ source: String) {
         self.lexer = TennLexer( source )
         self.lexer?.errorHandler = { (_ code: LexerError, _ stPos: Int, _ pos:Int) -> Void in
-            if code == .EndOfLineReadString {
+            switch code {
+            case .EndOfExpressionReadError:
+                self.errors.report(code: .wrongBlockTerminator, msg: "Unclosed expression terminal", token: nil)
+            case .EndOfLineReadString:
                 self.errors.report(code: .EndOfFileDuringStringRead, msg: "Unclosed string terminal", token: nil)
             }
         }

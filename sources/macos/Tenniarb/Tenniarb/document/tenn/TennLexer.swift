@@ -286,9 +286,9 @@ public class TennLexer {
             case "$":
                 let nc = self.next()
                 if nc == "(" {
-                    readExpression(r: &r, lit: ")", type: .expression)
+                    readExpression(r: &r, startLit: "(", endLit: ")", type: .expression)
                 } else if nc == "{" {
-                    readExpression(r: &r, lit: "}", type: .expressionBlock)
+                    readExpression(r: &r, startLit: "{", endLit: "}", type: .expressionBlock)
                 } else {
                     r.append(cc)
                     self.inc()
@@ -347,12 +347,13 @@ public class TennLexer {
         return false
     }
     
-    private func readExpression( r: inout String, lit: Character, type: TennTokenType) {
+    private func readExpression( r: inout String, startLit: Character, endLit: Character, type: TennTokenType) {
         self.add(check: &r)
         self.inc(2)
         
         let stPos = self.pos
         var foundEnd = false
+        var indent = 1
         while self.pos < self.buffer.count {
             let curChar = self.charAt()
             if  curChar == "\n" {
@@ -360,27 +361,36 @@ public class TennLexer {
                 self.currentChar = 0;
                 r.append(curChar)
             }
-            else if curChar == lit {
-                self.inc()
-                foundEnd = true
-                break
+            else if curChar == startLit {
+                indent += 1
+                r.append(self.charAt())
             }
-            else if (self.charAt() == "\\" && self.next() == lit) {
-                r.append(self.next())
-                self.inc(1)
-            } else {
+            else if curChar == endLit {
+                indent -= 1
+                if indent == 0 {
+                    foundEnd = true
+                    break
+                }
+                else {
+                    r.append(self.charAt())
+                }
+            }
+            else {
                 r.append(self.charAt())
             }
             self.inc()
-        }
-        if (r.count > 0) {
-            self.add(type: type ,literal: r)
-            r.removeAll(keepingCapacity: true)
         }
         if !foundEnd {
             if let h = self.errorHandler {
                 h(.EndOfExpressionReadError, stPos, pos)
             }
+        }
+        else {
+            if (r.count > 0) {
+                self.add(type: type ,literal: r)
+                r.removeAll(keepingCapacity: true)
+            }
+            self.inc()
         }
     }
 }
