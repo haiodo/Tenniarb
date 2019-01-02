@@ -18,6 +18,8 @@ public enum TennNodeKind {
     case Command
     case Statements
     case BlockExpr
+    case Expression
+    case ExpressionBlock
 }
 
 public class TennNode {

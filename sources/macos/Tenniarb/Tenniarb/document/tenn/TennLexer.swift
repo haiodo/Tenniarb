@@ -20,7 +20,8 @@ public enum TennTokenType {
     case comma
     case colon
     case semiColon
-    case hash
+    case expression         // $(expression)
+    case expressionBlock    // ${expression block;}
 }
 
 public class TennToken {
@@ -43,6 +44,7 @@ public class TennToken {
 
 public enum LexerError {
     case EndOfLineReadString
+    case EndOfExpressionReadError
 }
 
 public class TennLexer {
@@ -172,8 +174,6 @@ public class TennLexer {
                 break
             }
             else if (self.charAt() == "\\" && self.next() == lit) {
-                // Pass escaped
-//                r.append(self.charAt())
                 r.append(self.next())
                 self.inc(1)
             } else {
@@ -215,21 +215,7 @@ public class TennLexer {
             self.inc()
         }
     }
-    
-    private func processHash(_ r: inout String) {
-        self.add(check: &r)
-        
-        while self.pos < self.buffer.count {
-            if (charAt() == "\n") {
-                self.currentLine += 1
-                self.currentChar = 0
-            }
-            r.append(charAt())
-            self.inc()
-        }
-        self.add(type: .hash, literal: r)
-        r.removeAll(keepingCapacity: true)
-    }
+
     
     private func processComment( _ r: inout String, _ cc: Character) {
         if self.next() == "*" {
@@ -297,13 +283,22 @@ public class TennLexer {
                 }
             case "/":
                 self.processComment(&r, cc)
+            case "$":
+                let nc = self.next()
+                if nc == "(" {
+                    readExpression(r: &r, lit: ")", type: .expression)
+                } else if nc == "{" {
+                    readExpression(r: &r, lit: "}", type: .expressionBlock)
+                } else {
+                    r.append(cc)
+                    self.inc()
+                }
+                break;
             case "\'", "\"":
                 self.readString(r: &r, lit: cc)
                 if !self.tokenBuffer.isEmpty {
                     return self.tokenBuffer.removeFirst()
                 }
-            case "#":
-                self.processHash(&r)
             default:
                 r.append(cc)
                 self.inc()
@@ -350,6 +345,43 @@ public class TennLexer {
             return true
         }
         return false
+    }
+    
+    private func readExpression( r: inout String, lit: Character, type: TennTokenType) {
+        self.add(check: &r)
+        self.inc(2)
+        
+        let stPos = self.pos
+        var foundEnd = false
+        while self.pos < self.buffer.count {
+            let curChar = self.charAt()
+            if  curChar == "\n" {
+                self.currentLine += 1;
+                self.currentChar = 0;
+                r.append(curChar)
+            }
+            else if curChar == lit {
+                self.inc()
+                foundEnd = true
+                break
+            }
+            else if (self.charAt() == "\\" && self.next() == lit) {
+                r.append(self.next())
+                self.inc(1)
+            } else {
+                r.append(self.charAt())
+            }
+            self.inc()
+        }
+        if (r.count > 0) {
+            self.add(type: type ,literal: r)
+            r.removeAll(keepingCapacity: true)
+        }
+        if !foundEnd {
+            if let h = self.errorHandler {
+                h(.EndOfExpressionReadError, stPos, pos)
+            }
+        }
     }
 }
 

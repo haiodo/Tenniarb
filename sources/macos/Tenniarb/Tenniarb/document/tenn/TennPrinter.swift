@@ -27,9 +27,10 @@ extension TennNode {
         }
         return sb
     }
-    private func quote(_ val: String) -> String {
-        return val.replacingOccurrences(of: "\"", with: "\\\"", options: .literal, range: nil)
+    private func quote(_ val: String, _ tok: String = "\"") -> String {
+        return val.replacingOccurrences(of: tok, with: "\\" + tok, options: .literal, range: nil)
     }
+
     public func childsToStr(_ result: inout String, _ ind: Int, _ clean: Bool) {
         if let children = self.children {
             var i = 0
@@ -63,27 +64,12 @@ extension TennNode {
                     result.append(tok.literal)
                 }
                 else {
-//                    let parts = tok.literal.components(separatedBy: "\n")
-//                    if parts.count > 1 {
-//                        var c = 0
-//                        for p in parts {
-//                            if c == parts.count - 1 {
-//                                makeSeq(&result, pattern: TennNode.spaces, count: indent+1)
-//                                result.append("\"\(quote(p))\"")
-//                            }
-//                            else {
-//                                if c != 0 {
-//                                    makeSeq(&result, pattern: TennNode.spaces, count: indent+1)
-//                                }
-//                                result.append("\"\(quote(p))\\n\" + \n")
-//                            }
-//                            c += 1
-//                        }
-//                    }
-//                    else {
                     result.append("\"\(quote(tok.literal))\"")
-//                    }
                 }
+            case .Expression:
+                result.append("$(\(quote(tok.literal, ")")))")
+            case .ExpressionBlock:
+                result.append("${\(quote(tok.literal, "}"))}")
             default:
                 break
             }

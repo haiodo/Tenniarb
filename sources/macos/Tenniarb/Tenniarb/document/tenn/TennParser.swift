@@ -166,6 +166,10 @@ public class TennParser {
                 cmdNode.add(TennNode.newNode(kind: .IntLit, self.tok))
             case .floatLit:
                 cmdNode.add(TennNode.newNode(kind: .FloatLit, self.tok))
+            case .expression:
+                cmdNode.add(TennNode.newNode(kind: .Expression, self.tok))
+            case .expressionBlock:
+                cmdNode.add(TennNode.newNode(kind: .ExpressionBlock, self.tok))
             case .curlyLe:
                 if let stmtNode = self.parseBlock(TennTokenType.curlyLe, TennTokenType.curlyRi, self.tok!) {
                     cmdNode.add(stmtNode)
