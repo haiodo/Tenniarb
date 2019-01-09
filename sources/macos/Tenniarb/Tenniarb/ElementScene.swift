@@ -683,9 +683,49 @@ open class DrawableScene: DrawableContainer {
         return rectBox
     }
     
+    private func spaceCount(_ value: Substring) -> Int {
+        let chars = Array(value)
+        var count = 0
+        for c in chars {
+            if c == " " {
+                count += 1
+            }
+            else {
+                break
+            }
+        }
+        return count
+    }
+
     fileprivate func prepareBodyText(_ textValue: String) -> String {
-        let content = textValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
-        return content.split(separator: "\n").map({body in body.trimmingCharacters(in: NSCharacterSet.whitespaces)}).joined(separator: "\n")
+        
+        let content = textValue.replacingOccurrences(of: "\\n", with: "\n")
+                                .replacingOccurrences(of: "\t", with: "    ")
+                                
+        var lines = content.split(separator: "\n")
+        var minCount = Int.max
+        for l in lines {
+            if l.trimmingCharacters(in: .whitespacesAndNewlines).count != 0 {
+                let ll = spaceCount(l)
+                if ll < minCount {
+                    minCount = ll
+                }
+            }
+        }
+        
+        while lines.count > 0 && lines[lines.endIndex-1].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+            lines.removeLast()
+        }
+        
+        return lines.map({body in
+            if body.trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+                return String(body)
+            }
+            else {
+                return String(body[body.index(body.startIndex, offsetBy: minCount)...])
+            }
+            
+        }).joined(separator: "\n")
     }
     
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
@@ -712,7 +752,7 @@ open class DrawableScene: DrawableContainer {
                         if let txtValue = bodyText.getIdent(1) {
                             textValue = txtValue
                         }
-                        else if let block = bodyText.getChild(1), block.kind == .BlockExpr {
+                        else if let block = bodyText.getChild(1), (block.kind == .BlockExpr || block.kind == .ExpressionBlock) {
                             block.childsToStr(&textValue, 0, true)
                         }
                     }
@@ -726,8 +766,8 @@ open class DrawableScene: DrawableContainer {
                 textColor: bodyStyle.textColor,
                 fontSize: bodyStyle.fontSize,
                 layout: [.Left, .Bottom],
-                bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
-                padding: CGPoint(x:8, y:0)
+                bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 4)),
+                padding: CGPoint(x:8, y:4)
             )
         }
         

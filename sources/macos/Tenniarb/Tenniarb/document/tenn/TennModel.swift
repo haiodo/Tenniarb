@@ -99,7 +99,7 @@ public class TennNode {
     }
     
     public func getIdentText() -> String? {
-        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit  {
+        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression  {
             return token?.literal
         }
         return nil

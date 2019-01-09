@@ -71,7 +71,7 @@ extension TennNode {
             case .ExpressionBlock:
                 result.append("${")
                 result.append("\(tok.literal)")
-                result.append("\(getSeq(pattern: TennNode.spaces, count: indent + 1))}")
+                result.append("}")
             default:
                 break
             }

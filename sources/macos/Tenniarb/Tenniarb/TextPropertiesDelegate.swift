@@ -21,12 +21,19 @@ class TennTextView: NSTextView {
             attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)]
         )
         self.textStorage?.insert(str, at: loc)
+        
+        if let dlg = (self.delegate as? TextPropertiesDelegate) {
+            dlg.sheduleUpdate()
+        }
     }
     override func insertTab(_ sender: Any?) {
         let str = NSAttributedString(
             string:"    ",
             attributes:[NSAttributedString.Key.font:NSFont.systemFont(ofSize: defaultFontSize)])
         self.textStorage?.insert(str, at: self.selectedRange().location)
+        if let dlg = (self.delegate as? TextPropertiesDelegate) {
+            dlg.sheduleUpdate()
+        }
     }
 }
 
@@ -140,7 +147,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         highlight()
     }
     
-    fileprivate func sheduleUpdate( ) {
+    public func sheduleUpdate( ) {
         let curChanges = self.changes
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
             if curChanges == self.changes {
