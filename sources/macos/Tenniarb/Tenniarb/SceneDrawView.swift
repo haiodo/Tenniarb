@@ -109,6 +109,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var drawScheduled: Bool = false
     
+    var lastInvalidRect: CGRect? = nil
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.acceptsTouchEvents=true
@@ -117,23 +119,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var prevTouch: NSTouch? = nil
     
     @objc override func touchesBegan(with event: NSEvent) {
-        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
+        let wloc = event.locationInWindow
+        let vp = self.convert(wloc, from: nil)
+        
+        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging || self.mode == .DiagramMove {
             return
         }
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
-        if touches.count == 2 {
+        if touches.count == 2 && self.bounds.contains(vp) {
             prevTouch = touches.first
         }
     }
     
-//    override func scrollWheel(with event: NSEvent) {
-//        Swift.debugPrint("Scroll", event)
-//    }
-    
     func scheduleRedraw() {
         scheduleRedraw(invalidRect: nil)
     }
-    var lastInvalidRect: CGRect? = nil
+    
     fileprivate func scheduleRedraw( invalidRect: CGRect? ) {
         if !self.drawScheduled {
             drawScheduled = true
@@ -160,29 +161,43 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
         }
+        let wloc = event.locationInWindow
+        let vp = self.convert(wloc, from: nil)
+        
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
-        if touches.count == 2 {
+        Swift.debugPrint(" touches.count = \(touches.count)")
+        if touches.count == 2 && self.bounds.contains(vp) {
             if prevTouch == nil {
                 prevTouch = touches.first
                 return
             }
             var touch: NSTouch? = nil
+            var diffTouch: NSTouch? = nil
             for t in touches {
                 if t.identity.isEqual(prevTouch?.identity) {
                     touch = t
                     break
+                } else {
+                    diffTouch = t
                 }
             }
             if touch != nil {
                 let np1 = prevTouch!.normalizedPosition
                 let np2 = touch!.normalizedPosition
                 
-                self.ox += (np2.x-np1.x)*prevTouch!.deviceSize.width*3
-                self.oy += (np2.y-np1.y)*prevTouch!.deviceSize.height*3
+                let dx = (np2.x-np1.x)*prevTouch!.deviceSize.width*3
+                let dy = (np2.y-np1.y)*prevTouch!.deviceSize.height*3
+                self.ox += dx
+                self.oy += dy
+                Swift.debugPrint("DX=\(dx) DY=\(dy)")
                 
                 scheduleRedraw()
             }
-            prevTouch = touch
+            if touch != nil {
+                prevTouch = touch
+            } else {
+                prevTouch = diffTouch
+            }
         }
     }
     
