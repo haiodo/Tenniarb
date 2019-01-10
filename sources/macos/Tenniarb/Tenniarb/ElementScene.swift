@@ -1232,7 +1232,7 @@ public class DrawableLine: ItemDrawable {
     
     public func updateLayout(source sr: CGRect, target tr: CGRect) {
         self.extraPoints.removeAll()
-
+        
         if let layout = self.style.layout, layout.starts(with: "middle") {
             
             let x1 = sr.origin.x
@@ -1344,7 +1344,10 @@ public class DrawableLine: ItemDrawable {
             
             let hasControl = self.control != CGPoint.zero
             
-            let fromToLen = sqrt(pow(p1.x-p2.x,2)+pow(p1.y-p2.y,2))
+            var fromToLen = sqrt(pow(p1.x-p2.x,2)+pow(p1.y-p2.y,2))
+            if fromToLen == 0 {
+                fromToLen = 1
+            }
             let fTo = CGPoint(x: (p2.x-p1.x)/fromToLen, y: (p2.y-p1.y)/fromToLen)
             let ctrlPoint = CGPoint(x: p1.x + control.x + fTo.x*fromToLen/2, y: p1.y + fTo.y*fromToLen/2 + control.y)
             
@@ -1429,7 +1432,6 @@ public class DrawableLine: ItemDrawable {
 //        aPath.closeSubpath()
         
         context.addPath(aPath)
-        
         context.drawPath(using: fillType)
         
         if drawArrow {
