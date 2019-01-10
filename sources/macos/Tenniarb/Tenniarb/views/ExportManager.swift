@@ -55,10 +55,11 @@ class ExportManager: NSObject, NSMenuDelegate {
         ExportType(name:"Copy as PNG", exportType: .pngCopy, imgName: "png_logo"),
         ExportType(name:"Copy as JSON", exportType: .jsonCopy, imgName: "json_logo"),
         ExportType(name:"-", exportType: .separator, imgName: "-"),
+        ExportType(name:"Export as PDF", exportType: .pdf, imgName: "pdf_logo"),
+        ExportType(name:"-", exportType: .separator, imgName: "-"),
         ExportType(name:"Export current to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Export selection to file", exportType: .tenn, imgName: "Icon"),
 //        ExportType(name:"Preview printable value", exportType: .preview, imgName: "Icon")
-        ExportType(name:"Export as PDF", exportType: .pdf, imgName: "Icon"),
     ]
     
     var scene: DrawableScene? {
