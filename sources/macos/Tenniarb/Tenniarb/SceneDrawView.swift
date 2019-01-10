@@ -165,7 +165,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let vp = self.convert(wloc, from: nil)
         
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
-        Swift.debugPrint(" touches.count = \(touches.count)")
         if touches.count == 2 && self.bounds.contains(vp) {
             if prevTouch == nil {
                 prevTouch = touches.first
@@ -189,7 +188,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 let dy = (np2.y-np1.y)*prevTouch!.deviceSize.height*3
                 self.ox += dx
                 self.oy += dy
-                Swift.debugPrint("DX=\(dx) DY=\(dy)")
                 
                 scheduleRedraw()
             }
@@ -852,7 +850,74 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             scene.draw(context: context)
             context.restoreGState()
             
-            context.setStrokeColor(CGColor.init(red: 1, green: 0, blue: 0, alpha: 0.1))
+            var leftXItem = CGFloat(0)
+            var rightXItem = CGFloat(0)
+            
+            for d in scene.drawables.values {
+                if let box = d as? RoundBox{
+                    let db = box.getBounds()
+                    
+                    context.setStrokeColor(CGColor(red: 0, green: 0, blue: 0, alpha: 0.3))
+                    context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 0.3))
+
+                    let spos = CGPoint(x: db.minX + scene.offset.x, y: db.minY + scene.offset.y)
+                    if spos.y + db.height - 5 < 0 || (spos.y + 5) > bounds.height {
+                        var ypos = spos.y + db.height
+                        if (spos.y + 5) > bounds.height {
+                            ypos =  bounds.height - spos.y
+                        }
+                        if ypos < 0 {
+                            ypos = 0;
+                        }
+                        
+                        var x = spos.x + db.width/2 - 2.5
+                        var dpos: CGFloat = 0
+                        if x < 0 {
+                            x = 0
+                            dpos = leftXItem
+                            if leftXItem < 5 {
+                                leftXItem += 0.2
+                            }
+                        }
+                        
+                        if x > bounds.width - 5 {
+                            x = bounds.width - 5 - rightXItem
+                            dpos = rightXItem
+                            if rightXItem < 5 {
+                                rightXItem += 0.2
+                            }
+                        }
+                        
+                        if spos.y + 5 > bounds.height {
+                            context.addEllipse(in: CGRect(x: x, y: bounds.height + ypos - 5 - dpos, width: 5 + dpos, height: 5 + dpos))
+                        }
+                        else {
+                            context.addEllipse(in: CGRect(x: x, y: -1 * ypos, width: 5 + dpos, height: 5 + dpos))
+                        }
+                        context.drawPath(using: .fillStroke)
+                    }
+                    
+                    if spos.x + db.width  - 5 < 0 || spos.x + 5 > bounds.width {
+                        
+                        var xpos: CGFloat = 0
+                        if spos.x + db.width > bounds.width {
+                            xpos = bounds.width - 5
+                        }
+                        
+                        var ypos = spos.y + db.height/2
+                        if ypos < 0 {
+                            ypos = 0
+                        }
+                        if ypos > bounds.height - 5 {
+                            ypos = bounds.height - 5
+                        }
+                        
+                        
+                        context.addEllipse(in: CGRect(x: xpos, y: ypos, width: 5, height: 5))
+                        context.drawPath(using: .fillStroke)
+                    }
+                }
+            }
         }
     }
     
