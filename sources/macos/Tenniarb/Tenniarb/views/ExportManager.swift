@@ -106,6 +106,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         context?.saveGState()
         scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
+        scene.darkMode = false
         scene.draw(context: context!)
         context?.restoreGState()
         
