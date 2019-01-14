@@ -647,8 +647,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.mode == .LineDrawing {
             if let source = self.dragElements.first, let target = self.lineTarget {
                     // Create a new line if not yet pressent between elements
-                    
-                store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.scheduleRedraw, props: [TennNode.newCommand("display", TennNode.newStrNode("arrow"))])
+                
+                //TennNode.newCommand("display", TennNode.newStrNode("arrow"))
+                store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.scheduleRedraw, props: [])
             }
                 
             scene?.removeLineTo()
