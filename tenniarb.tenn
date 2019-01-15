@@ -82,7 +82,7 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Layout positions"
         item "Layout positions" {
-            pos -535.0 -16.0
+            pos -501.0 16.0
             color green
             font-size 12
         }
@@ -344,18 +344,15 @@ Engine" {
         }
         link "MVP" "Calculation
 Engine"
-        item "var" {
-            pos -101.228515625 231.0
-        }
-        link "Calculation
-Engine" "var"
         item "expressions" {
             pos -63.228515625 236.0
+            color yellow
         }
         link "Calculation
 Engine" "expressions"
         item "expr dsl" {
             pos -37.228515625 197.0
+            color yellow
         }
         link "Calculation
 Engine" "expr dsl"
@@ -384,14 +381,14 @@ Engine" "expr dsl"
         }
         link "Editing" "Copy/Paste"
         item "Diagram \nPosition widget" {
-            pos -187.650390625 52.0
-            color yellow
+            pos -202.650390625 49.0
+            color green
         }
         link "UI" "Diagram \nPosition widget" {
             pos 6.0 5.0
         }
         item "Export" {
-            pos -444.650390625 -182.0
+            pos -437.650390625 -198.0
             color lightgreen
         }
         link "UI" "Export" {
@@ -424,6 +421,7 @@ Engine" "expr dsl"
         }
         item "PDF" {
             pos -495.546875 -175.0
+            color green
         }
         link "Export" "PDF"
         item "PNG" {
@@ -432,7 +430,7 @@ Engine" "expr dsl"
         }
         link "Export" "PNG"
         item "HTML" {
-            pos -435.546875 -224.0
+            pos -460.546875 -252.0
             color green
         }
         link "Export" "HTML"
@@ -498,6 +496,21 @@ Engine" "expr dsl"
         link "Features" "Export" {
             target-index 1
         }
+        item "SVG" {
+            pos -408.732421875 -251.0
+        }
+        link "Export" "SVG"
+        item "Color matches" {
+            pos -606.62890625 -7.0
+            descr "Need to property match text color if background are selected"
+            color yellow
+        }
+        link "Scene Draw" "Color matches"
+        item "Broken file UI" {
+            pos -56.90625 388.0
+            color yellow
+        }
+        link "Durability" "Broken file UI"
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0

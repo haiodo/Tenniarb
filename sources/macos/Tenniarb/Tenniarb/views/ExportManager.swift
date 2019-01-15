@@ -104,9 +104,11 @@ class ExportManager: NSObject, NSMenuDelegate {
         
         context?.scaleBy(x: scaleFactor, y: scaleFactor)
         context?.saveGState()
+        
+        let scene = DrawableScene(self.element!, darkMode: false)
         scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
-        scene.darkMode = false
+
         scene.draw(context: context!)
         context?.restoreGState()
         
@@ -372,41 +374,41 @@ class ExportManager: NSObject, NSMenuDelegate {
     }
     
     func exportPdf() {
-        if let scene = self.scene {
-            if let element = self.element {
-                let panel = NSPDFPanel()
-                panel.defaultFileName = element.name
-                
-                let info = NSPDFInfo()
-                panel.beginSheet( with: info, modalFor: nil, completionHandler: { (result) -> Void in
-                    if result == 1 {
-                        let bounds = scene.getBounds()
-                        let ox = CGFloat(15)
-                        let oy = CGFloat(15)
-                        
+        if let element = self.element {
+            let panel = NSPDFPanel()
+            panel.defaultFileName = element.name
+            
+            let info = NSPDFInfo()
+            panel.beginSheet( with: info, modalFor: nil, completionHandler: { (result) -> Void in
+                if result == 1 {
+                    let scene = DrawableScene(element, darkMode: false)
+                    
+                    let bounds = scene.getBounds()
+                    let ox = CGFloat(15)
+                    let oy = CGFloat(15)
+                    
 //                        let scaleFactor = self.viewController!.view.window!.backingScaleFactor
-                        
-                        var imgBounds = bounds.insetBy(dx: CGFloat((-1 * ox) * 2), dy: CGFloat((-1 * oy) * 2))
-                        
-                        imgBounds.origin = CGPoint(x:0, y:0)
-                        let context = CGContext(info.url! as CFURL, mediaBox: &imgBounds, nil)
-                        context?.beginPDFPage(nil)
-                        
-                        let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
-                        NSGraphicsContext.current = nsContext
-                        
+                    
+                    var imgBounds = bounds.insetBy(dx: CGFloat((-1 * ox) * 2), dy: CGFloat((-1 * oy) * 2))
+                    
+                    imgBounds.origin = CGPoint(x:0, y:0)
+                    let context = CGContext(info.url! as CFURL, mediaBox: &imgBounds, nil)
+                    context?.beginPDFPage(nil)
+                    
+                    let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
+                    NSGraphicsContext.current = nsContext
+                    
 //                        context?.scaleBy(x: scaleFactor, y: scaleFactor)
-                        context?.saveGState()
-                        scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
-                        scene.layout(bounds, bounds)
-                        scene.draw(context: context!)
-                        context?.endPDFPage()
-                        context?.closePDF()
-                        
-                    }
+                    context?.saveGState()
+                    scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
+                    scene.layout(bounds, bounds)
+                    scene.draw(context: context!)
+                    context?.endPDFPage()
+                    context?.closePDF()
+                    
                 }
-                )
             }
+            )
         }
     }
 }
