@@ -213,7 +213,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         return target
     }
     
-    @IBAction func duplicateItem( _ sender: NSMenuItem ) {
+    @IBAction public func duplicateItem( _ sender: NSMenuItem ) {
         switch findTarget() {
         case 1:
             if let active = self.selectedElement {
@@ -256,7 +256,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         self.present(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .maxY, behavior: .transient)
         
     }
-    private func handleAddElement() {
+    public func handleAddElement() {
         let newEl = Element(name: "Unnamed element: " + String(itemIndex))
         self.itemIndex += 1
         var active: Element?
@@ -282,7 +282,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         
     }
-    private func handleRemoveElement() {
+    public func handleRemoveElement() {
         if let active = self.selectedElement {
             if let parent = active.parent {
                 _ = parent.remove(active)

@@ -41,6 +41,7 @@
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
 		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
+		0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */; };
 		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -113,6 +114,7 @@
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
 		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
+		0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayout.swift; sourceTree = "<group>"; };
 		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -269,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				0C4C16071F2E369A000C5410 /* LayoutBase.swift */,
+				0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */,
 			);
 			path = layout;
 			sourceTree = "<group>";
@@ -433,6 +436,7 @@
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
 				0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
+				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,

@@ -38,32 +38,7 @@ class OutlineNSTableRowView: NSTableRowView {
 }
 
 class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate {
-    override func menu(for event: NSEvent) -> NSMenu? {
-        if event.buttonNumber != 1 {
-            return nil
-        }
-        
-        if let delegate = self.delegate as? OutlineViewControllerDelegate {
-            abortEditing()
-            if let menu = delegate.menu(for: event, self) {
-                menu.autoenablesItems = true
-                menu.delegate = self
-                return menu
-            }
-        }
-        return nil
-    }
-    
-    override func rightMouseDown(with event: NSEvent) {
-        Swift.debugPrint("Right mouse down")
-//        super.rightMouseDown(with: event)
-    }
-    
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        return true
-    }
-    func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
-        item.isEnabled = true
         return true
     }
     override func keyDown(with event: NSEvent) {
@@ -88,6 +63,8 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     init(_ controller: ViewController ) {
         self.controller = controller
         controller.worldTree.registerForDraggedTypes([NSPasteboard.PasteboardType.string])
+        super.init()
+        controller.worldTree.menu = createMenu()
     }
     
     func outlineView(_ outlineView: NSOutlineView, shouldEdit tableColumn: NSTableColumn?, item: Any) -> Bool {
@@ -111,51 +88,50 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return false
     }
     @objc  func addElementAction(_ sender: NSMenuItem) {
-        
+        controller.handleAddElement()
     }
     
     @objc  func duplicateElementAction(_ sender: NSMenuItem) {
-        
+        controller.duplicateItem(sender)
     }
     
     @objc  func deleteElementAction(_ sender: NSMenuItem) {
-        
+        controller.handleRemoveElement()
     }
     
      func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        return true
-    }
-    
-    func menu(for event: NSEvent, _ outline: OutlineNSOutlineView) -> NSMenu? {
-        Swift.debugPrint("Menu")
-        
         let selectedIndex = controller.worldTree.selectedRow
         
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
-            let menu = NSMenu()
-            let addAction = NSMenuItem(
-                title: "New element", action: #selector(addElementAction), keyEquivalent: "")
-            
-            let duplicateAction = NSMenuItem(
-                title: "Duplicate", action: #selector(duplicateElementAction), keyEquivalent: "")
-            
-            let deleteAction = NSMenuItem(
-                title: "Delete", action: #selector(deleteElementAction), keyEquivalent: "")
-            menu.addItem(addAction)
-            menu.addItem(duplicateAction)
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(deleteAction)
-            return menu
+            if el.kind == .Root && menuItem.action == #selector(deleteElementAction) {
+                return false
+            }
+            return true
         }
-        else {
-            // No element selected
-            let menu = NSMenu()
-            let addLinkedAction = NSMenuItem(
-                title: "New element", action: #selector(addElementAction), keyEquivalent: "")
-            
-            return menu
-        }
-        return nil
+        return false
+    }
+    
+    func createMenu() -> NSMenu? {
+        Swift.debugPrint("Menu")
+        
+        let menu = NSMenu()
+        let addAction = NSMenuItem(
+            title: "New element", action: #selector(addElementAction), keyEquivalent: "")
+        addAction.target = self
+        
+        let duplicateAction = NSMenuItem(
+            title: "Duplicate", action: #selector(duplicateElementAction), keyEquivalent: "")
+        
+        duplicateAction.target = self
+        
+        let deleteAction = NSMenuItem(
+            title: "Delete", action: #selector(deleteElementAction), keyEquivalent: "")
+        deleteAction.target = self
+        menu.addItem(addAction)
+        menu.addItem(duplicateAction)
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(deleteAction)
+        return menu
     }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
