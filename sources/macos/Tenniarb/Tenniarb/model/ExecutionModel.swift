@@ -67,7 +67,19 @@ public class TemporaryExecutionContext {
             // This is diagram item
             Element.traverseBlock(source, {(cmdName, blChild) -> Void in
                 if blChild.count > 1 {
-                    self.context?.setObject(blChild.getIdent(1), forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                    if let nde = blChild.getChild(1), let identText = nde.getIdentText() {
+                        var value: Any = identText
+                        switch nde.kind {
+                        case .FloatLit:
+                            value = Float(identText) ?? -1.0
+                        case .IntLit:
+                            value = Int(identText) ?? 0
+                        default:
+                            break
+                        }
+                        self.context?.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                    
+                    }
                 }
             })
         }
