@@ -9,13 +9,6 @@
 import Foundation
 
 
-protocol LayoutFilter {
-    /**
-         Return [true] if item is irrelevant for layout
-     */
-    func isLayoutIrrelevant( item: DiagramItem ) -> Bool
-}
-
 protocol LayoutAlgorithm {
     func apply( context: LayoutContext, clean: Bool)
 }
@@ -25,11 +18,11 @@ public class LayoutContext {
     
     // A container to perform layout on
     var element: Element
-    
-    var filters: [LayoutFilter] = []
-    
+        
     public var preLayoutPass: [() -> Void] = []
     public var postLayoutPass: [() -> Void] = []
+    
+    var layout: LayoutAlgorithm?
     
     public init(_ element: Element) {
         self.element = element
@@ -44,6 +37,15 @@ public class LayoutContext {
         for post in postLayoutPass {
             post()
         }
+    }
+    
+    func apply(_ clean: Bool) {
+        guard let layout = self.layout else {
+            return
+        }
+        preLayout()
+        layout.apply(context: self, clean: clean)
+        postLayout()
     }
     
     func getNodes() -> [DiagramItem] {
