@@ -42,4 +42,43 @@ public class ExecutionContext: IElementModelListener {
     public func notifyChanges(_ event: ModelEvent ) {
 //        event.items
     }
+    public func setContext(_ item: DiagramItem) {
+    }
 }
+
+/**
+    Used for temporary evaluation of values edited
+ */
+public class TemporaryExecutionContext {
+    var context = JSContext()
+    var element: Element?
+    var item: DiagramItem?
+    init() {
+    }
+    
+    public func reset(_ element: Element, _ diagramItem: DiagramItem?) {
+        self.item = diagramItem
+        self.element = element
+    }
+    public func updateSource(_ source: TennNode ) {
+        self.context = JSContext()
+        
+        if self.item != nil {
+            // This is diagram item
+            Element.traverseBlock(source, {(cmdName, blChild) -> Void in
+                if blChild.count > 1 {
+                    self.context?.setObject(blChild.getIdent(1), forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                }
+            })
+        }
+        else {
+            // This is element model
+        }
+        
+    }
+        
+    public func evaluate( _ text: String) -> String? {
+        return self.context?.evaluateScript(text)?.toString()
+    }
+}
+

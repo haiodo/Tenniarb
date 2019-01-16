@@ -12,6 +12,8 @@ import Cocoa
 let defaultFontSize = CGFloat(15)
 
 class TennTextView: NSTextView {
+    var lineNumberAttributes: [NSAttributedString.Key:Any] = [:]
+
     override func insertNewline(_ sender: Any?) {
         let loc = self.selectedRange().location
         let insertPart = "\n"
@@ -35,6 +37,72 @@ class TennTextView: NSTextView {
             dlg.sheduleUpdate()
         }
     }
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        drawLineNumbers()
+    }
+    
+    func initDone() {
+        self.lineNumberAttributes = [
+            NSAttributedString.Key.font: NSFont.toolTipsFont(ofSize: defaultFontSize),
+            NSAttributedString.Key.foregroundColor: NSColor.gray,
+        ]
+    }
+    
+    func drawLineValue( _ lineNumberString:String, _ x:CGFloat, _ y:CGFloat) -> Void {
+        let relativePoint = self.convert(NSZeroPoint, from: self)
+        let attString = NSAttributedString(string: lineNumberString, attributes: lineNumberAttributes)
+        attString.draw(at: NSPoint(x: x, y: relativePoint.y + y))
+    }
+    func drawLineNumbers() {
+        if let layoutManager = self.layoutManager, let delegate = self.delegate as? TextPropertiesDelegate {
+            let visibleGlyphRange = layoutManager.glyphRange(forBoundingRect: self.visibleRect, in: self.textContainer!)
+            let firstVisibleGlyphCharacterIndex = layoutManager.characterIndexForGlyph(at: visibleGlyphRange.location)
+            
+            let newLineRegex = try! NSRegularExpression(pattern: "\n", options: [])
+            // The line number for the first visible line
+            var lineNumber = newLineRegex.numberOfMatches(in: self.string, options: [], range: NSMakeRange(0, firstVisibleGlyphCharacterIndex)) + 1
+            
+            var glyphIndexForStringLine = visibleGlyphRange.location
+            
+            // Go through each line in the string.
+            while glyphIndexForStringLine < NSMaxRange(visibleGlyphRange) {
+                
+                // Range of current line in the string.
+                let characterRangeForStringLine = (self.string as NSString).lineRange(
+                    for: NSMakeRange( layoutManager.characterIndexForGlyph(at: glyphIndexForStringLine), 0 )
+                )
+                let glyphRangeForStringLine = layoutManager.glyphRange(forCharacterRange: characterRangeForStringLine, actualCharacterRange: nil)
+                
+                var glyphIndexForGlyphLine = glyphIndexForStringLine
+                var glyphLineCount = 0
+                
+                while ( glyphIndexForGlyphLine < NSMaxRange(glyphRangeForStringLine) ) {
+                    
+                    // See if the current line in the string spread across
+                    // several lines of glyphs
+                    var effectiveRange = NSMakeRange(0, 0)
+                    
+                    // Range of current "line of glyphs". If a line is wrapped,
+                    // then it will have more than one "line of glyphs"
+                    let lineRect = layoutManager.lineFragmentUsedRect(forGlyphAt: glyphIndexForGlyphLine, effectiveRange: &effectiveRange, withoutAdditionalLayout: true)
+                    
+                    if glyphLineCount <= 0 {
+                        if let value = delegate.expressionLines[lineNumber - 1] {
+                            drawLineValue("= \(value)", lineRect.maxX + 5, lineRect.minY)
+                        }
+                    }
+                    
+                    // Move to next glyph line
+                    glyphLineCount += 1
+                    glyphIndexForGlyphLine = NSMaxRange(effectiveRange)
+                }
+                
+                glyphIndexForStringLine = NSMaxRange(glyphRangeForStringLine)
+                lineNumber += 1
+            }
+        }
+    }
 }
 
 class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
@@ -53,6 +121,10 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     let numberColorDark = NSColor(red: 0x96/255.0, green: 0x86/255.0, blue: 0xf5/255.0, alpha: 1)
     let expressionColorDark = NSColor(red: 198/255.0, green: 124/255.0, blue: 72/255.0, alpha: 1)
     
+    var expressionLines: [Int: String] = [:]
+    
+    var execContext: TemporaryExecutionContext = TemporaryExecutionContext()
+    
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
         self.view = textView
@@ -61,13 +133,14 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         self.view.delegate = self
         self.view.importsGraphics = false
         self.view.allowsUndo=false
+        (self.view as! TennTextView).initDone()
     }
     
     func needUpdate()-> Bool {
         return !doMerge
     }
     
-    func setTextValue(_ value: String) {
+    func setTextValue(_ value: String, _ element: Element, _ diagramItem: DiagramItem?) {
         if view.string == value || doMerge {
             return; // Same value
         }
@@ -75,6 +148,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         self.view.isAutomaticQuoteSubstitutionEnabled = false
         self.view.font = NSFont.systemFont(ofSize: defaultFontSize)
         self.view.textColor = NSColor.textColor
+        
+        self.execContext.reset(element, diagramItem)
+        
+        let parser = TennParser()
+        let textContent = self.view.textStorage!.string
+        let node = parser.parse(textContent)
+        if !parser.errors.hasErrors() {
+            self.execContext.updateSource(node)
+        }
         
         highlight()
         
@@ -89,6 +171,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     func highlight() {
         //get the range of the entire run of text
         let area = NSMakeRange(0, view.textStorage!.length)
+        
+        expressionLines.removeAll()
+        
         //remove existing coloring
         view.textStorage?.removeAttribute(NSAttributedString.Key.foregroundColor, range: area)
         
@@ -127,6 +212,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 let start = tok!.pos - 2 // Since we have } or ) at end
                 let size = tok!.size + 3
                 
+                if tok!.type == .expression, let evalValue = execContext.evaluate(tok!.literal) {
+                    expressionLines[tok!.line] = evalValue
+                }
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     expressionColor, range: NSMakeRange(start, size))
                 
@@ -160,6 +248,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 else {
                     self.highlight()
                     self.doMerge = true
+                    self.execContext.updateSource(node)
                     self.controller.mergeProperties(node)
                     self.doMerge = false
                 }

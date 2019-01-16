@@ -360,7 +360,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     
                     let strContent = (self.activeItems.count == 0) ? element.toTennProps(): self.activeItems[0].toTennProps()
                     
-                    delegate.setTextValue(strContent)
+                    delegate.setTextValue(strContent, element, self.activeItems.first)
                 })
             }
         }

@@ -67,7 +67,7 @@ extension TennNode {
                     result.append("\"\(quote(tok.literal))\"")
                 }
             case .Expression:
-                result.append("$(\(tok.literal)))")
+                result.append("$(\(tok.literal))")
             case .ExpressionBlock:
                 result.append("${")
                 result.append("\(tok.literal)")
