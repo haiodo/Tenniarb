@@ -74,6 +74,8 @@ public class TemporaryExecutionContext {
                             value = Float(identText) ?? -1.0
                         case .IntLit:
                             value = Int(identText) ?? 0
+                        case .ExpressionBlock:
+                            self.context?.evaluateScript(identText)
                         default:
                             break
                         }
