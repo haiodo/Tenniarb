@@ -166,7 +166,7 @@ public class TennParser {
             case .stringLit:
                 cmdNode.add(TennNode.newNode(kind: .StringLit, self.tok))
             case .markdownLit:
-                cmdNode.add(TennNode.newNode(kind: .MultiStringLit, self.tok))
+                cmdNode.add(TennNode.newNode(kind: .MarkdownLit, self.tok))
             case .intLit:
                 cmdNode.add(TennNode.newNode(kind: .IntLit, self.tok))
             case .floatLit:
