@@ -367,7 +367,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     fileprivate func editTitle(_ active: DiagramItem) {
         self.mode = .Editing
-        scene?.editingMode = true
         guard let de = scene?.drawables[active] else {
             return
         }
@@ -379,13 +378,24 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         let bounds = getEditBoxBounds(item: de)
         editBox = NSTextField(frame: bounds)
+        scene?.editBoxBounds = bounds
+        scene?.editingMode = true
+        
+        editBox?.wantsLayer = true
+        let textFieldLayer = CALayer()
+        editBox?.layer = textFieldLayer
+        editBox?.layer?.backgroundColor = scene?.sceneStyle.defaultItemStyle.color
+        editBox?.layer?.borderColor = scene?.sceneStyle.defaultItemStyle.borderColor
+        editBox?.layer?.borderWidth = 0.5
+        editBox?.layer?.cornerRadius = 8
+        
         if self.editBoxDelegate == nil {
             self.editBoxDelegate = EditTitleDelegate(self)
         }
         
         let style = self.scene!.sceneStyle.defaultItemStyle.copy()
         style.parseStyle(active.properties)
-        
+
         editBox?.delegate = self.editBoxDelegate
         editBox?.stringValue = active.name
         editBox?.drawsBackground = true
@@ -562,6 +572,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
         if event.characters == "\u{0D}" {
             if let active = self.activeItems.first, active.kind == .Item  {
+                setActiveItem(active)
                 editTitle(active)
             }
         }
