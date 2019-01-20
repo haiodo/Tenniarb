@@ -450,11 +450,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     @objc func duplicateItem() {
         var items: [DiagramItem] = []
+        var oldNewItems: [DiagramItem:DiagramItem] = [:]
+        var links: [DiagramItem] = []
         for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
                 let newEl = DiagramItem(kind: .Item, name: active.name )
                 newEl.description = active.description
+                oldNewItems[active] = newEl
                 
                 var offset = CGFloat(100.0)
                 if let dr = scene?.drawables[active] {
@@ -471,6 +474,21 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
                 
                 items.append(newEl)
+            }
+            else if active.kind == .Link {
+                let li = active.clone()
+                links.append(li)
+                items.append(li)
+            }
+        }
+        for li in links {
+            if let lli = li as? LinkItem {
+                if let src = lli.source, let newItm = oldNewItems[src] {
+                    lli.source = newItm
+                }
+                if let dst = lli.target, let newItm = oldNewItems[dst] {
+                    lli.target = newItm
+                }
             }
         }
         
