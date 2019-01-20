@@ -621,7 +621,7 @@ element "Documentation" {
             display arrow
         }
         item "New Item" {
-            pos -405.5712890625 268.0
+            pos -405.5712890625 267.0
         }
         link "press 'Tab'" "New Item" {
             display arrow
@@ -707,9 +707,46 @@ element "Documentation" {
             target-index 2
             display arrow
         }
-        item "Item" {
-            pos -131.107421875 142.0
-            title "qwe"
+        item "Styling items" {
+            pos -54.2177734375 60.0
+            display text
+            body {
+                text %{
+        1. Select existing item
+        2. Edit style properties.
+        2.1 color red    // Set one of colors
+        2.2 font-size 10   //Change font size
+    }
+            }
         }
+        item "Big yellow item" {
+            pos -60.7998046875 -36.0
+            color red
+            text-color yellow
+            font-size 30
+        }
+        item "ColorAnnotation" {
+            pos 159.1083984375 -65.0
+            title ""
+            body {
+                text-color #1c00cf
+                text %{
+        name "Big blue item"
+        color red
+        text-color yellow
+        font-size 30
+    }
+            }
+        }
+        link "Big yellow item" "ColorAnnotation"
+        item "Untitled 1" {
+            pos -541.0 -158.0
+            title ""
+        }
+        item "Untitled 2" {
+            pos -479.67578125 -158.0
+            title ""
+        }
+        link "Untitled 1" "Untitled 2"
     }
 }

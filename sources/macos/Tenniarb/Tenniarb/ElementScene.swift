@@ -469,6 +469,7 @@ open class DrawableScene: DrawableContainer {
             self.updateActiveElements(self.activeElements)
         }
     }
+    var editBoxBounds: CGRect?
     
     var activeElements: [DiagramItem] = []
     
@@ -559,7 +560,7 @@ open class DrawableScene: DrawableContainer {
                         self.activeDrawables.append(
                             SelectorBox(
                                 pos: CGPoint(x: deBounds.origin.x - 5, y: deBounds.origin.y - 5 ),
-                                size: CGSize(width: deBounds.width + 10, height: deBounds.height + 10 ),
+                                size: CGSize(width: (editBoxBounds?.width ?? deBounds.width ) + 10, height: (editBoxBounds?.height ?? deBounds.height ) + 10 ),
                                 color: !self.editingMode ? SelectorBox.normalColor: SelectorBox.editingColor
                             )
                         )
@@ -737,6 +738,14 @@ open class DrawableScene: DrawableContainer {
         let bgColor = style.color
         let borderColor = style.borderColor
         
+        var titleValue = (name.count > 0 ? name :  " ")
+        if let titleNode = e.properties.get( "title" ) {
+            if let text = titleNode.getIdent(1) {
+                titleValue = text
+            }
+        }
+        titleValue = titleValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
+        
         var bodyTextBox: TextBox? = nil
         
         if let bodyNode = e.properties.get( "body" ) {
@@ -757,7 +766,8 @@ open class DrawableScene: DrawableContainer {
                         }
                     }
                 }
-                else if bodyBlock.kind == .Ident || bodyBlock.kind == .StringLit, let strVal = bodyBlock.getIdentText() {
+                else if bodyBlock.kind == .Ident || bodyBlock.kind == .StringLit || bodyBlock.kind == .MarkdownLit,
+                        let strVal = bodyBlock.getIdentText() {
                     textValue = strVal
                 }
             }
@@ -772,7 +782,7 @@ open class DrawableScene: DrawableContainer {
         }
         
         let textBox = TextBox(
-            text: (name.count > 0 ? name :  " ").replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces),
+            text: titleValue,
             textColor: style.textColor,
             fontSize: style.fontSize,
             layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
@@ -796,15 +806,21 @@ open class DrawableScene: DrawableContainer {
             height += bodyBounds!.height // TODO: Put spacing into some configurable area
         }
         
-        let bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
+        var bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
         textBox.setFrame(CGRect(x: 0, y:0, width: width, height: height))
         
         if let tb = bodyTextBox {
             let tbb = tb.getBounds()
             
-            tb.setFrame(CGRect(x: 0, y:4, width: width, height: tbb.size.height))
-            
-            textBox.setFrame(CGRect(x: 0, y:tbb.height + 4, width: width, height: textBox.size.height ))
+            if titleValue.count > 0 {
+                tb.setFrame(CGRect(x: 0, y:4, width: width, height: tbb.size.height))
+                textBox.setFrame(CGRect(x: 0, y:tbb.height + 4, width: width, height: textBox.size.height ))
+            }
+            else {
+                bounds.size = CGSize(width: bounds.width, height: bounds.height - textBounds.height)
+                tb.setFrame(CGRect(x: 0, y:textBounds.height - 4, width: width, height: tbb.size.height))
+                textBox.setFrame(CGRect(x: 0, y:0, width: width, height: 0 ))
+            }
         }
         
         var box: DrawableContainer? = nil
@@ -1096,6 +1112,7 @@ public class TextBox: Drawable {
         let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
         
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
+        
         if( self.size.width > self.frame.width || self.size.height > self.frame.height) {
             self.frame = CGRect(origin: self.frame.origin, size: self.size)
         }
