@@ -1405,6 +1405,7 @@ public class DrawableLine: ItemDrawable {
         aPath.move(to: fromPt)
         
         for ep in self.extraPoints {
+
             aPath.addLine(to: CGPoint(x: ep.x + point.x, y: ep.y + point.y))
             
             if let lbl = self.label {

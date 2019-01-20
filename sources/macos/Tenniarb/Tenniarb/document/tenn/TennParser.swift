@@ -165,6 +165,8 @@ public class TennParser {
                 cmdNode.add(TennNode.newIdent(self.tok!))
             case .stringLit:
                 cmdNode.add(TennNode.newNode(kind: .StringLit, self.tok))
+            case .markdownLit:
+                cmdNode.add(TennNode.newNode(kind: .MultiStringLit, self.tok))
             case .intLit:
                 cmdNode.add(TennNode.newNode(kind: .IntLit, self.tok))
             case .floatLit:
@@ -178,11 +180,9 @@ public class TennParser {
                     cmdNode.add(stmtNode)
                 }
                 else {
-                    //TODO: Add report error here
                     return cmdNode
                 }
             default:
-//                this.markError("Unexpected token:" + this.tok, this.tok);
                 return cmdNode
             }
             if errors.hasErrors() {

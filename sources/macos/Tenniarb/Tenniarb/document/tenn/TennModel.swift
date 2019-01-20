@@ -15,6 +15,7 @@ public enum TennNodeKind {
     case IntLit
     case FloatLit
     case StringLit
+    case MarkdownLit
     case Command
     case Statements
     case BlockExpr
@@ -99,7 +100,7 @@ public class TennNode {
     }
     
     public func getIdentText() -> String? {
-        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression  {
+        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression || kind == .MarkdownLit  {
             return token?.literal
         }
         return nil

@@ -111,9 +111,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return false
     }
     
-    func createMenu() -> NSMenu? {
-        Swift.debugPrint("Menu")
-        
+    func createMenu() -> NSMenu? {        
         let menu = NSMenu()
         let addAction = NSMenuItem(
             title: "New element", action: #selector(addElementAction), keyEquivalent: "")

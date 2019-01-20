@@ -21,7 +21,8 @@ public enum TennTokenType {
     case colon
     case semiColon
     case expression         // $(expression)
-    case expressionBlock    // ${expression block;}
+    case expressionBlock    // ${expression block}
+    case markdownLit //%{}
 }
 
 public class TennToken {
@@ -283,6 +284,16 @@ public class TennLexer {
                 }
             case "/":
                 self.processComment(&r, cc)
+            case "%":
+                let nc = self.next()
+                if nc == "{" {
+                    readExpression(r: &r, startLit: "{", endLit: "}", type: .markdownLit)
+                }
+                else {
+                    r.append(cc)
+                    self.inc()
+                }
+                break;
             case "$":
                 let nc = self.next()
                 if nc == "(" {

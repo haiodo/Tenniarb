@@ -64,7 +64,7 @@ element "Tenniarb" {
         }
         link "Editing" "Titles"
         item "Titles" {
-            pos -70.0 -96.0
+            pos -139.0 -55.0
             color green
             font-size 12
         }
@@ -155,7 +155,7 @@ element "Tenniarb" {
             font-size 12
         }
         item "Undo&Redo" {
-            pos -122.0 -1.0
+            pos -131.0 6.0
             color green
             font-size 12
         }
@@ -174,6 +174,7 @@ element "Tenniarb" {
         item "App Store" {
             pos -284.0 323.0
             font-size 12
+            color yellow
         }
         link "Site" "Domain"
         item "Domain" {
@@ -266,21 +267,15 @@ element "Tenniarb" {
         }
         link "Editing" "Selection"
         item "Selection" {
-            pos -136.0 -74.0
+            pos -137.0 -86.0
             color green
             font-size 12
         }
         link "Selection" "Duplicate"
         item "Duplicate" {
-            pos -175.0 -111.0
+            pos -218.0 -119.0
             font-size 12
             color green
-        }
-        link "Selection" "Copy to new"
-        item "Copy to new" {
-            pos -144.0 -147.0
-            description "Copy selected elements  as a new child diagram"
-            font-size 12
         }
         link "App Store" "Images"
         item "Images" {
@@ -300,23 +295,13 @@ element "Tenniarb" {
             font-size 12
         }
         item "Multiple" {
-            pos -13.365234375 -5.0
+            pos -142.365234375 -148.0
             color red
             font-size 12
             color green
-        }
-        link "Editing" "Multiple"
-        item "Selection" {
-            pos 12.658203125 47.0
-            color red
-            font-size 12
-            color green
-        }
-        link "Multiple" "Selection" {
-            target-index 1
         }
         item "Movements" {
-            pos 54.658203125 11.0
+            pos -223.341796875 -179.0
             color red
             font-size 12
             color green
@@ -376,7 +361,7 @@ Engine" "expr dsl"
         link "MVP" "Keyboard\nshortcuts"
         link "Editing" "Undo&Redo"
         item "Copy/Paste" {
-            pos -83.365234375 32.0
+            pos -48.365234375 32.0
             color red
         }
         link "Editing" "Copy/Paste"
@@ -464,7 +449,7 @@ Engine" "expr dsl"
             display "arrow"
         }
         item "Payments" {
-            pos -52.94921875 92.0
+            pos -53.94921875 105.0
             color yellow
         }
         link "MVP" "Payments"
@@ -501,8 +486,10 @@ Engine" "expr dsl"
         }
         link "Export" "SVG"
         item "Color matches" {
-            pos -606.62890625 -7.0
-            descr "Need to property match text color if background are selected"
+            pos -606.62890625 -8.0
+            descr %{
+    "Need to property match text color if background are selected"
+}
             color yellow
         }
         link "Scene Draw" "Color matches"
@@ -511,6 +498,22 @@ Engine" "expr dsl"
             color yellow
         }
         link "Durability" "Broken file UI"
+        item "Markdown BODY" {
+            pos -105.900390625 -214.0
+            color yellow
+            descr %{
+    0. Use %{ as markdown start and } as markdown end.
+    1. Embedd markdown like font capabilities inside.
+    2. *BOLD*
+    3. _Italic_.
+}
+        }
+        link "Editing" "Markdown BODY"
+        item "Multi select" {
+            pos -227.3828125 -84.0
+        }
+        link "Selection" "Multi select"
+        link "Selection" "Multiple"
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0
@@ -592,6 +595,121 @@ Engine" "expr dsl"
 то что интересно" {
             pos 124.0 -63.0
             display arrows
+        }
+    }
+}
+element "Documentation" {
+    element "Basic steps" {
+        item "Item" {
+            pos -566.0 267.0
+        }
+        item "Adding new items" {
+            pos -579.5537109375 318.0
+            display text
+            body {
+                text %{
+        1. Press 'Tab' to add new item to diagram
+        2. Select item and press 'Tab' to add linked item to diagram.
+    }
+            }
+        }
+        item "press 'Tab'" {
+            pos -492.5537109375 204.0
+            font-size 10
+        }
+        link "Item" "press 'Tab'" {
+            display arrow
+        }
+        item "New Item" {
+            pos -405.5712890625 268.0
+        }
+        link "press 'Tab'" "New Item" {
+            display arrow
+        }
+        link "Item" "New Item" {
+            display arrow
+        }
+        item "Adding link between items" {
+            pos -580.0693359375 106.0
+            display text
+            body {
+                text %{
+        1. Select existing item
+        2. Hold 'Ctrl' key and draw line to any new item.
+    }
+            }
+        }
+        item "Item" {
+            pos -571.5537109375 44.0
+        }
+        item "New Item" {
+            pos -411.185546875 44.0
+        }
+        item "hold 'Ctrl'" {
+            pos -519.5712890625 -37.0
+            font-size 10
+        }
+        link "Item" "hold 'Ctrl'" {
+            source-index 1
+            display arrow
+        }
+        item "Draw line" {
+            pos -431.7744140625 -37.0
+            font-size 10
+        }
+        link "hold 'Ctrl'" "Draw line"
+        link "Draw line" "New Item" {
+            target-index 1
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 1
+            target-index 1
+            display arrow
+        }
+        item "Basic editing functions" {
+            pos -598.0693359375 407.0
+            display text
+            font-size 20
+        }
+        item "Duplicate items" {
+            pos -52.0693359375 322.0
+            display text
+            body {
+                text %{
+        1. Select one or more items
+        2. Press 'Cmd+D' to duplicate selection
+    }
+            }
+        }
+        item "Item" {
+            pos -49.5537109375 265.0
+        }
+        item "New Item" {
+            pos 151.814453125 266.0
+        }
+        item "press 'Tab'" {
+            pos 40.4287109375 202.0
+            font-size 10
+        }
+        link "press 'Tab'" "New Item" {
+            source-index 1
+            target-index 2
+            display arrow
+        }
+        link "Item" "press 'Tab'" {
+            source-index 2
+            target-index 1
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 2
+            target-index 2
+            display arrow
+        }
+        item "Item" {
+            pos -131.107421875 142.0
+            title "qwe"
         }
     }
 }

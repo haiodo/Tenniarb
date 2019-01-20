@@ -72,6 +72,8 @@ extension TennNode {
                 result.append("${")
                 result.append("\(tok.literal)")
                 result.append("}")
+            case .MarkdownLit:
+                result.append("%{\(tok.literal)}")
             default:
                 break
             }

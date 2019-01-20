@@ -207,6 +207,13 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     stringColor, range: NSMakeRange(start, size))
+            case .markdownLit:
+                // Check to include ", ' as part of sumbols.
+                let start = tok!.pos - 2 // Since we have ' or "
+                let size = tok!.size + 3
+                
+                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
+                    stringColor, range: NSMakeRange(start, size))
             case .expression, .expressionBlock:
                 // Check to include "${' or $( as part of sumbols.
                 let start = tok!.pos - 2 // Since we have } or ) at end
