@@ -1100,7 +1100,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     public func selectAllItems() {
-        self.setActiveItems(self.element!.items.filter { (itm) in itm.kind == ItemKind.Item })
+        self.setActiveItems(self.element!.items)
         scheduleRedraw()
     }
     public func selectNoneItems() {

@@ -40,7 +40,7 @@ element "Tenniarb" {
             }
         }
         item "MVP" {
-            pos -259.0 142.0
+            pos -247.0 174.0
             color "#0022ee"
             font-size 25
             color red
@@ -49,58 +49,58 @@ element "Tenniarb" {
             pos 0.0 2.0
         }
         item "UI" {
-            pos -240.0 -43.0
+            pos -228.0 -11.0
             color lightgreen
         }
         link "UI" "Scene Draw"
         item "Scene Draw" {
-            pos -524.0 -63.0
+            pos -512.0 -31.0
             color green
         }
         link "UI" "Editing"
         item "Editing" {
-            pos -61.0 -35.0
+            pos -49.0 -3.0
             color "#00ee00"
         }
         link "Editing" "Titles"
         item "Titles" {
-            pos -139.0 -55.0
+            pos -127.0 -23.0
             color green
             font-size 12
         }
         link "Editing" "Properties"
         item "Properties" {
-            pos -10.0 -71.0
+            pos 2.0 -39.0
             color green
             font-size 12
         }
         link "Properties" "Content assist"
         item "Content assist" {
-            pos 83.0 -127.0
+            pos 95.0 -95.0
             color white
             font-size 12
         }
         link "Scene Draw" "Layout positions"
         item "Layout positions" {
-            pos -533.0 8.0
+            pos -521.0 40.0
             color green
             font-size 12
         }
         link "Scene Draw" "Items"
         item "Items" {
-            pos -567.0 -91.0
+            pos -555.0 -59.0
             color green
             font-size 12
         }
         link "Scene Draw" "Links"
         item "Links" {
-            pos -513.0 -91.0
+            pos -501.0 -59.0
             color green
             font-size 12
         }
         link "Editing" "Movements"
         item "Movements" {
-            pos 71.0 -37.0
+            pos 83.0 -5.0
             color green
             font-size 12
         }
@@ -108,81 +108,81 @@ element "Tenniarb" {
             target-index 1
         }
         item "Items" {
-            pos 152.0 -12.0
+            pos 164.0 20.0
             color green
             font-size 12
         }
         link "Movements" "Draw links"
         item "Draw links" {
-            pos 151.0 -62.0
+            pos 163.0 -30.0
             color green
             font-size 12
         }
         item "Outline" {
-            pos -508.0 246.0
+            pos -496.0 278.0
             color green
         }
         link "Outline" "Edit titles"
         item "Edit titles" {
-            pos -466.0 274.0
+            pos -454.0 306.0
             color green
             font-size 12
         }
         link "Outline" "+/-"
         item "+/-" {
-            pos -504.0 356.0
+            pos -492.0 388.0
             color green
         }
         link "Outline" "D&D"
         item "D&D" {
-            pos -476.0 317.0
+            pos -464.0 349.0
             color green
         }
         link "Scene Draw" "Classes"
         item "Classes" {
-            pos -462.0 -113.0
+            pos -450.0 -81.0
             color red
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
-            pos -409.0 -82.0
+            pos -397.0 -50.0
             font-size 12
         }
         link "Scene Draw" "Colors"
         item "Colors" {
-            pos -450.0 -24.0
+            pos -438.0 8.0
             color green
             font-size 12
         }
         item "Undo&Redo" {
-            pos -131.0 6.0
+            pos -119.0 38.0
             color green
             font-size 12
         }
         link "MVP" "Presentation materials"
         item "Presentation materials" {
-            pos -333.0 266.0
+            pos -321.0 298.0
             color purple
             font-size 12
         }
         link "Presentation materials" "Site"
         item "Site" {
-            pos -360.0 293.0
+            pos -348.0 325.0
             font-size 12
         }
         link "Presentation materials" "App Store"
         item "App Store" {
-            pos -284.0 323.0
+            pos -272.0 355.0
             font-size 12
             color yellow
         }
         link "Site" "Domain"
         item "Domain" {
-            pos -408.0 318.0
+            pos -396.0 350.0
             font-size 12
         }
         item "Registration" {
-            pos -342.0 387.0
+            pos -330.0 419.0
             color green
             font-size 12
         }
@@ -191,117 +191,117 @@ element "Tenniarb" {
             pos 19.0 32.0
         }
         item "Publication" {
-            pos -328.0 420.0
+            pos -316.0 452.0
             font-size 12
         }
         link "MVP" "Quality"
         item "Quality" {
-            pos -185.0 225.0
+            pos -173.0 257.0
             font-size 12
         }
         link "Quality" "Testing"
         item "Testing" {
-            pos -179.0 287.0
+            pos -167.0 319.0
             font-size 12
         }
         link "Quality" "Functional testing" {
             pos -26.0 1.0
         }
         item "Functional testing" {
-            pos -214.0 367.0
+            pos -202.0 399.0
             font-size 12
         }
         link "Quality" "Performance"
         item "Performance" {
-            pos -117.0 287.0
+            pos -105.0 319.0
             font-size 12
         }
         link "Quality" "Durability"
         item "Durability" {
-            pos -129.0 328.0
+            pos -117.0 360.0
             font-size 12
         }
         link "MVP" "Model"
         item "Model" {
-            pos -400.0 156.0
+            pos -388.0 188.0
             color green
         }
         link "Model" "Cross diagram links" {
             pos -76.0 35.0
         }
         item "Cross diagram links" {
-            pos -700.0 267.0
+            pos -688.0 299.0
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
-            pos -564.0 308.0
+            pos -552.0 340.0
             color red
             font-size 12
         }
         link "Model" "Persistence"
         item "Persistence" {
-            pos -538.0 158.0
+            pos -526.0 190.0
             color green
             font-size 12
         }
         link "Persistence" "Duplicate names"
         item "Duplicate names" {
-            pos -643.0 186.0
+            pos -631.0 218.0
             color green
             font-size 12
         }
         link "UI" "Layout"
         item "Layout" {
-            pos -296.0 -166.0
+            pos -284.0 -134.0
         }
         link "Layout" "Automatic"
         item "Automatic" {
-            pos -358.0 -195.0
+            pos -346.0 -163.0
             font-size 12
         }
         link "Layout" "Manual"
         item "Manual" {
-            pos -291.0 -227.0
+            pos -279.0 -195.0
             color green
             font-size 12
         }
         link "Editing" "Selection"
         item "Selection" {
-            pos -137.0 -86.0
+            pos -125.0 -54.0
             color green
             font-size 12
         }
         link "Selection" "Duplicate"
         item "Duplicate" {
-            pos -218.0 -119.0
+            pos -206.0 -87.0
             font-size 12
             color green
         }
         link "App Store" "Images"
         item "Images" {
-            pos -247.0 429.0
+            pos -235.0 461.0
             font-size 12
         }
         link "App Store" "Description" {
             pos -6.0 23.0
         }
         item "Description" {
-            pos -194.0 422.0
+            pos -182.0 454.0
             font-size 12
         }
         link "Site" "Hosting"
         item "Hosting" {
-            pos -387.0 353.0
+            pos -375.0 385.0
             font-size 12
         }
         item "Multiple" {
-            pos -142.365234375 -148.0
+            pos -130.365234375 -116.0
             color red
             font-size 12
             color green
         }
         item "Movements" {
-            pos -223.341796875 -179.0
+            pos -211.341796875 -147.0
             color red
             font-size 12
             color green
@@ -310,7 +310,7 @@ element "Tenniarb" {
             target-index 1
         }
         item "Parsing" {
-            pos -603.087890625 143.0
+            pos -591.087890625 175.0
             color green
             font-size 12
             test {
@@ -324,107 +324,107 @@ element "Tenniarb" {
         }
         item "Calculation
 Engine" {
-            pos -73.0 206.0
+            pos -61.0 238.0
             color yellow
         }
         link "MVP" "Calculation
 Engine"
         item "expressions" {
-            pos -16.228515625 256.0
+            pos -4.228515625 288.0
             color yellow
         }
         link "Calculation
 Engine" "expressions"
         item "expr dsl" {
-            pos 9.771484375 217.0
+            pos 21.771484375 249.0
             color yellow
         }
         link "Calculation
 Engine" "expr dsl"
         item "Undo/Redo" {
-            pos 72.646484375 -79.0
+            pos 84.646484375 -47.0
             color green
             font-size 10
         }
         link "Properties" "Undo/Redo"
         item "Corrections" {
-            pos -576.66796875 -128.0
+            pos -564.66796875 -96.0
             font-size 12
             color green
         }
         link "Links" "Corrections"
         item "Keyboard\nshortcuts" {
-            pos -341.94921875 83.0
+            pos -329.94921875 115.0
             color red
             color green
         }
         link "MVP" "Keyboard\nshortcuts"
         link "Editing" "Undo&Redo"
         item "Copy/Paste" {
-            pos -48.365234375 32.0
+            pos -36.365234375 64.0
             color red
         }
         link "Editing" "Copy/Paste"
         item "Diagram \nPosition widget" {
-            pos -202.650390625 49.0
+            pos -190.650390625 81.0
             color green
         }
         link "UI" "Diagram \nPosition widget" {
             pos 6.0 5.0
         }
         item "Export" {
-            pos -451.650390625 -196.0
+            pos -439.650390625 -164.0
             color lightgreen
         }
         link "UI" "Export" {
             pos 27.0 -12.0
         }
         item "Import" {
-            pos -515.9111328125 89.0
+            pos -503.9111328125 121.0
         }
         link "Model" "Import" {
             pos 29.0 -21.0
         }
         item "Xmind" {
-            pos -667.4912109375 121.0
+            pos -655.4912109375 153.0
         }
         link "Import" "Xmind"
         item "Other" {
-            pos -674.4912109375 88.0
+            pos -662.4912109375 120.0
         }
         link "Import" "Other"
         item "JIRA CSV import" {
-            pos -677.4912109375 60.0
+            pos -665.4912109375 92.0
         }
         link "Import" "JIRA CSV import"
         item "Zoom?" {
-            pos -640.2587890625 -81.0
+            pos -628.2587890625 -49.0
             color yellow
         }
         link "Scene Draw" "Zoom?" {
             pos -26.0 19.0
         }
         item "PDF" {
-            pos -509.546875 -173.0
+            pos -497.546875 -141.0
             color green
         }
         link "Export" "PDF"
         item "PNG" {
-            pos -499.546875 -214.0
+            pos -487.546875 -182.0
             color green
         }
         link "Export" "PNG"
         item "HTML" {
-            pos -474.546875 -250.0
+            pos -462.546875 -218.0
             color green
         }
         link "Export" "HTML"
         item "Easy\nProperties" {
-            pos -32.365234375 -149.0
+            pos -20.365234375 -117.0
             color yellow
         }
         item "quick actions" {
-            pos 39.646484375 -173.0
+            pos 51.646484375 -141.0
             color yellow
             font-size 12
         }
@@ -432,61 +432,61 @@ Engine" "expr dsl"
             display "arrow"
         }
         item "quick colors" {
-            pos 101.67578125 -211.0
+            pos 113.67578125 -179.0
             font-size 12
         }
         link "quick actions" "quick colors"
         item "quick fonts" {
-            pos 13.67578125 -212.0
+            pos 25.67578125 -180.0
             font-size 12
         }
         link "quick actions" "quick fonts"
         item "javascript" {
-            pos 73.615234375 245.0
+            pos 85.615234375 277.0
         }
         link "expr dsl" "javascript"
         link "Properties" "Easy\nProperties" {
             display "arrow"
         }
         item "Payments" {
-            pos 0.05078125 99.0
+            pos 12.05078125 131.0
             color yellow
         }
         link "MVP" "Payments"
         item "StoreKit" {
-            pos 88.8046875 102.0
+            pos 100.8046875 134.0
             color yellow
         }
         link "Payments" "StoreKit"
         item "Features" {
-            pos 156.279296875 138.0
+            pos 168.279296875 170.0
             color yellow
         }
         link "StoreKit" "Features"
         item "Subscriptions" {
-            pos 163.279296875 103.0
+            pos 175.279296875 135.0
             color yellow
         }
         link "StoreKit" "Subscriptions"
         item "Display all for free" {
-            pos 134.279296875 178.0
+            pos 146.279296875 210.0
         }
         link "StoreKit" "Display all for free" {
             pos -11.0 11.0
         }
         item "Export" {
-            pos 249.443359375 157.0
+            pos 261.443359375 189.0
             color yellow
         }
         link "Features" "Export" {
             target-index 1
         }
         item "SVG" {
-            pos -422.732421875 -249.0
+            pos -410.732421875 -217.0
         }
         link "Export" "SVG"
         item "Color matches" {
-            pos -638.62890625 -16.0
+            pos -626.62890625 16.0
             descr %{
     "Need to property match text color if background are selected"
 }
@@ -494,12 +494,12 @@ Engine" "expr dsl"
         }
         link "Scene Draw" "Color matches"
         item "Broken file UI" {
-            pos -56.90625 388.0
+            pos -44.90625 420.0
             color yellow
         }
         link "Durability" "Broken file UI"
         item "Markdown BODY" {
-            pos -105.900390625 -214.0
+            pos -93.900390625 -182.0
             color yellow
             descr %{
     0. Use %{ as markdown start and } as markdown end.
@@ -510,7 +510,8 @@ Engine" "expr dsl"
         }
         link "Editing" "Markdown BODY"
         item "Multi select" {
-            pos -227.3828125 -84.0
+            pos -215.3828125 -52.0
+            color green
         }
         link "Selection" "Multi select"
         link "Selection" "Multiple"
@@ -601,10 +602,10 @@ Engine" "expr dsl"
 element "Documentation" {
     element "Basic steps" {
         item "Item" {
-            pos -566.0 267.0
+            pos -574.0 272.0
         }
         item "Adding new items" {
-            pos -579.5537109375 318.0
+            pos -587.5537109375 323.0
             display text
             body {
                 text %{
@@ -614,14 +615,14 @@ element "Documentation" {
             }
         }
         item "press 'Tab'" {
-            pos -492.5537109375 204.0
+            pos -500.5537109375 209.0
             font-size 10
         }
         link "Item" "press 'Tab'" {
             display arrow
         }
         item "New Item" {
-            pos -405.5712890625 267.0
+            pos -413.5712890625 272.0
         }
         link "press 'Tab'" "New Item" {
             display arrow
@@ -630,7 +631,7 @@ element "Documentation" {
             display arrow
         }
         item "Adding link between items" {
-            pos -580.0693359375 106.0
+            pos -588.0693359375 111.0
             display text
             body {
                 text %{
@@ -640,13 +641,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -571.5537109375 44.0
+            pos -579.5537109375 49.0
         }
         item "New Item" {
-            pos -411.185546875 44.0
+            pos -419.185546875 49.0
         }
         item "hold 'Ctrl'" {
-            pos -519.5712890625 -37.0
+            pos -527.5712890625 -32.0
             font-size 10
         }
         link "Item" "hold 'Ctrl'" {
@@ -654,7 +655,7 @@ element "Documentation" {
             display arrow
         }
         item "Draw line" {
-            pos -431.7744140625 -37.0
+            pos -439.7744140625 -32.0
             font-size 10
         }
         link "hold 'Ctrl'" "Draw line"
@@ -668,12 +669,12 @@ element "Documentation" {
             display arrow
         }
         item "Basic editing functions" {
-            pos -598.0693359375 407.0
+            pos -606.0693359375 412.0
             display text
             font-size 20
         }
         item "Duplicate items" {
-            pos -52.0693359375 322.0
+            pos -60.0693359375 327.0
             display text
             body {
                 text %{
@@ -683,13 +684,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -49.5537109375 265.0
+            pos -57.5537109375 270.0
         }
         item "New Item" {
-            pos 151.814453125 266.0
+            pos 143.814453125 271.0
         }
         item "press 'Tab'" {
-            pos 40.4287109375 202.0
+            pos 32.4287109375 207.0
             font-size 10
         }
         link "press 'Tab'" "New Item" {
@@ -708,7 +709,7 @@ element "Documentation" {
             display arrow
         }
         item "Styling items" {
-            pos -54.2177734375 60.0
+            pos -62.2177734375 65.0
             display text
             body {
                 text %{
@@ -720,13 +721,13 @@ element "Documentation" {
             }
         }
         item "Big yellow item" {
-            pos -60.7998046875 -36.0
+            pos -68.7998046875 -31.0
             color red
             text-color yellow
             font-size 30
         }
         item "ColorAnnotation" {
-            pos 159.1083984375 -65.0
+            pos 151.1083984375 -60.0
             title ""
             body {
                 text-color #1c00cf
@@ -740,7 +741,7 @@ element "Documentation" {
         }
         link "Big yellow item" "ColorAnnotation"
         item "Untitled 2" {
-            pos -209.67578125 5.0
+            pos -217.67578125 10.0
         }
     }
 }
