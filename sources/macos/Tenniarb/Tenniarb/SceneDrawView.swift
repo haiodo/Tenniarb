@@ -18,6 +18,7 @@ enum SceneMode {
     case Dragging // Dragging mode
     case DiagramMove
     case LineDrawing // Line dragging mode
+    case Selection  // Selection with shift key
 }
 
 class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
@@ -73,6 +74,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var pivotPoint: CGPoint = CGPoint(x:0, y:0)
     
     var styleManager: StyleManager?
+    
+    var selectionStart: CGPoint = CGPoint(x:0, y:0)
     
     var ox: CGFloat {
         set {
@@ -342,7 +345,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let tv = textView {
                 let textValue = tv.string
                 if textValue.count > 0 {
-                    self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
+                    if active.kind == .Item {
+                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
+                    }
+                    else {
+                        let newProps = active.properties.clone()
+                        var imgNode = newProps.get("label")
+                        if imgNode == nil {
+                            imgNode = TennNode.newCommand("label", TennNode.newStrNode(textValue))
+                            newProps.append(imgNode!)
+                        }
+                        else {
+                            imgNode?.children = [TennNode.newIdent("label"), TennNode.newStrNode(textValue)]
+                        }
+                        self.store?.setProperties(self.element!, active, newProps.asNode(),
+                                                  undoManager: self.undoManager,  refresh: {()->Void in})
+                    }
                 }
             }
         }
@@ -571,7 +589,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     
         if event.characters == "\u{0D}" {
-            if let active = self.activeItems.first, active.kind == .Item  {
+            if let active = self.activeItems.first  {
                 setActiveItem(active)
                 editTitle(active)
             }
@@ -672,6 +690,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             // No dragging allowed until editing is not done
             return
         }
+        if self.mode == .Selection {
+            self.mode = .Normal
+            
+            if !event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+                setActiveItems(self.dragElements)
+            }
+            self.dragElements.removeAll()
+            self.scene?.selectionBox = nil
+            self.scene?.updateActiveElements(self.activeItems)
+            scheduleRedraw()
+            return
+        }
         
         if self.mode == .LineDrawing {
             if let source = self.dragElements.first, let target = self.lineTarget {
@@ -725,6 +755,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 
         self.dragMap.removeAll()
         self.dragElements.removeAll()
+        
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+            self.selectionStart = CGPoint(x: self.x, y: self.y)
+            self.mode = .Selection
+            // Copy current selection
+            self.dragElements = self.activeItems
+            //Deselect all
+            self.setActiveItem(nil)
+            scene?.updateActiveElements(self.activeItems)
+            return
+        }
  
         guard let drawable = findElement(x: self.x, y: self.y) else {
             self.setActiveItem(nil)
@@ -774,11 +815,35 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     override func mouseDragged(with event: NSEvent) {
-        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing  {
+        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
             return
         }
         
         self.updateMousePosition(event)
+        
+        if self.mode == .Selection {
+            let minX = min(self.selectionStart.x, self.x)
+            let minY = min(self.selectionStart.y, self.y)
+            let width = abs(self.selectionStart.x - self.x)
+            let height = abs(self.selectionStart.y - self.y)
+            let selBox = CGRect(x: minX, y: minY, width: width, height: height)
+            scene?.selectionBox = selBox
+            
+            self.activeItems.removeAll()
+            if let drv = scene?.drawables {
+                for (it, d) in drv {
+                    let db = d.getBounds()
+                    if selBox.intersects(db) {
+                        self.activeItems.append(it)
+                    }
+                }
+            }
+            
+            scene?.updateActiveElements(self.activeItems)
+            
+            scheduleRedraw()
+            return
+        }
         
         if self.dragElements.count > 0 {
             var newPositions: [DiagramItem: CGPoint] = [:]
@@ -1110,7 +1175,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 if let filename = myOpen.url {
                     do {
                         let data:NSData = try NSData(contentsOf: filename)
-                        let encoded = data.base64EncodedString(options: NSData.Base64EncodingOptions.lineLength64Characters)
+                        let encoded = data.base64EncodedString()
                         
                         if let active = self.activeItems.first {
                             let newProps = active.properties.clone()

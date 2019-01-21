@@ -464,6 +464,8 @@ open class DrawableScene: DrawableContainer {
     
     var darkMode: Bool
     
+    var selectionBox: CGRect?
+    
     var editingMode: Bool = false {
         didSet {
             self.updateActiveElements(self.activeElements)
@@ -567,6 +569,15 @@ open class DrawableScene: DrawableContainer {
                     }
                 }
             }
+        }
+        if let sb = self.selectionBox {
+            let box = SelectorBox(
+                pos: sb.origin,
+                size: sb.size,
+                color: SelectorBox.normalColor
+            )
+            box.radius = 0
+            self.activeDrawables.append( box )
         }
     }
     
@@ -1524,6 +1535,8 @@ public class SelectorBox: Drawable {
     
     var lineWidth: CGFloat = 1
     
+    var radius:CGFloat = 9.0
+    
     static let normalColor = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
     static let editingColor = CGColor(red: 0, green: 1, blue: 0, alpha: 1)
     
@@ -1532,6 +1545,7 @@ public class SelectorBox: Drawable {
         self.size = size
         self.color = color
     }
+    
     
     public func drawBox(context: CGContext, at point: CGPoint) {
         self.draw(context: context, at: point)
@@ -1555,7 +1569,7 @@ public class SelectorBox: Drawable {
         
         path.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
         
-        let radius:CGFloat = 9.0
+        
         path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
                            tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
         path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),

@@ -53,6 +53,8 @@ extension DiagramItem {
             Element.buildLinkData(self, items)
         }
         
+        // Do strip of image data
+        
         return items
     }
     func toTennProps() -> String {

@@ -54,7 +54,7 @@ element "Tenniarb" {
         }
         link "UI" "Scene Draw"
         item "Scene Draw" {
-            pos -492.0 -55.0
+            pos -524.0 -63.0
             color green
         }
         link "UI" "Editing"
@@ -82,19 +82,19 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Layout positions"
         item "Layout positions" {
-            pos -501.0 16.0
+            pos -533.0 8.0
             color green
             font-size 12
         }
         link "Scene Draw" "Items"
         item "Items" {
-            pos -535.0 -83.0
+            pos -567.0 -91.0
             color green
             font-size 12
         }
         link "Scene Draw" "Links"
         item "Links" {
-            pos -481.0 -83.0
+            pos -513.0 -91.0
             color green
             font-size 12
         }
@@ -140,17 +140,17 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Classes"
         item "Classes" {
-            pos -430.0 -105.0
+            pos -462.0 -113.0
             color red
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
-            pos -377.0 -74.0
+            pos -409.0 -82.0
             font-size 12
         }
         link "Scene Draw" "Colors"
         item "Colors" {
-            pos -418.0 -16.0
+            pos -450.0 -24.0
             color green
             font-size 12
         }
@@ -324,19 +324,19 @@ element "Tenniarb" {
         }
         item "Calculation
 Engine" {
-            pos -120.0 186.0
+            pos -73.0 206.0
             color yellow
         }
         link "MVP" "Calculation
 Engine"
         item "expressions" {
-            pos -63.228515625 236.0
+            pos -16.228515625 256.0
             color yellow
         }
         link "Calculation
 Engine" "expressions"
         item "expr dsl" {
-            pos -37.228515625 197.0
+            pos 9.771484375 217.0
             color yellow
         }
         link "Calculation
@@ -348,7 +348,7 @@ Engine" "expr dsl"
         }
         link "Properties" "Undo/Redo"
         item "Corrections" {
-            pos -544.66796875 -120.0
+            pos -576.66796875 -128.0
             font-size 12
             color green
         }
@@ -373,7 +373,7 @@ Engine" "expr dsl"
             pos 6.0 5.0
         }
         item "Export" {
-            pos -437.650390625 -198.0
+            pos -451.650390625 -196.0
             color lightgreen
         }
         link "UI" "Export" {
@@ -398,24 +398,24 @@ Engine" "expr dsl"
         }
         link "Import" "JIRA CSV import"
         item "Zoom?" {
-            pos -608.2587890625 -73.0
+            pos -640.2587890625 -81.0
             color yellow
         }
         link "Scene Draw" "Zoom?" {
             pos -26.0 19.0
         }
         item "PDF" {
-            pos -495.546875 -175.0
+            pos -509.546875 -173.0
             color green
         }
         link "Export" "PDF"
         item "PNG" {
-            pos -485.546875 -216.0
+            pos -499.546875 -214.0
             color green
         }
         link "Export" "PNG"
         item "HTML" {
-            pos -460.546875 -252.0
+            pos -474.546875 -250.0
             color green
         }
         link "Export" "HTML"
@@ -442,51 +442,51 @@ Engine" "expr dsl"
         }
         link "quick actions" "quick fonts"
         item "javascript" {
-            pos 26.615234375 225.0
+            pos 73.615234375 245.0
         }
         link "expr dsl" "javascript"
         link "Properties" "Easy\nProperties" {
             display "arrow"
         }
         item "Payments" {
-            pos -53.94921875 105.0
+            pos 0.05078125 99.0
             color yellow
         }
         link "MVP" "Payments"
         item "StoreKit" {
-            pos 34.8046875 108.0
+            pos 88.8046875 102.0
             color yellow
         }
         link "Payments" "StoreKit"
         item "Features" {
-            pos 102.279296875 144.0
+            pos 156.279296875 138.0
             color yellow
         }
         link "StoreKit" "Features"
         item "Subscriptions" {
-            pos 109.279296875 109.0
+            pos 163.279296875 103.0
             color yellow
         }
         link "StoreKit" "Subscriptions"
         item "Display all for free" {
-            pos 80.279296875 184.0
+            pos 134.279296875 178.0
         }
         link "StoreKit" "Display all for free" {
             pos -11.0 11.0
         }
         item "Export" {
-            pos 195.443359375 163.0
+            pos 249.443359375 157.0
             color yellow
         }
         link "Features" "Export" {
             target-index 1
         }
         item "SVG" {
-            pos -408.732421875 -251.0
+            pos -422.732421875 -249.0
         }
         link "Export" "SVG"
         item "Color matches" {
-            pos -606.62890625 -8.0
+            pos -638.62890625 -16.0
             descr %{
     "Need to property match text color if background are selected"
 }
@@ -566,7 +566,7 @@ Engine" "expr dsl"
         }
         link "Делай для себя" "Не смотри
 на авторитетов" {
-            pos -139.0 63.0
+            pos -140.0 63.0
             display arrows
         }
         item "Не останавливайся
