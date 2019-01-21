@@ -367,7 +367,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
     
     func updateWindowTitle() {
-        let value = (self.elementStore?.model.modelName ?? "Unnamed model") + ((self.elementStore?.modified ?? true) ? "*":"")
+        var value = (self.elementStore?.model.modelName ?? "Unnamed model")
+        if value.hasSuffix(".tenn") {
+            value = String(value[value.startIndex..<value.index(value.endIndex, offsetBy: -5)])
+        }
+        if self.elementStore?.modified ?? false {
+           value += "*"
+        }
         self.title = value
         self.windowTitle.stringValue = value
     }

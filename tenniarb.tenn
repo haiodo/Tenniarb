@@ -739,14 +739,8 @@ element "Documentation" {
             }
         }
         link "Big yellow item" "ColorAnnotation"
-        item "Untitled 1" {
-            pos -541.0 -158.0
-            title ""
-        }
         item "Untitled 2" {
-            pos -479.67578125 -158.0
-            title ""
+            pos -209.67578125 5.0
         }
-        link "Untitled 1" "Untitled 2"
     }
 }
