@@ -77,6 +77,11 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     }
     
     func keyDown( for event: NSEvent, _ outline: OutlineNSOutlineView ) -> Bool {
+        if event.characters == "\t" {
+            self.controller.scene?.addTopItem()
+            self.controller.scene.window?.makeFirstResponder(self.controller.scene)
+            return true
+        }
         if event.characters == "\u{0D}" {
             let selectedIndex = controller.worldTree.selectedRow
             
@@ -111,7 +116,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return false
     }
     
-    func createMenu() -> NSMenu? {        
+    func createMenu() -> NSMenu? {
         let menu = NSMenu()
         let addAction = NSMenuItem(
             title: "New element", action: #selector(addElementAction), keyEquivalent: "")
