@@ -345,22 +345,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let tv = textView {
                 let textValue = tv.string
                 if textValue.count > 0 {
-                    if active.kind == .Item {
-                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
-                    }
-                    else {
-                        let newProps = active.properties.clone()
-                        var imgNode = newProps.get("label")
-                        if imgNode == nil {
-                            imgNode = TennNode.newCommand("label", TennNode.newStrNode(textValue))
-                            newProps.append(imgNode!)
-                        }
-                        else {
-                            imgNode?.children = [TennNode.newIdent("label"), TennNode.newStrNode(textValue)]
-                        }
-                        self.store?.setProperties(self.element!, active, newProps.asNode(),
-                                                  undoManager: self.undoManager,  refresh: {()->Void in})
-                    }
+                    self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
                 }
             }
         }
@@ -374,13 +359,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     fileprivate func getEditBoxBounds( item: Drawable ) -> CGRect {
-        let deBounds = self.editBoxItem!.getBounds()
+        var deBounds = self.editBoxItem!.getBounds()
+        if let link =  item as? DrawableLine, let label = link.label {
+            deBounds = label.getBounds()
+            deBounds.origin = CGPoint(x: deBounds.origin.x + label.point.x, y: deBounds.origin.y + label.point.y)
+        }
         let bounds = CGRect(
             x: deBounds.origin.x + scene!.offset.x,
             y: deBounds.origin.y + scene!.offset.y,
             width: max(deBounds.width, 100),
-            height: deBounds.height
+            height: max(deBounds.height, 20)
         )
+        
         return bounds
     }
     fileprivate func editTitle(_ active: DiagramItem) {
@@ -411,11 +401,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.editBoxDelegate = EditTitleDelegate(self)
         }
         
-        let style = self.scene!.sceneStyle.defaultItemStyle.copy()
+        let style = active.kind == .Item ? self.scene!.sceneStyle.defaultItemStyle.copy() : self.scene!.sceneStyle.defaultLineStyle.copy()
         style.parseStyle(active.properties)
 
         editBox?.delegate = self.editBoxDelegate
-        editBox?.stringValue = active.name
+        editBox?.stringValue = active.name        
+        
         editBox?.drawsBackground = true
         editBox?.isBordered = true
         editBox?.focusRingType = .none

@@ -835,6 +835,7 @@ open class DrawableScene: DrawableContainer {
         }
         
         var box: DrawableContainer? = nil
+        
         if let display = style.display {
             switch display {
             case "text":
@@ -1515,10 +1516,12 @@ public class DrawableLine: ItemDrawable {
         
         if let lbl = self.label {
             let lblBounds = lbl.getBounds()
-            minX = min( minX, lblBounds.minX)
-            minY = min( minY, lblBounds.minY)
-            maxX = max( maxX, lblBounds.maxX)
-            maxY = max( maxY, lblBounds.maxY)
+            if lblBounds.width > (maxX - minX) {
+                maxX = minX + lblBounds.width
+            }
+            if lblBounds.height > (maxY-minY) {
+                maxY = minY + lblBounds.height
+            }
         }
         
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
