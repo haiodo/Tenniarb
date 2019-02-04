@@ -598,14 +598,38 @@ Engine" "expr dsl"
             display arrows
         }
     }
+    element "Execution model" {
+        item "Element" {
+            pos -438.0 114.0
+        }
+        item "DiagramItem" {
+            pos -392.67578125 32.0
+        }
+        link "Element" "DiagramItem"
+        item "properties" {
+            pos -333.486328125 150.0
+            font-size 10
+        }
+        link "Element" "properties"
+        item "properties" {
+            pos -286.38671875 -23.0
+            font-size 10
+        }
+        link "DiagramItem" "properties" {
+            target-index 1
+        }
+        item "JSContext" {
+            pos -31.701171875 135.0
+        }
+    }
 }
 element "Documentation" {
     element "Basic steps" {
         item "Item" {
-            pos -574.0 272.0
+            pos -572.0 274.0
         }
         item "Adding new items" {
-            pos -587.5537109375 323.0
+            pos -585.5537109375 325.0
             display text
             body {
                 text %{
@@ -615,14 +639,14 @@ element "Documentation" {
             }
         }
         item "press 'Tab'" {
-            pos -500.5537109375 209.0
+            pos -498.5537109375 211.0
             font-size 10
         }
         link "Item" "press 'Tab'" {
             display arrow
         }
         item "New Item" {
-            pos -413.5712890625 272.0
+            pos -411.5712890625 274.0
         }
         link "press 'Tab'" "New Item" {
             display arrow
@@ -631,7 +655,7 @@ element "Documentation" {
             display arrow
         }
         item "Adding link between items" {
-            pos -588.0693359375 111.0
+            pos -586.0693359375 113.0
             display text
             body {
                 text %{
@@ -641,13 +665,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -579.5537109375 49.0
+            pos -577.5537109375 51.0
         }
         item "New Item" {
-            pos -419.185546875 49.0
+            pos -417.185546875 51.0
         }
         item "hold 'Ctrl'" {
-            pos -527.5712890625 -32.0
+            pos -525.5712890625 -30.0
             font-size 10
         }
         link "Item" "hold 'Ctrl'" {
@@ -655,7 +679,7 @@ element "Documentation" {
             display arrow
         }
         item "Draw line" {
-            pos -439.7744140625 -32.0
+            pos -437.7744140625 -30.0
             font-size 10
         }
         link "hold 'Ctrl'" "Draw line"
@@ -669,12 +693,12 @@ element "Documentation" {
             display arrow
         }
         item "Basic editing functions" {
-            pos -606.0693359375 412.0
+            pos -604.0693359375 414.0
             display text
             font-size 20
         }
         item "Duplicate items" {
-            pos -60.0693359375 327.0
+            pos -58.0693359375 329.0
             display text
             body {
                 text %{
@@ -684,13 +708,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -57.5537109375 270.0
+            pos -55.5537109375 272.0
         }
         item "New Item" {
-            pos 143.814453125 271.0
+            pos 145.814453125 273.0
         }
         item "press 'Tab'" {
-            pos 32.4287109375 207.0
+            pos 34.4287109375 209.0
             font-size 10
         }
         link "press 'Tab'" "New Item" {
@@ -709,7 +733,7 @@ element "Documentation" {
             display arrow
         }
         item "Styling items" {
-            pos -62.2177734375 65.0
+            pos -60.2177734375 67.0
             display text
             body {
                 text %{
@@ -721,13 +745,13 @@ element "Documentation" {
             }
         }
         item "Big yellow item" {
-            pos -68.7998046875 -31.0
+            pos -66.7998046875 -29.0
             color red
             text-color yellow
             font-size 30
         }
         item "ColorAnnotation" {
-            pos 151.1083984375 -60.0
+            pos 153.1083984375 -58.0
             title ""
             body {
                 text-color #1c00cf
@@ -740,8 +764,47 @@ element "Documentation" {
             }
         }
         link "Big yellow item" "ColorAnnotation"
-        item "Untitled 2" {
-            pos -217.67578125 10.0
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+        link "Item" "Item" {
+            source-index 1
+            target-index 1
+        }
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+    }
+    element "Styling" {
+    }
+    element "Executions" {
+        element "Simple1" {
+            c 30
+            d 30
+            item "Node1" {
+                pos -469.0 37.0
+                a 22
+                b $(a + 2)
+                c $(parent.c + parent.d)
+                nn $(name)
+                pp $(pos)
+            }
+            item "Node2" {
+                pos -250.42578125 196.0
+                a 20
+                b $(a)
+                c $(d)
+            }
+            item "Untitled 1" {
+                pos -49.373046875 76.0
+            }
+            link "Node2" "Untitled 1"
         }
     }
 }

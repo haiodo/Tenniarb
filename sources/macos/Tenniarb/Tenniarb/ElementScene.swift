@@ -1516,11 +1516,11 @@ public class DrawableLine: ItemDrawable {
         
         if let lbl = self.label {
             let lblBounds = lbl.getBounds()
-            if lblBounds.width > (maxX - minX) {
-                maxX = minX + lblBounds.width
+            if lbl.point.x +  lblBounds.width > (maxX - minX) {
+                maxX = minX + lblBounds.width + lbl.point.x
             }
-            if lblBounds.height > (maxY-minY) {
-                maxY = minY + lblBounds.height
+            if lbl.point.y + lblBounds.height > (maxY-minY) {
+                maxY = minY + lblBounds.height + lbl.point.y
             }
         }
         

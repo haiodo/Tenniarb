@@ -357,10 +357,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if let element = self.selectedElement, let delegate = self.textViewDelegate {
             if delegate.needUpdate() {
                 DispatchQueue.main.async(execute: {
-                    
-                    let strContent = (self.activeItems.count == 0) ? element.toTennProps(): self.activeItems[0].toTennProps()
-                    
-                    delegate.setTextValue(strContent, element, self.activeItems.first)
+                    delegate.setTextValue(element, self.activeItems.first)
                 })
             }
         }

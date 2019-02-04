@@ -128,7 +128,6 @@ public class ElementModelStore {
     
     public var onUpdate: [IElementModelListener] = []
     public var modified: Bool = false
-
     
     init(_ model:ElementModel ) {
         self.model = model

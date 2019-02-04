@@ -15,10 +15,9 @@ extension Element {
         items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
         
         buildElementData(self, items)
-        return items
-    }
-    func toTennProps() -> String {
-        return toTennAsProps().toStr()
+        // We need to convert it to/back to have a proper positioning
+        let p = TennParser()
+        return p.parse(items.toStr())
     }
     
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
@@ -54,11 +53,9 @@ extension DiagramItem {
         }
         
         // Do strip of image data
-        
-        return items
-    }
-    func toTennProps() -> String {
-        return toTennAsProps().toStr()
+        // We need to convert it to/back to have a proper positioning
+        let p = TennParser()
+        return p.parse(items.toStr())
     }
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {

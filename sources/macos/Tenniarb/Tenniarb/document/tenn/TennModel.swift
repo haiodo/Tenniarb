@@ -50,6 +50,16 @@ public class TennNode {
         return result
     }
     
+    public func traverse(_ visitor: (_ node: TennNode) -> Void ) {
+        visitor(self)
+        
+        if children != nil {
+            for c in self.children! {
+                c.traverse(visitor)
+            }
+        }
+    }
+    
     
     
     public init(kind: TennNodeKind, tok: TennToken? = nil) {

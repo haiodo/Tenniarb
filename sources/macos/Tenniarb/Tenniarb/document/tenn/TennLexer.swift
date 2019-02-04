@@ -43,6 +43,19 @@ public class TennToken {
     }
 }
 
+extension TennToken: Hashable {
+    public static func == (lhs: TennToken, rhs: TennToken) -> Bool {
+        return lhs.type == rhs.type && lhs.literal == rhs.literal && lhs.line == rhs.line && lhs.col == lhs.col && lhs.pos == rhs.pos && lhs.size == rhs.size;
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.type)
+        hasher.combine(self.literal)
+        hasher.combine(self.col)
+        hasher.combine(self.pos)
+        hasher.combine(self.size)
+    }
+}
+
 public enum LexerError {
     case EndOfLineReadString
     case EndOfExpressionReadError

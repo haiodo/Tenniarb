@@ -8,6 +8,7 @@
 
 import Foundation
 import Cocoa
+import JavaScriptCore
 
 let defaultFontSize = CGFloat(15)
 
@@ -123,7 +124,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     
     var expressionLines: [Int: String] = [:]
     
-    var execContext: TemporaryExecutionContext = TemporaryExecutionContext()
+    var element: Element?
+    var diagramItem: DiagramItem?
+    var tennContent: TennNode?
     
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
@@ -140,23 +143,20 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         return !doMerge
     }
     
-    func setTextValue(_ value: String, _ element: Element, _ diagramItem: DiagramItem?) {
-        if view.string == value || doMerge {
+    func setTextValue(_ element: Element, _ diagramItem: DiagramItem?) {
+        self.element = element
+        self.diagramItem = diagramItem
+        
+        self.tennContent = (diagramItem != nil) ? diagramItem!.toTennAsProps() : element.toTennAsProps()
+        let valueStr = tennContent!.toStr()
+        
+        if view.string == valueStr || doMerge {
             return; // Same value
         }
-        self.view.textStorage?.setAttributedString(NSAttributedString(string: value))
+        self.view.textStorage?.setAttributedString(NSAttributedString(string: valueStr))
         self.view.isAutomaticQuoteSubstitutionEnabled = false
         self.view.font = NSFont.systemFont(ofSize: defaultFontSize)
         self.view.textColor = NSColor.textColor
-        
-        self.execContext.reset(element, diagramItem)
-        
-        let parser = TennParser()
-        let textContent = self.view.textStorage!.string
-        let node = parser.parse(textContent)
-        if !parser.errors.hasErrors() {
-            self.execContext.updateSource(node)
-        }
         
         highlight()
         
@@ -169,6 +169,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     }
     
     func highlight() {
+        guard let tennContent = self.tennContent else {
+            return
+        }
         //get the range of the entire run of text
         let area = NSMakeRange(0, view.textStorage!.length)
         
@@ -180,7 +183,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         //add new coloring
         view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
         
-        let lexer = TennLexer((view.textStorage?.string)!)
+//        let lexer = TennLexer((view.textStorage?.string)!)
+        
+        var evaluated:[TennToken: JSValue] = [:]
+        
+        if let di = self.diagramItem, let ictx = self.controller.scene.executionContext.items[di] {
+            evaluated = ictx.evaluated
+        } else if self.diagramItem == nil, let evl = self.controller.scene.executionContext.rootCtx?.evaluated {
+            evaluated = evl
+        }
         
         var darkMode = false
         if #available(OSX 10.14, *) {
@@ -194,46 +205,48 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         let numberColor = !darkMode ? numberColorWhite: numberColorDark
         let expressionColor = !darkMode ? expressionColorWhite: expressionColorDark
         
-        var tok = lexer.getToken()
-        while tok != nil {
-            switch tok!.type {
+        
+        tennContent.traverse({ node in
+            Swift.debugPrint("Traversing \(node.token?.literal)")
+            guard let tok = node.token else {
+                return
+            }
+            switch tok.type {
             case .symbol:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    symbolColor, range: NSMakeRange(tok!.pos, tok!.size))
+                    symbolColor, range: NSMakeRange(tok.pos, tok.size))
             case .stringLit:
                 // Check to include ", ' as part of sumbols.
-                let start = tok!.pos - 1 // Since we have ' or "
-                let size = tok!.size + 2
+                let start = tok.pos - 1 // Since we have ' or "
+                let size = tok.size + 2
                 
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     stringColor, range: NSMakeRange(start, size))
             case .markdownLit:
                 // Check to include ", ' as part of sumbols.
-                let start = tok!.pos - 2 // Since we have ' or "
-                let size = tok!.size + 3
+                let start = tok.pos - 2 // Since we have ' or "
+                let size = tok.size + 3
                 
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     stringColor, range: NSMakeRange(start, size))
             case .expression, .expressionBlock:
                 // Check to include "${' or $( as part of sumbols.
-                let start = tok!.pos - 2 // Since we have } or ) at end
-                let size = tok!.size + 3
+                let start = tok.pos - 2 // Since we have } or ) at end
+                let size = tok.size + 3
                 
-                if tok!.type == .expression, let evalValue = execContext.evaluate(tok!.literal) {
-                    expressionLines[tok!.line] = evalValue
+                if tok.type == .expression, let evalValue = evaluated[tok] {
+                    expressionLines[tok.line] = evalValue.toString()
                 }
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     expressionColor, range: NSMakeRange(start, size))
                 
             case .floatLit, .intLit:
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    numberColor, range: NSMakeRange(tok!.pos, tok!.size))
+                    numberColor, range: NSMakeRange(tok.pos, tok.size))
             default:
                 break
             }
-            
-            tok = lexer.getToken()
-        }
+        })
         
         view.needsDisplay=true
     }
@@ -253,11 +266,11 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }
                 else {
-                    self.highlight()
                     self.doMerge = true
-                    self.execContext.updateSource(node)
                     self.controller.mergeProperties(node)
+                    self.tennContent = (self.diagramItem != nil) ? self.diagramItem!.toTennAsProps() : self.element!.toTennAsProps()                    
                     self.doMerge = false
+                    self.highlight()
                 }
                 self.view.needsDisplay = true
             }
