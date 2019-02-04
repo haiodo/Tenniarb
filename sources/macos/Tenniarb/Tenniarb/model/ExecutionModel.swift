@@ -72,7 +72,7 @@ fileprivate func calculateValue(_ node: TennNode?,
             hasExpressions = true
             // Block do not have value usually.
             let result = currentContext.evaluateScript(identText)
-            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
+//            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
             if let tk = nde.token {
                 evaluated[tk] = result
             }
@@ -80,7 +80,7 @@ fileprivate func calculateValue(_ node: TennNode?,
         case .Expression:
             hasExpressions = true
             let result = currentContext.evaluateScript(identText)
-            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
+//            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
             if let tk = nde.token {
                 evaluated[tk] = result
             }

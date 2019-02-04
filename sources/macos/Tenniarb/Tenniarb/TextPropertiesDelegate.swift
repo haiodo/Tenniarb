@@ -204,11 +204,13 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         let stringColor = !darkMode ? stringColorWhite: stringColorDark
         let numberColor = !darkMode ? numberColorWhite: numberColorDark
         let expressionColor = !darkMode ? expressionColorWhite: expressionColorDark
-        
-        
+                
         tennContent.traverse({ node in
-            Swift.debugPrint("Traversing \(node.token?.literal)")
             guard let tok = node.token else {
+                return
+            }
+            Swift.debugPrint("Traversing \(tok.literal) pos: \(tok.pos) \(tok.size)")
+            if tok.size == 0 {
                 return
             }
             switch tok.type {
@@ -268,7 +270,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 else {
                     self.doMerge = true
                     self.controller.mergeProperties(node)
-                    self.tennContent = (self.diagramItem != nil) ? self.diagramItem!.toTennAsProps() : self.element!.toTennAsProps()                    
+                    self.tennContent = node
                     self.doMerge = false
                     self.highlight()
                 }

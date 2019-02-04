@@ -787,6 +787,12 @@ element "Documentation" {
         element "Simple1" {
             c 30
             d 30
+            alpha $( 
+    function qwe(x) {
+        return "My super value 1"
+    } 
+)
+            ddd $(qwe(20))
             item "Node1" {
                 pos -469.0 37.0
                 a 22
@@ -794,6 +800,7 @@ element "Documentation" {
                 c $(parent.c + parent.d)
                 nn $(name)
                 pp $(pos)
+                dd $(parent.alpha)
             }
             item "Node2" {
                 pos -250.42578125 196.0
