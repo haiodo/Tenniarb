@@ -114,8 +114,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var lastInvalidRect: CGRect? = nil
     
-    var executionContext = ExecutionContext()
-    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.acceptsTouchEvents=true
@@ -221,9 +219,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     func notifyChanges(_ evt: ModelEvent) {
         
-        // Forward changes to execution context
-        executionContext.notifyChanges(evt)
-        
         // We should be smart anought to not rebuild all drawable scene every time
         if evt.items.count > 0, let el = self.element {
             var newActive: [DiagramItem] = []
@@ -268,7 +263,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.activeItems.removeAll()
         
         // Center diagram to fit all items
-        self.executionContext.setElement(elementModel)
+        self.store?.executionContext.setElement(elementModel)
+        
         self.buildScene()
         
         if let bounds = scene?.getBounds() {

@@ -128,6 +128,7 @@ public class ElementModelStore {
     
     public var onUpdate: [IElementModelListener] = []
     public var modified: Bool = false
+    public var executionContext = ExecutionContext()
     
     init(_ model:ElementModel ) {
         self.model = model
@@ -153,12 +154,20 @@ public class ElementModelStore {
             action.apply()
             action.isUndoCalled = false
         }
-        refresh()
         
         let evt = ModelEvent(kind: action.getEventKind(), element: action.getNotifier())
         action.collect(&evt.items)
         
-        self.modified(evt)
+        DispatchQueue.global(qos: .background).async {
+            // Do calculation in background
+            self.executionContext.notifyChanges(evt)
+            
+            DispatchQueue.main.async {
+                self.modified(evt)
+                refresh()
+            }
+            
+        }
     }
     
     public func updateName( item: DiagramItem, _ newName: String, undoManager: UndoManager?, refresh: @escaping () -> Void) {

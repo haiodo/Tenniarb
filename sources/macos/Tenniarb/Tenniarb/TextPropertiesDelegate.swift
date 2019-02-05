@@ -106,11 +106,10 @@ class TennTextView: NSTextView {
     }
 }
 
-class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
+class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IElementModelListener {
     var controller: ViewController
     var view: NSTextView
     var changes:Int = 0
-    var doMerge:Bool = false
     
     let symbolColorWhite = NSColor(red: 0x81/255.0, green: 0x5f/255.0, blue: 0x03/255.0, alpha: 1)
     let stringColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
@@ -126,7 +125,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     
     var element: Element?
     var diagramItem: DiagramItem?
-    var tennContent: TennNode?
+    var ourUpdate = false
     
     public init(_ controller: ViewController, _ textView: NSTextView ) {
         self.controller = controller
@@ -139,28 +138,73 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         (self.view as! TennTextView).initDone()
     }
     
-    func needUpdate()-> Bool {
-        return !doMerge
+    fileprivate func updateAnnotations() {
+        expressionLines.removeAll()
+        
+        let currentText = view.string
+        DispatchQueue.global(qos: .background).async {
+            let p = TennParser()
+            let currentNode = p.parse(currentText)
+            if let ctx = self.controller.elementStore?.executionContext {
+                var evaluated:[TennToken: JSValue] = [:]
+                if let di = self.diagramItem, let ictx = ctx.items[di] {
+                    _ = ictx.updateContext(currentNode)
+                    evaluated = ictx.evaluated
+                } else if self.diagramItem == nil, let ictx = ctx.rootCtx {
+                    _ = ictx.updateContext(currentNode)
+                    evaluated = ictx.evaluated
+                }
+                for (k,v) in evaluated {
+                    self.expressionLines[k.line] = v.toString()
+                }
+            }
+        
+            DispatchQueue.main.async {
+                self.view.setNeedsDisplay(self.view.bounds, avoidAdditionalLayout: true)
+            }
+        }
     }
     
-    func setTextValue(_ element: Element, _ diagramItem: DiagramItem?) {
+    func notifyChanges(_ event: ModelEvent) {
+        updateAnnotations()
+        // We need to handle our element changes in case it is not called by us
+        if self.ourUpdate {
+            self.ourUpdate = false
+        } else {
+            self.setTextValue(self.element, self.diagramItem)
+        }
+    }
+        
+    func setTextValue(_ element: Element?, _ diagramItem: DiagramItem?) {
         self.element = element
         self.diagramItem = diagramItem
         
-        self.tennContent = (diagramItem != nil) ? diagramItem!.toTennAsProps() : element.toTennAsProps()
-        let valueStr = tennContent!.toStr()
+        guard let tennContent = (diagramItem != nil) ? diagramItem!.toTennAsProps() : element?.toTennAsProps() else {
+            return
+        }
+        let valueStr = tennContent.toStr()
         
-        if view.string == valueStr || doMerge {
-            return; // Same value
+        let p = TennParser()
+        let minified = p.parse(view.string).toStr()
+        
+        if minified == valueStr {
+            return; // Same value, do not need to modify curren test
         }
         self.view.textStorage?.setAttributedString(NSAttributedString(string: valueStr))
         self.view.isAutomaticQuoteSubstitutionEnabled = false
         self.view.font = NSFont.systemFont(ofSize: defaultFontSize)
         self.view.textColor = NSColor.textColor
+        self.view.scrollToBeginningOfDocument(self)
         
         highlight()
+        updateAnnotations()
         
-        self.view.scrollToBeginningOfDocument(self)
+        // We need to register self to listen for model changes to update annotations
+        if !self.controller.elementStore!.onUpdate.contains(where: {$0 is TextPropertiesDelegate}) {
+            self.controller.elementStore?.onUpdate.append(self)
+        }
+                
+        
     }
 
     func textDidChange(_ notification: Notification) {
@@ -169,13 +213,8 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
     }
     
     func highlight() {
-        guard let tennContent = self.tennContent else {
-            return
-        }
         //get the range of the entire run of text
         let area = NSMakeRange(0, view.textStorage!.length)
-        
-        expressionLines.removeAll()
         
         //remove existing coloring
         view.textStorage?.removeAttribute(NSAttributedString.Key.foregroundColor, range: area)
@@ -183,15 +222,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         //add new coloring
         view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
         
-//        let lexer = TennLexer((view.textStorage?.string)!)
-        
-        var evaluated:[TennToken: JSValue] = [:]
-        
-        if let di = self.diagramItem, let ictx = self.controller.scene.executionContext.items[di] {
-            evaluated = ictx.evaluated
-        } else if self.diagramItem == nil, let evl = self.controller.scene.executionContext.rootCtx?.evaluated {
-            evaluated = evl
-        }
+        let lexer = TennLexer((view.textStorage?.string)!)
         
         var darkMode = false
         if #available(OSX 10.14, *) {
@@ -204,12 +235,11 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
         let stringColor = !darkMode ? stringColorWhite: stringColorDark
         let numberColor = !darkMode ? numberColorWhite: numberColorDark
         let expressionColor = !darkMode ? expressionColorWhite: expressionColorDark
-                
-        tennContent.traverse({ node in
-            guard let tok = node.token else {
-                return
+        
+        while( true ) {
+            guard let tok = lexer.getToken() else {
+                break
             }
-            Swift.debugPrint("Traversing \(tok.literal) pos: \(tok.pos) \(tok.size)")
             if tok.size == 0 {
                 return
             }
@@ -236,9 +266,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                 let start = tok.pos - 2 // Since we have } or ) at end
                 let size = tok.size + 3
                 
-                if tok.type == .expression, let evalValue = evaluated[tok] {
-                    expressionLines[tok.line] = evalValue.toString()
-                }
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     expressionColor, range: NSMakeRange(start, size))
                 
@@ -248,7 +275,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
             default:
                 break
             }
-        })
+        }
         
         view.needsDisplay=true
     }
@@ -268,11 +295,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate {
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }
                 else {
-                    self.doMerge = true
-                    self.controller.mergeProperties(node)
-                    self.tennContent = node
-                    self.doMerge = false
                     self.highlight()
+                    self.ourUpdate = true
+                    self.controller.mergeProperties(node)                 
                 }
                 self.view.needsDisplay = true
             }

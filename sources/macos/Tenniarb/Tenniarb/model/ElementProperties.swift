@@ -16,8 +16,7 @@ extension Element {
         
         buildElementData(self, items)
         // We need to convert it to/back to have a proper positioning
-        let p = TennParser()
-        return p.parse(items.toStr())
+        return items
     }
     
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
@@ -52,10 +51,7 @@ extension DiagramItem {
             Element.buildLinkData(self, items)
         }
         
-        // Do strip of image data
-        // We need to convert it to/back to have a proper positioning
-        let p = TennParser()
-        return p.parse(items.toStr())
+        return items
     }
     func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
         if self.kind == .Item {

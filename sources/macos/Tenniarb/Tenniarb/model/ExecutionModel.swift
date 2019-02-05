@@ -52,42 +52,57 @@ fileprivate func calculateValue(_ node: TennNode?,
         return nil
     }
     
-    if let identText = nde.getIdentText() {
-        switch nde.kind {
-        case .FloatLit:
+    switch nde.kind {
+    case .FloatLit:
+        if let identText = nde.getIdentText() {
             return Float(identText) ?? 0.0
-        case .IntLit:
-            return Int(identText) ?? 0
-        case .StringLit, .CharLit, .Ident, .MarkdownLit:
+        }
+        return nil
+    case .IntLit:
+        if let identText = nde.getIdentText() {
+            return Int(identText) ?? 0.0
+        }
+        return nil
+    case .StringLit, .CharLit, .Ident, .MarkdownLit:
+        if let identText = nde.getIdentText() {
             return identText
-        case .BlockExpr:
-            // A subcontext need to be constructed
-            var blockScope: [String:Any?] = [:]
-            blockScope.merge(currentScope, uniquingKeysWith: {(a,_) in a })
-            if let ctx = JSContext() {
-                hasExpressions = hasExpressions || processBlock(nde, ctx, &blockScope, &evaluated)
+        }
+        return nil
+    case .BlockExpr:
+        // A subcontext need to be constructed
+        var blockScope: [String:Any?] = [:]
+        let he = processBlock(nde, currentContext, &blockScope, &evaluated)
+        // We need to cleanup current context from inner scope values
+        for (k,v) in blockScope {
+            if let csv = currentScope[k] {
+                currentContext.setObject(csv, forKeyedSubscript: k as NSCopying & NSObjectProtocol)
             }
-            return blockScope
-        case .ExpressionBlock:
-            hasExpressions = true
-            // Block do not have value usually.
+        }
+        hasExpressions = hasExpressions || he
+        return blockScope
+    case .ExpressionBlock:
+        hasExpressions = true
+        // Block do not have value usually.
+        if let identText = nde.getIdentText() {
             let result = currentContext.evaluateScript(identText)
-//            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
+    //            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
             if let tk = nde.token {
                 evaluated[tk] = result
             }
-            // Change original node to be updated one.
-        case .Expression:
-            hasExpressions = true
+        }
+        // Change original node to be updated one.
+    case .Expression:
+        hasExpressions = true
+        if let identText = nde.getIdentText() {
             let result = currentContext.evaluateScript(identText)
-//            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
+    //            Swift.debugPrint("Evaluate: \(identText) == \(result?.toObject()) ")
             if let tk = nde.token {
                 evaluated[tk] = result
             }
             return result
-        default:
-            return identText
         }
+    default:
+        return nil
     }
     return nil
 }
@@ -96,7 +111,6 @@ public class ItemContext {
     var item: DiagramItem
     var itemObject: [String:Any?] = [:] // To be used from references
     var context: ExecutionContext
-    var jsContext: JSContext?
     
     var hasExpressions: Bool = false
     var parentCtx: ElementContext
@@ -112,12 +126,12 @@ public class ItemContext {
     }
    
     
-    func updateContext() -> Bool {
+    func updateContext(_ node:TennNode? = nil ) -> Bool {
         self.itemObject.removeAll()
-        self.jsContext = JSContext()
-        self.jsContext?.setObject(self.parentCtx.elementObject, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
+        
+        self.parentCtx.jsContext.setObject(self.parentCtx.elementObject, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
         self.evaluated.removeAll()
-        return processBlock(self.item.toTennAsProps(), self.jsContext!, &self.itemObject, &evaluated)
+        return processBlock( node ?? self.item.toTennAsProps(), self.parentCtx.jsContext, &self.itemObject, &evaluated)
     }
 }
 
@@ -125,7 +139,7 @@ public class ElementContext {
     var element: Element
     var elementObject: [String:Any?] = [:]
     var context: ExecutionContext
-    var jsContext: JSContext?
+    var jsContext: JSContext = JSContext()
     var hasExpressions: Bool = false
     var evaluated: [TennToken : JSValue] = [:]
     
@@ -135,11 +149,10 @@ public class ElementContext {
         
         self.hasExpressions = self.updateContext()
     }
-    func updateContext()-> Bool {
-        self.jsContext = JSContext()
+    func updateContext(_ node:TennNode? = nil )-> Bool {
         self.elementObject.removeAll()
         self.evaluated.removeAll()
-        return processBlock(self.element.toTennAsProps(), self.jsContext!, &self.elementObject, &evaluated)
+        return processBlock(node ?? self.element.toTennAsProps(), self.jsContext, &self.elementObject, &evaluated)
     }
 }
 

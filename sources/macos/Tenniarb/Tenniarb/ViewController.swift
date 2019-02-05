@@ -355,11 +355,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     func updateTextProperties( ) {
         if let element = self.selectedElement, let delegate = self.textViewDelegate {
-            if delegate.needUpdate() {
-                DispatchQueue.main.async(execute: {
-                    delegate.setTextValue(element, self.activeItems.first)
-                })
-            }
+            DispatchQueue.main.async(execute: {
+                delegate.setTextValue(element, self.activeItems.first)
+            })
         }
     }
     
@@ -443,10 +441,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 }
                 self.updateElements.removeAll()
                 self.worldTree.endUpdates()
-                
-                //# Update text
-                self.updateTextProperties()
-                
+                                
                 self.updateScheduled = 0
                 
                 self.updateWindowTitle()
