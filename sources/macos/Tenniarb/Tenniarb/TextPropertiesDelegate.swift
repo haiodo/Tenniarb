@@ -40,7 +40,7 @@ class TennTextView: NSTextView {
     }
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        drawLineNumbers()
+        drawAnnotations()
     }
     
     func initDone() {
@@ -55,8 +55,15 @@ class TennTextView: NSTextView {
         let attString = NSAttributedString(string: lineNumberString, attributes: lineNumberAttributes)
         attString.draw(at: NSPoint(x: x, y: relativePoint.y + y))
     }
-    func drawLineNumbers() {
-        if let layoutManager = self.layoutManager, let delegate = self.delegate as? TextPropertiesDelegate {
+    func drawAnnotations() {
+        if let layoutManager = self.layoutManager, let delegate = self.delegate as? TextPropertiesDelegate,
+            let context = NSGraphicsContext.current?.cgContext {
+            
+            context.saveGState()
+            defer {
+                context.restoreGState()
+            }
+            
             let visibleGlyphRange = layoutManager.glyphRange(forBoundingRect: self.visibleRect, in: self.textContainer!)
             let firstVisibleGlyphCharacterIndex = layoutManager.characterIndexForGlyph(at: visibleGlyphRange.location)
             
@@ -90,7 +97,14 @@ class TennTextView: NSTextView {
                     
                     if glyphLineCount <= 0 {
                         if let value = delegate.expressionLines[lineNumber - 1] {
-                            drawLineValue("= \(value)", lineRect.maxX + 5, lineRect.minY)
+                            
+                            let lineStart = lineRect.maxX + 5
+                            let textPos = max(lineRect.maxX + 10, 250)
+                            drawLineValue("\(value)", textPos, lineRect.minY)
+                            context.move(to: CGPoint(x: lineStart, y: lineRect.midY))
+                            context.addLine(to: CGPoint(x: textPos - 5, y: lineRect.midY))
+                            context.setLineDash(phase: 2, lengths: [2])
+                            context.drawPath(using: .stroke)
                         }
                     }
                     
@@ -147,7 +161,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             let currentNode = p.parse(currentText)
             if let ctx = self.controller.elementStore?.executionContext {
                 var evaluated:[TennToken: JSValue] = [:]
-                if let di = self.diagramItem, let ictx = ctx.items[di] {
+                if let di = self.diagramItem, let ictx = ctx.rootCtx?.itemsMap[di] {
                     _ = ictx.updateContext(currentNode)
                     evaluated = ictx.evaluated
                 } else if self.diagramItem == nil, let ictx = ctx.rootCtx {

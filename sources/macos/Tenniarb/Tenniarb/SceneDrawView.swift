@@ -265,6 +265,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         // Center diagram to fit all items
         self.store?.executionContext.setElement(elementModel)
         
+        if self.scene != nil {
+            self.scene?.activeElements.removeAll()
+            self.scene?.editingMode = false
+        }
         self.buildScene()
         
         if let bounds = scene?.getBounds() {

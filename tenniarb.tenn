@@ -787,15 +787,17 @@ element "Documentation" {
         element "Simple1" {
             c 32
             d 61
-            alpha $( 
-    function qwe(x) {
+            alpha ${ 
+    function global_function(x) {
         return "My super value 1"
     } 
-)
-            ddd $(qwe(20))
+}
+            ddd $(global_function(20))
             item "Node1" {
-                pos -582.0 140.0
-                a 25
+                pos -785.0 227.0
+                a 26
+                days 25
+                width $(days*20)
                 b $(a + 8) {
                     a1 $(12)
                     a2 $(2)
@@ -806,21 +808,25 @@ element "Documentation" {
                     b $(a)
                 }
                 qwe2 $(a)
-                p $(parent)
-                c $(parent.c + parent.d)
+                p $(parent.items.length)
+                c $(parent.properties.c + parent.properties.d)
                 nn $(name + '1')
-                pp $(pos[0] + 7)
-                dd $(parent.alpha)
+                pp $(pos[0])
+                dd $(global_function() + 2)
+                z0 $(parent.items[0].properties.days)
+                z $(parent.items.map(e => e.properties.days).reduce((a,b) => a +b))
             }
             item "Node2" {
-                pos -471.42578125 237.0
+                pos -553.42578125 352.0
                 a 20
                 b $(a)
                 c $(d)
+                days 2
             }
             item "Untitled 1" {
                 pos -241.373046875 199.0
                 color $('red')
+                days 50
             }
             link "Node2" "Untitled 1"
         }
