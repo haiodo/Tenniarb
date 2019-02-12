@@ -105,7 +105,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         context?.scaleBy(x: scaleFactor, y: scaleFactor)
         context?.saveGState()
         
-        let scene = DrawableScene(self.element!, darkMode: false)
+        let scene = DrawableScene(self.element!, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext)
         scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
 
@@ -381,7 +381,7 @@ class ExportManager: NSObject, NSMenuDelegate {
             let info = NSPDFInfo()
             panel.beginSheet( with: info, modalFor: nil, completionHandler: { (result) -> Void in
                 if result == 1 {
-                    let scene = DrawableScene(element, darkMode: false)
+                    let scene = DrawableScene(element, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext)
                     
                     let bounds = scene.getBounds()
                     let ox = CGFloat(15)

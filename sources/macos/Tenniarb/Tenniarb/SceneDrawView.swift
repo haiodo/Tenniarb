@@ -223,7 +223,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if evt.items.count > 0, let el = self.element {
             var newActive: [DiagramItem] = []
             for (k, v) in evt.items {
-                if k.kind == .Item || Set([.Append, .Update]).contains(v)  {
+                if k.kind == .Item || Set([.Append]).contains(v)  {
                     if el.items.contains(k) {
                         newActive.append(k)
                     }
@@ -292,7 +292,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         let darkMode = isDarkMode()
         
-        let scene = DrawableScene(self.element!, darkMode: darkMode)
+        let scene = DrawableScene(self.element!, darkMode: darkMode, executionContext: self.store!.executionContext)
         
         if oldActiveItem.count > 0 {
             scene.updateActiveElements(oldActiveItem)
@@ -407,7 +407,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         let style = active.kind == .Item ? self.scene!.sceneStyle.defaultItemStyle.copy() : self.scene!.sceneStyle.defaultLineStyle.copy()
-        style.parseStyle(active.properties)
+        style.parseStyle(active.properties, [:])
 
         editBox?.delegate = self.editBoxDelegate
         editBox?.stringValue = active.name        

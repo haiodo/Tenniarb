@@ -378,6 +378,7 @@ public class TennLexer {
         let stPos = self.pos
         var foundEnd = false
         var indent = 1
+        let startLine = self.currentLine
         while self.pos < self.buffer.count {
             let curChar = self.charAt()
             if  curChar == "\n" {
@@ -411,7 +412,9 @@ public class TennLexer {
         }
         else {
             if (r.count > 0) {
-                self.add(type: type ,literal: r)
+                self.tokenBuffer.append(
+                    TennToken(type: type, literal: r, line: startLine, col: currentChar, pos: self.pos-r.count, size: r.count)
+                )
                 r.removeAll(keepingCapacity: true)
             }
             self.inc()

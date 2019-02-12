@@ -9,6 +9,7 @@
 import Foundation
 
 import Cocoa
+import JavaScriptCore
 
 /// A basic drawable element
 public protocol Drawable {
@@ -210,9 +211,9 @@ class DrawableStyle {
         self.darkMode = darkMode
         reset()
     }
-    init( item: DiagramItem ) {
+    init( item: DiagramItem, _ evaluations: [TennToken: JSValue ] ) {
         reset()
-        self.parseStyle(item.properties)
+        self.parseStyle(item.properties, evaluations)
     }
     
     func newCopy() -> DrawableStyle {
@@ -283,19 +284,74 @@ class DrawableStyle {
         return CGColor.black.copy(alpha: alpha)!
     }
     
-    func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+    func getFloat(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> CGFloat? {
+        
+        guard let ch =  child else {
+            return nil
+        }
+        // Check if we have override for value
+        if let t = ch.token, let ev = evaluations[t] {
+            return CGFloat(ev.toDouble())
+        }
+        if let val = ch.getIdentText(), let floatVal = Float(val) {
+            return CGFloat(floatVal)
+        }
+        return nil
+    }
+    func getString(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> String? {
+        
+        guard let ch = child else {
+            return nil
+        }
+        // Check if we have override for value
+        if let t = ch.token, let ev = evaluations[t] {
+            return ev.toString()
+        }
+        return ch.getIdentText()
+    }
+    
+    func getColor(_ child: TennNode?, _ evaluations: [TennToken: JSValue ], alpha: CGFloat = 1.0) -> CGColor? {
+        
+        guard let ch = child else {
+            return nil
+        }
+        // Check if we have override for value
+        if let t = ch.token, let ev = evaluations[t] {
+            if ev.isArray, let arr = ev.toArray() {
+                if arr.count == 3 {
+                    if let r = arr[0] as? Int, let g = arr[1] as? Int, let b = arr[2] as? Int {
+                        return CGColor(red:  CGFloat(r) / 255.0, green: CGFloat(g) / 255.0, blue: CGFloat(b) / 255.0, alpha: alpha)
+                    }
+                }
+                if arr.count == 4 {
+                    if let r = arr[0] as? Int, let g = arr[1] as? Int, let b = arr[2] as? Int, let al = arr[3] as? Int {
+                        return CGColor(red:  CGFloat(r) / 255.0, green: CGFloat(g) / 255.0, blue: CGFloat(b) / 255.0, alpha: CGFloat(al) / 255.0)
+                    }
+                }
+            }
+            if let value = ev.toString() {
+                return parseColor(value.lowercased(), alpha: alpha)
+            }
+        }
+        if let text = ch.getIdentText() {
+            return parseColor(text.lowercased(), alpha: alpha)
+        }
+        return nil
+    }
+    
+    func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
         case PersistenceStyleKind.Color.name:
-            if let color = child.getIdent(1) {
-                self.color = self.parseColor(color.lowercased(), alpha: 0.7)
+            if let color = getColor(child.getChild(1), evaluations, alpha: 0.7) {
+                self.color = color
             }
         case PersistenceStyleKind.TextColor.name:
-            if let color = child.getIdent(1) {
-                self.textColor = self.parseColor(color.lowercased(), alpha: 1)
+            if let color = getColor(child.getChild(1), evaluations, alpha: 1) {
+                self.textColor = color
             }
         case PersistenceStyleKind.FontSize.name:
-            if let value = child.getFloat(1) {
-                self.fontSize = CGFloat(value)
+            if let value = getFloat(child.getChild(1), evaluations) {
+                self.fontSize = value
                 if self.fontSize > 37 {
                     self.fontSize = 36
                 }
@@ -312,29 +368,29 @@ class DrawableStyle {
                 self.layout = value
             }
         case PersistenceStyleKind.Width.name:
-            if let value = child.getFloat(1) {
-                self.width = CGFloat(value)
+            if let value = getFloat(child.getChild(1), evaluations) {
+                self.width = value
             }
         case PersistenceStyleKind.Height.name:
-            if let value = child.getFloat(1) {
-                self.height = CGFloat(value)
+            if let value = getFloat(child.getChild(1), evaluations) {
+                self.height = value
             }
         case PersistenceStyleKind.BorderColor.name:
-            if let color = child.getIdent(1) {
-                self.borderColor = self.parseColor(color.lowercased())
+            if let color = getColor(child.getChild(1), evaluations, alpha: 1) {
+                self.borderColor = color
             }
         default:
             break;
         }
     }
     
-    func parseStyle( _ properties: ModelProperties ) {
-        parseStyle( properties.node )
+    func parseStyle( _ properties: ModelProperties, _ evaluations: [TennToken: JSValue ] ) {
+        parseStyle( properties.node, evaluations )
     }
-    func parseStyle( _ node: TennNode ) {
+    func parseStyle( _ node: TennNode, _ evaluations: [TennToken: JSValue ] ) {
         for child in node.children ?? [] {
             if child.kind == .Command, child.count > 0, let cmdName = child.getIdent(0) {
-                self.parseStyleLine(cmdName, child)
+                self.parseStyleLine(cmdName, child, evaluations)
             }
         }
     }
@@ -344,14 +400,14 @@ class DrawableStyle {
 class DrawableLineStyle: DrawableStyle {
     var lineDash:String?
     
-    override func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+    override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
         case PersistenceStyleKind.LineStyle.name:
             if let value = child.getIdent(1) {
                 self.lineDash = value
             }
         default:
-            super.parseStyleLine(cmdName, child)
+            super.parseStyleLine(cmdName, child, evaluations)
         }
     }
     override func newCopy() -> DrawableStyle {
@@ -382,12 +438,24 @@ class DrawableLineStyle: DrawableStyle {
 }
 
 class DrawableItemStyle: DrawableStyle {
+    var title: String? = nil
     override func newCopy() -> DrawableStyle {
         return DrawableItemStyle(darkMode)
     }
     override func copy() -> DrawableItemStyle {
         let result = super.copy() as! DrawableItemStyle
         return result
+    }
+    override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken : JSValue]) {
+        switch cmdName {
+        case PersistenceStyleKind.Title.name:
+            self.title = child.getIdent(1)
+            if let ch =  child.getChild(1), let t = ch.token, let ev = evaluations[t] {
+                self.title = ev.toString()
+            }
+        default:
+            super.parseStyleLine(cmdName, child, evaluations)
+        }
     }
 }
 
@@ -408,7 +476,7 @@ class SceneStyle: DrawableStyle {
         self.defaultLineStyle.fontSize = 12
     }
     
-    override func parseStyleLine(_ cmdName: String, _ child: TennNode) {
+    override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
         case PersistenceStyleKind.ZoomLevel.name:
             if let value = child.getFloat(1) {
@@ -423,12 +491,12 @@ class SceneStyle: DrawableStyle {
                         case "item":
                             if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
                                 defaultItemStyle.reset()
-                                defaultItemStyle.parseStyle(ModelProperties(styles))
+                                defaultItemStyle.parseStyle(ModelProperties(styles), evaluations)
                             }
                         case "line":
                             if let styleProps = styleChild.getChild(1), styleProps.kind == .BlockExpr, let styles = styleProps.children {
                                 defaultLineStyle.reset()
-                                defaultLineStyle.parseStyle(ModelProperties(styles))
+                                defaultLineStyle.parseStyle(ModelProperties(styles), evaluations)
                             }
                         default:
                             break;
@@ -443,7 +511,7 @@ class SceneStyle: DrawableStyle {
             }
             break;
         default:
-            super.parseStyleLine(cmdName, child)
+            super.parseStyleLine(cmdName, child, evaluations)
         }
     }
 }
@@ -475,9 +543,12 @@ open class DrawableScene: DrawableContainer {
     
     var activeElements: [DiagramItem] = []
     
-    init( _ element: Element, darkMode: Bool) {
+    var executionContext: ExecutionContext?
+    
+    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContext?) {
         self.sceneStyle = SceneStyle(darkMode)
         self.darkMode = darkMode
+        self.executionContext = executionContext
         
         super.init([])
         
@@ -587,7 +658,7 @@ open class DrawableScene: DrawableContainer {
         }
         updateActiveElements(self.activeElements, newPositions)
         
-        var pos = newPositions.first!.value
+        let pos = newPositions.first!.value
         
         var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
         
@@ -744,16 +815,18 @@ open class DrawableScene: DrawableContainer {
         let name = e.name
         
         let style = self.sceneStyle.defaultItemStyle.copy()
-        style.parseStyle(e.properties)
+        let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
+        style.parseStyle(e.properties, evaluatedValues )
         
         let bgColor = style.color
         let borderColor = style.borderColor
         
         var titleValue = (name.count > 0 ? name :  " ")
-        if let titleNode = e.properties.get( "title" ) {
-            if let text = titleNode.getIdent(1) {
-                titleValue = text
-            }
+        if let title = style.title {
+            titleValue = title
+        }
+        if titleValue.starts(with: "name") {
+            Swift.debugPrint("What?")
         }
         titleValue = titleValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
         
@@ -766,7 +839,7 @@ open class DrawableScene: DrawableContainer {
             var textValue = ""
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
-                    bodyStyle.parseStyle(bodyBlock)
+                    bodyStyle.parseStyle(bodyBlock, evaluatedValues)
                     
                     if let bodyText = bodyBlock.getNamedElement("text") {
                         if let txtValue = bodyText.getIdent(1) {
@@ -860,7 +933,8 @@ open class DrawableScene: DrawableContainer {
         let elementDrawable = DrawableContainer()
         
         self.sceneStyle = SceneStyle(darkMode)
-        self.sceneStyle.parseStyle(element.properties)
+        let evaluated = self.executionContext?.getEvaluated(element) ?? [:]
+        self.sceneStyle.parseStyle(element.properties, evaluated)
         
         var links: [DiagramItem] = []
         
@@ -869,7 +943,7 @@ open class DrawableScene: DrawableContainer {
             if let data = e as? LinkItem {
                 
                 let linkStyle = self.sceneStyle.defaultLineStyle.copy()
-                linkStyle.parseStyle(e.properties)
+                linkStyle.parseStyle(e.properties, evaluated)
                 var sr: CGRect = CGRect(x: 0, y: 0, width: 5, height: 5)
                 var tr: CGRect = CGRect(x: 0, y: 5, width: 5, height: 5)
                 

@@ -331,13 +331,13 @@ Engine" {
 Engine"
         item "expressions" {
             pos -4.228515625 288.0
-            color yellow
+            color green
         }
         link "Calculation
 Engine" "expressions"
         item "expr dsl" {
             pos 21.771484375 249.0
-            color yellow
+            color green
         }
         link "Calculation
 Engine" "expr dsl"
@@ -443,6 +443,7 @@ Engine" "expr dsl"
         link "quick actions" "quick fonts"
         item "javascript" {
             pos 85.615234375 277.0
+            color green
         }
         link "expr dsl" "javascript"
         link "Properties" "Easy\nProperties" {
@@ -789,46 +790,57 @@ element "Documentation" {
             d 61
             alpha ${ 
     function global_function(x) {
-        return "My super value 1"
+        return "My super value " + x
     } 
+    function find_days() {
+        return parent.items.map(e=>e.properties.days).reduce((a,b)=>a+b)
+    }
 }
             ddd $(global_function(20))
-            item "Node1" {
-                pos -785.0 227.0
-                a 26
-                days 25
-                width $(days*20)
-                b $(a + 8) {
-                    a1 $(12)
-                    a2 $(2)
+            styles {
+                new_style_1 {
+                    color "red"
+                    width 500
                 }
-                w $(5)
-                qwe {
-                    a 211
-                    b $(a)
-                }
-                qwe2 $(a)
-                p $(parent.items.length)
-                c $(parent.properties.c + parent.properties.d)
-                nn $(name + '1')
-                pp $(pos[0])
-                dd $(global_function() + 2)
-                z0 $(parent.items[0].properties.days)
-                z $(parent.items.map(e => e.properties.days).reduce((a,b) => a +b))
             }
-            item "Node2" {
-                pos -553.42578125 352.0
-                a 20
-                b $(a)
-                c $(d)
-                days 2
+            item "Evaluated values - 2" {
+                pos -1866.048828125 843.0
+                days 20
+                width $(days *20)
+                qwe2 ${
+    styles.new_style_1.color
+}
+                title ${
+    name +  "\nthis is extra value\n" + find_days() + "=" + global_function(25) + "->" + pos[0]
+}
+                a $(days)
             }
             item "Untitled 1" {
-                pos -241.373046875 199.0
-                color $('red')
-                days 50
+                pos -1111.9873046875 512.0
+                days 4
             }
-            link "Node2" "Untitled 1"
+            link "Evaluated values - 2" "Untitled 1"
+            item "Untitled 2" {
+                pos -1119.6630859375 961.0
+                days 3
+            }
+            link "Untitled 1" "Untitled 2"
+            item "Untitled 3" {
+                pos -1959.8603515625 962.0
+                days 2
+                color $([255, 0, 0, 255])
+            }
+            link "Untitled 2" "Untitled 3"
+        }
+        element "Color on pos" {
+            item "Untitled 1" {
+                pos -12.0 221.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "Untitled 2" {
+                pos 57.32421875 94.0
+            }
+            link "Untitled 1" "Untitled 2"
         }
     }
 }

@@ -97,10 +97,10 @@ class TennTextView: NSTextView {
                     
                     if glyphLineCount <= 0 {
                         if let value = delegate.expressionLines[lineNumber - 1] {
-                            
+                            let finalValue = value.replacingOccurrences(of: "\n", with: "\\n")
                             let lineStart = lineRect.maxX + 5
                             let textPos = max(lineRect.maxX + 10, 250)
-                            drawLineValue("\(value)", textPos, lineRect.minY)
+                            drawLineValue("\(finalValue)", textPos, lineRect.minY)
                             context.move(to: CGPoint(x: lineStart, y: lineRect.midY))
                             context.addLine(to: CGPoint(x: textPos - 5, y: lineRect.midY))
                             context.setLineDash(phase: 2, lengths: [2])
@@ -180,7 +180,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
     }
     
     func notifyChanges(_ event: ModelEvent) {
-        updateAnnotations()
         // We need to handle our element changes in case it is not called by us
         if self.ourUpdate {
             self.ourUpdate = false
@@ -211,7 +210,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         self.view.scrollToBeginningOfDocument(self)
         
         highlight()
-        updateAnnotations()
         
         // We need to register self to listen for model changes to update annotations
         if !self.controller.elementStore!.onUpdate.contains(where: {$0 is TextPropertiesDelegate}) {
@@ -309,6 +307,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }
                 else {
+                    self.updateAnnotations()
                     self.highlight()
                     self.ourUpdate = true
                     self.controller.mergeProperties(node)                 

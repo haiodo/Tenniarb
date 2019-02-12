@@ -212,12 +212,6 @@ public class ElementContext: NSObject, ElementProtocol {
         }
     }
     
-//    dynamic subscript( key: String ) -> Any? {
-//        get {
-//            return elementObject[key]
-//        }
-//    }
-    
     init(_ context: ExecutionContext, _ element: Element ) {
         self.element = element
         self.context = context
@@ -292,55 +286,16 @@ public class ExecutionContext: IElementModelListener {
             }
         }
     }
-}
-
-/**
-    Used for temporary evaluation of values edited
- */
-public class TemporaryExecutionContext {
-    var context = JSContext()
-    var element: Element?
-    var item: DiagramItem?
-    init() {
-    }
-    
-    public func reset(_ element: Element, _ diagramItem: DiagramItem?) {
-        self.item = diagramItem
-        self.element = element
-    }
-    public func updateSource(_ source: TennNode ) {
-        self.context = JSContext()
-        
-        if self.item != nil {
-            // This is diagram item
-            Element.traverseBlock(source, {(cmdName, blChild) -> Void in
-                if blChild.count > 1 {
-                    if let nde = blChild.getChild(1), let identText = nde.getIdentText() {
-                        var value: Any = identText
-                        switch nde.kind {
-                        case .FloatLit:
-                            value = Float(identText) ?? -1.0
-                        case .IntLit:
-                            value = Int(identText) ?? 0
-                        case .ExpressionBlock:
-                            self.context?.evaluateScript(identText)
-                        default:
-                            break
-                        }
-                        self.context?.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
-                    
-                    }
-                }
-            })
+    public func getEvaluated(_ element: Element) -> [TennToken:JSValue] {
+        if let root = self.rootCtx, root.element == element {
+            return root.evaluated;
         }
-        else {
-            // This is element model
-        }
-        
+        return [:]
     }
-        
-    public func evaluate( _ text: String) -> String? {
-        return self.context?.evaluateScript(text)?.toString()
+    public func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue] {
+        if let root = self.rootCtx, let ic = root.itemsMap[item] {
+            return ic.evaluated;
+        }
+        return [:]
     }
 }
-

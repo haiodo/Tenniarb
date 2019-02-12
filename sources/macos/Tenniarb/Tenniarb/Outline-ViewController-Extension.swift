@@ -85,7 +85,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         if event.characters == "\u{0D}" {
             let selectedIndex = controller.worldTree.selectedRow
             
-            if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
+            if let _ = controller.worldTree.item(atRow: selectedIndex) as? Element {
                 outline.editColumn(0, row: selectedIndex, with: event, select: true)
                 return true
             }

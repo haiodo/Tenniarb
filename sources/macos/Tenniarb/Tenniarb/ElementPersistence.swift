@@ -53,6 +53,8 @@ public enum PersistenceStyleKind {
     case ZoomLevel
     case Styles
     case Grid
+    case Title
+    case Label
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -68,6 +70,8 @@ public enum PersistenceStyleKind {
         case .TextColor: return "text-color";
         case .Styles: return "styles";
         case .Grid: return "grid";
+        case .Title: return "title";
+        case .Label: return "label";
         }
     }
 }
