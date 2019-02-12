@@ -309,7 +309,18 @@ class DrawableStyle {
         }
         return ch.getIdentText()
     }
-    
+    func getComponentValue( _ value: Any ) -> CGFloat {
+        if let rr = value as? Int {
+            return CGFloat(rr)
+        }
+        if let rr = value as? Double {
+            return CGFloat(rr)
+        }
+        if let rr = value as? Float {
+            return CGFloat(rr)
+        }
+        return CGFloat(255.0)
+    }
     func getColor(_ child: TennNode?, _ evaluations: [TennToken: JSValue ], alpha: CGFloat = 1.0) -> CGColor? {
         
         guard let ch = child else {
@@ -318,16 +329,19 @@ class DrawableStyle {
         // Check if we have override for value
         if let t = ch.token, let ev = evaluations[t] {
             if ev.isArray, let arr = ev.toArray() {
-                if arr.count == 3 {
-                    if let r = arr[0] as? Int, let g = arr[1] as? Int, let b = arr[2] as? Int {
-                        return CGColor(red:  CGFloat(r) / 255.0, green: CGFloat(g) / 255.0, blue: CGFloat(b) / 255.0, alpha: alpha)
-                    }
+                var r: CGFloat = CGFloat(0)
+                var g: CGFloat = CGFloat(0)
+                var b: CGFloat = CGFloat(0)
+                var al: CGFloat = alpha
+                if arr.count >= 3 {
+                    r = getComponentValue(arr[0])
+                    g = getComponentValue(arr[1])
+                    b = getComponentValue(arr[2])
                 }
                 if arr.count == 4 {
-                    if let r = arr[0] as? Int, let g = arr[1] as? Int, let b = arr[2] as? Int, let al = arr[3] as? Int {
-                        return CGColor(red:  CGFloat(r) / 255.0, green: CGFloat(g) / 255.0, blue: CGFloat(b) / 255.0, alpha: CGFloat(al) / 255.0)
-                    }
+                    al = getComponentValue(arr[3]) / 255.0
                 }
+                return CGColor(red:  r / 255.0, green: g / 255.0, blue: b / 255.0, alpha: al)
             }
             if let value = ev.toString() {
                 return parseColor(value.lowercased(), alpha: alpha)

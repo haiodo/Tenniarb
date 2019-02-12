@@ -98,11 +98,11 @@ extension Element {
         return ee.toStr(0, false)
     }
     
-    static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode) {
+    static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode, _ addPos: Bool = false) {
         let nx = item.x != 0
         let ny = item.y != 0
         
-        if nx || ny {
+        if nx || ny || addPos {
             itemBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
         }
         
@@ -125,7 +125,7 @@ extension Element {
         }
     }
     
-    static func buildLinkData(_ item: DiagramItem, _ linkDataBlock: TennNode) {
+    static func buildLinkData(_ item: DiagramItem, _ linkDataBlock: TennNode, _ addPos: Bool = false) {
         if let descr = item.description {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
         }
@@ -137,7 +137,7 @@ extension Element {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Label.commandName, TennNode.newStrNode(item.name)))
         }
         
-        if nx || ny {
+        if nx || ny || addPos {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
         }
         

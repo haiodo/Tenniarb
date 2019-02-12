@@ -490,8 +490,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 
                 newEl.x = active.x + offset
                 newEl.y = active.y
-                
-                
+                                
                 // Copy parent properties
                 for p in active.properties {
                     newEl.properties.append(p.clone())

@@ -174,16 +174,30 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
    
     
-    func updateContext(_ node:TennNode? = nil ) -> Bool {
+    func updateContext() -> Bool {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
         
-        self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
-        self.evaluated.removeAll()
-        let result = processBlock( node ?? self.item.toTennAsProps(), self.parentCtx.jsContext, &newItems, &newEvaluated)
+        let result = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated)
+                
         self.itemObject = newItems
         self.evaluated = newEvaluated
+        
         return result
+    }
+    
+    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
+        self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
+        
+        // Update position
+        self.parentCtx.jsContext.setObject([self.item.x, self.item.y], forKeyedSubscript: "pos" as NSCopying & NSObjectProtocol)
+        
+        // Update name
+        self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSCopying & NSObjectProtocol)
+        
+        return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
     }
 }
 
@@ -234,11 +248,15 @@ public class ElementContext: NSObject, ElementProtocol {
             _ = ic.updateContext()
         }
     }
+    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
+        return processBlock(node ?? self.element.properties.node, self.jsContext, &newItems, &newEvaluated)
+    }
+    
     func updateContext(_ node:TennNode? = nil )-> Bool {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
 
-        let result = processBlock(node ?? self.element.toTennAsProps(), self.jsContext, &newItems, &newEvaluated)
+        let result = updateGetContext(node, newItems: &newItems, newEvaluated: &newEvaluated)
         
         self.elementObject = newItems
         self.evaluated = newEvaluated
@@ -273,6 +291,8 @@ public class ElementContext: NSObject, ElementProtocol {
 public class ExecutionContext: IElementModelListener {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
+    private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue")
+
     
     public func setElement(_ element: Element) {
         rootCtx = ElementContext(self, element)
@@ -280,22 +300,50 @@ public class ExecutionContext: IElementModelListener {
     }
     
     public func notifyChanges(_ event: ModelEvent ) {
-        if let root = self.rootCtx {
-            if event.element == root.element {
-               root.processEvent(event)
+        self.internalQueue.sync( execute: {
+            if let root = self.rootCtx {
+                if event.element == root.element {
+                   root.processEvent(event)
+                }
             }
-        }
+        })
     }
     public func getEvaluated(_ element: Element) -> [TennToken:JSValue] {
-        if let root = self.rootCtx, root.element == element {
-            return root.evaluated;
-        }
-        return [:]
+        var value: [TennToken:JSValue] = [:]
+        self.internalQueue.sync( execute: {
+            if let root = self.rootCtx, root.element == element {
+                value = root.evaluated;
+            }
+        })
+        return value
     }
     public func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue] {
-        if let root = self.rootCtx, let ic = root.itemsMap[item] {
-            return ic.evaluated;
-        }
-        return [:]
+        var value: [TennToken:JSValue] = [:]
+        self.internalQueue.sync( execute: {
+            if let root = self.rootCtx, let ic = root.itemsMap[item] {
+                value = ic.evaluated;
+            }
+        })
+        return value
+    }
+    public func getEvaluated(_ item: DiagramItem, _ node: TennNode ) -> [TennToken:JSValue] {
+        var value: [TennToken:JSValue] = [:]
+        self.internalQueue.sync( execute: {
+            if let root = self.rootCtx, let ic = root.itemsMap[item] {
+                var newItems: [String:Any] = [:]
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+            }
+        })
+        return value
+    }
+    public func getEvaluated(_ element: Element, _ node: TennNode ) -> [TennToken:JSValue] {
+        var value: [TennToken:JSValue] = [:]
+        self.internalQueue.sync( execute: {
+            if let ic = rootCtx, ic.element == element {
+                var newItems: [String:Any] = [:]
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+            }
+        })
+        return value
     }
 }

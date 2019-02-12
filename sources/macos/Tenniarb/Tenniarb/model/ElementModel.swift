@@ -33,6 +33,10 @@ public class ModelProperties: Sequence {
         node.add(props)
     }
     
+    init( node: TennNode) {
+        self.node = node
+    }
+    
     public func makeIterator() -> Iterator {
         if self.node.count == 0 {
             let nde: [TennNode] = []

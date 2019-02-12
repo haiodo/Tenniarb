@@ -389,7 +389,7 @@ class ComplexUpdateItem: AbstractUpdateValue<TennNode> {
     override var name:String { get { return "UpdateItem" } }
     
     override func apply(_ value: TennNode) {
-        self.item.fromTennProps(self.store, value)
+        self.item.fromTennProps(value)
     }
 }
 
@@ -397,7 +397,7 @@ class ComplexUpdateElement: AbstractUpdateElementValue<TennNode> {
     override var name:String { get { return "UpdateElement"} }
     
     override func apply(_ value: TennNode) {
-        self.element.fromTennProps(self.store, value)
+        self.element.fromTennProps(value)
     }
 }
 

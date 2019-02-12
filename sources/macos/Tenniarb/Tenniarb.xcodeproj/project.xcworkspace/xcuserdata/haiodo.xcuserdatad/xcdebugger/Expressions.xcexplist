@@ -3,10 +3,33 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "static Element.buildItemData(_:_:):ElementPersistence.swift">
+      </ContextState>
+      <ContextState
+         contextName = "DrawableScene.buildItemDrawable(_:_:):ElementScene.swift">
+      </ContextState>
+      <ContextState
+         contextName = "ItemContext.updateContext(_:):ExecutionModel.swift">
+      </ContextState>
+      <ContextState
+         contextName = "closure #2 in ElementModelStore.execute(_:_:_:):ElementOperations.swift">
+      </ContextState>
+      <ContextState
          contextName = "SceneDrawView.setActiveElement(_:):SceneDrawView.swift">
       </ContextState>
       <ContextState
+         contextName = "DrawableStyle.getColor(_:_:alpha:):ElementScene.swift">
+      </ContextState>
+      <ContextState
          contextName = "SceneDrawView.keyDown(with:):SceneDrawView.swift">
+      </ContextState>
+      <ContextState
+         contextName = "ItemContext.updateContext():ExecutionModel.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.parentCtx.jsContext.evaluateScript(&quot;pos&quot;)">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "Element.toTennStr(includeSubElements:includeAll:includeItems:):ElementPersistence.swift">

@@ -10,16 +10,21 @@ import Foundation
 
 extension Element {
     /// Convert items to list of properties
-    func toTennAsProps(_ kind: TennNodeKind = .Statements) -> TennNode {
+    func toTennAsProps(_ kind: TennNodeKind = .Statements, reparse: Bool = false) -> TennNode {
         let items = TennNode.newNode(kind: kind)
         items.add(TennNode.newCommand("name", TennNode.newStrNode(self.name)))
         
         buildElementData(self, items)
         // We need to convert it to/back to have a proper positioning
+        
+        if reparse {
+            let parser = TennParser()
+            return parser.parse(items.toStr())
+        }
         return items
     }
     
-    func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
+    func fromTennProps(_ node: TennNode ) {
         self.properties = ModelProperties()
         
         var linkElements:[(TennNode, LinkItem)] = []
@@ -38,22 +43,27 @@ extension Element {
 
 extension DiagramItem {
     /// Convert items to list of properties
-    func toTennAsProps(_ kind: TennNodeKind = .Statements ) -> TennNode {
+    func toTennAsProps(_ kind: TennNodeKind = .Statements, reparse: Bool = false ) -> TennNode {
         let items = TennNode.newNode(kind: kind)
         
         if self.kind == .Item {
             if !self.name.isEmpty {
                 items.add(TennNode.newCommand(PersistenceItemKind.Name.commandName, TennNode.newStrNode(self.name)))
             }
-            Element.buildItemData(self, items)
+            Element.buildItemData(self, items, true)
         }
         else if self.kind == .Link {
-            Element.buildLinkData(self, items)
+            Element.buildLinkData(self, items, true)
+        }
+        
+        if reparse {
+            let parser = TennParser()
+            return parser.parse(items.toStr())
         }
         
         return items
     }
-    func fromTennProps( _ store: ElementModelStore, _ node: TennNode ) {
+    func fromTennProps( _ node: TennNode ) {
         if self.kind == .Item {
             self.properties = ModelProperties()
             self.x = 0 // In case pos was deleted

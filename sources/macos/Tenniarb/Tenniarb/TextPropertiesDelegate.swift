@@ -161,12 +161,10 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             let currentNode = p.parse(currentText)
             if let ctx = self.controller.elementStore?.executionContext {
                 var evaluated:[TennToken: JSValue] = [:]
-                if let di = self.diagramItem, let ictx = ctx.rootCtx?.itemsMap[di] {
-                    _ = ictx.updateContext(currentNode)
-                    evaluated = ictx.evaluated
-                } else if self.diagramItem == nil, let ictx = ctx.rootCtx {
-                    _ = ictx.updateContext(currentNode)
-                    evaluated = ictx.evaluated
+                if let di = self.diagramItem {
+                    evaluated = ctx.getEvaluated(di, currentNode)
+                } else if self.diagramItem == nil, let ictx = ctx.rootCtx, ictx.element == self.element {
+                    evaluated = ctx.getEvaluated(self.element!, currentNode)
                 }
                 for (k,v) in evaluated {
                     self.expressionLines[k.line] = v.toString()
@@ -210,6 +208,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         self.view.scrollToBeginningOfDocument(self)
         
         highlight()
+        updateAnnotations()
         
         // We need to register self to listen for model changes to update annotations
         if !self.controller.elementStore!.onUpdate.contains(where: {$0 is TextPropertiesDelegate}) {
