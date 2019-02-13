@@ -291,7 +291,8 @@ public class ElementContext: NSObject, ElementProtocol {
 public class ExecutionContext: IElementModelListener {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
-    private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue")
+    private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue",
+                                                              qos: .userInteractive, autoreleaseFrequency: .workItem )
 
     
     public func setElement(_ element: Element) {

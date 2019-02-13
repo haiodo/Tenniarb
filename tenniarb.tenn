@@ -833,16 +833,545 @@ element "Documentation" {
             link "Untitled 2" "Untitled 3"
         }
         element "Color on pos" {
+            define ${
+    function my_color(pos) {
+        return [Math.abs(pos[0]), Math.abs(pos[1]),50]
+    }
+}
+            styles {
+                my_box {
+                    color "red"
+                    width 300
+                    height 300
+                    body "Hello world"
+                }
+            }
+            item "BLACK" {
+                pos -555.0 462.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                width $(parent.items.length)
+                my_props {
+                    name "Vasya"
+                    surname "Datata"
+                }
+                value $(my_props.name)
+            }
+            item "BLACK" {
+                pos -330.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -550.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -552.0 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -475.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -400.0 279.0
+                kind task
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -325.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -250.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -175.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -30.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 40.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 115.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 190.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 265.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 340.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -550.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -475.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -400.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -330.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -255.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -180.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -30.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 40.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 115.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 185.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 260.0 325.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 335.0 326.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -550.0 367.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -475.0 367.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -400.0 367.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -255.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -180.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -105.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -30.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 40.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 115.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 190.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 260.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 335.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -476.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -405.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -330.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -255.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -180.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -35.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 35.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 110.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 185.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 260.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 335.0 412.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 127.0 462.0
+                using "my_style"
+                color "red"
+                width 300
+                body "Hello world"
+            }
+            item "BLACK" {
+                pos 410.0 368.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 410.0 326.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 410.0 279.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -180.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -180.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 40.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -475.0 194.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 190.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -475.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 40.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 260.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -30.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -400.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -180.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 40.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -250.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 185.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 410.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -330.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 335.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -550.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 265.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -475.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 410.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -325.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 335.0 153.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 190.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -255.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 115.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -30.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 115.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 110.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 335.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 410.0 153.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -30.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -550.0 194.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -325.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -550.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -105.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos -400.0 194.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -250.0 195.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),pos[0]+pos[1]])
+            }
+            item "BLACK" {
+                pos 265.0 152.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -405.0 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -547.8466796875 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -473.693359375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -399.5400390625 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -325.38671875 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -251.2333984375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -177.080078125 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -102.9267578125 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -28.7734375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 45.3798828125 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 119.533203125 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 193.6865234375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 267.83984375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 341.9931640625 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos 416.146484375 102.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+            }
+            item "BLACK" {
+                pos -477.8466796875 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -403.693359375 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -329.5400390625 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -255.38671875 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -181.2333984375 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -107.080078125 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -32.9267578125 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 41.2265625 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 115.3798828125 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 189.533203125 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 263.6865234375 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 337.83984375 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos 411.9931640625 56.0
+                color $(my_color(pos))
+            }
+            item "BLACK" {
+                pos -398.8466796875 462.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                days 5
+                width $(20*days)
+            }
             item "Untitled 1" {
-                pos 92.0 402.0
-                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                pos -281.8466796875 462.0
+                color purple
             }
             item "BLACK" {
-                pos -13.67578125 327.0
-                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
-            }
-            item "BLACK" {
-                pos -188.5224609375 439.0
+                pos -547.8466796875 410.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
             }
         }
