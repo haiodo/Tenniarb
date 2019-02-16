@@ -180,6 +180,18 @@ open class DrawableContainer: ItemDrawable {
     }
 }
 
+func getString(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> String? {
+    
+    guard let ch = child else {
+        return nil
+    }
+    // Check if we have override for value
+    if let t = ch.token, let ev = evaluations[t] {
+        return ev.toString()
+    }
+    return ch.getIdentText()
+}
+
 class DrawableStyle {
     var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
     var textColor: CGColor = CGColor.black
@@ -298,17 +310,7 @@ class DrawableStyle {
         }
         return nil
     }
-    func getString(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> String? {
-        
-        guard let ch = child else {
-            return nil
-        }
-        // Check if we have override for value
-        if let t = ch.token, let ev = evaluations[t] {
-            return ev.toString()
-        }
-        return ch.getIdentText()
-    }
+    
     func getComponentValue( _ value: Any ) -> CGFloat {
         if let rr = value as? Int {
             return CGFloat(rr)
@@ -839,9 +841,6 @@ open class DrawableScene: DrawableContainer {
         if let title = style.title {
             titleValue = title
         }
-        if titleValue.starts(with: "name") {
-            Swift.debugPrint("What?")
-        }
         titleValue = titleValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
         
         var bodyTextBox: TextBox? = nil
@@ -855,18 +854,14 @@ open class DrawableScene: DrawableContainer {
                 if bodyBlock.kind == .BlockExpr {
                     bodyStyle.parseStyle(bodyBlock, evaluatedValues)
                     
-                    if let bodyText = bodyBlock.getNamedElement("text") {
-                        if let txtValue = bodyText.getIdent(1) {
-                            textValue = txtValue
-                        }
-                        else if let block = bodyText.getChild(1), (block.kind == .BlockExpr || block.kind == .ExpressionBlock) {
-                            block.childsToStr(&textValue, 0, true)
+                    if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
+                        if let txt = getString(txtNode, evaluatedValues) {
+                            textValue = txt
                         }
                     }
                 }
-                else if bodyBlock.kind == .Ident || bodyBlock.kind == .StringLit || bodyBlock.kind == .MarkdownLit,
-                        let strVal = bodyBlock.getIdentText() {
-                    textValue = strVal
+                else if let txt = getString(bodyBlock, evaluatedValues) {
+                    textValue = txt
                 }
             }
             bodyTextBox = TextBox(

@@ -220,16 +220,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     func notifyChanges(_ evt: ModelEvent) {
         
         // We should be smart anought to not rebuild all drawable scene every time
-        if evt.items.count > 0, let el = self.element {
-            var newActive: [DiagramItem] = []
+        if evt.items.count > 0 {
+            var removedItems: [DiagramItem] = []
             for (k, v) in evt.items {
-                if k.kind == .Item || Set([.Append]).contains(v)  {
-                    if el.items.contains(k) {
-                        newActive.append(k)
+                if v == .Remove  {
+                    if self.activeItems.contains(k) {
+                        removedItems.append(k)
                     }
                 }
             }
-            setActiveItems(newActive)
+            if removedItems.count > 0 {
+                setActiveItems(self.activeItems.filter({e in removedItems.contains(e)}))
+            }
         }
         if evt.kind == .Structure  {
             self.buildScene()
@@ -312,6 +314,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false ) {
         if items.count == 0 && self.activeItems.count == 0 {
+            return
+        }
+        if activeItems.elementsEqual(items) {
+            // No need to select same list
             return
         }
         activeItems = items

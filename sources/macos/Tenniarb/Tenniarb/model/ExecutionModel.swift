@@ -187,6 +187,11 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
     
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
+        // We need to set old values to be empty
+        for (k, v) in self.itemObject {
+            self.parentCtx.jsContext.evaluateScript("delete \(k)")
+        }
+        
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
         
         // Update position
@@ -249,6 +254,11 @@ public class ElementContext: NSObject, ElementProtocol {
         }
     }
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
+        // We need to set old values to be empty
+        for (k, v) in self.elementObject {
+            self.jsContext.evaluateScript("delete \(k)")
+        }
+
         return processBlock(node ?? self.element.properties.node, self.jsContext, &newItems, &newEvaluated)
     }
     
