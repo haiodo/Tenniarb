@@ -252,6 +252,14 @@ extension Element {
             buildElement(e: e, topParent: topParent, includeSubElements: includeSubElements, includeItems: includeItems)
         }
     }
+    
+    public func storeItems( _ items: [DiagramItem] ) -> TennNode {
+        let block = TennNode(kind: .Statements )
+        
+        let itemIndexes = self.prepareItemRefs(items)
+        Element.buildItems(items, block, itemIndexes)
+        return block
+    }
 }
 
 class IndexedName: Hashable {
@@ -403,6 +411,23 @@ extension Element {
         // Return nil
         //TODo: need to report error
         return nil
+    }
+    public static func parseItems( node: TennNode ) -> [DiagramItem] {
+        
+        let el = Element(name: "")
+        var linkElements: [(TennNode, LinkItem)] = []
+        
+        traverseBlock(node, { (cmdName, blChild) -> Void in
+            parseElementData(el, cmdName, blChild, &linkElements)
+        })
+    
+        let refs = prepareRefs(el.items)
+    
+        for (node, link) in linkElements {
+            processLink(link, node, refs)
+        }
+    
+        return el.items
     }
     static func parseItemData(_ el: DiagramItem, _ cmdName: String, _ blChild: TennNode) {
         switch cmdName  {

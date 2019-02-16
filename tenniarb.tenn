@@ -198,6 +198,7 @@ element "Tenniarb" {
         item "Quality" {
             pos -173.0 257.0
             font-size 12
+            color yellow
         }
         link "Quality" "Testing"
         item "Testing" {
@@ -213,8 +214,9 @@ element "Tenniarb" {
         }
         link "Quality" "Performance"
         item "Performance" {
-            pos -105.0 319.0
+            pos -105.0 305.0
             font-size 12
+            color green
         }
         link "Quality" "Durability"
         item "Durability" {
@@ -399,7 +401,7 @@ Engine" "expr dsl"
         link "Import" "JIRA CSV import"
         item "Zoom?" {
             pos -628.2587890625 -49.0
-            color yellow
+            color
         }
         link "Scene Draw" "Zoom?" {
             pos -26.0 19.0
@@ -450,7 +452,7 @@ Engine" "expr dsl"
             display "arrow"
         }
         item "Payments" {
-            pos 12.05078125 131.0
+            pos -4.94921875 169.0
             color yellow
         }
         link "MVP" "Payments"
@@ -507,6 +509,7 @@ Engine" "expr dsl"
     1. Embedd markdown like font capabilities inside.
     2. *BOLD*
     3. _Italic_.
+    4. Font size
 }
         }
         link "Editing" "Markdown BODY"
@@ -781,10 +784,85 @@ element "Documentation" {
             source-index 1
             target-index 1
         }
+        item "hold 'Ctrl'" {
+            pos -525.5712890625 -30.0
+            font-size 10
+        }
+        item "Draw line" {
+            pos -437.7744140625 -30.0
+            font-size 10
+        }
+        link "hold 'Ctrl'" "Draw line" {
+            source-index 1
+            target-index 1
+        }
+        link "Item" "hold 'Ctrl'" {
+            source-index 3
+            target-index 1
+            display arrow
+        }
+        link "Draw line" "New Item" {
+            source-index 1
+            target-index 3
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 3
+            target-index 3
+            display arrow
+        }
+        item "Item" {
+            pos -577.5537109375 51.0
+        }
+        link "Item" "Item" {
+            source-index 3
+            target-index 3
+        }
+        item "New Item" {
+            pos -417.185546875 51.0
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
     }
     element "Styling" {
     }
     element "Executions" {
+        item "Body with\nevaluations 1" {
+            pos -0.0 692.0
+            a 20
+            b $(a)
+            c 20
+            c $(a + b + c + 4)
+            body {
+                text $(`
+        a = ${a}
+        b = ${b}
+        c = 30
+    `)
+            }
+        }
+        item "Body with\nevaluations 2" {
+            pos 124.0 691.0
+            a 20
+            b $(a)
+            c 20
+            c $(a + b + c + 4)
+            body ${`
+            a = ${a}
+            b = ${b}
+            c = 30
+`}
+        }
         element "Simple1" {
             c 32
             d 61
@@ -804,14 +882,17 @@ element "Documentation" {
                 }
             }
             item "Evaluated values - 2" {
-                pos -1866.048828125 843.0
+                pos -1653.048828125 709.0
                 days 20
-                width $(days *20)
                 qwe2 ${
     styles.new_style_1.color
 }
                 title ${
-    name +  "\nthis is extra value\n" + find_days() + "=" + global_function(25) + "->" + pos[0]
+    name +  "\nthis is extra value\n" 
+    + find_days() + 
+    "=" + 
+    global_function(25) + 
+    "->\n" + pos[0]
 }
                 a $(days)
             }
@@ -831,19 +912,31 @@ element "Documentation" {
                 color $([255, 0, 0, 255])
             }
             link "Untitled 2" "Untitled 3"
-            item "Untitled 4" {
-                pos -1980.64453125 702.0
+            item "Body with\nevaluations 1" {
+                pos -1978.64453125 691.0
                 a 20
                 b $(a)
                 c 20
                 c $(a + b + c + 4)
                 body {
-                    text "
-        a = $(a)
-        b = $(b)
+                    text $(`
+        a = ${a}
+        b = ${b}
         c = 30
-    "
+    `)
                 }
+            }
+            item "Body with\nevaluations 2" {
+                pos -1826.1298828125 694.0
+                a 20
+                b $(a)
+                c 20
+                c $(a + b + c + 4)
+                body ${`
+            a = ${a}
+            b = ${b}
+            c = 30
+`}
             }
         }
         element "Color on pos" {

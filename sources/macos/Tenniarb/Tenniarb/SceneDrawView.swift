@@ -312,11 +312,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
-    public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false ) {
+    public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false, force: Bool = false ) {
         if items.count == 0 && self.activeItems.count == 0 {
             return
         }
-        if activeItems.elementsEqual(items) {
+        if !force && activeItems.elementsEqual(items) {
             // No need to select same list
             return
         }
@@ -785,7 +785,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             else {
                 self.activeItems.append(itm)
             }
-            setActiveItems(self.activeItems)
+            setActiveItems(self.activeItems, force: true )
             return
         }
         else {
@@ -1134,15 +1134,40 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     
     @objc func cut( _ sender: NSObject ) {
-        
+        copy(sender)
+        removeItem()
     }
-    
-    @objc func copy( _ sender: NSObject ) {
         
+    @objc func copy( _ sender: NSObject ) {
+        if self.activeItems.count > 0 {
+            let block = self.element!.storeItems(self.activeItems)
+            
+            NSPasteboard.general.clearContents()
+            let value = block.toStr()
+            NSPasteboard.general.setString(value, forType: .string)
+        }
     }
     
     @objc func paste( _ sender: NSObject ) {
-        
+        if let value = NSPasteboard.general.string(forType: .string) {
+            let p = TennParser()
+            let node = p.parse(value)
+            if p.errors.hasErrors() {
+                return // If there is errors, we could not paste.
+            }
+            let items = Element.parseItems(node: node)
+            if items.count > 0 {
+                // Move items a bit,
+                for i in items {
+                    i.x += 10
+                    i.y -= 10
+                }
+                self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+                
+                self.setActiveItems(items)
+                scheduleRedraw()
+            }
+        }
     }
     
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
@@ -1151,6 +1176,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 return !self.activeItems.isEmpty
             }
             else if action == #selector(copy(_:)) {
+                return !self.activeItems.isEmpty
+            }
+            else if action == #selector(cut(_:)) {
                 return !self.activeItems.isEmpty
             }
             else if action == #selector(delete(_:)) {
