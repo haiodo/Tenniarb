@@ -463,7 +463,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
-        return (prepareBodyText(textValue), style.fontSize)
+        return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
     fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
         let newProps = item.toTennAsProps(.BlockExpr)
