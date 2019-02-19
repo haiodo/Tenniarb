@@ -21,17 +21,64 @@ enum SceneMode {
     case Selection  // Selection with shift key
 }
 
+enum EditingMode {
+    case Name // edvarng of name/title
+    case Body // editing of body, shift + enter
+}
+
+public class PopupEditField: NSTextField {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+    }
+    
+    var shiftKeyDown = false
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override public func keyDown(with event: NSEvent) {
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+            shiftKeyDown = true
+        }
+        super.keyDown(with: event)
+    }
+    override public func keyUp(with event: NSEvent) {
+        shiftKeyDown = false
+        super.keyDown(with: event)
+    }
+    public override func flagsChanged(with event: NSEvent) {
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+            shiftKeyDown = true
+        }
+        super.flagsChanged(with: event)
+    }
+}
+
 class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     var view: SceneDrawView
     init( _ view: SceneDrawView) {
         self.view = view
     }
+    
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         if commandSelector == #selector(NSView.cancelOperation(_:)) {
             self.view.commitTitleEditing(nil)
             return true
         }
         if commandSelector == #selector(NSView.insertNewline(_:)) {
+            if self.view.editBox?.shiftKeyDown ?? false {
+                // Just shift click
+                let loc = textView.selectedRange().location
+                let insertPart = "\n"
+                
+                let str = NSAttributedString(
+                    string:insertPart,
+                    attributes:[NSAttributedString.Key.font: textView.font]
+                )
+                textView.textStorage?.insert(str, at: loc)
+                return true
+            }
             self.view.commitTitleEditing(textView)
             return true
         }
@@ -67,7 +114,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var mode: SceneMode = .Normal
     
-    var editBox: NSTextField? = nil
+    var editBox: PopupEditField? = nil
     var editBoxItem: Drawable? = nil
     var editBoxDelegate: EditTitleDelegate?
     
@@ -76,6 +123,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var styleManager: StyleManager?
     
     var selectionStart: CGPoint = CGPoint(x:0, y:0)
+    
+    var editingMode: EditingMode = .Name
     
     var ox: CGFloat {
         set {
@@ -356,7 +405,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let tv = textView {
                 let textValue = tv.string
                 if textValue.count > 0 {
-                    self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
+                    switch self.editingMode {
+                    case .Name:
+                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
+                    case .Body:
+                        self.setBody(active, textValue)
+                        break
+                    }
+                    
                 }
             }
         }
@@ -384,8 +440,66 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         return bounds
     }
-    fileprivate func editTitle(_ active: DiagramItem) {
+    
+    fileprivate func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
+        let bodyStyle = style.copy()
+        bodyStyle.fontSize -= 2 // Make a bit smaller for body
+        var textValue = ""
+        
+        if let bodyNode = item.properties.get( "body" ) {
+            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            if let bodyBlock = bodyNode.getChild(1) {
+                if bodyBlock.kind == .BlockExpr {
+                    bodyStyle.parseStyle(bodyBlock, [:] )
+                    
+                    if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
+                        if let txt = getString(txtNode, [:]) {
+                            textValue = txt
+                        }
+                    }
+                }
+                else if let txt = getString(bodyBlock, [:]) {
+                    textValue = txt
+                }
+            }
+        }
+        return (prepareBodyText(textValue), style.fontSize)
+    }
+    fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
+        let newProps = item.toTennAsProps(.BlockExpr)
+        if let bodyNode = newProps.getNamedElement( "body" ) {
+            if let bodyBlock = bodyNode.getChild(1) {
+                if bodyBlock.kind == .BlockExpr {
+                    if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
+                        bodyText.children?.removeAll()
+                        bodyText.add(TennNode.newIdent("text"))
+                        bodyText.add(TennNode.newMarkdownNode(body))
+                    }
+                }
+                else {
+                    // just replace existing text
+                    bodyNode.children?.removeAll()
+                    bodyNode.add(TennNode.newIdent("body"))
+                    bodyNode.add(TennNode.newMarkdownNode(body))
+                }
+            }
+        }
+        else {
+            let cmd = TennNode.newCommand("body")
+            if body.contains("\n") || body.contains("\\n") {
+                cmd.add(TennNode.newMarkdownNode(body))
+            } else {
+                cmd.add(TennNode.newStrNode(body))
+            }
+            newProps.add(cmd)
+        }
+        self.store?.setProperties(self.element!, item, newProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+    }
+    
+    fileprivate func editTitle(_ active: DiagramItem, _ editMode: EditingMode) {
         self.mode = .Editing
+        self.editingMode = editMode
+        
         guard let de = scene?.drawables[active] else {
             return
         }
@@ -396,7 +510,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.editBoxItem = de
         
         let bounds = getEditBoxBounds(item: de)
-        editBox = NSTextField(frame: bounds)
+        editBox = PopupEditField(frame: bounds)
         scene?.editBoxBounds = bounds
         scene?.editingMode = true
         
@@ -416,12 +530,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         style.parseStyle(active.properties, [:])
 
         editBox?.delegate = self.editBoxDelegate
-        editBox?.stringValue = active.name        
+        switch self.editingMode {
+        case .Name:
+            editBox?.stringValue = active.name
+            editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
+        case .Body:
+            let (text, fontSize) = self.getBody(active, style)
+            editBox?.stringValue = text
+            editBox?.font = NSFont.systemFont(ofSize: fontSize)
+        }
         
         editBox?.drawsBackground = true
         editBox?.isBordered = true
         editBox?.focusRingType = .none
-        editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
         
         self.addSubview(editBox!)
         
@@ -584,7 +705,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     
-    override func keyDown(with event: NSEvent) {        
+    override func keyDown(with event: NSEvent) {
+        if self.mode == .Editing {
+            return
+        }
         if event.characters == "\t" {
             addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
         }
@@ -592,15 +716,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if event.characters == "\u{0D}" {
             if let active = self.activeItems.first  {
                 setActiveItem(active)
-                editTitle(active)
+                if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+                    editTitle(active, .Body)
+                }
+                else {
+                    editTitle(active, .Name)
+                }
             }
         }
         else if event.characters == "\u{7f}" {
             removeItem()
         }
-        
-        
-        
         
         if let sk = event.specialKey, let sc = self.scene {
             var ops: [ElementOperation] = []

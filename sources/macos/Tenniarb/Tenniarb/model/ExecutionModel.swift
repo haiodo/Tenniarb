@@ -188,7 +188,7 @@ fileprivate func calculateValue(_ node: TennNode?,
     
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
-        for (k, v) in self.itemObject {
+        for (k, _) in self.itemObject {
             self.parentCtx.jsContext.evaluateScript("delete \(k)")
         }
         
@@ -255,7 +255,7 @@ public class ElementContext: NSObject, ElementProtocol {
     }
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
-        for (k, v) in self.elementObject {
+        for (k, _) in self.elementObject {
             self.jsContext.evaluateScript("delete \(k)")
         }
 

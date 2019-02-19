@@ -250,6 +250,9 @@ extension TennNode {
     public static func newStrNode(_ literal: String) -> TennNode {
         return TennNode(kind: .StringLit, tok: TennToken(type: .stringLit, literal: literal) )
     }
+    public static func newMarkdownNode(_ literal: String) -> TennNode {
+        return TennNode(kind: .MarkdownLit, tok: TennToken(type: .markdownLit, literal: literal) )
+    }
     public static func newFloatNode(_ value: Double ) -> TennNode {
         return TennNode(kind: .FloatLit, tok: TennToken(type: .floatLit, literal: String(value)) )
     }

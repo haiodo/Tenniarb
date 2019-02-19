@@ -531,7 +531,49 @@ class SceneStyle: DrawableStyle {
         }
     }
 }
-
+private func spaceCount(_ value: Substring) -> Int {
+    let chars = Array(value)
+    var count = 0
+    for c in chars {
+        if c == " " {
+            count += 1
+        }
+        else {
+            break
+        }
+    }
+    return count
+}
+public func prepareBodyText(_ textValue: String) -> String {
+    
+    let content = textValue.replacingOccurrences(of: "\\n", with: "\n")
+        .replacingOccurrences(of: "\t", with: "    ")
+    
+    var lines = content.split(separator: "\n")
+    var minCount = Int.max
+    for l in lines {
+        if l.trimmingCharacters(in: .whitespacesAndNewlines).count != 0 {
+            let ll = spaceCount(l)
+            if ll < minCount {
+                minCount = ll
+            }
+        }
+    }
+    
+    while lines.count > 0 && lines[lines.endIndex-1].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+        lines.removeLast()
+    }
+    
+    return lines.map({body in
+        if body.trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+            return String(body)
+        }
+        else {
+            return String(body[body.index(body.startIndex, offsetBy: minCount)...])
+        }
+        
+    }).joined(separator: "\n")
+}
 
 open class DrawableScene: DrawableContainer {
     public var offset = CGPoint(x:0, y:0)
@@ -782,56 +824,32 @@ open class DrawableScene: DrawableContainer {
         return rectBox
     }
     
-    private func spaceCount(_ value: Substring) -> Int {
-        let chars = Array(value)
-        var count = 0
-        for c in chars {
-            if c == " " {
-                count += 1
-            }
-            else {
-                break
-            }
-        }
-        return count
-    }
-
-    fileprivate func prepareBodyText(_ textValue: String) -> String {
-        
-        let content = textValue.replacingOccurrences(of: "\\n", with: "\n")
-                                .replacingOccurrences(of: "\t", with: "    ")
-                                
-        var lines = content.split(separator: "\n")
-        var minCount = Int.max
-        for l in lines {
-            if l.trimmingCharacters(in: .whitespacesAndNewlines).count != 0 {
-                let ll = spaceCount(l)
-                if ll < minCount {
-                    minCount = ll
-                }
-            }
-        }
-        
-        while lines.count > 0 && lines[lines.endIndex-1].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
-            lines.removeLast()
-        }
-        
-        return lines.map({body in
-            if body.trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
-                return String(body)
-            }
-            else {
-                return String(body[body.index(body.startIndex, offsetBy: minCount)...])
-            }
-            
-        }).joined(separator: "\n")
-    }
-    
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
         let name = e.name
         
         let style = self.sceneStyle.defaultItemStyle.copy()
         let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
+        
+        
+        // parse uses with list of styles.
+        
+        if let styleNode = e.properties.get( "use-style" ),
+            styleNode.count > 1,
+            let childs = styleNode.children,
+            let parent = e.parent,
+            let styles = parent.properties.get("styles"),
+            let stylesBlock = styles.getChild(1) {
+            let elementEvaluated = self.executionContext?.getEvaluated(parent) ?? [:]
+            for c in childs[1..<childs.count] {
+                if let ident = c.getIdentText(),
+                    let parentStyle = stylesBlock.getNamedElement(ident),
+                    let styleData = parentStyle.getChild(1) {
+                    
+                    style.parseStyle(styleData, elementEvaluated )
+                }
+            }
+        }
+        
         style.parseStyle(e.properties, evaluatedValues )
         
         let bgColor = style.color

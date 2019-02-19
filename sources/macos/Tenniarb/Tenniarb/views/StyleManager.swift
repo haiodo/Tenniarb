@@ -11,7 +11,7 @@ import Cocoa
 
 enum StyleOperation: Int {
     case Apply = 1
-    case ApplyDefault
+//    case ApplyDefault
     case AddStyleConfig
     case ShowConfig
     case separator
@@ -90,40 +90,37 @@ public class StyleManager: NSObject, NSMenuDelegate {
             }
             // Add new sync config
             styleNode?.getChild(1)?.add(
-                TennNode.newCommand("new-style-" + String(styleNode!.getBlock(1).count + 1), TennNode.newBlockExpr(TennNode.newCommand("color", TennNode.newStrNode("white"))))
+                TennNode.newCommand("new_style_" + String(styleNode!.getBlock(1).count + 1), TennNode.newBlockExpr(TennNode.newCommand("color", TennNode.newStrNode("white"))))
             )
             //            self.controller.viewController?.mergeProperties(newProps.asNode())
             elementStore?.setProperties(active, newProps.asNode(),
                                                         undoManager: undoManager,  refresh: {()->Void in})
         }
     }
-    fileprivate func doApply( _ node: TennNode ) {
+    fileprivate func doApply( _ styleName: String, _ node: TennNode ) {
         guard let element = self.element else {
             return
         }
         var ops: [ElementOperation] = []
-            
+        
         for itm in activeItems {
             let newItemProps = itm.toTennAsProps(.BlockExpr)
             
             var changed = 0
-            if let named = node.named {
-                // Iterate over uniq named properties
-                for (name, prop) in named {
-                    if let itmProp = newItemProps.getNamedElement(name) {
-                        // Property exists, we need to replace value
-                        if let childs = prop.children {
-                            itmProp.children?.removeAll()
-                            itmProp.add(childs)
-                        }
-                    }
-                    else {
-                        // Just add new property
-                        newItemProps.add(prop)
-                    }
+            if let itmProp = newItemProps.getNamedElement("use-style") {
+                // Property exists, we need to replace value
+                if itmProp.getIdent(1) != styleName {
+                    itmProp.children?.removeAll()
+                    itmProp.add(TennNode.newIdent("use-style"), TennNode.newIdent(styleName))
+                    changed += 1
                 }
+            }
+            else {
+                // Just add new property
+                newItemProps.add(TennNode.newCommand("use-style", TennNode.newIdent(styleName)))
                 changed += 1
             }
+            
             if changed > 0 {
                 if let op = elementStore?.createProperties(element, itm, newItemProps) {
                     ops.append(op)
@@ -144,11 +141,11 @@ public class StyleManager: NSObject, NSMenuDelegate {
             scene.setActiveItem(nil)
         }
         else if el.operation == .Apply, let nde = el.node {
-            doApply(nde)
+            doApply(el.name, nde)
         }
-        else if el.operation == .ApplyDefault, let nde = el.node {
-            doApply(nde)
-        }
+//        else if el.operation == .ApplyDefault, let nde = el.node {
+//            doApply(nde)
+//        }
     }
     
     func createMenu() -> NSMenu {

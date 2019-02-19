@@ -625,7 +625,7 @@ CQ
                 </viewController>
                 <customObject id="2Tp-Fl-jBw" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" id="ia2-ar-MRu">
-                    <rect key="frame" x="0.5" y="0.0" width="89" height="24"/>
+                    <rect key="frame" x="0.0" y="0.0" width="89" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="ORS-vC-Cvy">
                         <font key="font" metaFont="system"/>
@@ -760,109 +760,6 @@ CQ
                     <view key="view" id="zWf-BF-0pP">
                         <rect key="frame" x="0.0" y="0.0" width="430" height="258"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <gridView xPlacement="none" yPlacement="center" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="l1s-L0-zwt">
-                                <rect key="frame" x="20" y="46" width="390" height="192"/>
-                                <rows>
-                                    <gridRow yPlacement="top" height="93" id="9oF-rN-IhO"/>
-                                    <gridRow height="30" id="6mR-Yc-BCs"/>
-                                    <gridRow id="p6I-Aa-ogz"/>
-                                    <gridRow id="ff5-xR-hEw"/>
-                                </rows>
-                                <columns>
-                                    <gridColumn width="75" id="wdW-Co-QXG"/>
-                                    <gridColumn xPlacement="fill" id="6bT-AP-3QO"/>
-                                </columns>
-                                <gridCells>
-                                    <gridCell row="9oF-rN-IhO" column="wdW-Co-QXG" id="bbZ-Mo-ELX">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0MR-uO-fMX">
-                                            <rect key="frame" x="-2" y="175" width="41" height="17"/>
-                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label:" id="BVw-Fa-kRx">
-                                                <font key="font" usesAppearanceFont="YES"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="9oF-rN-IhO" column="6bT-AP-3QO" xPlacement="fill" yPlacement="fill" id="d2T-UM-mFi">
-                                        <textField key="contentView" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="CdJ-Zv-WYP">
-                                            <rect key="frame" x="81" y="99" width="309" height="93"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="66" id="3ZM-gK-SOP"/>
-                                            </constraints>
-                                            <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="wFa-Mw-D3o">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="6mR-Yc-BCs" column="wdW-Co-QXG" id="KnC-l7-xI8">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uxS-Cd-qlS">
-                                            <rect key="frame" x="-2" y="70" width="52" height="17"/>
-                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Display:" id="1vL-jt-0IK">
-                                                <font key="font" usesAppearanceFont="YES"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="6mR-Yc-BCs" column="6bT-AP-3QO" id="jk6-Au-qPa">
-                                        <comboBox key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="i29-fc-UkZ">
-                                            <rect key="frame" x="81" y="64" width="312" height="26"/>
-                                            <comboBoxCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" completes="NO" numberOfVisibleItems="5" id="4ex-cp-dZi">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                <objectValues>
-                                                    <string>None</string>
-                                                    <string>Arrow</string>
-                                                    <string>Source Arrow</string>
-                                                    <string>Both Arrows</string>
-                                                </objectValues>
-                                            </comboBoxCell>
-                                        </comboBox>
-                                    </gridCell>
-                                    <gridCell row="p6I-Aa-ogz" column="wdW-Co-QXG" id="6k6-rh-Yw4">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H2T-fK-ooq">
-                                            <rect key="frame" x="-2" y="34" width="37" height="17"/>
-                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Color" id="CMK-ZL-W6l">
-                                                <font key="font" usesAppearanceFont="YES"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="p6I-Aa-ogz" column="6bT-AP-3QO" id="LcZ-8l-wAa">
-                                        <colorWell key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="8tG-Tv-gVg">
-                                            <rect key="frame" x="81" y="27" width="309" height="30"/>
-                                            <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                        </colorWell>
-                                    </gridCell>
-                                    <gridCell row="ff5-xR-hEw" column="wdW-Co-QXG" id="BsS-5B-EiL"/>
-                                    <gridCell row="ff5-xR-hEw" column="6bT-AP-3QO" xPlacement="trailing" id="Zb1-YY-grB">
-                                        <segmentedControl key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="XEN-CT-Udx">
-                                            <rect key="frame" x="288" y="-2" width="104" height="24"/>
-                                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="Qcw-b0-u3K">
-                                                <font key="font" metaFont="system"/>
-                                                <segments>
-                                                    <segment width="32"/>
-                                                    <segment width="32" selected="YES" tag="1"/>
-                                                    <segment width="32">
-                                                        <nil key="label"/>
-                                                    </segment>
-                                                </segments>
-                                            </segmentedCell>
-                                        </segmentedControl>
-                                    </gridCell>
-                                </gridCells>
-                            </gridView>
-                        </subviews>
-                        <constraints>
-                            <constraint firstAttribute="trailing" secondItem="l1s-L0-zwt" secondAttribute="trailing" constant="20" id="bSC-24-VCd"/>
-                            <constraint firstItem="l1s-L0-zwt" firstAttribute="leading" secondItem="zWf-BF-0pP" secondAttribute="leading" constant="20" id="cqf-SP-lv2"/>
-                            <constraint firstItem="l1s-L0-zwt" firstAttribute="top" secondItem="zWf-BF-0pP" secondAttribute="top" constant="20" id="qgk-uM-uUz"/>
-                        </constraints>
                     </view>
                 </viewController>
                 <customObject id="Ks6-5L-2CA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
