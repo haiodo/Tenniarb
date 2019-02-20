@@ -936,11 +936,34 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         else {
-            for dri in drawables {
-                if let di = dri.item, !self.activeItems.contains(di) {
-                    self.setActiveItem(di)
-                    scene?.updateActiveElements(self.activeItems)
-                    return
+            for newDrawable in drawables {
+                if let newItem = newDrawable.item, !self.activeItems.contains(newItem) {
+                    // Check if selected is not contains new one
+                    if self.activeItems.count > 0 {
+                        for oldItem in self.activeItems {
+                            if let currentDrawable = scene?.drawables[oldItem] {
+                                
+                                var inNewDrawables = drawables.contains(where: {a in a.item?.id == oldItem.id})
+                                if currentDrawable.getBounds().contains(newDrawable.getBounds()) {
+                                    self.setActiveItem(newItem)
+                                    scene?.updateActiveElements(self.activeItems)
+                                    return
+                                }
+                                if newDrawable.getBounds().contains(currentDrawable.getBounds()) && inNewDrawables {
+                                    continue;
+                                }
+                                self.setActiveItem(newItem)
+                                scene?.updateActiveElements(self.activeItems)
+                                return
+                            }
+                            
+                        }
+                    }
+                    else {
+                        self.setActiveItem(newItem)
+                        scene?.updateActiveElements(self.activeItems)
+                        return
+                    }
                 }
             }
         }
