@@ -856,28 +856,28 @@ element "Documentation" {
     element "Styling" {
         element "Displays" {
             item "Blue" {
-                pos -1068.0 52.0
+                pos -1091.0 57.0
                 display circle
                 width 200
                 height 200
                 color blue
             }
             item "Green" {
-                pos -974.0 133.0
+                pos -1019.0 161.0
                 display circle
                 width 200
                 height 200
                 color green
             }
             item "Circle" {
-                pos -921.0 31.0
+                pos -952.0 54.0
                 display circle
                 width 200
                 height 200
                 color yellow
             }
             item "Box" {
-                pos -668.0 43.0
+                pos -672.0 37.0
                 width 200
                 height 200
                 display no-fill
@@ -885,7 +885,10 @@ element "Documentation" {
                 body "Body text"
             }
             item "Normal item" {
-                pos -581.0 199.0
+                pos -652.0 148.0
+            }
+            item "Normal item" {
+                pos -509.720703125 106.0
             }
         }
     }

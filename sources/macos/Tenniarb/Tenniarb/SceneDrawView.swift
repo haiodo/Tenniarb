@@ -952,6 +952,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                                 if newDrawable.getBounds().contains(currentDrawable.getBounds()) && inNewDrawables {
                                     continue;
                                 }
+                                
+                                if newDrawable.getBounds().intersects(currentDrawable.getBounds()) && inNewDrawables {
+                                    continue
+                                }
                                 self.setActiveItem(newItem)
                                 scene?.updateActiveElements(self.activeItems)
                                 return
