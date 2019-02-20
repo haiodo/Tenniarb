@@ -146,6 +146,16 @@ fileprivate func calculateValue(_ node: TennNode?,
     //    subscript( key: String ) -> Any? { get }
 }
 
+@objc protocol UtilsProtocol: JSExport {
+    func now() -> Double
+}
+    
+@objc public class UtilsContext: NSObject, UtilsProtocol {
+    func now() -> Double {
+        return NSDate().timeIntervalSince1970
+    }
+}
+
 @objc public class ItemContext: NSObject, ItemProtocol {
     private var item: DiagramItem
     var itemObject: [String:Any] = [:] // To be used from references
@@ -194,6 +204,8 @@ fileprivate func calculateValue(_ node: TennNode?,
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
         
+        self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSCopying & NSObjectProtocol)
+        
         // Update position
         self.parentCtx.jsContext.setObject([self.item.x, self.item.y], forKeyedSubscript: "pos" as NSCopying & NSObjectProtocol)
         
@@ -214,6 +226,7 @@ public class ElementContext: NSObject, ElementProtocol {
     var hasExpressions: Bool = false
     var evaluated: [TennToken : JSValue] = [:]
     var itemsMap:[DiagramItem: ItemContext] = [:]
+    var utils = UtilsContext()
     
     dynamic var properties: [String : Any] {
         get {
@@ -258,6 +271,8 @@ public class ElementContext: NSObject, ElementProtocol {
         for (k, _) in self.elementObject {
             self.jsContext.evaluateScript("delete \(k)")
         }
+        
+        self.jsContext.setObject(self.utils, forKeyedSubscript: "utils" as NSCopying & NSObjectProtocol)
 
         return processBlock(node ?? self.element.properties.node, self.jsContext, &newItems, &newEvaluated)
     }
@@ -308,6 +323,20 @@ public class ExecutionContext: IElementModelListener {
     public func setElement(_ element: Element) {
         rootCtx = ElementContext(self, element)
         self.elements[element] = rootCtx
+    }
+    public func updateAll(_ notifier: @escaping () -> Void) {
+        self.internalQueue.async( execute: {
+            if let root = self.rootCtx {
+               _ = root.updateContext()
+                
+                for ci in root.itemsMap.values {
+                    if ci.hasExpressions {
+                        _ = ci.updateContext()
+                    }
+                }
+                notifier()
+            }
+        })
     }
     
     public func notifyChanges(_ event: ModelEvent ) {

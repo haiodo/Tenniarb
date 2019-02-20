@@ -330,7 +330,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         needsDisplay = true
     }
-    
+    var count = 0;
+    func animate() {
+        if let fps = element?.properties.get("animation"), let delay = fps.getFloat(1) {
+            Swift.debugPrint("Animate: \(delay) count:\(count)")
+            count += 1
+            if self.mode == .Normal {
+                self.store!.executionContext.updateAll({
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: {
+                        self.buildScene()
+                        self.needsDisplay = true
+                    })
+                })
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: self.animate)
+            }
+        }
+    }
     private func buildScene() {
         // We need preserve selection of previous scene
         
@@ -348,6 +364,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if oldActiveItem.count > 0 {
             scene.updateActiveElements(oldActiveItem)
             scene.editingMode = oldEditMode
+        }
+        
+      
+        if let fps = element?.properties.get("animation"), let delay = fps.getFloat(1) {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: self.animate)
         }
     
         self.scene = scene
@@ -799,14 +820,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         popover.show(relativeTo: bounds, of: self, preferredEdge: NSRectEdge.maxY)
     }
     
-    public func findElement(x: CGFloat, y: CGFloat) -> ItemDrawable? {
+    public func findElement(x: CGFloat, y: CGFloat) -> [ItemDrawable] {
         let point = CGPoint(x: x, y: y)
         
-        if let drawable = self.scene?.find(point) {
-            return drawable
-        }
-        
-        return nil
+        return self.scene?.find(point) ?? []
     }
     
     
@@ -894,7 +911,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
  
-        guard let drawable = findElement(x: self.x, y: self.y) else {
+        let drawables = findElement(x: self.x, y: self.y)
+        if drawables.count == 0 {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
             return
@@ -902,7 +920,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
         if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
             // This is selection operation
-            guard let itm = drawable.item else {
+            guard let dr = drawables.first else {
+                return
+            }
+            guard let itm = dr.item else {
                 return
             }
             if self.activeItems.contains(itm) {
@@ -915,9 +936,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         else {
-            if let di = drawable.item, !self.activeItems.contains(di) {
-                self.setActiveItem(di)
-                scene?.updateActiveElements(self.activeItems)
+            for dri in drawables {
+                if let di = dri.item, !self.activeItems.contains(di) {
+                    self.setActiveItem(di)
+                    scene?.updateActiveElements(self.activeItems)
+                    return
+                }
             }
         }
         
@@ -1372,7 +1396,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.dragMap.removeAll()
         self.dragElements.removeAll()
         
-        if let drawable = findElement(x: self.x, y:  self.y), let itm = drawable.item {
+        if let drawable = findElement(x: self.x, y:  self.y).first, let itm = drawable.item {
             if !self.activeItems.contains(itm) {
                 self.setActiveItem(itm, immideateDraw: true)
             }

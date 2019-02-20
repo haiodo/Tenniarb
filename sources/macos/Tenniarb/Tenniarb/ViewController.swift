@@ -69,7 +69,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             
         }
     }
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -308,7 +308,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
     private func handleElementOptions() {
         
-    }
+    }    
     
     override var representedObject: Any? {
         didSet {

@@ -77,17 +77,14 @@ open class DrawableContainer: ItemDrawable {
         self.init(childs)
     }
     
-    public func find( _ point: CGPoint ) -> ItemDrawable? {
+    public func find( _ point: CGPoint ) -> [ItemDrawable] {
         var lines:[DrawableLine] = []
-        
+        var result: [ItemDrawable] = []
         // Check activeDrawable first
         if let childs = children {
             for c in childs {
                 if let drEl = c as? DrawableContainer {
-                    let res = drEl.find(point)
-                    if res != nil && res!.item != nil {
-                        return res
-                    }
+                    result.append(contentsOf: drEl.find(point))
                 }
                 else if let cc = c as? ItemDrawable {
                     if let ccl = c as? DrawableLine {
@@ -96,7 +93,7 @@ open class DrawableContainer: ItemDrawable {
                     else {
                         // Just regular drawable check for bounds
                         if cc.getBounds().contains(point) && cc.item != nil {
-                            return cc
+                            result.append(cc)
                         }
                     }
                 }
@@ -104,16 +101,16 @@ open class DrawableContainer: ItemDrawable {
         }
         for ccl in lines {
             if ccl.find(point) {
-                return ccl
+                result.append(ccl)
             }
         }
         if self.item != nil {
             // Check self coords
             if self.getBounds().contains(point) {
-                return self
+                result.append(self)
             }
         }
-        return nil
+        return result
     }
     
     public func append( _ child: Drawable ) {
@@ -615,22 +612,29 @@ open class DrawableScene: DrawableContainer {
         self.append(buildElementScene(element, self.darkMode))
     }
     
-    public override func find( _ point: CGPoint ) -> ItemDrawable? {
+    public override func find( _ point: CGPoint ) -> [ItemDrawable] {
+        var result: [ItemDrawable] = []
         for active in self.activeElements {
             if let activeDr = drawables[active] {
                 if activeDr.getBounds().contains(point) {
                     if let ln = activeDr as? DrawableLine {
                         if ln.find(point) {
-                            return activeDr as? ItemDrawable
+                            if let act = activeDr as? ItemDrawable {
+                                result.append(act)
+                            }
                         }
                     }
                     else {
-                        return activeDr as? ItemDrawable
+                        if let act = activeDr as? ItemDrawable {
+                            result.append(act)
+                        }
                     }
                 }
             }
         }
-        return super.find(point)
+        // Add all other items
+        result.append(contentsOf: super.find(point))
+        return result
     }
     
     func updateLineTo(_ de: DiagramItem, _ point: CGPoint ) -> DiagramItem? {
@@ -644,7 +648,7 @@ open class DrawableScene: DrawableContainer {
             
             var tBounds: CGRect?
             
-            if let targetDe = self.find(point) {
+            if let targetDe = self.find(point).first {
                 if let ti = targetDe.item, ti.kind == .Item {
                     tBounds = targetDe.getBounds()
                     targetPoint = CGPoint( x: tBounds!.midX, y: tBounds!.midY)
@@ -731,6 +735,10 @@ open class DrawableScene: DrawableContainer {
                 result = result.union(box.getBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
             }
+            if let box = drawables[item] as? CircleBox {
+                result = result.union(box.getBounds())
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+            }
             if let box = drawables[item] as? EmptyBox {
                 result = result.union(box.getBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
@@ -814,6 +822,23 @@ open class DrawableScene: DrawableContainer {
         elementDrawable.append(rectBox)
         return rectBox
     }
+    
+    fileprivate func buildCircle(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
+        let rectBox = CircleBox( bounds: bounds,
+                                fillColor: bgColor,
+                                borderColor: borderColor, fill: fill)
+        if self.activeElements.contains(e) {
+            rectBox.lineWidth = 1
+        }
+        rectBox.append(textBox)
+        
+        rectBox.item = e
+        
+        drawables[e] = rectBox
+        elementDrawable.append(rectBox)
+        return rectBox
+    }
+    
     fileprivate func buildEmptyRect(_ bounds: CGRect, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) -> EmptyBox {
         let rectBox = EmptyBox( bounds: bounds )
         rectBox.append(textBox)
@@ -912,8 +937,7 @@ open class DrawableScene: DrawableContainer {
         var height = max(20, textBounds.height)
         if let styleHeight = style.height, styleHeight != -1 {
             height = styleHeight//max(height, styleHeight)
-        }
-        if bodyBounds != nil {
+        } else if bodyBounds != nil {
             height += bodyBounds!.height // TODO: Put spacing into some configurable area
         }
         
@@ -924,8 +948,11 @@ open class DrawableScene: DrawableContainer {
             let tbb = tb.getBounds()
             
             if titleValue.count > 0 {
-                tb.setFrame(CGRect(x: 0, y:4, width: width, height: tbb.size.height))
-                textBox.setFrame(CGRect(x: 0, y:tbb.height + 4, width: width, height: textBox.size.height ))
+                // title
+                textBox.setFrame(CGRect(x: 0, y:height - textBox.size.height, width: width, height: textBox.size.height ))
+                
+                // Body
+                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: tbb.size.height))
             }
             else {
                 bounds.size = CGSize(width: bounds.width, height: bounds.height - textBounds.height)
@@ -944,6 +971,9 @@ open class DrawableScene: DrawableContainer {
                 box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
             case "stack":
                 box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, stack: 3)
+            case "circle":
+                box = buildCircle(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+                break;
             default:
                 box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
             }
@@ -1811,5 +1841,86 @@ public class ImageBox: Drawable {
         return CGRect(origin: self.pos, size: self.size)
     }
     public func update() {
+    }
+}
+
+
+public class CircleBox: DrawableContainer {
+    public var fillColor: CGColor
+    public var borderColor: CGColor
+    public var fill: Bool = true
+    public static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
+    public var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
+    
+    var path: CGMutablePath?
+    
+    init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor, fill: Bool ) {
+        self.fillColor = fillColor
+        self.borderColor = borderColor
+        self.fill = fill
+        
+        super.init([])
+        self.setPath(bounds)
+    }
+    
+    func setPath( _ rect: CGRect) {
+        self.bounds = rect
+    }
+    public override func drawBox(context: CGContext, at point: CGPoint) {
+        // We only need to draw rect for shadow
+        self.doDraw(context, at: point)
+    }
+    
+    public override func draw(context: CGContext, at point: CGPoint) {
+        context.saveGState()
+        self.doDraw(context, at: point)
+        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        context.clip(to: clipBounds )
+        super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
+        context.restoreGState()
+    }
+    
+    func doDraw(_ context:CGContext, at point: CGPoint) {
+        context.saveGState()
+        
+        context.setLineWidth( self.lineWidth )
+        context.setStrokeColor( self.borderColor )
+        context.setFillColor( self.fillColor )
+        
+        context.translateBy(x: point.x, y: point.y)
+        
+        context.addEllipse(in: self.bounds )
+        
+        if self.fill {
+            context.drawPath(using: .fillStroke)
+        }
+        else {
+            context.drawPath(using: .stroke)
+        }
+        
+        context.restoreGState()
+    }
+    
+    public override func layout(_ bounds: CGRect, _ dirty: CGRect) {
+        let selfBounds = self.bounds
+        
+        if let ch = self.children {
+            for c in ch {
+                c.layout( selfBounds, dirty )
+            }
+        }
+        let newBounds = self.bounds
+        visible = dirty.intersects(newBounds)
+    }
+    
+    public override func getBounds() -> CGRect {
+        //        if self.stack > 0 {
+        //            return CGRect(origin: bounds.origin,
+        //                          size: CGSize(
+        //                            width: bounds.width + CGFloat(self.stack-1)*self.stackStep.x,
+        //                            height: bounds.height + CGFloat(self.stack-1)*self.stackStep.y
+        //            ))
+        //        }
+        return bounds
     }
 }

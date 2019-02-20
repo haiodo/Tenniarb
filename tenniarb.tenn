@@ -854,6 +854,40 @@ element "Documentation" {
         }
     }
     element "Styling" {
+        element "Displays" {
+            item "Blue" {
+                pos -1105.0 31.0
+                display circle
+                width 200
+                height 200
+                color blue
+            }
+            item "Green" {
+                pos -1011.0 112.0
+                display circle
+                width 200
+                height 200
+                color green
+            }
+            item "Circle" {
+                pos -958.0 10.0
+                display circle
+                width 200
+                height 200
+                color yellow
+            }
+            item "Box" {
+                pos -686.0 58.0
+                width 200
+                height 200
+                display no-fill
+                title "A"
+                body "Body text"
+            }
+            item "Normal item" {
+                pos -673.0 164.0
+            }
+        }
     }
     element "Executions" {
         item "Body with\nevaluations 1" {
@@ -898,6 +932,7 @@ element "Documentation" {
                 new_style_1 {
                     color "red"
                     width 500
+                    heigth 200
                 }
                 green {
                     color "green"
@@ -905,7 +940,7 @@ element "Documentation" {
                 blue {
                     color "blue"
                     width 150
-                    height 30
+                    height -1
                 }
             }
             item "Evaluated values - 2" {
@@ -941,20 +976,29 @@ element "Documentation" {
             }
             link "Untitled 2" "Untitled 3"
             item "Body with\nevaluations 1" {
-                pos -509.64453125 772.0
-                uses new_style_1
+                pos -510.64453125 584.0
                 a 20
                 b $(a)
                 c 20
+                height 200
                 c $(a + b + c + 4)
                 body {
-                    text $(`
-        a = ${a}
-        b = ${b}
-        c = 30
-    `)
+                    text ${`a = ${a}
+b = ${b}
+c = 30
+d = 30
+d = 30
+d = 30
+d = 30
+d = 30
+d = 30
+d = 30
+d = 30
+d = 30
+`}
                 }
                 use-style blue
+                height -1
             }
             item "Body with\nevaluations 2" {
                 pos -110.1298828125 463.0
@@ -2193,6 +2237,14 @@ element "Documentation" {
                     b 50
                 }
                 d $(c.a + c.b)
+            }
+        }
+        element "Animation" {
+            animation 1
+            item "Untitled 1" {
+                pos -1139.0 227.1999969482422
+                title $(utils.now() % 255)
+                color $([utils.now() % 255, 50, utils.now() % 255 - 50])
             }
         }
     }
