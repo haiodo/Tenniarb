@@ -199,7 +199,9 @@ fileprivate func calculateValue(_ node: TennNode?,
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
         for (k, _) in self.itemObject {
-            self.parentCtx.jsContext.evaluateScript("delete \(k)")
+            if !k.contains("-") {
+                self.parentCtx.jsContext.evaluateScript("delete \(k)")
+            }
         }
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)

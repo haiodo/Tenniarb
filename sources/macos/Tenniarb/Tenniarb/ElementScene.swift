@@ -99,6 +99,9 @@ open class DrawableContainer: ItemDrawable {
                 }
             }
         }
+        if result.count > 0 {
+            return result
+        }
         for ccl in lines {
             if ccl.find(point) {
                 result.append(ccl)
@@ -613,27 +616,14 @@ open class DrawableScene: DrawableContainer {
     }
     
     public override func find( _ point: CGPoint ) -> [ItemDrawable] {
-        var result: [ItemDrawable] = []
-//        for active in self.activeElements {
-//            if let activeDr = drawables[active] {
-//                if activeDr.getBounds().contains(point) {
-//                    if let ln = activeDr as? DrawableLine {
-//                        if ln.find(point) {
-//                            if let act = activeDr as? ItemDrawable {
-//                                result.append(act)
-//                            }
-//                        }
-//                    }
-//                    else {
-//                        if let act = activeDr as? ItemDrawable {
-//                            result.append(act)
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        var result: [ItemDrawable] = []      
         // Add all other items
-        result.append(contentsOf: super.find(point))
+        let findResult = super.find(point)
+        for r in findResult  {
+            if !result.contains(where: {e in e.item == r.item}) {
+                result.append(r)
+            }
+        }
         return result
     }
     

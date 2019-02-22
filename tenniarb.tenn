@@ -856,39 +856,39 @@ element "Documentation" {
     element "Styling" {
         element "Displays" {
             item "Blue" {
-                pos -1091.0 57.0
+                pos -1089.0 58.0
                 display circle
                 width 200
                 height 200
-                color blue
+                color $([0,0,255, 200])
             }
             item "Green" {
-                pos -1019.0 161.0
+                pos -1010.0 174.0
                 display circle
                 width 200
                 height 200
-                color green
+                color $([0,255,0, 150])
             }
             item "Circle" {
-                pos -952.0 54.0
+                pos -941.0 53.0
                 display circle
                 width 200
                 height 200
                 color yellow
             }
             item "Box" {
-                pos -672.0 37.0
+                pos -683.0 56.0
                 width 200
                 height 200
                 display no-fill
-                title "A"
                 body "Body text"
             }
             item "Normal item" {
-                pos -652.0 148.0
+                pos -668.0 110.0
             }
-            item "Normal item" {
-                pos -509.720703125 106.0
+            item "Hi I'm text" {
+                pos -958.0 177.0
+                display text
             }
         }
     }
@@ -979,7 +979,7 @@ element "Documentation" {
             }
             link "Untitled 2" "Untitled 3"
             item "Body with\nevaluations 1" {
-                pos -510.64453125 584.0
+                pos -616.64453125 577.0
                 a 20
                 b $(a)
                 c 20
@@ -1000,11 +1000,11 @@ d = 30
 d = 30
 `}
                 }
-                use-style blue
+                use-style green
                 height -1
             }
             item "Body with\nevaluations 2" {
-                pos -110.1298828125 463.0
+                pos -232.1298828125 573.0
                 a 20
                 b $(a)
                 c 20
@@ -1032,7 +1032,7 @@ d = 30
                 }
             }
             item "BLACK" {
-                pos -168.9267578125 361.0
+                pos -274.9267578125 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1043,7 +1043,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -162.9267578125 147.0
+                pos -268.9267578125 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1054,7 +1054,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -464.693359375 400.0
+                pos -570.693359375 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1065,7 +1065,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -97.6201171875 320.0
+                pos -203.6201171875 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1076,7 +1076,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -391.38671875 361.0
+                pos -497.38671875 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1087,7 +1087,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -466.080078125 231.0
+                pos -572.080078125 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1098,7 +1098,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -391.9267578125 231.0
+                pos -497.9267578125 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1109,7 +1109,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -243.080078125 361.0
+                pos -349.080078125 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1120,7 +1120,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 59.533203125 147.0
+                pos -46.466796875 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1131,7 +1131,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -240.7734375 67.0
+                pos -346.7734375 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1142,7 +1142,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -542.5400390625 320.0
+                pos -648.5400390625 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1153,7 +1153,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -92.466796875 67.0
+                pos -198.466796875 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1164,7 +1164,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -23.466796875 320.0
+                pos -129.466796875 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1175,7 +1175,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -25.3134765625 276.0
+                pos -131.3134765625 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1186,7 +1186,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 58.6865234375 108.0
+                pos -47.3134765625 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1197,7 +1197,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -537.080078125 189.0
+                pos -643.080078125 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1208,7 +1208,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 124.83984375 320.0
+                pos 18.83984375 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1219,7 +1219,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -169.466796875 231.0
+                pos -275.466796875 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1230,7 +1230,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 204.453125 189.0
+                pos 96.453125 197.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1241,7 +1241,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 53.9931640625 23.0
+                pos -52.0068359375 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1252,7 +1252,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -462.9267578125 189.0
+                pos -568.9267578125 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1263,7 +1263,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -533.693359375 147.0
+                pos -639.693359375 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1274,7 +1274,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 127.6865234375 361.0
+                pos 21.6865234375 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1285,7 +1285,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 202.2998046875 23.0
+                pos 98.2998046875 30.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1296,7 +1296,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 202.6865234375 400.0
+                pos 98.6865234375 407.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1307,7 +1307,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -168.466796875 23.0
+                pos -274.466796875 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1318,7 +1318,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -245.9267578125 320.0
+                pos -351.9267578125 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1329,7 +1329,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -317.7734375 231.0
+                pos -423.7734375 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1340,7 +1340,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 128.146484375 23.0
+                pos 22.146484375 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1351,7 +1351,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -544.38671875 276.0
+                pos -648.38671875 280.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1362,7 +1362,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 130.2998046875 189.0
+                pos 24.2998046875 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1373,7 +1373,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 197.146484375 276.0
+                pos 93.146484375 283.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1384,7 +1384,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -538.8466796875 400.0
+                pos -644.8466796875 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1395,7 +1395,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -21.16015625 231.0
+                pos -127.16015625 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1406,7 +1406,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -89.6201171875 108.0
+                pos -195.6201171875 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1417,7 +1417,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 52.9931640625 231.0
+                pos -53.0068359375 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1428,7 +1428,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -163.7734375 108.0
+                pos -269.7734375 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1439,7 +1439,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -242.2333984375 400.0
+                pos -348.2333984375 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1450,7 +1450,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -166.6201171875 67.0
+                pos -272.6201171875 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1461,7 +1461,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -20.16015625 23.0
+                pos -126.16015625 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1472,7 +1472,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -14.6201171875 147.0
+                pos -120.6201171875 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1483,7 +1483,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -386.2333984375 108.0
+                pos -492.2333984375 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1494,7 +1494,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -388.7734375 189.0
+                pos -494.7734375 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1505,7 +1505,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -19.7734375 400.0
+                pos -125.7734375 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1516,7 +1516,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -237.080078125 147.0
+                pos -343.080078125 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1527,7 +1527,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -460.38671875 108.0
+                pos -566.38671875 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1538,7 +1538,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -20.6201171875 361.0
+                pos -126.6201171875 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1549,7 +1549,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -385.38671875 147.0
+                pos -491.38671875 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1560,7 +1560,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -93.9267578125 400.0
+                pos -199.9267578125 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1571,7 +1571,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -314.9267578125 67.0
+                pos -420.9267578125 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1582,7 +1582,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 48.83984375 276.0
+                pos -57.16015625 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1593,7 +1593,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -320.080078125 320.0
+                pos -426.080078125 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1604,7 +1604,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -240.466796875 189.0
+                pos -346.466796875 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1615,7 +1615,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 206.9931640625 108.0
+                pos 102.9931640625 115.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1626,7 +1626,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 201.2998046875 231.0
+                pos 97.2998046875 238.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1637,7 +1637,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -540.2333984375 231.0
+                pos -646.2333984375 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1648,7 +1648,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -168.080078125 400.0
+                pos -274.080078125 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1659,7 +1659,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -95.3134765625 231.0
+                pos -201.3134765625 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1670,7 +1670,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -389.080078125 67.0
+                pos -495.080078125 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1681,7 +1681,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 53.533203125 361.0
+                pos -52.466796875 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1692,7 +1692,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -247.7734375 276.0
+                pos -353.7734375 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1703,7 +1703,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -394.2333984375 320.0
+                pos -500.2333984375 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1714,7 +1714,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -92.16015625 189.0
+                pos -198.16015625 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1725,7 +1725,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -539.693359375 361.0
+                pos -645.693359375 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1736,7 +1736,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -459.5400390625 147.0
+                pos -565.5400390625 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1747,7 +1747,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -99.466796875 276.0
+                pos -205.466796875 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1758,7 +1758,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 122.9931640625 276.0
+                pos 16.9931640625 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1769,7 +1769,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -18.3134765625 67.0
+                pos -124.3134765625 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1780,7 +1780,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -242.6201171875 23.0
+                pos -348.6201171875 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1791,7 +1791,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 55.83984375 67.0
+                pos -50.16015625 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1802,7 +1802,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -237.9267578125 108.0
+                pos -343.9267578125 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1813,7 +1813,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -94.3134765625 23.0
+                pos -200.3134765625 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1824,7 +1824,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 54.3798828125 400.0
+                pos -51.6201171875 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1835,7 +1835,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 207.83984375 147.0
+                pos 103.83984375 154.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1846,7 +1846,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -173.6201171875 276.0
+                pos -279.6201171875 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1857,7 +1857,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -243.6201171875 231.0
+                pos -349.6201171875 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1868,7 +1868,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 128.533203125 400.0
+                pos 22.533203125 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1879,7 +1879,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -539.2333984375 23.0
+                pos -645.2333984375 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1890,7 +1890,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 127.146484375 231.0
+                pos 21.146484375 237.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1901,7 +1901,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 56.146484375 189.0
+                pos -49.853515625 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1912,7 +1912,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 50.6865234375 320.0
+                pos -55.3134765625 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1923,7 +1923,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -317.2333984375 361.0
+                pos -423.2333984375 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1934,7 +1934,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 132.83984375 108.0
+                pos 26.83984375 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1945,7 +1945,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -94.7734375 361.0
+                pos -200.7734375 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1956,7 +1956,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -396.080078125 276.0
+                pos -502.080078125 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1967,7 +1967,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 198.9931640625 320.0
+                pos 94.9931640625 327.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1978,7 +1978,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -171.7734375 320.0
+                pos -277.7734375 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -1989,7 +1989,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -465.080078125 23.0
+                pos -571.080078125 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2000,7 +2000,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -390.9267578125 23.0
+                pos -496.9267578125 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2011,7 +2011,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -537.38671875 67.0
+                pos -643.38671875 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2022,7 +2022,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -312.080078125 108.0
+                pos -418.080078125 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2033,7 +2033,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 129.9931640625 67.0
+                pos 23.9931640625 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2044,7 +2044,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 201.83984375 361.0
+                pos 97.83984375 368.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2055,7 +2055,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -316.7734375 23.0
+                pos -422.7734375 29.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2066,7 +2066,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -468.38671875 320.0
+                pos -574.38671875 326.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2077,7 +2077,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -311.2333984375 147.0
+                pos -417.2333984375 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2088,7 +2088,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -15.466796875 108.0
+                pos -121.466796875 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2099,7 +2099,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -321.9267578125 276.0
+                pos -427.9267578125 282.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2110,7 +2110,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -470.2333984375 276.0
+                pos -574.2333984375 280.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2121,7 +2121,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 204.146484375 67.0
+                pos 100.146484375 74.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2132,7 +2132,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -88.7734375 147.0
+                pos -194.7734375 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2143,7 +2143,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -18.0068359375 189.0
+                pos -124.0068359375 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2154,7 +2154,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -390.5400390625 400.0
+                pos -496.5400390625 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2165,7 +2165,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -534.5400390625 108.0
+                pos -640.5400390625 114.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2176,7 +2176,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -463.2333984375 67.0
+                pos -569.2333984375 73.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2187,7 +2187,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -316.38671875 400.0
+                pos -422.38671875 406.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2198,7 +2198,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -465.5400390625 361.0
+                pos -571.5400390625 367.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2209,7 +2209,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos 133.6865234375 147.0
+                pos 27.6865234375 153.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2220,7 +2220,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -314.6201171875 189.0
+                pos -420.6201171875 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2231,7 +2231,7 @@ d = 30
                 d $(c.a + c.b)
             }
             item "BLACK" {
-                pos -166.3134765625 189.0
+                pos -272.3134765625 195.0
                 color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
                 a 20
                 b $(a+20)
@@ -2240,6 +2240,1473 @@ d = 30
                     b 50
                 }
                 d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 181.83984375 408.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 183.2998046875 75.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 186.9931640625 155.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 176.2998046875 284.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 179.6064453125 198.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 178.146484375 328.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 186.146484375 116.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 180.9931640625 369.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 181.453125 31.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            item "BLACK" {
+                pos 180.453125 239.0
+                color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                a 20
+                b $(a+20)
+                c {
+                    a 30
+                    b 50
+                }
+                d $(c.a + c.b)
+            }
+            element "Color on pos" {
+                define ${
+    function my_color(pos) {
+        return [Math.abs(pos[0]), Math.abs(pos[1]),50]
+    }
+}
+                styles {
+                    my_box {
+                        color "red"
+                        width 300
+                        height 300
+                        body "Hello world"
+                    }
+                }
+                item "BLACK" {
+                    pos -274.9267578125 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -268.9267578125 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -570.693359375 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -203.6201171875 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -497.38671875 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -572.080078125 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -497.9267578125 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -349.080078125 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -46.466796875 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -346.7734375 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -648.5400390625 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -198.466796875 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -129.466796875 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -131.3134765625 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -47.3134765625 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -643.080078125 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 18.83984375 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -275.466796875 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 96.453125 197.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -52.0068359375 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -568.9267578125 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -639.693359375 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 21.6865234375 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 98.2998046875 30.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 98.6865234375 407.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -274.466796875 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -351.9267578125 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -423.7734375 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 22.146484375 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -648.38671875 280.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 24.2998046875 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 93.146484375 283.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -644.8466796875 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -127.16015625 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -195.6201171875 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -53.0068359375 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -269.7734375 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -348.2333984375 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -272.6201171875 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -126.16015625 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -120.6201171875 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -492.2333984375 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -494.7734375 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -125.7734375 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -343.080078125 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -566.38671875 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -126.6201171875 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -491.38671875 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -199.9267578125 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -420.9267578125 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -57.16015625 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -426.080078125 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -346.466796875 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 102.9931640625 115.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 97.2998046875 238.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -646.2333984375 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -274.080078125 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -201.3134765625 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -495.080078125 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -52.466796875 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -353.7734375 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -500.2333984375 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -198.16015625 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -645.693359375 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -565.5400390625 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -205.466796875 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 16.9931640625 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -124.3134765625 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -348.6201171875 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -50.16015625 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -343.9267578125 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -200.3134765625 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -51.6201171875 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 103.83984375 154.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -279.6201171875 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -349.6201171875 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 22.533203125 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -645.2333984375 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 21.146484375 237.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -49.853515625 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -55.3134765625 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -423.2333984375 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 26.83984375 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -200.7734375 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -502.080078125 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 94.9931640625 327.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -277.7734375 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -571.080078125 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -496.9267578125 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -643.38671875 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -418.080078125 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 23.9931640625 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 97.83984375 368.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -422.7734375 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -574.38671875 326.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -417.2333984375 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -121.466796875 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -427.9267578125 282.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -574.2333984375 280.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 100.146484375 74.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -194.7734375 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -124.0068359375 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -496.5400390625 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -640.5400390625 114.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -569.2333984375 73.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -422.38671875 406.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -571.5400390625 367.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 27.6865234375 153.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -420.6201171875 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -272.3134765625 195.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 181.83984375 408.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 183.2998046875 75.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 186.9931640625 155.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 176.2998046875 284.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 179.6064453125 198.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 178.146484375 328.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 186.146484375 116.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 180.9931640625 369.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 181.453125 31.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos 180.453125 239.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -571.080078125 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
+                item "BLACK" {
+                    pos -496.9267578125 29.0
+                    color $([Math.abs(pos[0]), Math.abs(pos[1]),0])
+                    a 20
+                    b $(a+20)
+                    c {
+                        a 30
+                        b 50
+                    }
+                    d $(c.a + c.b)
+                }
             }
         }
         element "Animation" {

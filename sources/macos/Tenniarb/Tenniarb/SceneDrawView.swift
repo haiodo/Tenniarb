@@ -126,6 +126,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var editingMode: EditingMode = .Name
     
+    var clickCounter = 0
+    
     var ox: CGFloat {
         set {
             if let active = element {
@@ -911,7 +913,35 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
  
-        let drawables = findElement(x: self.x, y: self.y)
+        var drawables = findElement(x: self.x, y: self.y)
+        
+        var result: [ItemDrawable] = []
+        let point = CGPoint(x: self.x, y: self.y)
+        Swift.debugPrint(event)
+        if event.clickCount == 1 {
+            for active in self.activeItems {
+                if let activeDr = scene?.drawables[active] {
+                    if activeDr.getBounds().contains(point) {
+                        if let ln = activeDr as? DrawableLine {
+                            if ln.find(point) {
+                                if let act = activeDr as? ItemDrawable {
+                                    result.append(act)
+                                }
+                            }
+                        }
+                        else {
+                            if let act = activeDr as? ItemDrawable {
+                                result.append(act)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if result.count > 0 {
+            drawables = result
+        }
+        
         if drawables.count == 0 {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
@@ -936,40 +966,21 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         else {
+            var itemsToSelect: [DiagramItem] = []
             for newDrawable in drawables {
                 if let newItem = newDrawable.item, !self.activeItems.contains(newItem) {
-                    // Check if selected is not contains new one
-                    if self.activeItems.count > 0 {
-                        for oldItem in self.activeItems {
-                            if let currentDrawable = scene?.drawables[oldItem] {
-                                
-                                var inNewDrawables = drawables.contains(where: {a in a.item?.id == oldItem.id})
-                                if currentDrawable.getBounds().contains(newDrawable.getBounds()) {
-                                    self.setActiveItem(newItem)
-                                    scene?.updateActiveElements(self.activeItems)
-                                    return
-                                }
-                                if newDrawable.getBounds().contains(currentDrawable.getBounds()) && inNewDrawables {
-                                    continue;
-                                }
-                                
-                                if newDrawable.getBounds().intersects(currentDrawable.getBounds()) && inNewDrawables {
-                                    continue
-                                }
-                                self.setActiveItem(newItem)
-                                scene?.updateActiveElements(self.activeItems)
-                                return
-                            }
-                            
-                        }
-                    }
-                    else {
-                        self.setActiveItem(newItem)
-                        scene?.updateActiveElements(self.activeItems)
-                        return
-                    }
+                    itemsToSelect.append(newItem)
                 }
             }
+            if itemsToSelect.count > 0 {
+                self.clickCounter += 1;
+                let pos: Int = clickCounter % itemsToSelect.count
+                let itm = itemsToSelect[pos]
+                self.setActiveItem(itm)
+                scene?.updateActiveElements(self.activeItems)
+                return
+            }
+            
         }
         
         self.dragElements.append(contentsOf: self.activeItems)
@@ -1326,6 +1337,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     @objc func paste( _ sender: NSObject ) {
+        if let items = NSPasteboard.general.pasteboardItems {
+            for itm in items {
+                let types = itm.types
+                for t in types {
+                    if let data = itm.data(forType: t) {
+                        Swift.debugPrint("Data:", data)
+                    }
+                }
+                Swift.debugPrint("Types: ", types)
+            }
+        }
         if let value = NSPasteboard.general.string(forType: .string) {
             let p = TennParser()
             let node = p.parse(value)
