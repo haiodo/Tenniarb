@@ -44,12 +44,13 @@ public class PopupEditField: NSTextField {
         super.keyDown(with: event)
     }
     override public func keyUp(with event: NSEvent) {
-        shiftKeyDown = false
         super.keyDown(with: event)
     }
     public override func flagsChanged(with event: NSEvent) {
         if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             shiftKeyDown = true
+        } else {
+            shiftKeyDown = false
         }
         super.flagsChanged(with: event)
     }
@@ -978,9 +979,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 let itm = itemsToSelect[pos]
                 self.setActiveItem(itm)
                 scene?.updateActiveElements(self.activeItems)
-                return
             }
-            
         }
         
         self.dragElements.append(contentsOf: self.activeItems)
