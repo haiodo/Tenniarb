@@ -1335,18 +1335,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    @objc func paste( _ sender: NSObject ) {
-        if let items = NSPasteboard.general.pasteboardItems {
-            for itm in items {
-                let types = itm.types
-                for t in types {
-                    if let data = itm.data(forType: t) {
-                        Swift.debugPrint("Data:", data)
-                    }
-                }
-                Swift.debugPrint("Types: ", types)
-            }
-        }
+    @objc func paste( _ sender: NSObject ) {      
         if let value = NSPasteboard.general.string(forType: .string) {
             let p = TennParser()
             let node = p.parse(value)
@@ -1357,8 +1346,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if items.count > 0 {
                 // Move items a bit,
                 for i in items {
-                    i.x += 10
-                    i.y -= 10
+                    if i.kind == .Item {
+                        i.x += 10
+                        i.y -= 10
+                    }
                 }
                 self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
                 

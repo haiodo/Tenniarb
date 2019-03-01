@@ -192,9 +192,26 @@ func getString(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> Stri
     return ch.getIdentText()
 }
 
+let styleBlack = CGColor.black // CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+let styleWhite = CGColor.white //CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
+
 class DrawableStyle {
     var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
-    var textColor: CGColor = CGColor.black
+    var textColorValue: CGColor?
+    
+    
+    var textColor: CGColor {
+        get {
+            if textColorValue != nil {
+                return textColorValue!
+            }
+            if let components = self.color.components, self.color.numberOfComponents >= 3 {
+                let sum = round( ( (components[0] * 255 * 299) + (components[1] * 255 * 587) + (components[2] * 255 * 114)) / 1000);
+                return (sum > 128) ? styleBlack : styleWhite;
+            }
+            return styleBlack
+        }
+    }
     
     var borderColor: CGColor = CGColor.black
     var fontSize:CGFloat = 18.0
@@ -234,7 +251,7 @@ class DrawableStyle {
     func copy() -> DrawableStyle {
         let result: DrawableStyle = newCopy()
         result.color = self.color
-        result.textColor = self.textColor
+        result.textColorValue = self.textColorValue
         result.borderColor = self.borderColor
         result.fontSize = self.fontSize
         result.width = self.width
@@ -250,12 +267,12 @@ class DrawableStyle {
         
         if self.darkMode {
             self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
-            self.textColor = CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
+            self.textColorValue = nil
             self.borderColor = CGColor.white
         }
         else {
             self.color = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
-            self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+            self.textColorValue = nil
             self.borderColor = CGColor.black
         }
         
@@ -363,7 +380,7 @@ class DrawableStyle {
             }
         case PersistenceStyleKind.TextColor.name:
             if let color = getColor(child.getChild(1), evaluations, alpha: 1) {
-                self.textColor = color
+                self.textColorValue = color
             }
         case PersistenceStyleKind.FontSize.name:
             if let value = getFloat(child.getChild(1), evaluations) {
@@ -440,12 +457,12 @@ class DrawableLineStyle: DrawableStyle {
         
         if self.darkMode {
             self.color = CGColor(red: 1, green:1, blue:1, alpha: 0.7)
-            self.textColor = CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
+            self.textColorValue = nil
             self.borderColor = CGColor.white
         }
         else {
             self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
-            self.textColor = CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
+            self.textColorValue = nil
             self.borderColor = CGColor.black
         }
         

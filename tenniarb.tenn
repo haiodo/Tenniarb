@@ -39,20 +39,26 @@ element "Tenniarb" {
                 font-size 12
             }
             feature {
-                color "white"
+                color "blue"
             }
             done {
-                color "green"
+                color "lightgreen"
             }
             required {
                 color "yellow"
             }
         }
         item "MVP" {
-            pos -247.0 174.0
+            pos -252.0 127.0
             color "#0022ee"
             font-size 25
             color red
+            display circle
+            width 100
+            height 100
+            draw %{
+    line(x, y, window.width, y)
+}
         }
         link "MVP" "UI" {
             pos 0.0 2.0
@@ -414,6 +420,7 @@ Engine" "expr dsl"
         item "Zoom?" {
             pos -628.2587890625 -49.0
             color
+            use-style feature
         }
         link "Scene Draw" "Zoom?" {
             pos -26.0 19.0
@@ -877,7 +884,7 @@ element "Documentation" {
                 color yellow
             }
             item "Box" {
-                pos -683.0 56.0
+                pos -684.0 79.0
                 width 200
                 height 200
                 display no-fill
