@@ -431,13 +431,13 @@ class DrawableStyle {
 
 
 class DrawableLineStyle: DrawableStyle {
-    var lineDash:String?
+    var lineStyle:String?
     
     override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
         case PersistenceStyleKind.LineStyle.name:
             if let value = child.getIdent(1) {
-                self.lineDash = value
+                self.lineStyle = value
             }
         default:
             super.parseStyleLine(cmdName, child, evaluations)
@@ -448,7 +448,7 @@ class DrawableLineStyle: DrawableStyle {
     }
     override func copy() -> DrawableLineStyle {
         let result = super.copy() as! DrawableLineStyle
-        result.lineDash = self.lineDash
+        result.lineStyle = self.lineStyle
         return result
     }
     override func reset() {
@@ -466,7 +466,7 @@ class DrawableLineStyle: DrawableStyle {
             self.borderColor = CGColor.black
         }
         
-        self.lineDash = nil
+        self.lineStyle = nil
     }
 }
 
@@ -1543,7 +1543,7 @@ public class DrawableLine: ItemDrawable {
     public override func draw(context: CGContext, at point: CGPoint) {
         //
         context.saveGState()
-        
+            
         context.setLineWidth( self.lineWidth )
         context.setStrokeColor(self.style.color)
         context.setFillColor(self.style.color)
@@ -1552,7 +1552,7 @@ public class DrawableLine: ItemDrawable {
                         self.style.display == "arrow-source" ||
                         self.style.display == "arrows"
         
-        if let dash = self.style.lineDash {
+        if let dash = self.style.lineStyle {
             switch dash {
             case "dotted":
                 context.setLineDash(phase: 1, lengths: [1, 4])
@@ -1650,19 +1650,18 @@ public class DrawableLine: ItemDrawable {
             maxX = max(ep.x, maxX)
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
+            
+            if let lbl = self.label {
+                let lblb = lbl.getBounds()
+                let point = CGPoint(x: ep.x, y: ep.y - lbl.getBounds().height)
+                
+                maxX = max( maxX, point.x + lblb.width + 5)
+                
+                minY = min( minY, point.y - 5)
+            }
         }
         
-        if let lbl = self.label {
-            let lblBounds = lbl.getBounds()
-            if lbl.point.x +  lblBounds.width > (maxX - minX) {
-                maxX = minX + lblBounds.width + lbl.point.x
-            }
-            if lbl.point.y + lblBounds.height > (maxY-minY) {
-                maxY = minY + lblBounds.height + lbl.point.y
-            }
-        }
-        
-        return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
+        return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0))
     }
     public override func update() {
     }

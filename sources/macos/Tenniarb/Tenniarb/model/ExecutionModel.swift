@@ -319,7 +319,7 @@ public class ExecutionContext: IElementModelListener {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
     private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue",
-                                                              qos: .userInteractive, autoreleaseFrequency: .workItem )
+                                                              qos: .background, autoreleaseFrequency: .never )
 
     
     public func setElement(_ element: Element) {

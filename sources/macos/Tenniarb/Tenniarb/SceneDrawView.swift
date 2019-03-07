@@ -282,7 +282,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
             if removedItems.count > 0 {
-                setActiveItems(self.activeItems.filter({e in removedItems.contains(e)}))
+                let newActive = self.activeItems.filter({ e in !removedItems.contains(e) })
+                setActiveItems(newActive, force: true)
             }
         }
         if evt.kind == .Structure  {
@@ -389,6 +390,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if items.count == 0 && self.activeItems.count == 0 {
             return
         }
+        // We need to update pivot point
+        if let act = items.first {
+            var offset = CGFloat(100.0)
+            if let dr = scene?.drawables[act] {
+                offset = CGFloat(dr.getBounds().width + 10)
+            }
+            self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
+        }
+        
         if !force && activeItems.elementsEqual(items) {
             // No need to select same list
             return
@@ -401,17 +411,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         // We need to rebuild scene as active element is changed
         scene?.updateActiveElements(items)
-        
-        // We need to update pivot point
-        
-        
-        if let act = items.first {
-            var offset = CGFloat(100.0)
-            if let dr = scene?.drawables[act] {
-                offset = CGFloat(dr.getBounds().width + 10)
-            }
-            self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
-        }
         
         if immideateDraw {
             needsDisplay = true
@@ -428,15 +427,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let active = self.activeItems.first {
             if let tv = textView {
                 let textValue = tv.string
-                if textValue.count > 0 {
-                    switch self.editingMode {
-                    case .Name:
-                        self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
-                    case .Body:
-                        self.setBody(active, textValue)
-                        break
-                    }
-                    
+                switch self.editingMode {
+                case .Name:
+                    self.store?.updateName(item: active, textValue, undoManager: self.undoManager, refresh: scheduleRedraw)
+                case .Body:
+                    self.setBody(active, textValue)
+                    break
                 }
             }
         }
@@ -946,6 +942,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if drawables.count == 0 {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
+            
+            self.pivotPoint = CGPoint(x: self.x , y: self.y)
+            
             return
         }
             

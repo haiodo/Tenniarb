@@ -55,6 +55,7 @@ public enum PersistenceStyleKind {
     case Grid
     case Title
     case Label
+    case Shadow
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -62,7 +63,7 @@ public enum PersistenceStyleKind {
         case .FontSize: return "font-size";
         case .Display: return "display";
         case .Layout: return "layout";
-        case .LineStyle: return "line-dash";
+        case .LineStyle: return "line-style";
         case .Width: return "width";
         case .Height: return "height";
         case .BorderColor: return "borderColor";
@@ -72,6 +73,7 @@ public enum PersistenceStyleKind {
         case .Grid: return "grid";
         case .Title: return "title";
         case .Label: return "label";
+        case .Shadow: return "shadow";
         }
     }
 }
