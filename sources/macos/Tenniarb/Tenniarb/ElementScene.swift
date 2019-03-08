@@ -1566,20 +1566,37 @@ public class DrawableLine: ItemDrawable {
         var fillType: CGPathDrawingMode = .stroke
         
         let fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
+        var fromPtLast = fromPt
         let toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
         
         let aPath = CGMutablePath()
+        
         aPath.move(to: fromPt)
         
         for ep in self.extraPoints {
 
-            aPath.addLine(to: CGPoint(x: ep.x + point.x, y: ep.y + point.y))
+            // Move from pt to new location
+            fromPtLast = CGPoint(x: ep.x + point.x, y: ep.y + point.y)
+            
+            if drawArrow {
+                // We need to move source point a bit less
+                let px = fromPtLast.x - fromPt.x
+                let py = fromPtLast.y - fromPt.y
+                
+                let plen = sqrt( px * px + py * py )
+                if plen > 10 {
+                    let ltoPt = CGPoint( x: fromPt.x + ( px / plen * 10 ), y: fromPt.y + ( py / plen * 10 ) )
+                    aPath.move(to: ltoPt)
+                }
+            }
+            
+            aPath.addLine(to: fromPtLast)
             
             if let lbl = self.label {
                 lbl.point = CGPoint(x: ep.x, y: ep.y - lbl.getBounds().height)
             }
         }
-        
+
         if self.extraPoints.isEmpty {
             if let lbl = self.label {
                 let lblBounds = lbl.getBounds()
@@ -1596,7 +1613,24 @@ public class DrawableLine: ItemDrawable {
             }
         }
         
-        aPath.addLine(to: toPt)
+        if drawArrow {
+            // We need to draw a bit less
+            let px = toPt.x - fromPtLast.x
+            let py = toPt.y - fromPtLast.y
+            
+            let plen = sqrt( px * px + py * py )
+            
+            if plen > 10 {
+                let ltoPt = CGPoint( x: toPt.x - ( px / plen * 10 ), y: toPt.y - ( py / plen * 10 ) )
+                aPath.addLine(to: ltoPt)
+            } else {
+                aPath.addLine(to: toPt)
+            }
+        } else {
+            aPath.addLine(to: toPt)
+        }
+        
+        
 //        aPath.closeSubpath()
         
         context.addPath(aPath)
