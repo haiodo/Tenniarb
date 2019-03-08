@@ -626,6 +626,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var items: [DiagramItem] = []
         var oldNewItems: [DiagramItem:DiagramItem] = [:]
         var links: [DiagramItem] = []
+        
         for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
@@ -633,12 +634,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 newEl.description = active.description
                 oldNewItems[active] = newEl
                 
-                var offset = CGFloat(100.0)
-                if let dr = scene?.drawables[active] {
-                    offset = CGFloat(dr.getBounds().width + 10)
-                }
-                
-                newEl.x = active.x + offset
+                newEl.x = active.x
                 newEl.y = active.y
                                 
                 // Copy parent properties
@@ -926,7 +922,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         var result: [ItemDrawable] = []
         let point = CGPoint(x: self.x, y: self.y)
-        Swift.debugPrint(event)
+
         if event.clickCount == 1 {
             for active in self.activeItems {
                 if let activeDr = scene?.drawables[active] {
