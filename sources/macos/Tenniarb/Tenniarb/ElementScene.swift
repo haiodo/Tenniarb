@@ -48,6 +48,11 @@ open class ItemDrawable: Drawable {
     open func layout(_ bounds: CGRect, _ dirty: CGRect) {
         visible = true
     }
+    
+    public func getSelectorBounds() -> CGRect {
+        return self.getBounds()
+    }
+    
     public func getBounds() -> CGRect {
         return bounds
     }
@@ -191,6 +196,18 @@ func getString(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> Stri
     }
     return ch.getIdentText()
 }
+func updateLineStyle(_ context: CGContext, _ style: DrawableStyle ) {
+    if let dash = style.lineStyle {
+        switch dash {
+        case "dotted":
+            context.setLineDash(phase: 1, lengths: [1, 4])
+        case "dashed":
+            context.setLineDash(phase: 5, lengths: [5])
+        case "solid": break;
+        default:break;
+        }
+    }
+}
 
 let styleBlack = CGColor.black // CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
 let styleWhite = CGColor.white //CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
@@ -218,6 +235,12 @@ class DrawableStyle {
     var width:CGFloat?
     var height:CGFloat?
     var darkMode = false
+    
+    var lineStyle:String?
+    
+    var shadow: CGSize? = nil
+    var shadowBlur: CGFloat = CGFloat(4)
+    var shadowColor: CGColor? = nil
     
     /**
      One of values:
@@ -258,6 +281,12 @@ class DrawableStyle {
         result.height = self.height
         result.display = self.display
         result.layout = self.layout
+        result.lineStyle = self.lineStyle
+        
+        result.shadow = self.shadow
+        result.shadowColor = self.shadowColor
+        result.shadowBlur = self.shadowBlur
+        
         return result
     }
     
@@ -281,6 +310,11 @@ class DrawableStyle {
         self.height = nil
         self.display = nil
         self.layout = nil
+        self.lineStyle = nil
+        
+        self.shadow = nil
+        self.shadowColor = nil
+        self.shadowBlur = 5
     }
 
     
@@ -412,6 +446,20 @@ class DrawableStyle {
             if let color = getColor(child.getChild(1), evaluations, alpha: 1) {
                 self.borderColor = color
             }
+        case PersistenceStyleKind.LineStyle.name:
+            if let value = child.getIdent(1) {
+                self.lineStyle = value
+            }
+        case PersistenceStyleKind.Shadow.name:
+            if let xOffset = child.getFloat(1), let yOffset = child.getFloat(2)  {
+                self.shadow = CGSize(width: CGFloat(xOffset), height: CGFloat(yOffset))
+            }
+            if let blur = child.getFloat(3) {
+                self.shadowBlur = CGFloat(blur)
+            }
+            if let clr = getColor(child.getChild(4), evaluations) {
+                self.shadowColor = clr
+            }
         default:
             break;
         }
@@ -431,14 +479,8 @@ class DrawableStyle {
 
 
 class DrawableLineStyle: DrawableStyle {
-    var lineStyle:String?
-    
     override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
-        case PersistenceStyleKind.LineStyle.name:
-            if let value = child.getIdent(1) {
-                self.lineStyle = value
-            }
         default:
             super.parseStyleLine(cmdName, child, evaluations)
         }
@@ -448,7 +490,6 @@ class DrawableLineStyle: DrawableStyle {
     }
     override func copy() -> DrawableLineStyle {
         let result = super.copy() as! DrawableLineStyle
-        result.lineStyle = self.lineStyle
         return result
     }
     override func reset() {
@@ -695,7 +736,7 @@ open class DrawableScene: DrawableContainer {
                         )
                     }
                     else {
-                        var deBounds = de.getBounds()
+                        var deBounds = de.getSelectorBounds()
                         if let newPos = positions[ae] {
                             deBounds.origin = newPos
                         }
@@ -813,10 +854,9 @@ open class DrawableScene: DrawableContainer {
         
     }
     
-    fileprivate func buildRoundRect(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) -> RoundBox {
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ style: DrawableItemStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) -> RoundBox {
         let rectBox = RoundBox( bounds: bounds,
-                                fillColor: bgColor,
-                                borderColor: borderColor, fill: fill)
+                                style, fill: fill)
         rectBox.stack = stack
         if self.activeElements.contains(e) {
             rectBox.lineWidth = 1
@@ -830,10 +870,9 @@ open class DrawableScene: DrawableContainer {
         return rectBox
     }
     
-    fileprivate func buildCircle(_ bounds: CGRect, _ bgColor: CGColor, _ borderColor: CGColor, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
+    fileprivate func buildCircle(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
         let rectBox = CircleBox( bounds: bounds,
-                                fillColor: bgColor,
-                                borderColor: borderColor, fill: fill)
+                                style, fill: fill)
         if self.activeElements.contains(e) {
             rectBox.lineWidth = 1
         }
@@ -846,8 +885,8 @@ open class DrawableScene: DrawableContainer {
         return rectBox
     }
     
-    fileprivate func buildEmptyRect(_ bounds: CGRect, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) -> EmptyBox {
-        let rectBox = EmptyBox( bounds: bounds )
+    fileprivate func buildEmptyRect(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) -> EmptyBox {
+        let rectBox = EmptyBox( bounds: bounds, style )
         rectBox.append(textBox)
         rectBox.item = e
         
@@ -973,20 +1012,20 @@ open class DrawableScene: DrawableContainer {
         if let display = style.display {
             switch display {
             case "text":
-                box = buildEmptyRect(bounds,  e, textBox, elementDrawable)
+                box = buildEmptyRect(bounds, style, e, textBox, elementDrawable)
             case "no-fill":
-                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, fill: false)
+                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: false)
             case "stack":
-                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable, stack: 3)
+                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, stack: 3)
             case "circle":
-                box = buildCircle(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+                box = buildCircle(bounds, style, e, textBox, elementDrawable)
                 break;
             default:
-                box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: true)
             }
         }
         else {
-            box = buildRoundRect(bounds, bgColor, borderColor, e, textBox, elementDrawable)
+            box = buildRoundRect(bounds, style, e, textBox, elementDrawable)
         }
         if let parentBox = box, let bbox = bodyTextBox {
             parentBox.append(bbox)
@@ -1059,20 +1098,19 @@ open class DrawableScene: DrawableContainer {
 }
 
 public class RoundBox: DrawableContainer {
-    public var fillColor: CGColor
-    public var borderColor: CGColor
-    public var radius: CGFloat = 8
-    public var fill: Bool = true
-    public static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
-    public var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
-    public var stack: Int = 0
-    public var stackStep = CGPoint(x:5, y:5)
+    var style: DrawableItemStyle
+    
+    var radius: CGFloat = 8
+    var fill: Bool = true
+    static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
+    var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
+    var stack: Int = 0
+    var stackStep = CGPoint(x:5, y:5)
     
     var path: CGMutablePath?
     
-    init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor, fill: Bool ) {
-        self.fillColor = fillColor
-        self.borderColor = borderColor
+    init( bounds: CGRect, _ style: DrawableItemStyle, fill: Bool ) {
+        self.style = style
         self.fill = fill
         
         super.init([])
@@ -1100,7 +1138,23 @@ public class RoundBox: DrawableContainer {
     
     public override func draw(context: CGContext, at point: CGPoint) {
         context.saveGState()
-        self.doDraw(context, at: point)
+        
+        if let pos = self.style.shadow {
+            context.saveGState()
+            if let col = self.style.shadowColor {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur, color: col)
+            } else {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur)
+            }
+            self.doDraw(context, at: point)
+            context.restoreGState()
+        } else {
+            self.doDraw(context, at: point)
+        }
+        
+        
+        
+        
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
         context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
@@ -1111,8 +1165,10 @@ public class RoundBox: DrawableContainer {
         context.saveGState()
         
         context.setLineWidth( self.lineWidth )
-        context.setStrokeColor( self.borderColor )
-        context.setFillColor( self.fillColor )
+        context.setStrokeColor( self.style.borderColor )
+        context.setFillColor( self.style.color )
+        
+        updateLineStyle(context, self.style)
         
         context.translateBy(x: point.x, y: point.y)
         
@@ -1166,8 +1222,12 @@ public class RoundBox: DrawableContainer {
 }
 
 public class EmptyBox: DrawableContainer {
-    init( bounds: CGRect) {
+    var style: DrawableStyle
+    
+    init( bounds: CGRect, _ style: DrawableStyle ) {
+        self.style = style
         super.init([])
+        
         self.bounds = bounds
     }
     
@@ -1180,8 +1240,16 @@ public class EmptyBox: DrawableContainer {
     
     public override func draw(context: CGContext, at point: CGPoint) {
         context.saveGState()
+        
+        if let pos = self.style.shadow {
+            if let col = self.style.shadowColor {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur, color: col)
+            } else {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur)
+            }
+        }
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-        context.clip(to: clipBounds )
+//        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1552,16 +1620,7 @@ public class DrawableLine: ItemDrawable {
                         self.style.display == "arrow-source" ||
                         self.style.display == "arrows"
         
-        if let dash = self.style.lineStyle {
-            switch dash {
-            case "dotted":
-                context.setLineDash(phase: 1, lengths: [1, 4])
-            case "dashed":
-                context.setLineDash(phase: 5, lengths: [5])
-            case "solid": break;
-            default:break;
-            }
-        }
+        updateLineStyle(context, style)
         
         var fillType: CGPathDrawingMode = .stroke
         
@@ -1886,17 +1945,15 @@ public class ImageBox: Drawable {
 
 
 public class CircleBox: DrawableContainer {
-    public var fillColor: CGColor
-    public var borderColor: CGColor
-    public var fill: Bool = true
-    public static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
-    public var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
+    var style: DrawableStyle
+    var fill: Bool = true
+    static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
+    var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
     
     var path: CGMutablePath?
     
-    init( bounds: CGRect, fillColor: CGColor, borderColor: CGColor, fill: Bool ) {
-        self.fillColor = fillColor
-        self.borderColor = borderColor
+    init( bounds: CGRect, _ style: DrawableStyle, fill: Bool ) {
+        self.style = style
         self.fill = fill
         
         super.init([])
@@ -1913,6 +1970,14 @@ public class CircleBox: DrawableContainer {
     
     public override func draw(context: CGContext, at point: CGPoint) {
         context.saveGState()
+        
+        if let pos = self.style.shadow {
+            if let col = self.style.shadowColor {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur, color: col)
+            } else {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur)
+            }
+        }
         self.doDraw(context, at: point)
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
         context.clip(to: clipBounds )
@@ -1924,8 +1989,8 @@ public class CircleBox: DrawableContainer {
         context.saveGState()
         
         context.setLineWidth( self.lineWidth )
-        context.setStrokeColor( self.borderColor )
-        context.setFillColor( self.fillColor )
+        context.setStrokeColor( self.style.borderColor )
+        context.setFillColor( self.style.color )
         
         context.translateBy(x: point.x, y: point.y)
         
@@ -1953,14 +2018,31 @@ public class CircleBox: DrawableContainer {
         visible = dirty.intersects(newBounds)
     }
     
+    public override func getSelectorBounds() -> CGRect {
+        return self.bounds
+    }
+        
     public override func getBounds() -> CGRect {
-        //        if self.stack > 0 {
-        //            return CGRect(origin: bounds.origin,
-        //                          size: CGSize(
-        //                            width: bounds.width + CGFloat(self.stack-1)*self.stackStep.x,
-        //                            height: bounds.height + CGFloat(self.stack-1)*self.stackStep.y
-        //            ))
-        //        }
-        return bounds
+        var result = self.bounds.applying(CGAffineTransform.identity)
+        // In case we had shadow, we need to extend bounds a bit.
+        if let shadow = self.style.shadow {
+            if shadow.width < 0 {
+                result.origin.x += shadow.width
+                result.size.width += -1 * shadow.width + self.style.shadowBlur
+            }
+            if shadow.width > 0 {
+                result.size.width += shadow.width + self.style.shadowBlur
+            }
+            
+            if shadow.height < 0 {
+                result.origin.y += shadow.height
+                result.size.height += -1 * shadow.height + self.style.shadowBlur
+            }
+            if shadow.height > 0 {
+                result.size.height += shadow.height + self.style.shadowBlur
+            }
+            
+        }
+        return result
     }
 }

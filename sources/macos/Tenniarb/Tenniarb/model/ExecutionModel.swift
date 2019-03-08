@@ -136,14 +136,16 @@ fileprivate func calculateValue(_ node: TennNode?,
 @objc protocol ItemProtocol: JSExport {
     var properties: [String: Any] { get }
     var parent: ElementProtocol { get }
-//    subscript( key: String ) -> Any? { get }
+    
+    func find(_ name: String ) -> ItemProtocol?
 }
 
 @objc protocol ElementProtocol: JSExport {
     var properties: [String: Any] { get }
     var items: [ItemProtocol] { get }
     var links: [ItemProtocol] { get }
-    //    subscript( key: String ) -> Any? { get }
+    
+    func find(_ name: String ) -> ItemProtocol?
 }
 
 @objc protocol UtilsProtocol: JSExport {
@@ -173,6 +175,9 @@ fileprivate func calculateValue(_ node: TennNode?,
         get {
             return self.itemObject
         }
+    }
+    dynamic func find(_ name: String ) -> ItemProtocol? {
+        return parent.find(name)
     }
     
     init(_ parentCtx: ElementContext ,_ item: DiagramItem ) {
@@ -206,6 +211,8 @@ fileprivate func calculateValue(_ node: TennNode?,
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
         
+        self.parentCtx.jsContext.setObject(self.self, forKeyedSubscript: "self" as NSCopying & NSObjectProtocol)
+        
         self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSCopying & NSObjectProtocol)
         
         // Update position
@@ -228,6 +235,7 @@ public class ElementContext: NSObject, ElementProtocol {
     var hasExpressions: Bool = false
     var evaluated: [TennToken : JSValue] = [:]
     var itemsMap:[DiagramItem: ItemContext] = [:]
+    var namedItems:[String: DiagramItem] = [:]
     var utils = UtilsContext()
     
     dynamic var properties: [String : Any] {
@@ -245,6 +253,12 @@ public class ElementContext: NSObject, ElementProtocol {
             return itemsMap.filter({(k,_) in k.kind == .Link }).values.map({e in e as ItemProtocol})
         }
     }
+    dynamic func find(_ name: String ) -> ItemProtocol?{
+        if let itm = self.namedItems[name] {
+            return itemsMap[itm]
+        }
+        return nil
+    }
     
     init(_ context: ExecutionContext, _ element: Element ) {
         self.element = element
@@ -259,6 +273,7 @@ public class ElementContext: NSObject, ElementProtocol {
             if ic.hasExpressions {
                 withExprs.append(ic)
             }
+            self.namedItems[itm.name] = itm
         }
         if self.hasExpressions {
             _ = self.updateContext()
@@ -296,9 +311,11 @@ public class ElementContext: NSObject, ElementProtocol {
             case .Append:
                 // New item we need to add it to calculation
                 self.itemsMap[k] = ItemContext(self, k)
+                self.namedItems[k.name] = k
             case .Remove:
                 if let idx = self.itemsMap.index(forKey: k) {
                     self.itemsMap.remove(at: idx)
+                    self.namedItems.removeValue(forKey: k.name)
                 }
             case .Update:
                 if let ci = self.itemsMap[k] {

@@ -427,7 +427,7 @@ let ColorNames: [String: String] = [
     "brown-700":"#5D4037",
     "brown-800":"#4E342E",
     "brown-900":"#3E2723",
-    // Grey
+    // Gray
     "gray-50":"#FAFAFA",
     "gray-100":"#F5F5F5",
     "gray-200":"#EEEEEE",
@@ -438,6 +438,18 @@ let ColorNames: [String: String] = [
     "gray-700":"#616161",
     "gray-800":"#424242",
     "gray-900":"#212121",
+    
+    // Grey
+    "grey-50":"#FAFAFA",
+    "grey-100":"#F5F5F5",
+    "grey-200":"#EEEEEE",
+    "grey-300":"#E0E0E0",
+    "grey-400":"#BDBDBD",
+    "grey-500":"#9E9E9E",
+    "grey-600":"#757575",
+    "grey-700":"#616161",
+    "grey-800":"#424242",
+    "grey-900":"#212121",
     
     // Blue grey
     "blue-grey-50":"#ECEFF1",
@@ -451,5 +463,18 @@ let ColorNames: [String: String] = [
     "blue-grey-800":"#37474F",
     "blue-grey-900":"#263238",
     "bluegrey": "#607D8B",
+    
+    // Blue gray
+    "blue-gray-50":"#ECEFF1",
+    "blue-gray-100":"#CFD8DC",
+    "blue-gray-200":"#B0BEC5",
+    "blue-gray-300":"#90A4AE",
+    "blue-gray-400":"#78909C",
+    "blue-gray-500":"#607D8B",
+    "blue-gray-600":"#546E7A",
+    "blue-gray-700":"#455A64",
+    "blue-gray-800":"#37474F",
+    "blue-gray-900":"#263238",
+    "bluegray": "#607D8B",
 ];
 

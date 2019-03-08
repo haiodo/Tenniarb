@@ -627,6 +627,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var oldNewItems: [DiagramItem:DiagramItem] = [:]
         var links: [DiagramItem] = []
         
+        let offsetx = CGFloat(75)
+        let offsety = CGFloat(-25)
         for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
@@ -634,8 +636,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 newEl.description = active.description
                 oldNewItems[active] = newEl
                 
-                newEl.x = active.x
-                newEl.y = active.y
+                newEl.x = active.x + offsetx
+                newEl.y = active.y + offsety
                                 
                 // Copy parent properties
                 for p in active.properties {
@@ -1124,6 +1126,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             else {
                 context.setFillColor(background)
             }
+            
+            context.setShouldAntialias(true)
 
             context.fill(dirtyRect)
             
