@@ -620,6 +620,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     @objc func duplicateItem() {
+        guard let curElement = self.element else {
+            return
+        }
         var items: [DiagramItem] = []
         var oldNewItems: [DiagramItem:DiagramItem] = [:]
         var links: [DiagramItem] = []
@@ -650,6 +653,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 links.append(li)
                 items.append(li)
             }
+            
+            for itm  in curElement.getRelatedItems(active) {
+                if itm.kind == .Link {
+                    let li = itm.clone()
+                    links.append(li)
+                    items.append(li)
+                }
+            }
+            
         }
         for li in links {
             if let lli = li as? LinkItem {
@@ -663,7 +675,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         if items.count > 0 {
-            self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            self.store?.add(curElement, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
             self.setActiveItems(items)
             scheduleRedraw()
         }
