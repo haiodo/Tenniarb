@@ -490,7 +490,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let bodyNode = newProps.getNamedElement( "body" ) {
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
-                    if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
+                    if let bodyText = bodyBlock.getNamedElement("text") {
                         bodyText.children?.removeAll()
                         bodyText.add(TennNode.newIdent("text"))
                         bodyText.add(TennNode.newMarkdownNode(body))
@@ -652,7 +652,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 items.append(li)
             }
             
-            for itm  in curElement.getRelatedItems(active) {
+            for itm  in curElement.getRelatedItems(active, source: false) {
                 if itm.kind == .Link {
                     let li = itm.clone()
                     links.append(li)
@@ -870,6 +870,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             scheduleRedraw()
         }
         else {
+            // Check if up/down interval is appropriate for dragging.
+            
+            let now = Date()
+            
+            if let down = self.downDate {
+                if now.timeIntervalSince(down).isLess(than: 0.2) {
+                    return
+                }
+            }
+            
             var ops: [ElementOperation] = []
             
             for de in self.dragElements {
@@ -896,8 +906,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.mode = .Normal
     }
     
+    var downDate:Date? = nil
+    
     override func mouseDown(with event: NSEvent) {
         self.updateMousePosition(event)
+        
+        self.downDate = Date()
         
         if self.mode == .Editing {
             // No dragging allowed until editing is not done
