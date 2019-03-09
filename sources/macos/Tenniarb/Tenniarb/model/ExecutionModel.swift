@@ -65,6 +65,31 @@ fileprivate func calculateValue(_ node: TennNode?,
         return nil
     case .StringLit, .CharLit, .Ident, .MarkdownLit:
         if let identText = nde.getIdentText() {
+            
+            if identText.contains("${") {
+                hasExpressions = true
+                // We need to perform substituion
+                var error: JSValue?
+                let oldHandler = currentContext.exceptionHandler
+                currentContext.exceptionHandler = {(a,b) in
+                    if let e = b {
+                        error = e
+                    }
+                }
+                defer {
+                    currentContext.exceptionHandler = oldHandler
+                }
+                if let result = currentContext.evaluateScript("`" + identText + "`") {
+                    if let tk = nde.token {
+                        evaluated[tk] = result
+                        if let e = error {
+                            evaluated[tk] = e
+                        }
+                    }
+                    return result
+                }
+            }
+            
             return identText
         }
         return nil
@@ -135,17 +160,12 @@ fileprivate func calculateValue(_ node: TennNode?,
 
 @objc protocol ItemProtocol: JSExport {
     var properties: [String: Any] { get }
-    var parent: ElementProtocol { get }
-    
-    func find(_ name: String ) -> ItemProtocol?
 }
 
 @objc protocol ElementProtocol: JSExport {
     var properties: [String: Any] { get }
     var items: [ItemProtocol] { get }
     var links: [ItemProtocol] { get }
-    
-    func find(_ name: String ) -> ItemProtocol?
 }
 
 @objc protocol UtilsProtocol: JSExport {
@@ -165,19 +185,11 @@ fileprivate func calculateValue(_ node: TennNode?,
     var parentCtx: ElementContext
     
     var evaluated: [TennToken: JSValue] = [:]
-    dynamic var parent: ElementProtocol {
-        get {
-            return parentCtx
-        }
-    }
     
     dynamic var properties: [String : Any] {
         get {
             return self.itemObject
         }
-    }
-    dynamic func find(_ name: String ) -> ItemProtocol? {
-        return parent.find(name)
     }
     
     init(_ parentCtx: ElementContext ,_ item: DiagramItem ) {
@@ -187,7 +199,7 @@ fileprivate func calculateValue(_ node: TennNode?,
         
         self.hasExpressions = self.updateContext();
     }
-   
+    
     
     func updateContext() -> Bool {
         var newItems: [String:Any] = [:]
@@ -211,7 +223,18 @@ fileprivate func calculateValue(_ node: TennNode?,
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
         
-        self.parentCtx.jsContext.setObject(self.self, forKeyedSubscript: "self" as NSCopying & NSObjectProtocol)
+        let valueForKey: @convention(block) (Any?, String) -> Any? = { target, key in
+            if let itm = self.parentCtx.namedItems[key] {
+                return itm.properties
+            }
+            return nil
+        }
+        
+        self.parentCtx.jsContext.setObject(valueForKey, forKeyedSubscript: "__valueForKey" as NSString)
+
+        self.parentCtx.jsContext.setObject(self.parentCtx.namedItems, forKeyedSubscript: "items" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.evaluateScript("items = new Proxy(items, { get: __valueForKey })")
+        
         
         self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSCopying & NSObjectProtocol)
         
@@ -235,7 +258,9 @@ public class ElementContext: NSObject, ElementProtocol {
     var hasExpressions: Bool = false
     var evaluated: [TennToken : JSValue] = [:]
     var itemsMap:[DiagramItem: ItemContext] = [:]
-    var namedItems:[String: DiagramItem] = [:]
+    
+    var namedItems:[String: ItemContext] = [:]
+    
     var utils = UtilsContext()
     
     dynamic var properties: [String : Any] {
@@ -253,12 +278,6 @@ public class ElementContext: NSObject, ElementProtocol {
             return itemsMap.filter({(k,_) in k.kind == .Link }).values.map({e in e as ItemProtocol})
         }
     }
-    dynamic func find(_ name: String ) -> ItemProtocol?{
-        if let itm = self.namedItems[name] {
-            return itemsMap[itm]
-        }
-        return nil
-    }
     
     init(_ context: ExecutionContext, _ element: Element ) {
         self.element = element
@@ -273,7 +292,7 @@ public class ElementContext: NSObject, ElementProtocol {
             if ic.hasExpressions {
                 withExprs.append(ic)
             }
-            self.namedItems[itm.name] = itm
+            self.namedItems[itm.name] = ic
         }
         if self.hasExpressions {
             _ = self.updateContext()
@@ -306,12 +325,14 @@ public class ElementContext: NSObject, ElementProtocol {
         return result
     }
     func processEvent(_ event: ModelEvent ) {
+        var needUpdateNamed = false
         for (k,v) in event.items {
             switch v {
             case .Append:
                 // New item we need to add it to calculation
-                self.itemsMap[k] = ItemContext(self, k)
-                self.namedItems[k.name] = k
+                let ikc = ItemContext(self, k)
+                self.itemsMap[k] = ikc
+                self.namedItems[k.name] = ikc
             case .Remove:
                 if let idx = self.itemsMap.index(forKey: k) {
                     self.itemsMap.remove(at: idx)
@@ -321,6 +342,16 @@ public class ElementContext: NSObject, ElementProtocol {
                 if let ci = self.itemsMap[k] {
                     _ = ci.updateContext()
                 }
+                // Probable we need to update list of named items.
+                
+                needUpdateNamed = true
+            }
+        }
+        
+        if needUpdateNamed {
+            self.namedItems.removeAll()
+            for itm in element.items {
+                self.namedItems[itm.name] = self.itemsMap[itm]
             }
         }
         

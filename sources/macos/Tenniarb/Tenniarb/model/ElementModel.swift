@@ -261,11 +261,11 @@ public class Element {
         return -1
     }
     
-    func getRelatedItems(_ item: DiagramItem ) -> [DiagramItem] {
+    func getRelatedItems(_ item: DiagramItem, source: Bool = true, target: Bool = true ) -> [DiagramItem] {
         return self.items.filter {
             // Need to check if item is Link and source or target is our client
             if $0.kind == .Link, let lData = $0 as? LinkItem {
-                if lData.source?.id == item.id || lData.target?.id == item.id {
+                if (source && lData.source?.id == item.id) || (target && lData.target?.id == item.id) {
                     return true
                 }
             }

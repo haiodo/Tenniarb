@@ -37,7 +37,7 @@ element "Tenniarb" {
         styles {
             item {
                 font-size 12
-                shadow -3 -3 7
+                shadow -5 -5 5
             }
             feature {
                 color "blue"
@@ -401,7 +401,7 @@ Engine" "expr dsl"
             pos 27.0 -12.0
         }
         item "Import" {
-            pos -503.9111328125 121.0
+            pos -503.9111328125 120.0
         }
         link "Model" "Import" {
             pos 29.0 -21.0
@@ -546,6 +546,13 @@ Engine" "expr dsl"
             use-style feature
         }
         link "Movements" "Display rulers"
+        item "Model" {
+            pos -289.0 246.0
+            color green
+        }
+        link "MVP" "Model" {
+            target-index 1
+        }
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0
@@ -3294,23 +3301,23 @@ element "Documentation" {
     }
     element "Executions" {
         item "Use of Variables" {
-            pos -1012.0 1065.0
+            pos -1776.0 1189.0
             body {
-                text ${`
-        a = \${parent.find('a').properties['value']} == ${parent.find('a').properties['value']}
-        c = 31
-    `}
+                text %{
+        a.value = ${items.a.value}
+        b.value = ${items.b.value}
+    }
             }
         }
         item "a" {
-            pos -1020.0 1194.0
-            title "Object 'a'"
-            value 20
-            body {
-                text ${
-        "Value=" + value
-    }
-            }
+            pos -1773.0 1295.0
+            value 21
+            title "${name} = ${value}"
+        }
+        item "b" {
+            pos -1695.0 1296.0
+            value 31
+            title "${name} = ${value}"
         }
         element "Color on pos" {
             define ${

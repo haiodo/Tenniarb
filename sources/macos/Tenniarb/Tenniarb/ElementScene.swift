@@ -781,15 +781,15 @@ open class DrawableScene: DrawableContainer {
             
             if let box = drawables[item] as? RoundBox {
                 result = result.union(box.getBounds())
-                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
             }
             if let box = drawables[item] as? CircleBox {
                 result = result.union(box.getBounds())
-                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
             }
             if let box = drawables[item] as? EmptyBox {
                 result = result.union(box.getBounds())
-                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.bounds.size))
+                box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
             }
             if let box = drawables[item] as? DrawableLine {
                 result = result.union(box.getBounds())
@@ -921,10 +921,7 @@ open class DrawableScene: DrawableContainer {
             }
         }
         
-        style.parseStyle(e.properties, evaluatedValues )
-        
-        let bgColor = style.color
-        let borderColor = style.borderColor
+        style.parseStyle(e.properties, evaluatedValues )            
         
         var titleValue = (name.count > 0 ? name :  " ")
         if let title = style.title {
@@ -1146,13 +1143,11 @@ public class RoundBox: DrawableContainer {
             } else {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur)
             }
-            self.doDraw(context, at: point)
+            self.doDraw(context, at: point)            
             context.restoreGState()
         } else {
             self.doDraw(context, at: point)
         }
-        
-        
         
         
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
@@ -1209,15 +1204,32 @@ public class RoundBox: DrawableContainer {
         visible = dirty.intersects(newBounds)
     }
     
-    public override func getBounds() -> CGRect {
-//        if self.stack > 0 {
-//            return CGRect(origin: bounds.origin,
-//                          size: CGSize(
-//                            width: bounds.width + CGFloat(self.stack-1)*self.stackStep.x,
-//                            height: bounds.height + CGFloat(self.stack-1)*self.stackStep.y
-//            ))
-//        }
+    public override func getSelectorBounds() -> CGRect {
         return bounds
+    }
+    
+    public override func getBounds() -> CGRect {
+        var result = self.bounds.applying(CGAffineTransform.identity)
+        // In case we had shadow, we need to extend bounds a bit.
+        if let shadow = self.style.shadow {
+            if shadow.width < 0 {
+                result.origin.x += shadow.width - self.style.shadowBlur
+                result.size.width += -1 * shadow.width + self.style.shadowBlur * 2
+            }
+            if shadow.width > 0 {
+                result.size.width += shadow.width + self.style.shadowBlur
+            }
+            
+            if shadow.height < 0 {
+                result.origin.y += shadow.height - self.style.shadowBlur
+                result.size.height += -1 * shadow.height + self.style.shadowBlur * 2
+            }
+            if shadow.height > 0 {
+                result.size.height += shadow.height + self.style.shadowBlur
+            }
+            
+        }
+        return result
     }
 }
 
@@ -1248,7 +1260,7 @@ public class EmptyBox: DrawableContainer {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur)
             }
         }
-        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+//        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
 //        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
@@ -1616,9 +1628,9 @@ public class DrawableLine: ItemDrawable {
         context.setStrokeColor(self.style.color)
         context.setFillColor(self.style.color)
         
-        let drawArrow = self.style.display == "arrow" ||
-                        self.style.display == "arrow-source" ||
-                        self.style.display == "arrows"
+        let drawArrowTarget = self.style.display == "arrow" || self.style.display == "arrows"
+        let drawArroySoure = self.style.display == "arrow-source" || self.style.display == "arrows"
+        let drawArrow = drawArrowTarget || drawArroySoure
         
         updateLineStyle(context, style)
         
@@ -1637,7 +1649,7 @@ public class DrawableLine: ItemDrawable {
             // Move from pt to new location
             fromPtLast = CGPoint(x: ep.x + point.x, y: ep.y + point.y)
             
-            if drawArrow {
+            if drawArroySoure {
                 // We need to move source point a bit less
                 let px = fromPtLast.x - fromPt.x
                 let py = fromPtLast.y - fromPt.y
@@ -1672,7 +1684,7 @@ public class DrawableLine: ItemDrawable {
             }
         }
         
-        if drawArrow {
+        if drawArrowTarget {
             // We need to draw a bit less
             let px = toPt.x - fromPtLast.x
             let py = toPt.y - fromPtLast.y
