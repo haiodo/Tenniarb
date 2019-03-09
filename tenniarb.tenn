@@ -3300,8 +3300,19 @@ element "Documentation" {
         }
     }
     element "Executions" {
+        colorByDay ${
+    function colorByDay() {
+        if (days > 3) {
+            return 'red'
+        }
+        if (days <= 3) {
+            return 'green-' + 2*days + '00'
+        }
+        return  'white'
+    }
+}
         item "Use of Variables" {
-            pos -1776.0 1189.0
+            pos -1785.0 1204.0
             body {
                 text %{
         a.value = ${items.a.value}
@@ -3310,14 +3321,58 @@ element "Documentation" {
             }
         }
         item "a" {
-            pos -1773.0 1295.0
+            pos -1782.0 1310.0
             value 21
             title "${name} = ${value}"
         }
         item "b" {
-            pos -1695.0 1296.0
+            pos -1704.0 1311.0
             value 31
             title "${name} = ${value}"
+        }
+        item "Task1" {
+            pos -1551.34912109375 1293.8109130859375
+            days 2
+            kind task
+            width $(days*30)
+            body "days: ${days}"
+            color $(colorByDay())
+        }
+        item "Task info" {
+            pos -1546.34912109375 1201.8109130859375
+            body %{
+    Tasks: ${parent.items.filter( it => it.kind == 'task').map(e => e.days).reduce((a,b) =>a+b)}
+}
+        }
+        item "Task2" {
+            pos -1479.34912109375 1293.8109130859375
+            days 3
+            kind task
+            width $(days*30)
+            body "days: ${days}"
+            color $(colorByDay())
+        }
+        item "Task2" {
+            pos -1383.34912109375 1292.8109130859375
+            days 4
+            kind task
+            width $(days*30)
+            body "days: ${days}"
+            color $(colorByDay())
+        }
+        item "Named variables access" {
+            pos -1812.982666015625 1181.132080078125
+            display no-fill
+            height 200
+            body ""
+            line-style dashed
+        }
+        item "Iterare over all items with kind=='task'" {
+            pos -1559.982666015625 1178.132080078125
+            display no-fill
+            height 200
+            body ""
+            line-style dashed
         }
         element "Color on pos" {
             define ${
@@ -6124,14 +6179,6 @@ element "Documentation" {
                 width 35
                 font-size 10
                 height 23
-            }
-        }
-        element "Animation" {
-            animation 1
-            item "Untitled 1" {
-                pos -1139.0 227.1999969482422
-                title $(utils.now() % 255)
-                color $([utils.now() % 255, 50, utils.now() % 255 - 50])
             }
         }
     }

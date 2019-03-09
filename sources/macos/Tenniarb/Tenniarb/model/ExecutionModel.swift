@@ -164,8 +164,8 @@ fileprivate func calculateValue(_ node: TennNode?,
 
 @objc protocol ElementProtocol: JSExport {
     var properties: [String: Any] { get }
-    var items: [ItemProtocol] { get }
-    var links: [ItemProtocol] { get }
+    var items: [NSDictionary] { get }
+    var links: [NSDictionary] { get }
 }
 
 @objc protocol UtilsProtocol: JSExport {
@@ -246,6 +246,8 @@ fileprivate func calculateValue(_ node: TennNode?,
         self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSCopying & NSObjectProtocol)
         self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSCopying & NSObjectProtocol)
         
+        newItems["name"] = self.item.name
+        
         return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
     }
 }
@@ -268,14 +270,14 @@ public class ElementContext: NSObject, ElementProtocol {
             return elementObject
         }
     }
-    dynamic var items: [ItemProtocol] {
+    dynamic var items: [NSDictionary] {
         get {
-            return itemsMap.filter({(k,_) in k.kind == .Item }).values.map({e in e as ItemProtocol})
+            return itemsMap.filter({(k,_) in k.kind == .Item }).values.map({e in e.properties as NSDictionary})
         }
     }
-    dynamic var links: [ItemProtocol] {
+    dynamic var links: [NSDictionary] {
         get {
-            return itemsMap.filter({(k,_) in k.kind == .Link }).values.map({e in e as ItemProtocol})
+            return itemsMap.filter({(k,_) in k.kind == .Link }).values.map({e in e.properties as NSDictionary})
         }
     }
     
