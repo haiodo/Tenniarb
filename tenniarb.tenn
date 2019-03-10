@@ -547,7 +547,7 @@ Engine" "expr dsl"
         }
         link "Movements" "Display rulers"
         item "Model" {
-            pos -289.0 246.0
+            pos -345.0 250.0
             color green
         }
         link "MVP" "Model" {
@@ -659,6 +659,36 @@ Engine" "expr dsl"
         item "JSContext" {
             pos -31.701171875 135.0
         }
+    }
+    element "bug" {
+        styles {
+            item {
+                font-size 12
+                shadow -5 -5 5
+            }
+            feature {
+                color "blue"
+            }
+            done {
+                color "lightgreen"
+            }
+            required {
+                color "yellow"
+            }
+        }
+        item "Diagram \nPosition widget" {
+            pos -45.650390625 85.0
+            color green
+        }
+        item "Payments" {
+            pos -55.94921875 251.0
+            color yellow
+        }
+        item "StoreKit" {
+            pos 100.8046875 134.0
+            color yellow
+        }
+        link "Payments" "StoreKit"
     }
 }
 element "Documentation" {

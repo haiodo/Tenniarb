@@ -1077,8 +1077,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if newPositions.count > 0 {
                 let dirtyRegion = self.scene!.updateLayout(newPositions)
                 
-                let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x-20, y: self.oy + bounds.midY + dirtyRegion.origin.y - 20)
-                scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width + 40, height: dirtyRegion.size.height + 40)))
+                let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x, y: self.oy + bounds.midY + dirtyRegion.origin.y)
+                scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width, height: dirtyRegion.size.height)))
             }
         }
         else {
@@ -1119,13 +1119,166 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return false
     }
     
+    fileprivate func drawRulers(_ scene: DrawableScene, _ context: CGContext) {
+        let ycount = 20
+        let xcount = 30
+        
+        var leftBoxes: [Int] = []
+        var rightBoxes: [Int] = []
+        
+        var topBoxes: [Int] = []
+        var bottomBoxes: [Int] = []
+        
+        for _ in 0...ycount {
+            leftBoxes.append(0)
+            rightBoxes.append(0)
+        }
+        
+        for _ in 0...xcount {
+            topBoxes.append(0)
+            bottomBoxes.append(0)
+        }
+        
+        
+        let ystep = bounds.height / CGFloat(ycount)
+        let xstep = bounds.width / CGFloat(xcount)
+        
+        for d in scene.drawables.values {
+            let db = d.getBounds()
+            
+            let x = db.minX + scene.offset.x
+            let y = db.minY + scene.offset.y
+            
+            if x + db.width < 0 {
+                var ypos = Int((y + db.height/2) / ystep)
+                if ypos > ycount {
+                    ypos = ycount
+                }
+                if ypos < 0 {
+                    ypos = 0
+                }
+                leftBoxes[ypos] += 1
+            }
+            if x > bounds.width {
+                var ypos = Int((y + db.height/2) / ystep)
+                if ypos > ycount {
+                    ypos = ycount
+                }
+                if ypos < 0 {
+                    ypos = 0
+                }
+                rightBoxes[ypos] += 1
+            }
+            if y + db.height < 0 {
+                var xpos = Int((x + db.width/2) / xstep)
+                if xpos >= xcount {
+                    xpos = xcount
+                    rightBoxes[0] += 1
+                }
+                else if xpos <= 0 {
+                    xpos = 0
+                    leftBoxes[0] += 1
+                }
+                else {
+                    bottomBoxes[xpos] +=  1
+                }
+            }
+            if y > bounds.height {
+                var xpos = Int((x + db.width/2) / xstep)
+                if xpos >= xcount {
+                    xpos = xcount
+                    rightBoxes[ycount] += 1
+                }
+                else if xpos <= 0 {
+                    xpos = 0
+                    leftBoxes[ycount] += 1
+                }
+                else {
+                    topBoxes[xpos] += 1
+                }
+            }
+        }
+        
+        if self.isDarkMode() {
+            context.setStrokeColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
+            context.setFillColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
+            context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
+        }
+        else {
+            context.setStrokeColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+            context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+            context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
+        }
+        
+        
+        
+        var needDraw = false
+        for i in 0...ycount {
+            var c = leftBoxes[i]
+            var newy = ystep * CGFloat(i) + 2
+            let cx = CGFloat(0.2)
+            if c > 0 {
+                if c > 50 {
+                    c = 50
+                }
+                if i == ycount {
+                    newy = newy - CGFloat(c)*cx - 7
+                }
+                context.addEllipse(in: CGRect(x: CGFloat(2), y: newy, width: 5 + CGFloat(c)*cx, height: 5 + CGFloat(c)*cx))
+                needDraw = true
+            }
+            
+            var cr = rightBoxes[i]
+            if cr > 0 {
+                if cr > 50 {
+                    cr = 50
+                }
+                if i == ycount {
+                    newy = bounds.height - CGFloat(cr)*cx - 7
+                }
+                context.addEllipse(in: CGRect(x: bounds.width - 7 - CGFloat(cr)*cx, y: newy, width: 5 + CGFloat(cr)*cx, height: 5 + CGFloat(cr)*cx))
+                needDraw = true
+            }
+        }
+        
+        for i in 0...xcount {
+            var c = bottomBoxes[i]
+            var newx = xstep * CGFloat(i) + 2
+            let cy = CGFloat(0.2)
+            if c > 0 {
+                if c > 50 {
+                    c = 50
+                }
+                if i == xcount {
+                    newx = newx - CGFloat(c)*cy - 7
+                }
+                context.addEllipse(in: CGRect(x: newx, y: CGFloat(2), width: 5 + CGFloat(c)*cy, height: 5 + CGFloat(c)*cy))
+                needDraw = true
+            }
+            
+            var cr = topBoxes[i]
+            if cr > 0 {
+                if cr > 50 {
+                    cr = 50
+                }
+                if i == xcount {
+                    newx = newx - CGFloat(cr)*cy - 7
+                }
+                context.addEllipse(in: CGRect(x: newx, y: bounds.height - 7 - CGFloat(cr)*cy, width: 5 + CGFloat(cr)*cy, height: 5 + CGFloat(cr)*cy))
+                needDraw = true
+            }
+        }
+        if needDraw {
+            context.drawPath(using: .fillStroke)
+        }
+    }
+    
     override func draw(_ dirtyRect: NSRect) {
         if( self.element == nil) {
             return
         }
-//        let st = NSDate()
-        
         // Check if apperance changed
+        
         
         let nDarkMode = isDarkMode()
         if self.scene?.darkMode != nDarkMode {
@@ -1133,6 +1286,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
+            context.saveGState()
             // Draw background
             if nDarkMode {
                 context.setFillColor(backgroundDark)
@@ -1142,8 +1296,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             
             context.setShouldAntialias(true)
-
-            context.fill(dirtyRect)
+            
+            context.fill(self.bounds)
+//            context.stroke(dirtyRect, width: 1)
             
             scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
             
@@ -1153,162 +1308,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             )
             
             context.saveGState()
-            scene.layout(bounds, sceneDirty)
             
+            scene.layout(bounds, sceneDirty)
             scene.draw(context: context)
             context.restoreGState()
             
-            let ycount = 20
-            let xcount = 30
+            drawRulers(scene, context)
             
-            var leftBoxes: [Int] = []
-            var rightBoxes: [Int] = []
-            
-            var topBoxes: [Int] = []
-            var bottomBoxes: [Int] = []
-            
-            for _ in 0...ycount {
-                leftBoxes.append(0)
-                rightBoxes.append(0)
-            }
-            
-            for _ in 0...xcount {
-                topBoxes.append(0)
-                bottomBoxes.append(0)
-            }
-            
-            
-            let ystep = bounds.height / CGFloat(ycount)
-            let xstep = bounds.width / CGFloat(xcount)
-            
-            for d in scene.drawables.values {
-                let db = d.getBounds()
-                
-                let x = db.minX + scene.offset.x
-                let y = db.minY + scene.offset.y
-                
-                if x + db.width < 0 {
-                    var ypos = Int((y + db.height/2) / ystep)
-                    if ypos > ycount {
-                        ypos = ycount
-                    }
-                    if ypos < 0 {
-                        ypos = 0
-                    }
-                    leftBoxes[ypos] += 1
-                }
-                if x > bounds.width {
-                    var ypos = Int((y + db.height/2) / ystep)
-                    if ypos > ycount {
-                        ypos = ycount
-                    }
-                    if ypos < 0 {
-                        ypos = 0
-                    }
-                    rightBoxes[ypos] += 1
-                }
-                if y + db.height < 0 {
-                    var xpos = Int((x + db.width/2) / xstep)
-                    if xpos >= xcount {
-                        xpos = xcount
-                        rightBoxes[0] += 1
-                    }
-                    else if xpos <= 0 {
-                        xpos = 0
-                        leftBoxes[0] += 1
-                    }
-                    else {
-                        bottomBoxes[xpos] +=  1
-                    }
-                }
-                if y > bounds.height {
-                    var xpos = Int((x + db.width/2) / xstep)
-                    if xpos >= xcount {
-                        xpos = xcount
-                        rightBoxes[ycount] += 1
-                    }
-                    else if xpos <= 0 {
-                        xpos = 0
-                        leftBoxes[ycount] += 1
-                    }
-                    else {
-                        topBoxes[xpos] += 1
-                    }
-                }
-            }
-            
-            if self.isDarkMode() {
-                context.setStrokeColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
-                context.setFillColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
-                context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
-            }
-            else {
-                context.setStrokeColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-                context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-                context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
-            }
-            
-            
-            
-            var needDraw = false
-            for i in 0...ycount {
-                var c = leftBoxes[i]
-                var newy = ystep * CGFloat(i) + 2
-                let cx = CGFloat(0.2)
-                if c > 0 {
-                    if c > 50 {
-                        c = 50
-                    }
-                    if i == ycount {
-                        newy = newy - CGFloat(c)*cx - 7
-                    }
-                    context.addEllipse(in: CGRect(x: CGFloat(2), y: newy, width: 5 + CGFloat(c)*cx, height: 5 + CGFloat(c)*cx))
-                    needDraw = true
-                }
-                
-                var cr = rightBoxes[i]
-                if cr > 0 {
-                    if cr > 50 {
-                        cr = 50
-                    }
-                    if i == ycount {
-                        newy = bounds.height - CGFloat(cr)*cx - 7
-                    }
-                    context.addEllipse(in: CGRect(x: bounds.width - 7 - CGFloat(cr)*cx, y: newy, width: 5 + CGFloat(cr)*cx, height: 5 + CGFloat(cr)*cx))
-                    needDraw = true
-                }
-            }
-            
-            for i in 0...xcount {
-                var c = bottomBoxes[i]
-                var newx = xstep * CGFloat(i) + 2
-                let cy = CGFloat(0.2)
-                if c > 0 {
-                    if c > 50 {
-                        c = 50
-                    }
-                    if i == xcount {
-                        newx = newx - CGFloat(c)*cy - 7
-                    }
-                    context.addEllipse(in: CGRect(x: newx, y: CGFloat(2), width: 5 + CGFloat(c)*cy, height: 5 + CGFloat(c)*cy))
-                    needDraw = true
-                }
-                
-                var cr = topBoxes[i]
-                if cr > 0 {
-                    if cr > 50 {
-                        cr = 50
-                    }
-                    if i == xcount {
-                        newx = newx - CGFloat(cr)*cy - 7
-                    }
-                    context.addEllipse(in: CGRect(x: newx, y: bounds.height - 7 - CGFloat(cr)*cy, width: 5 + CGFloat(cr)*cy, height: 5 + CGFloat(cr)*cy))
-                    needDraw = true
-                }
-            }
-            if needDraw {
-                context.drawPath(using: .fillStroke)
-            }
+            context.restoreGState()
         }
     }
     

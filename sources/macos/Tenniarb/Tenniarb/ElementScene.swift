@@ -146,7 +146,7 @@ open class DrawableContainer: ItemDrawable {
         }
     }
     open override func layout( _ bounds: CGRect, _ dirty: CGRect ) {
-        let selfBounds = self.getBounds()
+        let selfBounds = self.getSelectorBounds()
 
         if let ch = self.children {
             for c in ch {
@@ -768,15 +768,19 @@ open class DrawableScene: DrawableContainer {
         if newPositions.count == 0 {
             return getBounds()
         }
-        updateActiveElements(self.activeElements, newPositions)
         
         let pos = newPositions.first!.value
-        
         var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
+        for ad in activeDrawables {
+            result = result.union(ad.getBounds().insetBy(dx: -40, dy: -40))
+        }
+        
+        updateActiveElements(self.activeElements, newPositions)
         
         for ad in activeDrawables {
-            result = result.union(ad.getBounds())
+            result = result.union(ad.getBounds().insetBy(dx: -40, dy: -40))
         }
+        
         
         for (item, pos)  in newPositions {
             result = result.union(CGRect(origin: pos, size: CGSize(width:1, height:1)))
@@ -784,14 +788,20 @@ open class DrawableScene: DrawableContainer {
             if let box = drawables[item] as? RoundBox {
                 result = result.union(box.getBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
+                // Since bounds could be different
+                result = result.union(box.getBounds())
             }
             if let box = drawables[item] as? CircleBox {
                 result = result.union(box.getBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
+                // Since bounds could be different
+                result = result.union(box.getBounds())
             }
             if let box = drawables[item] as? EmptyBox {
                 result = result.union(box.getBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
+                // Since bounds could be different
+                result = result.union(box.getBounds())
             }
             if let box = drawables[item] as? DrawableLine {
                 result = result.union(box.getBounds())
@@ -806,8 +816,8 @@ open class DrawableScene: DrawableContainer {
                             result = result.union(lnkDr.getBounds())
                             
                             if let src = data.source, let dst = data.target {
-                                let sourceRect = drawables[src]?.getBounds()
-                                let targetRect = drawables[dst]?.getBounds()
+                                let sourceRect = drawables[src]?.getSelectorBounds()
+                                let targetRect = drawables[dst]?.getSelectorBounds()
                                 
                                 if let sr = sourceRect, let tr = targetRect {
                                     lnkDr.updateLayout(source: sr, target: tr)
@@ -819,6 +829,7 @@ open class DrawableScene: DrawableContainer {
                 }
             }
         }
+        
         return result
     }
     
@@ -903,7 +914,6 @@ open class DrawableScene: DrawableContainer {
         let style = self.sceneStyle.defaultItemStyle.copy()
         let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
         
-        
         // parse uses with list of styles.
         
         if let styleNode = e.properties.get( "use-style" ),
@@ -975,12 +985,12 @@ open class DrawableScene: DrawableContainer {
         let bodyBounds = bodyTextBox?.getBounds()
         
         var width = max(20, textBounds.width, bodyBounds != nil ? bodyBounds!.width : 0)
-        if let styleWidth = style.width, styleWidth != -1 {
+        if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
         }
         
         var height = max(20, textBounds.height)
-        if let styleHeight = style.height, styleHeight != -1 {
+        if let styleHeight = style.height, styleHeight >= 1 {
             height = styleHeight//max(height, styleHeight)
         } else if bodyBounds != nil {
             height += bodyBounds!.height // TODO: Put spacing into some configurable area
@@ -1096,6 +1106,29 @@ open class DrawableScene: DrawableContainer {
     
 }
 
+func getShadowRect(_ bounds: CGRect, _ style:DrawableStyle) -> CGRect {
+    var result = CGRect(origin: CGPoint(x: bounds.origin.x, y: bounds.origin.y), size: CGSize(width: bounds.width, height: bounds.height))
+    // In case we had shadow, we need to extend bounds a bit.
+    if let shadow = style.shadow {
+        if shadow.width < 0 {
+            result.origin.x += shadow.width - style.shadowBlur * 2
+            result.size.width += -1 * shadow.width + style.shadowBlur * 4
+        }
+        if shadow.width > 0 {
+            result.size.width += shadow.width + style.shadowBlur * 2
+        }
+        
+        if shadow.height < 0 {
+            result.origin.y += shadow.height - style.shadowBlur * 2
+            result.size.height += -1 * shadow.height + style.shadowBlur * 4
+        }
+        if shadow.height > 0 {
+            result.size.height += shadow.height + style.shadowBlur * 2
+        }
+    }
+    return result
+}
+
 public class RoundBox: DrawableContainer {
     var style: DrawableItemStyle
     
@@ -1191,6 +1224,8 @@ public class RoundBox: DrawableContainer {
             context.drawPath(using: .stroke)
         }
         
+//        context.stroke(getBounds(), width: 1)
+        
         context.restoreGState()
     }
     
@@ -1202,7 +1237,7 @@ public class RoundBox: DrawableContainer {
                 c.layout( selfBounds, dirty )
             }
         }
-        let newBounds = self.bounds
+        let newBounds = self.getBounds()
         visible = dirty.intersects(newBounds)
     }
     
@@ -1211,27 +1246,7 @@ public class RoundBox: DrawableContainer {
     }
     
     public override func getBounds() -> CGRect {
-        var result = self.bounds.applying(CGAffineTransform.identity)
-        // In case we had shadow, we need to extend bounds a bit.
-        if let shadow = self.style.shadow {
-            if shadow.width < 0 {
-                result.origin.x += shadow.width - self.style.shadowBlur
-                result.size.width += -1 * shadow.width + self.style.shadowBlur * 2
-            }
-            if shadow.width > 0 {
-                result.size.width += shadow.width + self.style.shadowBlur
-            }
-            
-            if shadow.height < 0 {
-                result.origin.y += shadow.height - self.style.shadowBlur
-                result.size.height += -1 * shadow.height + self.style.shadowBlur * 2
-            }
-            if shadow.height > 0 {
-                result.size.height += shadow.height + self.style.shadowBlur
-            }
-            
-        }
-        return result
+       return getShadowRect(self.bounds, self.style)
     }
 }
 
@@ -1845,7 +1860,7 @@ public class SelectorBox: Drawable {
         return true
     }
     public func getSelectorBounds() -> CGRect {
-        return self.getBounds()
+        return getBounds()
     }
     public func getBounds() -> CGRect {
         return CGRect(origin: self.pos, size: self.size)
@@ -2037,7 +2052,7 @@ public class CircleBox: DrawableContainer {
                 c.layout( selfBounds, dirty )
             }
         }
-        let newBounds = self.bounds
+        let newBounds = self.getBounds()
         visible = dirty.intersects(newBounds)
     }
     
@@ -2046,26 +2061,6 @@ public class CircleBox: DrawableContainer {
     }
         
     public override func getBounds() -> CGRect {
-        var result = self.bounds.applying(CGAffineTransform.identity)
-        // In case we had shadow, we need to extend bounds a bit.
-        if let shadow = self.style.shadow {
-            if shadow.width < 0 {
-                result.origin.x += shadow.width
-                result.size.width += -1 * shadow.width + self.style.shadowBlur
-            }
-            if shadow.width > 0 {
-                result.size.width += shadow.width + self.style.shadowBlur
-            }
-            
-            if shadow.height < 0 {
-                result.origin.y += shadow.height
-                result.size.height += -1 * shadow.height + self.style.shadowBlur
-            }
-            if shadow.height > 0 {
-                result.size.height += shadow.height + self.style.shadowBlur
-            }
-            
-        }
-        return result
+       return getShadowRect(self.bounds, self.style)
     }
 }
