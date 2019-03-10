@@ -25,6 +25,8 @@ public protocol Drawable {
     /// Layout children
     func layout( _ bounds: CGRect, _ dirty: CGRect )
     
+    func getSelectorBounds() -> CGRect
+    
     /// Return bounds of element
     func getBounds() -> CGRect
     
@@ -1047,11 +1049,11 @@ open class DrawableScene: DrawableContainer {
                 var sr: CGRect = CGRect(x: 0, y: 0, width: 5, height: 5)
                 var tr: CGRect = CGRect(x: 0, y: 5, width: 5, height: 5)
                 
-                if let src = data.source, let srr = (drawables[src]?.getBounds()) {
+                if let src = data.source, let srr = (drawables[src]?.getSelectorBounds()) {
                     self.addLink( src, e )
                     sr = srr
                 }
-                if let dst = data.target, let trr = drawables[dst]?.getBounds() {
+                if let dst = data.target, let trr = drawables[dst]?.getSelectorBounds() {
                     self.addLink( dst, e )
                     tr = trr
                 }
@@ -1392,6 +1394,9 @@ public class TextBox: Drawable {
         self.point = CGPoint(x: frame.origin.x + px + padding.x / 2 , y: frame.origin.y + py + padding.y / 2)
     }
     
+    public func getSelectorBounds() -> CGRect {
+        return frame
+    }
     public func getBounds() -> CGRect {
         return frame
     }
@@ -1629,8 +1634,8 @@ public class DrawableLine: ItemDrawable {
         context.setFillColor(self.style.color)
         
         let drawArrowTarget = self.style.display == "arrow" || self.style.display == "arrows"
-        let drawArroySoure = self.style.display == "arrow-source" || self.style.display == "arrows"
-        let drawArrow = drawArrowTarget || drawArroySoure
+        let drawArrowSoure = self.style.display == "arrow-source" || self.style.display == "arrows"
+        let drawArrow = drawArrowTarget || drawArrowSoure
         
         updateLineStyle(context, style)
         
@@ -1649,7 +1654,7 @@ public class DrawableLine: ItemDrawable {
             // Move from pt to new location
             fromPtLast = CGPoint(x: ep.x + point.x, y: ep.y + point.y)
             
-            if drawArroySoure {
+            if drawArrowSoure {
                 // We need to move source point a bit less
                 let px = fromPtLast.x - fromPt.x
                 let py = fromPtLast.y - fromPt.y
@@ -1839,6 +1844,9 @@ public class SelectorBox: Drawable {
     public func isVisible() -> Bool {
         return true
     }
+    public func getSelectorBounds() -> CGRect {
+        return self.getBounds()
+    }
     public func getBounds() -> CGRect {
         return CGRect(origin: self.pos, size: self.size)
     }
@@ -1947,6 +1955,9 @@ public class ImageBox: Drawable {
     
     public func isVisible() -> Bool {
         return true
+    }
+    public func getSelectorBounds() -> CGRect {
+        return self.getBounds()
     }
     public func getBounds() -> CGRect {
         return CGRect(origin: self.pos, size: self.size)
