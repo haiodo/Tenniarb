@@ -126,7 +126,7 @@ fileprivate func calculateValue(_ node: TennNode?,
                     evaluated[tk] = e
                 }
             }
-            
+            return result            
         }
         // Change original node to be updated one.
     case .Expression:
@@ -197,7 +197,7 @@ fileprivate func calculateValue(_ node: TennNode?,
         self.parentCtx = parentCtx
         super.init()
         
-        self.hasExpressions = self.updateContext();
+        _ = self.updateContext();
     }
     
     
@@ -205,11 +205,59 @@ fileprivate func calculateValue(_ node: TennNode?,
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
         
-        let result = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated)
-                
+        self.hasExpressions = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated)
+        
+        // Check if we had value changes
+        let result = checkChanges(self.itemObject, newItems)
+        
         self.itemObject = newItems
         self.evaluated = newEvaluated
         
+        return result
+    }
+    
+    func checkChanges(_ oldItems: [String:Any], _ newItems: [String: Any]) -> Bool {
+        var result = false
+        if oldItems.count != newItems.count {
+            result = true
+        }
+        else {
+            // We had same values count
+            for (k, v) in oldItems {
+                if let nk = newItems[k] {
+                    if let nkv = nk as? JSValue, let nv = v as? JSValue {
+                        let nkvs = nkv.toString()
+                        let nvs = nv.toString()
+                        if nkvs != nvs {
+                            result = true
+                            break
+                        }
+                    }
+                    if let nkv = nk as? String, let nv = v as? String {
+                        if nkv != nv {
+                            result = true
+                            break
+                        }
+                    }
+                    if let nkv = nk as? Int, let nv = v as? Int {
+                        if nkv != nv {
+                            result = true
+                            break
+                        }
+                    }
+                    if let nkv = nk as? Float, let nv = v as? Float {
+                        if nkv != nv {
+                            result = true
+                            break
+                        }
+                    }
+                } else {
+                    // Not pressent, we had changed.
+                    result = true
+                    break
+                }
+            }
+        }
         return result
     }
     
@@ -281,12 +329,27 @@ public class ElementContext: NSObject, ElementProtocol {
         }
     }
     
+    fileprivate func reCalculate(_ withExprs: inout [ItemContext]) {
+        var iterations = 100
+        //TODO: Add more smart cycle detection logic
+        while iterations > 0 && withExprs.count > 0 {
+            var changed: [ItemContext] = []
+            for ic in withExprs {
+                if ic.updateContext() {
+                    changed.append(ic)
+                }
+            }
+            withExprs = changed
+            iterations -= 1;
+        }
+    }
+    
     init(_ context: ExecutionContext, _ element: Element ) {
         self.element = element
         self.context = context
         super.init()
         
-        self.hasExpressions = self.updateContext()
+        self.updateContext()
         var withExprs: [ItemContext] = []
         for itm in element.items {
             let ic = ItemContext(self, itm)
@@ -297,12 +360,10 @@ public class ElementContext: NSObject, ElementProtocol {
             self.namedItems[itm.name] = ic
         }
         if self.hasExpressions {
-            _ = self.updateContext()
+            self.updateContext()
         }
         
-        for ic in withExprs {
-            _ = ic.updateContext()
-        }
+        reCalculate(&withExprs)
     }
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
@@ -315,16 +376,14 @@ public class ElementContext: NSObject, ElementProtocol {
         return processBlock(node ?? self.element.properties.node, self.jsContext, &newItems, &newEvaluated)
     }
     
-    func updateContext(_ node:TennNode? = nil )-> Bool {
+    func updateContext(_ node:TennNode? = nil ) {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
 
-        let result = updateGetContext(node, newItems: &newItems, newEvaluated: &newEvaluated)
+        self.hasExpressions = updateGetContext(node, newItems: &newItems, newEvaluated: &newEvaluated)
         
         self.elementObject = newItems
         self.evaluated = newEvaluated
-        
-        return result
     }
     func processEvent(_ event: ModelEvent ) {
         var needUpdateNamed = false
@@ -357,11 +416,9 @@ public class ElementContext: NSObject, ElementProtocol {
             }
         }
         
-        for ci in self.itemsMap.values {
-            if ci.hasExpressions {
-                _ = ci.updateContext()
-            }
-        }
+        var withExprs: [ItemContext] = []
+        withExprs.append(contentsOf: self.itemsMap.values)
+        reCalculate(&withExprs)
     }
 }
 

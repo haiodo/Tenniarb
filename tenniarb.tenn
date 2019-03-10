@@ -3300,7 +3300,7 @@ element "Documentation" {
         }
     }
     element "Executions" {
-        colorByDay ${
+        define ${
     function colorByDay() {
         if (days > 3) {
             return 'red'
@@ -3368,7 +3368,7 @@ element "Documentation" {
             line-style dashed
         }
         item "Iterare over all items with kind=='task'" {
-            pos -1559.982666015625 1178.132080078125
+            pos -1559.982666015625 1179.132080078125
             display no-fill
             height 200
             body ""
