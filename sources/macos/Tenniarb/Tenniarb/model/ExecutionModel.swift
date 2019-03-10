@@ -179,7 +179,7 @@ fileprivate func calculateValue(_ node: TennNode?,
 }
 
 @objc public class ItemContext: NSObject, ItemProtocol {
-    private var item: DiagramItem
+    var item: DiagramItem
     var itemObject: [String:Any] = [:] // To be used from references
     var hasExpressions: Bool = false
     var parentCtx: ElementContext
@@ -329,19 +329,28 @@ public class ElementContext: NSObject, ElementProtocol {
         }
     }
     
-    fileprivate func reCalculate(_ withExprs: inout [ItemContext]) {
+    fileprivate func reCalculate(_ withExprs: [ItemContext]) -> [DiagramItem] {
         var iterations = 100
+        var changes: [DiagramItem:Bool] = [:]
+        var toCheck: [ItemContext] = []
+        toCheck.append(contentsOf: withExprs)
         //TODO: Add more smart cycle detection logic
-        while iterations > 0 && withExprs.count > 0 {
-            var changed: [ItemContext] = []
-            for ic in withExprs {
-                if ic.updateContext() {
-                    changed.append(ic)
+        while iterations > 0 && toCheck.count > 0 {
+            var changed = 0
+            for ic in toCheck {
+                if ic.hasExpressions && ic.updateContext() {
+                    changes[ic.item] = true
+                    changed += 1
                 }
             }
-            withExprs = changed
+            if changed == 0 {
+                break
+            }
             iterations -= 1;
         }
+        var result: [DiagramItem] = []
+        result.append(contentsOf: changes.keys)
+        return result
     }
     
     init(_ context: ExecutionContext, _ element: Element ) {
@@ -363,7 +372,7 @@ public class ElementContext: NSObject, ElementProtocol {
             self.updateContext()
         }
         
-        reCalculate(&withExprs)
+        _ = reCalculate(withExprs)
     }
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
@@ -417,8 +426,15 @@ public class ElementContext: NSObject, ElementProtocol {
         }
         
         var withExprs: [ItemContext] = []
-        withExprs.append(contentsOf: self.itemsMap.values)
-        reCalculate(&withExprs)
+        withExprs.append(contentsOf: self.itemsMap.values.filter({ e in e.hasExpressions }))
+        
+        let changed = reCalculate(withExprs)
+        for c in changed {
+            if event.items.index(forKey: c) == nil {
+                Swift.debugPrint("Adding to redraw: " + c.name)
+                event.items[c] = .Update
+            }
+        }
     }
 }
 
