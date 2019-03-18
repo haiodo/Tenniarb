@@ -129,6 +129,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var clickCounter = 0
     
+    var viewController: ViewController?
+    
     var ox: CGFloat {
         set {
             if let active = element {
@@ -173,6 +175,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     var prevTouch: NSTouch? = nil
+    
+    var popupView: NSView?
     
     @objc override func touchesBegan(with event: NSEvent) {
         let wloc = event.locationInWindow
@@ -222,6 +226,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
         if touches.count == 2 && self.bounds.contains(vp) {
+            hidePopup()
             if prevTouch == nil {
                 prevTouch = touches.first
                 return
@@ -265,8 +270,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    func onLoad() {
+    func onLoad(_ vc: ViewController ) {
         styleManager = StyleManager(scene: self)
+        self.viewController = vc
     }
     
     func notifyChanges(_ evt: ModelEvent) {
@@ -293,6 +299,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         else {
             scheduleRedraw()
         }
+        showPopup()
     }
     
     public func setModel( store: ElementModelStore ) {
@@ -310,6 +317,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         if self.element == elementModel {
             return
+        }
+        if self.popupView != nil {
+            self.popupView?.removeFromSuperview()
+            self.popupView = nil
         }
         // Discard any editing during switch
         self.commitTitleEditing(nil)
@@ -386,10 +397,192 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
+    
+    @objc func fontMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("font-size", value)
+    }
+    
+    func changeItemProps( _ property: String, _ value: String) {
+        guard let itm = self.activeItems.first, activeItems.count == 1 else {
+            return
+        }
+        
+        let newItemProps = itm.toTennAsProps(.BlockExpr)
+        var changed = false
+        if let itmProp = newItemProps.getNamedElement(property) {
+            // Property exists, we need to replace value
+            if itmProp.getIdent(1) != value {
+                itmProp.children?.removeAll()
+                itmProp.add(TennNode.newIdent(property), TennNode.newIdent(value))
+                changed = true
+            }
+        }
+        else {
+            // Just add new property
+            newItemProps.add(TennNode.newCommand(property, TennNode.newIdent(value)))
+            changed = true
+        }
+        
+        if changed {
+            self.store?.setProperties(self.element!, itm, newItemProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+        }
+    }
+    
+    @objc func displayMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("display", value)
+    }
+    
+    func createMenu( selector: Selector, items: String...) -> NSMenu {
+        let menu = NSMenu()
+        for i in items {
+            menu.addItem(NSMenuItem(title: i, action: selector, keyEquivalent: ""))
+        }
+        return menu
+    }
+    
+    @objc func segmentAction(_ sender: NSSegmentedCell) {
+        guard let act = self.activeItems.first, activeItems.count == 1, let popup = self.popupView else {
+            return
+        }
+        
+        if act.kind == .Item {
+            switch sender.selectedSegment {
+            case 0:
+                self.addNewItem()
+                return
+            case 3:
+                self.removeItem()
+            default:
+                break
+            }
+        } else {
+            switch sender.selectedSegment {            
+            case 1:
+                self.removeItem()
+            default:
+                break
+            }
+        }
+        // If there is menu defined
+        var menuOrigin = popup.frame.origin
+        for i in 0..<sender.selectedSegment {
+            menuOrigin.x += sender.width(forSegment: i)
+        }
+        menuOrigin.y -= 2
+        if let menu = sender.menu(forSegment: sender.selectedSegment) {
+            menu.popUp(positioning: nil, at: menuOrigin, in: self)
+        }
+    }
+    
+    fileprivate func showPopup() {
+        if self.popupView != nil {
+            self.popupView?.removeFromSuperview()
+            self.popupView = nil
+        }
+        
+        if self.mode == .Editing {
+            return
+        }
+        
+        guard let act = self.activeItems.first, activeItems.count == 1, let dr = scene?.drawables[act] else {
+            return
+        }
+        let bounds = dr.getSelectorBounds()
+        
+        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height + 10)
+        
+        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 30))
+        
+        segments.segmentCount = 10
+        
+        segments.action = #selector(segmentAction(_:))
+
+        var segm = -1
+        if act.kind == .Item {
+            segm += 1
+            segments.setImage(NSImage(named: NSImage.addTemplateName) , forSegment: segm)
+            segments.setWidth(32, forSegment: segm)
+        
+            segm += 1
+            segments.setImage(NSImage(named: NSImage.fontPanelName), forSegment: segm)
+            segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
+            segments.setMenu(
+                createMenu(selector: #selector(fontMenuAction(_:)),
+                           items: "8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"),
+                forSegment: segm)
+            if #available(OSX 10.13, *) {
+                segments.setShowsMenuIndicator(true, forSegment: segm)
+                segments.setWidth(48, forSegment: segm)
+            } else {
+                segments.setWidth(32, forSegment: segm)
+            }
+        }
+        
+        segm += 1
+        segments.setLabel("Display", forSegment: segm)
+        if act.kind == .Item {
+            segments.setMenu(
+                createMenu(selector: #selector(displayMenuAction(_:)),
+                           items: "rect", "no-fill", "circle", "stack" ),
+                forSegment: segm)
+            segments.setWidth(60, forSegment: segm)
+        } else {
+            segments.setMenu(
+                createMenu(selector: #selector(displayMenuAction(_:)),
+                           items: "arrow", "arrows", "arrow-source"),
+                forSegment: segm)
+            segments.setWidth(60, forSegment: segm)
+        }
+        if #available(OSX 10.13, *) {
+            segments.setShowsMenuIndicator(true, forSegment: segm)
+            segments.setWidth(68, forSegment: segm)
+        }
+        
+        segm += 1
+        segments.setImage(NSImage(named: NSImage.removeTemplateName) , forSegment: segm)
+        segments.setWidth(32, forSegment: segm)
+        
+        segments.segmentCount = segm + 1
+        
+        segments.trackingMode = .momentary
+        
+        segments.sizeToFit()
+        let popup  = NSView(frame: NSRect(origin: origin, size: segments.bounds.size))
+        self.popupView = popup
+        popup.addSubview(segments)
+        
+        let shadow = NSShadow()
+        shadow.shadowOffset = NSSize(width: -5, height: -5)
+        shadow.shadowBlurRadius = 7
+        shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
+        popup.shadow = shadow
+        
+        segments.acceptsTouchEvents = false
+        
+        popup.acceptsTouchEvents = false
+        
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            if self.popupView != nil && self.popupView == popup {
+                self.addSubview(popup)
+            }
+        })
+    }
+    
+    fileprivate func hidePopup() {
+        if self.popupView != nil {
+            self.popupView?.removeFromSuperview()
+            self.popupView = nil
+        }
+    }
+    
     public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false, force: Bool = false ) {
         if items.count == 0 && self.activeItems.count == 0 {
             return
         }
+        hidePopup()
         // We need to update pivot point
         if let act = items.first {
             var offset = CGFloat(100.0)
@@ -401,6 +594,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         if !force && activeItems.elementsEqual(items) {
             // No need to select same list
+            showPopup()
             return
         }
         activeItems = items
@@ -411,6 +605,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         // We need to rebuild scene as active element is changed
         scene?.updateActiveElements(items)
+        
+        
+        showPopup()
         
         if immideateDraw {
             needsDisplay = true
@@ -461,7 +658,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return bounds
     }
     
-    fileprivate func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
+    func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
         let bodyStyle = style.copy()
         bodyStyle.fontSize -= 2 // Make a bit smaller for body
         var textValue = ""
@@ -523,6 +720,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         guard let de = scene?.drawables[active] else {
             return
         }
+        
+        hidePopup()
 
         if editBox != nil {
             editBox!.removeFromSuperview()
@@ -734,7 +933,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    
     override func keyDown(with event: NSEvent) {
         if self.mode == .Editing {
             return
@@ -853,6 +1051,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.scene?.selectionBox = nil
             self.scene?.updateActiveElements(self.activeItems)
             scheduleRedraw()
+            showPopup()
             return
         }
         
@@ -876,6 +1075,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             if let down = self.downDate {
                 if now.timeIntervalSince(down).isLess(than: 0.2) {
+                    showPopup()
                     return
                 }
             }
@@ -904,6 +1104,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.dragElements.removeAll()
         
         self.mode = .Normal
+        showPopup()
     }
     
     var downDate:Date? = nil
@@ -1029,7 +1230,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
             return
         }
-        
+       
+        self.hidePopup()
         self.updateMousePosition(event)
         
         if self.mode == .Selection {
@@ -1407,6 +1609,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             else if action == #selector(duplicateItem) {
                 return !self.activeItems.isEmpty
+            }
+            else if action == #selector(fontMenuAction) {
+                return true
             }
         }
         return true

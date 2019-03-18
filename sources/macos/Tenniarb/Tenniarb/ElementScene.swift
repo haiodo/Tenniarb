@@ -215,7 +215,7 @@ let styleBlack = CGColor.black // CGColor(red: 0.147, green: 0.222, blue: 0.162,
 let styleWhite = CGColor.white //CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
 
 class DrawableStyle {
-    var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+    var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 1)
     var textColorValue: CGColor?
     
     
@@ -297,12 +297,12 @@ class DrawableStyle {
         // Reset to default values
         
         if self.darkMode {
-            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
+            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 1)
             self.textColorValue = nil
             self.borderColor = CGColor.white
         }
         else {
-            self.color = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 0.7)
+            self.color = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 1)
             self.textColorValue = nil
             self.borderColor = CGColor.black
         }
@@ -411,7 +411,7 @@ class DrawableStyle {
     func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
         case PersistenceStyleKind.Color.name:
-            if let color = getColor(child.getChild(1), evaluations, alpha: 0.7) {
+            if let color = getColor(child.getChild(1), evaluations, alpha: 1) {
                 self.color = color
             }
         case PersistenceStyleKind.TextColor.name:
@@ -499,12 +499,12 @@ class DrawableLineStyle: DrawableStyle {
         
         
         if self.darkMode {
-            self.color = CGColor(red: 1, green:1, blue:1, alpha: 0.7)
+            self.color = CGColor(red: 1, green:1, blue:1, alpha: 1)
             self.textColorValue = nil
             self.borderColor = CGColor.white
         }
         else {
-            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 0.7)
+            self.color = CGColor(red: 0.2, green:0.2, blue:0.2, alpha: 1)
             self.textColorValue = nil
             self.borderColor = CGColor.black
         }
@@ -1661,6 +1661,7 @@ public class DrawableLine: ItemDrawable {
         let toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
         
         let aPath = CGMutablePath()
+        
         
         aPath.move(to: fromPt)
         

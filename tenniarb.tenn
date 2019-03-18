@@ -37,7 +37,7 @@ element "Tenniarb" {
         styles {
             item {
                 font-size 12
-                shadow -5 -5 5
+                shadow 5 5 7
             }
             feature {
                 color "blue"
@@ -242,7 +242,7 @@ element "Tenniarb" {
         }
         link "MVP" "Model"
         item "Model" {
-            pos -388.0 188.0
+            pos -397.0 187.0
             color green
         }
         link "Model" "Cross diagram links" {
@@ -546,13 +546,6 @@ Engine" "expr dsl"
             use-style feature
         }
         link "Movements" "Display rulers"
-        item "Model" {
-            pos -345.0 250.0
-            color green
-        }
-        link "MVP" "Model" {
-            target-index 1
-        }
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0
@@ -681,7 +674,7 @@ Engine" "expr dsl"
             color green
         }
         item "Payments" {
-            pos -55.94921875 251.0
+            pos -234.94921875 220.0
             color yellow
         }
         item "StoreKit" {
@@ -1125,20 +1118,21 @@ element "Documentation" {
                 title ""
             }
             item "Normal" {
-                pos -368.0 87.0
+                pos -368.0 96.0
                 display text
                 title ""
             }
             link "Normal" "display none" {
                 source-index 6
                 target-index 6
+                pos 3.0 -27.0
             }
             item "none or display solid" {
                 pos -74.19610595703125 84.51776123046875
                 display text
             }
             item "display none" {
-                pos -101.0 88.0
+                pos -105.0 99.0
                 display text
                 title ""
             }
@@ -3391,10 +3385,10 @@ element "Documentation" {
             color $(colorByDay())
         }
         item "Named variables access" {
-            pos -1812.982666015625 1181.132080078125
+            pos -1807.982666015625 1181.132080078125
             display no-fill
             height 200
-            body ""
+            body " "
             line-style dashed
         }
         item "Iterare over all items with kind=='task'" {
@@ -3404,6 +3398,45 @@ element "Documentation" {
             body ""
             line-style dashed
         }
+        item "color" {
+            pos -1953.882568359375 1423.042236328125
+            body 90
+            title ""
+        }
+        item "Color + 10" {
+            pos -1874.765380859375 1533.042236328125
+            color ${[items.color.body+10, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color + 20" {
+            pos -1774.765380859375 1533.042236328125
+            color ${[items.color.body+20, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color + 40" {
+            pos -1672.765380859375 1533.042236328125
+            color ${[items.color.body+40, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color + 60" {
+            pos -1567.765380859375 1533.042236328125
+            color ${[items.color.body+60, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color + 80" {
+            pos -1461.765380859375 1534.042236328125
+            color ${[items.color.body+80, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color + 100" {
+            pos -1358.765380859375 1535.042236328125
+            color ${[items.color.body+100, (items.color.body*2) % 255, 0]}
+            body ${color}
+        }
+        item "Color value" {
+            pos -2027.234130859375 1498.042236328125
+        }
+        link "color" "Color value"
         element "Color on pos" {
             define ${
     function my_color() {

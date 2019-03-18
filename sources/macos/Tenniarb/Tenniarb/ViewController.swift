@@ -47,8 +47,6 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             self.scene.addNewItem()
         case 1:
             self.scene.removeItem()
-        case 2:
-            self.showElementSource()
         default: break;
         }
     }
@@ -79,7 +77,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         
         self.textViewDelegate = TextPropertiesDelegate(self, self.textView!)
         
-        scene.onLoad()
+        scene.onLoad(self)
         
         if elementStore != nil && self.scene != nil {
             setElementModel(elementStore: elementStore!)
@@ -237,25 +235,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             break
         }
     }
-    
-    private func showElementSource() {
-        let popupController = self.storyboard?.instantiateController(withIdentifier: "SourcePopup") as! SourcePopoverViewController
-        
-        let popover = NSPopover()
-        popover.contentViewController = popupController
-        popover.contentSize = popupController.view.frame.size
-        
-        popover.behavior = .transient
-        popover.animates = false
-        
-        
-        if let active = self.selectedElement {
-            popupController.setElement(element: active)
-        }
-        
-        self.present(popupController, asPopoverRelativeTo: self.toolsSegmentedControl.bounds, of: self.toolsSegmentedControl, preferredEdge: .maxY, behavior: .transient)
-        
-    }
+
     public func handleAddElement() {
         let newEl = Element(name: "Unnamed element: " + String(itemIndex))
         self.itemIndex += 1
