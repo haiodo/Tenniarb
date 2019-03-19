@@ -1023,6 +1023,16 @@ open class DrawableScene: DrawableContainer {
             case "text":
                 box = buildEmptyRect(bounds, style, e, textBox, elementDrawable)
             case "no-fill":
+                var tc = style.textColorValue
+                if tc == nil {
+                    tc = CGColor.black
+                }
+                textBox.textColor = tc!
+                textBox.updateTextAttributes()
+                if let body = bodyTextBox {
+                    body.textColor = tc!
+                    body.updateTextAttributes()
+                }
                 box = buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: false)
             case "stack":
                 box = buildRoundRect(bounds, style, e, textBox, elementDrawable, stack: 3)
@@ -1327,7 +1337,7 @@ public enum TextPosition {
 public class TextBox: Drawable {
     var size: CGSize = CGSize(width: 0, height:0)
     var point: CGPoint = CGPoint(x:0, y:0)
-    var textColor: NSColor
+    var textColor: CGColor
     var textFontAttributes: [NSAttributedString.Key:Any]
     let text:String
     var font: NSFont
@@ -1336,6 +1346,14 @@ public class TextBox: Drawable {
     var frame: CGRect
     var padding: CGPoint
     
+    func updateTextAttributes() {
+        self.textFontAttributes = [
+            NSAttributedString.Key.foregroundColor: NSColor(cgColor: self.textColor)!,
+            NSAttributedString.Key.paragraphStyle: self.textStyle,
+            NSAttributedString.Key.font: self.font
+        ]
+    }
+    
     public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
         self.font = NSFont.systemFont(ofSize: fontSize)
         self.text = text
@@ -1343,13 +1361,13 @@ public class TextBox: Drawable {
         self.frame = bounds
         self.padding = padding
 
-        self.textColor = NSColor(cgColor: textColor)!
+        self.textColor = textColor
         
         self.textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         textStyle.alignment = NSTextAlignment.center
         
         self.textFontAttributes = [
-            NSAttributedString.Key.foregroundColor: self.textColor,
+            NSAttributedString.Key.foregroundColor: NSColor(cgColor: self.textColor)!,
             NSAttributedString.Key.paragraphStyle: self.textStyle,
             NSAttributedString.Key.font: self.font
         ]

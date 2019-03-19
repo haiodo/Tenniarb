@@ -403,6 +403,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         changeItemProps("font-size", value)
     }
     
+    @objc func colorMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("color", value)
+    }
+    
     func changeItemProps( _ property: String, _ value: String) {
         guard let itm = self.activeItems.first, activeItems.count == 1 else {
             return
@@ -429,12 +434,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    let itemDisplayVariants = ["■ rect", "□ no-fill", "● circle", "❐ stack"]
+    let linkDisplayVariants = ["→ arrow", "↔︎ arrows", "← arrow-source"]
+    
     @objc func displayMenuAction( _ sender: NSMenuItem ) {
-        let value = sender.title
-        changeItemProps("display", value)
+        let val = sender.title
+        let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
+        changeItemProps("display", String(value))
     }
     
-    func createMenu( selector: Selector, items: String...) -> NSMenu {
+    func createMenu( selector: Selector, items: [String]) -> NSMenu {
         let menu = NSMenu()
         for i in items {
             menu.addItem(NSMenuItem(title: i, action: selector, keyEquivalent: ""))
@@ -491,64 +500,80 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         let bounds = dr.getSelectorBounds()
         
-        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height + 10)
+        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height)
         
-        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 30))
-        
+        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        segments.segmentStyle = .texturedRounded
         segments.segmentCount = 10
         
-        segments.action = #selector(segmentAction(_:))
+//        segments.action = #selector(segmentAction(_:))
 
         var segm = -1
         if act.kind == .Item {
-            segm += 1
-            segments.setImage(NSImage(named: NSImage.addTemplateName) , forSegment: segm)
-            segments.setWidth(32, forSegment: segm)
+//            segm += 1
+//            segments.setImage(NSImage(named: NSImage.addTemplateName) , forSegment: segm)
+//            segments.setWidth(32, forSegment: segm)
         
             segm += 1
-            segments.setImage(NSImage(named: NSImage.fontPanelName), forSegment: segm)
-            segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
+            segments.setLabel("Ƭ", forSegment: segm)
             segments.setMenu(
                 createMenu(selector: #selector(fontMenuAction(_:)),
-                           items: "8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"),
+                           items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"]),
                 forSegment: segm)
             if #available(OSX 10.13, *) {
                 segments.setShowsMenuIndicator(true, forSegment: segm)
-                segments.setWidth(48, forSegment: segm)
-            } else {
-                segments.setWidth(32, forSegment: segm)
+                
             }
+            segments.setWidth(36, forSegment: segm)
         }
         
         segm += 1
-        segments.setLabel("Display", forSegment: segm)
+//        segments.setLabel("Display", forSegment: segm)
+        segments.setImage(NSImage(named: NSImage.flowViewTemplateName), forSegment: segm)
+        segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
         if act.kind == .Item {
             segments.setMenu(
                 createMenu(selector: #selector(displayMenuAction(_:)),
-                           items: "rect", "no-fill", "circle", "stack" ),
+                           items: itemDisplayVariants ),
                 forSegment: segm)
-            segments.setWidth(60, forSegment: segm)
         } else {
             segments.setMenu(
                 createMenu(selector: #selector(displayMenuAction(_:)),
-                           items: "arrow", "arrows", "arrow-source"),
+                           items: linkDisplayVariants),
                 forSegment: segm)
-            segments.setWidth(60, forSegment: segm)
         }
         if #available(OSX 10.13, *) {
             segments.setShowsMenuIndicator(true, forSegment: segm)
-            segments.setWidth(68, forSegment: segm)
+        }
+        segments.setWidth(36, forSegment: segm)
+        
+        if act.kind == .Item {
+            segm += 1
+            segments.setLabel("✎", forSegment: segm)
+            segments.setMenu(
+                createMenu(selector: #selector(colorMenuAction(_:)),
+                           items: ["red", "green", "blue", "yellow", "orange", "brown", "blue", "lightblue", "purple"]),
+                forSegment: segm)
+            if #available(OSX 10.13, *) {
+                segments.setShowsMenuIndicator(true, forSegment: segm)
+                
+            }
+            segments.setWidth(36, forSegment: segm)
         }
         
-        segm += 1
-        segments.setImage(NSImage(named: NSImage.removeTemplateName) , forSegment: segm)
-        segments.setWidth(32, forSegment: segm)
+//        segm += 1
+//        segments.setImage(NSImage(named: NSImage.removeTemplateName) , forSegment: segm)
+//        segments.setWidth(32, forSegment: segm)
+        
+        
         
         segments.segmentCount = segm + 1
         
+        
+        
         segments.trackingMode = .momentary
         
-        segments.sizeToFit()
+//        segments.sizeToFit()
         let popup  = NSView(frame: NSRect(origin: origin, size: segments.bounds.size))
         self.popupView = popup
         popup.addSubview(segments)
