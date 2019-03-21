@@ -434,7 +434,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     let itemDisplayVariants = ["■ rect", "□ no-fill", "● circle", "❐ stack", "≣ text"]
     let linkDisplayVariants = ["– solid","→ arrow", "↔︎ arrows", "← arrow-source"]
-    let lineStyleDisplayVariants = ["– solid", "⤍ dashed", "­­­⤑ dotted"]
+    let lineStyleDisplayVariants = ["– solid", "⤍ dashed", "⤑ dotted"]
     
     @objc func displayMenuAction( _ sender: NSMenuItem ) {
         let val = sender.title

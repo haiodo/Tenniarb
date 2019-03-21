@@ -342,6 +342,7 @@ element "Tenniarb" {
         link "Persistence" "Parsing"
         link "Model" "Outline" {
             pos 26.0 23.0
+            line-width 1
         }
         item "Calculation
 Engine" {
@@ -629,60 +630,6 @@ Engine" "expr dsl"
             display arrows
         }
     }
-    element "Execution model" {
-        item "Element" {
-            pos -438.0 114.0
-        }
-        item "DiagramItem" {
-            pos -392.67578125 32.0
-        }
-        link "Element" "DiagramItem"
-        item "properties" {
-            pos -333.486328125 150.0
-            font-size 10
-        }
-        link "Element" "properties"
-        item "properties" {
-            pos -286.38671875 -23.0
-            font-size 10
-        }
-        link "DiagramItem" "properties" {
-            target-index 1
-        }
-        item "JSContext" {
-            pos -31.701171875 135.0
-        }
-    }
-    element "bug" {
-        styles {
-            item {
-                font-size 12
-                shadow -5 -5 5
-            }
-            feature {
-                color "blue"
-            }
-            done {
-                color "lightgreen"
-            }
-            required {
-                color "yellow"
-            }
-        }
-        item "Diagram \nPosition widget" {
-            pos -45.650390625 85.0
-            color green
-        }
-        item "Payments" {
-            pos -234.94921875 220.0
-            color yellow
-        }
-        item "StoreKit" {
-            pos 100.8046875 134.0
-            color yellow
-        }
-        link "Payments" "StoreKit"
-    }
 }
 element "Documentation" {
     element "Basic steps" {
@@ -901,7 +848,7 @@ element "Documentation" {
                 }
             }
             item "Blue" {
-                pos -1089.0 58.0
+                pos -1094.0 50.0
                 display circle
                 width 200
                 height 200
@@ -915,6 +862,8 @@ element "Documentation" {
                 height 200
                 color $([0,255,0, 150])
                 shadow -5 -5 5
+                line-width 15
+                line-style dotted
             }
             item "Yellow" {
                 pos -956.0 61.0
@@ -936,7 +885,7 @@ element "Documentation" {
                 pos -668.0 110.0
             }
             item "Hi I'm text" {
-                pos -975.0 385.0
+                pos -978.0 381.0
                 display text
                 text-color Red
                 shadow -5 -5 4
@@ -955,7 +904,7 @@ element "Documentation" {
                 color yellow
             }
             link "Hi I'm text" "display=text" {
-                pos -133.0 33.0
+                pos -129.0 29.0
                 display arrow
                 line-width 5
             }
@@ -990,26 +939,22 @@ element "Documentation" {
                 shadow -5 -5 7
             }
             item "shadow -15 -15 15" {
-                pos -837.0 8.0
+                pos -840.0 2.0
                 use-style annotation
+                line-width 1
             }
             link "Yellow" "shadow -15 -15 15"
             item "Untitled 1" {
                 pos -1127.79296875 416.98828125
                 display text
             }
-            element "Unnamed element: 0" {
-                item "Untitled 1" {
-                    pos -426.2265625 82.95703125
-                }
-                item "Untitled 2" {
-                    pos -172.98828125 195.07421875
-                }
-                link "Untitled 1" "Untitled 2" {
-                    pos -112.0 54.0
-                    line-width 5
-                    display arrows
-                }
+            item "Box" {
+                pos -654.0 403.0
+                width 200
+                display no-fill
+                line-width 2
+                body "Body text"
+                line-style dashed
             }
         }
         element "Links" {
@@ -1149,6 +1094,7 @@ element "Documentation" {
                 source-index 6
                 target-index 6
                 pos 3.0 -27.0
+                line-width 2
             }
             item "none or display solid" {
                 pos -74.19610595703125 84.51776123046875
@@ -3345,6 +3291,496 @@ element "Documentation" {
                 body ""
             }
         }
+        element "Circles" {
+            styles {
+                line {
+                    display arrow
+                }
+                item {
+                    color red-500
+                }
+            }
+            item "Untitled 1" {
+                pos -351.5 -20.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -367.5 74.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -292.5 95.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -276.5 4.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -205.5 18.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -146.5 3.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -55.5 -31.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 19.5 -56.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -204.5 74.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -129.5 49.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -54.5 24.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 20.5 -0.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -223.5 126.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -148.5 101.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -36.5 99.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 1.5 51.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -352.5 -74.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -189.5 -74.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -190.5 -130.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -40.5 -180.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -261.5 -144.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -336.5 -169.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 34.5 -205.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -208.5 -22.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -133.5 -47.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -114.5 -99.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -277.5 -53.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -39.5 -124.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -58.5 -72.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 16.5 -97.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 35.5 -149.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -115.5 -155.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -115.5 209.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 47.5 209.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 46.5 153.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 196.5 103.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -24.5 139.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -99.5 114.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 271.5 78.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 28.5 261.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 103.5 236.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 122.5 184.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos -40.5 230.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 197.5 159.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 178.5 211.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 253.5 186.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 272.5 134.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 121.5 128.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 84.5 -14.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 247.5 -14.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 246.5 -70.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 396.5 -120.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 175.5 -84.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 100.5 -109.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 471.5 -145.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 228.5 37.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 303.5 12.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 322.5 -39.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 159.5 6.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 397.5 -64.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 378.5 -12.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 453.5 -37.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 472.5 -89.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 321.5 -95.28515625
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 50.5 114.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 125.5 89.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 38.5 74.71484375
+                title ""
+                display circle
+            }
+            item "Untitled 1" {
+                pos 113.5 49.71484375
+                title ""
+                display circle
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 16
+                target-index 26
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 21
+                target-index 20
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 21
+                target-index 26
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 16
+                target-index 20
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 20
+                target-index 17
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 26
+                target-index 17
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 26
+                target-index 23
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 23
+                target-index 24
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 17
+                target-index 5
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 5
+                target-index 6
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 24
+                target-index 10
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 6
+                target-index 15
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 10
+                target-index 11
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 15
+                target-index 58
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 11
+                target-index 58
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 58
+                target-index 49
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 49
+                target-index 56
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 56
+                target-index 55
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 55
+                target-index 58
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 11
+                target-index 67
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 67
+                target-index 58
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 67
+                target-index 15
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 15
+                target-index 10
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 10
+                target-index 5
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 5
+                target-index 23
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 49
+                target-index 48
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 48
+                target-index 11
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 11
+                target-index 6
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 6
+                target-index 24
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 24
+                target-index 17
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 17
+                target-index 23
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 20
+                target-index 26
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 16
+                target-index 17
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 21
+                target-index 23
+            }
+            link "Untitled 1" "Untitled 1" {
+                source-index 67
+                target-index 55
+            }
+        }
     }
     element "Executions" {
         define ${
@@ -3423,7 +3859,7 @@ element "Documentation" {
         }
         item "color" {
             pos -1953.882568359375 1423.042236328125
-            body 90
+            body 94
             title ""
         }
         item "Color + 10" {

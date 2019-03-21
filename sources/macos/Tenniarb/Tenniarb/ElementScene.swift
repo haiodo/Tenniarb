@@ -248,7 +248,7 @@ class DrawableStyle {
     var shadowBlur: CGFloat = CGFloat(4)
     var shadowColor: CGColor? = nil
     
-    var lineWidth = CGFloat(1)
+    var lineWidth = CGFloat(0)
     
     /**
      One of values:
@@ -522,6 +522,8 @@ class DrawableLineStyle: DrawableStyle {
         }
         
         self.lineStyle = nil
+        
+        self.lineWidth = CGFloat(1)
     }
 }
 
@@ -534,6 +536,7 @@ class DrawableItemStyle: DrawableStyle {
         let result = super.copy() as! DrawableItemStyle
         return result
     }
+    
     override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken : JSValue]) {
         switch cmdName {
         case PersistenceStyleKind.Title.name:
@@ -895,9 +898,6 @@ open class DrawableScene: DrawableContainer {
     fileprivate func buildCircle(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
         let rectBox = CircleBox( bounds: bounds,
                                 style, fill: fill)
-        if self.activeElements.contains(e) {
-            rectBox.lineWidth = 1
-        }
         rectBox.append(textBox)
         
         rectBox.item = e
@@ -1263,7 +1263,7 @@ public class RoundBox: DrawableContainer {
     }
     
     public override func getBounds() -> CGRect {
-       return getShadowRect(self.bounds, self.style)
+       return getShadowRect(self.bounds, self.style).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
     }
 }
 
@@ -1814,7 +1814,7 @@ public class DrawableLine: ItemDrawable {
             }
         }
         
-        return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0))
+        return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
     }
     public override func update() {
     }
@@ -2013,8 +2013,6 @@ public class ImageBox: Drawable {
 public class CircleBox: DrawableContainer {
     var style: DrawableStyle
     var fill: Bool = true
-    static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
-    var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
     
     var path: CGMutablePath?
     
@@ -2054,7 +2052,8 @@ public class CircleBox: DrawableContainer {
     func doDraw(_ context:CGContext, at point: CGPoint) {
         context.saveGState()
         
-        context.setLineWidth( self.lineWidth )
+        context.setLineWidth(style.lineWidth)
+        updateLineStyle(context, style)
         context.setStrokeColor( self.style.borderColor )
         context.setFillColor( self.style.color )
         
