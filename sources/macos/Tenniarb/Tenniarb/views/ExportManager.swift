@@ -108,6 +108,11 @@ class ExportManager: NSObject, NSMenuDelegate {
         let scene = DrawableScene(self.element!, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext)
         scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
+        
+        context?.setFillColor(CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1))
+    
+        context?.setShouldAntialias(true)
+        context?.fill(bounds)
 
         scene.draw(context: context!)
         context?.restoreGState()

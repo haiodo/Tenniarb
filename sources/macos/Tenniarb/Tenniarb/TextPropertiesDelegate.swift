@@ -182,7 +182,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         if self.ourUpdate {
             self.ourUpdate = false
         } else {
-            self.setTextValue(self.element, self.diagramItem)
+            DispatchQueue.main.async(execute: {
+                self.setTextValue(self.element, self.diagramItem)
+            })
         }
     }
         
@@ -207,15 +209,15 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         self.view.textColor = NSColor.textColor
         self.view.scrollToBeginningOfDocument(self)
         
-        highlight()
-        updateAnnotations()
-        
         // We need to register self to listen for model changes to update annotations
         if !self.controller.elementStore!.onUpdate.contains(where: {$0 is TextPropertiesDelegate}) {
             self.controller.elementStore?.onUpdate.append(self)
         }
-                
         
+        DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
+            self.highlight()
+            self.updateAnnotations()
+        })
     }
 
     func textDidChange(_ notification: Notification) {
@@ -235,12 +237,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         
         let lexer = TennLexer((view.textStorage?.string)!)
         
-        var darkMode = false
-        if #available(OSX 10.14, *) {
-            if NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark {
-                darkMode = true
-            }
-        }
+        let darkMode = PreferenceConstants.preference.darkMode
         
         let symbolColor = !darkMode ? symbolColorWhite: symbolColorDark
         let stringColor = !darkMode ? stringColorWhite: stringColorDark
@@ -292,7 +289,9 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
     }
     
     func textDidEndEditing(_ notification: Notification) {
-        highlight()
+        DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
+            self.highlight()
+        })
     }
     
     public func sheduleUpdate( ) {

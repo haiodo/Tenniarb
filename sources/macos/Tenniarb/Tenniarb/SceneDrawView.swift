@@ -91,10 +91,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
 
 
 class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
-//    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
-    let background = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
-    let backgroundDark = CGColor(red: 0x2e/255, green: 0x2e/255, blue: 0x2e/255, alpha:1)
-    
+//    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)    
     var store: ElementModelStore?
     
     var element: Element?
@@ -177,6 +174,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var prevTouch: NSTouch? = nil
     
     var popupView: NSView?
+    var popupItem: DiagramItem?
     
     @objc override func touchesBegan(with event: NSEvent) {
         let wloc = event.locationInWindow
@@ -273,7 +271,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     func onLoad(_ vc: ViewController ) {
         styleManager = StyleManager(scene: self)
         self.viewController = vc
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)        
     }
+    
+    @objc func defaultsChanged(_ notif: NSNotification) {
+        if self.element != nil {
+            buildScene()
+            scheduleRedraw()
+        }
+    }
+
     
     func notifyChanges(_ evt: ModelEvent) {
         
@@ -372,7 +380,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             oldEditMode = oldScene.editingMode
         }
         
-        let darkMode = isDarkMode()
+        let darkMode = PreferenceConstants.preference.isDiagramDarkMode()
         
         let scene = DrawableScene(self.element!, darkMode: darkMode, executionContext: self.store!.executionContext)
         
@@ -499,7 +507,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         let bounds = dr.getSelectorBounds()
-        
         let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height)
         
         let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
@@ -587,7 +594,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.acceptsTouchEvents = false
         
         popup.acceptsTouchEvents = false
-        
+        popupItem = act
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
             if self.popupView != nil && self.popupView == popup {
@@ -600,6 +607,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.popupView != nil {
             self.popupView?.removeFromSuperview()
             self.popupView = nil
+            self.popupItem = nil
+            self.window?.becomeFirstResponder()
         }
     }
     
@@ -1101,6 +1110,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let down = self.downDate {
                 if now.timeIntervalSince(down).isLess(than: 0.2) {
                     showPopup()
+                    self.mode = .Normal
                     return
                 }
             }
@@ -1331,20 +1341,31 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         self.updateMousePosition(event)
+        
+        // Process hide of popup if we go out to much
+        
+        if let act = self.popupItem, let dr = scene?.drawables[act] {
+            let bounds = dr.getSelectorBounds()
+            let popupBounds = self.popupView!.bounds
+            var rect = bounds.insetBy(dx: -30, dy: -50)
+            
+            rect.size = CGSize(width: max(rect.width, popupBounds.width), height: rect.height)
+            
+            let p = CGPoint(x: self.x, y: self.y)
+
+            if !rect.contains(p) {
+                hidePopup()
+            }
+            
+            return
+        }
     }
     
     override func viewWillStartLiveResize() {
         if self.mode == .Editing {
             commitTitleEditing(nil)
         }
-    }
-    
-    fileprivate func isDarkMode() -> Bool {
-        if #available(OSX 10.14, *) {
-            return NSAppearance.current.name == NSAppearance.Name.darkAqua  || NSAppearance.current.name == NSAppearance.Name.vibrantDark
-        }
-        return false
-    }
+    }        
     
     fileprivate func drawRulers(_ scene: DrawableScene, _ context: CGContext) {
         let ycount = 20
@@ -1426,7 +1447,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         
-        if self.isDarkMode() {
+        if PreferenceConstants.preference.darkMode {
             context.setStrokeColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
             context.setFillColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
             context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
@@ -1507,7 +1528,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         // Check if apperance changed
         
         
-        let nDarkMode = isDarkMode()
+        let nDarkMode = PreferenceConstants.preference.isDiagramDarkMode()
         if self.scene?.darkMode != nDarkMode {
             buildScene()
         }
@@ -1515,15 +1536,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             context.saveGState()
             // Draw background
-            if nDarkMode {
-                context.setFillColor(backgroundDark)
-            }
-            else {
-                context.setFillColor(background)
-            }
+            context.setFillColor( PreferenceConstants.preference.background)
             
             context.setShouldAntialias(true)
-            
             context.fill(self.bounds)
 //            context.stroke(dirtyRect, width: 1)
             

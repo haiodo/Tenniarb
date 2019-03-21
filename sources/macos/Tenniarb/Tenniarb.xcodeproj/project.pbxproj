@@ -17,6 +17,7 @@
 		0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F71ED838D900ECB516 /* Assets.xcassets */; };
 		0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C2375F91ED838D900ECB516 /* Main.storyboard */; };
 		0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */; };
+		0C3160422242ADC00021E4D9 /* PreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3160412242ADC00021E4D9 /* PreferencesController.swift */; };
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A36BD2085B41100CC646C /* SearchBoxController.swift */; };
 		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
@@ -83,6 +84,7 @@
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
 		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
+		0C3160412242ADC00021E4D9 /* PreferencesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreferencesController.swift; path = views/PreferencesController.swift; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		0C3A36BD2085B41100CC646C /* SearchBoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchBoxController.swift; path = views/SearchBoxController.swift; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				0C67960F210E215E00AEED63 /* SyncViewController.swift */,
 				0CF8902A2133BDD400F1A6EE /* StyleManager.swift */,
 				0C83E507219085BD00AD0317 /* ResourcesViewController.swift */,
+				0C3160412242ADC00021E4D9 /* PreferencesController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -430,6 +433,7 @@
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,
 				0C4F1472200889CC009C9EC5 /* ColorNames.swift in Sources */,
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
+				0C3160422242ADC00021E4D9 /* PreferencesController.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,

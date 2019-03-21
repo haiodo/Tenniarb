@@ -88,8 +88,20 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         let exportMenu = exportMgr.createMenu()
         
         exportSegments.setMenu(exportMenu, forSegment: 0)
+        
+        DistributedNotificationCenter.default().addObserver(self, selector: #selector(darkModeChanged), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
     }
     
+    @objc func darkModeChanged(_ notif: NSNotification) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            self.scene.scheduleRedraw()
+            if let delegate = self.textViewDelegate {
+                delegate.highlight()
+            }
+        })
+    }
+    
+        
     @IBAction func elementToolbarAction(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
         case 0: // This is add of new element.
@@ -388,7 +400,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         self.updateWindowTitle()
         
         var firstChild:Element? = nil
-        
+                
+//        worldTree.autosaveName = elementStore.model.modelName
+//        worldTree.autosaveExpandedItems = true
         for e in elementStore.model.elements {
             if firstChild == nil {
                 firstChild = e

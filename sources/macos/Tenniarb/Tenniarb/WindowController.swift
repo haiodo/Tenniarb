@@ -15,7 +15,10 @@ class WindowController: NSWindowController {
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
         return displayName
     }
-    override func windowDidLoad() {                
+    override func windowDidLoad() {
+        // Init default preferences
+        PreferenceConstants.preference.checkDefaults()
+        
         let ver = ProcessInfo.processInfo.operatingSystemVersion
         
         if ver.majorVersion == 10 && ver.minorVersion == 12 {    

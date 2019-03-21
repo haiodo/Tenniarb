@@ -214,6 +214,14 @@ func updateLineStyle(_ context: CGContext, _ style: DrawableStyle ) {
 let styleBlack = CGColor.black // CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
 let styleWhite = CGColor.white //CGColor(red: 0.847, green: 0.822, blue: 0.862, alpha: 1.0)
 
+func getTextColorBasedOn(_ color: CGColor ) -> CGColor {
+    if let components = color.components, color.numberOfComponents >= 3 {
+        let sum = round( ( (components[0] * 255 * 299) + (components[1] * 255 * 587) + (components[2] * 255 * 114)) / 1000);
+        return (sum > 128) ? styleBlack : styleWhite;
+    }
+    return styleBlack
+}
+
 class DrawableStyle {
     var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 1)
     var textColorValue: CGColor?
@@ -224,11 +232,7 @@ class DrawableStyle {
             if textColorValue != nil {
                 return textColorValue!
             }
-            if let components = self.color.components, self.color.numberOfComponents >= 3 {
-                let sum = round( ( (components[0] * 255 * 299) + (components[1] * 255 * 587) + (components[2] * 255 * 114)) / 1000);
-                return (sum > 128) ? styleBlack : styleWhite;
-            }
-            return styleBlack
+           return getTextColorBasedOn(self.color)
         }
     }
     
@@ -1025,7 +1029,7 @@ open class DrawableScene: DrawableContainer {
             case "no-fill":
                 var tc = style.textColorValue
                 if tc == nil {
-                    tc = CGColor.black
+                    tc = getTextColorBasedOn(PreferenceConstants.preference.background)
                 }
                 textBox.textColor = tc!
                 textBox.updateTextAttributes()
