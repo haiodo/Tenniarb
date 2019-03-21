@@ -929,13 +929,14 @@ element "Documentation" {
                 width 200
                 height 200
                 display no-fill
+                line-width 2
                 body "Body text"
             }
             item "Normal item" {
                 pos -668.0 110.0
             }
             item "Hi I'm text" {
-                pos -948.0 303.0
+                pos -975.0 385.0
                 display text
                 text-color Red
                 shadow -5 -5 4
@@ -946,13 +947,17 @@ element "Documentation" {
             }
             link "Green" "display=circle" {
                 display arrow
+                line-width 2
             }
             item "display=text" {
-                pos -1187.439453125 303.0
+                pos -1234.439453125 321.0
                 use-style annotation
+                color yellow
             }
             link "Hi I'm text" "display=text" {
+                pos -133.0 33.0
                 display arrow
+                line-width 5
             }
             item "display=no-fill" {
                 pos -441.0 261.0
@@ -967,6 +972,7 @@ element "Documentation" {
             item "Box" {
                 pos -1259.0 173.0
                 display no-fill
+                line-width 1
                 body %{
     display no-fill
     line-style dashed
@@ -991,6 +997,19 @@ element "Documentation" {
             item "Untitled 1" {
                 pos -1127.79296875 416.98828125
                 display text
+            }
+            element "Unnamed element: 0" {
+                item "Untitled 1" {
+                    pos -426.2265625 82.95703125
+                }
+                item "Untitled 2" {
+                    pos -172.98828125 195.07421875
+                }
+                link "Untitled 1" "Untitled 2" {
+                    pos -112.0 54.0
+                    line-width 5
+                    display arrows
+                }
             }
         }
         element "Links" {

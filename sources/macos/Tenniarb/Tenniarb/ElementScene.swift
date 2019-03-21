@@ -209,6 +209,7 @@ func updateLineStyle(_ context: CGContext, _ style: DrawableStyle ) {
         default:break;
         }
     }
+    context.setLineWidth(style.lineWidth)
 }
 
 let styleBlack = CGColor.black // CGColor(red: 0.147, green: 0.222, blue: 0.162, alpha: 1.0)
@@ -225,7 +226,6 @@ func getTextColorBasedOn(_ color: CGColor ) -> CGColor {
 class DrawableStyle {
     var color: CGColor = CGColor(red: 1.0, green:1.0, blue:1.0, alpha: 1)
     var textColorValue: CGColor?
-    
     
     var textColor: CGColor {
         get {
@@ -247,6 +247,8 @@ class DrawableStyle {
     var shadow: CGSize? = nil
     var shadowBlur: CGFloat = CGFloat(4)
     var shadowColor: CGColor? = nil
+    
+    var lineWidth = CGFloat(1)
     
     /**
      One of values:
@@ -292,6 +294,7 @@ class DrawableStyle {
         result.shadow = self.shadow
         result.shadowColor = self.shadowColor
         result.shadowBlur = self.shadowBlur
+        result.lineWidth = self.lineWidth
         
         return result
     }
@@ -321,6 +324,7 @@ class DrawableStyle {
         self.shadow = nil
         self.shadowColor = nil
         self.shadowBlur = 5
+        self.lineWidth = CGFloat(0.3)
     }
 
     
@@ -455,6 +459,10 @@ class DrawableStyle {
         case PersistenceStyleKind.LineStyle.name:
             if let value = child.getIdent(1) {
                 self.lineStyle = value
+            }
+        case PersistenceStyleKind.LineWidth.name:
+            if let value = getFloat(child.getChild(1), evaluations) {
+                self.lineWidth = CGFloat(value)
             }
         case PersistenceStyleKind.Shadow.name:
             if let xOffset = child.getFloat(1), let yOffset = child.getFloat(2)  {
@@ -875,9 +883,6 @@ open class DrawableScene: DrawableContainer {
         let rectBox = RoundBox( bounds: bounds,
                                 style, fill: fill)
         rectBox.stack = stack
-        if self.activeElements.contains(e) {
-            rectBox.lineWidth = 1
-        }
         rectBox.append(textBox)
         
         rectBox.item = e
@@ -1148,8 +1153,6 @@ public class RoundBox: DrawableContainer {
     
     var radius: CGFloat = 8
     var fill: Bool = true
-    static let DEFAULT_LINE_WIDTH: CGFloat = 0.3
-    var lineWidth: CGFloat = DEFAULT_LINE_WIDTH
     var stack: Int = 0
     var stackStep = CGPoint(x:5, y:5)
     
@@ -1208,7 +1211,7 @@ public class RoundBox: DrawableContainer {
     func doDraw(_ context:CGContext, at point: CGPoint) {
         context.saveGState()
         
-        context.setLineWidth( self.lineWidth )
+        context.setLineWidth( self.style.lineWidth )
         context.setStrokeColor( self.style.borderColor )
         context.setFillColor( self.style.color )
         
@@ -1678,9 +1681,9 @@ public class DrawableLine: ItemDrawable {
         
         var fillType: CGPathDrawingMode = .stroke
         
-        let fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
+        var fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
         var fromPtLast = fromPt
-        let toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
+        var toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
         
         let aPath = CGMutablePath()
         
@@ -1699,8 +1702,9 @@ public class DrawableLine: ItemDrawable {
                 
                 let plen = sqrt( px * px + py * py )
                 if plen > 10 {
-                    let ltoPt = CGPoint( x: fromPt.x + ( px / plen * 10 ), y: fromPt.y + ( py / plen * 10 ) )
+                    let ltoPt = CGPoint( x: fromPt.x + ( (px / plen) * 5 ), y: fromPt.y + ( (py / plen) * 5 ) )
                     aPath.move(to: ltoPt)
+                    fromPt = ltoPt
                 }
             }
             
@@ -1735,8 +1739,9 @@ public class DrawableLine: ItemDrawable {
             let plen = sqrt( px * px + py * py )
             
             if plen > 10 {
-                let ltoPt = CGPoint( x: toPt.x - ( px / plen * 10 ), y: toPt.y - ( py / plen * 10 ) )
+                let ltoPt = CGPoint( x: toPt.x - ( px / plen * 5 ), y: toPt.y - ( py / plen * 5 ) )
                 aPath.addLine(to: ltoPt)
+                toPt = ltoPt
             } else {
                 aPath.addLine(to: toPt)
             }

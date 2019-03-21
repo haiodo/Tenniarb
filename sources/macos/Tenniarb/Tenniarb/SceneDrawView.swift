@@ -406,16 +406,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
     
-    @objc func fontMenuAction( _ sender: NSMenuItem ) {
-        let value = sender.title
-        changeItemProps("font-size", value)
-    }
-    
-    @objc func colorMenuAction( _ sender: NSMenuItem ) {
-        let value = sender.title
-        changeItemProps("color", value)
-    }
-    
     func changeItemProps( _ property: String, _ value: String) {
         guard let itm = self.activeItems.first, activeItems.count == 1 else {
             return
@@ -442,8 +432,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    let itemDisplayVariants = ["■ rect", "□ no-fill", "● circle", "❐ stack"]
-    let linkDisplayVariants = ["→ arrow", "↔︎ arrows", "← arrow-source"]
+    let itemDisplayVariants = ["■ rect", "□ no-fill", "● circle", "❐ stack", "≣ text"]
+    let linkDisplayVariants = ["– solid","→ arrow", "↔︎ arrows", "← arrow-source"]
+    let lineStyleDisplayVariants = ["– solid", "⤍ dashed", "­­­⤑ dotted"]
     
     @objc func displayMenuAction( _ sender: NSMenuItem ) {
         let val = sender.title
@@ -457,6 +448,25 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(NSMenuItem(title: i, action: selector, keyEquivalent: ""))
         }
         return menu
+    }
+    @objc func fontMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("font-size", value)
+    }
+    @objc func lineWidthAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("line-width", value)
+    }
+    
+    @objc func colorMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("color", value)
+    }
+    
+    @objc func lineStyleMenuAction( _ sender: NSMenuItem ) {
+        let val = sender.title
+        let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
+        changeItemProps("line-style", String(value))
     }
     
     @objc func segmentAction(_ sender: NSSegmentedCell) {
@@ -517,10 +527,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         var segm = -1
         if act.kind == .Item {
-//            segm += 1
-//            segments.setImage(NSImage(named: NSImage.addTemplateName) , forSegment: segm)
-//            segments.setWidth(32, forSegment: segm)
-        
             segm += 1
             segments.setLabel("Ƭ", forSegment: segm)
             segments.setMenu(
@@ -568,15 +574,32 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             segments.setWidth(36, forSegment: segm)
         }
         
-//        segm += 1
-//        segments.setImage(NSImage(named: NSImage.removeTemplateName) , forSegment: segm)
-//        segments.setWidth(32, forSegment: segm)
+        // Border style
+        segm += 1
+        segments.setLabel("⊞", forSegment: segm)
+        segments.setMenu(
+            createMenu(selector: #selector(lineStyleMenuAction(_:)),
+                       items: lineStyleDisplayVariants),
+            forSegment: segm)
+        if #available(OSX 10.13, *) {
+            segments.setShowsMenuIndicator(true, forSegment: segm)
+            
+        }
+        segments.setWidth(36, forSegment: segm)
         
-        
+        segm += 1
+        segments.setLabel("〰", forSegment: segm)
+        segments.setMenu(
+            createMenu(selector: #selector(lineWidthAction(_:)),
+                       items: ["0.3", "0.5", "1", "1.5", "2", "5"]),
+            forSegment: segm)
+        if #available(OSX 10.13, *) {
+            segments.setShowsMenuIndicator(true, forSegment: segm)
+            
+        }
+        segments.setWidth(36, forSegment: segm)
         
         segments.segmentCount = segm + 1
-        
-        
         
         segments.trackingMode = .momentary
         
