@@ -993,12 +993,12 @@ open class DrawableScene: DrawableContainer {
         let textBounds = textBox.getBounds()
         let bodyBounds = bodyTextBox?.getBounds()
         
-        var width = max(20, textBounds.width, bodyBounds != nil ? bodyBounds!.width : 0)
+        var width = max(20, textBounds.width + 10, bodyBounds != nil ? bodyBounds!.width : 0)
         if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
         }
         
-        var height = max(20, textBounds.height)
+        var height = max(20, textBounds.height + 5)
         if let styleHeight = style.height, styleHeight >= 1 {
             height = styleHeight//max(height, styleHeight)
         } else if bodyBounds != nil {

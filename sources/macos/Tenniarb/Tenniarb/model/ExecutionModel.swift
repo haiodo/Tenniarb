@@ -261,6 +261,24 @@ fileprivate func calculateValue(_ node: TennNode?,
         return result
     }
     
+    func getRelativeItems(source: Bool, target: Bool) -> [Any] {
+        var result: [Any] = []
+        for itm  in self.parentCtx.element.getRelatedItems(self.item, source: source, target: target) {
+            if itm.id == self.item.id || itm.kind != .Link {
+                continue
+            }
+            guard let di = itm as? LinkItem else {
+                continue
+            }
+            if let opposite = (di.source == self.item ? di.target : di.source) {
+                if let ictx = self.parentCtx.itemsMap[opposite] {
+                    result.append(ictx.itemObject)
+                }
+            }
+        }
+        return result
+    }
+    
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
         for (k, _) in self.itemObject {
@@ -293,8 +311,25 @@ fileprivate func calculateValue(_ node: TennNode?,
         self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSCopying & NSObjectProtocol)
         self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSCopying & NSObjectProtocol)
         self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSCopying & NSObjectProtocol)
-        
         newItems["name"] = self.item.name
+        
+        // Edge operations
+        let edges: @convention(block) () -> Any? = { () in
+            return self.getRelativeItems(source: true, target: true)
+        }
+        
+        let inputs: @convention(block) () -> Any? = { () in
+           return self.getRelativeItems(source: false, target: true)
+        }
+        let outputs: @convention(block) () -> Any? = { () in
+            return self.getRelativeItems(source: true, target: false)
+        }
+        
+        self.parentCtx.jsContext.setObject(edges, forKeyedSubscript: "edges" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(inputs, forKeyedSubscript: "inputs" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(outputs, forKeyedSubscript: "outputs" as NSCopying & NSObjectProtocol)
+        
+        
         
         return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
     }

@@ -49,6 +49,13 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
         }
         super.keyDown(with: event)
     }
+    override func mouseDown(with event: NSEvent) {
+        if event.clickCount == 2 {
+            editColumn(0, row: self.selectedRow, with: nil, select: true)
+            return
+        }
+        super.mouseDown(with: event)
+    }
     override func editColumn(_ column: Int, row: Int, with event: NSEvent?, select: Bool) {
         if let evt = event, evt.characters == "\u{0D}" {
             super.editColumn(column, row: row, with: event, select: select)

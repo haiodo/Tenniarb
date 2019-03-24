@@ -37,6 +37,9 @@ public class PopupEditField: NSTextField {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public override func selectAll(_ sender: Any?) {
+    }
+    
     override public func keyDown(with event: NSEvent) {
         if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             shiftKeyDown = true
@@ -307,7 +310,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         else {
             scheduleRedraw()
         }
-        showPopup()
     }
     
     public func setModel( store: ElementModelStore ) {
@@ -651,7 +653,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         if !force && activeItems.elementsEqual(items) {
             // No need to select same list
-            showPopup()
             return
         }
         activeItems = items
@@ -1177,6 +1178,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.commitTitleEditing(nil)
         }
         
+        
         self.mouseDownState = true
                 
         self.dragMap.removeAll()
@@ -1218,6 +1220,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
+        
+        if event.clickCount == 2 && drawables.count == 1 {
+            editTitle(drawables[0].item!, .Name)
+            return
+        }
+        
         if result.count > 0 {
             drawables = result
         }
