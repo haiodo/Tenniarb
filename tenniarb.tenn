@@ -7197,7 +7197,7 @@ Mental Block" "🎧Listen to music"
         link "Nobody is perfect" "Tidy up later"
         item "Don't focus
 on perfection" {
-            pos -159.6964874267578 223.87109375
+            pos -172.6964874267578 234.87109375
             font-size 12
             color blue-500
         }
@@ -7205,7 +7205,7 @@ on perfection" {
 on perfection"
         item "Let's your ideas
 Explode!🧨" {
-            pos -90.69648742675781 292.87109375
+            pos -98.69648742675781 284.87109375
             font-size 12
             color blue-500
         }
@@ -7264,81 +7264,90 @@ Explode!🧨"
     }
     element "Execution basics" {
         item "1" {
-            pos -783.23046875 156.46875
+            pos -1059.23046875 325.46875
             my_value 10
             value ${my_value + outputs().reduce( (a, b) => a + b.value, 0)}
             title "${value}"
             body "${my_value} +"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         item "Untitled 25" {
-            pos -684.45078125 155.46875
+            pos -1001.4508056640625 253.46875
             my_value 10
             value ${my_value + outputs().reduce( (a, b) => a + b.value, 0)}
             title "${value}"
             body "${my_value} +"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "1" "Untitled 25"
         item "Untitled 26" {
-            pos -582.6710815429688 156.46875
+            pos -886.6710815429688 106.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 25" "Untitled 26"
         item "Untitled 29" {
-            pos -519.9226440429687 239.46875
+            pos -519.9226684570312 239.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 26" "Untitled 29"
         item "Untitled 30" {
-            pos -500.6667846679687 125.46875
+            pos -511.6667785644531 96.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 26" "Untitled 30"
         item "Untitled 31" {
-            pos -429.9183471679687 136.46875
+            pos -368.9183349609375 133.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 30" "Untitled 31"
         item "Untitled 32" {
-            pos -436.6624877929687 52.46875
-            my_value 10
+            pos -372.6624755859375 13.46875
+            my_value 100
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 30" "Untitled 32"
         item "Untitled 33" {
-            pos -450.1742065429687 299.46875
+            pos -376.1741943359375 324.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 29" "Untitled 33"
         item "Untitled 34" {
-            pos -435.9183471679687 230.46875
-            my_value 10
+            pos -215.9183349609375 205.46875
+            my_value ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
             body "${my_value} *"
+            color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 29" "Untitled 34"
     }

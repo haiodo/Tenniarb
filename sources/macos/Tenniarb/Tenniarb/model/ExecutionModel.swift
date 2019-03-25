@@ -466,7 +466,6 @@ public class ElementContext: NSObject, ElementProtocol {
         let changed = reCalculate(withExprs)
         for c in changed {
             if event.items.index(forKey: c) == nil {
-                Swift.debugPrint("Adding to redraw: " + c.name)
                 event.items[c] = .Update
             }
         }

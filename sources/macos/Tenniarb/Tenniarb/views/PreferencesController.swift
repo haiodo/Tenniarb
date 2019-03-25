@@ -41,7 +41,6 @@ public class PreferenceConstants {
             isDarkMode = false
         }
         
-        Swift.debugPrint("Dark mode:", isDarkMode)
         return isDarkMode
     }
     func isDiagramDarkMode() -> Bool {

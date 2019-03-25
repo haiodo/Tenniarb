@@ -886,6 +886,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         let offsetx = CGFloat(75)
         let offsety = CGFloat(-25)
+        var processedLinks: [String] = []
         for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
@@ -904,6 +905,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 items.append(newEl)
             }
             else if active.kind == .Link {
+                if processedLinks.contains(active.id.uuidString) {
+                    continue
+                }
+                processedLinks.append(active.id.uuidString)
                 let li = active.clone()
                 links.append(li)
                 items.append(li)
@@ -911,6 +916,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             for itm  in curElement.getRelatedItems(active, source: false) {
                 if itm.kind == .Link {
+                    if processedLinks.contains(active.id.uuidString) {
+                        continue
+                    }
+                    processedLinks.append(active.id.uuidString)
                     let li = itm.clone()
                     links.append(li)
                     items.append(li)
