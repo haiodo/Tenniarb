@@ -398,17 +398,19 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         // Expand all top level elements
         
         self.updateWindowTitle()
-        
-        var firstChild:Element? = nil
                 
-//        worldTree.autosaveName = elementStore.model.modelName
-//        worldTree.autosaveExpandedItems = true
-        for e in elementStore.model.elements {
-            if firstChild == nil {
-                firstChild = e
+        if PreferenceConstants.preference.autoExpand {
+            self.expandItems(elementStore.model.elements, PreferenceConstants.preference.autoExpandLevel)
+        }
+    }
+    
+    func expandItems(_ elements: [Element], _ level: Int) {
+        for e in elements {
+            worldTree.expandItem(e, expandChildren: false)
+            if level > 0 {
+                expandItems(e.elements, level - 1)
             }
-            worldTree.expandItem(e, expandChildren: true)
-        }        
+        }
     }
 
     func notifyChanges(_ evt: ModelEvent) {

@@ -9,12 +9,15 @@
 import Foundation
 import Cocoa
 
-let preferences = "preferences."
-let preferenceAutoExpand = preferences + "structure.auto_expand"
-let preferenceExpandLevel = preferences + "structure.expand_level"
+let preferenceAutoExpand = "preferences.structure.auto_expand"
+let preferenceExpandLevel = "preferences.structure.expand_level"
 
-let preferenceColorsBackground = preferences + "colors.background"
-let preferenceColorsBackgroundDark = preferences + "colors.background_dark"
+let preferenceColorsBackground = "preferences.colors.background"
+let preferenceColorsBackgroundDark = "preferences.colors.background_dark"
+
+
+let preferenceExportRenderBackground = "preferences.export.export_render_background"
+let preferenceExportUseNativeScale = "preferences.structure.export_use_native_scale"
 
 public class PreferenceConstants {
     public let backgroundDefault = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
@@ -98,6 +101,18 @@ public class PreferenceConstants {
         }
     }
     
+    public var autoExpand: Bool {
+        get {
+            return self.defaults.bool(forKey: preferenceAutoExpand)
+        }
+    }
+    
+    public var autoExpandLevel: Int {
+        get {
+            return self.defaults.integer(forKey: preferenceExpandLevel)
+        }
+    }
+    
     init() {
         self.defaults = NSUserDefaultsController.shared.defaults
         
@@ -125,7 +140,10 @@ public class PreferenceConstants {
             preferenceAutoExpand: true,
             preferenceExpandLevel: 2,
             preferenceColorsBackground: NSArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDefault)!),
-            preferenceColorsBackgroundDark: NSArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDarkDefault)!)
+            preferenceColorsBackgroundDark: NSArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDarkDefault)!),
+            
+            preferenceExportRenderBackground: true,
+            preferenceExportUseNativeScale: true,
             ])
         defaults.synchronize()
         initDone = true
@@ -150,13 +168,10 @@ class PreferencesGeneralController: NSViewController {
     override func viewDidAppear() {
         super.viewDidAppear()
     }
-    
-}
-
-class PreferencesExportController: NSViewController {
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        
+    override func keyDown(with event: NSEvent) {
+        if "\u{1B}" == event.characters {
+            self.view.window?.close()
+        }
     }
 }
 
@@ -180,6 +195,9 @@ class PreferencesController: NSTabViewController {
         if "\u{1B}" == event.characters {
             self.view.window?.close()
         }
+    }
+    override func viewDidAppear() {
+        self.view.window?.styleMask = [.docModalWindow, .closable, .titled]
     }
     
     private func setWindowFrame(for viewController: NSViewController) {
