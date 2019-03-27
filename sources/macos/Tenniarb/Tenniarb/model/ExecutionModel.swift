@@ -334,16 +334,40 @@ fileprivate func calculateValue(_ node: TennNode?,
         self.parentCtx.jsContext.setObject(outputs, forKeyedSubscript: "outputs" as NSString)
         
         let byTag: @convention(block) (String) -> Any? = { tagName in
-            return self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).map { e in e.properties }
+            // Make it in right order every time.
+            return self.parentCtx.element.items.map({(e) -> ItemContext? in self.parentCtx.itemsMap[e]}).filter({e in e != nil && e!.properties[tagName] != nil}).map { e in e!.properties }
         }
         
         self.parentCtx.jsContext.setObject(byTag, forKeyedSubscript: "byTag" as NSString)
         
-        let sum: @convention(block) (String, String) -> Any? = { (tagName, fieldName) in
-            return self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).map { e in e.properties }
+        let sum: @convention(block) (String, Any?) -> Any? = { (tagName, fieldName) in
+            var result: Double = 0
+            var field = ""
+            if let f = fieldName as? String {
+                field = f
+            }
+            if let f = fieldName as? JSValue {
+                field = f.toString()
+            }
+            if field.count == 0 {
+                field = tagName
+            }
+            self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).forEach({e in
+                if let v = e.properties[field] as? Int {
+                    result += Double(v)
+                }
+                if let v = e.properties[field] as? Double {
+                    result += v
+                }
+                if let v = e.properties[field] as? JSValue {
+                    result += v.toDouble()
+                }
+            })
+            return result
         }
         
         self.parentCtx.jsContext.setObject(byTag, forKeyedSubscript: "byTag" as NSString)
+        self.parentCtx.jsContext.setObject(sum, forKeyedSubscript: "sum" as NSString)
         
         return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
     }
