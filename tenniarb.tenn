@@ -57,9 +57,6 @@ element "Tenniarb" {
             display circle
             width 100
             height 100
-            draw %{
-    line(x, y, window.width, y)
-}
         }
         link "MVP" "UI" {
             pos 0.0 2.0
@@ -208,7 +205,7 @@ element "Tenniarb" {
             pos 19.0 32.0
         }
         item "Publication" {
-            pos -328.0 485.0
+            pos -303.0 479.0
             font-size 12
         }
         link "MVP" "Quality"
@@ -226,7 +223,7 @@ element "Tenniarb" {
             pos -26.0 1.0
         }
         item "Functional testing" {
-            pos -202.0 399.0
+            pos -175.0 396.0
             font-size 12
         }
         link "Quality" "Performance"
@@ -249,7 +246,7 @@ element "Tenniarb" {
             pos -76.0 35.0
         }
         item "Cross diagram links" {
-            pos -688.0 299.0
+            pos -677.0 281.0
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
@@ -300,14 +297,14 @@ element "Tenniarb" {
         }
         link "App Store" "Images"
         item "Images" {
-            pos -233.0 498.0
+            pos -217.0 473.0
             font-size 12
         }
         link "App Store" "Description" {
             pos -6.0 23.0
         }
         item "Description" {
-            pos -180.0 457.0
+            pos -190.0 435.0
             font-size 12
         }
         link "Site" "Hosting"
@@ -347,7 +344,7 @@ element "Tenniarb" {
         item "Calculation
 Engine" {
             pos -76.0 225.0
-            color yellow
+            use-style done
         }
         link "MVP" "Calculation
 Engine"
@@ -416,7 +413,7 @@ Engine" "expr dsl"
         }
         link "Import" "Other"
         item "JIRA CSV import" {
-            pos -665.4912109375 92.0
+            pos -652.4912109375 78.0
         }
         link "Import" "JIRA CSV import"
         item "Zoom?" {
@@ -444,11 +441,11 @@ Engine" "expr dsl"
         link "Export" "HTML"
         item "Easy\nProperties" {
             pos -20.365234375 -117.0
-            color yellow
+            color green
         }
         item "quick actions" {
             pos 51.646484375 -141.0
-            color yellow
+            color green
             font-size 12
         }
         link "Properties" "quick actions" {
@@ -457,11 +454,13 @@ Engine" "expr dsl"
         item "quick colors" {
             pos 113.67578125 -179.0
             font-size 12
+            color green
         }
         link "quick actions" "quick colors"
         item "quick fonts" {
             pos 25.67578125 -180.0
             font-size 12
+            color green
         }
         link "quick actions" "quick fonts"
         item "javascript" {
@@ -514,7 +513,7 @@ Engine" "expr dsl"
             descr %{
     "Need to property match text color if background are selected"
 }
-            color yellow
+            use-style done
         }
         link "Scene Draw" "Color matches"
         item "Broken file UI" {
@@ -524,7 +523,6 @@ Engine" "expr dsl"
         link "Durability" "Broken file UI"
         item "Markdown BODY" {
             pos -93.900390625 -182.0
-            color yellow
             descr %{
     0. Use %{ as markdown start and } as markdown end.
     1. Embedd markdown like font capabilities inside.
@@ -532,6 +530,7 @@ Engine" "expr dsl"
     3. _Italic_.
     4. Font size
 }
+            use-style done
         }
         link "Editing" "Markdown BODY"
         item "Multi select" {
@@ -547,6 +546,11 @@ Engine" "expr dsl"
             use-style feature
         }
         link "Movements" "Display rulers"
+        item "Aligh on XXX" {
+            pos -199.46054077148438 -209.0
+            use-style required
+        }
+        link "Layout" "Aligh on XXX"
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0
@@ -899,7 +903,7 @@ element "Documentation" {
                 line-width 2
             }
             item "display=text" {
-                pos -1234.439453125 321.0
+                pos -1228.439453125 324.0
                 use-style annotation
                 color yellow
             }
@@ -3298,7 +3302,7 @@ element "Documentation" {
                     display arrow
                 }
                 item {
-                    color red-500
+                    color red-600
                 }
             }
             item "Untitled 1" {
@@ -4014,32 +4018,32 @@ element "Documentation" {
             title ""
         }
         item "Color + 10" {
-            pos -1874.765380859375 1533.042236328125
+            pos -1906.765380859375 1534.042236328125
             color ${[items.color.body+10, (items.color.body*2) % 255, 0]}
             body ${color}
         }
         item "Color + 20" {
-            pos -1774.765380859375 1533.042236328125
+            pos -1789.765380859375 1534.042236328125
             color ${[items.color.body+20, (items.color.body*2) % 255, 0]}
             body ${color}
         }
         item "Color + 40" {
-            pos -1672.765380859375 1533.042236328125
+            pos -1679.765380859375 1534.042236328125
             color ${[items.color.body+40, (items.color.body*2) % 255, 0]}
             body ${color}
         }
         item "Color + 60" {
-            pos -1567.765380859375 1533.042236328125
+            pos -1569.765380859375 1535.042236328125
             color ${[items.color.body+60, (items.color.body*2) % 255, 0]}
             body ${color}
         }
         item "Color + 80" {
-            pos -1461.765380859375 1534.042236328125
+            pos -1455.765380859375 1535.042236328125
             color ${[items.color.body+80, (items.color.body*2) % 255, 0]}
             body ${color}
         }
         item "Color + 100" {
-            pos -1358.765380859375 1535.042236328125
+            pos -1346.765380859375 1531.042236328125
             color ${[items.color.body+100, (items.color.body*2) % 255, 0]}
             body ${color}
         }
@@ -7281,7 +7285,7 @@ Explode!🧨"
         }
         link "1" "Untitled 25"
         item "Untitled 26" {
-            pos -886.6710815429688 106.46875
+            pos -906.6710815429688 87.46875
             my_value 10
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
@@ -7341,8 +7345,9 @@ Explode!🧨"
         }
         link "Untitled 29" "Untitled 33"
         item "Untitled 34" {
-            pos -215.9183349609375 205.46875
-            my_value ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
+            pos -384.9183349609375 409.46875
+            my_value1 ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
+            my_value 14
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
@@ -7350,5 +7355,48 @@ Explode!🧨"
             color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
         }
         link "Untitled 29" "Untitled 34"
+        element "Items" {
+            item "a" {
+                pos -417.18359375 85.609375
+                title "Value 1"
+            }
+            item "b" {
+                pos -418.57421875 23.796875
+                title "a.title = ${items.a.title}"
+            }
+            item "title = \"Value 1\"" {
+                pos -174.80838012695312 84.49311828613281
+            }
+            link "title = \"Value 1\"" "a"
+            item "Untitled 4" {
+                pos -173.35130310058594 15.658937454223633
+                body "a.title = \${items.a.title}"
+            }
+            link "Untitled 4" "b"
+        }
+        element "byTag" {
+            item "Task1" {
+                pos -404.109375 94.70703125
+                value 10
+            }
+            item "Task2" {
+                pos -213.109375 168.70703125
+                value 20
+            }
+            item "Task3" {
+                pos -28.109375 111.70703125
+                not_value 30
+            }
+            item "sum(value)" {
+                pos -220.25726318359375 -74.78252410888672
+                body %{
+    items: ${byTag('value').map(a=>a.value)}
+    sum: ${byTag('value').reduce( (a,b)=>a + b.value,0)}
+}
+            }
+            link "sum(value)" "Task1"
+            link "sum(value)" "Task2"
+            link "sum(value)" "Task3"
+        }
     }
 }

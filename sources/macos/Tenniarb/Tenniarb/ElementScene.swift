@@ -446,11 +446,20 @@ class DrawableStyle {
             }
         case PersistenceStyleKind.Width.name:
             if let value = getFloat(child.getChild(1), evaluations) {
-                self.width = value
+                if value > 10000 {
+                    self.width = 10000
+                } else {
+                    self.width = value
+                }
+                
             }
         case PersistenceStyleKind.Height.name:
             if let value = getFloat(child.getChild(1), evaluations) {
-                self.height = value
+                if value > 10000 {
+                    self.height = 10000
+                } else {
+                    self.height = value
+                }
             }
         case PersistenceStyleKind.BorderColor.name:
             if let color = getColor(child.getChild(1), evaluations, alpha: 1) {

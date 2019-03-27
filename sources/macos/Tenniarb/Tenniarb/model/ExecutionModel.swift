@@ -22,7 +22,13 @@ fileprivate func processBlock(_ node: TennNode,
                 // We have simple field assignement, not array
                 if let value = calculateValue(ci, currentContext, levelObject, &hasExpressions, &evaluated) {
                     levelObject[cmdName] = value
-                    currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                    if let v = value as? NSDictionary {
+                        if v.count > 0 {
+                            currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                        }
+                    } else {
+                        currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                    }
                 }
             } else {
                 // We have array assignement
@@ -287,7 +293,7 @@ fileprivate func calculateValue(_ node: TennNode?,
             }
         }
         
-        self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSString)
         
         let valueForKey: @convention(block) (Any?, String) -> Any? = { target, key in
             if let itm = self.parentCtx.namedItems[key] {
@@ -297,20 +303,18 @@ fileprivate func calculateValue(_ node: TennNode?,
         }
         
         self.parentCtx.jsContext.setObject(valueForKey, forKeyedSubscript: "__valueForKey" as NSString)
-
-        self.parentCtx.jsContext.setObject(self.parentCtx.namedItems, forKeyedSubscript: "items" as NSCopying & NSObjectProtocol)
-        self.parentCtx.jsContext.evaluateScript("items = new Proxy(items, { get: __valueForKey })")
+        self.parentCtx.jsContext.evaluateScript("items = new Proxy({}, { get: __valueForKey })")
         
         
-        self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSString)
         
         // Update position
-        self.parentCtx.jsContext.setObject([self.item.x, self.item.y], forKeyedSubscript: "pos" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject([self.item.x, self.item.y], forKeyedSubscript: "pos" as NSString)
         
         // Update name
-        self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSCopying & NSObjectProtocol)
-        self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSCopying & NSObjectProtocol)
-        self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSString)
+        self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSString)
+        self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSString)
         newItems["name"] = self.item.name
         
         // Edge operations
@@ -325,11 +329,21 @@ fileprivate func calculateValue(_ node: TennNode?,
             return self.getRelativeItems(source: true, target: false)
         }
         
-        self.parentCtx.jsContext.setObject(edges, forKeyedSubscript: "edges" as NSCopying & NSObjectProtocol)
-        self.parentCtx.jsContext.setObject(inputs, forKeyedSubscript: "inputs" as NSCopying & NSObjectProtocol)
-        self.parentCtx.jsContext.setObject(outputs, forKeyedSubscript: "outputs" as NSCopying & NSObjectProtocol)
+        self.parentCtx.jsContext.setObject(edges, forKeyedSubscript: "edges" as NSString)
+        self.parentCtx.jsContext.setObject(inputs, forKeyedSubscript: "inputs" as NSString)
+        self.parentCtx.jsContext.setObject(outputs, forKeyedSubscript: "outputs" as NSString)
         
+        let byTag: @convention(block) (String) -> Any? = { tagName in
+            return self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).map { e in e.properties }
+        }
         
+        self.parentCtx.jsContext.setObject(byTag, forKeyedSubscript: "byTag" as NSString)
+        
+        let sum: @convention(block) (String, String) -> Any? = { (tagName, fieldName) in
+            return self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).map { e in e.properties }
+        }
+        
+        self.parentCtx.jsContext.setObject(byTag, forKeyedSubscript: "byTag" as NSString)
         
         return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
     }
