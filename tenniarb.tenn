@@ -3319,6 +3319,7 @@ element "Documentation" {
                 pos -279.5 57.71484375
                 title ""
                 display circle
+                marker "⏰"
             }
             item "Untitled 1" {
                 pos -276.5 4.71484375
@@ -6874,33 +6875,38 @@ element "Init screens" {
             }
         }
         item "Central" {
-            pos -288.94140625 119.265625
+            pos -304.94140625 122.265625
             use-style central
+            marker "🎁"
         }
         item "Main Topic 1" {
-            pos -112.0171890258789 169.265625
+            pos -114.0171890258789 189.265625
             color orange
             line-style solid
             line-width 1
             use-style main
+            marker "♣️"
         }
         link "Central" "Main Topic 1"
         item "Main Topic 2" {
-            pos -109.0171890258789 96.265625
+            pos -112.0171890258789 74.265625
             color lightblue
             use-style main
+            marker "♥️"
         }
         link "Central" "Main Topic 2"
         item "Main Topic 4" {
-            pos -468.0171813964844 70.265625
+            pos -481.0171813964844 69.265625
             color green
             use-style main
+            marker "♠️"
         }
         link "Central" "Main Topic 4"
         item "Main Topic 5" {
-            pos -472.0171813964844 170.265625
+            pos -484.0171813964844 190.265625
             color purple
             use-style main
+            marker "♦️"
         }
         link "Central" "Main Topic 5"
         item "Child Topic 1" {
@@ -6910,7 +6916,7 @@ element "Init screens" {
         }
         link "Main Topic 1" "Child Topic 1"
         item "Child Topic 2" {
-            pos 37.32109069824219 171.265625
+            pos 66.32109069824219 158.265625
             font-size 12
             use-style child
         }
@@ -6942,7 +6948,7 @@ element "Init screens" {
             target-index 3
         }
         item "Child" {
-            pos 39.79960632324219 92.265625
+            pos 74.79960632324219 77.265625
             use-style child
         }
         link "Main Topic 2" "Child" {

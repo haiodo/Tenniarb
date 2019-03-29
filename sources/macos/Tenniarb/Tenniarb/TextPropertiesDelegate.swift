@@ -249,26 +249,32 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                 break
             }
             if tok.size == 0 {
-                return
+                continue
             }
             switch tok.type {
             case .symbol:
-                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    symbolColor, range: NSMakeRange(tok.pos, tok.size))
+                if tok.size > 0 {
+                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
+                        symbolColor, range: NSMakeRange(tok.pos, tok.size))
+                }
             case .stringLit:
                 // Check to include ", ' as part of sumbols.
                 let start = tok.pos - 1 // Since we have ' or "
                 let size = tok.size + 2
                 
-                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    stringColor, range: NSMakeRange(start, size))
+                if size > 0  {
+                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
+                        stringColor, range: NSMakeRange(start, size))
+                }
             case .markdownLit:
                 // Check to include ", ' as part of sumbols.
                 let start = tok.pos - 2 // Since we have ' or "
                 let size = tok.size + 3
                 
-                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    stringColor, range: NSMakeRange(start, size))
+                if size > 0  {
+                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
+                        stringColor, range: NSMakeRange(start, size))
+                }
             case .expression, .expressionBlock:
                 // Check to include "${' or $( as part of sumbols.
                 let start = tok.pos - 2 // Since we have } or ) at end
