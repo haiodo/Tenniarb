@@ -6961,7 +6961,7 @@ element "Init screens" {
             pos -388.296875 57.37109375
         }
         item "Generating Ideas" {
-            pos -222.38436889648438 117.37109375
+            pos -232.38436889648438 117.37109375
             display circle
             width 150
             height 150
@@ -7055,11 +7055,12 @@ Mental Block"
         }
         link "Organizing Your
 Thoughts" "Write ideas down on notecards"
-        item "🤯Make a mind map" {
+        item "Make a mind map" {
             pos -61.0 1.37109375
+            marker "🤯"
         }
         link "Organizing Your
-Thoughts" "🤯Make a mind map" {
+Thoughts" "Make a mind map" {
             pos -7.0 2.0
         }
         item "Break the problem down into individual steps" {
@@ -7114,46 +7115,49 @@ Thoughts" "Cube the problem" {
         link "Cube the problem" "Argue for and against it" {
             pos -77.0 -87.0
         }
-        item "🚶🏻‍♂️Go for a walk" {
+        item "Go for a walk" {
             pos -70.38436889648438 -291.62890625
+            marker "🚶🏻‍♂️"
         }
         link "Getting Over 
-Mental Block" "🚶🏻‍♂️Go for a walk"
-        item "☕️Take a break" {
+Mental Block" "Go for a walk"
+        item "Take a break" {
             pos -100.38436889648438 -369.62890625
+            marker "☕️"
         }
         link "Getting Over 
-Mental Block" "☕️Take a break"
+Mental Block" "Take a break"
         item "help boost creativity" {
             pos 119.38555908203125 -290.62890625
             font-size 12
         }
-        link "🚶🏻‍♂️Go for a walk" "help boost creativity"
+        link "Go for a walk" "help boost creativity"
         item "get a snack🍿" {
             pos 90.88751220703125 -343.62890625
             font-size 12
         }
-        link "☕️Take a break" "get a snack🍿"
+        link "Take a break" "get a snack🍿"
         item "read a few news articles 🗞" {
             pos 88.88751220703125 -380.62890625
             font-size 12
         }
-        link "☕️Take a break" "read a few news articles 🗞"
+        link "Take a break" "read a few news articles 🗞"
         item "make a phone call📞" {
             pos 75.88751220703125 -419.62890625
             font-size 12
         }
-        link "☕️Take a break" "make a phone call📞"
+        link "Take a break" "make a phone call📞"
         item "Talk to yourself" {
             pos -148.38436889648438 -437.62890625
         }
         link "Getting Over 
 Mental Block" "Talk to yourself"
-        item "🎧Listen to music" {
+        item "Listen to music" {
             pos -335.3843994140625 -393.62890625
+            marker "🎧"
         }
         link "Getting Over 
-Mental Block" "🎧Listen to music"
+Mental Block" "Listen to music"
     }
     element "How to" {
         item "How to create a mind map" {
@@ -7162,8 +7166,9 @@ Mental Block" "🎧Listen to music"
             color green
         }
         item "Use color" {
-            pos -96.6587905883789 -19.12890625
+            pos -110.6587905883789 -19.12890625
             color orange
+            marker "🔥"
         }
         link "How to create a mind map" "Use color"
         item "Group your ideas" {
@@ -7173,13 +7178,15 @@ Mental Block" "🎧Listen to music"
         }
         link "Use color" "Group your ideas"
         item "Share it" {
-            pos -284.3247985839844 13.87109375
+            pos -299.3247985839844 13.87109375
             color light-blue-100
+            marker "🌎"
         }
         link "How to create a mind map" "Share it"
         item "Go deeper" {
-            pos -301.3247985839844 129.87109375
+            pos -306.3247985839844 131.87109375
             color green-200
+            marker "⌚️"
         }
         link "How to create a mind map" "Go deeper"
         item "Every node on mindmap" {
@@ -7216,9 +7223,10 @@ Explode!🧨" {
         link "Nobody is perfect" "Let's your ideas
 Explode!🧨"
         item "Break the \"on the page\"" {
-            pos 118.7835922241211 105.87109375
+            pos 112.7835922241211 105.87109375
             color red-200
             body "mentality"
+            marker "✂️"
         }
         link "How to create a mind map" "Break the \"on the page\""
         item "Your brain isn't confined" {
@@ -7347,7 +7355,7 @@ Explode!🧨"
         item "Untitled 34" {
             pos -384.9183349609375 409.46875
             my_value1 ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
-            my_value 14
+            my_value 18
             q ${outputs().map(a=>a.value)}
             value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
             title "${value}"
@@ -7426,7 +7434,7 @@ days=5" {
             link "Task3" "not_value=30
 days=5"
             item "Source" {
-                pos -8.956090927124023 -134.78252410888672
+                pos -8.956090927124023 -134.78253173828125
                 body %{
     body %{
         items: \${byTag('value').map(a=>a.value)}

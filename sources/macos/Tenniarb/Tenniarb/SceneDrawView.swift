@@ -408,7 +408,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
     
-    func changeItemProps( _ property: String, _ value: String) {
+    func changeItemProps( _ property: String, _ value: TennNode) {
         guard let itm = self.activeItems.first, activeItems.count == 1 else {
             return
         }
@@ -417,15 +417,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var changed = false
         if let itmProp = newItemProps.getNamedElement(property) {
             // Property exists, we need to replace value
-            if itmProp.getIdent(1) != value {
+            if itmProp.getIdent(1) != value.getIdentText() {
                 itmProp.children?.removeAll()
-                itmProp.add(TennNode.newIdent(property), TennNode.newIdent(value))
+                itmProp.add(TennNode.newIdent(property), value)
                 changed = true
             }
         }
         else {
             // Just add new property
-            newItemProps.add(TennNode.newCommand(property, TennNode.newIdent(value)))
+            newItemProps.add(TennNode.newCommand(property, value))
             changed = true
         }
         
@@ -441,7 +441,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     @objc func displayMenuAction( _ sender: NSMenuItem ) {
         let val = sender.title
         let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
-        changeItemProps("display", String(value))
+        changeItemProps("display", TennNode.newIdent(String(value)))
     }
     
     func createMenu( selector: Selector, items: [String]) -> NSMenu {
@@ -453,22 +453,26 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     @objc func fontMenuAction( _ sender: NSMenuItem ) {
         let value = sender.title
-        changeItemProps("font-size", value)
+        changeItemProps("font-size", TennNode.newIdent(value))
+    }
+    @objc func markerMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("marker", TennNode.newStrNode(value))
     }
     @objc func lineWidthAction( _ sender: NSMenuItem ) {
         let value = sender.title
-        changeItemProps("line-width", value)
+        changeItemProps("line-width", TennNode.newIdent(value))
     }
     
     @objc func colorMenuAction( _ sender: NSMenuItem ) {
         let value = sender.title
-        changeItemProps("color", value)
+        changeItemProps("color", TennNode.newIdent(value))
     }
     
     @objc func lineStyleMenuAction( _ sender: NSMenuItem ) {
         let val = sender.title
         let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
-        changeItemProps("line-style", String(value))
+        changeItemProps("line-style", TennNode.newIdent(String(value)))
     }
     
     @objc func segmentAction(_ sender: NSSegmentedCell) {
@@ -530,6 +534,33 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var segm = -1
         if act.kind == .Item {
             segm += 1
+            segments.setLabel("✑", forSegment: segm)
+            
+            let menu = NSMenu()
+            
+            let smiles = menu.addItem(withTitle: "😀 Emoji", action: nil, keyEquivalent: "")
+            smiles.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["😀","😛","😱","😵","😷","🐶","🐱","🐭","🐰","🦊","🌻","🌧","🌎","🔥","❄️","💦","☂️"])
+            
+            let numbers = menu.addItem(withTitle: "🔢 Numbers", action: nil, keyEquivalent: "")
+            numbers.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"])
+            
+            let objects = menu.addItem(withTitle: "🖥 Objects", action: nil, keyEquivalent: "")
+            objects.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["⌚️","🖥","🖨","⌛️","⏰","⚒","🧲","💣","🔒","✂️","🧸","🎁"])
+            
+            let symbols = menu.addItem(withTitle: "🔠 Symbols", action: nil, keyEquivalent: "")
+            symbols.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["🆗","🆖","#️⃣","🔤","ℹ️","🚻","🔃","➕","➖","➗","✖️","♾","💲","✔️","♠️","♣️","♥️","♦️"])
+            
+            segments.setMenu(
+                menu,
+                forSegment: segm)
+            if #available(OSX 10.13, *) {
+                segments.setShowsMenuIndicator(true, forSegment: segm)
+                
+            }
+            segments.setWidth(36, forSegment: segm)
+            
+            
+            segm += 1
             segments.setLabel("Ƭ", forSegment: segm)
             segments.setMenu(
                 createMenu(selector: #selector(fontMenuAction(_:)),
@@ -540,6 +571,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 
             }
             segments.setWidth(36, forSegment: segm)
+            
         }
         
         segm += 1

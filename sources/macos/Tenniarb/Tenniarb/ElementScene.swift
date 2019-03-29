@@ -538,6 +538,8 @@ class DrawableLineStyle: DrawableStyle {
 
 class DrawableItemStyle: DrawableStyle {
     var title: String? = nil
+    var marker: String? = nil
+    
     override func newCopy() -> DrawableStyle {
         return DrawableItemStyle(darkMode)
     }
@@ -552,6 +554,11 @@ class DrawableItemStyle: DrawableStyle {
             self.title = child.getIdent(1)
             if let ch =  child.getChild(1), let t = ch.token, let ev = evaluations[t] {
                 self.title = ev.toString()
+            }
+        case PersistenceStyleKind.Marker.name:
+            self.marker = child.getIdent(1)
+            if let ch =  child.getChild(1), let t = ch.token, let ev = evaluations[t] {
+                self.marker = ev.toString()
             }
         default:
             super.parseStyleLine(cmdName, child, evaluations)
@@ -989,6 +996,12 @@ open class DrawableScene: DrawableContainer {
                 padding: CGPoint(x:8, y:4)
             )
         }
+        
+        // Marker value
+        if let marker = style.marker {
+            titleValue  = marker + " " + titleValue
+        }
+        
         
         let textBox = TextBox(
             text: titleValue,
