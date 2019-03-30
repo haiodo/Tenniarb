@@ -38,6 +38,8 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     var searchBox: SearchBoxViewController?
     
+    var operationBox: OperationController?
+    
     var exportMgr = ExportManager()
         
     @IBOutlet weak var exportSegments: NSSegmentedCell!
@@ -116,11 +118,20 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
     
     fileprivate func hideSearchBox() {
-        if let sb = searchBox {
-            if sb.view.window != nil {
-                dismiss(sb)
+        hideView(searchBox)
+        searchBox = nil
+    }
+    
+    fileprivate func hideView(_ controller: NSViewController? ) {
+        if let c = controller {
+            if c.view.window != nil {
+                dismiss(c)
             }
         }
+    }
+    func hideOperationBox() {
+        hideView(operationBox)
+        operationBox = nil
     }
     
     @IBAction func showSearchBox(_ sender: NSMenuItem ) {
@@ -138,6 +149,25 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 sb.setActive = {(item) in self.scene.setActiveItem(item)}
                 
                 self.present(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+            }
+        }
+    }
+    
+    @IBAction func showOperationBox(_ sender: NSMenuItem ) {
+        showOperationBox()
+    }
+    func showOperationBox() {
+        if self.activeItems.count > 0, let element = self.selectedElement, let store = self.elementStore {
+            hideOperationBox()
+            
+            self.operationBox = self.storyboard?.instantiateController(withIdentifier: "operationBox") as? OperationController
+            
+            if let operartions = operationBox {
+                operartions.setController(self)
+                operartions.setStore(store)
+                operartions.setElement(element)
+                operartions.setItems(self.activeItems)
+                self.present(operartions, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
             }
         }
     }

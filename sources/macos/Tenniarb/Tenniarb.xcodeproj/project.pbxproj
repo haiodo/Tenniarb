@@ -31,6 +31,7 @@
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C67960F210E215E00AEED63 /* SyncViewController.swift */; };
 		0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */; };
+		0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ED8C1224F3F25009145E1 /* OperationController.swift */; };
 		0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C83E507219085BD00AD0317 /* ResourcesViewController.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
@@ -105,6 +106,7 @@
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C67960F210E215E00AEED63 /* SyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncViewController.swift; path = views/SyncViewController.swift; sourceTree = "<group>"; };
+		0C6ED8C1224F3F25009145E1 /* OperationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OperationController.swift; path = views/OperationController.swift; sourceTree = "<group>"; };
 		0C83E507219085BD00AD0317 /* ResourcesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ResourcesViewController.swift; path = views/ResourcesViewController.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 				0CF8902A2133BDD400F1A6EE /* StyleManager.swift */,
 				0C83E507219085BD00AD0317 /* ResourcesViewController.swift */,
 				0C3160412242ADC00021E4D9 /* PreferencesController.swift */,
+				0C6ED8C1224F3F25009145E1 /* OperationController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -428,6 +431,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */,
 				0C185AA821B263DF00D174B6 /* ExecutionModel.swift in Sources */,
 				0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */,
 				0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */,

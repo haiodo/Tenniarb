@@ -7202,8 +7202,9 @@ Mental Block" "Listen to music"
         }
         link "Go deeper" "Every node on mindmap"
         item "Nobody is perfect" {
-            pos -123.3248062133789 156.87109375
+            pos -144.32479858398438 158.87109375
             color blue-400
+            marker "-😱-"
         }
         link "How to create a mind map" "Nobody is perfect"
         item "Tidy up later" {

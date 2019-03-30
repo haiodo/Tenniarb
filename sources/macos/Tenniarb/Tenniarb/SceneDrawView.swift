@@ -1053,6 +1053,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         else if event.characters == "\u{7f}" {
             removeItem()
+        } else if event.characters == " " {
+            self.viewController?.showOperationBox()
         }
         
         if let sk = event.specialKey, let sc = self.scene {
@@ -1416,9 +1418,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         // Process hide of popup if we go out to much
         
-        if let act = self.popupItem, let dr = scene?.drawables[act] {
+        if let act = self.popupItem, let dr = scene?.drawables[act], let popupView = self.popupView {
             let bounds = dr.getSelectorBounds()
-            let popupBounds = self.popupView!.bounds
+            let popupBounds = popupView.bounds
             var rect = bounds.insetBy(dx: -30, dy: -50)
             
             rect.size = CGSize(width: max(rect.width, popupBounds.width), height: rect.height)
