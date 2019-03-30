@@ -98,6 +98,6 @@ class OperationController: NSViewController, NSTextViewDelegate {
         
         
         self.store.compositeOperation(notifier: element, undoManaget: self.controller.view.undoManager, refresh: self.controller.scene.scheduleRedraw, operations)
-        self.controller.hideOperationBox()
+        self.controller?.hideOperationBox()
     }
 }

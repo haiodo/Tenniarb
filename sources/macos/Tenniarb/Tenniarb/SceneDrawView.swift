@@ -1151,6 +1151,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.dragElements.removeAll()
             self.scene?.selectionBox = nil
             self.scene?.updateActiveElements(self.activeItems)
+            
+            for f in onSelection {
+                f(self.activeItems)
+            }
+            
             scheduleRedraw()
             showPopup()
             return
