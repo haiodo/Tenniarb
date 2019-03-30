@@ -25,6 +25,9 @@ fileprivate func processBlock(_ node: TennNode,
                     if let v = value as? NSDictionary {
                         if v.count > 0 {
                             currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
+                        } else {
+                            // This is
+                            Swift.debugPrint("Why")
                         }
                     } else {
                         currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
@@ -352,7 +355,7 @@ fileprivate func calculateValue(_ node: TennNode?,
             if field.count == 0 {
                 field = tagName
             }
-            self.parentCtx.namedItems.values.filter({e in e.properties[tagName] != nil}).forEach({e in
+            self.parentCtx.itemsMap.values.filter({e in e.properties[tagName] != nil}).forEach({e in
                 if let v = e.properties[field] as? Int {
                     result += Double(v)
                 }
