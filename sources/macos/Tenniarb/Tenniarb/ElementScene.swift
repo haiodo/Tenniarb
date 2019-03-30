@@ -2057,6 +2057,7 @@ public class CircleBox: DrawableContainer {
     public override func draw(context: CGContext, at point: CGPoint) {
         context.saveGState()
         
+        context.saveGState()
         if let pos = self.style.shadow {
             if let col = self.style.shadowColor {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur, color: col)
@@ -2065,6 +2066,7 @@ public class CircleBox: DrawableContainer {
             }
         }
         self.doDraw(context, at: point)
+        context.restoreGState()
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
         context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
