@@ -59,6 +59,13 @@ class OperationController: NSViewController, NSTextViewDelegate {
         var changed = false
         
         Element.traverseBlock(node, {(cmdName, node) in
+            if cmdName.starts(with: "-") {
+                let commandName = String(cmdName.suffix(from: cmdName.index(cmdName.startIndex, offsetBy: 1)))
+                if newItemProps.removeNamed(commandName) {
+                    changed = true
+                }
+                return
+            }
             if let itmProp = newItemProps.getNamedElement(cmdName), let children = node.children {
                 // Property exists, we need to replace value
                 itmProp.children?.removeAll()

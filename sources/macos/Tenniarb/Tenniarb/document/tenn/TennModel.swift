@@ -101,6 +101,18 @@ public class TennNode {
         }
         return named?[name]
     }
+    public func removeNamed( _ name: String ) -> Bool {
+        if var n = self.named {
+            n.removeValue(forKey: name)
+        }
+        if let chld = children {
+            let oldSize = chld.count
+            self.children = chld.filter({itm in itm.getIdent(0) != name})
+            // Do we really removd any field
+            return oldSize != self.children!.count
+        }
+        return false
+    }
     
     public func getBlock(_ index: Int) -> [TennNode] {
         if let bl = getChild(index), let childs = bl.children {
