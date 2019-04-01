@@ -167,7 +167,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 operartions.setStore(store)
                 operartions.setElement(element)
                 operartions.setItems(self.activeItems)
-                self.present(operartions, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
+                
+                // Get a
+                
+                let bounds = self.scene!.getSelectionBounds()
+                
+                self.present(operartions, asPopoverRelativeTo: NSRect(origin: bounds.origin, size: bounds.size),
+                             of: self.scene, preferredEdge: .minY, behavior: .transient)
             }
         }
     }

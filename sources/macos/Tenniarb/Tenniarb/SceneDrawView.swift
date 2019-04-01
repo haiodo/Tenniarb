@@ -732,7 +732,31 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         scheduleRedraw()
     }
     
-    fileprivate func getEditBoxBounds( item: Drawable ) -> CGRect {
+    func getSelectionBounds() -> CGRect {
+        var finalBounds: CGRect?
+        for itm in self.activeItems {
+            if let dr = self.scene?.drawables[itm] {
+                let deBounds = dr.getBounds()
+                let bounds = CGRect(
+                    x: deBounds.origin.x + scene!.offset.x,
+                    y: deBounds.origin.y + scene!.offset.y,
+                    width: deBounds.width,
+                    height: deBounds.height
+                )
+                if finalBounds == nil {
+                    finalBounds = bounds
+                } else {
+                    finalBounds = finalBounds?.union(bounds)
+                }
+            }
+        }
+        if finalBounds != nil {
+            return finalBounds!
+        }
+        return self.frame
+    }
+    
+    func getEditBoxBounds( item: Drawable ) -> CGRect {
         var deBounds = self.editBoxItem!.getSelectorBounds()
         if let link =  item as? DrawableLine, let label = link.label {
             deBounds = label.getBounds()

@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020294"
+            timestampString = "575788858.4551229"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "775"
-            endingLineNumber = "775"
-            landmarkName = "setBody(_:_:)"
+            startingLineNumber = "799"
+            endingLineNumber = "799"
+            landmarkName = "getBody(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,7 +26,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020384"
+            timestampString = "575788858.455214"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "74"
@@ -42,12 +42,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020455"
+            timestampString = "575788858.455284"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1038"
-            endingLineNumber = "1038"
-            landmarkName = "keyDown(with:)"
+            startingLineNumber = "1062"
+            endingLineNumber = "1062"
+            landmarkName = "SceneDrawView"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "575788858.455348"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1060"
+            endingLineNumber = "1060"
+            landmarkName = "moveLeft(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -58,23 +74,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020516"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1036"
-            endingLineNumber = "1036"
-            landmarkName = "keyDown(with:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020575"
+            timestampString = "575788858.455413"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "44"
@@ -90,7 +90,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020632"
+            timestampString = "575788858.455476"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "54"
@@ -106,11 +106,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020691"
+            timestampString = "575788858.455539"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "846"
-            endingLineNumber = "846"
+            startingLineNumber = "870"
+            endingLineNumber = "870"
             landmarkName = "editTitle(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -122,7 +122,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020751"
+            timestampString = "575788858.455601"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "395"
@@ -138,7 +138,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.0208091"
+            timestampString = "575788858.455665"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "396"
@@ -154,7 +154,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020867"
+            timestampString = "575788858.455726"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "363"
@@ -170,7 +170,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.020925"
+            timestampString = "575788858.455789"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "369"
@@ -186,7 +186,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.020992"
+            timestampString = "575788858.455853"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1450"
@@ -202,7 +202,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.021391"
+            timestampString = "575788858.455904"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "935"
@@ -218,7 +218,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.0217071"
+            timestampString = "575788858.4559489"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "970"
@@ -234,7 +234,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.022012"
+            timestampString = "575788858.455996"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "934"
@@ -250,7 +250,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.022312"
+            timestampString = "575788858.4560421"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "971"
@@ -266,7 +266,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.022599"
+            timestampString = "575788858.456087"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1013"
@@ -282,7 +282,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.022887"
+            timestampString = "575788858.456134"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1448"
@@ -298,11 +298,27 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023178"
+            timestampString = "575788858.456184"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1219"
-            endingLineNumber = "1219"
+            startingLineNumber = "1243"
+            endingLineNumber = "1243"
+            landmarkName = "mouseUp(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "575788858.45625"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1269"
+            endingLineNumber = "1269"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -314,11 +330,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023243"
+            timestampString = "575788858.456311"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1245"
-            endingLineNumber = "1245"
+            startingLineNumber = "1332"
+            endingLineNumber = "1332"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -330,28 +346,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023304"
+            timestampString = "575788858.456373"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1308"
-            endingLineNumber = "1308"
-            landmarkName = "mouseDown(with:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023362"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1691"
-            endingLineNumber = "1691"
-            landmarkName = "paste(_:)"
+            startingLineNumber = "1715"
+            endingLineNumber = "1715"
+            landmarkName = "addNewItemCopy(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -362,7 +362,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.023421"
+            timestampString = "575788858.456434"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "110"
@@ -378,11 +378,43 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023694"
+            timestampString = "575788858.456483"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1223"
-            endingLineNumber = "1223"
+            startingLineNumber = "1247"
+            endingLineNumber = "1247"
+            landmarkName = "mouseUp(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "575788858.456543"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1248"
+            endingLineNumber = "1248"
+            landmarkName = "mouseUp(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "575788858.456605"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1274"
+            endingLineNumber = "1274"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -394,39 +426,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023755"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1224"
-            endingLineNumber = "1224"
-            landmarkName = "mouseDown(with:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023815"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1250"
-            endingLineNumber = "1250"
-            landmarkName = "mouseDown(with:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023873"
+            timestampString = "575788858.456728"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "292"
@@ -442,12 +442,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023932"
+            timestampString = "575788858.456817"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "883"
-            endingLineNumber = "883"
-            landmarkName = "addNewItem(copyProps:)"
+            startingLineNumber = "907"
+            endingLineNumber = "907"
+            landmarkName = "editTitle(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -458,7 +458,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.023989"
+            timestampString = "575788858.4568861"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "302"
@@ -506,7 +506,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.024045"
+            timestampString = "575788858.456953"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "303"
@@ -554,7 +554,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.024145"
+            timestampString = "575788858.457069"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1762"
@@ -570,7 +570,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.024439"
+            timestampString = "575788858.457175"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "477"
@@ -586,11 +586,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.024724"
+            timestampString = "575788858.4572459"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1181"
-            endingLineNumber = "1181"
+            startingLineNumber = "1205"
+            endingLineNumber = "1205"
             landmarkName = "mouseUp(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -602,11 +602,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.024791"
+            timestampString = "575788858.4573179"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "431"
-            endingLineNumber = "431"
+            startingLineNumber = "452"
+            endingLineNumber = "452"
             landmarkName = "ElementContext"
             landmarkType = "3">
          </BreakpointContent>
@@ -694,7 +694,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.024931"
+            timestampString = "575788858.457468"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "118"
@@ -710,11 +710,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.0249929"
+            timestampString = "575788858.457536"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "413"
-            endingLineNumber = "413"
+            startingLineNumber = "434"
+            endingLineNumber = "434"
             landmarkName = "reCalculate(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -726,11 +726,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.025062"
+            timestampString = "575788858.457599"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "238"
-            endingLineNumber = "238"
+            startingLineNumber = "243"
+            endingLineNumber = "243"
             landmarkName = "checkChanges(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -742,11 +742,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.025121"
+            timestampString = "575788858.457661"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "508"
-            endingLineNumber = "508"
+            startingLineNumber = "533"
+            endingLineNumber = "533"
             landmarkName = "processEvent(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -758,11 +758,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.025179"
+            timestampString = "575788858.457723"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "507"
-            endingLineNumber = "507"
+            startingLineNumber = "532"
+            endingLineNumber = "532"
             landmarkName = "processEvent(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -774,11 +774,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.025236"
+            timestampString = "575788858.4577841"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "505"
-            endingLineNumber = "505"
+            startingLineNumber = "530"
+            endingLineNumber = "530"
             landmarkName = "processEvent(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -790,11 +790,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.0252939"
+            timestampString = "575788858.4578429"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "506"
-            endingLineNumber = "506"
+            startingLineNumber = "531"
+            endingLineNumber = "531"
             landmarkName = "processEvent(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -806,7 +806,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.025354"
+            timestampString = "575788858.457904"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "805"
@@ -822,12 +822,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.02564"
+            timestampString = "575788858.457954"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1144"
-            endingLineNumber = "1144"
-            landmarkName = "mouseUp(with:)"
+            startingLineNumber = "1168"
+            endingLineNumber = "1168"
+            landmarkName = "showPopover(bounds:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -838,7 +838,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.025704"
+            timestampString = "575788858.4580179"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "663"
@@ -854,7 +854,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.025761"
+            timestampString = "575788858.458078"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "529"
@@ -870,7 +870,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.02582"
+            timestampString = "575788858.45814"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "444"
@@ -886,7 +886,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.02588"
+            timestampString = "575788858.458202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1379"
@@ -902,7 +902,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.026161"
+            timestampString = "575788858.45825"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1057"
@@ -966,7 +966,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.026504"
+            timestampString = "575788858.458348"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1059"
@@ -982,7 +982,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.02679"
+            timestampString = "575788858.458398"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1055"
@@ -1046,12 +1046,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.02712"
+            timestampString = "575788858.458495"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1618"
-            endingLineNumber = "1618"
-            landmarkName = "draw(_:)"
+            startingLineNumber = "1642"
+            endingLineNumber = "1642"
+            landmarkName = "drawRulers(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1062,7 +1062,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.027186"
+            timestampString = "575788858.458562"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "240"
@@ -1094,7 +1094,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.027253"
+            timestampString = "575788858.45863"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "241"
@@ -1142,12 +1142,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.027329"
+            timestampString = "575788858.458709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1427"
-            endingLineNumber = "1427"
-            landmarkName = "mouseMoved(with:)"
+            startingLineNumber = "1451"
+            endingLineNumber = "1451"
+            landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1158,7 +1158,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.027402"
+            timestampString = "575788858.458774"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1725"
@@ -1174,7 +1174,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.0276721"
+            timestampString = "575788858.458823"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1713"
@@ -1190,7 +1190,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.02794"
+            timestampString = "575788858.458871"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "475"
@@ -1206,7 +1206,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.028"
+            timestampString = "575788858.458932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "513"
@@ -1222,11 +1222,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.028057"
+            timestampString = "575788858.458995"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "274"
-            endingLineNumber = "274"
+            startingLineNumber = "279"
+            endingLineNumber = "279"
             landmarkName = "getRelativeItems(source:target:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1238,12 +1238,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.028114"
+            timestampString = "575788858.45906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "912"
-            endingLineNumber = "912"
-            landmarkName = "duplicateItem()"
+            startingLineNumber = "936"
+            endingLineNumber = "936"
+            landmarkName = "addNewItem(copyProps:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1254,7 +1254,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.028168"
+            timestampString = "575788858.4591219"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1899"
@@ -1270,7 +1270,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.0284621"
+            timestampString = "575788858.45917"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1900"
@@ -1286,39 +1286,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.028743"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "308"
-            endingLineNumber = "308"
-            landmarkName = "updateGetContext(_:newItems:newEvaluated:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.028811"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "347"
-            endingLineNumber = "347"
-            landmarkName = "updateGetContext(_:newItems:newEvaluated:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/model/ExecutionModel.swift"
-            timestampString = "575649473.028864"
+            timestampString = "575788858.459219"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "30"
@@ -1334,7 +1302,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.028913"
+            timestampString = "575788858.459272"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "459"
@@ -1350,7 +1318,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ElementScene.swift"
-            timestampString = "575649473.028972"
+            timestampString = "575788858.459336"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1002"
@@ -1366,7 +1334,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.029259"
+            timestampString = "575788858.4593869"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "262"
@@ -1382,7 +1350,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.0293109"
+            timestampString = "575788858.4594361"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "248"
@@ -1398,7 +1366,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.029361"
+            timestampString = "575788858.459482"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "290"
@@ -1414,7 +1382,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/TextPropertiesDelegate.swift"
-            timestampString = "575649473.029407"
+            timestampString = "575788858.459528"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "251"
@@ -1430,11 +1398,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/views/OperationController.swift"
-            timestampString = "575649473.0294549"
+            timestampString = "575788858.459577"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "91"
-            endingLineNumber = "91"
+            startingLineNumber = "103"
+            endingLineNumber = "103"
             landmarkName = "commit()"
             landmarkType = "7">
          </BreakpointContent>
@@ -1446,11 +1414,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/views/OperationController.swift"
-            timestampString = "575649473.029503"
+            timestampString = "575788858.459633"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "62"
-            endingLineNumber = "62"
+            startingLineNumber = "74"
+            endingLineNumber = "74"
             landmarkName = "createOperation(_:_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1462,7 +1430,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ViewController.swift"
-            timestampString = "575649473.029551"
+            timestampString = "575788858.4596879"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "160"
@@ -1478,12 +1446,44 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "575649473.029598"
+            timestampString = "575788858.460161"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1146"
-            endingLineNumber = "1146"
-            landmarkName = "mouseUp(with:)"
+            startingLineNumber = "1170"
+            endingLineNumber = "1170"
+            landmarkName = "showPopover(bounds:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/views/OperationController.swift"
+            timestampString = "575788858.460227"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "67"
+            endingLineNumber = "67"
+            landmarkName = "createOperation(_:_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/views/SearchBoxController.swift"
+            timestampString = "575788858.460284"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "147"
+            endingLineNumber = "147"
+            landmarkName = "outlineView(_:viewFor:item:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

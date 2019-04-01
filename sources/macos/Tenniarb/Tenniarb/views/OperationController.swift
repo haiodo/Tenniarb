@@ -39,6 +39,11 @@ class OperationController: NSViewController, NSTextViewDelegate {
         operationsTextBox.delegate = self.delegate
     }
     
+    override func viewDidAppear() {
+        self.operationsTextBox.becomeFirstResponder()
+//        self.view.window?.center()
+    }
+    
     func setController(_ controller: ViewController ) {
         self.controller = controller
     }

@@ -31,9 +31,10 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     @IBOutlet weak var resultView: NSOutlineView!
     override func viewDidLoad() {
         self.searchBox.delegate = self
-        self.searchResultDelegate = SearchBoxResultDelegate(self)
-        resultView.delegate = self.searchResultDelegate!
-        resultView.dataSource = self.searchResultDelegate!
+        let delegate = SearchBoxResultDelegate(self)
+        self.searchResultDelegate = delegate
+        resultView.delegate = delegate
+        resultView.dataSource = delegate
     }
     
     func setElement(_ element: Element) {
@@ -153,9 +154,9 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
         return nil
     }
     
-    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-        return OutlineNSTableRowView()
-    }
+//    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+//        return OutlineNSTableRowView()
+//    }
     
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
