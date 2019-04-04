@@ -366,7 +366,7 @@ public class ExecutionSession {
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue], _ session: ExecutionSession? ) -> Bool {
         // We need to set old values to be empty
         for (k, _) in self.itemObject {
-            if !k.contains("-") || !k.contains("+") {
+            if !k.contains("-") && !k.contains("+") && !k.contains("[") && !k.contains("]") {
                 self.parentCtx.jsContext.evaluateScript("delete \(k)")
             }
         }
