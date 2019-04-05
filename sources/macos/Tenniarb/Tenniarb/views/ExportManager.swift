@@ -112,7 +112,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         context?.setFillColor(CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1))
     
         context?.setShouldAntialias(true)
-        context?.fill(bounds)
+        context?.fill(CGRect(x: 0, y: 0, width: Int(imgBounds.width*scaleFactor), height: Int(imgBounds.height*scaleFactor)))
 
         scene.draw(context: context!)
         context?.restoreGState()
