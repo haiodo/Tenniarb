@@ -102,11 +102,13 @@ public class CompositeOperation: ElementOperation {
     override func apply() {
         for op in self.operations {
             op.apply()
+            op.isUndoCalled = false
         }
     }
     override func undo() {
         for op in self.operations.reversed() {
             op.undo()
+            op.isUndoCalled = true
         }
     }
     override func getNotifier() -> Element {
@@ -456,7 +458,11 @@ class AddItem: ElementOperation {
         return self.parent
     }
     override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
-        items[item] = .Append
+        if !isUndoCalled {
+            items[item] = .Append
+        } else {
+            items[item] = .Remove
+        }
     }
 }
 
@@ -502,6 +508,10 @@ class RemoveItem: ElementOperation {
         return self.parent
     }
     override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
-        items[child] = .Remove
+        if !isUndoCalled {
+            items[child] = .Append
+        } else {
+            items[child] = .Remove
+        }
     }
 }

@@ -32,6 +32,7 @@
 		0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C67960F210E215E00AEED63 /* SyncViewController.swift */; };
 		0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */; };
 		0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ED8C1224F3F25009145E1 /* OperationController.swift */; };
+		0C6ED8C62253988B009145E1 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 0C6ED8C52253988B009145E1 /* index.html */; };
 		0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C83E507219085BD00AD0317 /* ResourcesViewController.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
@@ -107,6 +108,7 @@
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C67960F210E215E00AEED63 /* SyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncViewController.swift; path = views/SyncViewController.swift; sourceTree = "<group>"; };
 		0C6ED8C1224F3F25009145E1 /* OperationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OperationController.swift; path = views/OperationController.swift; sourceTree = "<group>"; };
+		0C6ED8C52253988B009145E1 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		0C83E507219085BD00AD0317 /* ResourcesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ResourcesViewController.swift; path = views/ResourcesViewController.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
+				0C6ED8C322536626009145E1 /* Resources */,
 				0C3130601F0A9D0100FA5624 /* Documentation */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
@@ -294,6 +297,22 @@
 			path = TenniarbTests;
 			sourceTree = "<group>";
 		};
+		0C6ED8C322536626009145E1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0C6ED8C422539869009145E1 /* help */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		0C6ED8C422539869009145E1 /* help */ = {
+			isa = PBXGroup;
+			children = (
+				0C6ED8C52253988B009145E1 /* index.html */,
+			);
+			path = help;
+			sourceTree = "<group>";
+		};
 		0CB496991F11D8D600F5CB4C /* scene */ = {
 			isa = PBXGroup;
 			children = (
@@ -412,6 +431,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C6ED8C62253988B009145E1 /* index.html in Resources */,
 				0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */,
 				0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */,
 			);

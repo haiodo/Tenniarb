@@ -167,16 +167,6 @@ fileprivate func calculateValue(_ node: TennNode?,
     return nil
 }
 
-@objc protocol ItemProtocol: JSExport {
-    var properties: [String: Any] { get }
-}
-
-@objc protocol ElementProtocol: JSExport {
-    var properties: [String: Any] { get }
-    var items: [NSDictionary] { get }
-    var links: [NSDictionary] { get }
-}
-
 @objc protocol UtilsProtocol: JSExport {
     func now() -> Double
 }
@@ -187,13 +177,37 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
 }
 
-public class ExecutionSession {
-    var currentItem: ItemContext?
-    var dependencies: [ItemContext:[ItemContext]] = [:] // Dependencies
-    var useDeps: Bool = false
+
+@objc protocol ParentProtocol: JSExport {
+    var items: [Any] {
+        get
+    }
+    var links: [Any] {
+        get
+    }
 }
 
-@objc public class ItemContext: NSObject, ItemProtocol {
+@objc public class ParentObject: NSObject, ParentProtocol {
+    var parent: ElementContext
+    var item: ItemContext
+    init(_ parent: ElementContext, _ item: ItemContext ) {
+        self.parent = parent
+        self.item = item
+    }
+    var items: [Any] {
+        get {
+            return parent.itemsMap.values.filter({ e in e.item.kind == .Item } ).map{e in e.itemObject}
+        }
+    }
+    var links: [Any] {
+        get {
+            return parent.itemsMap.values.filter({ e in e.item.kind == .Link } ).map{e in e.itemObject}
+        }
+    }
+}
+
+
+@objc public class ItemContext: NSObject {
     var item: DiagramItem
     var itemObject: [String:Any] = [:] // To be used from references
     var hasExpressions: Bool = false
@@ -201,11 +215,7 @@ public class ExecutionSession {
     
     var evaluated: [TennToken: JSValue] = [:]
     
-    dynamic var properties: [String : Any] {
-        get {
-            return self.itemObject
-        }
-    }
+    var dependencies: Set<ItemContext> = Set()
     
     init(_ parentCtx: ElementContext ,_ item: DiagramItem ) {
         self.item = item
@@ -214,19 +224,18 @@ public class ExecutionSession {
     }
     
     
-    func updateContext(_ session: ExecutionSession) -> Bool {
-        session.currentItem = self
+    func updateContext() -> Bool {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
         
-        self.hasExpressions = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated, session)
+        self.hasExpressions = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated)
         
         // Check if we had value changes
         let result = checkChanges(self.itemObject, newItems)
         
         self.itemObject = newItems
         self.evaluated = newEvaluated
-        session.currentItem = nil
+
         return result
     }
     
@@ -293,7 +302,7 @@ public class ExecutionSession {
         return result
     }
     
-    fileprivate func registerSum(_ session: ExecutionSession?) {
+    fileprivate func registerSum() {
         let sum: @convention(block) (String, Any?) -> Any? = { (tagName, fieldName) in
             var result: Double = 0
             var field = ""
@@ -306,14 +315,15 @@ public class ExecutionSession {
             if field.count == 0 {
                 field = tagName
             }
-            self.parentCtx.itemsMap.values.filter({e in e.properties[tagName] != nil}).forEach({e in
-                if let v = e.properties[field] as? Int {
+            self.parentCtx.itemsMap.values.filter({e in e.itemObject[tagName] != nil}).forEach({e in
+                self.dependencies.insert(e)
+                if let v = e.itemObject[field] as? Int {
                     result += Double(v)
                 }
-                if let v = e.properties[field] as? Double {
+                if let v = e.itemObject[field] as? Double {
                     result += v
                 }
-                if let v = e.properties[field] as? JSValue {
+                if let v = e.itemObject[field] as? JSValue {
                     result += v.toDouble()
                 }
             })
@@ -323,25 +333,40 @@ public class ExecutionSession {
         self.parentCtx.jsContext.setObject(sum, forKeyedSubscript: "sum" as NSString)
     }
     
-    fileprivate func registerByTag(_ session: ExecutionSession?) {
+    fileprivate func registerByTag() {
         let byTag: @convention(block) (String) -> Any? = { tagName in
             // Make it in right order every time.
-            return self.parentCtx.element.items.map({(e) -> ItemContext? in self.parentCtx.itemsMap[e]}).filter({e in e != nil && e!.properties[tagName] != nil}).map { e in e!.properties }
+            return self.parentCtx.element.items.map({(e) -> ItemContext? in self.parentCtx.itemsMap[e]}).filter({e in e != nil && e!.itemObject[tagName] != nil}).map { e in e!.itemObject }
         }
         
         self.parentCtx.jsContext.setObject(byTag, forKeyedSubscript: "byTag" as NSString)
     }
     
-    fileprivate func registerInputsOutputs(_ session: ExecutionSession? ) {
+    fileprivate func registerInputsOutputs() {
         // Edge operations
         let edges: @convention(block) () -> Any? = { () in
+            for itm in self.parentCtx.element.getRelatedItems(self.item, source: true, target: true) {
+                if let ctx = self.parentCtx.itemsMap[itm] {
+                    self.dependencies.insert(ctx)
+                }
+            }
             return self.getRelativeItems(source: true, target: true)
         }
         
         let inputs: @convention(block) () -> Any? = { () in
+            for itm in self.parentCtx.element.getRelatedItems(self.item, source: false, target: true) {
+                if let ctx = self.parentCtx.itemsMap[itm] {
+                    self.dependencies.insert(ctx)
+                }
+            }
             return self.getRelativeItems(source: false, target: true)
         }
         let outputs: @convention(block) () -> Any? = { () in
+            for itm in self.parentCtx.element.getRelatedItems(self.item, source: true, target: false) {
+                if let ctx = self.parentCtx.itemsMap[itm] {
+                    self.dependencies.insert(ctx)
+                }
+            }
             return self.getRelativeItems(source: true, target: false)
         }
         
@@ -350,11 +375,11 @@ public class ExecutionSession {
         self.parentCtx.jsContext.setObject(outputs, forKeyedSubscript: "outputs" as NSString)
     }
     
-    fileprivate func registerItems(_ session: ExecutionSession? ) {
+    fileprivate func registerItems( ) {
         let valueForKey: @convention(block) (Any?, String) -> Any? = { target, key in
             if let itm = self.parentCtx.namedItems[key] {
-                //
-                return itm.properties
+                self.dependencies.insert(itm)
+                return itm.itemObject
             }
             return nil
         }
@@ -363,18 +388,25 @@ public class ExecutionSession {
         self.parentCtx.jsContext.evaluateScript("items = new Proxy({}, { get: __valueForKey })")
     }
     
-    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue], _ session: ExecutionSession? ) -> Bool {
+    fileprivate func cleanContext() {
         // We need to set old values to be empty
         for (k, _) in self.itemObject {
             if !k.contains("-") && !k.contains("+") && !k.contains("[") && !k.contains("]") {
                 self.parentCtx.jsContext.evaluateScript("delete \(k)")
             }
         }
+    }
+    
+    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue]) -> Bool {
+        cleanContext()
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSString)
         
-        registerItems(session)
+        registerItems()
         
+        let parentObj = ParentObject(self.parentCtx, self)
+        
+        self.parentCtx.jsContext.setObject(parentObj, forKeyedSubscript: "parent" as NSString)
         self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSString)
         
         // Update position
@@ -386,16 +418,20 @@ public class ExecutionSession {
         self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSString)
         newItems["name"] = self.item.name
         
-        registerInputsOutputs(session)
+        registerInputsOutputs()
         
-        registerByTag(session)
-        registerSum(session)
+        registerByTag()
+        registerSum()
         
-        return processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
+        let result = processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
+        
+        // Cleanup most of context
+        cleanContext()
+        return result
     }
 }
 
-public class ElementContext: NSObject, ElementProtocol {
+public class ElementContext: NSObject {
     var element: Element
     var elementObject: [String:Any] = [:]
     var context: ExecutionContext
@@ -408,24 +444,6 @@ public class ElementContext: NSObject, ElementProtocol {
     
     var utils = UtilsContext()
     
-    var session: ExecutionSession = ExecutionSession()
-    
-    dynamic var properties: [String : Any] {
-        get {
-            return elementObject
-        }
-    }
-    dynamic var items: [NSDictionary] {
-        get {
-            return itemsMap.filter({(k,_) in k.kind == .Item }).values.map({e in e.properties as NSDictionary})
-        }
-    }
-    dynamic var links: [NSDictionary] {
-        get {
-            return itemsMap.filter({(k,_) in k.kind == .Link }).values.map({e in e.properties as NSDictionary})
-        }
-    }
-    
     fileprivate func reCalculate(_ withExprs: [ItemContext]) -> [DiagramItem] {
         var iterations = 100
         var changes: [DiagramItem:Bool] = [:]
@@ -435,7 +453,7 @@ public class ElementContext: NSObject, ElementProtocol {
         while iterations > 0 && toCheck.count > 0 {
             var changed = 0
             for ic in toCheck {
-                if ic.hasExpressions && ic.updateContext(self.session) {
+                if ic.hasExpressions && ic.updateContext() {
                     changes[ic.item] = true
                     changed += 1
                 }
@@ -459,7 +477,7 @@ public class ElementContext: NSObject, ElementProtocol {
         var withExprs: [ItemContext] = []
         for itm in element.items {
             let ic = ItemContext(self, itm)
-            _ = ic.updateContext(self.session)
+            _ = ic.updateContext()
             self.itemsMap[itm] = ic
             if ic.hasExpressions {
                 withExprs.append(ic)
@@ -486,14 +504,11 @@ public class ElementContext: NSObject, ElementProtocol {
     func updateContext(_ node:TennNode? = nil ) {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
-        self.session.dependencies.removeAll()
-        self.session.useDeps = false;
 
         self.hasExpressions = updateGetContext(node, newItems: &newItems, newEvaluated: &newEvaluated)
         
         self.elementObject = newItems
         self.evaluated = newEvaluated
-        self.session.useDeps = true;
     }
     func processEvent(_ event: ModelEvent ) {
         var needUpdateNamed = false
@@ -502,16 +517,18 @@ public class ElementContext: NSObject, ElementProtocol {
             case .Append:
                 // New item we need to add it to calculation
                 let ikc = ItemContext(self, k)
+                _ = ikc.updateContext()
                 self.itemsMap[k] = ikc
-                self.namedItems[k.name] = ikc
+                needUpdateNamed = true
             case .Remove:
                 if let idx = self.itemsMap.index(forKey: k) {
                     self.itemsMap.remove(at: idx)
                     self.namedItems.removeValue(forKey: k.name)
                 }
+                needUpdateNamed = true
             case .Update:
                 if let ci = self.itemsMap[k] {
-                    _ = ci.updateContext(self.session)
+                    _ = ci.updateContext()
                 }
                 // Probable we need to update list of named items.
                 
@@ -535,7 +552,6 @@ public class ElementContext: NSObject, ElementProtocol {
                 event.items[c] = .Update
             }
         }
-        self.session.useDeps = true;
     }
 }
 
@@ -555,14 +571,11 @@ public class ExecutionContext: IElementModelListener {
             if let root = self.rootCtx {
                _ = root.updateContext()
                 // We need to recalculate all stuff
-                root.session.dependencies.removeAll()
-                
                 for ci in root.itemsMap.values {
                     if ci.hasExpressions {
-                        _ = ci.updateContext(root.session)
+                        _ = ci.updateContext()
                     }
                 }
-                root.session.useDeps = true;
                 notifier()
             }
         })
@@ -600,7 +613,7 @@ public class ExecutionContext: IElementModelListener {
         self.internalQueue.sync( execute: {
             if let root = self.rootCtx, let ic = root.itemsMap[item] {
                 var newItems: [String:Any] = [:]
-                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, nil )
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
             }
         })
         return value
