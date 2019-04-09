@@ -8,6 +8,7 @@
 
 import Foundation
 import JavaScriptCore
+import Cocoa
 
 fileprivate func processBlock(_ node: TennNode,
                               _ currentContext: JSContext,
@@ -169,11 +170,40 @@ fileprivate func calculateValue(_ node: TennNode?,
 
 @objc protocol UtilsProtocol: JSExport {
     func now() -> Double
+    
+    func textWidth(_ text: String, _ fontSize: Any?) -> Double
+    func textSize(_ text: String, _ fontSize: Any?) -> [Double]
 }
     
 @objc public class UtilsContext: NSObject, UtilsProtocol {
     func now() -> Double {
         return NSDate().timeIntervalSince1970
+    }
+    func textWidth(_ text: String, _ fontSize: Any?) -> Double {
+        return textSize(text, fontSize)[0]
+    }
+    func textSize(_ text: String, _ fontSize: Any?) -> [Double] {
+        let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        textStyle.alignment = NSTextAlignment.center
+        
+        var fontSizeValue:CGFloat = 18
+        
+        if let size = fontSize as? Double {
+            fontSizeValue = CGFloat(size)
+        }
+        if let size = fontSize as? Int {
+            fontSizeValue = CGFloat(size)
+        }
+        
+        let textFontAttributes = [
+            NSAttributedString.Key.paragraphStyle: textStyle,
+            NSAttributedString.Key.font: NSFont.systemFont(ofSize: fontSizeValue)
+        ]
+        let attrString = NSAttributedString(string: text, attributes: textFontAttributes)
+        
+        let fs = CTFramesetterCreateWithAttributedString(attrString)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
+        return [Double(frameSize.width+6), Double(frameSize.height+4)]
     }
 }
 
@@ -184,6 +214,28 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
     var links: [Any] {
         get
+    }
+}
+
+@objc protocol PositionProtocol: JSExport {
+    var x: Double {
+        get
+    }
+    var y: Double {
+        get
+    }
+}
+
+@objc public class PositionItem: NSObject, PositionProtocol {
+    var x: Double
+    var y: Double
+    init( _ x: CGFloat, _ y: CGFloat) {
+        self.x = Double(x)
+        self.y = Double(y)
+    }
+    init( _ pos: CGPoint ) {
+        self.x = Double(pos.x)
+        self.y = Double(pos.y)
     }
 }
 
@@ -410,13 +462,15 @@ fileprivate func calculateValue(_ node: TennNode?,
         self.parentCtx.jsContext.setObject(self.parentCtx.utils, forKeyedSubscript: "utils" as NSString)
         
         // Update position
-        self.parentCtx.jsContext.setObject([self.item.x, self.item.y], forKeyedSubscript: "pos" as NSString)
+        let posObj = PositionItem(self.item.x, self.item.y)
+        self.parentCtx.jsContext.setObject(posObj, forKeyedSubscript: "pos" as NSString)
         
         // Update name
         self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSString)
         self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSString)
         self.parentCtx.jsContext.setObject(self.item.id.uuidString, forKeyedSubscript: "id" as NSString)
         newItems["name"] = self.item.name
+        newItems["pos"] = posObj
         
         registerInputsOutputs()
         

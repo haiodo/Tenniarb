@@ -43,7 +43,7 @@ element "Tenniarb" {
                 color "blue"
             }
             done {
-                color "lightgreen"
+                color "green"
             }
             required {
                 color "yellow"
@@ -151,11 +151,6 @@ element "Tenniarb" {
         item "D&D" {
             pos -464.0 349.0
             color green
-        }
-        link "Scene Draw" "Classes"
-        item "Classes" {
-            pos -450.0 -81.0
-            color red
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
@@ -272,12 +267,12 @@ element "Tenniarb" {
         }
         link "Layout" "Automatic"
         item "Automatic" {
-            pos -346.0 -163.0
+            pos -317.0 -172.0
             font-size 12
         }
         link "Layout" "Manual"
         item "Manual" {
-            pos -279.0 -195.0
+            pos -283.0 -211.0
             color green
             font-size 12
         }
@@ -313,7 +308,7 @@ element "Tenniarb" {
             font-size 12
         }
         item "Multiple" {
-            pos -130.365234375 -116.0
+            pos -172.365234375 -116.0
             color red
             font-size 12
             color green
@@ -380,8 +375,8 @@ Engine" "expr dsl"
         link "MVP" "Keyboard\nshortcuts"
         link "Editing" "Undo&Redo"
         item "Copy/Paste" {
-            pos -36.365234375 64.0
-            color red
+            pos -13.365234375 59.0
+            use-style done
         }
         link "Editing" "Copy/Paste"
         item "Diagram \nPosition widget" {
@@ -396,7 +391,7 @@ Engine" "expr dsl"
             color lightgreen
         }
         link "UI" "Export" {
-            pos 27.0 -12.0
+            pos -6.0 7.0
         }
         item "Import" {
             pos -503.9111328125 120.0
@@ -430,12 +425,12 @@ Engine" "expr dsl"
         }
         link "Export" "PDF"
         item "PNG" {
-            pos -487.546875 -182.0
+            pos -547.546875 -159.0
             color green
         }
         link "Export" "PNG"
         item "HTML" {
-            pos -462.546875 -218.0
+            pos -505.546875 -183.0
             color green
         }
         link "Export" "HTML"
@@ -505,7 +500,7 @@ Engine" "expr dsl"
             target-index 1
         }
         item "SVG" {
-            pos -389.732421875 -228.0
+            pos -442.732421875 -131.0
         }
         link "Export" "SVG"
         item "Color matches" {
@@ -551,6 +546,42 @@ Engine" "expr dsl"
             use-style required
         }
         link "Layout" "Aligh on XXX"
+        item "Position calculation" {
+            pos 137.637109375 322.0
+        }
+        link "javascript" "Position calculation"
+        item "Under" {
+            pos -90.24336242675781 -112.0
+            use-style required
+        }
+        item "Layering" {
+            pos -389.3414001464844 -222.0
+            use-style required
+        }
+        link "UI" "Layering" {
+            pos -14.0 1.0
+        }
+        item "Front/Back" {
+            pos -450.56561279296875 -273.0
+            use-style required
+        }
+        link "Layering" "Front/Back"
+        link "Selection" "Under"
+        item "Markdown styles" {
+            pos -67.1617202758789 -227.0
+            use-style required
+        }
+        link "Markdown BODY" "Markdown styles"
+        item "Export options" {
+            pos -538.9254150390625 -228.0
+            use-style required
+        }
+        link "Export" "Export options"
+        item "Draw background" {
+            pos -600.5031127929688 -264.0
+            use-style required
+        }
+        link "Export options" "Draw background"
         element "Plans" {
             item "Tenniarb Server" {
                 pos -415.0 183.0
@@ -872,8 +903,8 @@ element "Documentation" {
             item "Yellow" {
                 pos -956.0 61.0
                 display circle
-                width 200
-                height 200
+                width ${utils.textWidth(name)*3}
+                height ${width}
                 color yellow
                 shadow -15 -15 15
             }
@@ -7547,6 +7578,10 @@ Explode!🧨"
             width ${days_width()}
             kind Task
         }
+        item "Untitled 1" {
+            pos -74.0015869140625 -107.3583984375
+            body "${items.Person1.pos}"
+        }
     }
 }
 element "Execution basics" {
@@ -7739,5 +7774,16 @@ days=5"
             pos -356.5963439941406 291.5770263671875
             body "byTag/sum"
         }
+    }
+    element "Positioning" {
+        item "Item1" {
+            pos -429.36328125 142.2109375
+        }
+        item "Item2" {
+            pos -138.36328125 -10.7890625
+            body "${items.Item1.pos.x}"
+            x ${items.Item1.pos.x + items.Item1.width}
+        }
+        link "Item1" "Item2"
     }
 }
