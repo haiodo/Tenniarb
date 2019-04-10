@@ -547,7 +547,7 @@ Engine" "expr dsl"
         }
         link "Layout" "Aligh on XXX"
         item "Position calculation" {
-            pos 137.637109375 322.0
+            pos 137.63711547851562 322.0
         }
         link "javascript" "Position calculation"
         item "Under" {
@@ -4086,7 +4086,7 @@ element "Documentation" {
         element "Color on pos" {
             define ${
     function my_color() {
-        return [Math.abs(pos[0]), Math.abs(pos[1]),50]
+        return [Math.abs(pos.x), Math.abs(pos.y),50]
     }
 }
             item "0:0" {
@@ -7777,10 +7777,14 @@ days=5"
     }
     element "Positioning" {
         item "Item1" {
-            pos -429.36328125 142.2109375
+            pos -715.36328125 236.2109375
+            body %{
+    width = ${width}
+    height = ${height}
+}
         }
         item "Item2" {
-            pos -138.36328125 -10.7890625
+            pos -403.36328125 167.2109375
             body "${items.Item1.pos.x}"
             x ${items.Item1.pos.x + items.Item1.width}
         }

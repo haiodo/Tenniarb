@@ -692,9 +692,9 @@ open class DrawableScene: DrawableContainer {
     
     var activeElements: [DiagramItem] = []
     
-    var executionContext: ExecutionContext?
+    var executionContext: ExecutionContextEvaluator?
     
-    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContext?) {
+    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContextEvaluator?, buildChildren: Bool = true) {
         self.sceneStyle = SceneStyle(darkMode)
         self.darkMode = darkMode
         self.executionContext = executionContext
@@ -703,7 +703,7 @@ open class DrawableScene: DrawableContainer {
         
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
         
-        self.append(buildElementScene(element, self.darkMode))
+        self.append(buildElementScene(element, self.darkMode, buildChildren: buildChildren))
     }
     
     public override func find( _ point: CGPoint ) -> [ItemDrawable] {
@@ -1082,7 +1082,7 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func buildElementScene( _ element: Element, _ darkMode: Bool)-> Drawable {
+    func buildElementScene( _ element: Element, _ darkMode: Bool, buildChildren: Bool)-> Drawable {
         let elementDrawable = DrawableContainer()
         
         self.sceneStyle = SceneStyle(darkMode)
@@ -1091,37 +1091,39 @@ open class DrawableScene: DrawableContainer {
         
         var links: [DiagramItem] = []
         
-        buildItems(element.items, elementDrawable, &links)
-        for e in links {
-            if let data = e as? LinkItem {
-                
-                let linkStyle = self.sceneStyle.defaultLineStyle.copy()
-                linkStyle.parseStyle(e.properties, evaluated)
-                var sr: CGRect = CGRect(x: 0, y: 0, width: 5, height: 5)
-                var tr: CGRect = CGRect(x: 0, y: 5, width: 5, height: 5)
-                
-                if let src = data.source, let srr = (drawables[src]?.getSelectorBounds()) {
-                    self.addLink( src, e )
-                    sr = srr
+        if buildChildren {
+            buildItems(element.items, elementDrawable, &links)
+            for e in links {
+                if let data = e as? LinkItem {
+                    
+                    let linkStyle = self.sceneStyle.defaultLineStyle.copy()
+                    linkStyle.parseStyle(e.properties, evaluated)
+                    var sr: CGRect = CGRect(x: 0, y: 0, width: 5, height: 5)
+                    var tr: CGRect = CGRect(x: 0, y: 5, width: 5, height: 5)
+                    
+                    if let src = data.source, let srr = (drawables[src]?.getSelectorBounds()) {
+                        self.addLink( src, e )
+                        sr = srr
+                    }
+                    if let dst = data.target, let trr = drawables[dst]?.getSelectorBounds() {
+                        self.addLink( dst, e )
+                        tr = trr
+                    }
+                    let linkDr = DrawableLine(
+                        source: sr,
+                        target: tr,
+                        style: linkStyle,
+                        control: CGPoint(x: e.x, y: e.y ))
+                    
+                    if data.name.count > 0 {
+                        linkDr.addLabel(data.name)
+                    }
+                    
+                    linkDr.item = e
+                    drawables[e] = linkDr
+                    elementDrawable.insert(
+                        linkDr, at: 0)
                 }
-                if let dst = data.target, let trr = drawables[dst]?.getSelectorBounds() {
-                    self.addLink( dst, e )
-                    tr = trr
-                }
-                let linkDr = DrawableLine(
-                    source: sr,
-                    target: tr,
-                    style: linkStyle,
-                    control: CGPoint(x: e.x, y: e.y ))
-                
-                if data.name.count > 0 {
-                    linkDr.addLabel(data.name)
-                }
-                
-                linkDr.item = e
-                drawables[e] = linkDr
-                elementDrawable.insert(
-                    linkDr, at: 0)
             }
         }
         return elementDrawable

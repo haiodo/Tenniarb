@@ -162,7 +162,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             if let ctx = self.controller.elementStore?.executionContext {
                 var evaluated:[TennToken: JSValue] = [:]
                 if let di = self.diagramItem {
-                    evaluated = ctx.getEvaluated(di, currentNode)
+                    evaluated = ctx.getEvaluated(di, currentNode, self.controller.scene.scene?.drawables[di])
                 } else if self.diagramItem == nil, let ictx = ctx.rootCtx, ictx.element == self.element {
                     evaluated = ctx.getEvaluated(self.element!, currentNode)
                 }
@@ -181,6 +181,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         // We need to handle our element changes in case it is not called by us
         if self.ourUpdate {
             self.ourUpdate = false
+            updateAnnotations()
         } else {
             DispatchQueue.main.async(execute: {
                 self.setTextValue(self.element, self.diagramItem)
@@ -201,6 +202,11 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         let minified = p.parse(view.string).toStr()
         
         if minified == valueStr {
+            // Annotation could be different
+            DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
+                self.highlight()
+                self.updateAnnotations()
+            })
             return; // Same value, do not need to modify curren test
         }
         self.view.textStorage?.setAttributedString(NSAttributedString(string: valueStr))

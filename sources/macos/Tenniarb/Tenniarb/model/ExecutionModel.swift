@@ -239,6 +239,34 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
 }
 
+
+@objc protocol VisualProtocol: JSExport {
+    var width: Double {
+        get
+    }
+    var height: Double {
+        get
+    }
+}
+
+
+@objc public class VisualItem: NSObject, VisualProtocol {
+    var drawable: Drawable
+    init( _ item: Drawable ) {
+        self.drawable = item
+    }
+    var width: Double {
+        get {
+            return round(Double(self.drawable.getSelectorBounds().width))
+        }
+    }
+    var height: Double {
+        get {
+            return round(Double(self.drawable.getSelectorBounds().height))
+        }
+    }
+}
+
 @objc public class ParentObject: NSObject, ParentProtocol {
     var parent: ElementContext
     var item: ItemContext
@@ -276,11 +304,13 @@ fileprivate func calculateValue(_ node: TennNode?,
     }
     
     
-    func updateContext() -> Bool {
+    func updateContext(_ scene: DrawableScene ) -> Bool {
         var newItems: [String:Any] = [:]
         var newEvaluated: [TennToken: JSValue] = [:]
         
-        self.hasExpressions = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated)
+        let container = DrawableContainer()
+        scene.buildItemDrawable(self.item, container)
+        self.hasExpressions = updateGetContext(nil, newItems: &newItems, newEvaluated: &newEvaluated, scene.drawables[self.item])
         
         // Check if we had value changes
         let result = checkChanges(self.itemObject, newItems)
@@ -449,7 +479,7 @@ fileprivate func calculateValue(_ node: TennNode?,
         }
     }
     
-    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue]) -> Bool {
+    fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue], _ drawable: Drawable? ) -> Bool {
         cleanContext()
         
         self.parentCtx.jsContext.setObject(self.parentCtx, forKeyedSubscript: "parent" as NSString)
@@ -465,6 +495,16 @@ fileprivate func calculateValue(_ node: TennNode?,
         let posObj = PositionItem(self.item.x, self.item.y)
         self.parentCtx.jsContext.setObject(posObj, forKeyedSubscript: "pos" as NSString)
         
+        if let dr = drawable {
+            let visualObj = VisualItem(dr)
+            self.parentCtx.jsContext.setObject(visualObj, forKeyedSubscript: "defaults" as NSString)
+            self.parentCtx.jsContext.setObject(visualObj.width, forKeyedSubscript: "width" as NSString)
+            self.parentCtx.jsContext.setObject(visualObj.height, forKeyedSubscript: "height" as NSString)
+            
+            newItems["width"] = visualObj.width
+            newItems["height"] = visualObj.height
+        }
+        
         // Update name
         self.parentCtx.jsContext.setObject(self.item.name, forKeyedSubscript: "name" as NSString)
         self.parentCtx.jsContext.setObject(self.item.kind.commandName, forKeyedSubscript: "kind" as NSString)
@@ -478,6 +518,7 @@ fileprivate func calculateValue(_ node: TennNode?,
         registerSum()
         
         let result = processBlock( node ?? self.item.properties.node, self.parentCtx.jsContext, &newItems, &newEvaluated)
+        
         
         // Cleanup most of context
         cleanContext()
@@ -498,7 +539,7 @@ public class ElementContext: NSObject {
     
     var utils = UtilsContext()
     
-    fileprivate func reCalculate(_ withExprs: [ItemContext]) -> [DiagramItem] {
+    fileprivate func reCalculate(_ withExprs: [ItemContext], _ scene: DrawableScene) -> [DiagramItem] {
         var iterations = 100
         var changes: [DiagramItem:Bool] = [:]
         var toCheck: [ItemContext] = []
@@ -507,7 +548,7 @@ public class ElementContext: NSObject {
         while iterations > 0 && toCheck.count > 0 {
             var changed = 0
             for ic in toCheck {
-                if ic.hasExpressions && ic.updateContext() {
+                if ic.hasExpressions && ic.updateContext(scene) {
                     changes[ic.item] = true
                     changed += 1
                 }
@@ -528,10 +569,13 @@ public class ElementContext: NSObject {
         super.init()
         
         self.updateContext()
+        
+        let scene = DrawableScene(self.element, darkMode: false, executionContext: self.context.evalContext, buildChildren: false)
+        
         var withExprs: [ItemContext] = []
         for itm in element.items {
             let ic = ItemContext(self, itm)
-            _ = ic.updateContext()
+            _ = ic.updateContext(scene)
             self.itemsMap[itm] = ic
             if ic.hasExpressions {
                 withExprs.append(ic)
@@ -542,7 +586,7 @@ public class ElementContext: NSObject {
             self.updateContext()
         }
         
-        _ = reCalculate(withExprs)
+        _ = reCalculate(withExprs, scene)
     }
     fileprivate func updateGetContext( _ node: TennNode?, newItems: inout [String:Any], newEvaluated: inout [TennToken: JSValue] ) -> Bool {
         // We need to set old values to be empty
@@ -566,12 +610,13 @@ public class ElementContext: NSObject {
     }
     func processEvent(_ event: ModelEvent ) {
         var needUpdateNamed = false
+        let scene = DrawableScene(self.element, darkMode: false, executionContext: self.context.evalContext, buildChildren: false)
         for (k,v) in event.items {
             switch v {
             case .Append:
                 // New item we need to add it to calculation
                 let ikc = ItemContext(self, k)
-                _ = ikc.updateContext()
+                _ = ikc.updateContext(scene)
                 self.itemsMap[k] = ikc
                 needUpdateNamed = true
             case .Remove:
@@ -582,7 +627,7 @@ public class ElementContext: NSObject {
                 needUpdateNamed = true
             case .Update:
                 if let ci = self.itemsMap[k] {
-                    _ = ci.updateContext()
+                    _ = ci.updateContext(scene)
                 }
                 // Probable we need to update list of named items.
                 
@@ -600,7 +645,7 @@ public class ElementContext: NSObject {
         var withExprs: [ItemContext] = []
         withExprs.append(contentsOf: self.itemsMap.values.filter({ e in e.hasExpressions }))
         
-        let changed = reCalculate(withExprs)
+        let changed = reCalculate(withExprs, scene)
         for c in changed {
             if event.items.index(forKey: c) == nil {
                 event.items[c] = .Update
@@ -609,12 +654,37 @@ public class ElementContext: NSObject {
     }
 }
 
-public class ExecutionContext: IElementModelListener {
+public protocol ExecutionContextEvaluator {
+    func getEvaluated(_ element: Element) -> [TennToken:JSValue]
+    func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue]
+}
+
+public class ExecutionContextEval: ExecutionContextEvaluator {
+    var context: ExecutionContext!
+    init( ) {
+    }
+    public func getEvaluated(_ element: Element) -> [TennToken : JSValue] {
+        return self.context.getEvaluatedNoSync(element)
+    }
+    
+    public func getEvaluated(_ item: DiagramItem) -> [TennToken : JSValue] {
+        return self.context.getEvaluatedNoSync(item)
+    }
+    
+    
+}
+
+public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
     private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue",
                                                               qos: .background, autoreleaseFrequency: .never )
 
+    let evalContext: ExecutionContextEval = ExecutionContextEval()
+    
+    init() {
+        self.evalContext.context = self
+    }
     
     public func setElement(_ element: Element) {
         rootCtx = ElementContext(self, element)
@@ -624,10 +694,11 @@ public class ExecutionContext: IElementModelListener {
         self.internalQueue.async( execute: {
             if let root = self.rootCtx {
                _ = root.updateContext()
+                let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, buildChildren: false)
                 // We need to recalculate all stuff
                 for ci in root.itemsMap.values {
                     if ci.hasExpressions {
-                        _ = ci.updateContext()
+                        _ = ci.updateContext(scene)
                     }
                 }
                 notifier()
@@ -653,6 +724,13 @@ public class ExecutionContext: IElementModelListener {
         })
         return value
     }
+    public func getEvaluatedNoSync(_ element: Element) -> [TennToken:JSValue] {
+        var value: [TennToken:JSValue] = [:]
+        if let root = self.rootCtx, root.element == element {
+            value = root.evaluated;
+        }
+        return value
+    }
     public func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
         self.internalQueue.sync( execute: {
@@ -662,12 +740,19 @@ public class ExecutionContext: IElementModelListener {
         })
         return value
     }
-    public func getEvaluated(_ item: DiagramItem, _ node: TennNode ) -> [TennToken:JSValue] {
+    public func getEvaluatedNoSync(_ item: DiagramItem) -> [TennToken:JSValue] {
+        var value: [TennToken:JSValue] = [:]
+        if let root = self.rootCtx, let ic = root.itemsMap[item] {
+            value = ic.evaluated;
+        }
+        return value
+    }
+    public func getEvaluated(_ item: DiagramItem, _ node: TennNode, _ drawable: Drawable? ) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
         self.internalQueue.sync( execute: {
             if let root = self.rootCtx, let ic = root.itemsMap[item] {
                 var newItems: [String:Any] = [:]
-                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, drawable)
             }
         })
         return value
