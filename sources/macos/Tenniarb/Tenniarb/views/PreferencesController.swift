@@ -19,6 +19,8 @@ let preferenceColorsBackgroundDark = "preferences.colors.background_dark"
 let preferenceExportRenderBackground = "preferences.export.export_render_background"
 let preferenceExportUseNativeScale = "preferences.structure.export_use_native_scale"
 
+let windowPositionOption = "window.pos."
+
 public class PreferenceConstants {
     public let backgroundDefault = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
     public let backgroundDarkDefault = CGColor(red: 0x2e/255, green: 0x2e/255, blue: 0x2e/255, alpha:1)

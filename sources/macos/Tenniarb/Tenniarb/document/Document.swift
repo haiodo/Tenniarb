@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class Document: NSDocument, IElementModelListener {
+class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     var store: ElementModelStore?
     
     var vc: ViewController?
@@ -43,8 +43,32 @@ class Document: NSDocument, IElementModelListener {
         
         
         vc = windowController.contentViewController as? ViewController
+        vc?.view.window?.delegate = self
         
         vc?.setElementModel(elementStore: self.store!)
+        
+        if let uri = self.fileURL?.absoluteString, let window = self.vc?.view.window,
+            let data = PreferenceConstants.preference.defaults.value(forKey: windowPositionOption + uri)  {
+            if let dta = data as? Data, let frame = NSUnarchiver.unarchiveObject(with: dta) as? NSRect {
+                window.setFrame(frame, display: true)
+            }
+        }
+    }
+    
+    func saveWindowPosition() {
+        if let frame = vc?.view.window?.frame, let uri = self.fileURL?.absoluteString {
+            let value = NSArchiver.archivedData(withRootObject: frame)
+            PreferenceConstants.preference.defaults.set(value, forKey: windowPositionOption + uri)
+        }
+    }
+    func windowDidMove(_ notification: Notification) {
+        saveWindowPosition()
+    }
+    func windowDidResize(_ notification: Notification) {
+        saveWindowPosition()
+    }
+    func windowDidExpose(_ notification: Notification) {
+        saveWindowPosition()
     }
     
     override func read(from url: URL, ofType typeName: String) throws {
