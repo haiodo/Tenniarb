@@ -728,6 +728,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         textBox.removeFromSuperview()
         self.editBox = nil
         self.editBoxItem = nil
+        self.scene?.editBoxBounds = nil
+        self.scene?.editingMode = false
         self.window?.makeFirstResponder(self)
         scheduleRedraw()
     }
@@ -759,7 +761,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     func getEditBoxBounds( item: Drawable ) -> CGRect {
         var deBounds = self.editBoxItem!.getSelectorBounds()
         if let link =  item as? DrawableLine, let label = link.label {
-            deBounds = label.getBounds()
+            deBounds = label.getSelectorBounds()
             deBounds.origin = CGPoint(x: deBounds.origin.x + label.point.x, y: deBounds.origin.y + label.point.y)
         }
         let bounds = CGRect(
@@ -1305,6 +1307,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if drawables.count == 0 {
             self.setActiveItem(nil)
             self.mode = .DiagramMove
+            self.scene?.selectionBox = nil
             
             self.pivotPoint = CGPoint(x: self.x , y: self.y)
             

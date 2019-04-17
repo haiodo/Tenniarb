@@ -99,7 +99,7 @@ open class DrawableContainer: ItemDrawable {
                     }
                     else {
                         // Just regular drawable check for bounds
-                        if cc.getBounds().contains(point) && cc.item != nil {
+                        if cc.getSelectorBounds().contains(point) && cc.item != nil {
                             result.append(cc)
                         }
                     }
@@ -116,7 +116,7 @@ open class DrawableContainer: ItemDrawable {
         }
         if self.item != nil {
             // Check self coords
-            if self.getBounds().contains(point) {
+            if self.getSelectorBounds().contains(point) {
                 result.append(self)
             }
         }
