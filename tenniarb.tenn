@@ -901,7 +901,7 @@ element "Documentation" {
                 line-style dotted
             }
             item "Yellow" {
-                pos -956.0 61.0
+                pos -946.0 50.0
                 display circle
                 width ${utils.textWidth(name)*3}
                 height ${width}
