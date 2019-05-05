@@ -62,15 +62,15 @@ class ExportManager: NSObject, NSMenuDelegate {
 //        ExportType(name:"Preview printable value", exportType: .preview, imgName: "Icon")
     ]
     
-    var scene: DrawableScene? {
-        get {
-            return viewController?.scene.scene
-        }
-    }
-    
     var element: Element? {
         get {
             return viewController?.selectedElement
+        }
+    }
+    
+    var activeItems: [DiagramItem]? {
+        get {
+            return (viewController?.activeItems.count ?? 0 ) > 0 ?  viewController?.activeItems : nil
         }
     }
     
@@ -78,12 +78,19 @@ class ExportManager: NSObject, NSMenuDelegate {
         self.viewController = viewcontroller;
     }
 
-    func renderImage(_ scene: DrawableScene ) -> NSImage {
+    func renderImage( ) -> (NSImage, CGRect) {
+        
+        let scene = DrawableScene(self.element!, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext,
+                                  items: self.activeItems)
         let bounds = scene.getBounds()
         let ox = CGFloat(15)
         let oy = CGFloat(15)
         
-        let scaleFactor = self.viewController!.view.window!.backingScaleFactor
+        var scaleFactor = self.viewController!.view.window!.backingScaleFactor
+        
+        if !PreferenceConstants.preference.renderUseNativeResolution {
+            scaleFactor = 1
+        }
         
         let imgBounds = bounds.insetBy(dx: CGFloat((-1 * ox) * 2), dy: CGFloat((-1 * oy) * 2))
         
@@ -105,21 +112,24 @@ class ExportManager: NSObject, NSMenuDelegate {
         context?.scaleBy(x: scaleFactor, y: scaleFactor)
         context?.saveGState()
         
-        let scene = DrawableScene(self.element!, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext)
-        scene.offset = CGPoint(x: ox + CGFloat(-1 * bounds.origin.x), y: oy + CGFloat(-1 * bounds.origin.y))
+        
+        scene.offset = CGPoint(x: ox*scaleFactor + CGFloat(-1 * bounds.origin.x), y: oy*scaleFactor + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
         
         context?.setFillColor(CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1))
     
         context?.setShouldAntialias(true)
-        context?.fill(CGRect(x: 0, y: 0, width: Int(imgBounds.width*scaleFactor), height: Int(imgBounds.height*scaleFactor)))
+        if PreferenceConstants.preference.renderEnableBackground {
+            context?.fill(CGRect(x: 0, y: 0, width: Int(imgBounds.width*scaleFactor), height:
+                Int(imgBounds.height*scaleFactor)))
+        }
 
         scene.draw(context: context!)
         context?.restoreGState()
         
         let image = context!.makeImage()
         let img = NSImage(cgImage: image!, size: imgBounds.size)
-        return img
+        return (img, bounds)
     }
     
     func displayImageInPopup(_ img: NSImage, _ imgBounds: CGRect) {
@@ -161,46 +171,43 @@ class ExportManager: NSObject, NSMenuDelegate {
     }
     
     fileprivate func exportPng(_ writeFile: Bool) {
-        if let scene = self.scene {
-            let img = renderImage(scene)
-            
-            if let tiff = img.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiff) {
-                if let pngData = bitmapImage.representation(using: .png, properties: [:]) {
-                    if writeFile {
-                        let mySave = NSSavePanel()
-                        mySave.allowedFileTypes = ["png"]
-                        mySave.allowsOtherFileTypes = false
-                        mySave.isExtensionHidden = true
-                        mySave.nameFieldStringValue = self.element!.name
-                        mySave.title = "Export diagram as PNG"
+        let (img, _) = renderImage()
+        
+        if let tiff = img.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiff) {
+            if let pngData = bitmapImage.representation(using: .png, properties: [:]) {
+                if writeFile {
+                    let mySave = NSSavePanel()
+                    mySave.allowedFileTypes = ["png"]
+                    mySave.allowsOtherFileTypes = false
+                    mySave.isExtensionHidden = true
+                    mySave.nameFieldStringValue = self.element!.name
+                    mySave.title = "Export diagram as PNG"
+                    
+                    mySave.begin { (result) -> Void in
                         
-                        mySave.begin { (result) -> Void in
-                            
-                            if result.rawValue == NSFileHandlingPanelOKButton {
-                                if let filename = mySave.url {
-                                    do {
-                                        try pngData.write(to: filename)
-                                    }
-                                    catch {
-                                        Swift.debugPrint("Error saving file")
-                                    }
+                        if result.rawValue == NSFileHandlingPanelOKButton {
+                            if let filename = mySave.url {
+                                do {
+                                    try pngData.write(to: filename)
+                                }
+                                catch {
+                                    Swift.debugPrint("Error saving file")
                                 }
                             }
                         }
                     }
-                    else {
-                        let pb = NSPasteboard.general
-                        pb.clearContents()
-                        pb.setData(pngData, forType: .png)
-                    }
+                }
+                else {
+                    let pb = NSPasteboard.general
+                    pb.clearContents()
+                    pb.setData(pngData, forType: .png)
                 }
             }
         }
     }
     
-    func generateHtml(_ scene: DrawableScene ) -> String? {
-        let bounds = scene.getBounds()
-        let img = renderImage(scene)
+    func generateHtml( ) -> String? {
+        let (img, bounds) = renderImage()
 
         if let tiff = img.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiff) {
             if let base64Data = bitmapImage.representation(using: .png, properties: [:])?.base64EncodedString() {
@@ -250,17 +257,15 @@ class ExportManager: NSObject, NSMenuDelegate {
     }
     
     func exportHtml(_ exportFile: Bool ) {
-        if let scene = self.scene {
-            if let htmlContent = self.generateHtml(scene) {
-                if exportFile {
-                    exportHtmlFile(htmlContent)
-                }
-                else {
-                    let pb = NSPasteboard.general
-                    pb.clearContents()
-                    pb.setString(htmlContent, forType: .html)
-                    pb.setString(htmlContent, forType: .string)
-                }
+        if let htmlContent = self.generateHtml() {
+            if exportFile {
+                exportHtmlFile(htmlContent)
+            }
+            else {
+                let pb = NSPasteboard.general
+                pb.clearContents()
+                pb.setString(htmlContent, forType: .html)
+                pb.setString(htmlContent, forType: .string)
             }
         }
     }
@@ -346,10 +351,8 @@ class ExportManager: NSObject, NSMenuDelegate {
             case .pdf:
                 exportPdf()
             case .preview:
-                if let scene = scene {
-                    let img = renderImage(scene)
-                    displayImageInPopup(img, CGRect(x:0, y:0, width: 1024, height: 768))
-                }
+                let (img, bounds ) = renderImage()
+                displayImageInPopup(img, CGRect(x:0, y:0, width: bounds.width, height: bounds.height))
             default:
                 break;
             }

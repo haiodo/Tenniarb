@@ -184,10 +184,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         if responder  == self.scene {
             self.scene.selectAllItems()
+            return
         }
         else if responder == self.textView {
             self.textView.selectAll(sender)
+            return
         }
+        super.selectAll(sender)
     }
     
     @IBAction func selectNoneItems(_ sender: NSMenuItem) {

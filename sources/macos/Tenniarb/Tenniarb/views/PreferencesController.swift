@@ -19,6 +19,9 @@ let preferenceColorsBackgroundDark = "preferences.colors.background_dark"
 let preferenceExportRenderBackground = "preferences.export.export_render_background"
 let preferenceExportUseNativeScale = "preferences.structure.export_use_native_scale"
 
+let renderEnableBackgroundKey = "preferences.render.enable_background"
+let renderUseNativeResolutionKey = "preferences.render.enable_hidpi"
+
 let windowPositionOption = "window.pos."
 
 public class PreferenceConstants {
@@ -114,6 +117,17 @@ public class PreferenceConstants {
             return self.defaults.integer(forKey: preferenceExpandLevel)
         }
     }
+    public var renderEnableBackground: Bool {
+        get {
+            return self.defaults.bool(forKey: renderEnableBackgroundKey)
+        }
+    }
+    
+    public var renderUseNativeResolution: Bool {
+        get {
+            return self.defaults.bool(forKey: renderUseNativeResolutionKey)
+        }
+    }
     
     init() {
         self.defaults = NSUserDefaultsController.shared.defaults
@@ -146,6 +160,8 @@ public class PreferenceConstants {
             
             preferenceExportRenderBackground: true,
             preferenceExportUseNativeScale: true,
+            renderEnableBackgroundKey: false,
+            renderUseNativeResolutionKey: true
             ])
         defaults.synchronize()
         initDone = true

@@ -694,7 +694,7 @@ open class DrawableScene: DrawableContainer {
     
     var executionContext: ExecutionContextEvaluator?
     
-    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContextEvaluator?, buildChildren: Bool = true) {
+    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContextEvaluator?, buildChildren: Bool = true, items: [DiagramItem]? = nil) {
         self.sceneStyle = SceneStyle(darkMode)
         self.darkMode = darkMode
         self.executionContext = executionContext
@@ -702,8 +702,8 @@ open class DrawableScene: DrawableContainer {
         super.init([])
         
         self.bounds = CGRect(x:0, y:0, width: 0, height: 0)
-        
-        self.append(buildElementScene(element, self.darkMode, buildChildren: buildChildren))
+        let buildItems = items ?? element.items
+        self.append(buildElementScene(element, self.darkMode, buildChildren: buildChildren, items: buildItems))
     }
     
     public override func find( _ point: CGPoint ) -> [ItemDrawable] {
@@ -1082,7 +1082,7 @@ open class DrawableScene: DrawableContainer {
         }
     }
     
-    func buildElementScene( _ element: Element, _ darkMode: Bool, buildChildren: Bool)-> Drawable {
+    func buildElementScene( _ element: Element, _ darkMode: Bool, buildChildren: Bool, items: [DiagramItem] )-> Drawable {
         let elementDrawable = DrawableContainer()
         
         self.sceneStyle = SceneStyle(darkMode)
@@ -1092,7 +1092,7 @@ open class DrawableScene: DrawableContainer {
         var links: [DiagramItem] = []
         
         if buildChildren {
-            buildItems(element.items, elementDrawable, &links)
+            buildItems(items, elementDrawable, &links)
             for e in links {
                 if let data = e as? LinkItem {
                     

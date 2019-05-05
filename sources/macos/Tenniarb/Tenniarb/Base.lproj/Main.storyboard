@@ -699,139 +699,165 @@ CQ
             <objects>
                 <viewController title="General" showSeguePresentationStyle="single" id="EjF-jJ-3eK" customClass="PreferencesGeneralController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="6IQ-5A-XRu">
-                        <rect key="frame" x="0.0" y="0.0" width="350" height="150"/>
+                        <rect key="frame" x="0.0" y="0.0" width="416" height="367"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="slA-fc-TwS">
-                                <rect key="frame" x="103" y="120" width="61" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Structure" id="zCN-sQ-Ub1">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="EmR-hQ-IZN" userLabel="autoExpand">
-                                <rect key="frame" x="168" y="119" width="98" height="18"/>
-                                <buttonCell key="cell" type="check" title="Auto expand" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kBE-dZ-1gO">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.structure.auto_expand" id="WCN-Aa-zeM"/>
-                                </connections>
-                            </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="n4L-Da-Gd3">
-                                <rect key="frame" x="113" y="93" width="100" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Expand to level:" id="Y7O-zj-dAC">
-                                    <font key="font" usesAppearanceFont="YES"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WsI-Lx-jhl" userLabel="expandLevel">
-                                <rect key="frame" x="219" y="90" width="34" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="34" id="Qhs-o9-u0B"/>
-                                </constraints>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="2" drawsBackground="YES" id="tXi-WP-PPq">
-                                    <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="fLg-ha-fd6"/>
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <connections>
-                                    <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.structure.expand_level" id="Lpz-a6-Rus">
-                                        <dictionary key="options">
-                                            <bool key="NSContinuouslyUpdatesValue" value="YES"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vtZ-6S-3n0">
-                                <rect key="frame" x="73" y="61" width="81" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Background:" id="Yvb-aI-rdV">
-                                    <font key="font" usesAppearanceFont="YES"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <colorWell translatesAutoresizingMaskIntoConstraints="NO" id="r1g-Ld-pDC" userLabel="background">
-                                <rect key="frame" x="160" y="57" width="40" height="25"/>
-                                <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                <connections>
-                                    <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background" id="ZK9-Cx-rwX">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSUnarchiveFromData</string>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </colorWell>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nia-4w-HtY">
-                                <rect key="frame" x="61" y="32" width="113" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Background Dark:" id="e0b-3E-FZA">
-                                    <font key="font" usesAppearanceFont="YES"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <colorWell translatesAutoresizingMaskIntoConstraints="NO" id="gOk-j3-X9d" userLabel="backgroundDark">
-                                <rect key="frame" x="175" y="28" width="40" height="25"/>
-                                <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                <connections>
-                                    <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background_dark" id="ld9-Rd-Wv7">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSUnarchiveFromData</string>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </colorWell>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UL1-DQ-2Ts">
-                                <rect key="frame" x="205" y="52" width="75" height="32"/>
-                                <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dK9-Ce-ox9">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="resetBackground:" target="EjF-jJ-3eK" id="0qZ-CD-Hde"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vOF-Dw-IYI">
-                                <rect key="frame" x="217" y="23" width="75" height="32"/>
-                                <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTG-hj-XPe">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="resetDarkBackground:" target="EjF-jJ-3eK" id="DH9-0g-9Oa"/>
-                                </connections>
-                            </button>
+                            <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Outline" translatesAutoresizingMaskIntoConstraints="NO" id="7Ko-dS-aSb">
+                                <rect key="frame" x="17" y="242" width="382" height="105"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <view key="contentView" id="YjT-8b-lLM">
+                                    <rect key="frame" x="3" y="3" width="376" height="87"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textField verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WsI-Lx-jhl" userLabel="expandLevel">
+                                            <rect key="frame" x="134" y="20" width="94" height="22"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="34" id="Qhs-o9-u0B"/>
+                                            </constraints>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="2" drawsBackground="YES" id="tXi-WP-PPq">
+                                                <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="fLg-ha-fd6"/>
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.structure.expand_level" id="Lpz-a6-Rus">
+                                                    <dictionary key="options">
+                                                        <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n4L-Da-Gd3">
+                                            <rect key="frame" x="18" y="23" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Expand to level:" id="Y7O-zj-dAC">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EmR-hQ-IZN" userLabel="autoExpand">
+                                            <rect key="frame" x="18" y="51" width="159" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Structure Auto expand" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kBE-dZ-1gO">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.structure.auto_expand" id="WCN-Aa-zeM"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </box>
+                            <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Colors" translatesAutoresizingMaskIntoConstraints="NO" id="Y3S-wm-cj3">
+                                <rect key="frame" x="17" y="126" width="382" height="112"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <view key="contentView" id="d6e-dM-4EI">
+                                    <rect key="frame" x="3" y="3" width="376" height="94"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vOF-Dw-IYI">
+                                            <rect key="frame" x="240" y="15" width="75" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTG-hj-XPe">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="resetDarkBackground:" target="EjF-jJ-3eK" id="DH9-0g-9Oa"/>
+                                            </connections>
+                                        </button>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vtZ-6S-3n0">
+                                            <rect key="frame" x="18" y="53" width="81" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Background:" id="Yvb-aI-rdV">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <colorWell fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="r1g-Ld-pDC" userLabel="background">
+                                            <rect key="frame" x="132" y="49" width="106" height="25"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background" id="ZK9-Cx-rwX">
+                                                    <dictionary key="options">
+                                                        <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </colorWell>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nia-4w-HtY">
+                                            <rect key="frame" x="18" y="24" width="113" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Background Dark:" id="e0b-3E-FZA">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <colorWell fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gOk-j3-X9d" userLabel="backgroundDark">
+                                            <rect key="frame" x="132" y="20" width="106" height="25"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background_dark" id="ld9-Rd-Wv7">
+                                                    <dictionary key="options">
+                                                        <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </colorWell>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UL1-DQ-2Ts">
+                                            <rect key="frame" x="240" y="44" width="75" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dK9-Ce-ox9">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="resetBackground:" target="EjF-jJ-3eK" id="0qZ-CD-Hde"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </box>
+                            <box fixedFrame="YES" title="Export" translatesAutoresizingMaskIntoConstraints="NO" id="9VZ-CO-KDr">
+                                <rect key="frame" x="17" y="16" width="382" height="106"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <view key="contentView" id="96C-WH-kkx">
+                                    <rect key="frame" x="3" y="3" width="376" height="88"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3NI-X4-hkK" userLabel="autoExpand">
+                                            <rect key="frame" x="18" y="52" width="141" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Render background" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="DIq-IC-GCj">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.render.enable_background" id="5Wy-t5-VfN"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XsR-cw-wvW" userLabel="autoExpand">
+                                            <rect key="frame" x="18" y="24" width="152" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Use Native resolution" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="sCC-9V-IaK">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.render.enable_hidpi" id="Lsa-9W-fcl"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </box>
                         </subviews>
-                        <constraints>
-                            <constraint firstItem="WsI-Lx-jhl" firstAttribute="top" secondItem="EmR-hQ-IZN" secondAttribute="bottom" constant="9" id="4YO-6C-8Up"/>
-                            <constraint firstItem="gOk-j3-X9d" firstAttribute="centerY" secondItem="vOF-Dw-IYI" secondAttribute="centerY" id="6TL-w4-KH1"/>
-                            <constraint firstItem="UL1-DQ-2Ts" firstAttribute="leading" secondItem="r1g-Ld-pDC" secondAttribute="trailing" constant="11" id="8BQ-oO-hGr"/>
-                            <constraint firstItem="r1g-Ld-pDC" firstAttribute="centerY" secondItem="UL1-DQ-2Ts" secondAttribute="centerY" id="EJh-8q-RR7"/>
-                            <constraint firstItem="EmR-hQ-IZN" firstAttribute="leading" secondItem="slA-fc-TwS" secondAttribute="trailing" constant="8" symbolic="YES" id="GBi-WY-zMG"/>
-                            <constraint firstItem="vOF-Dw-IYI" firstAttribute="leading" secondItem="gOk-j3-X9d" secondAttribute="trailing" constant="8" symbolic="YES" id="L9H-My-dSD"/>
-                            <constraint firstItem="slA-fc-TwS" firstAttribute="top" secondItem="6IQ-5A-XRu" secondAttribute="top" constant="13" id="Lil-5P-5gw"/>
-                            <constraint firstItem="nia-4w-HtY" firstAttribute="leading" secondItem="6IQ-5A-XRu" secondAttribute="leading" constant="63" id="O9a-oY-53B"/>
-                            <constraint firstItem="r1g-Ld-pDC" firstAttribute="leading" secondItem="vtZ-6S-3n0" secondAttribute="trailing" constant="8" symbolic="YES" id="PZ2-py-qu1"/>
-                            <constraint firstItem="gOk-j3-X9d" firstAttribute="leading" secondItem="nia-4w-HtY" secondAttribute="trailing" constant="3" id="TIg-b8-PT7"/>
-                            <constraint firstItem="slA-fc-TwS" firstAttribute="baseline" secondItem="EmR-hQ-IZN" secondAttribute="baseline" id="VKf-cn-Pte"/>
-                            <constraint firstAttribute="trailing" secondItem="EmR-hQ-IZN" secondAttribute="trailing" constant="86" id="Z6F-oS-SJF"/>
-                            <constraint firstItem="gOk-j3-X9d" firstAttribute="top" secondItem="UL1-DQ-2Ts" secondAttribute="bottom" constant="6" id="cdi-kA-GY3"/>
-                            <constraint firstAttribute="trailing" secondItem="WsI-Lx-jhl" secondAttribute="trailing" constant="97" id="dNf-PT-2AE"/>
-                            <constraint firstItem="n4L-Da-Gd3" firstAttribute="baseline" secondItem="WsI-Lx-jhl" secondAttribute="baseline" id="gXN-6R-hVU"/>
-                            <constraint firstItem="gOk-j3-X9d" firstAttribute="top" secondItem="r1g-Ld-pDC" secondAttribute="bottom" constant="4" id="lna-cj-gkX"/>
-                            <constraint firstItem="vtZ-6S-3n0" firstAttribute="centerY" secondItem="r1g-Ld-pDC" secondAttribute="centerY" id="mxJ-sr-9hN"/>
-                            <constraint firstAttribute="trailing" secondItem="vOF-Dw-IYI" secondAttribute="trailing" constant="64" id="qTt-zk-Wcd"/>
-                            <constraint firstAttribute="trailing" secondItem="UL1-DQ-2Ts" secondAttribute="trailing" constant="76" id="tfI-aS-wTV"/>
-                            <constraint firstItem="UL1-DQ-2Ts" firstAttribute="top" secondItem="WsI-Lx-jhl" secondAttribute="bottom" constant="10" id="vTA-h5-jeM"/>
-                            <constraint firstItem="WsI-Lx-jhl" firstAttribute="leading" secondItem="n4L-Da-Gd3" secondAttribute="trailing" constant="8" symbolic="YES" id="wtS-Ie-5xj"/>
-                            <constraint firstItem="nia-4w-HtY" firstAttribute="centerY" secondItem="gOk-j3-X9d" secondAttribute="centerY" id="x4f-EH-w3N"/>
-                            <constraint firstItem="vtZ-6S-3n0" firstAttribute="leading" secondItem="6IQ-5A-XRu" secondAttribute="leading" constant="75" id="z79-he-JdJ"/>
-                            <constraint firstItem="nia-4w-HtY" firstAttribute="top" secondItem="r1g-Ld-pDC" secondAttribute="bottom" constant="8" symbolic="YES" id="zkt-vR-1W4"/>
-                        </constraints>
                     </view>
                     <connections>
                         <outlet property="background" destination="r1g-Ld-pDC" id="Yiq-oT-2Iw"/>
@@ -841,7 +867,7 @@ CQ
                 <customObject id="8vI-fo-UYi" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="w1b-39-YrS"/>
             </objects>
-            <point key="canvasLocation" x="983" y="999"/>
+            <point key="canvasLocation" x="1016" y="1077.5"/>
         </scene>
         <!--Search Box View Controller-->
         <scene sceneID="Jla-SR-a45">
