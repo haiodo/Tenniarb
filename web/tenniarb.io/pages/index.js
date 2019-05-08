@@ -4,6 +4,7 @@ import React from 'react';
 
 import Router from 'next/router';
 
+import "../static/css/global.css"
 import "../static/css/menu.css"
 import "../static/css/side-menu.css"
 
@@ -80,10 +81,13 @@ function DocsGenralInfo() {
     return <div class="main">
         <h2>General Information</h2>
         <p>
-            <h4>Add of new item to diagram:</h4>
+            <h4>Main window:</h4>
+            <img src="/static/images/docs/main_window.png" width="600px"/>
+
             <table>
                 <tr>
                     <td>
+                        <h4>Add of new item to diagram:</h4>
                         <ul>
                             <li>1. Press 'Tab' to add new item to diagram</li>
                             <li>2. Select item and press 'Tab' to add linked item to diagram.</li>

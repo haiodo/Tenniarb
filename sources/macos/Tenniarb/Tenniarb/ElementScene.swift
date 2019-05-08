@@ -803,13 +803,13 @@ open class DrawableScene: DrawableContainer {
         let pos = newPositions.first!.value
         var result:CGRect = CGRect(origin: pos, size: CGSize(width:1, height:1))
         for ad in activeDrawables {
-            result = result.union(ad.getBounds().insetBy(dx: -40, dy: -40))
+            result = result.union(ad.getSelectorBounds().insetBy(dx: -40, dy: -40))
         }
         
         updateActiveElements(self.activeElements, newPositions)
         
         for ad in activeDrawables {
-            result = result.union(ad.getBounds().insetBy(dx: -40, dy: -40))
+            result = result.union(ad.getSelectorBounds().insetBy(dx: -40, dy: -40))
         }
         
         
@@ -817,25 +817,25 @@ open class DrawableScene: DrawableContainer {
             result = result.union(CGRect(origin: pos, size: CGSize(width:1, height:1)))
             
             if let box = drawables[item] as? RoundBox {
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
                 // Since bounds could be different
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
             }
             if let box = drawables[item] as? CircleBox {
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
                 // Since bounds could be different
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
             }
             if let box = drawables[item] as? EmptyBox {
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
                 box.setPath(CGRect(origin:CGPoint(x: pos.x, y: pos.y), size: box.getSelectorBounds().size))
                 // Since bounds could be different
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
             }
             if let box = drawables[item] as? DrawableLine {
-                result = result.union(box.getBounds())
+                result = result.union(box.getSelectorBounds())
                 box.control = pos
                 box.updateLayout(source: box.sourceRect, target: box.targetRect)
             }
@@ -853,7 +853,7 @@ open class DrawableScene: DrawableContainer {
                                 if let sr = sourceRect, let tr = targetRect {
                                     lnkDr.updateLayout(source: sr, target: tr)
                                 }
-                                result = result.union(lnkDr.getBounds())
+                                result = result.union(lnkDr.getSelectorBounds())
                             }
                         }
                     }
@@ -1227,7 +1227,7 @@ public class RoundBox: DrawableContainer {
         
         
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-        context.clip(to: clipBounds )
+//        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1429,10 +1429,10 @@ public class TextBox: Drawable {
     public func draw(context: CGContext, at point: CGPoint) {
         let q: NSString = self.text as NSString
         
-        let atp = CGPoint(x: point.x + self.point.x, y: point.y + self.point.y )
+        let atp = CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y )
         q.draw(at: atp , withAttributes: textFontAttributes)
         
-//        context.stroke(CGRect(origin: CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y), size: self.frame.size))
+//        context.stroke(CGRect(origin: CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y), size: self.frame.size))
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
@@ -1455,11 +1455,11 @@ public class TextBox: Drawable {
         
         //TODO: If we doesn't fit into parent bounds we need to do something with it.
         
-        self.point = CGPoint(x: frame.origin.x + px + padding.x / 2 , y: frame.origin.y + py + padding.y / 2)
+        self.point = CGPoint(x: px + padding.x / 2 , y: py + padding.y / 2)
     }
     
     public func getSelectorBounds() -> CGRect {
-        return frame
+        return CGRect(x: self.point.x + frame.origin.x, y: self.point.y + self.frame.origin.y, width: self.frame.width, height: self.frame.height)
     }
     public func getBounds() -> CGRect {
         return frame
@@ -1503,7 +1503,7 @@ public class DrawableLine: ItemDrawable {
         self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
                              textColor: self.style.borderColor,
                              fontSize: self.style.fontSize, layout: [.Middle, .Center],
-                             bounds: CGRect(origin: control, size: CGSize(width:0, height:0)))
+                             bounds: CGRect(origin: CGPoint.zero, size: CGSize(width:0, height:0)))
     }
     
     func find( _ point: CGPoint)-> Bool {
@@ -1689,6 +1689,20 @@ public class DrawableLine: ItemDrawable {
         self.draw(context: context, at: point)
     }
     
+    fileprivate func getLabelPosition(_ lbl: TextBox) -> CGPoint {
+        let lblBounds = lbl.getBounds()
+        var nx = (source.x + target.x)/2
+        
+        if abs(source.y-target.y) < 10 {
+            nx -= lblBounds.width/2
+        }
+        var ny = (source.y + target.y)/2
+        if abs(source.x-target.x) < 10 {
+            ny -= lblBounds.height/2
+        }
+        return CGPoint(x: nx+5, y: ny)
+    }
+    
     public override func draw(context: CGContext, at point: CGPoint) {
         //
         context.saveGState()
@@ -1714,6 +1728,8 @@ public class DrawableLine: ItemDrawable {
         
         aPath.move(to: fromPt)
         
+        var labelPoint: CGPoint?
+        
         for ep in self.extraPoints {
 
             // Move from pt to new location
@@ -1735,23 +1751,13 @@ public class DrawableLine: ItemDrawable {
             aPath.addLine(to: fromPtLast)
             
             if let lbl = self.label {
-                lbl.point = CGPoint(x: ep.x, y: ep.y - lbl.getBounds().height)
+                labelPoint = CGPoint(x: ep.x + 5, y: ep.y - lbl.getBounds().height)
             }
         }
 
         if self.extraPoints.isEmpty {
             if let lbl = self.label {
-                let lblBounds = lbl.getBounds()
-                var nx = (source.x + target.x)/2
-                
-                if abs(source.y-target.y) < 10 {
-                    nx -= lblBounds.width/2
-                }
-                var ny = (source.y + target.y)/2
-                if abs(source.x-target.x) < 10 {
-                    ny -= lblBounds.height/2
-                }
-                lbl.point = CGPoint(x: nx, y: ny)
+                labelPoint = getLabelPosition(lbl)
             }
         }
         
@@ -1800,9 +1806,13 @@ public class DrawableLine: ItemDrawable {
             context.drawPath(using: fillType)
         }
         
-        if let lbl = self.label {
-            lbl.draw(context: context, at: point)
+        if let lbl = self.label, let pp = labelPoint {
+            lbl.draw(context: context, at: CGPoint(x: point.x + pp.x, y: point.y + pp.y))
         }
+        
+        
+//        let b = getSelectorBounds()
+//        context.stroke(CGRect(origin: CGPoint(x: point.x + b.origin.x, y: point.y + b.origin.y), size: b.size))
         
         
         context.restoreGState()
@@ -1827,10 +1837,33 @@ public class DrawableLine: ItemDrawable {
             maxX = max(ep.x, maxX)
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
+        }
+        
+        return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
+    }
+    public override func getSelectorBounds() -> CGRect {
+        var minX = min(source.x, target.x)
+        var maxX = max(source.x, target.x)
+        var minY = min(source.y, target.y)
+        var maxY = max(source.y, target.y)
+        
+        for ep in self.extraPoints {
+            minX = min(ep.x, minX)
+            maxX = max(ep.x, maxX)
+            minY = min(ep.y, minY)
+            maxY = max(ep.y, maxY)
             
             if let lbl = self.label {
-                let lblb = lbl.getBounds()
-                let point = CGPoint(x: ep.x, y: ep.y - lbl.getBounds().height)
+                let point = CGPoint(x: ep.x + 5, y: ep.y - lbl.getBounds().height)
+                let lblb = lbl.getSelectorBounds()
+                maxX = max( maxX, point.x + lblb.width + 5)
+                minY = min( minY, point.y - 5)
+            }
+        }
+        if self.extraPoints.count == 0 {
+            if let lbl = self.label {
+                let point = getLabelPosition(lbl)
+                let lblb = lbl.getSelectorBounds()
                 
                 maxX = max( maxX, point.x + lblb.width + 5)
                 
@@ -1839,6 +1872,24 @@ public class DrawableLine: ItemDrawable {
         }
         
         return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
+    }
+    public func getLabelBounds() -> CGRect {
+        for ep in self.extraPoints {
+            if let lbl = self.label {
+                let point = CGPoint(x: ep.x + 5, y: ep.y - lbl.getBounds().height)
+                let lblb = lbl.getSelectorBounds()
+                return CGRect(origin: point, size: lblb.size)
+            }
+        }
+        if self.extraPoints.count == 0 {
+            if let lbl = self.label {
+                let point = getLabelPosition(lbl)
+                let lblb = lbl.getSelectorBounds()
+                return CGRect(origin: point, size: lblb.size)
+            }
+        }
+        let b = getBounds()
+        return CGRect(x: b.midX - 50, y: b.midY - 15, width: 100, height: 30)
     }
     public override func update() {
     }
