@@ -10,12 +10,34 @@ import Foundation
 import JavaScriptCore
 import Cocoa
 
+fileprivate func convertNameJS(_ name: String) -> String? {
+    var result = ""
+    for c in name.unicodeScalars {
+        let cc = Character(c)
+        if CharacterSet.alphanumerics.contains(c) {
+            result.append(cc)
+        } else {
+            result.append("_")
+        }
+    }
+    if result.count > 0 {
+        return result
+    }
+    return nil
+}
 fileprivate func processBlock(_ node: TennNode,
                               _ currentContext: JSContext,
                               _ levelObject: inout [String : Any],
                               _ evaluated: inout [TennToken : JSValue]) -> Bool {
     var hasExpressions: Bool = false
-    Element.traverseBlock(node, {(cmdName, blChild) -> Void in
+    Element.traverseBlock(node, {(cmdNameRaw, blChild) -> Void in
+        
+        guard let cmdName = convertNameJS(cmdNameRaw) else {
+            return
+        }
+        // we need to check if cmdName is valid command for java-script
+        
+        
         if blChild.count > 1 {
             if blChild.count == 2 {
                 let ci = blChild.getChild(1)
@@ -26,9 +48,6 @@ fileprivate func processBlock(_ node: TennNode,
                     if let v = value as? NSDictionary {
                         if v.count > 0 {
                             currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
-                        } else {
-                            // This is
-                            Swift.debugPrint("Why")
                         }
                     } else {
                         currentContext.setObject(value, forKeyedSubscript: cmdName as NSCopying & NSObjectProtocol)
@@ -399,13 +418,14 @@ fileprivate func calculateValue(_ node: TennNode?,
             }
             self.parentCtx.itemsMap.values.filter({e in e.itemObject[tagName] != nil}).forEach({e in
                 self.dependencies.insert(e)
-                if let v = e.itemObject[field] as? Int {
+                let vv = e.itemObject[field]
+                if let v = vv as? Int {
                     result += Double(v)
-                }
-                if let v = e.itemObject[field] as? Double {
+                } else if let v = vv as? Double {
                     result += v
-                }
-                if let v = e.itemObject[field] as? JSValue {
+                } else if let v = vv as? Float {
+                    result += Double(v)
+                } else if let v = vv as? JSValue {
                     result += v.toDouble()
                 }
             })
@@ -473,7 +493,7 @@ fileprivate func calculateValue(_ node: TennNode?,
     fileprivate func cleanContext() {
         // We need to set old values to be empty
         for (k, _) in self.itemObject {
-            if !k.contains("-") && !k.contains("+") && !k.contains("[") && !k.contains("]") {
+            if !k.contains("-") && !k.contains("+") && !k.contains("[") && !k.contains("]") && !k.contains("\\") {
                 self.parentCtx.jsContext.evaluateScript("delete \(k)")
             }
         }
@@ -580,7 +600,7 @@ public class ElementContext: NSObject {
             if ic.hasExpressions {
                 withExprs.append(ic)
             }
-            self.namedItems[itm.name] = ic
+            self.namedItems[convertNameJS(itm.name) ?? itm.name] = ic
         }
         if self.hasExpressions {
             self.updateContext()
@@ -622,7 +642,7 @@ public class ElementContext: NSObject {
             case .Remove:
                 if let idx = self.itemsMap.index(forKey: k) {
                     self.itemsMap.remove(at: idx)
-                    self.namedItems.removeValue(forKey: k.name)
+                    self.namedItems.removeValue(forKey: convertNameJS(k.name) ?? k.name)
                 }
                 needUpdateNamed = true
             case .Update:

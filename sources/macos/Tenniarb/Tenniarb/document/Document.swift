@@ -49,7 +49,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         
         if let uri = self.fileURL?.absoluteString, let window = self.vc?.view.window,
             let data = PreferenceConstants.preference.defaults.value(forKey: windowPositionOption + uri)  {
-            if let dta = data as? Data, let frame = NSUnarchiver.unarchiveObject(with: dta) as? NSRect {
+            if let dta = data as? Data, let frame = NSKeyedUnarchiver.unarchiveObject(with: dta) as? NSRect {
                 window.setFrame(frame, display: true)
             }
         }
@@ -57,7 +57,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     
     func saveWindowPosition() {
         if let frame = vc?.view.window?.frame, let uri = self.fileURL?.absoluteString {
-            let value = NSArchiver.archivedData(withRootObject: frame)
+            let value = NSKeyedArchiver.archivedData(withRootObject: frame)
             PreferenceConstants.preference.defaults.set(value, forKey: windowPositionOption + uri)
         }
     }

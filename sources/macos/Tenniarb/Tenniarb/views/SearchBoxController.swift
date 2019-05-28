@@ -10,7 +10,6 @@ import Foundation
 import Cocoa
 
 
-
 class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate, NSPopoverDelegate {
     
     @IBOutlet weak var searchBox: NSTextField!
@@ -41,14 +40,14 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
         self.element = element
     }
     
-//    func windowDidResignMain(_ notification: Notification) {
-//        close()
-//    }
+    //    func windowDidResignMain(_ notification: Notification) {
+    //        close()
+    //    }
     
     override func viewWillAppear() {
         self.view.window?.hidesOnDeactivate = true
         
-//        self.searc
+        //        self.searc
         self.searchBox.becomeFirstResponder()
         
         self.view.window?.center()
@@ -60,17 +59,47 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             return true
         }
         if commandSelector == #selector(NSView.insertNewline(_:)) {
+            self.close()
             return true
         }
         
-        if commandSelector == #selector(NSView.keyDown(with:)) {
+//        if commandSelector == #selector(NSView.keyDown(with:)) {
+//            return true
+//        }
+        
+        if commandSelector == #selector(NSView.moveUp(_:)) {
+            let row = self.resultView.selectedRow
+            if row > 0 {
+                self.resultView.selectRowIndexes(NSIndexSet(index: row - 1) as IndexSet, byExtendingSelection: false)
+                self.resultView.scrollRowToVisible(row - 1 )
+            } else {
+                self.resultView.selectRowIndexes(NSIndexSet(index: self.currentItems.count - 1) as IndexSet, byExtendingSelection: false)
+                self.resultView.scrollRowToVisible( self.currentItems.count - 1 )
+            }
+            
             return true
         }
+        if commandSelector == #selector(NSView.moveDown(_:)) {
+            let row = self.resultView.selectedRow
+            if row + 1 < self.currentItems.count {
+                self.resultView.selectRowIndexes(NSIndexSet(index: row + 1) as IndexSet, byExtendingSelection: false)
+                self.resultView.scrollRowToVisible(row + 1 )
+            } else {
+                self.resultView.selectRowIndexes(NSIndexSet(index: 0) as IndexSet, byExtendingSelection: false)
+                self.resultView.scrollRowToVisible(0 )
+            }
+            return true
+        }
+        
         // TODO: Resize both text and drawed item to fit value smoothly.
         
         return false
     }
-        
+    
+    override func selectAll(_ sender: Any?) {
+        self.searchBox.selectAll( sender )
+    }
+    
     func controlTextDidChange(_ notification: Notification) {
         changes += 1
         sheduleUpdate()
@@ -84,10 +113,21 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
                 
                 if let el = self.element {
                     self.currentItems = el.items.filter({(item) in
-                        return item.name.lowercased().contains(textContent.lowercased())
+                        
+                        let nameMatched = item.name.lowercased().contains(textContent.lowercased())
+                        
+                        var textValue = ""
+                        SceneDrawView.getBodyText(item, nil , &textValue)
+                        
+                        let bodyMatched = textValue.lowercased().contains(textContent.lowercased())
+                        
+                        return nameMatched || bodyMatched
                     }).sorted(by: {(a,b) in a.name.lexicographicallyPrecedes(b.name)})
                     
                     self.resultView.reloadData()
+                    if self.currentItems.count > 0 {
+                        self.resultView.selectRowIndexes(NSIndexSet(index: 0) as IndexSet, byExtendingSelection: false)
+                    }
                 }
                 
                 self.view.needsDisplay = true
@@ -111,7 +151,6 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
 
 class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
     let controller: SearchBoxViewController
-    
     init(_ controller: SearchBoxViewController ) {
         self.controller = controller
     }
@@ -146,7 +185,15 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
         if let el = item as? DiagramItem {
             if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "SearchItemCell"), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
-                    textField.stringValue = el.name
+                    
+                    var textValue = ""
+                    SceneDrawView.getBodyText(el, nil , &textValue)
+                    
+                    if textValue.count > 0 {
+                        textField.stringValue = (el.name + " - " + textValue ) .replacingOccurrences(of: "\n", with: "\\n")
+                    } else {
+                        textField.stringValue = el.name.replacingOccurrences(of: "\n", with: "\\n")
+                    }
                 }
                 return view
             }
@@ -154,17 +201,15 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
         return nil
     }
     
-//    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-//        return OutlineNSTableRowView()
-//    }
-    
+    //    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+    //        return OutlineNSTableRowView()
+    //    }
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         
         let selectedIndex = controller.resultView.selectedRow
         if let el = controller.resultView.item(atRow: selectedIndex) as? DiagramItem {
             self.controller.setActive!(el)
-            self.controller.close()
         }
     }
 }

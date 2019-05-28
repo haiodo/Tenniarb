@@ -82,7 +82,7 @@ public class PreferenceConstants {
             guard let obj = defaults.data(forKey: preferenceColorsBackground) else {
                 return backgroundDefault
             }
-            guard let clr = NSUnarchiver.unarchiveObject(with: obj) as? NSColor else {
+            guard let clr = NSKeyedUnarchiver.unarchiveObject(with: obj) as? NSColor else {
                 return backgroundDefault
             }
             self.backgroundColorCache = clr.cgColor
@@ -98,7 +98,7 @@ public class PreferenceConstants {
             guard let obj = defaults.data(forKey: preferenceColorsBackgroundDark) else {
                 return backgroundDarkDefault
             }
-            guard let clr = NSUnarchiver.unarchiveObject(with: obj) as? NSColor else {
+            guard let clr = NSKeyedUnarchiver.unarchiveObject(with: obj) as? NSColor else {
                 return backgroundDarkDefault
             }
             self.backgroundColorDarkCache = clr.cgColor
@@ -155,8 +155,8 @@ public class PreferenceConstants {
         defaults.register(defaults: [
             preferenceAutoExpand: true,
             preferenceExpandLevel: 2,
-            preferenceColorsBackground: NSArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDefault)!),
-            preferenceColorsBackgroundDark: NSArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDarkDefault)!),
+            preferenceColorsBackground: NSKeyedArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDefault)!),
+            preferenceColorsBackgroundDark: NSKeyedArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDarkDefault)!),
             
             preferenceExportRenderBackground: true,
             preferenceExportUseNativeScale: true,

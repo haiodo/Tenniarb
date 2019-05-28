@@ -1227,7 +1227,7 @@ public class RoundBox: DrawableContainer {
         
         
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-//        context.clip(to: clipBounds )
+        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }

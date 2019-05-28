@@ -233,7 +233,7 @@ public class Element {
         }
     }    
     func remove(_ element: Element) -> Int {
-        if let index = self.elements.index(of: element) {
+        if let index = self.elements.firstIndex(of: element) {
             self.elements.remove(at: index)
             return index
         }
@@ -254,7 +254,7 @@ public class Element {
     }
     
     func remove(_ item: DiagramItem) -> Int {
-        if let index = self.items.index(of: item) {
+        if let index = self.items.firstIndex(of: item) {
             self.items.remove(at: index)
             return index
         }
@@ -373,22 +373,17 @@ class LinkItem: DiagramItem {
 }
 
 extension Element: Hashable {
-    public var hashValue: Int {
-        get {
-            return id.hashValue
-        }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
     }
-    
     public static func ==(lhs: Element, rhs: Element) -> Bool {
         return lhs.id == rhs.id
     }
 }
 
 extension DiagramItem: Hashable {
-    public var hashValue: Int {
-        get {
-            return id.hashValue
-        }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
     }
     
     public static func ==(lhs: DiagramItem, rhs: DiagramItem) -> Bool {

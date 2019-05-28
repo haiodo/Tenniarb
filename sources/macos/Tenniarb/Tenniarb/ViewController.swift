@@ -146,7 +146,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 sb.parentView = self.view
                 
                 sb.closeAction = {() in self.hideSearchBox()}
-                sb.setActive = {(item) in self.scene.setActiveItem(item)}
+                sb.setActive = { (item) in
+                    self.scene.setActiveItem(item)
+                    self.scene.centerItem(item, 120)
+                }
                 
                 self.present(sb, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .transient)
             }
@@ -219,6 +222,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if let action = menuItem.action {
+            if action == #selector(selectAllItems(_:)) {
+                if self.view.window?.firstResponder == self.scene {
+                    return true
+                }
+            }
+            if action == #selector(self.showSearchBox(_:)) {
+                return true
+            }
             if action == #selector(duplicateItem) {
                 switch findTarget() {
                 case 1:
@@ -231,7 +242,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 
             }
         }
-        return true
+        return false
     }
     
     fileprivate func findTarget() -> Int {

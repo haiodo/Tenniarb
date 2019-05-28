@@ -26,10 +26,8 @@ class ExportType: Hashable {
     static func == (lhs: ExportType, rhs: ExportType) -> Bool {
         return lhs.name == rhs.name
     }
-    public var hashValue: Int {
-        get {
-            return self.name.hashValue
-        }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.name)
     }
     
     var name: String
@@ -185,7 +183,7 @@ class ExportManager: NSObject, NSMenuDelegate {
                     
                     mySave.begin { (result) -> Void in
                         
-                        if result.rawValue == NSFileHandlingPanelOKButton {
+                        if result == NSApplication.ModalResponse.OK {
                             if let filename = mySave.url {
                                 do {
                                     try pngData.write(to: filename)
@@ -242,7 +240,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         mySave.title = "Export diagram as HTML with embedded Image"
         
         mySave.begin { (result) -> Void in
-            if result.rawValue == NSFileHandlingPanelOKButton {
+            if result == NSApplication.ModalResponse.OK {
                 if let filename = mySave.url {
                     do {
                         try htmlContent.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
@@ -282,7 +280,7 @@ class ExportManager: NSObject, NSMenuDelegate {
             mySave.title = "Export element to file"
             
             mySave.begin { (result) -> Void in
-                if result.rawValue == NSFileHandlingPanelOKButton {
+                if result == NSApplication.ModalResponse.OK {
                     if let filename = mySave.url {
                         do {
                             try tennSource.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
@@ -310,7 +308,7 @@ class ExportManager: NSObject, NSMenuDelegate {
                 mySave.title = "Export element to json file"
                 
                 mySave.begin { (result) -> Void in
-                    if result.rawValue == NSFileHandlingPanelOKButton {
+                    if result == NSApplication.ModalResponse.OK {
                         if let filename = mySave.url {
                             do {
                                 try jsonSource.write(to: filename, atomically: true, encoding: String.Encoding.utf8)

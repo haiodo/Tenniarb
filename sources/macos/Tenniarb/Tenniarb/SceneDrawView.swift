@@ -78,7 +78,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
                 
                 let str = NSAttributedString(
                     string:insertPart,
-                    attributes:[NSAttributedString.Key.font: textView.font]
+                    attributes:[NSAttributedString.Key.font: textView.font ?? NSFont.systemFont(ofSize: 12)]
                 )
                 textView.textStorage?.insert(str, at: loc)
                 return true
@@ -170,8 +170,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.acceptsTouchEvents=true
-        
+        self.allowedTouchTypes = [.direct, .indirect]
     }
     
     var prevTouch: NSTouch? = nil
@@ -355,6 +354,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         needsDisplay = true
     }
+    
+    func centerItem( _ item: DiagramItem, _ offset: CGFloat ) {
+        
+        if let dr = self.scene?.drawables[item] {
+            let bounds = dr.getBounds()
+            self.ox = -1 * bounds.midX
+            self.oy = -1 * bounds.midY - offset
+        }
+    }
+    
     var count = 0;
     func animate() {
         if let fps = element?.properties.get("animation"), let delay = fps.getFloat(1) {
@@ -648,9 +657,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
         popup.shadow = shadow
         
-        segments.acceptsTouchEvents = false
+        segments.allowedTouchTypes = []
         
-        popup.acceptsTouchEvents = false
+        popup.allowedTouchTypes = []
         popupItem = act
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
@@ -773,16 +782,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return bounds
     }
     
-    func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
-        let bodyStyle = style.copy()
-        bodyStyle.fontSize -= 2 // Make a bit smaller for body
-        var textValue = ""
-        
+    static func getBodyText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) {
         if let bodyNode = item.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
-                    bodyStyle.parseStyle(bodyBlock, [:] )
+                    if let style = bodyStyle {
+                        style.parseStyle(bodyBlock, [:] )
+                    }
                     
                     if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
                         if let txt = getString(txtNode, [:]) {
@@ -795,6 +802,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
+    }
+    
+    func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
+        let bodyStyle = style.copy()
+        bodyStyle.fontSize -= 2 // Make a bit smaller for body
+        var textValue = ""
+        
+        SceneDrawView.getBodyText(item, bodyStyle, &textValue)
         return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
     fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
@@ -1253,7 +1268,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         
         self.mouseDownState = true
-                
+        
         self.dragMap.removeAll()
         self.dragElements.removeAll()
         
@@ -1304,9 +1319,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         if drawables.count == 0 {
-            self.setActiveItem(nil)
-            self.mode = .DiagramMove
-            self.scene?.selectionBox = nil
+            if event.clickCount == 2 {
+                self.setActiveItem(nil)
+                self.mode = .DiagramMove
+                self.scene?.selectionBox = nil
+            }
             
             self.pivotPoint = CGPoint(x: self.x , y: self.y)
             
@@ -1367,9 +1384,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     override func mouseDragged(with event: NSEvent) {
-        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
-            return
-        }
+//        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
+//            return
+//        }
        
         self.hidePopup()
         self.updateMousePosition(event)
@@ -1771,7 +1788,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         myOpen.title = "Attach image file..."
         
         myOpen.begin { (result) -> Void in
-            if result.rawValue == NSFileHandlingPanelOKButton {
+            if result == NSApplication.ModalResponse.OK {
                 if let filename = myOpen.url {
                     do {
                         let data:NSData = try NSData(contentsOf: filename)

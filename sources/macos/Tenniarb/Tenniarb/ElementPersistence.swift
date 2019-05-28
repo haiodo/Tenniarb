@@ -269,11 +269,11 @@ extension Element {
 }
 
 class IndexedName: Hashable {
-    var hashValue: Int {
-        get {
-            return name.hashValue + index != 0 ? index.hashValue : 0
-        }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(index)
     }
+    
     var name: String = ""
     var index: Int = 0
     
