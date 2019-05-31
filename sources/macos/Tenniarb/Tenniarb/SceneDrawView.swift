@@ -1177,7 +1177,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     override func mouseUp(with event: NSEvent) {
         self.updateMousePosition(event)
-        
         if self.mode == .Editing {
             // No dragging allowed until editing is not done
             return
@@ -1221,6 +1220,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             if let down = self.downDate {
                 if now.timeIntervalSince(down).isLess(than: 0.2) {
+                    
+                    let drawables = findElement(x: self.x, y: self.y)
+                    if self.mode != .DiagramMove && drawables.count == 0 {
+                        self.setActiveItem(nil)
+                        self.scene?.selectionBox = nil
+                    }
+                
                     showPopup()
                     self.mode = .Normal
                     return
@@ -1319,11 +1325,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         if drawables.count == 0 {
-            if event.clickCount == 2 {
-                self.setActiveItem(nil)
-                self.mode = .DiagramMove
-                self.scene?.selectionBox = nil
-            }
+//            if event.clickCount == 2 {
+//                self.setActiveItem(nil)
+//                self.mode = .DiagramMove
+//                self.scene?.selectionBox = nil
+//            }
             
             self.pivotPoint = CGPoint(x: self.x , y: self.y)
             
@@ -1443,6 +1449,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         else {
             ox += event.deltaX
             oy -= event.deltaY
+            
+            self.mode = .DiagramMove
             
             scheduleRedraw()
         }

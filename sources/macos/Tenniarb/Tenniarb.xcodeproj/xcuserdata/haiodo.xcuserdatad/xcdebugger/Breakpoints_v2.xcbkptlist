@@ -74,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "580764412.818513"
+            timestampString = "580978683.369421"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1395"
-            endingLineNumber = "1395"
+            startingLineNumber = "1403"
+            endingLineNumber = "1403"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -90,11 +90,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "580764412.81858"
+            timestampString = "580978683.36985"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1390"
-            endingLineNumber = "1390"
+            startingLineNumber = "1398"
+            endingLineNumber = "1398"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -266,7 +266,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "580764412.8191839"
+            timestampString = "580978683.370278"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "417"
@@ -289,6 +289,70 @@
             endingLineNumber = "79"
             landmarkName = "backgroundGet"
             landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "580978683.37058"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1179"
+            endingLineNumber = "1179"
+            landmarkName = "mouseUp(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "580978683.370872"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1268"
+            endingLineNumber = "1268"
+            landmarkName = "mouseDown(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "580978683.371151"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1452"
+            endingLineNumber = "1452"
+            landmarkName = "mouseDragged(with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tenniarb/SceneDrawView.swift"
+            timestampString = "580978683.371433"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1399"
+            endingLineNumber = "1399"
+            landmarkName = "mouseDragged(with:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
