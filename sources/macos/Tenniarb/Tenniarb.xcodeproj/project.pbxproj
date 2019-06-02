@@ -24,6 +24,9 @@
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
 		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
+		0C45B12C22A397BE00640305 /* examples.md in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12822A397BE00640305 /* examples.md */; };
+		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
+		0C45B12E22A397BE00640305 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12B22A397BE00640305 /* readme.md */; };
 		0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4C16071F2E369A000C5410 /* LayoutBase.swift */; };
 		0C4F1472200889CC009C9EC5 /* ColorNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4F1471200889CC009C9EC5 /* ColorNames.swift */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
@@ -75,7 +78,6 @@
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
 		0C185AA721B263DF00D174B6 /* ExecutionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExecutionModel.swift; path = model/ExecutionModel.swift; sourceTree = "<group>"; };
 		0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		0C235ED21F13F4B9004E37AC /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = docs/readme.md; sourceTree = "<group>"; };
 		0C2375EB1ED838D900ECB516 /* Tenniarb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenniarb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2375EE1ED838D900ECB516 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0C2375F01ED838D900ECB516 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -84,7 +86,6 @@
 		0C2375FA1ED838D900ECB516 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C2375FC1ED838D900ECB516 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C27F05D1EDC225B006CD2A2 /* ElementModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElementModel.swift; path = model/ElementModel.swift; sourceTree = "<group>"; };
-		0C3130611F0A9D2600FA5624 /* examples.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = examples.md; path = docs/examples.md; sourceTree = "<group>"; };
 		0C3160412242ADC00021E4D9 /* PreferencesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreferencesController.swift; path = views/PreferencesController.swift; sourceTree = "<group>"; };
 		0C34564D1ED88E9100341F1C /* SceneDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDrawView.swift; sourceTree = "<group>"; };
 		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
@@ -97,6 +98,9 @@
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
 		0C439D21200335A10031AE78 /* TennModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennModel.swift; sourceTree = "<group>"; };
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
+		0C45B12822A397BE00640305 /* examples.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = examples.md; sourceTree = "<group>"; };
+		0C45B12A22A397BE00640305 /* main_screen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = main_screen.png; sourceTree = "<group>"; };
+		0C45B12B22A397BE00640305 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
 		0C4F1471200889CC009C9EC5 /* ColorNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorNames.swift; sourceTree = "<group>"; };
 		0C571C59206A069600ACDC6D /* Tenniarb.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tenniarb.entitlements; sourceTree = "<group>"; };
@@ -152,7 +156,6 @@
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
-				0C3130601F0A9D0100FA5624 /* Documentation */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C3AA4332041582F0054DCDF /* TenniarbUITests */,
@@ -173,6 +176,7 @@
 		0C2375ED1ED838D900ECB516 /* Tenniarb */ = {
 			isa = PBXGroup;
 			children = (
+				0C45B12722A397BE00640305 /* docs */,
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
@@ -197,15 +201,6 @@
 			);
 			name = model;
 			path = ..;
-			sourceTree = "<group>";
-		};
-		0C3130601F0A9D0100FA5624 /* Documentation */ = {
-			isa = PBXGroup;
-			children = (
-				0C3130611F0A9D2600FA5624 /* examples.md */,
-				0C235ED21F13F4B9004E37AC /* readme.md */,
-			);
-			name = Documentation;
 			sourceTree = "<group>";
 		};
 		0C35FF0020DC09BD00BE3B2C /* Frameworks */ = {
@@ -271,6 +266,24 @@
 				0C2375F01ED838D900ECB516 /* ViewController.swift */,
 			);
 			name = views;
+			sourceTree = "<group>";
+		};
+		0C45B12722A397BE00640305 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				0C45B12822A397BE00640305 /* examples.md */,
+				0C45B12922A397BE00640305 /* Images */,
+				0C45B12B22A397BE00640305 /* readme.md */,
+			);
+			path = docs;
+			sourceTree = SOURCE_ROOT;
+		};
+		0C45B12922A397BE00640305 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				0C45B12A22A397BE00640305 /* main_screen.png */,
+			);
+			path = Images;
 			sourceTree = "<group>";
 		};
 		0C4C16061F2E3685000C5410 /* layout */ = {
@@ -417,7 +430,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C45B12C22A397BE00640305 /* examples.md in Resources */,
 				0C2375F81ED838D900ECB516 /* Assets.xcassets in Resources */,
+				0C45B12D22A397BE00640305 /* main_screen.png in Resources */,
+				0C45B12E22A397BE00640305 /* readme.md in Resources */,
 				0C2375FB1ED838D900ECB516 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

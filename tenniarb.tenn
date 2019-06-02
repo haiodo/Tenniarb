@@ -764,18 +764,16 @@ element "Documentation" {
         item "New Item" {
             pos 145.814453125 273.0
         }
-        item "press 'Tab'" {
+        item "press 'Cmd+D'" {
             pos 34.4287109375 209.0
             font-size 10
         }
-        link "press 'Tab'" "New Item" {
-            source-index 1
+        link "press 'Cmd+D'" "New Item" {
             target-index 2
             display arrow
         }
-        link "Item" "press 'Tab'" {
+        link "Item" "press 'Cmd+D'" {
             source-index 2
-            target-index 1
             display arrow
         }
         link "Item" "New Item" {
@@ -879,6 +877,47 @@ element "Documentation" {
         link "New Item" "New Item" {
             source-index 3
             target-index 3
+        }
+        item "New Item" {
+            pos -396.5712890625 -255.0
+            color green
+        }
+        link "press 'Option+Tab'" "New Item" {
+            target-index 4
+            display arrow
+        }
+        item "press 'Option+Tab'" {
+            pos -483.5537109375 -318.0
+            font-size 10
+        }
+        link "Item" "press 'Option+Tab'" {
+            source-index 4
+            display arrow
+        }
+        link "press 'Option+Tab'" "New Item" {
+            target-index 4
+            display arrow
+        }
+        item "Item" {
+            pos -557.0 -255.0
+            color green
+        }
+        item "Adding new items/ copy style" {
+            pos -570.5537109375 -204.0
+            display text
+            body {
+                text %{1. Select item and press 'Option Tab' 
+to add linked item to diagram.}
+            }
+        }
+        link "Item" "press 'Option+Tab'" {
+            source-index 4
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 4
+            target-index 4
+            display arrow
         }
     }
     element "Styling" {

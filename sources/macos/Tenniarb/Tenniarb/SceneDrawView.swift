@@ -1875,11 +1875,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
             
-            if self.activeItems.count == 1 {
-                menu.addItem(NSMenuItem.separator())
-                menu.addItem(NSMenuItem(
-                    title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
-            }
+//            if self.activeItems.count == 1 {
+//                menu.addItem(NSMenuItem.separator())
+//                menu.addItem(NSMenuItem(
+//                    title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
+//            }
  
             menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
