@@ -45,6 +45,7 @@
 		0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */; };
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
+		0CCAE77222AACB560083F898 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCAE77122AACB560083F898 /* Application.swift */; };
 		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
 		0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */; };
 		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
@@ -121,6 +122,7 @@
 		0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextPropertiesDelegate.swift; sourceTree = "<group>"; };
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
+		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
 		0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayout.swift; sourceTree = "<group>"; };
 		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 				0C2375F91ED838D900ECB516 /* Main.storyboard */,
 				0C2375FC1ED838D900ECB516 /* Info.plist */,
 				0C3E41D41F0951EC009C2A2E /* Icon.icns */,
+				0CCAE77122AACB560083F898 /* Application.swift */,
 			);
 			path = Tenniarb;
 			sourceTree = "<group>";
@@ -452,6 +455,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0CCAE77222AACB560083F898 /* Application.swift in Sources */,
 				0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */,
 				0C185AA821B263DF00D174B6 /* ExecutionModel.swift in Sources */,
 				0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */,

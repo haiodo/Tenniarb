@@ -7068,6 +7068,7 @@ element "Init screens" {
             display circle
             width 150
             height 150
+            line-style dashed
         }
         link "Brainstorm" "Generating Ideas"
         item "Organizing Your
@@ -7076,6 +7077,7 @@ Thoughts" {
             display circle
             width 150
             height 150
+            color blue
         }
         link "Brainstorm" "Organizing Your
 Thoughts"
@@ -7085,6 +7087,7 @@ Mental Block" {
             display circle
             width 150
             height 150
+            font-size 18
         }
         link "Brainstorm" "Getting Over 
 Mental Block"
@@ -7688,7 +7691,9 @@ element "Execution basics" {
         body "${my_value} *"
         color ${[value % 255, (value / 100) % 255, (value / 1000) % 255 ]}
     }
-    link "Untitled 25" "Untitled 26"
+    link "Untitled 25" "Untitled 26" {
+        display arrow
+    }
     item "Untitled 29" {
         pos -519.9226684570312 239.46875
         my_value 10
@@ -7742,7 +7747,7 @@ element "Execution basics" {
     item "Untitled 34" {
         pos -384.9183349609375 409.46875
         my_value1 ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
-        my_value 18
+        my_value 20
         q ${outputs().map(a=>a.value)}
         value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
         title "${value}"
