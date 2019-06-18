@@ -545,7 +545,7 @@ Engine" "expr dsl"
         }
         link "Export options" "Draw background"
         item "Documentation" {
-            pos 73.33242225646973 275.0
+            pos 73.3324203491211 275.0
             use-style required
         }
         link "Quality" "Documentation"
@@ -887,6 +887,9 @@ to add linked item to diagram.}
                     font-size 12
                     shadow 5 -5 5
                 }
+                new_style_2 {
+                    color "white"
+                }
             }
             item "Blue" {
                 pos -1094.0 50.0
@@ -911,7 +914,7 @@ to add linked item to diagram.}
                 display circle
                 width ${utils.textWidth(name)*3}
                 height ${width}
-                color yellow
+                color "#ffeeff"
                 shadow -15 -15 15
             }
             item "Box" {
@@ -981,7 +984,7 @@ to add linked item to diagram.}
                 line-width 1.5
             }
             item "shadow -15 -15 15" {
-                pos -826.0 -6.0
+                pos -1286.0 -11.0
                 use-style annotation
                 line-width 1
             }

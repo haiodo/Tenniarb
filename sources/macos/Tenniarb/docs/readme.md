@@ -49,7 +49,7 @@ There is few ways to create elements.
 
 ![](./Images/elements_menu.png)
 
-* Using (+), (-) buttons oon top of logical structure, will add child item to selected top level item or delete child item. All this operations are support undo & redo.
+* Using (+), (-) buttons on top of logical structure, will add child item to selected top level item or delete child item. All this operations are support undo & redo.
 
 * Drag & Drop - could be used to organize items.
 
@@ -84,6 +84,49 @@ Adding new items to diagram layer:
     ![](./Images/diagram_quick_styles.png)
     * All styles could be editing using textual representation in Tell language format. More details will be in Styling secrtion of this document.
     ![](./Images/textual_styles.png)
+
+## Styling
+
+Items on diagram could be styled via properties and via defined layer styles.
+
+Tenniarb support following item styles to define different look:
+### Colors
+
+Colors could be defined with following style property:
+```
+color red       // named color
+color #ffeeff   // Full RGB color in hex.
+text-color red // Define only text color.
+```
+
+Also it is included easy set of usefull colors based on this table
+
+![](./Images/color-table.png)
+
+By passing `color name-variant` it is possible to easy define different color values. Ex: 'color red-500', 'color green-200'.
+
+### Reusable styles
+Every layer support it's own defined styles, this styles could be used to define look of items.
+
+They are defined on layer item `styles`
+```
+styles {
+    annotation {
+        color gray-400
+        font-size 12
+        shadow 5 -5 5
+    }
+}
+```
+
+Every named group under styles are treaded as different style and could be applied to items. Using `use-style`
+property. Also it is accessible via context menu:
+
+![](./Images/use-style-menu.png)
+
+This context menu also allow to define more styles. On clicking to `Define new style` selection will switch to layer itself and add new item with counted name.
+
+
 
 
 # Tenniarb - Detailed specifications.
