@@ -1001,6 +1001,79 @@ to add linked item to diagram.}
                 body "Body text"
                 line-style dashed
             }
+            element "Docs" {
+                item "Display" {
+                    pos -375.0 135.0
+                    body %{rect}
+                    width ${items.MultiBody.width}
+                    height ${items.MultiBody.height}
+                    display rect
+                }
+                item "Named" {
+                    pos -255.0 136.0
+                    body {
+                        text %{no-fill}
+                        text-color red
+                    }
+                    width ${items.MultiBody.width}
+                    height ${items.MultiBody.height}
+                    display no-fill
+                }
+                item "Display" {
+                    pos -9.0 135.0
+                    body {
+                        text %{Stack}
+                        text-color red
+                    }
+                    width ${items.MultiBody.width}
+                    height ${items.MultiBody.height}
+                    display stack
+                }
+                item "Display" {
+                    pos -130.0 135.0
+                    title "My title ${parent.items.length}"
+                    width ${items.MultiBody.width}
+                    height ${items.MultiBody.height}
+                    display circle
+                }
+                item "Variant 1" {
+                    pos -357.0842590332031 215.0
+                    display text
+                    font-size 10
+                }
+                item "Variant 2" {
+                    pos -237.08425903320312 215.0
+                    display text
+                    font-size 10
+                }
+                item "Variant 3" {
+                    pos -110.0 215.0
+                    display text
+                    font-size 10
+                }
+                item "Variant 4" {
+                    pos 6.915740966796875 215.0
+                    display text
+                    font-size 10
+                }
+                item "Variant 5" {
+                    pos 131.91574096679688 213.0
+                    display text
+                    font-size 10
+                }
+                item "MultiBody" {
+                    pos 116.0 138.0
+                    body {
+                        text %{
+        body text
+        body line 2
+    }
+                        text-color red
+                    }
+                    display text
+                }
+                link "Display" "Named"
+            }
         }
         element "Links" {
             item "Normal" {
@@ -1152,6 +1225,134 @@ to add linked item to diagram.}
             }
             item "Regular" {
                 pos -462.4532775878906 85.72610473632812
+            }
+            element "Links doc" {
+                item "Variant 1" {
+                    pos -460.0 318.26806640625
+                    display text
+                }
+                item "Variant 3" {
+                    pos -460.0 218.26806640625
+                    display text
+                }
+                item "Variant 2" {
+                    pos -460.0 269.26806640625
+                    display text
+                }
+                item "Variant 4" {
+                    pos -460.0 164.26806640625
+                    display text
+                }
+                item "Variant 5" {
+                    pos -460.0 116.26806640625
+                    display text
+                }
+                item "Variant 6" {
+                    pos -460.0 70.26806640625
+                    display text
+                }
+                item "Normal" {
+                    pos -358.0 320.0
+                    display text
+                    title ""
+                }
+                item "Normal" {
+                    pos -360.0 170.0
+                    display text
+                    title ""
+                }
+                item "display none" {
+                    pos -87.0 224.0
+                    display text
+                    title ""
+                }
+                item "Normal" {
+                    pos -361.0 224.0
+                    display text
+                    title ""
+                }
+                item "display none" {
+                    pos -86.0 170.0
+                    display text
+                    title ""
+                }
+                item "Normal" {
+                    pos -358.0 86.0
+                    display text
+                    title ""
+                }
+                item "Normal" {
+                    pos -362.0 274.0
+                    display text
+                    title ""
+                }
+                link "Normal" "display none" {
+                    target-index 6
+                }
+                link "Normal" "display none" {
+                    source-index 3
+                    target-index 4
+                    pos 3.0 -27.0
+                    line-width 2
+                }
+                item "Normal" {
+                    pos -361.0 224.0
+                    display text
+                    title ""
+                }
+                item "display none" {
+                    pos -88.0 274.0
+                    display text
+                    title ""
+                }
+                link "Normal" "display none" {
+                    source-index 2
+                    pos -1.0 0.0
+                    display arrows
+                }
+                item "display none" {
+                    pos -87.0 224.0
+                    display text
+                    title ""
+                }
+                item "display none" {
+                    pos -95.0 89.0
+                    display text
+                    title ""
+                }
+                link "Normal" "display none" {
+                    source-index 4
+                    target-index 2
+                    pos -1.0 0.0
+                    display arrow
+                }
+                link "Normal" "display none" {
+                    source-index 1
+                    target-index 1
+                    pos -1.0 0.0
+                    line-style dashed
+                }
+                item "display none" {
+                    pos -87.0 122.0
+                    display text
+                    title ""
+                }
+                link "Normal" "display none" {
+                    source-index 6
+                    target-index 5
+                    pos -1.0 0.0
+                    line-style dotted
+                }
+                item "display none" {
+                    pos -91.0 321.0
+                    display text
+                    title ""
+                }
+                item "Normal" {
+                    pos -361.0 122.0
+                    display text
+                    title ""
+                }
             }
         }
         element "Colors" {
@@ -3976,6 +4177,158 @@ to add linked item to diagram.}
                 pos 180.5 -47.28515625
                 title ""
                 display circle
+            }
+        }
+        element "Text Colors" {
+            item "Item without
+styles" {
+                pos -415.0 149.5078125
+                width 140
+            }
+            item "Item with Green
+Background" {
+                pos -200.0 145.0
+                color green
+                width 140
+            }
+            item "Item with Green
+Text" {
+                pos -415.0 73.5078125
+                text-color green
+                width 140
+            }
+            item "Item with Blue
+Text on Green" {
+                pos -200.0 71.5078125
+                text-color blue
+                color green
+                width 140
+            }
+        }
+        element "Font size" {
+            item "Default item" {
+                pos -594.0 185.5078125
+                body "Default body"
+                font-size 18
+            }
+            item "Font - 10" {
+                pos -245.0 194.5078125
+                font-size 10
+            }
+            item "Font - 30" {
+                pos -162.0 180.5078125
+                font-size 30
+            }
+            item "Default item - 10" {
+                pos -454.0 162.5078125
+                body {
+                    text "Body text - 30"
+                    font-size 30
+                }
+            }
+            item "Variant 1" {
+                pos -565.084228515625 262.0
+                display text
+                font-size 10
+            }
+            item "Variant 2" {
+                pos -388.0842590332031 258.0
+                display text
+                font-size 10
+            }
+            item "Variant 3" {
+                pos -243.0 255.0
+                display text
+                font-size 10
+            }
+            item "Variant 4" {
+                pos -126.08425903320312 254.0
+                display text
+                font-size 10
+            }
+        }
+        element "Body" {
+            item "Named" {
+                pos -385.0 145.0
+                body "Body"
+                width ${items.MultiBody.width}
+                height ${items.MultiBody.height}
+            }
+            item "Named" {
+                pos -265.0 146.0
+                body {
+                    text "body text"
+                    text-color red
+                }
+                width ${items.MultiBody.width}
+                height ${items.MultiBody.height}
+            }
+            item "MultiBody" {
+                pos -19.0 145.0
+                body {
+                    text %{
+        body text
+        body line 2
+    }
+                    text-color red
+                }
+            }
+            item "Named" {
+                pos -140.0 145.0
+                body "Body"
+                title "My title ${parent.items.length}"
+                width ${items.MultiBody.width}
+                height ${items.MultiBody.height}
+            }
+            item "Variant 1" {
+                pos -367.0842590332031 225.0
+                display text
+                font-size 10
+            }
+            item "Variant 2" {
+                pos -247.08425903320312 225.0
+                display text
+                font-size 10
+            }
+            item "Variant 3" {
+                pos -120.0 225.0
+                display text
+                font-size 10
+            }
+            item "Variant 4" {
+                pos -3.084259033203125 225.0
+                display text
+                font-size 10
+            }
+        }
+        element "Width/Height" {
+            item "Variant 1" {
+                pos -367.0842590332031 225.0
+                display text
+                font-size 10
+            }
+            item "Variant 2" {
+                pos -247.08425903320312 225.0
+                display text
+                font-size 10
+            }
+            item "Variant 3" {
+                pos -120.0 225.0
+                display text
+                font-size 10
+            }
+            item "AAA" {
+                pos -362.47119140625 146.39297485351562
+                width 50
+            }
+            item "AAA" {
+                pos -282.47119140625 149.39297485351562
+                width 150
+            }
+            item "AAA" {
+                pos -114.47119140625 125.39297485351562
+                width ${utils.textWidth(name)*2}
+                height ${width}
             }
         }
     }
