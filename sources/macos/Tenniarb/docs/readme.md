@@ -1,10 +1,10 @@
 #  Tenniarb - General information
 
-Tenniarb is a diagram/modeling tool, capable of doing simple and complex diagraming, easy organize them into categories. Easy create and style them, and as benetit it has a powerfull JavaScript calculation engine embedded, so styling and diagraming become a real powerfull solution for any kind of fast modeling and prototyping.
+Tenniarb is a diagram/modelling tool, capable of doing simple and complex diagraming, easy organize them into categories. Easy create and style them, and as benetit it has a powerfull JavaScript calculation engine embedded, so styling and diagraming become a real powerfull solution for any kind of fast modelling and prototyping.
 
 Every item on diagram is an object with set of properties, some properties have influence on how item is displayed on diagram. Some properties are user defined data, properties could depend on calculations and other items and properties.
 
-In general every item on diagram could be treated as a cell in electronic table, but it allow not just one formala to be used but to define any set of formal and properties to be used.
+In general every item on diagram could be treated as a cell in electronic table, but it allow not just one formula to be used but to define any set of formal and properties to be used.
 
 
 ## First steps
@@ -27,74 +27,95 @@ Where `element` is describing a logic structure of diagram layers embedded one i
 ### Main screen
 
 Main window:
+
 ![](./Images/main_screen.png)
 
 Main window has following structural components:
 
 * Document logical structure:
 
-    It allows to organize diagrams, and perform logical structuration with basic operations of drag & drop, duplication and naming.
+    It allows to organise diagrams, and perform logical structure with basic operations of drag & drop, duplication and naming.
 
 * Diagram with items.
-
-    Support organization of items with links, styles for visual representation of ideas, structures and any kind of information required.
+    Support ordering items with links, styles for visual representation of ideas, structures and any kind of information required.
 
 * Properties pane.
 
-    A textual representation of selected diagram, item with proeprties managed by Tenn language.
+    A textual representation of selected diagram, item with properties managed by Tenn language.
 
 ### Creating and managing elements.
 
 There is few ways to create elements.
 
-![](./Images/elements_menu.png)
+<img style="float: right;" width="300px" src="./Images/elements_menu.png"/>
 
 * Using (+), (-) buttons on top of logical structure, will add child item to selected top level item or delete child item. All this operations are support undo & redo.
 
-* Drag & Drop - could be used to organize items.
+* Drag & Drop - could be used to put items in right position and order.
 
 * Duplicate - could be used for duplicate selected layer of diageam for perform some changes and see differences.
 
 
 ### Creating and managing items on diagram layer.
 
-Item is a key point element of any diagram, it represent structure point of interest, it could contain any set of properties, properties could be groupped and represent a tree structured document. Main property of every item its his `name`. But name is not uniq representation so it could be multiple items with same name. 
+Item is a key point element of any diagram, it represent structure point of interest, it could contain any set of properties, properties could be groupped and represent a tree structured document. Main property of every item its his `name`. But name is not uniq representation so it could be multiple items with same name.
 
 Item positioned on diagram using `pos x y` property.
- 
-On every selected layer items could be managed using items main panel. 
-
+On every selected layer items could be managed using items main panel.
 After layer is selected we could use selection, modification and addition of new items.
 
 Adding new items to diagram layer:
+<table>
+<tr>
+<td>Pressing 'Tab' key on keyboard will add new item and link it with selected item. </td>
+<td><img src="./Images/add_new_item.png"/></td>
+</tr>
+<tr>
+<td>Pressing 'Option + Tab' key on keyboard will add new item, link it with selected item and copy styles from selected item.
+</td>
+<td><img src="./Images/add_item_copy_style.png"></td>
+</tr>
+<tr>
+<td>Pressing 'Command + D' key on keyboard will duplicate selected item and it incoming links, it could be used to easy create more linked items for brain maps.</td>
+<td><img src="./Images/duplicate_item.png"/></td>
+</tr>
+<tr>
+<td>Clicking '(+)' button on top of items layer, will add item item and link it with selected item.</td><td></td>
+</tr>
 
-* Pressing 'Tab' key on keyboard will add new item and link it with selected item.
-  ![](./Images/add_new_item.png)
-* Pressing 'Option + Tab' key on keyboard will add new item, link it with selected item and copy styles from selected item.
-  ![](./Images/add_item_copy_style.png)
-* Pressing 'Command + D' key on keyboard will duplicate selected item and it incoming links, it could be used to easy create more linked items for brain maps.
-  ![](./Images/duplicate_item.png)
-* Clicking '(+)' button on top of items layer, will add item item and link it with selected item.
-* Using context menu:
-    ![](./Images/context_menu.png)
-    * New item - Add new top level item.
-    * New linked item - Add new linked item to selected one.
-    * Linked styled item - Add new linked item with copy of styles to selected one.
-    * Style - use or define new style.
-    * Duplicate - dupliate selected item with incoming links.
-    * Delete - delete current selected items.
+<tr>
+<td>
+Using context menu:
+<ol>
+<li> New item - Add new top level item.</li>
+<li>New linked item - Add new linked item to selected one.</li>
+<li>Linked styled item - Add new linked item with copy of styles to selected one.</li>
+<li>Style - use or define new style.</li>
+<li> Duplicate - dupliate selected item with incoming links.</li>
+<li> Delete - delete current selected items.</li>
+</ol>
+</td>
+<td><img src="./Images/context_menu.png"/></td>
+</tr>
+<tr>
+<td>Styling items</td>
+<td><img src="./Images/styling_items.png"/></td>
+</tr>
+<tr>
+<td>Popup toolbar could be used for fast apply for basic display, color,font size, line width and marker fields. </td>
+</td>
+<td><img src="./Images/diagram_quick_styles.png"/></td>
+<tr>
+<td>All styles could be editing using textual representation in Tell language format. More details will be in Styling secrtion of this document.
+</td>
+<td><img src="./Images/textual_styles.png"/></td>
+</tr>
+</table>
 
-* Styling items:
-    ![](./Images/styling_items.png)
-    * Popup toolbar could be used for fast apply for basic display, color, font size, line width and marker fields.
-    ![](./Images/diagram_quick_styles.png)
-    * All styles could be editing using textual representation in Tell language format. More details will be in Styling secrtion of this document.
-    ![](./Images/textual_styles.png)
 
 ## Styling
 
 Items on diagram could be styled via properties and via defined layer styles.
-
 Tenniarb support following item styles to define different look:
 ### Colors
 
@@ -122,11 +143,16 @@ Text color could be configured using property `text-color`
 text-color blue
 ```
 
-Default mode:
-![](./Images/text-colors.png)
+<table>
+    <thead>
+        <th>Default mode:</th> <th>Dark mode:</th>
+    </thead>
+    <tr>
+        <td><img src="./Images/text-colors.png"/></td>
+        <td><img src="./Images/text-colors-dark.png"/></td>
+    </tr>
+</table>
 
-Dark mode:
-![](./Images/text-colors-dark.png)
 
 Background and text color by default will be automaticcaly ajusted to fit into selected user theme.
 
@@ -134,13 +160,14 @@ Background and text color by default will be automaticcaly ajusted to fit into s
 
 Every item on layer could be labeled by title and could have additional body field, if body is defined it will be shown udner title, and title will be on left of item.
 
-By default `title` field uses name of item on layer. So it could be used without specificatio for most of situations. But could be changed, also `title` in compare to name support variable substituions and scripting. 
+By default `title` field uses name of item on layer. So it could be used without specificatio for most of situations. But could be changed, also `title` in compare to name support variable substituions and scripting.
 
-![](./Images/body_all.png)
+<img src="./Images/body_all.png" width="600px">
 
-* Variant 1: 
+
+* Variant 1:
     Define via `body str` property Or `body %{}` for multi line variant.
-* Variant 2: 
+* Variant 2:
     Define via body block with text property inside.
     ```
     body {
@@ -162,13 +189,15 @@ By default `title` field uses name of item on layer. So it could be used without
         text-color red
     }
     ```
-    
+
 
 
 #### Font size and body font size.
 
-Item/Body font size could be configured via `font-size` property. 
-![](./Images/font_size.png)
+Item/Body font size could be configured via `font-size` property.
+
+<img src="./Images/font_size.png" width="500px">
+
 
 * Variant 1: Default title font are 18 and body font size is font-size - 2 points.
 * Variant 2: Both title and body fonts are changed.
@@ -181,11 +210,11 @@ In all situations boundaries of item are calculated to fit both title and body.
 
 Bundaries of items could be changed by defining `width` and `height` properties.
 
-![](./Images/width_height.png)
+<img src="./Images/width_height.png" width="400px">
 
 * Variant 1: `width 50` is defined.
 * Variant 2: `width 150` is defined.
-* Variant 3: 
+* Variant 3:
     ```
     name "AAA"
     width ${utils.textWidth(name)*2}
@@ -197,7 +226,8 @@ Bundaries of items could be changed by defining `width` and `height` properties.
 
 Items on layer could have a different look.
 
-![](./Images/display_prop.png)
+<img src="./Images/display_prop.png" width="600px">
+
 
 * Variant 1 - default or `display=rect`
     This variant is suitable for most of brain maps and other situations.
@@ -223,7 +253,8 @@ styles {
 Every named group under styles are treaded as different style and could be applied to items. Using `use-style`
 property. Also it is accessible via context menu:
 
-![](./Images/use-style-menu.png)
+<img src="./Images/use-style-menu.png" width="500px">
+
 
 This context menu also allow to define more styles. On clicking to `Define new style` selection will switch to layer itself and add new item with counted name.
 
@@ -237,7 +268,7 @@ Every two items on diagram layer could be linked together by line reference. Sou
 
 Links could also have some styles:
 
-![](./Images/links_variants.png)
+<img src="./Images/links_variants.png" width="400px">
 
 * Variant 1 - regular links, drawn by default.
 * Variant 2 - `display arrow` draws arrow on target side.
@@ -248,8 +279,19 @@ Links could also have some styles:
 
 Every line could be split and corrected by dragging line, it will add a `pos x y` property to controll offset from line central point, so this point will be moved every time line source/target will be moven.
 
+## Line styles.
 
-# Tenniarb - Detailed specifications.
+Line styles also could be applied to items.
+
+
+<img src="./Images/line_styles.png" width="400px">
+
+* `line-style dashed` draw line dashed.
+* `line-style dotted` draw lines with dots.
+* `line-width 2` control width of line.
+
+
+# Tenniarb - Advanced details.
 
 ## Tenn language reference.
 
@@ -281,5 +323,3 @@ String support `\c` escaping.
 * Command separator - `;` could be used as command separator within single line.
 
 (!) All comments are fully removed at this versions of application during save and load.
-
-## Execution engine

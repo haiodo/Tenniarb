@@ -4331,6 +4331,33 @@ Text on Green" {
                 height ${width}
             }
         }
+        element "Line styles" {
+            item "Normal" {
+                pos -413.140625 45.0
+            }
+            item "Dashed" {
+                pos -308.140625 45.0
+                line-style dashed
+            }
+            item "Dotted" {
+                pos -197.140625 45.0
+                line-style dotted
+            }
+            item "Dashed" {
+                pos -307.140625 -4.0
+                line-style dashed
+                line-width 3
+            }
+            item "Dotted" {
+                pos -196.140625 -4.0
+                line-style dotted
+                line-width 3
+            }
+            item "Normal" {
+                pos -412.140625 -4.0
+                line-width 3
+            }
+        }
     }
     element "Executions" {
         define ${
