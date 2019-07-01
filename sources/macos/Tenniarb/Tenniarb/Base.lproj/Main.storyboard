@@ -509,6 +509,15 @@ CQ
                                                                                 <action selector="clickExtraButton:" target="5gI-5U-AMq" id="G0m-tf-DgV"/>
                                                                             </connections>
                                                                         </segmentedControl>
+                                                                        <segmentedControl hidden="YES" verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nPJ-q3-IeN" userLabel="QuickProperties">
+                                                                            <rect key="frame" x="520.5" y="6" width="26" height="23"/>
+                                                                            <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="Wlc-Ek-yYl">
+                                                                                <font key="font" metaFont="system"/>
+                                                                                <segments>
+                                                                                    <segment toolTip="Export &amp; Share" image="NSTouchBarFolderMoveToTemplate" width="20"/>
+                                                                                </segments>
+                                                                            </segmentedCell>
+                                                                        </segmentedControl>
                                                                     </subviews>
                                                                     <constraints>
                                                                         <constraint firstAttribute="trailing" secondItem="zbO-zz-O9G" secondAttribute="trailing" constant="10" id="7HA-II-0g0"/>
@@ -516,6 +525,7 @@ CQ
                                                                         <constraint firstItem="fzh-iN-2Fn" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="CxS-Dh-MVg"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" secondItem="SXa-LX-SJ4" secondAttribute="trailing" constant="20" id="Hte-zE-mg2"/>
                                                                         <constraint firstItem="SXa-LX-SJ4" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="IPv-Xh-tkU"/>
+                                                                        <constraint firstItem="fzh-iN-2Fn" firstAttribute="leading" secondItem="nPJ-q3-IeN" secondAttribute="trailing" constant="10" id="WsW-4a-Ms1"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="nsv-cH-qdL"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xxj-wV-uFj" secondAttribute="trailing" constant="41" id="te2-Op-awM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="leading" secondItem="s5a-YQ-Uz7" secondAttribute="leading" constant="15" id="v51-Iq-FW6"/>
@@ -619,6 +629,7 @@ CQ
                     </view>
                     <connections>
                         <outlet property="exportSegments" destination="po3-ln-0Dn" id="cy1-L4-0Xs"/>
+                        <outlet property="quickProperties" destination="nPJ-q3-IeN" id="mDx-sL-iaD"/>
                         <outlet property="scene" destination="oxI-2Z-wAL" id="gqX-pA-f3S"/>
                         <outlet property="textView" destination="LDJ-EQ-s6n" id="88L-Cj-weB"/>
                         <outlet property="toolsSegmentedControl" destination="zbO-zz-O9G" id="j4x-SM-Z9y"/>
@@ -698,18 +709,18 @@ CQ
             <objects>
                 <viewController title="General" showSeguePresentationStyle="single" id="EjF-jJ-3eK" customClass="PreferencesGeneralController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="6IQ-5A-XRu">
-                        <rect key="frame" x="0.0" y="0.0" width="416" height="367"/>
+                        <rect key="frame" x="0.0" y="0.0" width="580" height="257"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Outline" translatesAutoresizingMaskIntoConstraints="NO" id="7Ko-dS-aSb">
-                                <rect key="frame" x="17" y="242" width="382" height="105"/>
+                                <rect key="frame" x="17" y="130" width="272" height="112"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <view key="contentView" id="YjT-8b-lLM">
-                                    <rect key="frame" x="3" y="3" width="376" height="87"/>
+                                    <rect key="frame" x="3" y="3" width="266" height="94"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textField verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WsI-Lx-jhl" userLabel="expandLevel">
-                                            <rect key="frame" x="134" y="20" width="94" height="22"/>
+                                            <rect key="frame" x="134" y="27" width="41" height="22"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="34" id="Qhs-o9-u0B"/>
                                             </constraints>
@@ -728,7 +739,7 @@ CQ
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n4L-Da-Gd3">
-                                            <rect key="frame" x="18" y="23" width="100" height="17"/>
+                                            <rect key="frame" x="18" y="30" width="100" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Expand to level:" id="Y7O-zj-dAC">
                                                 <font key="font" usesAppearanceFont="YES"/>
@@ -737,7 +748,7 @@ CQ
                                             </textFieldCell>
                                         </textField>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EmR-hQ-IZN" userLabel="autoExpand">
-                                            <rect key="frame" x="18" y="51" width="159" height="18"/>
+                                            <rect key="frame" x="18" y="58" width="159" height="18"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="check" title="Structure Auto expand" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kBE-dZ-1gO">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -751,23 +762,12 @@ CQ
                                 </view>
                             </box>
                             <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Colors" translatesAutoresizingMaskIntoConstraints="NO" id="Y3S-wm-cj3">
-                                <rect key="frame" x="17" y="126" width="382" height="112"/>
+                                <rect key="frame" x="17" y="16" width="272" height="112"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <view key="contentView" id="d6e-dM-4EI">
-                                    <rect key="frame" x="3" y="3" width="376" height="94"/>
+                                    <rect key="frame" x="3" y="3" width="266" height="94"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vOF-Dw-IYI">
-                                            <rect key="frame" x="240" y="15" width="75" height="32"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTG-hj-XPe">
-                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <action selector="resetDarkBackground:" target="EjF-jJ-3eK" id="DH9-0g-9Oa"/>
-                                            </connections>
-                                        </button>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vtZ-6S-3n0">
                                             <rect key="frame" x="18" y="53" width="81" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -778,7 +778,7 @@ CQ
                                             </textFieldCell>
                                         </textField>
                                         <colorWell fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="r1g-Ld-pDC" userLabel="background">
-                                            <rect key="frame" x="132" y="49" width="106" height="25"/>
+                                            <rect key="frame" x="132" y="49" width="45" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
@@ -799,7 +799,7 @@ CQ
                                             </textFieldCell>
                                         </textField>
                                         <colorWell fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gOk-j3-X9d" userLabel="backgroundDark">
-                                            <rect key="frame" x="132" y="20" width="106" height="25"/>
+                                            <rect key="frame" x="132" y="20" width="45" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
@@ -810,8 +810,19 @@ CQ
                                                 </binding>
                                             </connections>
                                         </colorWell>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vOF-Dw-IYI">
+                                            <rect key="frame" x="179" y="15" width="75" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTG-hj-XPe">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="resetDarkBackground:" target="EjF-jJ-3eK" id="DH9-0g-9Oa"/>
+                                            </connections>
+                                        </button>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UL1-DQ-2Ts">
-                                            <rect key="frame" x="240" y="44" width="75" height="32"/>
+                                            <rect key="frame" x="179" y="44" width="75" height="32"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dK9-Ce-ox9">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -825,14 +836,14 @@ CQ
                                 </view>
                             </box>
                             <box fixedFrame="YES" title="Export" translatesAutoresizingMaskIntoConstraints="NO" id="9VZ-CO-KDr">
-                                <rect key="frame" x="17" y="16" width="382" height="106"/>
+                                <rect key="frame" x="291" y="130" width="272" height="112"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <view key="contentView" id="96C-WH-kkx">
-                                    <rect key="frame" x="3" y="3" width="376" height="88"/>
+                                    <rect key="frame" x="3" y="3" width="266" height="94"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3NI-X4-hkK" userLabel="autoExpand">
-                                            <rect key="frame" x="18" y="52" width="141" height="18"/>
+                                            <rect key="frame" x="18" y="58" width="141" height="18"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="check" title="Render background" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="DIq-IC-GCj">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -843,7 +854,7 @@ CQ
                                             </connections>
                                         </button>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XsR-cw-wvW" userLabel="autoExpand">
-                                            <rect key="frame" x="18" y="24" width="152" height="18"/>
+                                            <rect key="frame" x="18" y="30" width="152" height="18"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="check" title="Use Native resolution" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="sCC-9V-IaK">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -851,6 +862,27 @@ CQ
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.render.enable_hidpi" id="Lsa-9W-fcl"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </box>
+                            <box fixedFrame="YES" title="UI" translatesAutoresizingMaskIntoConstraints="NO" id="Kg4-T9-I4T">
+                                <rect key="frame" x="291" y="16" width="272" height="112"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <view key="contentView" id="sO1-I4-l61">
+                                    <rect key="frame" x="3" y="3" width="266" height="94"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lxX-mc-aL0" userLabel="autoExpand">
+                                            <rect key="frame" x="18" y="58" width="136" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Quick panel on top" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NwE-R0-2r2">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.ui.quick_panel_top" id="SKG-RM-uxf"/>
                                             </connections>
                                         </button>
                                     </subviews>
@@ -866,7 +898,7 @@ CQ
                 <customObject id="8vI-fo-UYi" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="w1b-39-YrS"/>
             </objects>
-            <point key="canvasLocation" x="1016" y="1077.5"/>
+            <point key="canvasLocation" x="1098" y="1022.5"/>
         </scene>
         <!--Search Box View Controller-->
         <scene sceneID="Jla-SR-a45">

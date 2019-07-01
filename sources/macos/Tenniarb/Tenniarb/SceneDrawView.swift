@@ -131,6 +131,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var viewController: ViewController?
     
+    var quickProperties: NSSegmentedControl!
+    
     var ox: CGFloat {
         set {
             if let active = element {
@@ -519,22 +521,40 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     fileprivate func showPopup() {
-        if self.popupView != nil {
-            self.popupView?.removeFromSuperview()
-            self.popupView = nil
+        if !PreferenceConstants.preference.uiQuickPanelOnTop {
+            if self.popupView != nil {
+                self.popupView?.removeFromSuperview()
+                self.popupView = nil
+            }
         }
+
         
         if self.mode == .Editing {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                if PreferenceConstants.preference.uiQuickPanelOnTop {
+                    self.quickProperties.isHidden = true
+                }
+            })
             return
         }
         
         guard let act = self.activeItems.first, activeItems.count == 1, let dr = scene?.drawables[act] else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                if PreferenceConstants.preference.uiQuickPanelOnTop {
+                    self.quickProperties.isHidden = true
+                }
+            })
             return
         }
         let bounds = dr.getSelectorBounds()
         let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height)
         
-        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        var segments: NSSegmentedControl!
+        if PreferenceConstants.preference.uiQuickPanelOnTop {
+            segments  = self.quickProperties!
+        } else {
+            segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        }
         segments.segmentStyle = .texturedRounded
         segments.segmentCount = 10
         
@@ -646,25 +666,34 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         segments.trackingMode = .momentary
         
-//        segments.sizeToFit()
-        let popup  = NSView(frame: NSRect(origin: origin, size: segments.bounds.size))
-        self.popupView = popup
-        popup.addSubview(segments)
+        var popup: NSView?
+        if !PreferenceConstants.preference.uiQuickPanelOnTop {
+//            segments.sizeToFit()
+            popup  = NSView(frame: NSRect(origin: origin, size: segments.bounds.size))
+            self.popupView = popup
+            popup!.addSubview(segments)
+            
+            let shadow = NSShadow()
+            shadow.shadowOffset = NSSize(width: -5, height: -5)
+            shadow.shadowBlurRadius = 7
+            shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
+            popup!.shadow = shadow
+        }
         
-        let shadow = NSShadow()
-        shadow.shadowOffset = NSSize(width: -5, height: -5)
-        shadow.shadowBlurRadius = 7
-        shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
-        popup.shadow = shadow
-        
-        segments.allowedTouchTypes = []
-        
-        popup.allowedTouchTypes = []
+        segments.allowedTouchTypes = []        
         popupItem = act
         
+        if !PreferenceConstants.preference.uiQuickPanelOnTop {
+            popup!.allowedTouchTypes = []
+        }
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-            if self.popupView != nil && self.popupView == popup {
-                self.addSubview(popup)
+            if PreferenceConstants.preference.uiQuickPanelOnTop {
+                self.quickProperties.isHidden = false
+            } else {
+                if self.popupView != nil && self.popupView == popup {
+                    self.addSubview(popup!)
+                }
             }
         })
     }

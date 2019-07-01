@@ -80,11 +80,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.6574171"
+            timestampString = "583694586.669347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1401"
-            endingLineNumber = "1401"
+            startingLineNumber = "1430"
+            endingLineNumber = "1430"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -97,11 +97,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.6578979"
+            timestampString = "583694586.6697921"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1396"
-            endingLineNumber = "1396"
+            startingLineNumber = "1425"
+            endingLineNumber = "1425"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -182,11 +182,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/ViewController.swift"
-            timestampString = "581618859.4834369"
+            timestampString = "583694586.670204"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "227"
-            endingLineNumber = "227"
+            startingLineNumber = "229"
+            endingLineNumber = "229"
             landmarkName = "validateMenuItem(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -284,11 +284,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.658306"
+            timestampString = "583694586.670316"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "417"
-            endingLineNumber = "417"
+            startingLineNumber = "419"
+            endingLineNumber = "419"
             landmarkName = "setActiveItem(_:immideateDraw:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -301,11 +301,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/views/PreferencesController.swift"
-            timestampString = "580764412.819226"
+            timestampString = "583694586.6706311"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "79"
-            endingLineNumber = "79"
+            startingLineNumber = "81"
+            endingLineNumber = "81"
             landmarkName = "backgroundGet"
             landmarkType = "24">
          </BreakpointContent>
@@ -318,11 +318,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.658607"
+            timestampString = "583694586.670681"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1179"
-            endingLineNumber = "1179"
+            startingLineNumber = "1208"
+            endingLineNumber = "1208"
             landmarkName = "mouseUp(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -335,11 +335,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.658897"
+            timestampString = "583694586.670987"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1266"
-            endingLineNumber = "1266"
+            startingLineNumber = "1295"
+            endingLineNumber = "1295"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -352,11 +352,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.659188"
+            timestampString = "583694586.671299"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1450"
-            endingLineNumber = "1450"
+            startingLineNumber = "1479"
+            endingLineNumber = "1479"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -369,11 +369,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683686.659471"
+            timestampString = "583694586.671597"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1397"
-            endingLineNumber = "1397"
+            startingLineNumber = "1426"
+            endingLineNumber = "1426"
             landmarkName = "mouseDragged(with:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -433,11 +433,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "583683749.502774"
+            timestampString = "583694586.671937"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1358"
-            endingLineNumber = "1358"
+            startingLineNumber = "1387"
+            endingLineNumber = "1387"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>

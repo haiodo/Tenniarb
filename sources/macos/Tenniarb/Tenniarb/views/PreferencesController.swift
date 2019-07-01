@@ -24,6 +24,8 @@ let renderUseNativeResolutionKey = "preferences.render.enable_hidpi"
 
 let windowPositionOption = "window.pos."
 
+let preferenceUIQuickPanelOnTop = "preferences.ui.quick_panel_top"
+
 public class PreferenceConstants {
     public let backgroundDefault = CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
     public let backgroundDarkDefault = CGColor(red: 0x2e/255, green: 0x2e/255, blue: 0x2e/255, alpha:1)
@@ -129,6 +131,12 @@ public class PreferenceConstants {
         }
     }
     
+    public var uiQuickPanelOnTop: Bool {
+        get {
+            return self.defaults.bool(forKey: preferenceUIQuickPanelOnTop)
+        }
+    }
+    
     init() {
         self.defaults = NSUserDefaultsController.shared.defaults
         
@@ -161,7 +169,9 @@ public class PreferenceConstants {
             preferenceExportRenderBackground: true,
             preferenceExportUseNativeScale: true,
             renderEnableBackgroundKey: false,
-            renderUseNativeResolutionKey: true
+            renderUseNativeResolutionKey: true,
+            
+            preferenceUIQuickPanelOnTop: true,
             ])
         defaults.synchronize()
         initDone = true
