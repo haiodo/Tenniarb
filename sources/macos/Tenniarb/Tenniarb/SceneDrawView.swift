@@ -1315,7 +1315,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         
-        if event.clickCount == 2 && drawables.count == 1 {
+        if event.clickCount == 2 && drawables.count == 1 && result.count == 1 {
             editTitle(drawables[0].item!, .Name)
             return
         }
