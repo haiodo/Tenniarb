@@ -65,6 +65,7 @@ On every selected layer items could be managed using items main panel.
 After layer is selected we could use selection, modification and addition of new items.
 
 Adding new items to diagram layer:
+
 <table>
 <tr>
 <td>Pressing 'Tab' key on keyboard will add new item and link it with selected item. </td>
@@ -97,6 +98,15 @@ Using context menu:
 </td>
 <td><img src="./Images/context_menu.png"/></td>
 </tr>
+</table>
+
+
+## Styling
+
+Items on diagram could be styled via properties and via defined layer styles.
+Tenniarb support following item styles to define different look:
+
+<table>
 <tr>
 <td>Styling items</td>
 <td><img src="./Images/styling_items.png"/></td>
@@ -112,11 +122,6 @@ Using context menu:
 </tr>
 </table>
 
-
-## Styling
-
-Items on diagram could be styled via properties and via defined layer styles.
-Tenniarb support following item styles to define different look:
 ### Colors
 
 #### Item Background and color in general
@@ -162,47 +167,85 @@ Every item on layer could be labeled by title and could have additional body fie
 
 By default `title` field uses name of item on layer. So it could be used without specificatio for most of situations. But could be changed, also `title` in compare to name support variable substituions and scripting.
 
-<img src="./Images/body_all.png" width="600px">
-
-
-* Variant 1:
-    Define via `body str` property Or `body %{}` for multi line variant.
-* Variant 2:
-    Define via body block with text property inside.
-    ```
-    body {
-        text "body text"
-        text-color red
-    }
-    ```
-    Styling properties line `color`, `text-color`, `font-size`, etc are supported for individual title and body.
-* Variant 3:
-    Use `title "My title ${parent.items.length}"` to show number of all items on layer with JS code.
-* Variant 4:
+<table>
+<th colspan="2"><img src="./Images/body_all.png" width="600px"></th>
+<tr>
+    <td>Variant 1</td>
+    <td>Define via
+    <code>body str</code> property Or <code>body %{}</code><br/> for multi line variant.</td>
+</tr>
+<tr>
+    <td>Variant 2</td>
+    <td>Define via body block with text property inside.
+    <pre><code>
+body {
+    text "body text"
+    text-color red
+}
+    </code></pre>
+    Styling properties line <code>color</code>, <code>text-color</code>,<code>font-size</code>, <br/>etc are supported for individual title and body.
+    </td>
+</tr>
+<tr>
+    <td>Variant 3</td>
+    <td>Use <code>title "My title ${parent.items.length}"</code><br/>to show number of all items on layer with JS code.</td>
+</tr>
+<tr>
+    <td>Variant 4</td>
+    <td>
     Use multi line body
-    ```
-    body {
-        text %{
-            body text
-            body line 2
-        }
-        text-color red
+    <pre><code>
+body {
+    text %{
+        body text
+        body line 2
     }
-    ```
-
-
+    text-color red
+}
+    </code></pre>
+    </td>
+</tr>
+</table>
 
 #### Font size and body font size.
 
 Item/Body font size could be configured via `font-size` property.
 
+<table>
+<th colspan=2>
 <img src="./Images/font_size.png" width="500px">
-
-
-* Variant 1: Default title font are 18 and body font size is font-size - 2 points.
-* Variant 2: Both title and body fonts are changed.
-* Variant 3: Title font are changed.
-* Variant 4: Title font are changed.
+</th>
+<tr>
+<td>Variant 1:
+<pre><code>font-size 18</code></pre>
+</td>
+<td>Default title font are 18 and body font size is font-size - 2 points.</td>
+</tr>
+<tr>
+<td>Variant 2:
+<pre><code>
+font-size 10
+body {
+    text "Body text - 30"
+    font-size 30
+}
+</code></pre>
+</td>
+<td>Both title and body fonts are changed.</td>
+</tr>
+<tr>
+<td>Variant 3:
+<pre><code>font-size 10</code></pre>
+</td>
+<td>Title font are changed.</td>
+</tr>
+<tr>
+<td>Variant 4:
+<pre><code>font-size 30</code></pre>
+</td>
+<td>Title font are changed.</td>
+</tr>
+</table>
 
 In all situations boundaries of item are calculated to fit both title and body.
 
@@ -210,31 +253,76 @@ In all situations boundaries of item are calculated to fit both title and body.
 
 Bundaries of items could be changed by defining `width` and `height` properties.
 
+<table>
+<th colspan=2>
 <img src="./Images/width_height.png" width="400px">
-
-* Variant 1: `width 50` is defined.
-* Variant 2: `width 150` is defined.
-* Variant 3:
-    ```
-    name "AAA"
-    width ${utils.textWidth(name)*2}
-    height ${width}
-    ```
-    This variant uses utils object to calculate text size and multiple it two times, and set both width and height to same values. Be aware of using non static calculations on with/heigh since properties calculation could be cycled, only limited number of cyclec will be executed to have stable final results.
+</th>
+<tr>
+    <td>Variant 1:</td>
+    <td><code>width 50</code><br/>
+    If text is not fit into width it will be clipped on bounds of item.
+    </td>
+</tr>
+<tr>
+    <td>Variant 2:</td>
+    <td><code>width 150</code></td>
+</tr>
+<tr>
+    <td>Variant 3:</td>
+    <td>
+    <pre><code>
+name "AAA"
+width ${utils.textWidth(name)*2}
+height ${width}
+    </code></pre>
+    This variant uses <code>utils</code> object to calculate text size and multiple it two times, and set both width and height to same values. <br/>
+    Be aware of using non static calculations on <code>width/height</code> since properties calculation could be cycled, only limited number of cyclec will be executed to have stable final results.
+    </td>
+</tr>
+</table>
 
 #### Display property.
 
 Items on layer could have a different look.
 
+<table>
+<th colspan=2>
 <img src="./Images/display_prop.png" width="600px">
+</th>
+<tr>
+<td>Variant 1</br>
+Default or <code>display=rect</code>
+</td>
+<td>This variant is suitable for most of brain maps and other situations.</td>
+</tr>
+<tr>
+<td>Variant 2</br>
+<code>display no-fill</code>
+</td>
+<td>a variable without background filling.</td>
+</tr>
+<tr>
+<td>Variant 3</br>
+<code>display circle</code>
+</td>
+<td>a display of Eclipse/Circle. based on width and height of rect.<br/> It would be required to specify <code>width</code> and <code>height</code> properties to have a proper fit of text inside.</td>
+</tr>
+<tr>
+<td>Variant 4</br>
+<code>display stack</code>
+</td>
+<td>a rect with stack line display.</td>
+</tr>
+<tr>
+<td>Variant 5</br>
+<code>display text</code>
+</td>
+<td>
+a usefull for writing some text descriptions and formatted text areas. A full <b>markdown</b> syntax is planed for one of upcoming versions of product and could be specified via <br/><code>body %{markdown}</code> or <code>title %{markdown}</code>
+</td>
+</tr>
+</table>
 
-
-* Variant 1 - default or `display=rect`
-    This variant is suitable for most of brain maps and other situations.
-* Variant 2 - `display no-fill` a variable without background filling.
-* Variant 3 - `display circle` a display of Eclipse/Circle. based on width and height of rect. It would be required to specify `width` and `height` properties to have a proper fit of text inside.
-* Variant 4 - `display stack` a rect with stack line display.
-* Variant 5 - `display text` a usefull for writing some text descriptions and formatted text areas. A full `markdown` syntax is planed for one of upcoming versions of product and could be specified via `body %{markdown}` or `title %{markdown}`
 
 ### Reusable styles
 Every layer support it's own defined styles, this styles could be used to define look of items.
@@ -250,13 +338,16 @@ styles {
 }
 ```
 
-Every named group under styles are treaded as different style and could be applied to items. Using `use-style`
-property. Also it is accessible via context menu:
+Every named group under styles are treaded as different style and could be applied to items.
+Using `use-style` property.
 
-<img src="./Images/use-style-menu.png" width="500px">
+<img style="float: right;" width="300px" src="./Images/use-style-menu.png"/>
+
+Also it is accessible via context menu:
 
 
-This context menu also allow to define more styles. On clicking to `Define new style` selection will switch to layer itself and add new item with counted name.
+This context menu also allow to define more styles.
+On clicking to `Define new style` selection will switch to layer itself and add new item with counted name.
 
 ## Connections/Links
 
@@ -268,14 +359,29 @@ Every two items on diagram layer could be linked together by line reference. Sou
 
 Links could also have some styles:
 
-<img src="./Images/links_variants.png" width="400px">
-
-* Variant 1 - regular links, drawn by default.
-* Variant 2 - `display arrow` draws arrow on target side.
-* Variant 3 - `display arrows` draws arrows on both sides.
-* Variant 4 - `line-style dashed` draw line dashed.
-* Variant 5 - `line-style dotted` draw lines with dots.
-* Variant 6 - `line-width 2` control width of line.
+<table>
+<tr>
+    <td>1. regular links</td><td>drawn by default.</td>
+    <td rowspan=6>
+        <img src="./Images/links_variants.png" width="500px">
+    </td>
+</tr>
+<tr>
+    <td>2. <code>display arrow</code></td><td>draws arrow on target side.</tr>
+</tr>
+<tr>
+    <td>3. <code>display arrows</code></td><td>draws arrows on both sides.</tr>
+</tr>
+<tr>
+    <td>4 <code>line-style dashed</code></td><td>draw line dashed.</tr>
+</tr>
+<tr>
+    <td>5 <code>line-style dotted</code></td><td>draw lines with dots.</tr>
+</tr>
+<tr>
+    <td>6 <code>line-width 2</code> </td><td>control width of line.</tr>
+</tr>
+</table>
 
 Every line could be split and corrected by dragging line, it will add a `pos x y` property to controll offset from line central point, so this point will be moved every time line source/target will be moven.
 
