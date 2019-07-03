@@ -1695,7 +1695,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             context.saveGState()
             // Draw background
-            context.setFillColor( PreferenceConstants.preference.background)
+            var color = PreferenceConstants.preference.background
+            
+            if PreferenceConstants.preference.uiTransparentBackground {
+                color = color.copy(alpha: 0.1)!
+            }
+            
+            context.setFillColor( color )
             
             context.setShouldAntialias(true)
             context.fill(self.bounds)

@@ -885,6 +885,17 @@ CQ
                                                 <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.ui.quick_panel_top" id="SKG-RM-uxf"/>
                                             </connections>
                                         </button>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Hnf-6Z-2I8" userLabel="autoExpand">
+                                            <rect key="frame" x="18" y="24" width="171" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Transparent background" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="12a-it-hyc">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.ui.transparent_background" id="hL7-hV-Zba"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                 </view>
                             </box>
