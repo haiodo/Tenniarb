@@ -14,15 +14,17 @@
 				<string>tenn</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>Icon.icns</string>
+			<string>TennIco.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>text/plain</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>Tenn</string>
+			<string>Tenniarb file</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>tenniarb.tenn</string>
@@ -36,7 +38,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>TennIco.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -48,7 +50,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>27</string>
+	<string>29</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
@@ -76,8 +78,10 @@
 			<array>
 				<string>public.text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Tenniarb file</string>
 			<key>UTTypeIconFile</key>
-			<string>Icon.icns</string>
+			<string>TennIco.icns</string>
 			<key>UTTypeIdentifier</key>
 			<string>tenniarb.tenn</string>
 			<key>UTTypeTagSpecification</key>
@@ -103,9 +107,9 @@
 				<string>public.text</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Tenn Brain Map</string>
+			<string>Tenniarb file</string>
 			<key>UTTypeIconFile</key>
-			<string>Icon.icns</string>
+			<string>TennIco.icns</string>
 			<key>UTTypeIdentifier</key>
 			<string>tenniarb.tenn</string>
 			<key>UTTypeTagSpecification</key>
