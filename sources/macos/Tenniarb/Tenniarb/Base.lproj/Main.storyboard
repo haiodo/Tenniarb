@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14490.70"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -268,7 +269,7 @@ CQ
                                     <items>
                                         <menuItem title="Tenniarb Help" keyEquivalent="?" id="FKE-Sm-Kum">
                                             <connections>
-                                                <action selector="showHelp:" target="Ady-hI-5gd" id="y7X-2Q-9no"/>
+                                                <segue destination="kJS-FH-koP" kind="show" id="1PE-0t-Wrh"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -497,26 +498,17 @@ CQ
                                                                                 </segments>
                                                                             </segmentedCell>
                                                                         </segmentedControl>
-                                                                        <segmentedControl hidden="YES" verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="Resources_actions">
+                                                                        <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="HelpAction">
                                                                             <rect key="frame" x="555.5" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="vqf-vq-Awc">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
-                                                                                    <segment toolTip="Export &amp; Share" image="NSTouchBarFolderMoveToTemplate" width="20"/>
+                                                                                    <segment toolTip="Export &amp; Share" image="NSBookmarksTemplate" width="20"/>
                                                                                 </segments>
                                                                             </segmentedCell>
                                                                             <connections>
-                                                                                <action selector="clickExtraButton:" target="5gI-5U-AMq" id="G0m-tf-DgV"/>
+                                                                                <segue destination="kJS-FH-koP" kind="show" id="vtn-ED-noe"/>
                                                                             </connections>
-                                                                        </segmentedControl>
-                                                                        <segmentedControl hidden="YES" verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nPJ-q3-IeN" userLabel="QuickProperties">
-                                                                            <rect key="frame" x="520.5" y="6" width="26" height="23"/>
-                                                                            <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="Wlc-Ek-yYl">
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <segments>
-                                                                                    <segment toolTip="Export &amp; Share" image="NSTouchBarFolderMoveToTemplate" width="20"/>
-                                                                                </segments>
-                                                                            </segmentedCell>
                                                                         </segmentedControl>
                                                                     </subviews>
                                                                     <constraints>
@@ -525,7 +517,6 @@ CQ
                                                                         <constraint firstItem="fzh-iN-2Fn" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="CxS-Dh-MVg"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" secondItem="SXa-LX-SJ4" secondAttribute="trailing" constant="20" id="Hte-zE-mg2"/>
                                                                         <constraint firstItem="SXa-LX-SJ4" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="IPv-Xh-tkU"/>
-                                                                        <constraint firstItem="fzh-iN-2Fn" firstAttribute="leading" secondItem="nPJ-q3-IeN" secondAttribute="trailing" constant="10" id="WsW-4a-Ms1"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="centerY" secondItem="s5a-YQ-Uz7" secondAttribute="centerY" id="nsv-cH-qdL"/>
                                                                         <constraint firstItem="zbO-zz-O9G" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xxj-wV-uFj" secondAttribute="trailing" constant="41" id="te2-Op-awM"/>
                                                                         <constraint firstItem="xxj-wV-uFj" firstAttribute="leading" secondItem="s5a-YQ-Uz7" secondAttribute="leading" constant="15" id="v51-Iq-FW6"/>
@@ -629,7 +620,6 @@ CQ
                     </view>
                     <connections>
                         <outlet property="exportSegments" destination="po3-ln-0Dn" id="cy1-L4-0Xs"/>
-                        <outlet property="quickProperties" destination="nPJ-q3-IeN" id="mDx-sL-iaD"/>
                         <outlet property="scene" destination="oxI-2Z-wAL" id="gqX-pA-f3S"/>
                         <outlet property="textView" destination="LDJ-EQ-s6n" id="88L-Cj-weB"/>
                         <outlet property="toolsSegmentedControl" destination="zbO-zz-O9G" id="j4x-SM-Z9y"/>
@@ -703,6 +693,37 @@ CQ
                 <customObject id="EWO-Lg-21c" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="847" y="356"/>
+        </scene>
+        <!--Tenniarb Help-->
+        <scene sceneID="7su-tB-NOc">
+            <objects>
+                <viewController title="Tenniarb Help" showSeguePresentationStyle="single" id="kJS-FH-koP" customClass="HelpController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="g4K-va-EBO">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <wkWebView wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="y1o-D1-WxH">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <wkWebViewConfiguration key="configuration">
+                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
+                                    <wkPreferences key="preferences"/>
+                                </wkWebViewConfiguration>
+                            </wkWebView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="y1o-D1-WxH" secondAttribute="bottom" id="9t3-hI-S1e"/>
+                            <constraint firstAttribute="trailing" secondItem="y1o-D1-WxH" secondAttribute="trailing" id="Wdf-xl-sGk"/>
+                            <constraint firstItem="y1o-D1-WxH" firstAttribute="top" secondItem="g4K-va-EBO" secondAttribute="top" id="jdm-dJ-AZG"/>
+                            <constraint firstItem="y1o-D1-WxH" firstAttribute="leading" secondItem="g4K-va-EBO" secondAttribute="leading" id="qSS-8h-kLf"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="webView" destination="y1o-D1-WxH" id="Ob1-gL-35X"/>
+                    </connections>
+                </viewController>
+                <customObject id="XZ3-eq-4fw" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1244" y="1654"/>
         </scene>
         <!--General-->
         <scene sceneID="0VU-is-90t">
@@ -875,9 +896,9 @@ CQ
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lxX-mc-aL0" userLabel="autoExpand">
-                                            <rect key="frame" x="18" y="58" width="136" height="18"/>
+                                            <rect key="frame" x="18" y="58" width="171" height="18"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="check" title="Quick panel on top" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NwE-R0-2r2">
+                                            <buttonCell key="cell" type="check" title="Show popup quick panel" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NwE-R0-2r2">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -1062,11 +1083,14 @@ CQ
     </scenes>
     <resources>
         <image name="NSAddTemplate" width="11" height="11"/>
+        <image name="NSBookmarksTemplate" width="17" height="18"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="NSRevealFreestandingTemplate" width="14" height="14"/>
         <image name="NSShareTemplate" width="11" height="16"/>
         <image name="NSTouchBarAddDetailTemplate" width="18" height="30"/>
-        <image name="NSTouchBarFolderMoveToTemplate" width="22" height="30"/>
         <image name="ico-group" width="22" height="20"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="vtn-ED-noe"/>
+    </inferredMetricsTieBreakers>
 </document>

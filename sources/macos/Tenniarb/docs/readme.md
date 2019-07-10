@@ -397,7 +397,7 @@ Line styles also could be applied to items.
 * `line-width 2` control width of line.
 
 
-# Tenniarb - Advanced details.
+# Advanced details.
 
 ## Tenn language reference.
 

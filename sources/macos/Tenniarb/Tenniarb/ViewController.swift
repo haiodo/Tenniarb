@@ -16,7 +16,6 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     @IBOutlet var textView: NSTextView!
     
-    @IBOutlet weak var quickProperties: NSSegmentedControl!
     var elementStore: ElementModelStore?
     
     var selectedElement: Element?
@@ -80,7 +79,6 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         
         self.textViewDelegate = TextPropertiesDelegate(self, self.textView!)
         
-        scene.quickProperties = self.quickProperties
         scene.onLoad(self)
         
         if elementStore != nil && self.scene != nil {
