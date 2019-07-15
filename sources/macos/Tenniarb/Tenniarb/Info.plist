@@ -50,7 +50,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>29</string>
+	<string>31</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
@@ -61,16 +61,6 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>Tenniarb.TenniarbApplication</string>
-	<key>NSServices</key>
-	<array>
-		<dict>
-			<key>NSMenuItem</key>
-			<dict/>
-			<key>NSMessage</key>
-			<string></string>
-		</dict>
-		<dict/>
-	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
