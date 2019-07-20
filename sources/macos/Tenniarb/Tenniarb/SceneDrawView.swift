@@ -367,7 +367,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var count = 0;
     func animate() {
         if let fps = element?.properties.get("animation"), let delay = fps.getFloat(1) {
-            Swift.debugPrint("Animate: \(delay) count:\(count)")
+            //Swift.debugPrint("Animate: \(delay) count:\(count)")
             count += 1
             if self.mode == .Normal {
                 self.store!.executionContext.updateAll({
@@ -1744,20 +1744,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     @objc func copy( _ sender: NSObject ) {
         if self.activeItems.count > 0 {
             let block = self.element!.storeItems(self.activeItems)
-            
-            NSPasteboard.general.clearContents()
-            let value = block.toStr()
-            NSPasteboard.general.setString(value, forType: .string)
+            ClipboardUtils.copy(block)
         }
     }
     
-    @objc func paste( _ sender: NSObject ) {      
-        if let value = NSPasteboard.general.string(forType: .string) {
-            let p = TennParser()
-            let node = p.parse(value)
-            if p.errors.hasErrors() {
-                return // If there is errors, we could not paste.
-            }
+    @objc func paste( _ sender: NSObject ) {
+        ClipboardUtils.paste { node in
             let items = Element.parseItems(node: node)
             if items.count > 0 {
                 // Move items a bit,
@@ -1794,6 +1786,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             else if action == #selector(fontMenuAction) {
                 return true
+            }
+            else if action == #selector(paste(_:)) {
+                return ClipboardUtils.canPaste()
             }
         }
         return true

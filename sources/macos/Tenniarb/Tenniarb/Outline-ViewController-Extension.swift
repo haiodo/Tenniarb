@@ -39,12 +39,68 @@ class OutlineNSTableRowView: NSTableRowView {
 
 class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate {
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if let action = menuItem.action {
+            let el = item(atRow: selectedRow) as? Element
+            
+            if action == #selector(cut) {
+                return el != nil
+            }
+            else if action == #selector(copy(_:)) {
+                return el != nil
+            }
+            else if action == #selector(cut(_:)) {
+                return el != nil
+            }
+            else if action == #selector(paste(_:)) {
+                return ClipboardUtils.canPaste()
+            }
+        }
+        
+        if let menuDelegate = delegate as? NSMenuItemValidation {
+            return menuDelegate.validateMenuItem(menuItem)
+        }
         return true
     }
+    @objc func cut( _ sender: NSObject ) {
+        self.copy(sender)
+        if let delegate = self.delegate as? OutlineViewControllerDelegate {
+            delegate.controller.handleRemoveElement()
+        }
+        
+    }
+    
+    @objc func copy( _ sender: NSObject ) {
+        if let el = item(atRow: selectedRow) as? Element {
+            ClipboardUtils.copy(el.toTenn())
+        }
+    }
+    
+    @objc func paste( _ sender: NSObject ) {
+        if let delegate = self.delegate as? OutlineViewControllerDelegate,
+            let root = item(atRow: selectedRow) as? Element {
+            ClipboardUtils.paste { node in
+                let elModel = Element.parseTenn(node: node)
+                if elModel.elements.count > 0 {
+                    delegate.controller.elementStore?.addElements(root, elModel.elements, undoManager: self.undoManager, refresh: {()->Void in
+                        DispatchQueue.main.async(execute: {
+                            if root.kind == .Root {
+                                self.reloadData()
+                            }
+                            else {
+                                self.reloadItem(root, reloadChildren: true )
+                                self.expandItem(root)
+                            }
+                        })
+                    })
+                }
+            }
+        }
+    }
+    
     override func keyDown(with event: NSEvent) {
         if let delegate = self.delegate as? OutlineViewControllerDelegate {
             if delegate.keyDown(for: event, self) {
-               return
+                return
             }
         }
         super.keyDown(with: event)
@@ -79,7 +135,6 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     }
     
     func control(_ control: NSControl, textShouldBeginEditing fieldEditor: NSText) -> Bool {
-        Swift.debugPrint("HI")
         return true
     }
     
@@ -111,7 +166,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         controller.handleRemoveElement()
     }
     
-     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         let selectedIndex = controller.worldTree.selectedRow
         
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
@@ -120,7 +175,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             }
             return true
         }
-        return false
+        return true
     }
     
     func createMenu() -> NSMenu? {
@@ -234,7 +289,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         let selectedIndex = controller.worldTree.selectedRow
-
+        
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
             self.controller.onElementSelected(el)
         }

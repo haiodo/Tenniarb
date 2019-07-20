@@ -199,6 +199,14 @@ public class ElementModelStore {
         execute(AddElement(self, parent, child, index: index), undoManager, refresh)
     }
     
+    public func addElements( _ parent: Element, _ childs: [Element], undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int? = nil ) {
+        var ops: [ElementOperation] = []
+        for el in childs {
+            ops.append(AddElement(self, parent, el, index: nil))
+        }
+        compositeOperation( notifier: parent, undoManaget: undoManager, refresh: refresh, ops)
+    }
+    
     
     public func move( _ element: Element, _ newParent: Element, undoManager: UndoManager?, refresh: @escaping () -> Void, index: Int ) {
         

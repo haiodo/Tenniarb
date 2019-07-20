@@ -327,7 +327,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     public func handleRemoveElement() {
         if let active = self.selectedElement {
             if let parent = active.parent {
-                _ = parent.remove(active)
+//                _ = parent.remove(active)
                 
                 if parent.kind == .Root {
                     selectedElement = nil
@@ -336,15 +336,17 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     selectedElement = parent
                 }
                 
-                DispatchQueue.main.async(execute: {
-                    if parent.kind == .Root {
-                        self.worldTree.reloadData()
-                    }
-                    else {
-                        self.worldTree.reloadItem(parent, reloadChildren: true)
-                    }
-                })
-
+                self.elementStore?.remove(parent, active, undoManager: self.undoManager, refresh: {()->Void in
+                    DispatchQueue.main.async(execute: {
+                        if parent.kind == .Root {
+                            self.worldTree.reloadData()
+                        }
+                        else {
+                            self.worldTree.reloadItem(parent, reloadChildren: true )
+                            self.worldTree.expandItem(parent)
+                        }
+                    })
+                })              
             }
         }
     }

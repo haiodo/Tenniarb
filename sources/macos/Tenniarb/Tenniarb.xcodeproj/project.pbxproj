@@ -44,6 +44,7 @@
 		0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */; };
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
+		0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */; };
 		0CCAE77222AACB560083F898 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCAE77122AACB560083F898 /* Application.swift */; };
 		0CD170A322D5BB6500E217D4 /* draw_line_items.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1708E22D5BB6300E217D4 /* draw_line_items.png */; };
 		0CD170A422D5BB6500E217D4 /* font_size.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1708F22D5BB6300E217D4 /* font_size.png */; };
@@ -145,6 +146,8 @@
 		0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextPropertiesDelegate.swift; sourceTree = "<group>"; };
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
+		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = ../../../../../../../../../../System/Volumes/Data/Users/haiodo/Develop/private/tenniarb/sources/macos/Tenniarb/Tenniarb/Utils/ClipboardUtils.swift; sourceTree = "<group>"; };
+		0CC7005D22E2ED2700DF2071 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = Changelog.md; path = ../../../../../../../../../System/Volumes/Data/Users/haiodo/Develop/private/tenniarb/sources/macos/Tenniarb/docs/Changelog.md; sourceTree = "<group>"; };
 		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CD1708E22D5BB6300E217D4 /* draw_line_items.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = draw_line_items.png; sourceTree = "<group>"; };
 		0CD1708F22D5BB6300E217D4 /* font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = font_size.png; sourceTree = "<group>"; };
@@ -314,6 +317,7 @@
 		0C44D7571EE316F8001B7D01 /* views */ = {
 			isa = PBXGroup;
 			children = (
+				0CC7005A22E2E51A00DF2071 /* Utils */,
 				0C3A36BC2085B3D500CC646C /* controllers */,
 				0CB496991F11D8D600F5CB4C /* scene */,
 				0CBF20D31EF98F0200FE17D5 /* WindowController.swift */,
@@ -329,6 +333,7 @@
 				0C45B12822A397BE00640305 /* examples.md */,
 				0C45B12922A397BE00640305 /* Images */,
 				0C45B12B22A397BE00640305 /* readme.md */,
+				0CC7005D22E2ED2700DF2071 /* Changelog.md */,
 			);
 			name = docs;
 			path = ../docs;
@@ -394,6 +399,14 @@
 				0C4F1471200889CC009C9EC5 /* ColorNames.swift */,
 			);
 			name = scene;
+			sourceTree = "<group>";
+		};
+		0CC7005A22E2E51A00DF2071 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		0CFBC7A41F0CAF190072E4FF /* document */ = {
@@ -576,6 +589,7 @@
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
 				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
+				0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
 				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
 				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
