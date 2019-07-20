@@ -481,14 +481,33 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 
                 self.worldTree.beginUpdates()
                 
-                if self.selectedElement != evt.element {
-                    self.onElementSelected(evt.element)
+                // Check if operation added some items and in this case select it.
+                var selectionUpdated = false
+                for (el, kind) in evt.elements {
+                    if kind == .Append {
+                        if self.selectedElement != el {
+                            self.onElementSelected(el)
+                            selectionUpdated = true
+                        }
+                    }
+                }
+                if !selectionUpdated {
+                    if self.selectedElement != evt.element {
+                        self.onElementSelected(evt.element)
+                    }
                 }
                 for el in self.updateElements {
                     self.worldTree.reloadItem(el, reloadChildren: true)
                 }
                 self.updateElements.removeAll()
+                
                 self.worldTree.endUpdates()
+                
+                if let sel = self.selectedElement {
+                    let childIndex = self.worldTree.row(forItem: sel)
+                    self.worldTree.selectRowIndexes(IndexSet.init(arrayLiteral: childIndex),
+                                                    byExtendingSelection: false)
+                }
                                 
                 self.updateScheduled = 0
                 

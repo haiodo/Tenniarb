@@ -16,7 +16,7 @@ public enum ModelEventKind {
     case Layout
 }
 
-public enum ModelEventItemOperation {
+public enum ModelEventOperation {
     case Append
     case Remove
     case Update
@@ -25,7 +25,9 @@ public enum ModelEventItemOperation {
 public class ModelEvent {
     let kind: ModelEventKind
     var element: Element
-    var items: [DiagramItem:ModelEventItemOperation] = [:]
+    var items: [DiagramItem:ModelEventOperation] = [:]
+    var elements: [Element:ModelEventOperation] = [:]
+
     init(kind: ModelEventKind, element: Element) {
         self.kind = kind
         self.element = element
@@ -59,7 +61,9 @@ public class ElementOperation {
     func getEventKind() -> ModelEventKind {
         return .Structure
     }
-    func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+    func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
+    }
+    func collect( _ elements: inout [Element:ModelEventOperation] ) {
     }
 }
 
@@ -84,6 +88,22 @@ public class CompositeOperation: ElementOperation {
     
     func add(_ ops: ElementOperation...) {
         self.operations.append(contentsOf: ops)
+    }
+    
+    override func getEventKind() -> ModelEventKind {
+        // Check if all operations are add operations, when it is add.
+        
+        if self.operations.count == 0 {
+            return super.getEventKind()
+        }
+        let kind = self.operations[0].getEventKind()
+        for op in self.operations {
+            if kind != op.getEventKind() {
+                // If not same, return Structure.
+                return super.getEventKind()
+            }
+        }
+        return kind
     }
     
     override var name:String {
@@ -114,9 +134,14 @@ public class CompositeOperation: ElementOperation {
     override func getNotifier() -> Element {
         return self.notifier
     }
-    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+    override func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
         for op in self.operations {
             op.collect(&items)
+        }
+    }
+    override func collect(_ elements: inout [Element : ModelEventOperation]) {
+        for op in self.operations {
+            op.collect(&elements)
         }
     }
 }
@@ -143,7 +168,6 @@ public class ElementModelStore {
             })
         }
         
-        
         if DEBUG_OPERATION_TRACKING {
             Swift.debugPrint("Calling operation:",action.name," state:",action.isUndoCalled)
         }
@@ -159,6 +183,7 @@ public class ElementModelStore {
         
         let evt = ModelEvent(kind: action.getEventKind(), element: action.getNotifier())
         action.collect(&evt.items)
+        action.collect(&evt.elements)
         
         DispatchQueue.global(qos: .background).async {
             // Do calculation in background
@@ -333,7 +358,7 @@ class AbstractUpdateValue<ValueType>: ElementOperation {
         self.apply(oldValue)
         super.undo()
     }
-    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+    override func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
         items[item] = .Update
     }
     override func getNotifier() -> Element {
@@ -445,6 +470,14 @@ class AddElement: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
+    override func collect(_ elements: inout [Element : ModelEventOperation]) {
+        if !isUndoCalled {
+            elements[child] = .Append
+        } else {
+            elements[child] = .Remove
+        }
+    }
+    
 }
 
 class AddItem: ElementOperation {
@@ -465,7 +498,7 @@ class AddItem: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
-    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+    override func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
         if !isUndoCalled {
             items[item] = .Append
         } else {
@@ -494,6 +527,13 @@ class RemoveElement: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
+    override func collect(_ elements: inout [Element : ModelEventOperation]) {
+        if !isUndoCalled {
+            elements[child] = .Remove
+        } else {
+            elements[child] = .Append
+        }
+    }
 }
 
 class RemoveItem: ElementOperation {
@@ -515,11 +555,11 @@ class RemoveItem: ElementOperation {
     override func getNotifier() -> Element {
         return self.parent
     }
-    override func collect( _ items: inout [DiagramItem:ModelEventItemOperation] ) {
+    override func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
         if !isUndoCalled {
-            items[child] = .Append
-        } else {
             items[child] = .Remove
+        } else {
+            items[child] = .Append
         }
     }
 }
