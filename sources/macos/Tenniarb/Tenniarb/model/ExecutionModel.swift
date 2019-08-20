@@ -84,7 +84,7 @@ fileprivate func calculateValue(_ node: TennNode?,
     switch nde.kind {
     case .FloatLit:
         if let identText = nde.getIdentText() {
-            return Float(identText) ?? 0.0
+            return Double(identText) ?? 0.0
         }
         return nil
     case .IntLit:

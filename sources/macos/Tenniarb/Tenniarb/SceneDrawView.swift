@@ -994,10 +994,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             for itm  in curElement.getRelatedItems(active, source: false) {
                 if itm.kind == .Link {
-                    if processedLinks.contains(active.id.uuidString) {
+                    if processedLinks.contains(itm.id.uuidString) {
                         continue
                     }
-                    processedLinks.append(active.id.uuidString)
+                    processedLinks.append(itm.id.uuidString)
                     let li = itm.clone()
                     links.append(li)
                     items.append(li)
