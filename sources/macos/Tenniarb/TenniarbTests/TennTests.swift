@@ -42,36 +42,26 @@ class LexerTests: XCTestCase {
         
         let t4 = lexer.getToken()
         XCTAssertNil(t4)
-        
     }
-//    func testParsing() {
-//        let parser = TennParser()
-//        let nde = parser.parse("""
-//            map qwe {
-//                elements {
-//                    node "Platform" {
-//                    }
-//                    node ""
-//                }
-//            }
-//            """)
-//        let asText:String = nde.toStr()
-//        let expected = """
-//            map qwe {
-//              elements {
-//                node "Platform" {
-//                }
-//                node ""
-//              }
-//            }
-//            """
-//        do {
-//            try asText.write(toFile: "/tmp/f1.txt", atomically: true, encoding: String.Encoding.utf8)
-//            try expected.write(toFile: "/tmp/f2.txt", atomically: true, encoding: String.Encoding.utf8)
-//        }
-//        catch {
-//            
-//        }
-//        XCTAssertEqual(asText, expected )
-//    }
+    func testEmojiiLexing() {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        
+        let lexer = TennLexer("qwe 😈")
+        let t1 = lexer.getToken()
+        
+        XCTAssertEqual(t1?.literal, "qwe")
+        XCTAssertEqual(t1?.type, TennTokenType.symbol)
+        
+        let t2 = lexer.getToken()
+        
+        XCTAssertEqual(t2?.literal, "😈")
+        XCTAssertEqual(t2?.type, TennTokenType.symbol)
+        
+        let t3 = lexer.getToken()
+        XCTAssertEqual(t3?.type, TennTokenType.eof)
+        
+        let t4 = lexer.getToken()
+        XCTAssertNil(t4)
+    }
 }

@@ -8,72 +8,21 @@
 
 import Foundation
 
-public enum TennTokenType {
-    case invalid
-    case eof
-    case symbol
-    case floatLit
-    case intLit
-    case stringLit
-    case curlyLe
-    case curlyRi
-    case comma
-    case colon
-    case semiColon
-    case expression         // $(expression)
-    case expressionBlock    // ${expression block}
-    case markdownLit //%{}
-}
-
-public class TennToken {
-    public let type: TennTokenType
-    public let literal: String
-    public let line: Int
-    public let col: Int
-    public let pos: Int
-    public let size: Int
+public class TennLexer: TennLexerProtocol {
+    private var currentLine: Int = 0
+    private var currentChar: Int = 0
+    private var buffer: [Character]
+    private var bufferCount: Int = 0
+    private var pos: Int = 0
     
-    init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0, pos:Int = 0, size:Int = 0) {
-        self.type = type
-        self.literal = literal
-        self.line = line
-        self.col = col
-        self.pos = pos
-        self.size = size
-    }
-}
-
-extension TennToken: Hashable {
-    public static func == (lhs: TennToken, rhs: TennToken) -> Bool {
-        return lhs.type == rhs.type && lhs.literal == rhs.literal && lhs.line == rhs.line && lhs.col == lhs.col && lhs.pos == rhs.pos && lhs.size == rhs.size;
-    }
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.type)
-        hasher.combine(self.literal)
-        hasher.combine(self.col)
-        hasher.combine(self.pos)
-        hasher.combine(self.size)
-    }
-}
-
-public enum LexerError {
-    case EndOfLineReadString
-    case EndOfExpressionReadError
-}
-
-public class TennLexer {
-    var currentLine: Int = 0
-    var currentChar: Int = 0
-    var buffer: Array<Character>
-    var pos: Int = 0
+    private var tokenBuffer: [TennToken] = []
+    private var blockState:[TennTokenType] = []
     
-    var tokenBuffer: [TennToken] = []
-    var blockState:[TennTokenType] = []
-    
-    var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
+    public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
-        self.buffer = Array(code)
+        self.buffer = code.map {c in c}
+        self.bufferCount = self.buffer.count
     }
     
     public func revert(tok: TennToken) {
@@ -84,19 +33,19 @@ public class TennLexer {
             TennToken(type: type, literal: literal, line: currentLine, col: currentChar, pos: self.pos-literal.count, size: literal.count)
         )
     }
-    private func add(check pattern: inout String) {
+    private func add(check pattern: inout [Character]) {
         if pattern.count > 0 {
-            self.add(type: detectSymbolType(pattern: pattern), literal: pattern)
+            self.add(type: detectSymbolType(pattern: pattern), literal: String(pattern))
             pattern.removeAll(keepingCapacity: true)
         }
         
     }
-    private func add(literal: String) {
-        self.add(type: .stringLit, literal: literal)
+    private func add(literal: [Character]) {
+        self.add(type: .stringLit, literal: String(literal))
     }
-    private func detectSymbolType( pattern: String ) -> TennTokenType {
+    private func detectSymbolType( pattern: [Character] ) -> TennTokenType {
         var value = pattern
-        if value.count > 0 && value.hasPrefix("-") {
+        if value.count > 0 && value[0] == "-" {
             value.remove(at: value.index(value.startIndex, offsetBy: 0))
         }
         var dot = false
@@ -129,19 +78,19 @@ public class TennLexer {
     }
     
     private func charAt(_ offset:Int = 0)-> Character {
-        if self.pos + offset < self.buffer.count {
+        if self.pos + offset < self.bufferCount {
             return self.buffer[self.pos + offset]
         }
         return Character("\0")
     }
     
-    private func readString( r: inout String, lit: Character) {
+    private func readString( r: inout [Character], lit: Character) {
         self.add(check: &r)
         self.inc()
         
         var foundEnd = false
         let stPos = self.pos
-        while self.pos < self.buffer.count {
+        while self.pos < self.bufferCount {
             let curChar = self.charAt()
             if  curChar == "\n" {
                 self.currentLine += 1;
@@ -155,7 +104,7 @@ public class TennLexer {
                 let oldCurLines = self.currentLine
                 let oldCurChar = self.currentChar
                 self.inc()
-                while self.pos < self.buffer.count {
+                while self.pos < self.bufferCount {
                     let chartAt = charAt()
                     if (chartAt == " " || chartAt == "\t" || chartAt == "\r") {
                         // All is ok
@@ -205,12 +154,12 @@ public class TennLexer {
             }
         }
     }
-    private func skipCComment(_ r: inout String) {
+    private func skipCComment(_ r: inout [Character]) {
         self.add(check: &r)
     
         self.inc(2); // Skip \/*
     
-        while self.pos < self.buffer.count {
+        while self.pos < self.bufferCount {
             switch self.charAt() {
             case "\n":
                 self.currentLine += 1
@@ -231,13 +180,13 @@ public class TennLexer {
     }
 
     
-    private func processComment( _ r: inout String, _ cc: Character) {
+    private func processComment( _ r: inout [Character], _ cc: Character) {
         if self.next() == "*" {
             // C/C++ multi-line comment
             self.skipCComment(&r)
         } else if self.next() == "/" {
             // End of line comment
-            while self.pos < self.buffer.count {
+            while self.pos < self.bufferCount {
                 if self.charAt() == "\n" {
                     self.currentLine += 1
                     self.currentChar = 0
@@ -251,7 +200,7 @@ public class TennLexer {
         }
     }
     
-    private func processNewLine(_ r: inout String, _ cc: Character) -> Bool {
+    private func processNewLine(_ r: inout [Character], _ cc: Character) -> Bool {
         self.add(check: &r)
         if cc == "\n" {
             self.currentLine += 1
@@ -272,8 +221,8 @@ public class TennLexer {
         if self.tokenBuffer.count > 0 {
             return self.tokenBuffer.removeFirst()
         }
-        var r = String()
-        while self.pos < self.buffer.count {
+        var r: [Character] = []
+        while self.pos < self.bufferCount {
             let cc = charAt()
             switch (cc) {
             case " ", "\t", "\r","\n":
@@ -331,7 +280,7 @@ public class TennLexer {
         
         self.add(check: &r)
         
-        if self.pos == self.buffer.count {
+        if self.pos == self.bufferCount {
             self.add(type: .eof, literal: "\0")
             self.inc()
         }
@@ -349,7 +298,7 @@ public class TennLexer {
         
         self.blockState.insert(.curlyLe, at: 0)
     }
-    private func processCurlyClose( _ r: inout String, _ cc: Character)-> Bool {
+    private func processCurlyClose( _ r: inout [Character], _ cc: Character)-> Bool {
         self.add(check: &r)
         
         self.add(type: .curlyRi, literal: String(cc))
@@ -371,7 +320,7 @@ public class TennLexer {
         return false
     }
     
-    private func readExpression( r: inout String, startLit: Character, endLit: Character, type: TennTokenType) {
+    private func readExpression( r: inout [Character], startLit: Character, endLit: Character, type: TennTokenType) {
         self.add(check: &r)
         self.inc(2)
         
@@ -379,7 +328,7 @@ public class TennLexer {
         var foundEnd = false
         var indent = 1
         let startLine = self.currentLine
-        while self.pos < self.buffer.count {
+        while self.pos < self.bufferCount {
             let curChar = self.charAt()
             if  curChar == "\n" {
                 self.currentLine += 1;
@@ -413,15 +362,11 @@ public class TennLexer {
         else {
             if (r.count > 0) {
                 self.tokenBuffer.append(
-                    TennToken(type: type, literal: r, line: startLine, col: currentChar, pos: self.pos-r.count, size: r.count)
+                    TennToken(type: type, literal: String(r), line: startLine, col: currentChar, pos: self.pos-r.count, size: r.count)
                 )
                 r.removeAll(keepingCapacity: true)
             }
             self.inc()
         }
     }
-}
-
-public class TennPrinter {
-    
 }

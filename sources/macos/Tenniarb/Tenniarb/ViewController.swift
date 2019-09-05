@@ -208,6 +208,24 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
     
+    @IBAction func editTitle(_ sender: NSMenuItem ) {
+        if let active = self.scene?.activeItems.first  {
+            scene.setActiveItem(active)
+            scene?.editTitle(active, .Name)
+        }
+    }
+    @IBAction func editBody(_ sender: NSMenuItem ) {
+        if let active = self.scene?.activeItems.first  {
+            scene.setActiveItem(active)
+            scene?.editTitle(active, .Body)
+        }
+    }
+    
+    @IBAction func quickEdit(_ sender: NSMenuItem ) {
+        showOperationBox()
+    }
+    
+    
     @IBAction func addLinkedItem(_ sender: NSMenuItem ) {
         scene?.addNewItem()
     }
@@ -229,6 +247,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             }
             if action == #selector(self.showSearchBox(_:)) {
                 return true
+            }
+            if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) ||
+                action == #selector(self.showOperationBox(_:)) {
+                return !self.scene.activeItems.isEmpty
             }
             if action == #selector(duplicateItem) {
                 switch findTarget() {

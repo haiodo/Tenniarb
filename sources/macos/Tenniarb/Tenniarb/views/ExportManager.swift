@@ -128,45 +128,7 @@ class ExportManager: NSObject, NSMenuDelegate {
         let image = context!.makeImage()
         let img = NSImage(cgImage: image!, size: imgBounds.size)
         return (img, bounds)
-    }
-    
-    func displayImageInPopup(_ img: NSImage, _ imgBounds: CGRect) {
-        let controller = NSViewController()
-        controller.view = NSView(frame: CGRect(x: CGFloat(0), y: CGFloat(0), width: CGFloat(imgBounds.width), height: CGFloat(imgBounds.height)))
-        controller.view.autoresizesSubviews = true
-
-        let popover = NSPopover()
-        popover.contentViewController = controller
-
-        let displaySize = CGSize(
-            width: imgBounds.size.width,
-            height: imgBounds.size.height)
-
-        popover.contentSize = displaySize
-
-        popover.behavior = .transient
-        popover.animates = false
-        
-        let imgSize = img.size
-        
-        let imgView = NSImageView(image: img)
-        imgView.imageScaling = .scaleProportionallyDown
-        imgView.setBoundsSize(imgSize)
-        imgView.setFrameSize(imgSize)
-        
-        let scrView = NSScrollView()
-        scrView.drawsBackground = false
-        
-        scrView.setFrameSize(NSSize(width: imgBounds.width, height: imgBounds.height))
-        scrView.hasVerticalScroller = true
-        scrView.hasHorizontalScroller = true
-        scrView.documentView = imgView
-        
-        controller.view.addSubview(scrView)
-        popover.show(relativeTo: self.viewController!.view.frame,
-                     of: self.viewController!.view, preferredEdge: NSRectEdge.minY)
-        
-    }
+    }    
     
     fileprivate func exportPng(_ writeFile: Bool) {
         let (img, _) = renderImage()
@@ -350,7 +312,7 @@ class ExportManager: NSObject, NSMenuDelegate {
                 exportPdf()
             case .preview:
                 let (img, bounds ) = renderImage()
-                displayImageInPopup(img, CGRect(x:0, y:0, width: bounds.width, height: bounds.height))
+                displayImageInPopup(viewController!.view, img, CGRect(x:0, y:0, width: bounds.width, height: bounds.height))
             default:
                 break;
             }

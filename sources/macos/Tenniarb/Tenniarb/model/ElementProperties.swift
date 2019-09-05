@@ -50,10 +50,10 @@ extension DiagramItem {
             if !self.name.isEmpty {
                 items.add(TennNode.newCommand(PersistenceItemKind.Name.commandName, TennNode.newStrNode(self.name)))
             }
-            Element.buildItemData(self, items, true)
+            Element.buildItemData(self, items, addPos: true, storeAttachments: false)
         }
         else if self.kind == .Link {
-            Element.buildLinkData(self, items, true)
+            Element.buildLinkData(self, items, addPos: true, storeAttachments: false)
         }
         
         if reparse {

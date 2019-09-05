@@ -50,17 +50,22 @@ public class TennErrorContainer {
 }
 
 public class TennParser {
-    var lexer: TennLexer?
+    var lexer: TennLexerProtocol?
     var tok: TennToken?
     
     var errors: TennErrorContainer = TennErrorContainer()
     
+    var factory: (( _ source: String ) -> TennLexerProtocol) = { source in TennLexer( source )}
+    
     public init() {
-        
+    }
+    public convenience init( lexerFactory: @escaping (( _ source: String ) -> TennLexerProtocol) ) {
+        self.init()
+        factory = lexerFactory
     }
     
     func reset( _ source: String) {
-        self.lexer = TennLexer( source )
+        self.lexer = factory(source)
         self.lexer?.errorHandler = { (_ code: LexerError, _ stPos: Int, _ pos:Int) -> Void in
             switch code {
             case .EndOfExpressionReadError:
@@ -69,7 +74,6 @@ public class TennParser {
                 self.errors.report(code: .EndOfFileDuringStringRead, msg: "Unclosed string terminal", token: nil)
             }
         }
-        
     }
     
     func getTok() -> TennToken? {
@@ -103,7 +107,7 @@ public class TennParser {
         var nextCmdMark: Set<TennTokenType> = Set()
         nextCmdMark.insert(TennTokenType.semiColon)
         nextCmdMark.insert(TennTokenType.eof)
-        while tok != nil && tok?.type != .eof {
+        while self.tok != nil && self.tok!.type != .eof {
             if let node = self.parseCommand(nextCmdMark) {
                 result.add(node)
             }

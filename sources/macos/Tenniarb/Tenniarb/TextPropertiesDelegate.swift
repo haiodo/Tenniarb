@@ -269,6 +269,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                 let size = tok.size + 2
                 
                 if size > 0  {
+                    let strValue = view.textStorage?.string
                     view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                         stringColor, range: NSMakeRange(start, size))
                 }

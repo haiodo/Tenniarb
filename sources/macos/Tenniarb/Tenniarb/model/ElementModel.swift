@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Cocoa
 
 public enum ElementKind {
     case Root
@@ -326,6 +327,8 @@ public class DiagramItem {
     var description: String? = nil
     
     var properties: ModelProperties = ModelProperties() // Extra nodes not supported directly by model.
+    
+    var images: [String:NSImage] = [:]
     
     var x: CGFloat = 0
     var y: CGFloat = 0

@@ -176,12 +176,43 @@ CQ
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Delete" id="pa3-QI-u2k">
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+CA
+</string>
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="delete:" target="Ady-hI-5gd" id="0Mk-Ml-PaM"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="346-q5-4ng"/>
+                                        <menuItem title="Show edit box" keyEquivalent=" " id="Ssc-Yt-lmZ">
+                                            <attributedString key="attributedTitle"/>
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="showOperationBox:" target="Ady-hI-5gd" id="KAG-Z3-9UO"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Edit title" id="3YL-hf-tKo">
+                                            <attributedString key="attributedTitle"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="editTitle:" target="Ady-hI-5gd" id="juG-rn-5xf"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Edit body" id="soz-13-aJA">
+                                            <attributedString key="attributedTitle"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                            <connections>
+                                                <action selector="editBody:" target="Ady-hI-5gd" id="2rE-UX-h1G"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="cFy-nl-ozi"/>
                                         <menuItem title="Select All" keyEquivalent="a" allowsKeyEquivalentWhenHidden="YES" id="T08-Xa-q2D">
                                             <connections>
                                                 <action selector="selectAllItems" target="Ady-hI-5gd" id="s1C-xK-YLt"/>
@@ -1091,6 +1122,6 @@ CQ
         <image name="ico-group" width="22" height="20"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="vtn-ED-noe"/>
+        <segue reference="1PE-0t-Wrh"/>
     </inferredMetricsTieBreakers>
 </document>
