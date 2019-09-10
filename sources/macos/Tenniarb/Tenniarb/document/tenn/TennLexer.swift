@@ -11,7 +11,7 @@ import Foundation
 public class TennLexer: TennLexerProtocol {
     public var currentLine: Int = 0
     public var currentChar: Int = 0
-    public var buffer: Array<Character>
+    public var buffer: Array<Unicode.Scalar>
     public var bufferCount: Int = 0
     public var pos: Int = 0
     
@@ -21,7 +21,7 @@ public class TennLexer: TennLexerProtocol {
     public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
-        self.buffer = Array(code)
+        self.buffer = Array(code.unicodeScalars)
         self.bufferCount = self.buffer.count
     }
     
@@ -83,10 +83,11 @@ public class TennLexer: TennLexerProtocol {
     }
     
     @inlinable func charAt(_ offset:Int = 0)-> Character {
-        if self.pos + offset < self.bufferCount {
-            return self.buffer[self.pos + offset]
+        let ppos = self.pos + offset
+        if ppos  < self.bufferCount {
+            return Character(self.buffer[ppos])
         }
-        return Character("\0")
+        return "\0"
     }
     
     private func readString( r: inout [Character], lit: Character) {
