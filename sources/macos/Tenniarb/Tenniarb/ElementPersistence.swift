@@ -111,11 +111,12 @@ extension Element {
             return
         }
         imagesBlock.traverse {child in
-            if let imgName = child.getIdent(1), let block = child.getChild(2),
-                let data = block.getValueStr("data"),
-                block.getValue(name: "encoding", defaultValue: "") == "png:base64" {
-                if let dta = Data(base64Encoded: data, options: .ignoreUnknownCharacters) {
-                    item.images[imgName] = NSImage(data: dta)
+            if let imgName = child.getIdent(1), let block = child.getChild(2) {
+                if block.getValue(name: "format", defaultValue: "") == "png" {
+                    if let nde = block.getNamedElement("data"), let data=nde.getIdent(1),
+                        let dta = Data(base64Encoded: data, options: .ignoreUnknownCharacters) {
+                        item.images[imgName] = NSImage(data: dta)
+                    }
                 }
             }
         }
@@ -130,13 +131,11 @@ extension Element {
                 if let tiffData = v.tiffRepresentation {
                     
                     let imageRep = NSBitmapImageRep(data: tiffData)
-                    let pngData = imageRep?.representation(using: .png, properties: [:])
-                    
-                    if let base64Data =  pngData?.base64EncodedString() {
+                    if let pngData = imageRep?.representation(using: .png, properties: [:]) {
                         let imgBlock = TennNode.newBlockExpr()
                         let img = TennNode.newCommand("image", TennNode.newStrNode(k), imgBlock)
-                        imgBlock.add(TennNode.newCommand("data", TennNode.newStrNode(base64Data)))
-                        imgBlock.add(TennNode.newCommand("encoding", TennNode.newStrNode("png:base64")))
+                        imgBlock.add(TennNode.newCommand("data", TennNode.newStrNode(pngData.base64EncodedString())))
+                        imgBlock.add(TennNode.newCommand("format", TennNode.newStrNode("png")))
                         let sz = v.size
                         imgBlock.add(TennNode.newCommand("width", TennNode.newFloatNode( Double(sz.width))))
                         imgBlock.add(TennNode.newCommand("height", TennNode.newFloatNode(Double(sz.height))))

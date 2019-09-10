@@ -9,11 +9,11 @@
 import Foundation
 
 public class TennLexer: TennLexerProtocol {
-    private var currentLine: Int = 0
-    private var currentChar: Int = 0
-    private var buffer: [Character]
-    private var bufferCount: Int = 0
-    private var pos: Int = 0
+    public var currentLine: Int = 0
+    public var currentChar: Int = 0
+    public var buffer: Array<Character>
+    public var bufferCount: Int = 0
+    public var pos: Int = 0
     
     private var tokenBuffer: [TennToken] = []
     private var blockState:[TennTokenType] = []
@@ -21,36 +21,41 @@ public class TennLexer: TennLexerProtocol {
     public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
-        self.buffer = code.map {c in c}
+        self.buffer = Array(code)
         self.bufferCount = self.buffer.count
     }
     
     public func revert(tok: TennToken) {
         tokenBuffer.insert(tok, at: 0)
     }
-    private func add(type: TennTokenType, literal: String) {
+    private func add(type: TennTokenType, literal: [Character]) {
         self.tokenBuffer.append(
-            TennToken(type: type, literal: literal, line: currentLine, col: currentChar, pos: self.pos-literal.count, size: literal.count)
+            TennToken(type: type, literal: String(literal), line: currentLine, col: currentChar, pos: self.pos-literal.count, size: literal.count)
         )
     }
     private func add(check pattern: inout [Character]) {
         if pattern.count > 0 {
-            self.add(type: detectSymbolType(pattern: pattern), literal: String(pattern))
+            self.add(type: detectSymbolType(pattern: pattern), literal: pattern)
             pattern.removeAll(keepingCapacity: true)
         }
         
     }
     private func add(literal: [Character]) {
-        self.add(type: .stringLit, literal: String(literal))
+        self.add(type: .stringLit, literal: literal)
     }
     private func detectSymbolType( pattern: [Character] ) -> TennTokenType {
         var value = pattern
+        var skipFirst = false
         if value.count > 0 && value[0] == "-" {
-            value.remove(at: value.index(value.startIndex, offsetBy: 0))
+            skipFirst = true
         }
         var dot = false
         var i = 0
         for c in value {
+            if skipFirst {
+                skipFirst = false
+                continue
+            }
             if c == "." {
                 if i == 0  || dot {
                     return .symbol
@@ -69,15 +74,15 @@ public class TennLexer: TennLexerProtocol {
         return TennTokenType.intLit
     }
     
-    private func inc(_ pos: Int = 1) {
+    @inlinable func inc(_ pos: Int = 1) {
         self.currentChar += pos
         self.pos += pos
     }
-    private func next() -> Character {
+    @inlinable func next() -> Character {
         return charAt(1)
     }
     
-    private func charAt(_ offset:Int = 0)-> Character {
+    @inlinable func charAt(_ offset:Int = 0)-> Character {
         if self.pos + offset < self.bufferCount {
             return self.buffer[self.pos + offset]
         }
@@ -98,49 +103,17 @@ public class TennLexer: TennLexerProtocol {
                 r.append(curChar)
             }
             else if curChar == lit {
-                let curPos = self.pos
-                
-                var foundPlus = false
-                let oldCurLines = self.currentLine
-                let oldCurChar = self.currentChar
-                self.inc()
-                while self.pos < self.bufferCount {
-                    let chartAt = charAt()
-                    if (chartAt == " " || chartAt == "\t" || chartAt == "\r") {
-                        // All is ok
-                    } else if (chartAt == "\n") {
-                        self.currentLine += 1
-                        self.currentChar = 0
-                    } else if (chartAt == "+") {
-                        foundPlus = true
-                    } else if (chartAt == lit) {
-                        break
-                    } else {
-                        break
-                    }
-                    self.inc()
-                }
-                if (!foundPlus) {
-                    currentLine = oldCurLines
-                    currentChar = oldCurChar
-                    self.pos = curPos
-                } else {
-                    // Success we found + and spaces between and new string.
-                    self.inc()
-                    continue
-                }
-                foundEnd = true
-                
                 self.add(literal: r);
                 r.removeAll(keepingCapacity: true)
                 self.inc()
+                foundEnd = true
                 break
             }
-            else if (self.charAt() == "\\" && self.next() == lit) {
+            else if (curChar == "\\" && self.next() == lit) {
                 r.append(self.next())
                 self.inc(1)
             } else {
-                r.append(self.charAt())
+                r.append(curChar)
             }
             self.inc()
         }
@@ -207,7 +180,7 @@ public class TennLexer: TennLexerProtocol {
             self.currentChar = 0
             // Check if we need to send a delimiter semicolon symbol.
             if self.blockState.count == 0 || self.blockState[0] == .curlyLe {
-                self.add(type: .semiColon, literal: "\n")
+                self.add(type: .semiColon, literal: ["\n"])
             }
         }
         self.inc()
@@ -239,7 +212,7 @@ public class TennLexer: TennLexerProtocol {
             case ";":
                 self.add(check: &r)
                 
-                self.add(type: .semiColon, literal: String(cc))
+                self.add(type: .semiColon, literal: [cc])
                 self.inc()
                 if  !self.tokenBuffer.isEmpty {
                     return self.tokenBuffer.removeFirst()
@@ -281,7 +254,7 @@ public class TennLexer: TennLexerProtocol {
         self.add(check: &r)
         
         if self.pos == self.bufferCount {
-            self.add(type: .eof, literal: "\0")
+            self.add(type: .eof, literal: ["\0"])
             self.inc()
         }
         
@@ -293,7 +266,7 @@ public class TennLexer: TennLexerProtocol {
     }
     
     private func processCurlyOpen(_ cc: Character) {
-        self.add(type: .curlyLe, literal: String(cc))
+        self.add(type: .curlyLe, literal: [cc])
         self.inc()
         
         self.blockState.insert(.curlyLe, at: 0)
@@ -301,7 +274,7 @@ public class TennLexer: TennLexerProtocol {
     private func processCurlyClose( _ r: inout [Character], _ cc: Character)-> Bool {
         self.add(check: &r)
         
-        self.add(type: .curlyRi, literal: String(cc))
+        self.add(type: .curlyRi, literal: [cc])
         self.inc()
         
         if self.blockState.count == 0 {
@@ -337,7 +310,7 @@ public class TennLexer: TennLexerProtocol {
             }
             else if curChar == startLit {
                 indent += 1
-                r.append(self.charAt())
+                r.append(curChar)
             }
             else if curChar == endLit {
                 indent -= 1
@@ -346,11 +319,11 @@ public class TennLexer: TennLexerProtocol {
                     break
                 }
                 else {
-                    r.append(self.charAt())
+                    r.append(curChar)
                 }
             }
             else {
-                r.append(self.charAt())
+                r.append(curChar)
             }
             self.inc()
         }

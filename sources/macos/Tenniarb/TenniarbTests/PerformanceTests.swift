@@ -34,8 +34,8 @@ class PerformanceTests: XCTestCase {
         let nde = TennNode(kind: .Statements)
         
         var now = Date()
-        let value = randomString(length: 1024)
-        for i in 0...10000 {
+        let value = randomString(length: 1024000)
+        for i in 0...10 {
             nde.add(TennNode.newCommand("cmd_\(i)", TennNode.newStrNode("String value: \(i) \(value)")))
             nde.add(TennNode.newCommand("cmd_\(i)_float", TennNode.newFloatNode(Date().timeIntervalSinceNow)))
             nde.add(TennNode.newCommand("cmd_\(i)_int", TennNode.newIntNode(i)))
@@ -53,5 +53,11 @@ class PerformanceTests: XCTestCase {
         _ = TennParser().parse(str)
         Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
         
-    }
+//        now = Date()
+//        let p = TennParser()
+//        p.factory = { source in FastTennLexer( source )}
+//        _ = p.parse(str)
+//        Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
+        
+    }   
 }
