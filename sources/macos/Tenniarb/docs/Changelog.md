@@ -7,4 +7,5 @@
 * Auto selection of items after addition, and other operations.
 * Fix floating point number rounding.
 * Fix link doubling when do duplicate.
+* Improve parsing performance.
 

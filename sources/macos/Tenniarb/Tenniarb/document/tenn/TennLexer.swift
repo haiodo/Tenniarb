@@ -17,10 +17,12 @@ public class TennLexer: TennLexerProtocol {
     
     private var tokenBuffer: [TennToken] = []
     private var blockState:[TennTokenType] = []
+    private var code: String
     
     public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
+        self.code = code
         self.buffer = Array(code.unicodeScalars)
         self.bufferCount = self.buffer.count
     }
@@ -176,6 +178,7 @@ public class TennLexer: TennLexerProtocol {
     
     private func processNewLine(_ r: inout [Character], _ cc: Character) -> Bool {
         self.add(check: &r)
+        self.inc()
         if cc == "\n" {
             self.currentLine += 1
             self.currentChar = 0
@@ -184,7 +187,6 @@ public class TennLexer: TennLexerProtocol {
                 self.add(type: .semiColon, literal: ["\n"])
             }
         }
-        self.inc()
         if !self.tokenBuffer.isEmpty {
             return true
         }
@@ -267,16 +269,16 @@ public class TennLexer: TennLexerProtocol {
     }
     
     private func processCurlyOpen(_ cc: Character) {
-        self.add(type: .curlyLe, literal: [cc])
         self.inc()
+        self.add(type: .curlyLe, literal: [cc])
         
         self.blockState.insert(.curlyLe, at: 0)
     }
     private func processCurlyClose( _ r: inout [Character], _ cc: Character)-> Bool {
         self.add(check: &r)
         
-        self.add(type: .curlyRi, literal: [cc])
         self.inc()
+        self.add(type: .curlyRi, literal: [cc])
         
         if self.blockState.count == 0 {
             Swift.debugPrint("Invalid open close tokens expected .curlyLe but found \(cc)")
