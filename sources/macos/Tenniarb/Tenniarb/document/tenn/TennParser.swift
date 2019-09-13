@@ -76,11 +76,11 @@ public class TennParser {
         }
     }
     
-    func getTok() -> TennToken? {
+    private func getTok() -> TennToken? {
         self.tok = self.lexer?.getToken()
         return self.tok
     }
-    func nextTok() {
+    private func nextTok() {
         self.tok = self.lexer?.getToken()
     }
     
@@ -123,7 +123,7 @@ public class TennParser {
         self.lexer?.revert(tok: self.tok!)
         self.tok = token
     }
-    func parseCommand( _ endTokens: Set<TennTokenType> ) -> TennNode? {
+    private func parseCommand( _ endTokens: Set<TennTokenType> ) -> TennNode? {
         
         // Skip all semicolons.
         while self.tok != nil && self.tok!.type == .semiColon {
@@ -198,7 +198,7 @@ public class TennParser {
         
         return cmdNode
     }
-    func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennNode? {
+    private func parseBlock( _ stToken: TennTokenType, _ edToken: TennTokenType, _ currentTok: TennToken  ) -> TennNode? {
         self.eat(tokenType: stToken)
         
         let result = TennNode.newNode(kind: .BlockExpr, currentTok)

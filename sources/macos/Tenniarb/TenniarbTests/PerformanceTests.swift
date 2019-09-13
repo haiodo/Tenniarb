@@ -13,10 +13,8 @@ import XCTest
 @testable import Tenniarb
 
 class PerformanceTests: XCTestCase {
-    
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
@@ -30,7 +28,7 @@ class PerformanceTests: XCTestCase {
         return String(randomCharacters)
     }
     
-    func testLexerParsingPerformance() {
+    func generateString() -> String {
         let nde = TennNode(kind: .Statements)
         
         var now = Date()
@@ -46,18 +44,231 @@ class PerformanceTests: XCTestCase {
         now = Date()
         let str = nde.toStr()
         Swift.debugPrint("Elapsed toStr \(Date().timeIntervalSince(now))")
+        return str
+    }
+    
+    func testIterateOverString() {
+        let str: String = generateString()
+        let now = Date()
+        var count: Int = 0
+        for c in str {
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("---------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testIterateOverStringIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count: Int = 0
+        let strLen = str.count
+        let st = str.startIndex
         
-        Swift.debugPrint("Len of generated string \(str.count)")
+        var idx = str.index(st, offsetBy: 0)
+        for i in 0..<strLen {
+            let c = str[idx]
+            if c == "A" {
+                count += 1
+            }
+            idx = str.index(after: idx)
+        }
+        Swift.debugPrint("-------- \(#function) ------ Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testIterateOverStringArray() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        let arr = Array(str)
+        Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
+        for c in arr {
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testIterateOverStringPrimitiveArray() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        var arr: [Character] = []
+        arr.reserveCapacity(str.count)
+        for c in str {
+            arr.append(c)
+        }
         
-        now = Date()
-        _ = TennParser().parse(str)
-        Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
-        
-//        now = Date()
-//        let p = TennParser()
-//        p.factory = { source in FastTennLexer( source )}
-//        _ = p.parse(str)
-//        Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
-        
+        Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
+        for c in arr {
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testIterateOverStringPrimitiveArrayIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        var arr: [Character] = []
+        arr.reserveCapacity(str.count)
+        for c in str {
+            arr.append(c)
+        }
+        let strLen = str.count
+        Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
+        for i in 0..<strLen {
+            let c = arr[i]
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testIterateOverStringPrimitiveScalarArrayIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        var arr: [UnicodeScalar] = []
+        arr.reserveCapacity(str.count)
+        for c in str.unicodeScalars {
+            arr.append(c)
+        }
+        let strLen = str.count
+        Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
+        for i in 0..<strLen {
+            let c = Character(arr[i])
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testIterateOverStringArrayIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        let arr = Array(str)
+        let strLen = str.count
+        Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
+        for i in 0..<strLen {
+            let c = arr[i]
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testIterateOverUnicodeScalarsArray() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        let arr = Array(str.unicodeScalars)
+        Swift.debugPrint("Build scalars array Elapsed: \(Date().timeIntervalSince(now))")
+        for c in arr {
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) -------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testIterateOverUnicodeScalarsArrayIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        let arr = Array(str.unicodeScalars)
+        let strLen = str.count
+        Swift.debugPrint("Build scalars array Elapsed: \(Date().timeIntervalSince(now))")
+        for i in 0..<strLen {
+            let c = Character(arr[i])
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testIterateOverUnicodeScalars() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        for cc in str.unicodeScalars {
+            let c = Character(cc)
+            if c == "A" {
+                count += 1
+            }
+        }
+        Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testIterateOverUnicodeScalarsIndex() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        let sc = str.unicodeScalars
+        var idx = sc.index(sc.startIndex, offsetBy: 0)
+        let strLen = sc.count
+        for i in 0..<strLen {
+            let c = Character(sc[idx])
+            if c == "A" {
+                count += 1
+            }
+            idx = sc.index(after: idx)
+        }
+        Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testGenerateTokenArray() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        var result:[Character] = []
+        result.reserveCapacity(1024)
+        for c in str {
+            result.append(c)
+        }
+        let ss = String(result)
+        if str.count != ss.count {
+            Swift.print("Error")
+        }
+        Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    func testGenerateTokenString() {
+        let str: String = generateString()
+        let now = Date()
+        var count = 0
+        var result = ""
+        result.reserveCapacity(1024)
+        for c in str {
+            result.append(c)
+        }
+        if str.count != result.count {
+            Swift.print("Error")
+        }
+        Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
+    }
+    
+    func testLexerParsingPerformance() {
+        for i in 0..<3 {
+            let str: String = generateString()
+            let now = Date()
+            _ = TennParser().parse(str)
+            Swift.debugPrint("Elapsed: \(Date().timeIntervalSince(now))")
+        }
     }   
 }
+
+
+/*
+ string:                    1.0s
+ stringIndex:               1.0s
+ stringArray:               7.7s
+ stringArrayIndex:          1.8s
+ unicodeScallarsArray:      6.3s
+ unicodeScallarsArrayIndex: 0.9s
+ unicodeScallars:           0.5s
+ unicodeScallarsIndex:      0.7s
+ */
