@@ -10,29 +10,13 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Tenniarb/SceneDrawView.swift"
-            timestampString = "589393450.0163521"
+            filePath = "Tenniarb/model/ExecutionModel.swift"
+            timestampString = "590048989.786809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1823"
-            endingLineNumber = "1823"
-            landmarkName = "showImage(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Tenniarb/ElementPersistence.swift"
-            timestampString = "589393450.0193779"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "130"
-            endingLineNumber = "130"
-            landmarkName = "storeAttachments(_:_:)"
+            startingLineNumber = "774"
+            endingLineNumber = "774"
+            landmarkName = "getEvaluated(_:_:_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

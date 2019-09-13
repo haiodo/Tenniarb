@@ -697,8 +697,7 @@ public class ExecutionContextEval: ExecutionContextEvaluator {
 public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
-    private let internalQueue: DispatchQueue = DispatchQueue( label: "ExecutionContextQueue",
-                                                              qos: .background, autoreleaseFrequency: .never )
+    private let internalGroup: DispatchGroup = DispatchGroup()
 
     let evalContext: ExecutionContextEval = ExecutionContextEval()
     
@@ -711,7 +710,7 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
         self.elements[element] = rootCtx
     }
     public func updateAll(_ notifier: @escaping () -> Void) {
-        self.internalQueue.async( execute: {
+        DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
             if let root = self.rootCtx {
                _ = root.updateContext()
                 let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, buildChildren: false)
@@ -727,7 +726,7 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     }
     
     public func notifyChanges(_ event: ModelEvent ) {
-        self.internalQueue.sync( execute: {
+        DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
             if let root = self.rootCtx {
                 if event.element == root.element {
                    root.processEvent(event)
@@ -737,11 +736,13 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     }
     public func getEvaluated(_ element: Element) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalQueue.sync( execute: {
-            if let root = self.rootCtx, root.element == element {
-                value = root.evaluated;
-            }
-        })
+        self.internalGroup.enter()
+        defer {
+            self.internalGroup.leave()
+        }
+        if let root = self.rootCtx, root.element == element {
+            value = root.evaluated;
+        }
         return value
     }
     public func getEvaluatedNoSync(_ element: Element) -> [TennToken:JSValue] {
@@ -753,11 +754,13 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     }
     public func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalQueue.sync( execute: {
-            if let root = self.rootCtx, let ic = root.itemsMap[item] {
-                value = ic.evaluated;
-            }
-        })
+        self.internalGroup.enter()
+        defer {
+            self.internalGroup.leave()
+        }
+        if let root = self.rootCtx, let ic = root.itemsMap[item] {
+            value = ic.evaluated;
+        }
         return value
     }
     public func getEvaluatedNoSync(_ item: DiagramItem) -> [TennToken:JSValue] {
@@ -769,22 +772,26 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     }
     public func getEvaluated(_ item: DiagramItem, _ node: TennNode, _ drawable: Drawable? ) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalQueue.sync( execute: {
-            if let root = self.rootCtx, let ic = root.itemsMap[item] {
-                var newItems: [String:Any] = [:]
-                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, drawable)
-            }
-        })
+        self.internalGroup.enter()
+        defer {
+            self.internalGroup.leave()
+        }
+        if let root = self.rootCtx, let ic = root.itemsMap[item] {
+            var newItems: [String:Any] = [:]
+            _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, drawable)
+        }
         return value
     }
     public func getEvaluated(_ element: Element, _ node: TennNode ) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalQueue.sync( execute: {
-            if let ic = rootCtx, ic.element == element {
-                var newItems: [String:Any] = [:]
-                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
-            }
-        })
+        self.internalGroup.enter()
+        defer {
+            self.internalGroup.leave()
+        }
+        if let ic = rootCtx, ic.element == element {
+            var newItems: [String:Any] = [:]
+            _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+        }
         return value
     }
 }

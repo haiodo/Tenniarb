@@ -5155,7 +5155,7 @@ Explode!🧨"
         element "Execution basics" {
             item "1" {
                 pos -1059.23046875 325.46875
-                my_value 10
+                my_value 12
                 value ${my_value + outputs().reduce( (a, b) => a + b.value, 0)}
                 title "${value}"
                 body "${my_value} +"
@@ -5235,7 +5235,7 @@ Explode!🧨"
             item "Untitled 34" {
                 pos -384.9183349609375 409.46875
                 my_value1 ${0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
-                my_value 20
+                my_value 25
                 q ${outputs().map(a=>a.value)}
                 value ${my_value + outputs().reduce( (a, b) => a * b.value, 1)}
                 title "${value}"
