@@ -112,7 +112,17 @@ public class MarkdownLexer {
         }
         
         var r: BufferType = BufferType()
-        var wasWhiteSpace = false
+        
+        var wasWhiteSpace = self.pos == 0
+        if self.pos > 0 && self.pos < self.bufferCount {
+            let prev = self.buffer[self.pos-1]
+            switch prev {
+            case " ", "\t", "\r","\n":
+                wasWhiteSpace = true
+            default:
+                break
+            }
+        }
         while self.pos < self.bufferCount {
             let cc = Character(self.buffer[self.pos])
             switch (cc) {

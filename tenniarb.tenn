@@ -4354,6 +4354,9 @@ and value2. Some more text is here." {
             item "Text is ~scratchs~" {
                 pos -269.08984375 -111.0078125
             }
+            item "*Color* !(red)RED and !() *black* bold" {
+                pos -429.08984375 226.9921875
+            }
         }
     }
     element "Init screens" {
