@@ -21,11 +21,12 @@ public enum TennNodeKind {
     case BlockExpr
     case Expression
     case ExpressionBlock
+    case Image
 }
 
 public class TennNode {
     public let kind: TennNodeKind
-    public let token: TennToken?
+    public var token: TennToken?
     public var children: [TennNode]?
     
     var named: [String:TennNode]?
@@ -122,7 +123,7 @@ public class TennNode {
     }
     
     public func getIdentText() -> String? {
-        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression || kind == .MarkdownLit  {
+        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression || kind == .MarkdownLit || kind == .Image  {
             return token?.literal
         }
         return nil

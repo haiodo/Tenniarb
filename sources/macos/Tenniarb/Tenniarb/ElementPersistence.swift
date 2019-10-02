@@ -21,7 +21,6 @@ public enum PersistenceItemKind {
     case TargetIndex
     case Name
     case Position
-    case Attachments
     
     var commandName : String {
         switch self {
@@ -37,7 +36,6 @@ public enum PersistenceItemKind {
         case .Position: return "pos";
         case .Name: return "name";
         case .Label: return "label";
-        case .Attachments: return "attachments";
         }
     }
 }
@@ -106,48 +104,7 @@ extension Element {
         return ee.toStr(0, false)
     }
     
-    fileprivate static func parseAttachments(_ item: DiagramItem, _ blChild: TennNode) {
-        guard let imagesBlock = blChild.getChild(1) else {
-            return
-        }
-        imagesBlock.traverse {child in
-            if let imgName = child.getIdent(1), let block = child.getChild(2) {
-                if block.getValue(name: "format", defaultValue: "") == "png" {
-                    if let nde = block.getNamedElement("data"), let data=nde.getIdent(1),
-                        let dta = Data(base64Encoded: data, options: .ignoreUnknownCharacters) {
-                        item.images[imgName] = NSImage(data: dta)
-                    }
-                }
-            }
-        }
-    }
-    
-    fileprivate static func storeAttachments(_ item: DiagramItem, _ itemBlock: TennNode) {
-        // Store images
-        if item.images.count > 0 {
-            let block = TennNode.newBlockExpr()
-            let attachemnts = TennNode.newCommand(PersistenceItemKind.Attachments.commandName, block)
-            for (k, v) in item.images {
-                if let tiffData = v.tiffRepresentation {
-                    
-                    let imageRep = NSBitmapImageRep(data: tiffData)
-                    if let pngData = imageRep?.representation(using: .png, properties: [:]) {
-                        let imgBlock = TennNode.newBlockExpr()
-                        let img = TennNode.newCommand("image", TennNode.newStrNode(k), imgBlock)
-                        imgBlock.add(TennNode.newCommand("data", TennNode.newStrNode(pngData.base64EncodedString())))
-                        imgBlock.add(TennNode.newCommand("format", TennNode.newStrNode("png")))
-                        let sz = v.size
-                        imgBlock.add(TennNode.newCommand("width", TennNode.newFloatNode( Double(sz.width))))
-                        imgBlock.add(TennNode.newCommand("height", TennNode.newFloatNode(Double(sz.height))))
-                        block.add(img)
-                    }
-                }
-            }
-            itemBlock.add(attachemnts)
-        }
-    }
-    
-    static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode, addPos: Bool, storeAttachments: Bool) {
+    static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode, addPos: Bool) {
         let nx = item.x != 0
         let ny = item.y != 0
         
@@ -158,9 +115,6 @@ extension Element {
         for p in item.properties {
             itemBlock.add(p.clone())
         }
-        if storeAttachments {
-            self.storeAttachments(item, itemBlock)
-        }
     }
     
     static func buildItem(_ item: DiagramItem, _ enodeBlock: TennNode) {
@@ -170,14 +124,14 @@ extension Element {
         
         let itemBlock = TennNode.newBlockExpr()
         
-        buildItemData(item, itemBlock, addPos: false, storeAttachments: true)
+        buildItemData(item, itemBlock, addPos: false)
         
         if itemBlock.count > 0 {
             itemRoot.add(itemBlock)
         }
     }
     
-    static func buildLinkData(_ item: DiagramItem, _ linkDataBlock: TennNode, addPos: Bool, storeAttachments: Bool) {
+    static func buildLinkData(_ item: DiagramItem, _ linkDataBlock: TennNode, addPos: Bool ) {
         if let descr = item.description {
             linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
         }
@@ -195,10 +149,6 @@ extension Element {
         
         for p in item.properties {
             linkDataBlock.add(p.clone())
-        }
-        
-        if storeAttachments {
-            self.storeAttachments(item, linkDataBlock)
         }
     }
     
@@ -227,7 +177,7 @@ extension Element {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.TargetIndex.commandName, TennNode.newIntNode(targetIndex)))
             }
             
-            buildLinkData(item, linkDataBlock, addPos: false, storeAttachments: true)
+            buildLinkData(item, linkDataBlock, addPos: false)
             
             if linkDataBlock.count > 0 {
                 linkCmd.add(linkDataBlock)
@@ -502,8 +452,6 @@ extension Element {
             }
         case PersistenceItemKind.Description.commandName:
             el.description = blChild.getIdent(1)
-        case PersistenceItemKind.Attachments.commandName:
-            parseAttachments(el, blChild)
         default:
             el.properties.append(blChild);
             break;
@@ -566,8 +514,6 @@ extension Element {
             else {
                 link.properties.append(blChild)
             }
-        case PersistenceItemKind.Attachments.commandName:
-            parseAttachments(link, blChild)
         default:
             link.properties.append(blChild)
             break;

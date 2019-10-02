@@ -47,6 +47,21 @@ public func displayImageInPopup(_ parentView: NSView, _ img: NSImage, _ imgBound
     
 }
 
+public func getMaxRect( maxWidth: CGFloat, maxHeight: CGFloat, imageWidth: CGFloat, imageHeight: CGFloat) -> NSRect {
+    var ratio: CGFloat = 0.0
+    // Get ratio (landscape or portrait)
+    if (imageWidth > imageHeight) {
+        ratio = maxWidth / imageWidth
+    } else {
+        ratio = maxHeight / imageHeight
+    }
+    
+    // Calculate new size based on the ratio
+    if ratio > 1 {
+        ratio = 1
+    }
+    return NSRect(x: 0, y: 0, width: imageWidth*ratio, height: imageHeight*ratio)
+}
 
 public func scaleImage(_ image: CGImage, maxWidth: Float, maxHeight: Float ) -> CGImage? {
     let ciImage = CIImage(cgImage: image)

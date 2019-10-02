@@ -538,7 +538,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let bounds = dr.getSelectorBounds()
         let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height)
         
-        var segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
         
         segments.segmentStyle = .texturedRounded
         segments.segmentCount = 10
@@ -1792,7 +1792,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             else if action == #selector(paste(_:)) {
                 return ClipboardUtils.canPaste()
-            }
+            }            
         }
         return true
     }
@@ -1811,27 +1811,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     let image = NSImage(byReferencing: filename)
                     if let active = self.activeItems.first {
                         let name = filename.lastPathComponent
-                        self.store?.setImage(self.element!, active, name: name, image: image,
+//                        self.store?.setImage(self.element!, active, name: name, image: image,
+//                                             undoManager: self.undoManager,  refresh: {()->Void in})
+                        let newProps = active.toTennAsProps(.BlockExpr)
+                        if let tiffData = image.tiffRepresentation {                            
+                            let imageRep = NSBitmapImageRep(data: tiffData)
+                            if let pngData = imageRep?.representation(using: .png, properties: [:]) {
+                                newProps.add(TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(pngData.base64EncodedString())))
+                            }
+                        }
+                        self.store?.setProperties(self.element!, active, newProps,
                                              undoManager: self.undoManager,  refresh: {()->Void in})
                     }
                 }
             }
         }
     }
-    @objc func showImage( _ sender: NSObject ) {
-        if let itm = sender as? NSMenuItem {
-            if let active = self.activeItems.first, let origImg = active.images[itm.title] {
-                var imageRect = CGRect(x: 0, y: 0, width: origImg.size.width, height: origImg.size.height)
-                if let imageRef = origImg.cgImage(forProposedRect: &imageRect, context: nil, hints: nil),
-                    let img = scaleImage(imageRef, maxWidth: 640, maxHeight: 480) {
-                    let nsImg = NSImage(cgImage: img, size: NSSize(width: img.width, height: img.height))
-                    displayImageInPopup(self.viewController!.view, nsImg,
-                                        CGRect(x:0, y:0, width: img.width, height: img.height))
-                }
-            }
-        }
-    }
-    
     
     fileprivate func createStylesMenu(_ menu: NSMenu) {
         let style = NSMenuItem(
@@ -1882,29 +1877,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
             
-            if self.activeItems.count == 1, let first = self.activeItems.first {
+            if self.activeItems.count == 1 {
                 menu.addItem(NSMenuItem.separator())
                 menu.addItem(NSMenuItem(
                     title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
-                
-                // Check if we have images, to show operations with them.
-                
-                if first.images.count > 0 {
-                    let images = NSMenuItem(
-                        title: "Images", action: nil, keyEquivalent: "")
-                    menu.addItem(images)
-                    
-                    let imagesMenu = NSMenu()
-                    
-                    for (k,v) in first.images {
-                        let item = NSMenuItem(
-                            title: k, action: #selector(showImage(_:)), keyEquivalent: "")
-                        
-                        imagesMenu.addItem(item)
-                    }
-                    
-                    menu.setSubmenu(imagesMenu, for: images)
-                }
             }
             
             menu.addItem(NSMenuItem.separator())

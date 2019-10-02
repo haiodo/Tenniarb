@@ -76,6 +76,8 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         do {
             let storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
             
+            let now = Date()
+            
             let parser = TennParser()
             let node = parser.parse(storedValue)
             
@@ -84,9 +86,13 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
             }
             
             let elementModel = ElementModel.parseTenn(node: node)
+            
+            Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
+            
             elementModel.modelName = url.lastPathComponent
             
             vc?.setElementModel(elementStore: self.store!)
+            
             
             self.updateStore(elementModel)
             self.fileURL = url

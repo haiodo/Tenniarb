@@ -68,6 +68,8 @@ extension TennNode {
                 }
             case .Expression:
                 result.append("$(\(tok.literal))")
+            case .Image:
+                result.append("@(\(tok.literal))")
             case .ExpressionBlock:
                 result.append("${")
                 result.append("\(tok.literal)")

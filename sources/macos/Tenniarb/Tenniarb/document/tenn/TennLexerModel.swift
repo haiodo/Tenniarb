@@ -22,7 +22,8 @@ public enum TennTokenType {
     case semiColon
     case expression         // $(expression)
     case expressionBlock    // ${expression block}
-    case markdownLit //%{}
+    case markdownLit // %{}
+    case imageData  // @"base64" - encoded png image
 }
 
 public class TennToken {

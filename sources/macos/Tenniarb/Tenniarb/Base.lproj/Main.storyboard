@@ -586,20 +586,20 @@ DQ
                                                         <rect key="frame" x="0.0" y="625" width="703" height="5"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     </box>
-                                                    <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="ClA-kj-FQy">
+                                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" id="ClA-kj-FQy">
                                                         <rect key="frame" x="0.0" y="629" width="703" height="131"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="hGw-pF-IPC">
                                                             <rect key="frame" x="0.0" y="0.0" width="703" height="131"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textView drawsBackground="NO" verticallyResizable="YES" findStyle="panel" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" textReplacement="YES" smartInsertDelete="YES" id="LDJ-EQ-s6n" customClass="TennTextView" customModule="Tenniarb" customModuleProvider="target">
+                                                                <textView drawsBackground="NO" horizontallyResizable="YES" verticallyResizable="YES" findStyle="panel" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" textReplacement="YES" smartInsertDelete="YES" id="LDJ-EQ-s6n" customClass="TennTextView" customModule="Tenniarb" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="0.0" width="703" height="131"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                    <size key="minSize" width="703" height="131"/>
-                                                                    <size key="maxSize" width="927.5" height="10000000"/>
+                                                                    <size key="minSize" width="100" height="100"/>
+                                                                    <size key="maxSize" width="10000000" height="10000000"/>
                                                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 </textView>
                                                             </subviews>
@@ -612,7 +612,7 @@ DQ
                                                             <rect key="frame" x="-100" y="-100" width="87" height="18"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
-                                                        <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="NO" id="31O-35-GFX">
+                                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="NO" id="31O-35-GFX">
                                                             <rect key="frame" x="687" y="0.0" width="16" height="131"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
@@ -1122,6 +1122,6 @@ DQ
         <image name="ico-group" width="22" height="20"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="1PE-0t-Wrh"/>
+        <segue reference="vtn-ED-noe"/>
     </inferredMetricsTieBreakers>
 </document>

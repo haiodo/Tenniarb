@@ -10,6 +10,7 @@ import Foundation
 import Cocoa
 
 public class TenniarbApplication: NSApplication {
+    
     override public func sendEvent(_ event: NSEvent) {
         if event.type == NSEvent.EventType.keyDown {
             if (event.modifierFlags.contains(NSEvent.ModifierFlags.command)) {

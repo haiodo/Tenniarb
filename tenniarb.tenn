@@ -528,7 +528,7 @@ Engine" "expr dsl"
         link "Selection" "Under"
         item "Markdown styles" {
             pos -67.1617202758789 -227.0
-            use-style required
+            use-style done
         }
         link "Markdown BODY" "Markdown styles"
         item "Export options" {
@@ -3550,6 +3550,7 @@ to add linked item to diagram.}
                 pos -204.5 74.71484375
                 title ""
                 display circle
+                a 20
             }
             item "Untitled 1" {
                 pos -129.5 49.71484375
@@ -4314,6 +4315,44 @@ Text on Green" {
             item "Normal" {
                 pos -412.140625 -4.0
                 line-width 3
+            }
+        }
+        element "Markdown" {
+            item "Color !(red)RED and !() black" {
+                pos -434.08984375 176.9921875
+            }
+            item "Color !(blue|Blue) and black" {
+                pos -431.08984375 122.9921875
+            }
+            item "Text is *bold*" {
+                pos -222.08984375 175.9921875
+            }
+            item "Text is _italic_" {
+                pos -222.08984375 121.9921875
+            }
+            item "# 1. Topic
+and value. Some text is here.
+# 2. Topic
+and value2. Some more text is here." {
+                pos -434.08984375 -41.0078125
+            }
+            item "Text is `code`" {
+                pos -65.08984375 174.9921875
+            }
+            item "Text is `code block\nwith new line`Inside text" {
+                pos -67.08984375 50.9921875
+            }
+            item "Bullets
+* 1 variant 1
+* 2 variant 2
+ * sub variant" {
+                pos -72.94482421875 -72.85546875
+            }
+            item "Text is <underline>" {
+                pos -435.08984375 -109.0078125
+            }
+            item "Text is ~scratchs~" {
+                pos -269.08984375 -111.0078125
             }
         }
     }
@@ -8186,5 +8225,33 @@ days=5"
                 a 55
             }
         }
+    }
+    element "Images" {
+        item "attachments {
+   image \"name\" png base64data
+}" {
+            pos -494.0 122.0
+        }
+        item "image \"name\" png base64Data" {
+            pos -480.0 12.0
+        }
+        item "Show in properties?" {
+            pos -99.7320327758789 59.0
+        }
+        link "image \"name\" png base64Data" "Show in properties?"
+        item "Do not show in properties" {
+            pos -96.8052749633789 224.0
+        }
+        link "attachments {
+   image \"name\" png base64data
+}" "Do not show in properties"
+        item "slow on rendering" {
+            pos -122.7320327758789 -22.0
+        }
+        link "image \"name\" png base64Data" "slow on rendering"
+        item "hide image content." {
+            pos 148.3826141357422 -2.0
+        }
+        link "slow on rendering" "hide image content."
     }
 }

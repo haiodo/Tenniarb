@@ -67,7 +67,7 @@ class PerformanceTests: XCTestCase {
         let st = str.startIndex
         
         var idx = str.index(st, offsetBy: 0)
-        for i in 0..<strLen {
+        for _ in 0..<strLen {
             let c = str[idx]
             if c == "A" {
                 count += 1

@@ -14,7 +14,7 @@ let defaultFontSize = CGFloat(15)
 
 class TennTextView: NSTextView {
     var lineNumberAttributes: [NSAttributedString.Key:Any] = [:]
-
+    
     override func insertNewline(_ sender: Any?) {
         let loc = self.selectedRange().location
         let insertPart = "\n"
@@ -48,6 +48,10 @@ class TennTextView: NSTextView {
             NSAttributedString.Key.font: NSFont.toolTipsFont(ofSize: defaultFontSize),
             NSAttributedString.Key.foregroundColor: NSColor.gray,
         ]
+        self.isHorizontallyResizable=true
+        self.maxSize = NSSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)
+        self.textContainer?.containerSize = NSSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)
+        self.textContainer?.widthTracksTextView = false
     }
     
     func drawLineValue( _ lineNumberString:String, _ x:CGFloat, _ y:CGFloat) -> Void {
@@ -125,16 +129,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
     var view: NSTextView
     var changes:Int = 0
     
-    let symbolColorWhite = NSColor(red: 0x81/255.0, green: 0x5f/255.0, blue: 0x03/255.0, alpha: 1)
-    let stringColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
-    let numberColorWhite = NSColor(red: 0x1c/255.0, green: 0x00/255.0, blue: 0xcf/255.0, alpha: 1)
-    let expressionColorWhite = NSColor(red: 100/255.0, green: 100/255.0, blue: 133/255.0, alpha: 1)
-    
-    let symbolColorDark = NSColor(red: 0x75/255.0, green: 0xb4/255.0, blue: 0x92/255.0, alpha: 1)
-    let stringColorDark = NSColor(red: 0xfc/255.0, green: 0x6a/255.0, blue: 0x5d/255.0, alpha: 1)
-    let numberColorDark = NSColor(red: 0x96/255.0, green: 0x86/255.0, blue: 0xf5/255.0, alpha: 1)
-    let expressionColorDark = NSColor(red: 198/255.0, green: 124/255.0, blue: 72/255.0, alpha: 1)
-    
     var expressionLines: [Int: String] = [:]
     
     var element: Element?
@@ -170,7 +164,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                     self.expressionLines[k.line] = v.toString()
                 }
             }
-        
+            
             DispatchQueue.main.async {
                 self.view.setNeedsDisplay(self.view.bounds, avoidAdditionalLayout: true)
             }
@@ -188,7 +182,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             })
         }
     }
-        
+    
     func setTextValue(_ element: Element?, _ diagramItem: DiagramItem?) {
         self.element = element
         self.diagramItem = diagramItem
@@ -198,21 +192,23 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         }
         let valueStr = tennContent.toStr()
         
+        let attrStr = tennContent.toAttributedStr(NSFont.systemFont(ofSize: defaultFontSize), NSColor.textColor)
+        
         let p = TennParser()
         let minified = p.parse(view.string).toStr()
         
         if minified == valueStr {
             // Annotation could be different
             DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
-                self.highlight()
+                //                self.highlight()
                 self.updateAnnotations()
             })
             return; // Same value, do not need to modify curren test
         }
-        self.view.textStorage?.setAttributedString(NSAttributedString(string: valueStr))
         self.view.isAutomaticQuoteSubstitutionEnabled = false
         self.view.font = NSFont.systemFont(ofSize: defaultFontSize)
         self.view.textColor = NSColor.textColor
+        self.view.textStorage?.setAttributedString(attrStr)
         self.view.scrollToBeginningOfDocument(self)
         
         // We need to register self to listen for model changes to update annotations
@@ -221,11 +217,11 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
-            self.highlight()
+            //            self.highlight()
             self.updateAnnotations()
         })
     }
-
+    
     func textDidChange(_ notification: Notification) {
         changes += 1
         sheduleUpdate()
@@ -245,10 +241,10 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         
         let darkMode = PreferenceConstants.preference.darkMode
         
-        let symbolColor = !darkMode ? symbolColorWhite: symbolColorDark
-        let stringColor = !darkMode ? stringColorWhite: stringColorDark
-        let numberColor = !darkMode ? numberColorWhite: numberColorDark
-        let expressionColor = !darkMode ? expressionColorWhite: expressionColorDark
+        let symbolColor = !darkMode ? TennColors.symbolColorWhite: TennColors.symbolColorDark
+        let stringColor = !darkMode ? TennColors.stringColorWhite: TennColors.stringColorDark
+        let numberColor = !darkMode ? TennColors.numberColorWhite: TennColors.numberColorDark
+        let expressionColor = !darkMode ? TennColors.expressionColorWhite: TennColors.expressionColorDark
         
         while( true ) {
             guard let tok = lexer.getToken() else {
@@ -269,7 +265,6 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                 let size = tok.size + 2
                 
                 if size > 0  {
-                    let strValue = view.textStorage?.string
                     view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                         stringColor, range: NSMakeRange(start, size))
                 }
@@ -284,8 +279,8 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                 }
             case .expression, .expressionBlock:
                 // Check to include "${' or $( as part of sumbols.
-                let start = tok.pos - 2 // Since we have } or ) at end
-                let size = tok.size + 3
+                let start = tok.pos - 1 // Since we have } or ) at end
+                let size = tok.size + 2
                 
                 view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
                     expressionColor, range: NSMakeRange(start, size))
@@ -307,13 +302,54 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         })
     }
     
+    func generateTextContent(_ parser: TennParser) -> TennNode {
+        let textStorage = self.view.textStorage!
+        let result = textStorage.string
+        var finalResult = ""
+        var idx = 0
+        var images: [String:String] = [:]
+        for c in result {
+            if let attr = textStorage.attribute(NSAttributedString.Key.attachment, at: idx, effectiveRange: nil),
+                let attachment = attr as? NSTextAttachment,
+                let image = attachment.image {
+                if let tiffData = image.tiffRepresentation {
+                    let imageRep = NSBitmapImageRep(data: tiffData)
+                    if let pngData = imageRep?.representation(using: .png, properties: [:]) {
+                        let nme = "image:\(c)-\(idx)"
+                        images[nme] = pngData.base64EncodedString()
+                        finalResult.append("@(\(nme))")
+                    }
+                }
+            }
+            else {
+                finalResult.append(c)
+            }
+            idx += 1
+        }
+        let node = parser.parse(finalResult)
+        
+        if parser.errors.hasErrors() {
+            return node
+        }
+        
+        // We need to iterate and update images.
+        
+        node.traverse {nde in
+            if nde.kind == .Image, let t = nde.token, let imgData = images[t.literal] {
+                nde.token = TennToken(type: .imageData, literal: imgData)
+            }
+        }
+        
+        return node
+    }
+    
     public func sheduleUpdate( ) {
         let curChanges = self.changes
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
             if curChanges == self.changes {
                 let parser = TennParser()
-                let textContent = self.view.textStorage!.string
-                let node = parser.parse(textContent)
+                let node = self.generateTextContent(parser)
+                
                 if parser.errors.hasErrors() {
                     self.view.textColor = NSColor(red: 1.0, green: 0, blue: 0, alpha: 0.8)
                 }

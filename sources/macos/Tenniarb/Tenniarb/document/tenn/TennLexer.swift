@@ -237,6 +237,15 @@ public class TennLexer: TennLexerProtocol {
                     self.currentChar += 1;  self.pos += 1
                 }
                 break;
+            case "@":
+                let nc = self.next()
+                if nc == "(" {
+                    readExpression(r: &r, startLit: "(", endLit: ")", type: .imageData)
+                } else {
+                    r.append(cc)
+                    self.currentChar += 1;  self.pos += 1
+                }
+                break;
             case "$":
                 let nc = self.next()
                 if nc == "(" {

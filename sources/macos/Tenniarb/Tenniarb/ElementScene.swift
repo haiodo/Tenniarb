@@ -15,7 +15,7 @@ import JavaScriptCore
 public protocol Drawable {
     
     func isVisible() -> Bool
-
+    
     /// raw drag
     func drawBox( context: CGContext, at point: CGPoint )
     
@@ -40,7 +40,7 @@ open class ItemDrawable: Drawable {
     var visible: Bool = true
     
     var bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-
+    
     open func drawBox(context: CGContext, at point: CGPoint) {
     }
     
@@ -95,7 +95,7 @@ open class DrawableContainer: ItemDrawable {
                 }
                 else if let cc = c as? ItemDrawable {
                     if let ccl = c as? DrawableLine {
-                       lines.append(ccl)
+                        lines.append(ccl)
                     }
                     else {
                         // Just regular drawable check for bounds
@@ -147,7 +147,7 @@ open class DrawableContainer: ItemDrawable {
     }
     open override func layout( _ bounds: CGRect, _ dirty: CGRect ) {
         let selfBounds = self.getSelectorBounds()
-
+        
         if let ch = self.children {
             for c in ch {
                 c.layout( selfBounds, dirty )
@@ -232,7 +232,7 @@ class DrawableStyle {
             if textColorValue != nil {
                 return textColorValue!
             }
-           return getTextColorBasedOn(self.color)
+            return getTextColorBasedOn(self.color)
         }
     }
     
@@ -252,18 +252,18 @@ class DrawableStyle {
     
     /**
      One of values:
-        * default, not specified - just item box
-        * text - as a just text box
-        * etc
+     * default, not specified - just item box
+     * text - as a just text box
+     * etc
      
      */
     var display: String?
     
     /*
-        A child layout specification
+     A child layout specification
      Values:
-        * manual, not specified - just as placed
-        * auto - managed layout
+     * manual, not specified - just as placed
+     * auto - managed layout
      */
     var layout: String?
     
@@ -326,36 +326,7 @@ class DrawableStyle {
         self.shadowBlur = 5
         self.lineWidth = CGFloat(0.3)
     }
-
-    
-    func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
-        let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        let scanner = Scanner(string: hexString)
-        if (hexString.hasPrefix("#")) {
-            scanner.scanLocation = 1
-        }
-        var color: UInt32 = 0
-        scanner.scanHexInt32(&color)
-        let mask = 0x000000FF
-        let r = Int(color >> 16) & mask
-        let g = Int(color >> 8) & mask
-        let b = Int(color) & mask
-        let red   = CGFloat(r) / 255.0
-        let green = CGFloat(g) / 255.0
-        let blue  = CGFloat(b) / 255.0
-        return CGColor(red:red, green:green, blue:blue, alpha:alpha)
-    }
-    
-    func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
-        if color.starts(with: "#") {
-            return hexStringToUIColor(hexString: color, alpha: alpha)
-        }
-        if let cl = ColorNames[color] {
-            return hexStringToUIColor(hexString: cl, alpha: alpha)
-        }
         
-        return CGColor.black.copy(alpha: alpha)!
-    }
     
     func getFloat(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> CGFloat? {
         
@@ -913,7 +884,7 @@ open class DrawableScene: DrawableContainer {
     
     fileprivate func buildCircle(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
         let rectBox = CircleBox( bounds: bounds,
-                                style, fill: fill)
+                                 style, fill: fill)
         rectBox.append(textBox)
         
         rectBox.item = e
@@ -1010,7 +981,7 @@ open class DrawableScene: DrawableContainer {
             layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
             bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
             padding: CGPoint(x:8, y:8))
-
+        
         
         let textBounds = textBox.getBounds()
         let bodyBounds = bodyTextBox?.getBounds()
@@ -1195,13 +1166,13 @@ public class RoundBox: DrawableContainer {
         self.path = CGMutablePath()
         self.path?.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
         self.path?.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
-                     tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
         self.path?.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),
-                     tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
+                           tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
         self.path?.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.maxY ),
-                     tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
+                           tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
         self.path?.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
-                     tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
         self.path?.closeSubpath()
     }
     public override func drawBox(context: CGContext, at point: CGPoint) {
@@ -1226,7 +1197,8 @@ public class RoundBox: DrawableContainer {
         }
         
         
-        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        var clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        clipBounds.size.width -= 1
         context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
@@ -1251,7 +1223,7 @@ public class RoundBox: DrawableContainer {
                                     y: self.stackStep.y * CGFloat(self.stack-i))
                 context.addPath(self.path!.copy()!)
                 context.drawPath(using: .fill)
-
+                
                 context.restoreGState()
             }
         }
@@ -1265,7 +1237,7 @@ public class RoundBox: DrawableContainer {
             context.drawPath(using: .stroke)
         }
         
-//        context.stroke(getBounds(), width: 1)
+        //        context.stroke(getBounds(), width: 1)
         
         context.restoreGState()
     }
@@ -1287,7 +1259,7 @@ public class RoundBox: DrawableContainer {
     }
     
     public override func getBounds() -> CGRect {
-       return getShadowRect(self.bounds, self.style).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
+        return getShadowRect(self.bounds, self.style).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
     }
 }
 
@@ -1318,8 +1290,8 @@ public class EmptyBox: DrawableContainer {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur)
             }
         }
-//        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-//        context.clip(to: clipBounds )
+        //        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        //        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1369,20 +1341,24 @@ public class TextBox: Drawable {
     var size: CGSize = CGSize(width: 0, height:0)
     var point: CGPoint = CGPoint(x:0, y:0)
     var textColor: CGColor
-    var textFontAttributes: [NSAttributedString.Key:Any]
     let text:String
     var font: NSFont
-    var textStyle: NSMutableParagraphStyle
     var layout: Set<TextPosition>
     var frame: CGRect
     var padding: CGPoint
+    var attrStr: NSAttributedString
     
     func updateTextAttributes() {
-        self.textFontAttributes = [
-            NSAttributedString.Key.foregroundColor: NSColor(cgColor: self.textColor)!,
-            NSAttributedString.Key.paragraphStyle: self.textStyle,
-            NSAttributedString.Key.font: self.font
-        ]
+        var shift: CGPoint = CGPoint(x:0, y:0)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift)
+    }
+    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint) -> NSAttributedString {
+        let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        textStyle.alignment = NSTextAlignment.center
+//        textStyle.lineBreakMode = .byCharWrapping
+        
+        let tokens = MarkdownLexer.getTokens(code: code)
+        return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift)
     }
     
     public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
@@ -1391,26 +1367,32 @@ public class TextBox: Drawable {
         self.layout = layout
         self.frame = bounds
         self.padding = padding
-
+        
         self.textColor = textColor
         
-        self.textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-        textStyle.alignment = NSTextAlignment.center
+        var shift: CGPoint = CGPoint(x:0, y:0)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift)
         
-        self.textFontAttributes = [
-            NSAttributedString.Key.foregroundColor: NSColor(cgColor: self.textColor)!,
-            NSAttributedString.Key.paragraphStyle: self.textStyle,
-            NSAttributedString.Key.font: self.font
-        ]
-        let attrString = NSAttributedString(string: text, attributes: textFontAttributes)
-        
-        let fs = CTFramesetterCreateWithAttributedString(attrString)
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrString.length), nil, CGSize(width: 1000, height: 1000), nil)
-        
+        let fs = CTFramesetterCreateWithAttributedString(self.attrStr)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 3000, height: 3000), nil)
+                        
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
         
+        if self.attrStr.string.hasSuffix("\n") {
+            // We need to add one line
+            
+            let abox = TextBox.getAttributedString(code: "A", font: self.font, color: self.textColor, shift: &shift)
+            
+            let afs = CTFramesetterCreateWithAttributedString(abox)
+            let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
+            
+            self.size.height += aframeSize.height
+        }
+        self.size.width += shift.x
+        self.size.height += shift.y
+        
         if( self.size.width > self.frame.width || self.size.height > self.frame.height) {
-            self.frame = CGRect(origin: self.frame.origin, size: self.size)
+            self.frame = CGRect(origin: self.frame.origin, size: CGSize(width: size.width, height: size.height))
         }
     }
     
@@ -1427,12 +1409,10 @@ public class TextBox: Drawable {
     }
     
     public func draw(context: CGContext, at point: CGPoint) {
-        let q: NSString = self.text as NSString
-        
         let atp = CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y )
-        q.draw(at: atp , withAttributes: textFontAttributes)
+        self.attrStr.draw(at: atp)
         
-//        context.stroke(CGRect(origin: CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y), size: self.frame.size))
+//        context.stroke(CGRect(origin:atp, size: self.frame.size))
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
@@ -1564,7 +1544,7 @@ public class DrawableLine: ItemDrawable {
             
             let cx = !(x1+w1 < x2 || x1 > x2 + w2)
             let cy = !(y1+h1 < y2 || y1 > y2 + h2)
-
+            
             if cx && !cy {
                 // Variant A
                 
@@ -1706,7 +1686,7 @@ public class DrawableLine: ItemDrawable {
     public override func draw(context: CGContext, at point: CGPoint) {
         //
         context.saveGState()
-            
+        
         context.setLineWidth( self.lineWidth )
         context.setStrokeColor(self.style.color)
         context.setFillColor(self.style.color)
@@ -1731,7 +1711,7 @@ public class DrawableLine: ItemDrawable {
         var labelPoint: CGPoint?
         
         for ep in self.extraPoints {
-
+            
             // Move from pt to new location
             fromPtLast = CGPoint(x: ep.x + point.x, y: ep.y + point.y)
             
@@ -1754,7 +1734,7 @@ public class DrawableLine: ItemDrawable {
                 labelPoint = CGPoint(x: ep.x + 5, y: ep.y - lbl.getBounds().height)
             }
         }
-
+        
         if self.extraPoints.isEmpty {
             if let lbl = self.label {
                 labelPoint = getLabelPosition(lbl)
@@ -1780,7 +1760,7 @@ public class DrawableLine: ItemDrawable {
         }
         
         
-//        aPath.closeSubpath()
+        //        aPath.closeSubpath()
         
         context.addPath(aPath)
         context.drawPath(using: fillType)
@@ -1811,8 +1791,8 @@ public class DrawableLine: ItemDrawable {
         }
         
         
-//        let b = getSelectorBounds()
-//        context.stroke(CGRect(origin: CGPoint(x: point.x + b.origin.x, y: point.y + b.origin.y), size: b.size))
+        //        let b = getSelectorBounds()
+        //        context.stroke(CGRect(origin: CGPoint(x: point.x + b.origin.x, y: point.y + b.origin.y), size: b.size))
         
         
         context.restoreGState()
@@ -1931,7 +1911,7 @@ public class SelectorBox: Drawable {
         context.setLineDash(phase: 5, lengths: [5])
         
         let rect = CGRect(origin: CGPoint(x: pos.x + point.x, y: pos.y + point.y), size: self.size)
-//        context.addRect(rect)
+        //        context.addRect(rect)
         
         let path = CGMutablePath()
         
@@ -1939,13 +1919,13 @@ public class SelectorBox: Drawable {
         
         
         path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
-                           tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
+                     tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
         path.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),
-                           tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
+                     tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
         path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.maxY ),
-                           tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
+                     tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
         path.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
-                           tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
+                     tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
         path.closeSubpath()
         
         context.addPath(path)
@@ -2002,7 +1982,7 @@ public class SelectorLine: ItemDrawable {
         
         context.setShadow(offset: CGSize(width: 0.0, height: 0.0), blur: 5.0, color: self.color)
         context.setLineDash(phase: 5, lengths: [5])
-
+        
         let aPath = CGMutablePath()
         
         aPath.move(to: CGPoint(x: source.x + point.x, y: source.y + point.y))
@@ -2012,7 +1992,7 @@ public class SelectorLine: ItemDrawable {
         aPath.addLine(to: CGPoint( x: target.x + point.x, y: target.y + point.y))
         
         //Keep using the method addLineToPoint until you get to the one where about to close the path
-//        aPath.closeSubpath()
+        //        aPath.closeSubpath()
         context.addPath(aPath)
         context.drawPath(using: .stroke)
         
@@ -2163,8 +2143,8 @@ public class CircleBox: DrawableContainer {
     public override func getSelectorBounds() -> CGRect {
         return self.bounds
     }
-        
+    
     public override func getBounds() -> CGRect {
-       return getShadowRect(self.bounds, self.style)
+        return getShadowRect(self.bounds, self.style)
     }
 }

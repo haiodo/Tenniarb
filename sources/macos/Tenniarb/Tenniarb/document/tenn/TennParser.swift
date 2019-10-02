@@ -179,6 +179,8 @@ public class TennParser {
                 cmdNode.add(TennNode.newNode(kind: .Expression, self.tok))
             case .expressionBlock:
                 cmdNode.add(TennNode.newNode(kind: .ExpressionBlock, self.tok))
+            case .imageData:
+                cmdNode.add(TennNode.newNode(kind: .Image, self.tok))
             case .curlyLe:
                 if let stmtNode = self.parseBlock(TennTokenType.curlyLe, TennTokenType.curlyRi, self.tok!) {
                     cmdNode.add(stmtNode)
@@ -253,6 +255,9 @@ extension TennNode {
     }
     public static func newStrNode(_ literal: String) -> TennNode {
         return TennNode(kind: .StringLit, tok: TennToken(type: .stringLit, literal: literal) )
+    }
+    public static func newImageNode(_ literal: String) -> TennNode {
+        return TennNode(kind: .Image, tok: TennToken(type: .imageData, literal: literal) )
     }
     public static func newMarkdownNode(_ literal: String) -> TennNode {
         return TennNode(kind: .MarkdownLit, tok: TennToken(type: .markdownLit, literal: literal) )
