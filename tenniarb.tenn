@@ -4469,24 +4469,26 @@ and value2. Some more text is here." {
             item "Brainstorm" {
                 pos -388.296875 57.37109375
             }
-            item "Generating Ideas" {
+            item "*Generating*
+Ideas" {
                 pos -232.38436889648438 117.37109375
                 display circle
                 width 150
                 height 150
                 line-style dashed
             }
-            link "Brainstorm" "Generating Ideas"
-            item "Organizing Your
-Thoughts" {
+            link "Brainstorm" "*Generating*
+Ideas"
+            item "*Organizing*
+Your Thoughts" {
                 pos -241.38436889648438 -87.62890625
                 display circle
                 width 150
                 height 150
                 color blue
             }
-            link "Brainstorm" "Organizing Your
-Thoughts"
+            link "Brainstorm" "*Organizing*
+Your Thoughts"
             item "Getting Over 
 Mental Block" {
                 pos -256.3843688964844 -257.62890625
@@ -4500,13 +4502,15 @@ Mental Block"
             item "🚀Write down your goals and problems" {
                 pos -107.38436889648438 326.37109375
             }
-            link "Generating Ideas" "🚀Write down your goals and problems" {
+            link "*Generating*
+Ideas" "🚀Write down your goals and problems" {
                 pos -36.0 36.0
             }
             item "Do word association" {
                 pos -71.38436889648438 262.37109375
             }
-            link "Generating Ideas" "Do word association"
+            link "*Generating*
+Ideas" "Do word association"
             item "central idea" {
                 pos 108.18536376953125 291.37109375
                 font-size 12
@@ -4520,7 +4524,8 @@ Mental Block"
             item "Freewrite" {
                 pos -33.384368896484375 214.37109375
             }
-            link "Generating Ideas" "Freewrite"
+            link "*Generating*
+Ideas" "Freewrite"
             item "Sit down for 15m" {
                 pos 67.61602020263672 223.37109375
                 font-size 12
@@ -4543,7 +4548,8 @@ Mental Block"
             item "Draft a list" {
                 pos -58.384368896484375 137.37109375
             }
-            link "Generating Ideas" "Draft a list" {
+            link "*Generating*
+Ideas" "Draft a list" {
                 pos 66.0 -5.0
             }
             item "a list of every ideas" {
@@ -4554,7 +4560,8 @@ Mental Block"
             item "Doodle pictures" {
                 pos -86.38436889648438 91.37109375
             }
-            link "Generating Ideas" "Doodle pictures" {
+            link "*Generating*
+Ideas" "Doodle pictures" {
                 pos -21.0 -44.0
             }
             item "draw as ideas come" {
@@ -4565,28 +4572,28 @@ Mental Block"
             item "Write ideas down on notecards" {
                 pos -93.38436889648438 42.37109375
             }
-            link "Organizing Your
-Thoughts" "Write ideas down on notecards"
+            link "*Organizing*
+Your Thoughts" "Write ideas down on notecards"
             item "Make a mind map" {
                 pos -61.0 1.37109375
                 marker "🤯"
             }
-            link "Organizing Your
-Thoughts" "Make a mind map" {
+            link "*Organizing*
+Your Thoughts" "Make a mind map" {
                 pos -7.0 2.0
             }
             item "Break the problem down into individual steps" {
                 pos -68.38436889648438 -37.62890625
             }
-            link "Organizing Your
-Thoughts" "Break the problem down into individual steps" {
+            link "*Organizing*
+Your Thoughts" "Break the problem down into individual steps" {
                 pos -67.0 -9.0
             }
             item "Cube the problem" {
                 pos -69.38436889648438 -75.62890625
             }
-            link "Organizing Your
-Thoughts" "Cube the problem" {
+            link "*Organizing*
+Your Thoughts" "Cube the problem" {
                 pos -10.0 -28.0
             }
             item "Describe the problem" {

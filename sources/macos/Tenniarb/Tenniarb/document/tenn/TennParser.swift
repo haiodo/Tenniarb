@@ -50,8 +50,8 @@ public class TennErrorContainer {
 }
 
 public class TennParser {
-    var lexer: TennLexerProtocol?
-    var tok: TennToken?
+    private var lexer: TennLexerProtocol?
+    private var tok: TennToken?
     
     var errors: TennErrorContainer = TennErrorContainer()
     

@@ -169,7 +169,7 @@
 		0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextPropertiesDelegate.swift; sourceTree = "<group>"; };
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
-		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = ../../../../../../../../../../System/Volumes/Data/Users/haiodo/Develop/private/tenniarb/sources/macos/Tenniarb/Tenniarb/Utils/ClipboardUtils.swift; sourceTree = "<group>"; };
+		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = Tenniarb/Utils/ClipboardUtils.swift; sourceTree = SOURCE_ROOT; };
 		0CC7005D22E2ED2700DF2071 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = Changelog.md; path = ../../../../../../../../../System/Volumes/Data/Users/haiodo/Develop/private/tenniarb/sources/macos/Tenniarb/docs/Changelog.md; sourceTree = "<group>"; };
 		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CD1708E22D5BB6300E217D4 /* draw_line_items.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = draw_line_items.png; sourceTree = "<group>"; };

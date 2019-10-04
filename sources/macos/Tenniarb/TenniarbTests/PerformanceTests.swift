@@ -47,7 +47,7 @@ class PerformanceTests: XCTestCase {
         return str
     }
     
-    func testIterateOverString() {
+    func _testIterateOverString() {
         let str: String = generateString()
         let now = Date()
         var count: Int = 0
@@ -59,7 +59,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("---------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testIterateOverStringIndex() {
+    func _testIterateOverStringIndex() {
         let str: String = generateString()
         let now = Date()
         var count: Int = 0
@@ -77,7 +77,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("-------- \(#function) ------ Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testIterateOverStringArray() {
+    func _testIterateOverStringArray() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -91,7 +91,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testIterateOverStringPrimitiveArray() {
+    func _testIterateOverStringPrimitiveArray() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -109,7 +109,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testIterateOverStringPrimitiveArrayIndex() {
+    func _testIterateOverStringPrimitiveArrayIndex() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -128,7 +128,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testIterateOverStringPrimitiveScalarArrayIndex() {
+    func _testIterateOverStringPrimitiveScalarArrayIndex() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -147,7 +147,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testIterateOverStringArrayIndex() {
+    func _testIterateOverStringArrayIndex() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -163,7 +163,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testIterateOverUnicodeScalarsArray() {
+    func _testIterateOverUnicodeScalarsArray() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -176,7 +176,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) -------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testIterateOverUnicodeScalarsArrayIndex() {
+    func _testIterateOverUnicodeScalarsArrayIndex() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -192,7 +192,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testIterateOverUnicodeScalars() {
+    func _testIterateOverUnicodeScalars() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -204,7 +204,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testIterateOverUnicodeScalarsIndex() {
+    func _testIterateOverUnicodeScalarsIndex() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -221,7 +221,7 @@ class PerformanceTests: XCTestCase {
         Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
     
-    func testGenerateTokenArray() {
+    func _testGenerateTokenArray() {
         let str: String = generateString()
         let now = Date()
         var count = 0
@@ -236,10 +236,9 @@ class PerformanceTests: XCTestCase {
         }
         Swift.debugPrint("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    func testGenerateTokenString() {
+    func _testGenerateTokenString() {
         let str: String = generateString()
         let now = Date()
-        var count = 0
         var result = ""
         result.reserveCapacity(1024)
         for c in str {
@@ -252,7 +251,7 @@ class PerformanceTests: XCTestCase {
     }
     
     func testLexerParsingPerformance() {
-        for i in 0..<3 {
+        for _ in 0..<1 {
             let str: String = generateString()
             let now = Date()
             _ = TennParser().parse(str)
