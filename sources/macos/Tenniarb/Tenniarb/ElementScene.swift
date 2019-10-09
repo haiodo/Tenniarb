@@ -637,6 +637,29 @@ public func prepareBodyText(_ textValue: String) -> String {
     }).joined(separator: "\n")
 }
 
+/**
+    Cache images used by scene
+ */
+open class ImageCollector {
+    // Images with size, etc applied.
+    var images: [String: NSImage] = [:]
+    
+    // Source images resolved
+    var imageSources: [String: NSImage] = [:]
+    
+    // path is named and style combimned parsed from @(name|style)
+    public func resolveImage(path: String, item: DiagramItem ) -> NSImage? {
+        var name = path
+        var style = ""
+        if let pos = path.firstIndex(of: "|") {
+            name = String(path.prefix(upTo: pos))
+            style = String(path.suffix(from: path.index(after: pos)))
+        }
+        
+        return nil
+    }
+}
+
 open class DrawableScene: DrawableContainer {
     public var offset = CGPoint(x:0, y:0)
     
