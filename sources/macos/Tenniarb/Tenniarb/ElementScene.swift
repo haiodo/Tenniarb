@@ -958,7 +958,7 @@ open class DrawableScene: DrawableContainer {
         if let title = style.title {
             titleValue = title
         }
-        titleValue = titleValue.replacingOccurrences(of: "\\n", with: "\n").trimmingCharacters(in: NSCharacterSet.whitespaces)
+        titleValue = prepareBodyText(titleValue)
         
         var bodyTextBox: TextBox? = nil
         
