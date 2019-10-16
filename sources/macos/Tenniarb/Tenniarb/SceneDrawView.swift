@@ -954,6 +954,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    override func becomeFirstResponder() -> Bool {
+        return true
+    }
+    
     @objc func duplicateItem() {
         guard let curElement = self.element else {
             return

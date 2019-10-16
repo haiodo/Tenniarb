@@ -98,10 +98,10 @@ extension TennNode {
                 if let dta = Data(base64Encoded: tok.literal, options: .ignoreUnknownCharacters) {
                     let img = NSImage(data: dta)
                     image1Attachment.image = img
-                    
+                                        
                     if let sz = img?.size {
                         let bb = getMaxRect(maxWidth: 100, maxHeight: 100, imageWidth: sz.width, imageHeight: sz.height)
-                        image1Attachment.bounds = CGRect(x: 0, y: -1 * bb.height / 2, width: bb.width, height: bb.height)
+                        image1Attachment.bounds = CGRect(x: 0, y: font.capHeight/2 + -1 * bb.height / 2, width: bb.width, height: bb.height)
                     }
                 }
                 result.append(NSAttributedString(attachment: image1Attachment))

@@ -104,6 +104,7 @@ class ExportManager: NSObject, NSMenuDelegate {
             bitmapInfo: bitmapInfo.rawValue)
         
         
+        let old = NSGraphicsContext.current
         let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
         NSGraphicsContext.current = nsContext
         
@@ -127,6 +128,9 @@ class ExportManager: NSObject, NSMenuDelegate {
         
         let image = context!.makeImage()
         let img = NSImage(cgImage: image!, size: imgBounds.size)
+        
+        NSGraphicsContext.current = old
+        
         return (img, bounds)
     }    
     

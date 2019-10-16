@@ -36,7 +36,7 @@ class MarkDownAttributedPrinter {
     private static func attrStr(_ text: String, _ attributes: [NSAttributedString.Key: Any]) -> NSAttributedString {
         return NSAttributedString(string: text, attributes: attributes)
     }
-    public static func toAttributedStr(_ tokens: [MarkdownToken], font: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint) -> NSAttributedString {
+    public static func toAttributedStr(_ tokens: [MarkdownToken], font: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSAttributedString {
         let result = NSMutableAttributedString()
         
         var currentColor = foregroundColor
@@ -89,6 +89,19 @@ class MarkDownAttributedPrinter {
                 ]))
                 break;
             case .image:
+                let image1Attachment = NSTextAttachment()
+                                
+                let (image, rect) = imageProvider.resolveImage( path: t.literal )
+                if let img = image, let r = rect {
+                    image1Attachment.image = img
+                    var bnds = r
+                    bnds.origin.y = font.capHeight/2 + -1 * bnds.height / 2
+                    image1Attachment.bounds = bnds
+                    
+                    let strImg = NSMutableAttributedString(attachment: image1Attachment)
+                    result.append(strImg)
+                    
+                }
                 break;
             case .italic:
                 result.append(attrStr(literal, [

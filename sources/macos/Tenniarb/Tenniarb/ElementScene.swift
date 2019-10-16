@@ -593,7 +593,7 @@ class SceneStyle: DrawableStyle {
         }
     }
 }
-private func spaceCount(_ value: Substring) -> Int {
+private func spaceCount(_ value: String) -> Int {
     let chars = Array(value)
     var count = 0
     for c in chars {
@@ -611,8 +611,19 @@ public func prepareBodyText(_ textValue: String) -> String {
     let content = textValue.replacingOccurrences(of: "\\n", with: "\n")
         .replacingOccurrences(of: "\t", with: "    ")
     
-    var lines = content.split(separator: "\n")
+    var lines = content.components(separatedBy: "\n")
     var minCount = Int.max
+    
+    // Remove first empty line
+    if lines.count > 0 && lines[lines.startIndex].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+        lines.removeFirst()
+    }
+    
+    // remove last empty line.
+    if lines.count > 0 && lines[lines.endIndex-1].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
+        lines.removeLast()
+    }
+    
     for l in lines {
         if l.trimmingCharacters(in: .whitespacesAndNewlines).count != 0 {
             let ll = spaceCount(l)
@@ -622,13 +633,9 @@ public func prepareBodyText(_ textValue: String) -> String {
         }
     }
     
-    while lines.count > 0 && lines[lines.endIndex-1].trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
-        lines.removeLast()
-    }
-    
     return lines.map({body in
         if body.trimmingCharacters(in: .whitespacesAndNewlines).count == 0 {
-            return String(body)
+            return String(body + " ")
         }
         else {
             return String(body[body.index(body.startIndex, offsetBy: minCount)...])
@@ -638,17 +645,26 @@ public func prepareBodyText(_ textValue: String) -> String {
 }
 
 /**
-    Cache images used by scene
+    Cache images inside items with required processing.
  */
-open class ImageCollector {
-    // Images with size, etc applied.
-    var images: [String: NSImage] = [:]
+open class ImageProvider {
+    // Image cache
+    var images: [String:NSImage] = [:]
     
-    // Source images resolved
-    var imageSources: [String: NSImage] = [:]
+    var item: DiagramItem?
     
+    init(_ item: DiagramItem ) {
+        self.item = item
+    }
+
     // path is named and style combimned parsed from @(name|style)
-    public func resolveImage(path: String, item: DiagramItem ) -> NSImage? {
+    public func resolveImage(path: String ) -> (NSImage?, CGRect?) {
+        if self.item == nil {
+            return (nil, nil)
+        }
+        // If image already cached.
+        var image: NSImage? = self.images[path]
+        
         var name = path
         var style = ""
         if let pos = path.firstIndex(of: "|") {
@@ -656,7 +672,50 @@ open class ImageCollector {
             style = String(path.suffix(from: path.index(after: pos)))
         }
         
-        return nil
+        if let itm = self.item, image == nil {
+            // Retrieve image data from properties, if not cached
+            itm.properties.node.traverse {child in
+                if let cmdName = child.getIdent(0), let imgName = child.getIdent(1), let imgData = child.getIdent(2) {
+                    if cmdName == "image" && imgName == name {
+                        if let dta = Data(base64Encoded: imgData, options: .ignoreUnknownCharacters) {
+                            image = NSImage(data: dta)
+                        }
+                    }
+                }
+            }
+            self.images[path] = image
+        }
+            
+        if let img = image {
+            var width = img.size.width
+            var height = img.size.height
+            if style != "" {
+                var widthStr = style
+                var heightStr = ""
+                // We need to apply style is applicable
+                if let xPos = style.firstIndex(of: "x") {
+                    widthStr = String(style.prefix(upTo: xPos)).trimmingCharacters(in: .whitespacesAndNewlines)
+                    heightStr = String(style.suffix(from: style.index(after: xPos))).trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                    
+                // This is aspect scale.
+                if !widthStr.isEmpty, let newWidth = Int(widthStr, radix: 10) {
+                    width = CGFloat(newWidth)
+                }
+                if !heightStr.isEmpty, let newHeight = Int(heightStr, radix: 10) {
+                    height = CGFloat(newHeight)
+                }
+                
+                if widthStr.isEmpty || heightStr.isEmpty {
+                    let r = getMaxRect(maxWidth: width, maxHeight: height, imageWidth: img.size.width, imageHeight: img.size.height)
+                    width = r.width
+                    height = r.height
+                }
+            }
+            return (image, CGRect(x: 0, y: 0, width: width, height: height))
+        }
+            
+        return (nil, nil)
     }
 }
 
@@ -933,6 +992,8 @@ open class DrawableScene: DrawableContainer {
         let style = self.sceneStyle.defaultItemStyle.copy()
         let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
         
+        let imageProvider = ImageProvider(e)
+        
         // parse uses with list of styles.
         
         if let styleNode = e.properties.get( "use-style" ),
@@ -987,6 +1048,7 @@ open class DrawableScene: DrawableContainer {
                 fontSize: bodyStyle.fontSize,
                 layout: [.Left, .Bottom],
                 bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 4)),
+                imageProvider: imageProvider,
                 padding: CGPoint(x:8, y:4)
             )
         }
@@ -1003,6 +1065,7 @@ open class DrawableScene: DrawableContainer {
             fontSize: style.fontSize,
             layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
             bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
+            imageProvider: imageProvider,
             padding: CGPoint(x:8, y:8))
         
         
@@ -1032,7 +1095,8 @@ open class DrawableScene: DrawableContainer {
                 textBox.setFrame(CGRect(x: 0, y:height - textBox.size.height, width: width, height: textBox.size.height ))
                 
                 // Body
-                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: tbb.size.height))
+//                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: tbb.size.height))
+                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: height - textBox.size.height))
             }
             else {
                 bounds.size = CGSize(width: bounds.width, height: bounds.height - textBounds.height)
@@ -1110,7 +1174,7 @@ open class DrawableScene: DrawableContainer {
                         control: CGPoint(x: e.x, y: e.y ))
                     
                     if data.name.count > 0 {
-                        linkDr.addLabel(data.name)
+                        linkDr.addLabel(data.name, imageProvider: ImageProvider(e))
                     }
                     
                     linkDr.item = e
@@ -1313,8 +1377,8 @@ public class EmptyBox: DrawableContainer {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur)
             }
         }
-        //        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-        //        context.clip(to: clipBounds )
+        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
+        context.clip(to: clipBounds )
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1370,49 +1434,87 @@ public class TextBox: Drawable {
     var frame: CGRect
     var padding: CGPoint
     var attrStr: NSAttributedString
+    var imageProvider: ImageProvider
     
     func updateTextAttributes() {
         var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
     }
-    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint) -> NSAttributedString {
+    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSAttributedString {
         let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         textStyle.alignment = NSTextAlignment.center
-//        textStyle.lineBreakMode = .byCharWrapping
         
         let tokens = MarkdownLexer.getTokens(code: code)
-        return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift)
+        return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
     }
     
-    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
-        self.font = NSFont.systemFont(ofSize: fontSize)
-        self.text = text
-        self.layout = layout
-        self.frame = bounds
-        self.padding = padding
-        
-        self.textColor = textColor
-        
-        var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift)
-        
+    fileprivate func calculateSize(_ padding: CGPoint, _ shift: inout CGPoint) {
         let fs = CTFramesetterCreateWithAttributedString(self.attrStr)
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 3000, height: 3000), nil)
-                        
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
         
         if self.attrStr.string.hasSuffix("\n") {
             // We need to add one line
             
-            let abox = TextBox.getAttributedString(code: "A", font: self.font, color: self.textColor, shift: &shift)
+            let abox = TextBox.getAttributedString(code: "A", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
             
             let afs = CTFramesetterCreateWithAttributedString(abox)
             let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
             
             self.size.height += aframeSize.height
         }
+        
         self.size.width += shift.x
         self.size.height += shift.y
+        
+        // Correct size
+        let path = CGMutablePath()
+        path.addRect(CGRect(x: 0, y: 0, width: 30000, height: 30000))
+        
+        let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, self.attrStr.length), path, nil)
+    
+        
+        if let lines = CTFrameGetLines(frame) as? [CTLine] {
+            var maxWidth = CGFloat(0)
+            for l in lines {
+                var maxHeight = CGFloat(0)
+                var imagesWidth = CGFloat(0)
+                let range = CTLineGetStringRange(l)
+                for i in 0..<range.length {
+                    if let attr = self.attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
+                        let attachment = attr as? NSTextAttachment, attachment.image != nil {
+                        imagesWidth += attachment.bounds.width
+                        if attachment.bounds.height > maxHeight {
+                            maxHeight = attachment.bounds.height
+                        }
+                    }
+                }
+                if imagesWidth > maxWidth {
+                    maxWidth = imagesWidth
+                }
+                if maxHeight > font.pointSize {
+                    self.size.height += maxHeight - font.pointSize
+                }
+            }
+            self.size.width += maxWidth
+        }
+    }
+    
+    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, imageProvider: ImageProvider, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
+        self.font = NSFont.systemFont(ofSize: fontSize)
+        self.text = text
+        self.layout = layout
+        self.frame = bounds
+        self.padding = padding
+        self.imageProvider = imageProvider
+        
+        self.textColor = textColor
+        
+        var shift: CGPoint = CGPoint(x:0, y:0)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
+        
+        calculateSize(padding, &shift)
         
         if( self.size.width > self.frame.width || self.size.height > self.frame.height) {
             self.frame = CGRect(origin: self.frame.origin, size: CGSize(width: size.width, height: size.height))
@@ -1502,11 +1604,12 @@ public class DrawableLine: ItemDrawable {
         self.control = CGPoint.zero
     }
     
-    func addLabel(_ label: String) {
+    func addLabel(_ label: String, imageProvider: ImageProvider) {
         self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
                              textColor: self.style.borderColor,
                              fontSize: self.style.fontSize, layout: [.Middle, .Center],
-                             bounds: CGRect(origin: CGPoint.zero, size: CGSize(width:0, height:0)))
+                             bounds: CGRect(origin: CGPoint.zero, size: CGSize(width:0, height:0)),
+                             imageProvider: imageProvider)
     }
     
     func find( _ point: CGPoint)-> Bool {

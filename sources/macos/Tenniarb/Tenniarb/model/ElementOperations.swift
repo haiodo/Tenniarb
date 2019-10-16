@@ -328,11 +328,7 @@ public class ElementModelStore {
     func setProperties( _ element: Element, _ item: DiagramItem, _ node: TennNode, undoManager: UndoManager?, refresh: @escaping () -> Void) {
         execute(ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node ), undoManager, refresh)
     }
-    
-    func setImage( _ element: Element, _ item: DiagramItem, name: String, image: NSImage, undoManager: UndoManager?, refresh: @escaping () -> Void) {
-        execute(SetImageOperation(self, element, item, name: name, image: image), undoManager, refresh)
-    }
-    
+        
     func createProperties(_ element: Element, _ item: DiagramItem, _ node: TennNode) -> ElementOperation {
         return ComplexUpdateItem(self, element, item, old: item.toTennAsProps(), new: node )
     }
@@ -433,44 +429,6 @@ class ComplexUpdateItem: AbstractUpdateValue<TennNode> {
         self.item.fromTennProps(value)
     }
 }
-
-class SetImageOperation: ElementOperation {
-    let element: Element
-    let item: DiagramItem
-    let image: NSImage
-    var oldImage: NSImage?
-    var imgName: String
-    
-    init( _ store: ElementModelStore, _ element: Element, _ item: DiagramItem, name: String, image: NSImage) {
-        self.element = element
-        self.item = item
-        self.imgName = name
-        self.image = image
-        self.oldImage = item.images[imgName]
-        
-        super.init(store)
-    }
-    
-    override func apply() {
-        self.item.images[self.imgName] = image
-        super.apply()
-    }
-    override func undo() {
-        if let old = oldImage {
-            self.item.images[self.imgName] = old
-        } else {
-            self.item.images.removeValue(forKey: self.imgName)
-        }
-        super.undo()
-    }
-    override func collect( _ items: inout [DiagramItem:ModelEventOperation] ) {
-        items[item] = .Update
-    }
-    override func getNotifier() -> Element {
-        return element
-    }
-}
-
 
 class ComplexUpdateElement: AbstractUpdateElementValue<TennNode> {
     override var name:String { get { return "UpdateElement"} }

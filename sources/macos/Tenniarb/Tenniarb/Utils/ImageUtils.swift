@@ -48,14 +48,12 @@ public func displayImageInPopup(_ parentView: NSView, _ img: NSImage, _ imgBound
 }
 
 public func getMaxRect( maxWidth: CGFloat, maxHeight: CGFloat, imageWidth: CGFloat, imageHeight: CGFloat) -> NSRect {
-    var ratio: CGFloat = 0.0
     // Get ratio (landscape or portrait)
-    if (imageWidth > imageHeight) {
-        ratio = maxWidth / imageWidth
-    } else {
-        ratio = maxHeight / imageHeight
-    }
+    let ratiox = maxWidth / imageWidth
+    let ratioy = maxHeight / imageHeight
     
+    var ratio = min(ratiox, ratioy)
+        
     // Calculate new size based on the ratio
     if ratio > 1 {
         ratio = 1
@@ -64,20 +62,20 @@ public func getMaxRect( maxWidth: CGFloat, maxHeight: CGFloat, imageWidth: CGFlo
 }
 
 public func scaleImage(_ image: CGImage, maxWidth: Float, maxHeight: Float ) -> CGImage? {
+    if image.width == Int(maxWidth) && image.height == Int(maxHeight) {
+        return image
+    }
     let ciImage = CIImage(cgImage: image)
     
-    var ratio: Float = 0.0
     let imageWidth = Float(image.width)
     let imageHeight = Float(image.height)
     let maxWidth: Float = maxWidth
     let maxHeight: Float = maxHeight
     
-    // Get ratio (landscape or portrait)
-    if (imageWidth > imageHeight) {
-        ratio = maxWidth / imageWidth
-    } else {
-        ratio = maxHeight / imageHeight
-    }
+    let ratiox = maxWidth / imageWidth
+    let ratioy = maxHeight / imageHeight
+    
+    var ratio = min(ratiox, ratioy)
     
     // Calculate new size based on the ratio
     if ratio > 1 {
