@@ -89,18 +89,17 @@ class MarkDownAttributedPrinter {
                 ]))
                 break;
             case .image:
-                let image1Attachment = NSTextAttachment()
                                 
                 let (image, rect) = imageProvider.resolveImage( path: t.literal )
                 if let img = image, let r = rect {
+                    let image1Attachment = NSTextAttachment()
                     image1Attachment.image = img
                     var bnds = r
                     bnds.origin.y = font.capHeight/2 + -1 * bnds.height / 2
                     image1Attachment.bounds = bnds
-                    
+                                        
                     let strImg = NSMutableAttributedString(attachment: image1Attachment)
                     result.append(strImg)
-                    
                 }
                 break;
             case .italic:

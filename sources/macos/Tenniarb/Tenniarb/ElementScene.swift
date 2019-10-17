@@ -1444,7 +1444,7 @@ public class TextBox: Drawable {
         let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         textStyle.alignment = NSTextAlignment.center
         
-        let tokens = MarkdownLexer.getTokens(code: code)
+        let tokens = MarkdownLexer.getTokens(code: code + "\n ")
         return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
     }
     
@@ -1454,16 +1454,19 @@ public class TextBox: Drawable {
         
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
         
-        if self.attrStr.string.hasSuffix("\n") {
-            // We need to add one line
-            
-            let abox = TextBox.getAttributedString(code: "A", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
-            
-            let afs = CTFramesetterCreateWithAttributedString(abox)
-            let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
-            
-            self.size.height += aframeSize.height
-        }
+//        if self.attrStr.string.hasSuffix("\n") {
+//            // We need to add one line
+//
+        let abox = TextBox.getAttributedString(code: "A", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
+
+        let afs = CTFramesetterCreateWithAttributedString(abox)
+        let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
+
+        self.frame.size.height -= aframeSize.height
+        self.size.height -= aframeSize.height / 2
+        self.padding.y -= aframeSize.height
+//        self.frame.origin.y -= aframeSize.height
+//        }
         
         self.size.width += shift.x
         self.size.height += shift.y
@@ -1537,7 +1540,7 @@ public class TextBox: Drawable {
         let atp = CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y )
         self.attrStr.draw(at: atp)
         
-//        context.stroke(CGRect(origin:atp, size: self.frame.size))
+//        context.stroke(CGRect(origin:CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y), size: self.frame.size))
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
