@@ -138,13 +138,13 @@ public class MarkdownLexer {
                     r.removeAll()
                 }
             case "\\":
-                r.append(cc)
-                self.currentChar += 1;  self.pos += 1
+//                r.append(cc)
                 // Skip next if required to skip
                 let nc = self.next()
+                self.currentChar += 1;  self.pos += 1
                 switch nc {
                 case "@", "$", "*", "_", "#", "<", "~", "!":
-                    r.append(cc)
+                    r.append(nc)
                     self.currentChar += 1;  self.pos += 1
                 default:
                     break;
