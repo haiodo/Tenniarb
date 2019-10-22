@@ -1450,7 +1450,9 @@ public class TextBox: Drawable {
     
     fileprivate func calculateSize(_ padding: CGPoint, _ shift: inout CGPoint) {
         let fs = CTFramesetterCreateWithAttributedString(self.attrStr)
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        
+        // Need to have a attributed string without pictures, to have a proper sizes.
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, self.attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
         
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
         
@@ -1474,11 +1476,18 @@ public class TextBox: Drawable {
     
         
         if let lines = CTFrameGetLines(frame) as? [CTLine] {
-            var maxWidth = CGFloat(0)
+            var maxWidth = self.size.width
             for l in lines {
                 var maxHeight = CGFloat(0)
                 var imagesWidth = CGFloat(0)
                 let range = CTLineGetStringRange(l)
+                
+                var ascent: CGFloat = 0
+                var descent: CGFloat = 0
+                var leading: CGFloat = 0
+                
+                let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading)) + self.padding.x
+                
                 for i in 0..<range.length {
                     if let attr = self.attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
                         let attachment = attr as? NSTextAttachment, attachment.image != nil {
@@ -1488,14 +1497,14 @@ public class TextBox: Drawable {
                         }
                     }
                 }
-                if imagesWidth > maxWidth {
-                    maxWidth = imagesWidth
+                if imagesWidth + lineWidth > maxWidth {
+                    maxWidth = imagesWidth + lineWidth
                 }
                 if maxHeight > font.pointSize {
                     self.size.height += maxHeight - font.pointSize
                 }
             }
-            self.size.width += maxWidth
+            self.size.width = maxWidth
         }
     }
     
