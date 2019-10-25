@@ -53,10 +53,9 @@ class MarkDownAttributedPrinter {
                     literal = String(literal.suffix(literal.count-1))
                 }
                 let colorValue = NSColor(cgColor: parseColor("grey-200"))!
-                let ps = paragraphStyle.mutableCopy() as! NSMutableParagraphStyle
                 result.append(attrStr("\n",[
                     attrType.font: font,
-                    attrType.paragraphStyle: ps,
+                    attrType.paragraphStyle: paragraphStyle,
                     attrType.foregroundColor: NSColor.black,
                     attrType.backgroundColor: colorValue,
                 ]))
@@ -65,7 +64,8 @@ class MarkDownAttributedPrinter {
             case .text:
                 result.append(
                     attrStr( literal,[
-                        attrType.font: font, attrType.paragraphStyle: paragraphStyle,
+                        attrType.font: font,
+                        attrType.paragraphStyle: paragraphStyle,
                         attrType.foregroundColor: currentColor
                     ])
                 )
@@ -99,6 +99,7 @@ class MarkDownAttributedPrinter {
                     image1Attachment.bounds = bnds
                                         
                     let strImg = NSMutableAttributedString(attachment: image1Attachment)
+                    strImg.addAttribute(attrType.paragraphStyle, value: paragraphStyle, range: NSMakeRange(0, strImg.length))
                     result.append(strImg)
                 }
                 break;
@@ -154,7 +155,6 @@ class MarkDownAttributedPrinter {
                 break
             case .code:
                 let colorValue = NSColor(cgColor: parseColor("grey-200"))!
-                let ps = paragraphStyle.mutableCopy() as! NSMutableParagraphStyle
                 if literal.contains("\n") {
                     if !literal.hasPrefix("\n") && !lastLiteral.hasSuffix("\n") {
                         result.append(attrStr("\n",[
@@ -169,7 +169,7 @@ class MarkDownAttributedPrinter {
                 }
                 result.append(attrStr(literal,[
                     attrType.font: font,
-                    attrType.paragraphStyle: ps,
+                    attrType.paragraphStyle: paragraphStyle,
                     attrType.foregroundColor: NSColor.black,
                     attrType.backgroundColor: colorValue,
                 ]))

@@ -1059,11 +1059,28 @@ open class DrawableScene: DrawableContainer {
         }
         
         
+        var textLayout: Set<TextPosition> = ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top]
+        
+        if let l = style.layout {
+            let ls = Set<String>(l.split(separator: ",").map({t in t.trimmingCharacters(in: .whitespacesAndNewlines)}))
+            if bodyTextBox == nil {
+                if ls.contains("left") {
+                    textLayout.remove(.Center)
+                    textLayout.remove(.Right)
+                    textLayout.insert(.Left)
+                }
+            }
+            if ls.contains("center") {
+                textLayout.remove(.Left)
+                textLayout.remove(.Right)
+                textLayout.insert(.Center)
+            }
+        }
         let textBox = TextBox(
             text: titleValue,
             textColor: style.textColor,
             fontSize: style.fontSize,
-            layout: ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top],
+            layout: textLayout,
             bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
             imageProvider: imageProvider,
             padding: CGPoint(x:8, y:8))
@@ -1438,11 +1455,19 @@ public class TextBox: Drawable {
     
     func updateTextAttributes() {
         var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
     }
-    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSAttributedString {
+    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: Set<TextPosition>) -> NSAttributedString {
         let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-        textStyle.alignment = NSTextAlignment.center
+        if layout.contains(.Center) {
+            textStyle.alignment = NSTextAlignment.center
+        }
+        if layout.contains(.Left) {
+            textStyle.alignment = NSTextAlignment.left
+        }
+        if layout.contains(.Right) {
+            textStyle.alignment = NSTextAlignment.right
+        }
         
         let tokens = MarkdownLexer.getTokens(code: code + "\n ")
         return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
@@ -1456,7 +1481,7 @@ public class TextBox: Drawable {
         
         self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
         
-        let abox = TextBox.getAttributedString(code: " ", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
+        let abox = TextBox.getAttributedString(code: " ", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
 
         let afs = CTFramesetterCreateWithAttributedString(abox)
         let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
@@ -1519,7 +1544,7 @@ public class TextBox: Drawable {
         self.textColor = textColor
         
         var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider)
+        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
         
         calculateSize(padding, &shift)
         
@@ -1542,9 +1567,16 @@ public class TextBox: Drawable {
     
     public func draw(context: CGContext, at point: CGPoint) {
         let atp = CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y )
-        self.attrStr.draw(at: atp)
         
-//        context.stroke(CGRect(origin:CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y), size: self.frame.size))
+        if layout.contains(.Center) {
+            let rr = CGRect(origin:CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y - 5), size: self.frame.size)
+            self.attrStr.draw(in: rr)
+        }
+        else {
+            self.attrStr.draw(at: atp)
+        }
+        
+//        context.stroke(rr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
