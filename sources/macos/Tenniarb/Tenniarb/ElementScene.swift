@@ -1156,7 +1156,7 @@ open class DrawableScene: DrawableContainer {
             var horizontal: TextPosition = .Left
             parseLayout(bodyStyle, &horizontal, &vertical)
             bodyAttrString =
-                DrawableScene.getAttributedString(code: "\n" + prepareBodyText(textValue), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
+                DrawableScene.getAttributedString(code: (titleValue.count > 0 ? "\n": "") + prepareBodyText(textValue), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
         }
         
         var vertical: TextPosition = .Middle
@@ -1554,7 +1554,7 @@ public class TextBox: Drawable {
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
         
-        context.stroke(atr)
+//        context.stroke(atr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
