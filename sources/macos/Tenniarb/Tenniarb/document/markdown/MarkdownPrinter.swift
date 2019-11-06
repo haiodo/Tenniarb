@@ -36,7 +36,7 @@ class MarkDownAttributedPrinter {
     private static func attrStr(_ text: String, _ attributes: [NSAttributedString.Key: Any]) -> NSAttributedString {
         return NSAttributedString(string: text, attributes: attributes)
     }
-    public static func toAttributedStr(_ tokens: [MarkdownToken], font: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSAttributedString {
+    public static func toAttributedStr(_ tokens: [MarkdownToken], font: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSMutableAttributedString {
         let result = NSMutableAttributedString()
         
         var currentColor = foregroundColor

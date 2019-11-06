@@ -326,7 +326,7 @@ class DrawableStyle {
         self.shadowBlur = 5
         self.lineWidth = CGFloat(0.3)
     }
-        
+    
     
     func getFloat(_ child: TennNode?, _ evaluations: [TennToken: JSValue ]) -> CGFloat? {
         
@@ -412,9 +412,16 @@ class DrawableStyle {
                 self.display = value
             }
         case PersistenceStyleKind.Layout.name:
-            if let value = child.getIdent(1) {
-                self.layout = value
+            var layout = ""
+            for i in 1..<child.count {
+                if let value = child.getIdent(i) {
+                    if layout.count > 0 {
+                        layout += ", "
+                    }
+                    layout += value
+                }
             }
+            self.layout = layout
         case PersistenceStyleKind.Width.name:
             if let value = getFloat(child.getChild(1), evaluations) {
                 if value > 10000 {
@@ -645,7 +652,7 @@ public func prepareBodyText(_ textValue: String) -> String {
 }
 
 /**
-    Cache images inside items with required processing.
+ Cache images inside items with required processing.
  */
 open class ImageProvider {
     // Image cache
@@ -656,7 +663,7 @@ open class ImageProvider {
     init(_ item: DiagramItem ) {
         self.item = item
     }
-
+    
     // path is named and style combimned parsed from @(name|style)
     public func resolveImage(path: String ) -> (NSImage?, CGRect?) {
         if self.item == nil {
@@ -685,7 +692,7 @@ open class ImageProvider {
             }
             self.images[path] = image
         }
-            
+        
         if let img = image {
             var width = img.size.width
             var height = img.size.height
@@ -697,7 +704,7 @@ open class ImageProvider {
                     widthStr = String(style.prefix(upTo: xPos)).trimmingCharacters(in: .whitespacesAndNewlines)
                     heightStr = String(style.suffix(from: style.index(after: xPos))).trimmingCharacters(in: .whitespacesAndNewlines)
                 }
-                    
+                
                 // This is aspect scale.
                 if !widthStr.isEmpty, let newWidth = Int(widthStr, radix: 10) {
                     width = CGFloat(newWidth)
@@ -714,7 +721,7 @@ open class ImageProvider {
             }
             return (image, CGRect(x: 0, y: 0, width: width, height: height))
         }
-            
+        
         return (nil, nil)
     }
 }
@@ -951,7 +958,7 @@ open class DrawableScene: DrawableContainer {
         
     }
     
-    fileprivate func buildRoundRect(_ bounds: CGRect, _ style: DrawableItemStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) -> RoundBox {
+    fileprivate func buildRoundRect(_ bounds: CGRect, _ style: DrawableItemStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) {
         let rectBox = RoundBox( bounds: bounds,
                                 style, fill: fill)
         rectBox.stack = stack
@@ -961,10 +968,9 @@ open class DrawableScene: DrawableContainer {
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
-        return rectBox
     }
     
-    fileprivate func buildCircle(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true) -> CircleBox {
+    fileprivate func buildCircle(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true){
         let rectBox = CircleBox( bounds: bounds,
                                  style, fill: fill)
         rectBox.append(textBox)
@@ -973,17 +979,116 @@ open class DrawableScene: DrawableContainer {
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
-        return rectBox
     }
     
-    fileprivate func buildEmptyRect(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) -> EmptyBox {
+    fileprivate func buildEmptyRect(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
         let rectBox = EmptyBox( bounds: bounds, style )
         rectBox.append(textBox)
         rectBox.item = e
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
-        return rectBox
+    }
+    
+    static func calculateSize(attrStr: NSAttributedString) -> CGSize {
+        let fs = CTFramesetterCreateWithAttributedString(attrStr)
+        
+        // Need to have a attributed string without pictures, to have a proper sizes.
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        
+        var size = CGSize(width: frameSize.width, height: frameSize.height )
+        // Correct size
+        let path = CGMutablePath()
+        path.addRect(CGRect(x: 0, y: 0, width: 30000, height: 30000))
+        
+        let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, attrStr.length), path, nil)
+        
+        if let lines = CTFrameGetLines(frame) as? [CTLine] {
+            var maxWidth = size.width
+            for l in lines {
+                var maxHeight = CGFloat(0)
+                var imagesWidth = CGFloat(0)
+                let range = CTLineGetStringRange(l)
+                                
+                var ascent: CGFloat = 0
+                var descent: CGFloat = 0
+                var leading: CGFloat = 0
+                
+                let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
+                
+                var maxFontSize = CGFloat(0)
+                
+                for i in 0..<range.length {
+                    if let attr = attrStr.attribute(NSAttributedString.Key.font, at: range.location+i, effectiveRange: nil), let font = attr as? NSFont {
+                        if font.pointSize > maxFontSize {
+                            maxFontSize = font.pointSize
+                        }
+                    }
+                    if let attr = attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
+                        let attachment = attr as? NSTextAttachment, attachment.image != nil {
+                        imagesWidth += attachment.bounds.width
+                        if attachment.bounds.height > maxHeight {
+                            maxHeight = attachment.bounds.height
+                        }
+                    }
+                }
+                if imagesWidth + lineWidth > maxWidth {
+                    maxWidth = imagesWidth + lineWidth
+                }
+                if maxHeight > maxFontSize {
+                    size.height += maxHeight - maxFontSize
+                }
+            }
+            size.width = maxWidth
+        }
+        return size
+    }
+    
+    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: [TextPosition]) -> NSMutableAttributedString {
+        let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        for pos in layout {
+            switch pos {
+            case .Center:
+                textStyle.alignment = NSTextAlignment.center
+            case .Left:
+                textStyle.alignment = NSTextAlignment.left
+                
+            case .Right:
+                textStyle.alignment = NSTextAlignment.right
+            default:
+                break;
+            }
+        }
+        
+        let tokens = MarkdownLexer.getTokens(code: code)
+        return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
+    }
+    
+    fileprivate func parseLayout(_ style: DrawableItemStyle, _ horizontal: inout TextPosition, _ vertical: inout TextPosition) {
+        if let l = style.layout {
+            let ls = Set<String>(l.split(separator: ",").map({t in t.trimmingCharacters(in: .whitespacesAndNewlines)}))
+            if ls.contains("center") {
+                horizontal = .Center
+            }
+            if ls.contains("left") {
+                horizontal = .Left
+            }
+            if ls.contains("right") {
+                horizontal = .Right
+            }
+            if ls.contains("middle") {
+                vertical = .Middle
+            }
+            if ls.contains("top") {
+                vertical = .Top
+            }
+            if ls.contains("fill") {
+                vertical = .Fill
+            }
+            if ls.contains("bottom") {
+                vertical = .Bottom
+            }
+        }
     }
     
     func buildItemDrawable(_ e: DiagramItem, _ elementDrawable: DrawableContainer) {
@@ -1020,8 +1125,13 @@ open class DrawableScene: DrawableContainer {
             titleValue = title
         }
         titleValue = prepareBodyText(titleValue)
-        
-        var bodyTextBox: TextBox? = nil
+        // Marker value
+        if let marker = style.marker {
+            titleValue  = marker + " " + titleValue
+        }
+        var shift = CGPoint(x:0, y:0)
+
+        var bodyAttrString: NSAttributedString?
         
         if let bodyNode = e.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
@@ -1042,118 +1152,93 @@ open class DrawableScene: DrawableContainer {
                     textValue = txt
                 }
             }
-            bodyTextBox = TextBox(
-                text: prepareBodyText(textValue),
-                textColor: bodyStyle.textColor,
-                fontSize: bodyStyle.fontSize,
-                layout: [.Left, .Bottom],
-                bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 4)),
-                imageProvider: imageProvider,
-                padding: CGPoint(x:8, y:4)
-            )
+            var vertical: TextPosition = .Middle
+            var horizontal: TextPosition = .Left
+            parseLayout(bodyStyle, &horizontal, &vertical)
+            bodyAttrString =
+                DrawableScene.getAttributedString(code: "\n" + prepareBodyText(textValue), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
         }
         
-        // Marker value
-        if let marker = style.marker {
-            titleValue  = marker + " " + titleValue
+        var vertical: TextPosition = .Middle
+        var horizontal: TextPosition = .Center
+        
+        if bodyAttrString != nil {
+            vertical = .Fill
         }
-        
-        
-        var textLayout: Set<TextPosition> = ( bodyTextBox == nil ) ? [.Center, .Middle] : [.Left, .Top]
-        
-        if let l = style.layout {
-            let ls = Set<String>(l.split(separator: ",").map({t in t.trimmingCharacters(in: .whitespacesAndNewlines)}))
-            if bodyTextBox == nil {
-                if ls.contains("left") {
-                    textLayout.remove(.Center)
-                    textLayout.remove(.Right)
-                    textLayout.insert(.Left)
-                }
-            }
-            if ls.contains("center") {
-                textLayout.remove(.Left)
-                textLayout.remove(.Right)
-                textLayout.insert(.Center)
-            }
+        parseLayout(style, &horizontal, &vertical)
+                
+        let attrString = DrawableScene.getAttributedString(code: titleValue, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
+        if bodyAttrString != nil {
+            attrString.append(bodyAttrString!)
         }
-        let textBox = TextBox(
-            text: titleValue,
-            textColor: style.textColor,
-            fontSize: style.fontSize,
-            layout: textLayout,
-            bounds: CGRect( origin: CGPoint(x:0, y:0), size: CGSize(width: 0, height: 0)),
-            imageProvider: imageProvider,
-            padding: CGPoint(x:8, y:8))
-        
-        
-        let textBounds = textBox.getBounds()
-        let bodyBounds = bodyTextBox?.getBounds()
-        
-        var width = max(20, textBounds.width + 10, bodyBounds != nil ? bodyBounds!.width : 0)
+        let textBounds = DrawableScene.calculateSize(attrStr: attrString)
+                                
+        var width = max(20, textBounds.width)
         if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
         }
         
-        var height = max(20, textBounds.height + 5)
+        var height = max(20, textBounds.height)
         if let styleHeight = style.height, styleHeight >= 1 {
             height = styleHeight//max(height, styleHeight)
-        } else if bodyBounds != nil {
-            height += bodyBounds!.height // TODO: Put spacing into some configurable area
+        }
+        let sz = CGSize(width: width + shift.x + 4, height: height + shift.y + 4 )
+        bounds = CGRect(origin: CGPoint(x:e.x, y:e.y), size: sz)
+        
+        
+        var finalTextBounds = CGRect( origin: CGPoint(x:2, y:2), size: CGSize(width: width + shift.x, height: height + shift.y))
+        
+        switch vertical {
+        case .Middle:
+            if finalTextBounds.height > textBounds.height {
+                let yshift = (finalTextBounds.height - textBounds.height )
+                finalTextBounds.origin.y = 2 + yshift / 2
+                finalTextBounds.size.height -= yshift
+            }
+        case .Top:
+            if finalTextBounds.height > textBounds.height {
+                let yshift = (finalTextBounds.height - textBounds.height )
+                finalTextBounds.origin.y = 2 + yshift
+                finalTextBounds.size.height -= yshift
+            }
+            break
+        case .Fill:
+            break
+        case .Bottom:
+            if finalTextBounds.height > textBounds.height {
+                let yshift = (finalTextBounds.height - textBounds.height )
+                finalTextBounds.origin.y = 2
+                finalTextBounds.size.height -= yshift
+            }
+        default:
+            break;
         }
         
-        var bounds = CGRect(x: e.x, y:e.y, width: width, height: height)
-        textBox.setFrame(CGRect(x: 0, y:0, width: width, height: height))
-        
-        if let tb = bodyTextBox {
-            let tbb = tb.getBounds()
-            
-            if titleValue.count > 0 {
-                // title
-                textBox.setFrame(CGRect(x: 0, y:height - textBox.size.height, width: width, height: textBox.size.height ))
-                
-                // Body
-//                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: tbb.size.height))
-                tb.setFrame(CGRect(x: 0, y: height - textBox.size.height - tbb.size.height, width: width, height: height - textBox.size.height))
-            }
-            else {
-                bounds.size = CGSize(width: bounds.width, height: bounds.height - textBounds.height)
-                tb.setFrame(CGRect(x: 0, y:textBounds.height - 4, width: width, height: tbb.size.height))
-                textBox.setFrame(CGRect(x: 0, y:0, width: width, height: 0 ))
-            }
-        }
-        
-        var box: DrawableContainer? = nil
-        
+        let textBox = TextBox(
+            text: attrString,
+            bounds: finalTextBounds)
+                        
         if let display = style.display {
             switch display {
             case "text":
-                box = buildEmptyRect(bounds, style, e, textBox, elementDrawable)
+                buildEmptyRect(bounds, style, e, textBox, elementDrawable)
             case "no-fill":
                 var tc = style.textColorValue
                 if tc == nil {
                     tc = getTextColorBasedOn(PreferenceConstants.preference.background)
                 }
-                textBox.textColor = tc!
-                textBox.updateTextAttributes()
-                if let body = bodyTextBox {
-                    body.textColor = tc!
-                    body.updateTextAttributes()
-                }
-                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: false)
+                buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: false)
             case "stack":
-                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, stack: 3)
+                buildRoundRect(bounds, style, e, textBox, elementDrawable, stack: 3)
             case "circle":
-                box = buildCircle(bounds, style, e, textBox, elementDrawable)
+                buildCircle(bounds, style, e, textBox, elementDrawable)
                 break;
             default:
-                box = buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: true)
+                buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: true)
             }
         }
         else {
-            box = buildRoundRect(bounds, style, e, textBox, elementDrawable)
-        }
-        if let parentBox = box, let bbox = bodyTextBox {
-            parentBox.append(bbox)
+            buildRoundRect(bounds, style, e, textBox, elementDrawable)
         }
     }
     
@@ -1437,120 +1522,19 @@ public enum TextPosition {
     case Left
     case Right
     case Center  // Horizomtal
+    
     case Top
+    case Fill
     case Bottom
     case Middle // Vertical
 }
 public class TextBox: Drawable {
-    var size: CGSize = CGSize(width: 0, height:0)
-    var point: CGPoint = CGPoint(x:0, y:0)
-    var textColor: CGColor
-    let text:String
-    var font: NSFont
-    var layout: Set<TextPosition>
     var frame: CGRect
-    var padding: CGPoint
     var attrStr: NSAttributedString
-    var imageProvider: ImageProvider
     
-    func updateTextAttributes() {
-        var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
-    }
-    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: Set<TextPosition>) -> NSAttributedString {
-        let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-        if layout.contains(.Center) {
-            textStyle.alignment = NSTextAlignment.center
-        }
-        if layout.contains(.Left) {
-            textStyle.alignment = NSTextAlignment.left
-        }
-        if layout.contains(.Right) {
-            textStyle.alignment = NSTextAlignment.right
-        }
-        
-        let tokens = MarkdownLexer.getTokens(code: code + "\n ")
-        return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
-    }
-    
-    fileprivate func calculateSize(_ padding: CGPoint, _ shift: inout CGPoint) {
-        let fs = CTFramesetterCreateWithAttributedString(self.attrStr)
-        
-        // Need to have a attributed string without pictures, to have a proper sizes.
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, self.attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
-        
-        self.size = CGSize(width: frameSize.width + padding.x, height: frameSize.height + padding.y )
-        
-        let abox = TextBox.getAttributedString(code: " ", font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
-
-        let afs = CTFramesetterCreateWithAttributedString(abox)
-        let aframeSize = CTFramesetterSuggestFrameSizeWithConstraints(afs, CFRangeMake(0, abox.length), nil, CGSize(width: 3000, height: 3000), nil)
-
-        self.frame.size.height -= aframeSize.height
-        self.size.height -= aframeSize.height / 2
-        self.padding.y -= aframeSize.height
-        
-        self.size.width += shift.x
-        self.size.height += shift.y
-        
-        // Correct size
-        let path = CGMutablePath()
-        path.addRect(CGRect(x: 0, y: 0, width: 30000, height: 30000))
-        
-        let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, self.attrStr.length), path, nil)
-    
-        
-        if let lines = CTFrameGetLines(frame) as? [CTLine] {
-            var maxWidth = self.size.width
-            for l in lines {
-                var maxHeight = CGFloat(0)
-                var imagesWidth = CGFloat(0)
-                let range = CTLineGetStringRange(l)
-                
-                var ascent: CGFloat = 0
-                var descent: CGFloat = 0
-                var leading: CGFloat = 0
-                
-                let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading)) + self.padding.x
-                
-                for i in 0..<range.length {
-                    if let attr = self.attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
-                        let attachment = attr as? NSTextAttachment, attachment.image != nil {
-                        imagesWidth += attachment.bounds.width
-                        if attachment.bounds.height > maxHeight {
-                            maxHeight = attachment.bounds.height
-                        }
-                    }
-                }
-                if imagesWidth + lineWidth > maxWidth {
-                    maxWidth = imagesWidth + lineWidth
-                }
-                if maxHeight > font.pointSize {
-                    self.size.height += maxHeight - font.pointSize
-                }
-            }
-            self.size.width = maxWidth
-        }
-    }
-    
-    public init( text: String, textColor: CGColor, fontSize:CGFloat = 24, layout: Set<TextPosition>, bounds: CGRect, imageProvider: ImageProvider, padding: CGPoint = CGPoint( x:4, y:4 ) ) {
-        self.font = NSFont.systemFont(ofSize: fontSize)
-        self.text = text
-        self.layout = layout
+    public init( text: NSAttributedString, bounds: CGRect) {
         self.frame = bounds
-        self.padding = padding
-        self.imageProvider = imageProvider
-        
-        self.textColor = textColor
-        
-        var shift: CGPoint = CGPoint(x:0, y:0)
-        self.attrStr = TextBox.getAttributedString(code: self.text, font: self.font, color: self.textColor, shift: &shift, imageProvider: self.imageProvider, layout: self.layout)
-        
-        calculateSize(padding, &shift)
-        
-        if( self.size.width > self.frame.width || self.size.height > self.frame.height) {
-            self.frame = CGRect(origin: self.frame.origin, size: CGSize(width: size.width, height: size.height))
-        }
+        self.attrStr = text
     }
     
     public func setFrame(_ bounds: CGRect ) {
@@ -1566,44 +1550,18 @@ public class TextBox: Drawable {
     }
     
     public func draw(context: CGContext, at point: CGPoint) {
-        let atp = CGPoint(x: point.x + self.point.x + self.frame.origin.x, y: point.y + self.point.y + self.frame.origin.y )
+        let atp = CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y )
+        let atr = CGRect(origin: atp, size: self.frame.size)
+        self.attrStr.draw(in: atr)
         
-        if layout.contains(.Center) {
-            let rr = CGRect(origin:CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y - 5), size: self.frame.size)
-            self.attrStr.draw(in: rr)
-        }
-        else {
-            self.attrStr.draw(at: atp)
-        }
-        
-//        context.stroke(rr)
+        context.stroke(atr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
-        // Put in centre of bounds
-        var px = self.layout.contains(.Center) ? (frame.width-size.width)/2 : 0
-        var py = self.layout.contains(.Middle) ? (frame.height-size.height)/2 : 0
-        
-        if self.layout.contains(.Left) {
-            px = 0;
-        }
-        if self.layout.contains(.Right) {
-            px = frame.width - size.width;
-        }
-        if self.layout.contains(.Bottom) {
-            py = 0;
-        }
-        if self.layout.contains(.Top) {
-            py = frame.height - size.height;
-        }
-        
-        //TODO: If we doesn't fit into parent bounds we need to do something with it.
-        
-        self.point = CGPoint(x: px + padding.x / 2 , y: py + padding.y / 2)
     }
     
     public func getSelectorBounds() -> CGRect {
-        return CGRect(x: self.point.x + frame.origin.x, y: self.point.y + self.frame.origin.y, width: self.frame.width, height: self.frame.height)
+        return frame
     }
     public func getBounds() -> CGRect {
         return frame
@@ -1644,11 +1602,11 @@ public class DrawableLine: ItemDrawable {
     }
     
     func addLabel(_ label: String, imageProvider: ImageProvider) {
-        self.label = TextBox(text: label.replacingOccurrences(of: "\\n", with: "\n"),
-                             textColor: self.style.borderColor,
-                             fontSize: self.style.fontSize, layout: [.Middle, .Center],
-                             bounds: CGRect(origin: CGPoint.zero, size: CGSize(width:0, height:0)),
-                             imageProvider: imageProvider)
+        var shift = CGPoint(x:0, y:0)
+        let attrStr = DrawableScene.getAttributedString(code: label.replacingOccurrences(of: "\\n", with: "\n"), font: NSFont.systemFont(ofSize: self.style.fontSize), color: self.style.borderColor, shift: &shift, imageProvider: imageProvider, layout: [.Center, .Middle])
+        let size = DrawableScene.calculateSize(attrStr: attrStr)
+        self.label = TextBox(text: attrStr,
+                             bounds: CGRect(origin: CGPoint.zero, size: size))
     }
     
     func find( _ point: CGPoint)-> Bool {
@@ -2263,10 +2221,13 @@ public class CircleBox: DrawableContainer {
                 context.setShadow(offset: pos, blur: self.style.shadowBlur)
             }
         }
+        context.beginPath()
         self.doDraw(context, at: point)
         context.restoreGState()
-        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-        context.clip(to: clipBounds )
+        let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x + 2, y: bounds.origin.y + point.y + 2), size: CGSize(width: bounds.size.width-4, height: bounds.size.height-4))
+        context.addEllipse(in: clipBounds )
+        context.clip(using: .winding)
+        
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
