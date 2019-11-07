@@ -1171,34 +1171,52 @@ open class DrawableScene: DrawableContainer {
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }
-        let textBounds = DrawableScene.calculateSize(attrStr: attrString)
+        var textBounds = DrawableScene.calculateSize(attrStr: attrString)
+        
+//        textBounds.width += 8
+//        textBounds.height += 8
+        
+        let offx = CGFloat(4)
+        let offy = CGFloat(4)
+        
+        var wx=offx*2
+        var wy=offy*2
+        
                                 
         var width = max(20, textBounds.width)
         if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
+            wx = 0
         }
         
         var height = max(20, textBounds.height)
         if let styleHeight = style.height, styleHeight >= 1 {
             height = styleHeight//max(height, styleHeight)
+            wy = 0
         }
-        let sz = CGSize(width: width + shift.x + 4, height: height + shift.y + 4 )
+        let sz = CGSize(width: width + shift.x+wx, height: height + shift.y + wy )
         bounds = CGRect(origin: CGPoint(x:e.x, y:e.y), size: sz)
         
+        var finalTextBounds = CGRect( origin: CGPoint(x:offx, y:offy), size: CGSize(width: textBounds.width + shift.x, height: textBounds.height + shift.y))
         
-        var finalTextBounds = CGRect( origin: CGPoint(x:2, y:2), size: CGSize(width: width + shift.x, height: height + shift.y))
+        if finalTextBounds.size.width + offx*2 < width {
+            finalTextBounds.size.width = width - offx*2
+        }
+        if finalTextBounds.size.height + offy*2 < height {
+            finalTextBounds.size.height = height - offy*2
+        }
         
         switch vertical {
         case .Middle:
             if finalTextBounds.height > textBounds.height {
                 let yshift = (finalTextBounds.height - textBounds.height )
-                finalTextBounds.origin.y = 2 + yshift / 2
+                finalTextBounds.origin.y = offy + yshift / 2
                 finalTextBounds.size.height -= yshift
             }
         case .Top:
             if finalTextBounds.height > textBounds.height {
                 let yshift = (finalTextBounds.height - textBounds.height )
-                finalTextBounds.origin.y = 2 + yshift
+                finalTextBounds.origin.y = offy + yshift
                 finalTextBounds.size.height -= yshift
             }
             break
@@ -1207,7 +1225,7 @@ open class DrawableScene: DrawableContainer {
         case .Bottom:
             if finalTextBounds.height > textBounds.height {
                 let yshift = (finalTextBounds.height - textBounds.height )
-                finalTextBounds.origin.y = 2
+                finalTextBounds.origin.y = offy
                 finalTextBounds.size.height -= yshift
             }
         default:
@@ -1554,7 +1572,7 @@ public class TextBox: Drawable {
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
         
-//        context.stroke(atr)
+        context.stroke(atr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
