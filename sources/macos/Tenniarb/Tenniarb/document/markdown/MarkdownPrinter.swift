@@ -99,7 +99,19 @@ class MarkDownAttributedPrinter {
                     image1Attachment.bounds = bnds
                                         
                     let strImg = NSMutableAttributedString(attachment: image1Attachment)
-                    strImg.addAttribute(attrType.paragraphStyle, value: paragraphStyle, range: NSMakeRange(0, strImg.length))
+                    strImg.addAttributes([
+                        attrType.paragraphStyle: paragraphStyle,
+                        attrType.font: font],
+                                         range: NSMakeRange(0, strImg.length))
+                    
+                        // We need to add at least one space to be able to see image.
+                        
+                        strImg.append(attrStr(" ",[
+                            attrType.font: font,
+                            attrType.paragraphStyle: paragraphStyle,
+                            attrType.foregroundColor: NSColor.black,
+                        ]))
+                    
                     result.append(strImg)
                 }
                 break;

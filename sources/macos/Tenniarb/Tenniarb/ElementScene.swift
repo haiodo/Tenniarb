@@ -1016,7 +1016,7 @@ open class DrawableScene: DrawableContainer {
                 
                 let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
                 
-                var maxFontSize = CGFloat(0)
+                var maxFontSize = ascent + descent
                 
                 for i in 0..<range.length {
                     if let attr = attrStr.attribute(NSAttributedString.Key.font, at: range.location+i, effectiveRange: nil), let font = attr as? NSFont {
@@ -1044,7 +1044,7 @@ open class DrawableScene: DrawableContainer {
         return size
     }
     
-    static func getAttributedString(code: String, font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: [TextPosition]) -> NSMutableAttributedString {
+    static func toAttributedString(tokens: [MarkdownToken], font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: [TextPosition]) -> NSMutableAttributedString {
         let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         for pos in layout {
             switch pos {
@@ -1059,8 +1059,6 @@ open class DrawableScene: DrawableContainer {
                 break;
             }
         }
-        
-        let tokens = MarkdownLexer.getTokens(code: code)
         return MarkDownAttributedPrinter.toAttributedStr(tokens, font: font, paragraphStyle: textStyle, foregroundColor: NSColor(cgColor: color)!, shift: &shift, imageProvider: imageProvider)
     }
     
@@ -1132,7 +1130,6 @@ open class DrawableScene: DrawableContainer {
         var shift = CGPoint(x:0, y:0)
 
         var bodyAttrString: NSAttributedString?
-        
         if let bodyNode = e.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
             let bodyStyle = style.copy()
@@ -1156,26 +1153,32 @@ open class DrawableScene: DrawableContainer {
             var horizontal: TextPosition = .Left
             parseLayout(bodyStyle, &horizontal, &vertical)
             bodyAttrString =
-                DrawableScene.getAttributedString(code: (titleValue.count > 0 ? "\n": "") + prepareBodyText(textValue), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
+                DrawableScene.toAttributedString(tokens: MarkdownLexer.getTokens(code: (titleValue.count > 0 ? "\n": "") + prepareBodyText(textValue)), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
         }
         
         var vertical: TextPosition = .Middle
         var horizontal: TextPosition = .Center
         
+        let titleTokens = MarkdownLexer.getTokens(code: titleValue)
+        
         if bodyAttrString != nil {
             vertical = .Fill
         }
+                
+        // If markdown has titles, bullets, we need to change horizontal layout to left one.
+        if titleTokens.contains(where: {e in [.bullet, .title, .code].contains(e.type)}) {
+            horizontal = .Left
+        }
+        
+        
         parseLayout(style, &horizontal, &vertical)
                 
-        let attrString = DrawableScene.getAttributedString(code: titleValue, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
+        let attrString = DrawableScene.toAttributedString(tokens: titleTokens, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }
-        var textBounds = DrawableScene.calculateSize(attrStr: attrString)
-        
-//        textBounds.width += 8
-//        textBounds.height += 8
-        
+        let textBounds = DrawableScene.calculateSize(attrStr: attrString)
+                
         let offx = CGFloat(4)
         let offy = CGFloat(4)
         
@@ -1572,7 +1575,7 @@ public class TextBox: Drawable {
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
         
-        context.stroke(atr)
+//        context.stroke(atr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
@@ -1621,7 +1624,7 @@ public class DrawableLine: ItemDrawable {
     
     func addLabel(_ label: String, imageProvider: ImageProvider) {
         var shift = CGPoint(x:0, y:0)
-        let attrStr = DrawableScene.getAttributedString(code: label.replacingOccurrences(of: "\\n", with: "\n"), font: NSFont.systemFont(ofSize: self.style.fontSize), color: self.style.borderColor, shift: &shift, imageProvider: imageProvider, layout: [.Center, .Middle])
+        let attrStr = DrawableScene.toAttributedString(tokens: MarkdownLexer.getTokens(code: label.replacingOccurrences(of: "\\n", with: "\n")), font: NSFont.systemFont(ofSize: self.style.fontSize), color: self.style.borderColor, shift: &shift, imageProvider: imageProvider, layout: [.Center, .Middle])
         let size = DrawableScene.calculateSize(attrStr: attrStr)
         self.label = TextBox(text: attrStr,
                              bounds: CGRect(origin: CGPoint.zero, size: size))
