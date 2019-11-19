@@ -156,12 +156,18 @@ public class ElementModelStore {
     public var onUpdate: [IElementModelListener] = []
     public var modified: Bool = false
     public var executionContext = ExecutionContext()
+
+    private let internalGroup: DispatchGroup = DispatchGroup()
     
     init(_ model:ElementModel ) {
         self.model = model
     }
     
     func execute( _ action: ElementOperation, _ undoManager: UndoManager?, _ refresh: @escaping () -> Void) {
+        self.internalGroup.enter()
+        defer {
+            self.internalGroup.leave()
+        }
         if let manager = undoManager {
             manager.registerUndo(withTarget: self, handler: {(ae: ElementModelStore) -> Void in
                 ae.execute(action, manager, refresh)

@@ -712,6 +712,10 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     public func updateAll(_ notifier: @escaping () -> Void) {
         DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
             if let root = self.rootCtx {
+                self.internalGroup.enter()
+                defer {
+                    self.internalGroup.leave()
+                }
                _ = root.updateContext()
                 let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, buildChildren: false)
                 // We need to recalculate all stuff
