@@ -1757,23 +1757,41 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     @objc func paste( _ sender: NSObject ) {
         ClipboardUtils.paste { node in
-            if let activeItem = self.activeItems.first, node.kind == .Command {
-                let props = activeItem.toTennAsProps()
-                props.add(node)
-                if let cmdName = node.getIdent(0), let imgName = node.getIdent(1), cmdName == "image" {
-                    if let titleItem = props.getNamedElement("title") {
-                        // Prepend image to title
-                        if let bodyText = titleItem.getIdent(1) {
-                            titleItem.children![1] = TennNode.newMarkdownNode("@(\(imgName)|96)\n\(bodyText)" )
+            if node.kind == .Command {
+                if let activeItem = self.activeItems.first {
+                    let props = activeItem.toTennAsProps()
+                    props.add(node)
+                    if let cmdName = node.getIdent(0), let imgName = node.getIdent(1), cmdName == "image" {
+                        if let titleItem = props.getNamedElement("title") {
+                            // Prepend image to title
+                            if let bodyText = titleItem.getIdent(1) {
+                                titleItem.children![1] = TennNode.newMarkdownNode("@(\(imgName)|96)\n\(bodyText)" )
+                            }
+                        } else {
+                            // Create title from name and image.
+                            props.add(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
                         }
-                    } else {
-                        // Create title from name and image.
-                        props.add(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
                     }
+                    self.store?.setProperties(self.element!, activeItem, props, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+                    return
+                } else {
+                    // Add new diagram item.
+                    let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
+                    self.createIndex += 1
+                    
+                    newEl.x = pivotPoint.x
+                    newEl.y = pivotPoint.y
+                    newEl.properties = ModelProperties()
+                    newEl.properties.append(node)
+                    if let cmdName = node.getIdent(0), let imgName = node.getIdent(1), cmdName == "image" {
+                        // Create title from name and image.
+                        newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
+                    }
+                    self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+                    
+                    self.setActiveItem(newEl)
                 }
-                self.store?.setProperties(self.element!, activeItem, props, undoManager: self.undoManager, refresh: self.scheduleRedraw)
-            }
-            else {
+            } else {
                 let items = Element.parseItems(node: node)
                 if items.count > 0 {
                     // Move items a bit,
