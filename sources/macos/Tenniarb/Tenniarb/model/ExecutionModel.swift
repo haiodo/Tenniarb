@@ -729,6 +729,10 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
         DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
             if let root = self.rootCtx {
                 if event.element == root.element {
+                    self.internalGroup.enter()
+                    defer {
+                        self.internalGroup.leave()
+                    }
                    root.processEvent(event)
                 }
             }
