@@ -22,6 +22,21 @@ class ClipboardUtils {
         return false
     }
     static func paste( _ operation: (TennNode) -> Void ) {
+        let av = NSPasteboard.general.availableType(from: [.png, .tiff, .URL])
+        if let value = NSPasteboard.general.data(forType: .png) {
+            if let name = NSPasteboard.general.string(forType: .string) {
+                let node = TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(value.base64EncodedString()))
+            operation(node)
+            }
+        }
+        
+        if let value = NSPasteboard.general.data(forType: .tiff) {
+            if let name = NSPasteboard.general.string(forType: .string) {
+                let node = TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(value.base64EncodedString()))
+            operation(node)
+            }
+        }
+        
         if let value = NSPasteboard.general.string(forType: .string) {
             let p = TennParser()
             let node = p.parse(value)

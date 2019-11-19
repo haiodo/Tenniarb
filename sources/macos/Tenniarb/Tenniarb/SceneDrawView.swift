@@ -1757,19 +1757,37 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     @objc func paste( _ sender: NSObject ) {
         ClipboardUtils.paste { node in
-            let items = Element.parseItems(node: node)
-            if items.count > 0 {
-                // Move items a bit,
-                for i in items {
-                    if i.kind == .Item {
-                        i.x += 10
-                        i.y -= 10
+            if let activeItem = self.activeItems.first, node.kind == .Command {
+                let props = activeItem.toTennAsProps()
+                props.add(node)
+                if let cmdName = node.getIdent(0), let imgName = node.getIdent(1), cmdName == "image" {
+                    if let titleItem = props.getNamedElement("title") {
+                        // Prepend image to title
+                        if let bodyText = titleItem.getIdent(1) {
+                            titleItem.children![1] = TennNode.newMarkdownNode("@(\(imgName)|96)\n\(bodyText)" )
+                        }
+                    } else {
+                        // Create title from name and image.
+                        props.add(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
                     }
                 }
-                self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
-                
-                self.setActiveItems(items)
-                scheduleRedraw()
+                self.store?.setProperties(self.element!, activeItem, props, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            }
+            else {
+                let items = Element.parseItems(node: node)
+                if items.count > 0 {
+                    // Move items a bit,
+                    for i in items {
+                        if i.kind == .Item {
+                            i.x += 10
+                            i.y -= 10
+                        }
+                    }
+                    self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+                    
+                    self.setActiveItems(items)
+                    scheduleRedraw()
+                }
             }
         }
     }
