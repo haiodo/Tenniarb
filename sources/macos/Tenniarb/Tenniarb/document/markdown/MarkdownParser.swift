@@ -55,7 +55,6 @@ extension MarkdownToken: Hashable {
 }
 
 public class MarkdownLexer {
-    private var buffer: ContiguousArray<Unicode.Scalar>
     private var bufferCount: Int = 0
     private var pos: Int = 0
     private var currentLine: Int = 0
@@ -65,43 +64,73 @@ public class MarkdownLexer {
     
     private var tokenBuffer: [MarkdownToken] = []
     private var code: String
+    private var it: String.Iterator
+    private var nextChar: Character?
+    private var currentCharValue: Character
+    private var prevCharacter: Character = "\0"
     
     public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
         self.code = code
-        self.buffer = ContiguousArray(code.unicodeScalars)
-        self.bufferCount = self.buffer.count
+        self.it = code.makeIterator()
+        
+        if let cc = self.it.next() {
+            self.currentCharValue = cc
+        } else {
+            self.currentCharValue = "\0"
+        }
+        self.bufferCount = self.code.count
     }
     
     public func revert(tok: MarkdownToken) {
         tokenBuffer.insert(tok, at: 0)
     }
-    private func add(type: MarkdownTokenType, literal: BufferType) {
+    private func add(type: MarkdownTokenType, literal: String) {
         let c = literal.count
         self.tokenBuffer.append(
-            MarkdownToken(type: type, literal: String(literal), line: currentLine, col: currentChar, pos: self.pos-c, size: c)
+            MarkdownToken(type: type, literal: literal, line: currentLine, col: currentChar, pos: self.pos-c, size: c)
         )
     }
     
-    private func add(check pattern: inout BufferType) {
+    private func add(check pattern: inout String) {
         if !pattern.isEmpty {
             self.add(type: .text, literal: pattern)
             pattern.removeAll()//keepingCapacity: true)
         }
         
     }
-    private func add(literal: BufferType) {
+    private func add(literal: String) {
         let c = literal.count
         self.tokenBuffer.append(
-            MarkdownToken(type: .text, literal: String(literal), line: currentLine, col: currentChar, pos: self.pos-c, size: c)
+            MarkdownToken(type: .text, literal: literal, line: currentLine, col: currentChar, pos: self.pos-c, size: c)
         )
     }
     
+    private func inc() {
+        self.currentChar += 1
+        self.pos += 1
+        self.prevCharacter = self.currentCharValue
+        if let nc = self.nextChar {
+            self.currentCharValue = nc
+            self.nextChar = nil
+        } else {
+            if let cc = self.it.next() {
+                self.currentCharValue = cc
+            } else {
+                self.currentCharValue = "\0"
+            }
+        }
+    }
     private func next() -> Character {
-        let ppos = self.pos + 1
-        if ppos < self.bufferCount {
-            return Character(self.buffer[ppos])
+        if let nc = self.nextChar {
+            return nc
+        }
+        if let ncc = self.it.next() {
+            self.nextChar = ncc
+        }
+        if let nc = self.nextChar {
+            return nc
         }
         return "\0"
     }
@@ -111,12 +140,11 @@ public class MarkdownLexer {
             return self.tokenBuffer.removeFirst()
         }
         
-        var r: BufferType = BufferType()
+        var r: String = ""
         
         var wasWhiteSpace = self.pos == 0
         if self.pos > 0 && self.pos < self.bufferCount {
-            let prev = self.buffer[self.pos-1]
-            switch prev {
+            switch prevCharacter {
             case " ", "\t", "\r","\n":
                 wasWhiteSpace = true
             default:
@@ -124,11 +152,11 @@ public class MarkdownLexer {
             }
         }
         while self.pos < self.bufferCount {
-            let cc = Character(self.buffer[self.pos])
+            let cc = currentCharValue
             switch (cc) {
             case " ", "\t", "\r","\n":
                 r.append(cc)
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
                 wasWhiteSpace = true
                 if cc == "\n" {
                     self.currentLine += 1
@@ -138,14 +166,14 @@ public class MarkdownLexer {
                     r.removeAll()
                 }
             case "\\":
-//                r.append(cc)
+                //                r.append(cc)
                 // Skip next if required to skip
                 let nc = self.next()
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
                 switch nc {
                 case "@", "$", "*", "_", "#", "<", "~", "!":
                     r.append(nc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 default:
                     break;
                 }
@@ -157,7 +185,7 @@ public class MarkdownLexer {
                     readUntil(r: &r, startLit: "(", endLit: ")", type: .image)
                 } else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 break;
@@ -169,7 +197,7 @@ public class MarkdownLexer {
                 }
                 else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 break;
@@ -178,12 +206,12 @@ public class MarkdownLexer {
                 if lineState && next() == " " {
                     // Only whitespaces before, and at least one space
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                     self.add(type: .bullet, literal: r)
                     r.removeAll()//keepingCapacity: true)
                 } else if( wasWhiteSpace && next() != " " ) {
                     self.add(check: &r) // Add previous line
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                     // This is potentially ** ** - strong or * * emphasize
                     if processUntilCharExceptNewLine(&r, "*") {
                         self.add(type: .bold, literal: r)
@@ -194,7 +222,7 @@ public class MarkdownLexer {
                 } else {
                     // Just *
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 
@@ -202,7 +230,7 @@ public class MarkdownLexer {
             case "_":
                 self.add(check: &r)
                 if wasWhiteSpace && next() != " " {
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                     if processUntilCharExceptNewLine(&r, "_") {
                         self.add(type: .italic, literal: r)
                     } else {
@@ -211,7 +239,7 @@ public class MarkdownLexer {
                     r.removeAll()//keepingCapacity: true)
                 } else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 
@@ -219,7 +247,7 @@ public class MarkdownLexer {
             case "<":
                 self.add(check: &r)
                 if wasWhiteSpace && next() != " " {
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                     if processUntilCharExceptNewLine(&r, ">") {
                         self.add(type: .underline, literal: r)
                     } else {
@@ -228,7 +256,7 @@ public class MarkdownLexer {
                     r.removeAll()//keepingCapacity: true)
                 } else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 
@@ -236,7 +264,7 @@ public class MarkdownLexer {
             case "~":
                 self.add(check: &r)
                 if wasWhiteSpace && next() != " " {
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                     if processUntilCharExceptNewLine(&r, "~") {
                         self.add(type: .scratch, literal: r)
                     } else {
@@ -245,7 +273,7 @@ public class MarkdownLexer {
                     r.removeAll()//keepingCapacity: true)
                 } else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 
@@ -253,7 +281,7 @@ public class MarkdownLexer {
             case "#":
                 self.add(check: &r)
                 r.append(cc)
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
                 self.processUntilNewLine(&r)
                 wasWhiteSpace = true
                 self.add(type: .title, literal: r)
@@ -268,7 +296,7 @@ public class MarkdownLexer {
                     readUntil(r: &r, startLit: "{", endLit: "}", type: .expression)
                 } else {
                     r.append(cc)
-                    self.currentChar += 1;  self.pos += 1
+                    self.inc()
                 }
                 wasWhiteSpace = false
                 break;
@@ -280,7 +308,7 @@ public class MarkdownLexer {
             default:
                 wasWhiteSpace = false
                 r.append(cc)
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
             }
             // Do not collect more whitespace characters.
             if !wasWhiteSpace {
@@ -291,8 +319,8 @@ public class MarkdownLexer {
         self.add(check: &r)
         
         if self.pos == self.bufferCount {
-            self.add(type: .eof, literal: ["\0"])
-            self.currentChar += 1;  self.pos += 1
+            self.add(type: .eof, literal: "\0")
+            self.inc()
         }
         
         if !self.tokenBuffer.isEmpty {
@@ -302,54 +330,54 @@ public class MarkdownLexer {
         }
     }
     
-    private func processUntilNewLine( _ r: inout BufferType) {
+    private func processUntilNewLine( _ r: inout String) {
         // End of line comment
         while self.pos < self.bufferCount {
-            let cc = Character(self.buffer[self.pos])
+            let cc = currentCharValue
             if cc == "\n" {
                 self.currentLine += 1
-                self.currentChar = 0
                 lineState = true // Mark as new line is started and we need to capture prefixes.
                 r.append(cc)
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
+                self.currentChar = 0
                 break
             }
             r.append(cc)
-            self.currentChar += 1;  self.pos += 1
+            self.inc()
         }
     }
     
-    private func processUntilCharExceptNewLine( _ r: inout BufferType, _ c: Character) -> Bool {
+    private func processUntilCharExceptNewLine( _ r: inout String, _ c: Character) -> Bool {
         // End of line comment
         while self.pos < self.bufferCount {
-            let cc = Character(self.buffer[self.pos])
+            let cc = currentCharValue
             if cc == "\n" {
                 self.currentLine += 1
-                self.currentChar = 0
                 r.append(cc)
-                self.pos += 1
+                self.inc()
+                self.currentChar = 0
                 lineState = true // Mark as new line is started and we need to capture prefixes.
                 return false
             }
             if cc == c {
                 // We found out character, return
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
                 return true
             }
             r.append(cc)
-            self.currentChar += 1;  self.pos += 1
+            self.inc()
         }
         return false
     }
     
-    private func readUntilWithEscaping( r: inout BufferType, lit: Character, type: MarkdownTokenType) {
+    private func readUntilWithEscaping( r: inout String, lit: Character, type: MarkdownTokenType) {
         self.add(check: &r)
-        self.currentChar += 1;  self.pos += 1
+        self.inc()
         
         var foundEnd = false
         let stPos = self.pos
         while self.pos < self.bufferCount {
-            let curChar = Character(self.buffer[self.pos])
+            let curChar = currentCharValue
             if  curChar == "\n" {
                 self.currentLine += 1;
                 self.currentChar = 0;
@@ -358,17 +386,17 @@ public class MarkdownLexer {
             else if curChar == lit {
                 self.add(type: type, literal: r)
                 r.removeAll()//keepingCapacity: true)
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
                 foundEnd = true
                 break
             }
             else if (curChar == "\\" && self.next() == lit) {
                 r.append(self.next())
-                self.currentChar += 1;  self.pos += 1
+                self.inc()
             } else {
                 r.append(curChar)
             }
-            self.currentChar += 1;  self.pos += 1
+            self.inc()
         }
         if !r.isEmpty {
             self.add(type: type, literal: r)
@@ -381,16 +409,17 @@ public class MarkdownLexer {
         }
     }
     
-    private func readUntil( r: inout BufferType, startLit: Character, endLit: Character, type: MarkdownTokenType, addEmpty: Bool = false) {
+    private func readUntil( r: inout String, startLit: Character, endLit: Character, type: MarkdownTokenType, addEmpty: Bool = false) {
         self.add(check: &r)
-        self.currentChar += 2;  self.pos += 2;
+        self.inc()
+        self.inc()
         
         let stPos = self.pos
         var foundEnd = false
         var indent = 1
         let startLine = self.currentLine
         while self.pos < self.bufferCount {
-            let curChar = Character(self.buffer[self.pos])
+            let curChar = currentCharValue
             if  curChar == "\n" {
                 self.currentLine += 1;
                 self.currentChar = 0;
@@ -413,7 +442,7 @@ public class MarkdownLexer {
             else {
                 r.append(curChar)
             }
-            self.currentChar += 1;  self.pos += 1
+            self.inc()
         }
         
         if !foundEnd {
@@ -429,7 +458,7 @@ public class MarkdownLexer {
                 )
                 r.removeAll()//keepingCapacity: true)
             }
-            self.currentChar += 1;  self.pos += 1
+            self.inc()
         }
     }
     public static func getTokens(code: String ) -> [MarkdownToken] {
