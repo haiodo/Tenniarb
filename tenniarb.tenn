@@ -857,7 +857,7 @@ to add linked item to diagram.}
                 color $([0,0,255, 200])
                 shadow -5 -5 5
             }
-            item "Green" {
+            item "Big\nGreen\nApple" {
                 pos -1011.0 174.0
                 display circle
                 width 200
@@ -896,7 +896,7 @@ to add linked item to diagram.}
                 pos -770.0 394.0
                 use-style annotation
             }
-            link "Green" "display=circle" {
+            link "Big\nGreen\nApple" "display=circle" {
                 display arrow
                 line-width 2
             }

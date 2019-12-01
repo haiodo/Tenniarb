@@ -234,7 +234,7 @@ class PerformanceTests: XCTestCase {
         let sc = str.unicodeScalars
         var idx = sc.index(sc.startIndex, offsetBy: 0)
         let strLen = sc.count
-        for i in 0..<strLen {
+        for _ in 0..<strLen {
             let c = Character(sc[idx])
             if c == "A" {
                 count += 1
@@ -247,7 +247,6 @@ class PerformanceTests: XCTestCase {
     func doTestGenerateTokenArray() -> String {
         let str: String = generateString()
         let now = Date()
-        var count = 0
         var result:[Character] = []
         result.reserveCapacity(1024)
         for c in str {
@@ -275,9 +274,11 @@ class PerformanceTests: XCTestCase {
     
     func testLexerParsingPerformance() {
         let str: String = generateString()
-        var now = Date()
-        _ = TennParser().parse(str)
-        Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
+        measure {
+            let now = Date()
+            _ = TennParser().parse(str)
+            Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
+        }
     }
     
     func _testPerformance() {
@@ -296,6 +297,62 @@ class PerformanceTests: XCTestCase {
         values.append(doTestIterateOverStringPrimitiveArrayIndex())
         values.append(doTestIterateOverStringPrimitiveScalarArrayIndex())
         Swift.print("Results: \n \(values.joined(separator: "\n"))" )
+    }
+    
+    let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    func testStringBuilding() {
+        measure {
+            var s = ""
+            s.makeContiguousUTF8()
+                        
+            let randomChar = letters.randomElement()!
+            
+            for _ in 0..<1000000 {
+                s.append(randomChar)
+            }
+            
+            let ss = s as String
+            var cc = 0
+            for _ in ss {
+                cc += 1
+            }
+        }
+    }
+    func testStringBuildViaArray() {
+        measure {
+            var s = Array<Character>()
+            
+            let randomChar = letters.randomElement()!
+            
+            for _ in 0..<1000000 {
+                s.append(randomChar)
+            }
+            let ss = String(s)
+            
+            var cc = 0
+            for _ in ss {
+                cc += 1
+            }
+            
+        }
+    }
+    func testStringBuildViaContiguousArray() {
+        measure {
+            var s = ContiguousArray<Character>()
+            
+            let randomChar = letters.randomElement()!
+            
+            for _ in 0..<1000000 {
+                s.append(randomChar)
+            }
+            let ss = String(s)
+            
+            var cc = 0
+            for _ in ss {
+                cc += 1
+            }
+            
+        }
     }
 }
 
