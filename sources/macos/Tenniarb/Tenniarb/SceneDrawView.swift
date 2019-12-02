@@ -24,6 +24,7 @@ enum SceneMode {
 enum EditingMode {
     case Name // edvarng of name/title
     case Body // editing of body, shift + enter
+    case Value // A custom edit field selection
 }
 
 public class PopupEditField: NSTextField {
@@ -735,6 +736,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 case .Body:
                     self.setBody(active, textValue)
                     break
+                case .Value:
+                    self.setValue(active, textValue)
+                    break;
                 }
             }
         }
@@ -809,6 +813,26 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
     }
+    static func findFieldName(_ item:DiagramItem) -> String {
+        var fieldName = "value"
+        if let field = item.properties.get("field-name"), let customFieldName = field.getIdent(1) {
+            fieldName = customFieldName
+        }
+        return fieldName
+    }
+    static func getCustomText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) -> String? {
+        let fieldName = findFieldName(item)
+        
+        if let bodyNode = item.properties.get( fieldName ) {
+            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            if let bodyBlock = bodyNode.getChild(1) {
+                if let txt = getString(bodyBlock, [:]) {
+                    textValue = txt
+                }
+            }
+        }
+        return fieldName
+    }
     
     func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
         let bodyStyle = style.copy()
@@ -817,6 +841,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         SceneDrawView.getBodyText(item, bodyStyle, &textValue)
         return (prepareBodyText(textValue), bodyStyle.fontSize)
+    }
+    func getCustomField( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat, String)? {
+        let bodyStyle = style.copy()
+        bodyStyle.fontSize -= 2 // Make a bit smaller for body
+        var textValue = ""
+        
+        if let customField = SceneDrawView.getCustomText(item, bodyStyle, &textValue) {
+            return (prepareBodyText(textValue), bodyStyle.fontSize, customField)
+        }
+        return nil
     }
     fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
         let newProps = item.toTennAsProps(.BlockExpr)
@@ -844,6 +878,60 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             } else {
                 cmd.add(TennNode.newStrNode(body))
             }
+            newProps.add(cmd)
+        }
+        self.store?.setProperties(self.element!, item, newProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+    }
+    
+    private static func detectSymbolType( pattern value: String ) -> (TennNodeKind, TennTokenType) {
+        var skipFirst = false
+        if !value.isEmpty && value.hasPrefix("-") {
+            skipFirst = true
+        }
+        var dot = false
+        var i = 0
+        for c in value {
+            if skipFirst {
+                skipFirst = false
+                continue
+            }
+            if c == "." {
+                if i == 0  || dot {
+                    return (.Ident,.symbol)
+                }
+                dot = true
+                continue
+            }
+            if c == " " || c == "\n" || c == "\t" {
+                return (.StringLit, .stringLit)
+            }
+            if !CharacterSet.decimalDigits.contains(c.unicodeScalars.first!) {
+                return (.Ident,.symbol)
+            }
+            i += 1
+        }
+        if dot {
+            return (.FloatLit,.floatLit)
+        }
+        return (.IntLit,.intLit)
+    }
+    
+    fileprivate func setValue( _ item: DiagramItem, _ value: String ) {
+        let fieldName = SceneDrawView.findFieldName(item)
+        let newProps = item.toTennAsProps(.BlockExpr)
+        let (nType, tType) = SceneDrawView.detectSymbolType(pattern: value)
+        
+        if let bodyNode = newProps.getNamedElement( fieldName ) {
+            // just replace existing text
+            bodyNode.children?.removeAll()
+            bodyNode.add(TennNode.newIdent(fieldName))
+            
+            // Try detect field type
+            bodyNode.add(TennNode(kind: nType , tok: TennToken(type: tType, literal: value) ))
+        }
+        else {
+            let cmd = TennNode.newCommand(fieldName)
+            cmd.add(TennNode(kind: nType , tok: TennToken(type: tType, literal: value) ))
             newProps.add(cmd)
         }
         self.store?.setProperties(self.element!, item, newProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
@@ -893,6 +981,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let (text, fontSize) = self.getBody(active, style)
             editBox?.stringValue = text
             editBox?.font = NSFont.systemFont(ofSize: fontSize)
+        case .Value:
+            if let (text, fontSize, customField) = self.getCustomField(active, style) {
+                editBox?.stringValue = text
+                editBox?.font = NSFont.systemFont(ofSize: fontSize)
+            } else {
+                mode = .Normal
+                return
+            }
         }
         
         editBox?.drawsBackground = true
@@ -1268,7 +1364,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.dragMap.removeValue(forKey: de)
         }
         self.dragElements.removeAll()
-        
+                
         self.mode = .Normal
         showPopup()
     }
@@ -1327,9 +1423,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
-        
-        if event.clickCount == 2 && drawables.count == 1 && result.count == 1 {
-            editTitle(drawables[0].item!, .Name)
+        if event.clickCount == 2 && drawables.count == 1 {
+            self.editTitle(drawables[0].item!, .Name)
             return
         }
         
@@ -1675,7 +1770,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.scene?.darkMode != nDarkMode {
             buildScene()
         }
-        
+        let now = Date()
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             context.saveGState()
             // Draw background
@@ -1708,6 +1803,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.restoreGState()
         }
+        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
     }
     
     public func selectAllItems() {
