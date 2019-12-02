@@ -82,6 +82,8 @@
 		0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */; };
 		0CF801F42344E4DC00E5E08E /* ColorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF801F32344E4DC00E5E08E /* ColorUtils.swift */; };
 		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
+		1E7CDF0C2394F3FF0005C824 /* Changelog.md in Resources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0B2394F3FF0005C824 /* Changelog.md */; };
+		1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0D2394FF140005C824 /* SlowLexer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,7 +172,6 @@
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
 		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = Tenniarb/Utils/ClipboardUtils.swift; sourceTree = SOURCE_ROOT; };
-		0CC7005D22E2ED2700DF2071 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = Changelog.md; path = ../../../../../../../../../System/Volumes/Data/Users/haiodo/Develop/private/tenniarb/sources/macos/Tenniarb/docs/Changelog.md; sourceTree = "<group>"; };
 		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CD1708E22D5BB6300E217D4 /* draw_line_items.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = draw_line_items.png; sourceTree = "<group>"; };
 		0CD1708F22D5BB6300E217D4 /* font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = font_size.png; sourceTree = "<group>"; };
@@ -202,6 +203,8 @@
 		0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayout.swift; sourceTree = "<group>"; };
 		0CF801F32344E4DC00E5E08E /* ColorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorUtils.swift; sourceTree = "<group>"; };
 		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
+		1E7CDF0B2394F3FF0005C824 /* Changelog.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
+		1E7CDF0D2394FF140005C824 /* SlowLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlowLexer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -346,6 +349,7 @@
 				0C5C6D261EFF7D5900714971 /* TennParser.swift */,
 				0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */,
 				0C7F8995233273FC0098B745 /* AttributedPrinter.swift */,
+				1E7CDF0D2394FF140005C824 /* SlowLexer.swift */,
 			);
 			path = tenn;
 			sourceTree = "<group>";
@@ -369,7 +373,7 @@
 				0C45B12822A397BE00640305 /* examples.md */,
 				0C45B12922A397BE00640305 /* Images */,
 				0C45B12B22A397BE00640305 /* readme.md */,
-				0CC7005D22E2ED2700DF2071 /* Changelog.md */,
+				1E7CDF0B2394F3FF0005C824 /* Changelog.md */,
 			);
 			name = docs;
 			path = ../docs;
@@ -613,6 +617,7 @@
 				0CD170B222D5BB6500E217D4 /* color-table.png in Resources */,
 				0CD170AA22D5BB6500E217D4 /* textual_styles.png in Resources */,
 				0CD170CE22D6571400E217D4 /* TennIco.icns in Resources */,
+				1E7CDF0C2394F3FF0005C824 /* Changelog.md in Resources */,
 				0CD170A722D5BB6500E217D4 /* links_variants.png in Resources */,
 				0CD170B422D5BB6500E217D4 /* styling_items.png in Resources */,
 				0CD170AE22D5BB6500E217D4 /* width_height.png in Resources */,
@@ -684,6 +689,7 @@
 				0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
 				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
+				1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */,
 				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
@@ -897,6 +903,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 37;
 				DEVELOPMENT_TEAM = 594YM2Y457;
+				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = Tenniarb/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

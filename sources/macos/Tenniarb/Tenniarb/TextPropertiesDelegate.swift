@@ -237,7 +237,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         //add new coloring
         view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
         
-        let lexer = TennLexer((view.textStorage?.string)!)
+        let lexer = SlowLexer((view.textStorage?.string)!)
         
         let darkMode = PreferenceConstants.preference.darkMode
         

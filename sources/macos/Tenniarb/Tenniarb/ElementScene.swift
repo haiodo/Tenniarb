@@ -656,9 +656,7 @@ public func prepareBodyText(_ textValue: String) -> String {
  */
 open class ImageProvider {
     // Image cache
-    var images: [String:NSImage] = [:]
-    
-    var item: DiagramItem?
+    var item: DiagramItem
     
     init(_ item: DiagramItem ) {
         self.item = item
@@ -666,12 +664,11 @@ open class ImageProvider {
     
     // path is named and style combimned parsed from @(name|style)
     public func resolveImage(path: String ) -> (NSImage?, CGRect?) {
-        if self.item == nil {
-            return (nil, nil)
-        }
         // If image already cached.
-        var image: NSImage? = self.images[path]
-        
+        var image: NSImage? = self.item.images[path]
+        if image != nil {
+            return (image, CGRect(origin: CGPoint(x:0, y:0), size: image!.size))
+        }
         var name = path
         var style = ""
         if let pos = path.firstIndex(of: "|") {
@@ -679,9 +676,9 @@ open class ImageProvider {
             style = String(path.suffix(from: path.index(after: pos)))
         }
         
-        if let itm = self.item, image == nil {
+        if image == nil {
             // Retrieve image data from properties, if not cached
-            itm.properties.node.traverse {child in
+            self.item.properties.node.traverse {child in
                 if let cmdName = child.getIdent(0), let imgName = child.getIdent(1), let imgData = child.getIdent(2) {
                     if cmdName == "image" && imgName == name {
                         if let dta = Data(base64Encoded: imgData, options: .ignoreUnknownCharacters) {
@@ -690,7 +687,6 @@ open class ImageProvider {
                     }
                 }
             }
-            self.images[path] = image
         }
         
         if let img = image {
@@ -719,11 +715,37 @@ open class ImageProvider {
                     height = r.height
                 }
             }
+            
+            
+            
+            image = rescaleImage(image!, width, height)
+            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
+            self.item.images[path] = image
             return (image, CGRect(x: 0, y: 0, width: width, height: height))
         }
         
         return (nil, nil)
     }
+}
+
+func rescaleImage(_ image: NSImage, _ width: CGFloat, _ height: CGFloat) -> NSImage {
+    let newSize = CGSize(width: width, height: height)
+    if let bitmapRep = NSBitmapImageRep(
+        bitmapDataPlanes: nil, pixelsWide: Int(newSize.width), pixelsHigh: Int(newSize.height),
+        bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+        colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ) {
+        bitmapRep.size = newSize
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+        image.draw(in: NSRect(x: 0, y: 0, width: newSize.width, height: newSize.height), from: .zero, operation: .copy, fraction: 1.0)
+        NSGraphicsContext.restoreGraphicsState()
+        
+        let resizedImage = NSImage(size: newSize)
+        resizedImage.addRepresentation(bitmapRep)
+        return resizedImage
+    }
+    return image
 }
 
 open class DrawableScene: DrawableContainer {
