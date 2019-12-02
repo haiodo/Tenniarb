@@ -16,20 +16,20 @@ public class TennLexer: TennLexerProtocol {
     
     private var tokenBuffer: [TennToken] = []
     private var blockState:[TennTokenType] = []
-    private var code: String
+    private var code: Data
     
-    private var it: String.Iterator
+    private var it: Data.Iterator
     private var nextChar: Character?
     private var currentCharValue: Character
     
     public var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)?
     
     init( _ code: String) {
-        self.code = code
-        self.it = code.makeIterator()
+        self.code = code.data(using: String.Encoding.utf8)!
+        self.it = self.code.makeIterator()
         
         if let cc = self.it.next() {
-            self.currentCharValue = cc
+            self.currentCharValue = Character(UnicodeScalar(cc))
         } else {
             self.currentCharValue = "\0"
         }
@@ -60,7 +60,7 @@ public class TennLexer: TennLexerProtocol {
     }
     private func detectSymbolType( pattern value: String ) -> TennTokenType {
         var skipFirst = false
-        if !value.isEmpty && value[value.startIndex] == "-" {
+        if !value.isEmpty && value.hasPrefix("-") {
             skipFirst = true
         }
         var dot = false
@@ -96,7 +96,7 @@ public class TennLexer: TennLexerProtocol {
             self.nextChar = nil
         } else {
             if let cc = self.it.next() {
-                self.currentCharValue = cc
+                self.currentCharValue = Character(UnicodeScalar(cc))
             } else {
                 self.currentCharValue = "\0"
             }
@@ -107,7 +107,7 @@ public class TennLexer: TennLexerProtocol {
             return nc
         }
         if let ncc = self.it.next() {
-            self.nextChar = ncc
+            self.nextChar = Character(UnicodeScalar(ncc))
         }
         if let nc = self.nextChar {
             return nc
@@ -118,33 +118,60 @@ public class TennLexer: TennLexerProtocol {
     private func readString( lit: Character) {
         self.inc()
         
-        var r = ""
         var foundEnd = false
-        let stPos = self.pos
+        var stPos = self.pos
+        var r = ""
         while self.pos < self.bufferCount {
             if  currentCharValue == "\n" {
                 self.currentLine += 1;
                 self.currentChar = 0;
-                r.append(currentCharValue)
             }
             else if currentCharValue == lit {
+                if stPos < self.pos {
+                    guard let ss = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+                        if let h = self.errorHandler {
+                            h(.UTF8Error, stPos, pos)
+                        }
+                        return
+                    }
+                    r.append(ss)
+                }
                 self.add(literal: r);
-                r.removeAll()//keepingCapacity: true)
+                r.removeAll()
                 self.inc()
+                stPos = self.pos
                 foundEnd = true
                 break
             }
             else if (currentCharValue == "\\" && self.next() == lit) {
-                r.append(self.next())
+                if stPos < self.pos {
+                    guard let ss = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+                        if let h = self.errorHandler {
+                            h(.UTF8Error, stPos, pos)
+                        }
+                        return
+                    }
+                    r.append(ss)
+                }
+                r.append(lit)
                 self.inc()
-            } else {
-                r.append(currentCharValue)
+                self.inc()
+                stPos = self.pos
+                continue
             }
             self.inc()
         }
+        if stPos < self.pos {
+            guard let ss = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+                if let h = self.errorHandler {
+                    h(.UTF8Error, stPos, pos)
+                }
+                return
+            }
+            r.append(ss)
+        }
         if !r.isEmpty {
             self.add(literal: r)
-            r.removeAll()//keepingCapacity: true)
         }
         if !foundEnd {
             if let h = self.errorHandler {
@@ -155,7 +182,7 @@ public class TennLexer: TennLexerProtocol {
     private func skipCComment() {
         self.inc(); // Skip \/*
         self.inc(); // Skip \/*
-    
+        
         while self.pos < self.bufferCount {
             switch currentCharValue {
             case "\n":
@@ -176,7 +203,7 @@ public class TennLexer: TennLexerProtocol {
             self.inc()
         }
     }
-
+    
     
     private func processComment( _ cc: Character) {
         if self.next() == "*" {
@@ -213,41 +240,76 @@ public class TennLexer: TennLexerProtocol {
             return true
         }
         return false
-
+        
+    }
+    
+    fileprivate func returnToken() -> TennToken? {
+        return self.tokenBuffer.removeFirst()
     }
     
     public func getToken() -> TennToken? {
         if !self.tokenBuffer.isEmpty {
-            return self.tokenBuffer.removeFirst()
+            return returnToken()
         }
         
         var r = ""
+        var stPos = self.pos
+        
+        let appendFunc: () -> Bool = {
+            if stPos < self.pos {
+                guard let ss = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+                    if let h = self.errorHandler {
+                        h(.UTF8Error, stPos, self.pos)
+                    }
+                    return false
+                }
+                stPos = self.pos
+                r.append(ss)
+            }
+            return true
+        }
+        
         while self.pos < self.bufferCount {
             let cc = currentCharValue
             switch (cc) {
             case " ", "\t", "\r","\n":
-                if r.count > 0 {
+                if stPos < self.pos {
+                    if !appendFunc() {
+                        return nil
+                    }
                     self.add(check: r)
                     r.removeAll()
                 }
                 if self.processNewLine(cc) {
-                    return self.tokenBuffer.removeFirst()
+                    return returnToken()
                 }
+                stPos = self.pos
             case "{":
+                if !appendFunc() {
+                    return nil
+                }
                 if r.count > 0 {
                     self.add(check: r)
                     r.removeAll()
                 }
                 self.processCurlyOpen(cc)
+                stPos = self.pos
             case "}":
+                if !appendFunc() {
+                    return nil
+                }
                 if r.count > 0 {
                     self.add(check: r)
                     r.removeAll()
                 }
                 if self.processCurlyClose(cc) {
-                    return self.tokenBuffer.removeFirst()
+                    return returnToken()
                 }
+                stPos = self.pos
             case ";":
+                if !appendFunc() {
+                    return nil
+                }
                 if r.count > 0 {
                     self.add(check: r)
                     r.removeAll()
@@ -255,75 +317,99 @@ public class TennLexer: TennLexerProtocol {
                 self.add(type: .semiColon, literal: String(cc))
                 self.inc()
                 if  !self.tokenBuffer.isEmpty {
-                    return self.tokenBuffer.removeFirst()
+                    return returnToken()
                 }
+                stPos = self.pos
             case "/":
+                if !appendFunc() {
+                    return nil
+                }
                 if r.count > 0 {
                     self.add(check: r)
                     r.removeAll()
                 }
                 self.processComment(cc)
+                stPos = self.pos
             case "%":
                 let nc = self.next()
                 if nc == "{" {
+                    if !appendFunc() {
+                        return nil
+                    }
                     if r.count > 0 {
                         self.add(check: r)
                         r.removeAll()
                     }
                     readExpression(startLit: "{", endLit: "}", type: .markdownLit)
+                    stPos = self.pos
                 }
                 else {
-                    r.append(cc)
                     self.inc()
                 }
                 break;
             case "@":
                 let nc = self.next()
                 if nc == "(" {
+                    if !appendFunc() {
+                        return nil
+                    }
                     if r.count > 0 {
                         self.add(check: r)
                         r.removeAll()
                     }
-                    readExpression(startLit: "(", endLit: ")", type: .imageData)
+                    readImage(startLit: "(", endLit: ")", type: .imageData)
+                    stPos = self.pos
                 } else {
-                    r.append(cc)
                     self.inc()
                 }
                 break;
             case "$":
                 let nc = self.next()
                 if nc == "(" {
+                    if !appendFunc() {
+                        return nil
+                    }
                     if r.count > 0 {
                         self.add(check: r)
                         r.removeAll()
                     }
                     readExpression(startLit: "(", endLit: ")", type: .expression)
+                    stPos = self.pos
                 } else if nc == "{" {
+                    if !appendFunc() {
+                        return nil
+                    }
                     if r.count > 0 {
                         self.add(check: r)
                         r.removeAll()
                     }
                     readExpression(startLit: "{", endLit: "}", type: .expressionBlock)
+                    stPos = self.pos
                 } else {
-                    r.append(cc)
                     self.inc()
                 }
                 break;
             case "\'", "\"":
+                if !appendFunc() {
+                    return nil
+                }
                 if r.count > 0 {
                     self.add(check: r)
                     r.removeAll()
                 }
                 self.readString(lit: cc)
                 if !self.tokenBuffer.isEmpty {
-                    return self.tokenBuffer.removeFirst()
+                    return returnToken()
                 }
+                stPos = self.pos
             default:
-                r.append(cc)
                 self.inc()
             }
         }
         
+        if !appendFunc() {
+            return nil
+        }
         if r.count > 0 {
             self.add(check: r)
             r.removeAll()
@@ -335,7 +421,7 @@ public class TennLexer: TennLexerProtocol {
         }
         
         if !self.tokenBuffer.isEmpty {
-            return self.tokenBuffer.removeFirst()
+            return returnToken()
         } else {
             return nil
         }
@@ -375,7 +461,6 @@ public class TennLexer: TennLexerProtocol {
         self.inc()
         self.inc()
         
-        var r = ""
         let stPos = self.pos
         var foundEnd = false
         var indent = 1
@@ -385,11 +470,9 @@ public class TennLexer: TennLexerProtocol {
             if  curChar == "\n" {
                 self.currentLine += 1;
                 self.currentChar = 0;
-                r.append(curChar)
             }
             else if curChar == startLit {
                 indent += 1
-                r.append(curChar)
             }
             else if curChar == endLit {
                 indent -= 1
@@ -397,16 +480,16 @@ public class TennLexer: TennLexerProtocol {
                     foundEnd = true
                     break
                 }
-                else {
-                    r.append(curChar)
-                }
-            }
-            else {
-                r.append(curChar)
             }
             self.inc()
         }
-                
+        
+        guard let r = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+            if let h = self.errorHandler {
+                h(.UTF8Error, stPos, pos)
+            }
+            return
+        }
         if !foundEnd {
             if let h = self.errorHandler {
                 h(.EndOfExpressionReadError, stPos, pos)
@@ -418,7 +501,47 @@ public class TennLexer: TennLexerProtocol {
                 self.tokenBuffer.append(
                     TennToken(type: type, literal: String(r), line: startLine, col: currentChar, pos: self.pos-c, size: c)
                 )
-                r.removeAll()//keepingCapacity: true)
+            }
+            self.inc()
+        }
+    }
+    private func readImage( startLit: Character, endLit: Character, type: TennTokenType) {
+        self.inc()
+        self.inc()
+        
+        let stPos = self.pos
+        var foundEnd = false
+        let startLine = self.currentLine
+        while self.pos < self.bufferCount {
+            let curChar = currentCharValue
+            if  curChar == "\n" {
+                self.currentLine += 1;
+                self.currentChar = 0;
+            }
+            else if curChar == endLit {
+                foundEnd = true
+                break
+            }
+            self.inc()
+        }
+        
+        guard let r = String(bytes: self.code[stPos..<self.pos], encoding:String.Encoding.utf8) else {
+            if let h = self.errorHandler {
+                h(.UTF8Error, stPos, pos)
+            }
+            return
+        }
+        if !foundEnd {
+            if let h = self.errorHandler {
+                h(.EndOfExpressionReadError, stPos, pos)
+            }
+        }
+        else {
+            if !r.isEmpty {
+                let c = r.count
+                self.tokenBuffer.append(
+                    TennToken(type: type, literal: String(r), line: startLine, col: currentChar, pos: self.pos-c, size: c)
+                )
             }
             self.inc()
         }

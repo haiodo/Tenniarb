@@ -60,6 +60,7 @@ extension TennToken: Hashable {
 public enum LexerError {
     case EndOfLineReadString
     case EndOfExpressionReadError
+    case UTF8Error
 }
 
 public protocol TennLexerProtocol {

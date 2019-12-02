@@ -72,6 +72,8 @@ public class TennParser {
                 self.errors.report(code: .wrongBlockTerminator, msg: "Unclosed expression terminal", token: nil)
             case .EndOfLineReadString:
                 self.errors.report(code: .EndOfFileDuringStringRead, msg: "Unclosed string terminal", token: nil)
+            case .UTF8Error:
+                self.errors.report(code: .unexpectedInput, msg: "UTF8 conversion error", token: nil)
             }
         }
     }
