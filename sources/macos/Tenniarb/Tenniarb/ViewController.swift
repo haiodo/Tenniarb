@@ -221,6 +221,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
     
+    @IBAction func editValue(_ sender: NSMenuItem ) {
+           if let active = self.scene?.activeItems.first  {
+               scene.setActiveItem(active)
+               scene?.editTitle(active, .Value)
+           }
+       }
+    
     @IBAction func quickEdit(_ sender: NSMenuItem ) {
         showOperationBox()
     }
@@ -248,7 +255,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if action == #selector(self.showSearchBox(_:)) {
                 return true
             }
-            if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) ||
+            if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) || action == #selector(self.editValue(_:)) ||
                 action == #selector(self.showOperationBox(_:)) {
                 return !self.scene.activeItems.isEmpty
             }

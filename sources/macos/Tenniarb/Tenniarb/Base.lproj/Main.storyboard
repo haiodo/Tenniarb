@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -210,6 +209,15 @@ DQ
                                             <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                                             <connections>
                                                 <action selector="editBody:" target="Ady-hI-5gd" id="2rE-UX-h1G"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Edit value" id="E00-cI-IMc">
+                                            <attributedString key="attributedTitle"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                            <connections>
+                                                <action selector="editValue:" target="Ady-hI-5gd" id="is0-aB-79x"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="cFy-nl-ozi"/>
@@ -598,7 +606,7 @@ DQ
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                    <size key="minSize" width="100" height="100"/>
+                                                                    <size key="minSize" width="703" height="131"/>
                                                                     <size key="maxSize" width="10000000" height="10000000"/>
                                                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 </textView>
@@ -675,7 +683,6 @@ DQ
                                 <subviews>
                                     <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="0.0" horizontalStackHuggingPriority="250" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fD7-NG-FKl">
                                         <rect key="frame" x="0.0" y="10" width="280" height="30"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <subviews>
                                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="0CD-QR-GsY">
                                                 <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
@@ -967,18 +974,18 @@ DQ
         <scene sceneID="Jla-SR-a45">
             <objects>
                 <viewController storyboardIdentifier="SearchBox" showSeguePresentationStyle="single" id="siT-NU-DFJ" customClass="SearchBoxViewController" customModule="Tenniarb" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="HsE-zz-4AX">
-                        <rect key="frame" x="0.0" y="0.0" width="1138" height="179"/>
+                    <view key="view" misplaced="YES" id="HsE-zz-4AX">
+                        <rect key="frame" x="0.0" y="0.0" width="1138" height="178"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <visualEffectView blendingMode="behindWindow" material="popover" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="HhD-Hx-tll">
-                                <rect key="frame" x="0.0" y="0.0" width="1138" height="179"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1138" height="178"/>
                                 <subviews>
                                     <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M3R-d3-NnX">
-                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="174"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="173"/>
                                         <subviews>
                                             <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V7F-7f-5hj">
-                                                <rect key="frame" x="0.0" y="139" width="893" height="35"/>
+                                                <rect key="frame" x="0.0" y="138" width="893" height="35"/>
                                                 <subviews>
                                                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vC0-IB-paJ">
                                                         <rect key="frame" x="0.0" y="5" width="30" height="30"/>
@@ -1010,13 +1017,13 @@ DQ
                                                 </customSpacing>
                                             </stackView>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2vJ-KE-k4m">
-                                                <rect key="frame" x="0.0" y="0.0" width="1138" height="134"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="F2S-Yk-eo2">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1138" height="134"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" autoresizesOutlineColumn="YES" outlineTableColumn="fdS-FP-WJp" id="eHh-SB-Ufe">
-                                                            <rect key="frame" x="0.0" y="0.0" width="1138" height="134"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1040,7 +1047,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="CIH-3C-Jzb">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="1000" height="17"/>
+                                                                                    <rect key="frame" x="0.0" y="1" width="1000" height="16"/>
                                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" identifier="textField" id="DGb-Xm-MK5">
                                                                                         <font key="font" metaFont="system"/>
                                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1122,6 +1129,6 @@ DQ
         <image name="ico-group" width="22" height="20"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="vtn-ED-noe"/>
+        <segue reference="1PE-0t-Wrh"/>
     </inferredMetricsTieBreakers>
 </document>
