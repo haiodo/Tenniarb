@@ -1235,7 +1235,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 if now.timeIntervalSince(down).isLess(than: 0.2) {
                     
                     let drawables = findElement(x: self.x, y: self.y)
-                    if self.mode != .DiagramMove && drawables.count == 0 {
+                    if drawables.count == 0 {
                         self.setActiveItem(nil)
                         self.scene?.selectionBox = nil
                     }
