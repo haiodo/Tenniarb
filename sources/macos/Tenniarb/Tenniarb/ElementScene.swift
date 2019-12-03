@@ -657,17 +657,19 @@ public func prepareBodyText(_ textValue: String) -> String {
 open class ImageProvider {
     // Image cache
     var item: DiagramItem
+    let scaleFactor: CGFloat
     
-    init(_ item: DiagramItem ) {
+    init(_ item: DiagramItem, _ scaleFactor: CGFloat ) {
         self.item = item
+        self.scaleFactor = scaleFactor
     }
     
     // path is named and style combimned parsed from @(name|style)
     public func resolveImage(path: String ) -> (NSImage?, CGRect?) {
         // If image already cached.
-        var image: NSImage? = self.item.images[path]
+        var image: CachedImage? = self.item.images[path]
         if image != nil {
-            return (image, CGRect(origin: CGPoint(x:0, y:0), size: image!.size))
+            return (image!.image, CGRect(origin: CGPoint(x:0, y:0), size: image!.size))
         }
         var name = path
         var style = ""
@@ -682,7 +684,9 @@ open class ImageProvider {
                 if let cmdName = child.getIdent(0), let imgName = child.getIdent(1), let imgData = child.getIdent(2) {
                     if cmdName == "image" && imgName == name {
                         if let dta = Data(base64Encoded: imgData, options: .ignoreUnknownCharacters) {
-                            image = NSImage(data: dta)
+                            if let img = NSImage(data: dta) {
+                                image = CachedImage( image: img, size: img.size)
+                            }
                         }
                     }
                 }
@@ -715,13 +719,12 @@ open class ImageProvider {
                     height = r.height
                 }
             }
-            
-            
-            
-            image = rescaleImage(image!, width, height)
-            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
+            img.image = rescaleImage(img.image, width * self.scaleFactor, height * self.scaleFactor)
+            img.size = CGSize(width: width, height: height)
+                                                                              
+//            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
             self.item.images[path] = image
-            return (image, CGRect(x: 0, y: 0, width: width, height: height))
+            return (img.image, CGRect(x: 0, y: 0, width: width, height: height))
         }
         
         return (nil, nil)
@@ -776,10 +779,13 @@ open class DrawableScene: DrawableContainer {
     
     var executionContext: ExecutionContextEvaluator?
     
-    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContextEvaluator?, buildChildren: Bool = true, items: [DiagramItem]? = nil) {
+    let scaleFactor: CGFloat
+    
+    init( _ element: Element, darkMode: Bool, executionContext: ExecutionContextEvaluator?, scaleFactor: CGFloat = 1, buildChildren: Bool = true, items: [DiagramItem]? = nil) {
         self.sceneStyle = SceneStyle(darkMode)
         self.darkMode = darkMode
         self.executionContext = executionContext
+        self.scaleFactor = scaleFactor
         
         super.init([])
         
@@ -1117,7 +1123,7 @@ open class DrawableScene: DrawableContainer {
         let style = self.sceneStyle.defaultItemStyle.copy()
         let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
         
-        let imageProvider = ImageProvider(e)
+        let imageProvider = ImageProvider(e, self.scaleFactor)
         
         // parse uses with list of styles.
         
@@ -1319,7 +1325,7 @@ open class DrawableScene: DrawableContainer {
                         control: CGPoint(x: e.x, y: e.y ))
                     
                     if data.name.count > 0 {
-                        linkDr.addLabel(data.name, imageProvider: ImageProvider(e))
+                        linkDr.addLabel(data.name, imageProvider: ImageProvider(e, self.scaleFactor))
                     }
                     
                     linkDr.item = e

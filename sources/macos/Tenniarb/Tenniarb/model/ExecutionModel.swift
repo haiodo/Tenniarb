@@ -590,7 +590,7 @@ public class ElementContext: NSObject {
         
         self.updateContext()
         
-        let scene = DrawableScene(self.element, darkMode: false, executionContext: self.context.evalContext, buildChildren: false)
+        let scene = DrawableScene(self.element, darkMode: false, executionContext: self.context.evalContext, scaleFactor: self.context.scaleFactor, buildChildren: false)
         
         var withExprs: [ItemContext] = []
         for itm in element.items {
@@ -700,9 +700,14 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     private let internalGroup: DispatchGroup = DispatchGroup()
 
     let evalContext: ExecutionContextEval = ExecutionContextEval()
+    var scaleFactor: CGFloat = 1
     
     init() {
         self.evalContext.context = self
+    }
+    
+    public func setScaleFactor(_ factor: CGFloat) {
+        self.scaleFactor = factor
     }
     
     public func setElement(_ element: Element) {
@@ -717,7 +722,7 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
                     self.internalGroup.leave()
                 }
                _ = root.updateContext()
-                let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, buildChildren: false)
+                let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, scaleFactor: self.scaleFactor, buildChildren: false)
                 // We need to recalculate all stuff
                 for ci in root.itemsMap.values {
                     if ci.hasExpressions {

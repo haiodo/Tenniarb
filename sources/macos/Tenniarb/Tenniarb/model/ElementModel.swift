@@ -318,6 +318,15 @@ public enum ItemKind {
     }
 }
 
+public class CachedImage {
+    var image: NSImage
+    var size: CGSize
+    
+    init( image: NSImage, size: CGSize) {
+        self.image = image
+        self.size = size
+    }
+}
 public class DiagramItem {
     var kind: ItemKind
     var name: String
@@ -329,7 +338,7 @@ public class DiagramItem {
     var properties: ModelProperties = ModelProperties() // Extra nodes not supported directly by model.
 
     // Images cache.
-    var images: [String:NSImage] = [:]
+    var images: [String:CachedImage] = [:]
         
     var x: CGFloat = 0
     var y: CGFloat = 0

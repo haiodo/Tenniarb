@@ -178,6 +178,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var popupView: NSView?
     var popupItem: DiagramItem?
+    var scaleFactor: CGFloat = 1
     
     @objc override func touchesBegan(with event: NSEvent) {
         let wloc = event.locationInWindow
@@ -275,9 +276,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         styleManager = StyleManager(scene: self)
         self.viewController = vc
         
+        if let win = vc.view.window {
+            self.scaleFactor = win.backingScaleFactor
+        }
+        
         NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)        
     }
     
+    func onAppear( ) {
+        if let win = self.window {
+            self.scaleFactor = win.backingScaleFactor
+        }
+    }
+        
     @objc func defaultsChanged(_ notif: NSNotification) {
         if self.element != nil {
             buildScene()
@@ -337,7 +348,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.element = elementModel
         self.activeItems.removeAll()
-        
+        self.store?.executionContext.setScaleFactor(self.scaleFactor)
         // Center diagram to fit all items
         self.store?.executionContext.setElement(elementModel)
         
@@ -385,6 +396,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     private func buildScene() {
         // We need preserve selection of previous scene
         
+        if let vc = self.viewController, let win = vc.view.window {
+            self.scaleFactor = win.backingScaleFactor
+        }
+        
         var oldActiveItem: [DiagramItem] = []
         var oldEditMode: Bool = false
         if let oldScene = self.scene {
@@ -394,7 +409,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         let darkMode = PreferenceConstants.preference.isDiagramDarkMode()
         
-        let scene = DrawableScene(self.element!, darkMode: darkMode, executionContext: self.store!.executionContext)
+        let scene = DrawableScene(self.element!, darkMode: darkMode, executionContext: self.store!.executionContext,
+                                  scaleFactor: self.scaleFactor)
         
         if oldActiveItem.count > 0 {
             scene.updateActiveElements(oldActiveItem)
@@ -820,7 +836,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         return fieldName
     }
-    static func getCustomText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) -> String? {
+    static func getCustomText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) {
         let fieldName = findFieldName(item)
         
         if let bodyNode = item.properties.get( fieldName ) {
@@ -831,7 +847,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
-        return fieldName
     }
     
     func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
@@ -842,15 +857,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         SceneDrawView.getBodyText(item, bodyStyle, &textValue)
         return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
-    func getCustomField( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat, String)? {
+    func getCustomField( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat)? {
         let bodyStyle = style.copy()
         bodyStyle.fontSize -= 2 // Make a bit smaller for body
         var textValue = ""
         
-        if let customField = SceneDrawView.getCustomText(item, bodyStyle, &textValue) {
-            return (prepareBodyText(textValue), bodyStyle.fontSize, customField)
-        }
-        return nil
+        SceneDrawView.getCustomText(item, bodyStyle, &textValue)
+        return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
     fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
         let newProps = item.toTennAsProps(.BlockExpr)
@@ -982,7 +995,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             editBox?.stringValue = text
             editBox?.font = NSFont.systemFont(ofSize: fontSize)
         case .Value:
-            if let (text, fontSize, customField) = self.getCustomField(active, style) {
+            if let (text, fontSize) = self.getCustomField(active, style) {
                 editBox?.stringValue = text
                 editBox?.font = NSFont.systemFont(ofSize: fontSize)
             } else {
@@ -1803,7 +1816,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.restoreGState()
         }
-        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
+//        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
     }
     
     public func selectAllItems() {

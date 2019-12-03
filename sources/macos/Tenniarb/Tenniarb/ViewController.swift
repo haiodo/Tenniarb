@@ -94,6 +94,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(darkModeChanged), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
     }
     
+    override func viewDidAppear() {
+        scene.onAppear()
+    }
+    
     @objc func darkModeChanged(_ notif: NSNotification) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
             self.scene.scheduleRedraw()
@@ -484,6 +488,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             self.expandItems(elementStore.model.elements, PreferenceConstants.preference.autoExpandLevel)
         }
     }
+    
     
     func expandItems(_ elements: [Element], _ level: Int) {
         for e in elements {
