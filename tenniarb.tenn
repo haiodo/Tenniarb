@@ -595,7 +595,7 @@ Engine" "Markdown" {
         }
         item "Text
 Positioning" {
-            pos -551.7535095214844 -44.0
+            pos -551.7535400390625 -44.0
             color green
         }
         link "Scene Draw" "Text
@@ -4271,13 +4271,13 @@ Text on Green" {
         }
         element "Body" {
             item "Named" {
-                pos -385.0 145.0
+                pos -385.0 145.4
                 body "Body"
                 width ${items.MultiBody.width}
                 height ${items.MultiBody.height}
             }
             item "Named" {
-                pos -265.0 146.0
+                pos -256.0 145.4
                 body {
                     text "body text"
                     text-color red
@@ -4286,7 +4286,7 @@ Text on Green" {
                 height ${items.MultiBody.height}
             }
             item "MultiBody" {
-                pos -19.0 145.0
+                pos -19.0 145.51328125
                 body {
                     text %{
         body text
@@ -4296,7 +4296,7 @@ Text on Green" {
                 }
             }
             item "Named" {
-                pos -140.0 145.0
+                pos -140.0 145.4
                 body "Body"
                 title "My title ${parent.items.length}"
                 width ${items.MultiBody.width}

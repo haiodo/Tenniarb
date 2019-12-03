@@ -1984,6 +1984,122 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.setSubmenu(styleManager?.createMenu(), for: style)
     }
     
+
+    @objc func alignLeadingEdges(_ sender: NSMenuItem) {
+        if self.activeItems.count == 0 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        var leftPos = CGFloat(roundf(Float(self.activeItems[0].x)))
+        for active in self.activeItems {
+            if active.x < leftPos  {
+                leftPos = CGFloat(roundf(Float(active.x)))
+            }
+        }
+        for active in self.activeItems {
+            let newPos = CGPoint( x: leftPos, y: active.y)
+            ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
+    @objc func alignTrailingEdges(_ sender: NSMenuItem) {
+        if self.activeItems.count == 0 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        var rightPos = CGFloat(roundf(Float(self.activeItems[0].x)))
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                if active.x + bnds.width > rightPos  {
+                    rightPos = CGFloat(roundf(Float(active.x + bnds.width)))
+                }
+            }
+        }
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                let newPos = CGPoint( x: rightPos - bnds.width, y: active.y)
+                ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+            }
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
+    @objc func alignTopEdges(_ sender: NSMenuItem) {
+        if self.activeItems.count == 0 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        var topPos = CGFloat(roundf(Float(self.activeItems[0].y)))
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                if active.y + bnds.height > topPos  {
+                    topPos = CGFloat(roundf(Float(active.y + bnds.height)))
+                }
+            }
+        }
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                let newPos = CGPoint( x: active.x, y: topPos - bnds.height)
+                ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+            }
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    @objc func alignBottomEdges(_ sender: NSMenuItem) {
+        if self.activeItems.count == 0 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        var bottomPos = CGFloat(roundf(Float(self.activeItems[0].y)))
+        for active in self.activeItems {
+            if active.y < bottomPos  {
+                bottomPos = CGFloat(roundf(Float(active.y)))
+            }
+        }
+        for active in self.activeItems {
+            let newPos = CGPoint( x: active.x, y: bottomPos)
+            ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
+    fileprivate func createAlighMenu(_ menu: NSMenu) {
+        let align = NSMenuItem(
+            title: "Align", action: nil, keyEquivalent: "")
+        menu.addItem(align)
+        
+        let menu = NSMenu()
+        menu.autoenablesItems=true
+        
+        menu.addItem(NSMenuItem( title: "Leading Edges", action: #selector(alignLeadingEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem( title: "Trailing Edges", action: #selector(alignTrailingEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem( title: "Top Edges", action: #selector(alignTopEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem( title: "Bottom Edges", action: #selector(alignBottomEdges(_:)), keyEquivalent: ""))
+        
+        menu.setSubmenu(menu, for: align)
+    }
+    
     override func menu(for event: NSEvent) -> NSMenu? {
         if event.buttonNumber != 1 {
             return nil
@@ -2023,6 +2139,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(addLinkedCopyAction)
             menu.addItem(NSMenuItem.separator())
             createStylesMenu(menu)
+            if self.activeItems.count > 1 {
+                menu.addItem(NSMenuItem.separator())
+                createAlighMenu(menu)
+            }
             menu.addItem(NSMenuItem.separator())
             menu.addItem(duplicateAction)
             
