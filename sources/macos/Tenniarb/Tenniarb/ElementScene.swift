@@ -721,8 +721,8 @@ open class ImageProvider {
             }
             img.image = rescaleImage(img.image, width * self.scaleFactor, height * self.scaleFactor)
             img.size = CGSize(width: width, height: height)
-                                                                              
-//            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
+            
+            //            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
             self.item.images[path] = image
             return (img.image, CGRect(x: 0, y: 0, width: width, height: height))
         }
@@ -1022,14 +1022,16 @@ open class DrawableScene: DrawableContainer {
         let fs = CTFramesetterCreateWithAttributedString(attrStr)
         
         // Need to have a attributed string without pictures, to have a proper sizes.
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        //        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
         
-        var size = CGSize(width: frameSize.width, height: frameSize.height )
+        //        var size = CGSize(width: frameSize.width, height: frameSize.height )
         // Correct size
         let path = CGMutablePath()
         path.addRect(CGRect(x: 0, y: 0, width: 30000, height: 30000))
         
         let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, attrStr.length), path, nil)
+        
+        var size = CGSize(width:0, height:0)
         
         if let lines = CTFrameGetLines(frame) as? [CTLine] {
             var maxWidth = size.width
@@ -1037,7 +1039,7 @@ open class DrawableScene: DrawableContainer {
                 var maxHeight = CGFloat(0)
                 var imagesWidth = CGFloat(0)
                 let range = CTLineGetStringRange(l)
-                                
+                
                 var ascent: CGFloat = 0
                 var descent: CGFloat = 0
                 var leading: CGFloat = 0
@@ -1045,6 +1047,8 @@ open class DrawableScene: DrawableContainer {
                 let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
                 
                 var maxFontSize = ascent + descent
+                
+                maxHeight = ascent + descent + leading
                 
                 for i in 0..<range.length {
                     if let attr = attrStr.attribute(NSAttributedString.Key.font, at: range.location+i, effectiveRange: nil), let font = attr as? NSFont {
@@ -1063,9 +1067,7 @@ open class DrawableScene: DrawableContainer {
                 if imagesWidth + lineWidth > maxWidth {
                     maxWidth = imagesWidth + lineWidth
                 }
-                if maxHeight > maxFontSize {
-                    size.height += maxHeight - maxFontSize
-                }
+                size.height += maxHeight
             }
             size.width = maxWidth
         }
@@ -1156,7 +1158,7 @@ open class DrawableScene: DrawableContainer {
             titleValue  = marker + " " + titleValue
         }
         var shift = CGPoint(x:0, y:0)
-
+        
         var bodyAttrString: NSAttributedString?
         if let bodyNode = e.properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
@@ -1191,8 +1193,9 @@ open class DrawableScene: DrawableContainer {
         
         if bodyAttrString != nil {
             vertical = .Fill
+            horizontal = .Left
         }
-                
+        
         // If markdown has titles, bullets, we need to change horizontal layout to left one.
         if titleTokens.contains(where: {e in [.bullet, .title, .code].contains(e.type)}) {
             horizontal = .Left
@@ -1200,20 +1203,20 @@ open class DrawableScene: DrawableContainer {
         
         
         parseLayout(style, &horizontal, &vertical)
-                
+        
         let attrString = DrawableScene.toAttributedString(tokens: titleTokens, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }
         let textBounds = DrawableScene.calculateSize(attrStr: attrString)
-                
+        
         let offx = CGFloat(4)
         let offy = CGFloat(4)
         
         var wx=offx*2
         var wy=offy*2
         
-                                
+        
         var width = max(20, textBounds.width)
         if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
@@ -1225,10 +1228,19 @@ open class DrawableScene: DrawableContainer {
             height = styleHeight//max(height, styleHeight)
             wy = 0
         }
+        
+        if width > textBounds.width {
+            wx = 0
+        }
+        if height > textBounds.height {
+            wy = 0
+        }
+        
         let sz = CGSize(width: width + shift.x+wx, height: height + shift.y + wy )
         bounds = CGRect(origin: CGPoint(x:e.x, y:e.y), size: sz)
         
         var finalTextBounds = CGRect( origin: CGPoint(x:offx, y:offy), size: CGSize(width: textBounds.width + shift.x, height: textBounds.height + shift.y))
+        
         
         if finalTextBounds.size.width + offx*2 < width {
             finalTextBounds.size.width = width - offx*2
@@ -1243,30 +1255,51 @@ open class DrawableScene: DrawableContainer {
                 let yshift = (finalTextBounds.height - textBounds.height )
                 finalTextBounds.origin.y = offy + yshift / 2
                 finalTextBounds.size.height -= yshift
+            } else {
+                if bounds.height < finalTextBounds.height {
+                    let yshift = ( finalTextBounds.height - bounds.height )
+                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                }
             }
         case .Top:
             if finalTextBounds.height > textBounds.height {
                 let yshift = (finalTextBounds.height - textBounds.height )
                 finalTextBounds.origin.y = offy + yshift
                 finalTextBounds.size.height -= yshift
+            } else {
+                if bounds.height < finalTextBounds.height {
+                    let yshift = ( finalTextBounds.height - bounds.height )
+                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                }
             }
             break
         case .Fill:
+            if bounds.height < finalTextBounds.height {
+                let yshift = ( finalTextBounds.height - bounds.height )
+                finalTextBounds.origin.y = -1 * ( offy + yshift)
+            }
             break
         case .Bottom:
             if finalTextBounds.height > textBounds.height {
                 let yshift = (finalTextBounds.height - textBounds.height )
                 finalTextBounds.origin.y = offy
                 finalTextBounds.size.height -= yshift
+            } else {
+                if bounds.height < finalTextBounds.height {
+                    let yshift = ( finalTextBounds.height - bounds.height )
+                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                }
             }
         default:
             break;
         }
         
+        // If we do not fit for text bounds into finalTextBounds, we need to move down.
+        
         let textBox = TextBox(
             text: attrString,
             bounds: finalTextBounds)
-                        
+        
         if let display = style.display {
             switch display {
             case "text":
@@ -1603,7 +1636,7 @@ public class TextBox: Drawable {
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
         
-//        context.stroke(atr)
+        //context.stroke(atr)
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {

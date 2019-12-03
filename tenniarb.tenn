@@ -37,7 +37,7 @@ element "Tenniarb" {
         styles {
             item {
                 font-size 12
-                shadow 5 5 7
+                shadow 5 -5 5
             }
             feature {
                 color "blue"
@@ -62,18 +62,26 @@ element "Tenniarb" {
             pos 0.0 2.0
         }
         item "UI" {
-            pos -228.0 -11.0
+            pos -279.0 -19.0
             color lightgreen
+            font-size 30
+            display circle
+            width 50
+            height 50
         }
         link "UI" "Scene Draw"
         item "Scene Draw" {
-            pos -465.0 5.0
+            pos -460.0 29.0
             color green
         }
         link "UI" "Editing"
         item "Editing" {
-            pos -48.0 5.0
+            pos -76.0 -15.0
             color "#00ee00"
+            font-size 25
+            display circle
+            width 100
+            height 50
         }
         link "Editing" "Titles"
         item "Titles" {
@@ -90,7 +98,7 @@ element "Tenniarb" {
         }
         link "Properties" "Content assist"
         item "Content assist" {
-            pos 95.0 -95.0
+            pos 69.0 -102.0
             color white
             font-size 12
         }
@@ -102,13 +110,13 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Items"
         item "Items" {
-            pos -500.0 -32.0
+            pos -484.0 0.0
             color green
             font-size 12
         }
         link "Scene Draw" "Links"
         item "Links" {
-            pos -446.0 -41.0
+            pos -431.0 -3.0
             color green
             font-size 12
         }
@@ -144,22 +152,22 @@ element "Tenniarb" {
         }
         link "Outline" "+/-"
         item "+/-" {
-            pos -492.0 388.0
+            pos -495.0 352.0
             color green
         }
         link "Outline" "D&D"
         item "D&D" {
-            pos -464.0 349.0
+            pos -471.0 341.0
             color green
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
-            pos -608.0 -13.0
+            pos -568.0 15.0
             font-size 12
         }
         link "Scene Draw" "Colors"
         item "Colors" {
-            pos -383.0 35.0
+            pos -366.0 39.0
             color green
             font-size 12
         }
@@ -183,7 +191,7 @@ element "Tenniarb" {
         item "App Store" {
             pos -197.0 313.0
             font-size 12
-            color yellow
+            color green
         }
         link "Site" "Domain"
         item "Domain" {
@@ -191,7 +199,7 @@ element "Tenniarb" {
             font-size 12
         }
         item "Registration" {
-            pos -251.0 399.0
+            pos -253.0 357.0
             color green
             font-size 12
         }
@@ -200,14 +208,15 @@ element "Tenniarb" {
             pos 19.0 32.0
         }
         item "Publication" {
-            pos -228.0 437.0
+            pos -234.0 389.0
             font-size 12
+            color green
         }
         link "Tenniarb" "Quality"
         item "Quality" {
-            pos -89.0 185.0
-            font-size 12
-            color yellow
+            pos -120.0 213.0
+            font-size 20
+            color green
         }
         link "Quality" "Testing"
         item "Testing" {
@@ -215,22 +224,24 @@ element "Tenniarb" {
             font-size 12
             color green-300
         }
-        link "Quality" "Functional testing" {
+        link "Quality" "Functional
+testing" {
             pos -26.0 1.0
         }
-        item "Functional testing" {
-            pos -91.0 324.0
+        item "Functional
+testing" {
+            pos -109.0 289.0
             font-size 12
         }
         link "Quality" "Performance"
         item "Performance" {
-            pos -17.0 221.0
-            font-size 12
+            pos -30.0 216.0
+            font-size 20
             color green
         }
         link "Quality" "Durability"
         item "Durability" {
-            pos -16.0 284.0
+            pos -29.0 280.0
             font-size 12
             color green-300
         }
@@ -247,7 +258,7 @@ element "Tenniarb" {
         }
         link "Outline" "Copy/paste"
         item "Copy/paste" {
-            pos -566.0 343.0
+            pos -553.0 315.0
             font-size 12
             use-style done
         }
@@ -259,7 +270,7 @@ element "Tenniarb" {
         }
         link "Persistence" "Duplicate names"
         item "Duplicate names" {
-            pos -631.0 218.0
+            pos -611.0 219.0
             color green
             font-size 12
         }
@@ -295,7 +306,7 @@ element "Tenniarb" {
         }
         link "App Store" "Images"
         item "Images" {
-            pos -142.0 431.0
+            pos -137.0 345.0
             font-size 12
             color green
         }
@@ -303,13 +314,13 @@ element "Tenniarb" {
             pos -6.0 23.0
         }
         item "Description" {
-            pos -115.0 393.0
+            pos -142.0 380.0
             font-size 12
             color green
         }
         link "Site" "Hosting"
         item "Hosting" {
-            pos -389.0 413.0
+            pos -350.0 370.0
             font-size 12
         }
         item "Multiple" {
@@ -328,7 +339,7 @@ element "Tenniarb" {
             target-index 1
         }
         item "Parsing" {
-            pos -591.087890625 175.0
+            pos -586.087890625 185.0
             color green
             font-size 12
             test {
@@ -343,19 +354,19 @@ element "Tenniarb" {
         }
         item "Calculation
 Engine" {
-            pos -63.0 112.0
+            pos -71.0 151.0
             use-style done
         }
         link "Tenniarb" "Calculation
 Engine"
         item "expressions" {
-            pos 8.771484375 175.0
+            pos 3.771484375 182.0
             color green
         }
         link "Calculation
 Engine" "expressions"
         item "expr dsl" {
-            pos 34.771484375 136.0
+            pos 10.771484375 145.0
             color green
         }
         link "Calculation
@@ -367,7 +378,7 @@ Engine" "expr dsl"
         }
         link "Properties" "Undo/Redo"
         item "Corrections" {
-            pos -522.66796875 -81.0
+            pos -450.66796875 -35.0
             font-size 12
             color green
         }
@@ -392,42 +403,42 @@ Engine" "expr dsl"
             pos 6.0 5.0
         }
         item "Export" {
-            pos -439.650390625 -164.0
+            pos -431.650390625 -109.0
             color lightgreen
         }
         link "UI" "Export" {
             pos -6.0 7.0
         }
         item "Import" {
-            pos -503.9111328125 120.0
+            pos -518.9111328125 120.0
         }
         link "Model" "Import" {
             pos 29.0 -21.0
         }
         item "Xmind" {
-            pos -655.4912109375 153.0
+            pos -569.4912109375 143.0
         }
         link "Import" "Xmind"
         item "Other" {
-            pos -662.4912109375 120.0
+            pos -589.4912109375 117.0
         }
         link "Import" "Other"
         item "JIRA CSV import" {
-            pos -652.4912109375 78.0
+            pos -603.4912109375 91.0
         }
         link "Import" "JIRA CSV import"
         item "PDF" {
-            pos -497.546875 -141.0
+            pos -489.546875 -86.0
             color green
         }
         link "Export" "PDF"
         item "PNG" {
-            pos -547.546875 -159.0
+            pos -539.546875 -104.0
             color green
         }
         link "Export" "PNG"
         item "HTML" {
-            pos -505.546875 -183.0
+            pos -497.546875 -128.0
             color green
         }
         link "Export" "HTML"
@@ -456,7 +467,7 @@ Engine" "expr dsl"
         }
         link "quick actions" "quick fonts"
         item "javascript" {
-            pos 99.615234375 161.0
+            pos 75.615234375 145.0
             color green
         }
         link "expr dsl" "javascript"
@@ -464,19 +475,19 @@ Engine" "expr dsl"
             display "arrow"
         }
         item "SVG" {
-            pos -442.732421875 -131.0
+            pos -434.732421875 -76.0
         }
         link "Export" "SVG"
         item "Color matches" {
-            pos -571.62890625 43.0
+            pos -559.62890625 48.0
             descr %{
     "Need to property match text color if background are selected"
 }
             use-style done
         }
         link "Scene Draw" "Color matches"
-        item "Markdown BODY" {
-            pos -93.900390625 -182.0
+        item "Markdown" {
+            pos -92.900390625 -190.0
             descr %{
     0. Use %{ as markdown start and } as markdown end.
     1. Embedd markdown like font capabilities inside.
@@ -485,8 +496,9 @@ Engine" "expr dsl"
     4. Font size
 }
             use-style done
+            font-size 20
         }
-        link "Editing" "Markdown BODY"
+        link "Editing" "Markdown"
         item "Multi select" {
             pos -215.3828125 -52.0
             color green
@@ -506,46 +518,95 @@ Engine" "expr dsl"
         }
         link "Layout" "Aligh on XXX"
         item "Position calculation" {
-            pos 150.63711547851562 209.0
+            pos 90.63711547851562 180.0
         }
         link "javascript" "Position calculation"
         item "Under" {
-            pos -90.24336242675781 -112.0
+            pos -104.24336242675781 -95.0
             use-style required
         }
         item "Layering" {
-            pos -386.3414001464844 -209.0
+            pos -380.3414001464844 -140.0
             use-style required
         }
         link "UI" "Layering" {
             pos -14.0 1.0
         }
         item "Front/Back" {
-            pos -347.56561279296875 -254.0
+            pos -390.56561279296875 -207.0
             use-style required
         }
         link "Layering" "Front/Back"
         link "Selection" "Under"
-        item "Markdown styles" {
-            pos -67.1617202758789 -227.0
+        item "Bold/Italic" {
+            pos -48.161720275878906 -240.0
             use-style done
         }
-        link "Markdown BODY" "Markdown styles"
+        link "Markdown" "Bold/Italic"
         item "Export options" {
-            pos -501.9254150390625 -218.0
+            pos -493.9254150390625 -163.0
             use-style done
         }
         link "Export" "Export options"
         item "Draw background" {
-            pos -526.5031127929688 -257.0
+            pos -518.5031127929688 -202.0
             use-style done
         }
         link "Export options" "Draw background"
         item "Documentation" {
-            pos 73.3324203491211 275.0
+            pos 20.332420349121094 258.0
             use-style required
+            color green-200
         }
         link "Quality" "Documentation"
+        item "Markdown" {
+            pos 2.6058592796325684 113.0
+            color green
+        }
+        link "Calculation
+Engine" "Markdown" {
+            target-index 1
+        }
+        item "Images" {
+            pos -110.1617202758789 -238.0
+            use-style done
+        }
+        link "Markdown" "Images" {
+            target-index 1
+        }
+        item "Colors" {
+            pos -107.1617202758789 -272.0
+            use-style done
+        }
+        link "Markdown" "Colors" {
+            target-index 1
+        }
+        item "Bullets" {
+            pos -42.161720275878906 -273.0
+            use-style done
+        }
+        link "Markdown" "Bullets"
+        item "Titles" {
+            pos -73.1617202758789 -300.0
+            use-style done
+        }
+        link "Markdown" "Titles" {
+            target-index 1
+        }
+        item "Text
+Positioning" {
+            pos -551.7535095214844 -44.0
+            color green
+        }
+        link "Scene Draw" "Text
+Positioning"
+        item "Markdown" {
+            pos -636.0289306640625 -24.0
+            color green
+        }
+        link "Scene Draw" "Markdown" {
+            target-index 2
+        }
     }
     element "Process" {
         item "Делай для себя" {
@@ -4363,8 +4424,9 @@ Text on Green" {
                 height 100
                 title ""
             }
-            item "Center" {
-                pos -340.0 -210.0
+            item "Fill" {
+                pos -489.0 -129.0
+                layout middle
                 body {
                     text %{
     Right
@@ -4379,12 +4441,6 @@ asdasd
                 }
                 width 100
                 height 100
-            }
-            item "!(red)BUG" {
-                pos -165.39999389648438 -142.0
-            }
-            link "Center" "!(red)BUG" {
-                source-index 2
             }
         }
         element "Width/Height" {
@@ -4477,20 +4533,20 @@ asdasd
 * 1 variant 1
 * 2 variant 2
  * sub variant" {
-                pos -69.94482421875 112.14453125
+                pos -69.94482421875 89.14453125
                 layout left
             }
             item "Text is <underline>" {
                 pos -432.08984375 -48.0078125
             }
             item "Text is ~scratchs~" {
-                pos -88.08984375 63.9921875
+                pos -87.08984375 18.9921875
             }
             item "*Color* !(red)RED and !() *black* bold" {
                 pos -429.08984375 226.9921875
             }
             item "Text is !(red) `RED code`" {
-                pos -89.08984375 14.9921875
+                pos -94.08984375 -50.0
             }
         }
         element "Circle image" {
