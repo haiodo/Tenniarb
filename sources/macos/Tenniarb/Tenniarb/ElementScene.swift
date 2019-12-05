@@ -1702,7 +1702,17 @@ public class DrawableLine: ItemDrawable {
             if crossPointLine(ln[i], ln[i+1], point) {
                 return true
             }
-            
+        }
+        
+        if self.style.layout == "quad" {
+            let (aPath, _, _, _, _) = self.buildPath(CGPoint(x:0, y:0))
+            for i in -3..<3 {
+                for j in -3..<3 {
+                    if aPath.contains(CGPoint(x: point.x + CGFloat(i), y: point.y + CGFloat(j)), using: .evenOdd, transform: .identity) {
+                        return true
+                    }
+                }
+            }
         }
         
         return false
@@ -1887,34 +1897,22 @@ public class DrawableLine: ItemDrawable {
         }
         return CGPoint(x: nx+5, y: ny)
     }
-    
-    public override func draw(context: CGContext, at point: CGPoint) {
-        //
-        context.saveGState()
-        
-        context.setLineWidth( self.lineWidth )
-        context.setStrokeColor(self.style.color)
-        context.setFillColor(self.style.color)
-        
+    private func buildPath(_ point: CGPoint) -> (CGMutablePath, CGPoint?, Bool, CGPoint, CGPoint) {
+        let aPath =  CGMutablePath()
+        var labelPoint: CGPoint?
         let drawArrowTarget = self.style.display == "arrow" || self.style.display == "arrows"
         let drawArrowSoure = self.style.display == "arrow-source" || self.style.display == "arrows"
         let drawArrow = drawArrowTarget || drawArrowSoure
-        
-        updateLineStyle(context, style)
-        
-        var fillType: CGPathDrawingMode = .stroke
         
         var fromPt = CGPoint(x: source.x + point.x, y: source.y + point.y)
         var fromPtLast = fromPt
         var toPt = CGPoint( x: target.x + point.x, y: target.y + point.y)
         
-        let aPath = CGMutablePath()
-        
-        
         aPath.move(to: fromPt)
         
-        var labelPoint: CGPoint?
+        let quad = self.style.layout == "quad"
         
+        var quadCp: CGPoint = CGPoint(x:0, y:0)
         for ep in self.extraPoints {
             
             // Move from pt to new location
@@ -1932,8 +1930,12 @@ public class DrawableLine: ItemDrawable {
                     fromPt = ltoPt
                 }
             }
-            
-            aPath.addLine(to: fromPtLast)
+            if quad {
+                quadCp = fromPtLast
+            }
+            else {
+                aPath.addLine(to: fromPtLast)
+            }
             
             if let lbl = self.label {
                 labelPoint = CGPoint(x: ep.x + 5, y: ep.y - lbl.getBounds().height)
@@ -1955,17 +1957,43 @@ public class DrawableLine: ItemDrawable {
             
             if plen > 10 {
                 let ltoPt = CGPoint( x: toPt.x - ( px / plen * 5 ), y: toPt.y - ( py / plen * 5 ) )
-                aPath.addLine(to: ltoPt)
+                if quad {
+                    aPath.addQuadCurve(to: ltoPt, control: quadCp)
+                }
+                else {
+                    aPath.addLine(to: ltoPt)
+                }
                 toPt = ltoPt
             } else {
-                aPath.addLine(to: toPt)
+                if quad {
+                    aPath.addQuadCurve(to: toPt, control: quadCp)
+                }else {
+                    aPath.addLine(to: toPt)
+                }
             }
         } else {
-            aPath.addLine(to: toPt)
+            if quad {
+                aPath.addQuadCurve(to: toPt, control: quadCp)
+            }
+            else {
+                aPath.addLine(to: toPt)
+            }
         }
+        return (aPath, labelPoint, drawArrow, fromPt, toPt)
+    }
+    public override func draw(context: CGContext, at point: CGPoint) {
+        //
+        context.saveGState()
         
+        context.setLineWidth( self.lineWidth )
+        context.setStrokeColor(self.style.color)
+        context.setFillColor(self.style.color)
         
+        updateLineStyle(context, style)
+        
+        let (aPath, labelPoint, drawArrow, fromPt, toPt) = self.buildPath(point)
         //        aPath.closeSubpath()
+        var fillType: CGPathDrawingMode = .stroke
         
         context.addPath(aPath)
         context.drawPath(using: fillType)
@@ -1973,16 +2001,30 @@ public class DrawableLine: ItemDrawable {
         if drawArrow {
             fillType = .fillStroke
             
-            let spt = extraPoints.count > 0 ? CGPoint(x: extraPoints[0].x + point.x, y: extraPoints[0].y + point.y) : toPt
-            let ept = extraPoints.count > 0 ? CGPoint(x: extraPoints[extraPoints.count-1].x + point.x, y: extraPoints[extraPoints.count-1].y + point.y) : fromPt
+            var spt = extraPoints.count > 0 ? CGPoint(x: extraPoints[0].x + point.x, y: extraPoints[0].y + point.y) : toPt
+            var ept = extraPoints.count > 0 ? CGPoint(x: extraPoints[extraPoints.count-1].x + point.x, y: extraPoints[extraPoints.count-1].y + point.y) : fromPt
             
             if self.style.display == "arrow" || self.style.display == "arrows" {
+                let px = ept.x - toPt.x
+                let py = ept.y - toPt.y
+                
+                let plen = sqrt( px * px + py * py )
+                if plen > 10 {
+                    ept = CGPoint( x: toPt.x + ( (px / plen) * 10 ), y: toPt.y + ( (py / plen) * 10 ) )
+                }
                 if let arr = arrow(from: ept, to: toPt,
                                    tailWidth: 0, headWidth: 10, headLength: 10) {
                     context.addPath(arr)
                 }
             }
             if self.style.display == "arrow-source" || self.style.display == "arrows" {
+                let px = spt.x - fromPt.x
+                let py = spt.y - fromPt.y
+                
+                let plen = sqrt( px * px + py * py )
+                if plen > 10 {
+                    spt = CGPoint( x: fromPt.x + ( (px / plen) * 10 ), y: fromPt.y + ( (py / plen) * 10 ) )
+                }
                 if let arr = arrow(from: spt, to: fromPt,
                                    tailWidth: 0, headWidth: 10, headLength: 10) {
                     context.addPath(arr)

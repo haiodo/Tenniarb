@@ -1492,6 +1492,27 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.dragElements.append(contentsOf: self.activeItems)
         
+        if event.modifierFlags.contains(NSEvent.ModifierFlags.option) && self.dragElements.count == 1 {
+            // Add all outgoing items and all outgoing items.
+            var itemsToCheck: [DiagramItem] = [self.activeItems[0]]
+            while itemsToCheck.count > 0 {
+                let item = itemsToCheck.removeFirst()
+                for itm in self.element!.items {
+                    // Need to check if item is Link and source or target is our client
+                    if itm.kind == .Link, let lData = itm as? LinkItem, let source = lData.source, let target = lData.target {
+                        if source.id == item.id {
+                            // we found target item
+                            if !self.dragElements.contains(target) {
+                                self.dragElements.append(target)
+                                itemsToCheck.append(target)
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+        
         if event.modifierFlags.contains(NSEvent.ModifierFlags.control) && self.dragElements.count == 1 {
             self.mode = .LineDrawing
             self.lineToPoint = CGPoint(x: self.x, y: self.y )
@@ -1561,6 +1582,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
             if newPositions.count > 0 {
+                //TODO: Pass a list of drag items and sibling drag items,
+                // Also do not add sibling drag items to direct list, and use separate one, to not select after finish of
+                // Operation.
                 let dirtyRegion = self.scene!.updateLayout(newPositions)
                 
                 let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x, y: self.oy + bounds.midY + dirtyRegion.origin.y)
@@ -2076,6 +2100,34 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         for active in self.activeItems {
             let newPos = CGPoint( x: active.x, y: bottomPos)
             ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
+    @objc func alignCenterVertical(_ sender: NSMenuItem) {
+        if self.activeItems.count == 0 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        var topPos = CGFloat(roundf(Float(self.activeItems[0].y)))
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                if active.y + bnds.height > topPos  {
+                    topPos = CGFloat(roundf(Float(active.y + bnds.height)))
+                }
+            }
+        }
+        for active in self.activeItems {
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                let newPos = CGPoint( x: active.x, y: topPos - bnds.height)
+                ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+            }
         }
         if ops.count > 0 {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
