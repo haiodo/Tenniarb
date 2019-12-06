@@ -1912,7 +1912,7 @@ public class DrawableLine: ItemDrawable {
         
         let quad = self.style.layout == "quad"
         
-        var quadCp: CGPoint = CGPoint(x:0, y:0)
+        var quadCp: CGPoint = fromPt
         for ep in self.extraPoints {
             
             // Move from pt to new location
@@ -2065,6 +2065,24 @@ public class DrawableLine: ItemDrawable {
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
         }
+    
+        let (aPath, _, drawArrow, _, _) = self.buildPath(CGPoint(x:0, y:0))
+        
+        let box = aPath.boundingBox
+        
+        minX = min(box.minX, minX)
+        maxX = max(box.maxX, maxX)
+        minY = min(box.minY, minY)
+        maxY = max(box.maxY, maxY)
+        
+        if drawArrow {
+            minX -= 10
+            minY -= 10
+            maxX += 10
+            maxY += 10
+        }
+
+        
         
         return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
     }
@@ -2097,7 +2115,6 @@ public class DrawableLine: ItemDrawable {
                 minY = min( minY, point.y - 5)
             }
         }
-        
         return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
     }
     public func getLabelBounds() -> CGRect {
@@ -2266,7 +2283,7 @@ public class SelectorLine: ItemDrawable {
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
         }
-        
+                
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
     }
     public override func update() {

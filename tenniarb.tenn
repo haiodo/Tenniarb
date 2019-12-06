@@ -153,7 +153,10 @@ element "Tenniarb" {
             color green
             font-size 12
         }
-        link "Outline" "+/-"
+        link "Outline" "+/-" {
+            pos 9.0 2.0
+            layout quad
+        }
         item "+/-" {
             pos -511.0 345.0
             color green
@@ -165,7 +168,7 @@ element "Tenniarb" {
         }
         link "Scene Draw" "Draw DSL"
         item "Draw DSL" {
-            pos -625.0 -3.0
+            pos -633.0 2.0
             font-size 12
         }
         link "Scene Draw" "Colors"
@@ -208,10 +211,11 @@ element "Tenniarb" {
         }
         link "Registration" "App Store"
         link "App Store" "Publication" {
-            pos 19.0 32.0
+            pos -70.0 -17.0
+            layout quad
         }
         item "Publication" {
-            pos -254.0 388.0
+            pos -285.0 386.0
             font-size 12
             color green
         }
@@ -223,13 +227,14 @@ element "Tenniarb" {
         }
         link "Quality" "Testing"
         item "Testing" {
-            pos -88.0 249.0
+            pos -104.0 254.0
             font-size 12
             color green-300
         }
         link "Quality" "Functional
 testing" {
             pos -26.0 1.0
+            layout quad
         }
         item "Functional
 testing" {
@@ -242,7 +247,10 @@ testing" {
             font-size 20
             color green
         }
-        link "Quality" "Durability"
+        link "Quality" "Durability" {
+            pos 10.0 -2.0
+            layout quad
+        }
         item "Durability" {
             pos -45.0 273.0
             font-size 12
@@ -287,7 +295,10 @@ testing" {
             pos -333.0 -179.0
             font-size 12
         }
-        link "Layout" "Manual"
+        link "Layout" "Manual" {
+            pos 16.0 5.0
+            layout quad
+        }
         item "Manual" {
             pos -299.0 -218.0
             color green
@@ -309,15 +320,16 @@ testing" {
         }
         link "App Store" "Images"
         item "Images" {
-            pos -157.0 344.0
+            pos -148.0 341.0
             font-size 12
             color green
         }
         link "App Store" "Description" {
-            pos -6.0 23.0
+            pos 0.0 16.0
+            layout quad
         }
         item "Description" {
-            pos -162.0 379.0
+            pos -156.0 377.0
             font-size 12
             color green
         }
@@ -458,7 +470,9 @@ Engine" "expr dsl"
             font-size 12
         }
         link "Properties" "quick actions" {
+            pos -19.0 -1.0
             display "arrow"
+            layout quad
         }
         item "quick colors" {
             pos 97.67578125 -186.0
@@ -519,7 +533,7 @@ Engine" "expr dsl"
         }
         link "Movements" "Display rulers"
         item "Aligh on XXX" {
-            pos -215.46054077148438 -216.0
+            pos -246.46054077148438 -198.0
             use-style required
         }
         link "Layout" "Aligh on XXX"
@@ -546,7 +560,7 @@ Engine" "expr dsl"
         link "Layering" "Front/Back"
         link "Selection" "Under"
         item "Bold/Italic" {
-            pos -64.1617202758789 -247.0
+            pos -44.161720275878906 -246.0
             use-style done
         }
         link "Markdown" "Bold/Italic"
@@ -565,7 +579,10 @@ Engine" "expr dsl"
             use-style required
             color green-200
         }
-        link "Quality" "Documentation"
+        link "Quality" "Documentation" {
+            pos -5.0 11.0
+            layout quad
+        }
         item "Markdown" {
             pos -13.39414119720459 106.0
             color green
@@ -587,18 +604,25 @@ Engine" "Markdown" {
         }
         link "Markdown" "Colors" {
             target-index 1
+            pos 6.0 -23.0
+            layout quad
         }
         item "Bullets" {
             pos -58.161720275878906 -280.0
             use-style done
         }
-        link "Markdown" "Bullets"
+        link "Markdown" "Bullets" {
+            pos -10.0 2.0
+            layout quad
+        }
         item "Titles" {
             pos -89.1617202758789 -307.0
             use-style done
         }
         link "Markdown" "Titles" {
             target-index 1
+            pos 1.0 1.0
+            layout quad
         }
         item "Text
 Positioning" {
@@ -613,6 +637,8 @@ Positioning"
         }
         link "Scene Draw" "Markdown" {
             target-index 2
+            pos -1.0 0.0
+            layout quad
         }
     }
     element "Process" {
@@ -1255,28 +1281,28 @@ to add linked item to diagram.}
                 pos -462.4532775878906 85.72610473632812
             }
             item "Normal" {
-                pos -366.0 33.0
+                pos -366.0 50.0
                 display text
                 title ""
             }
             item "Quad" {
-                pos -460.4532775878906 22.726104736328125
+                pos -454.4532775878906 29.726104736328125
             }
             item "display none" {
-                pos -103.0 36.0
+                pos -102.0 50.0
                 display text
                 title ""
             }
             link "Normal" "display none" {
                 source-index 7
                 target-index 7
-                pos 8.0 -91.0
+                pos 2.0 -134.0
                 line-width 2
                 layout quad
                 display arrows
             }
-            item "none or display solid" {
-                pos -72.19610595703125 21.51776123046875
+            item "layout quad" {
+                pos -69.19610595703125 40.51776123046875
                 display text
             }
             element "Links doc" {
@@ -1405,6 +1431,24 @@ to add linked item to diagram.}
                     pos -361.0 122.0
                     display text
                     title ""
+                }
+            }
+            element "Smile Face" {
+                item "Normal" {
+                    pos -148.0 20.0
+                    display circle
+                    title " * "
+                }
+                item "display none" {
+                    pos -98.0 19.0
+                    display circle
+                    title " * "
+                }
+                link "Normal" "display none" {
+                    pos 3.0 -133.0
+                    line-width 2
+                    layout quad
+                    display circle
                 }
             }
         }
