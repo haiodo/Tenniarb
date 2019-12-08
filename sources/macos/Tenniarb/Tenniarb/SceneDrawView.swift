@@ -1510,6 +1510,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     }
                 }
             }
+            self.setActiveItems(dragElements)
             
         }
         
