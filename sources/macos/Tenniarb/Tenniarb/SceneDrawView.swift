@@ -47,9 +47,9 @@ public class PopupEditField: NSTextField {
         }
         super.keyDown(with: event)
     }
-//    override public func keyUp(with event: NSEvent) {
-//        super.keyDown(with: event)
-//    }
+    //    override public func keyUp(with event: NSEvent) {
+    //        super.keyDown(with: event)
+    //    }
     public override func flagsChanged(with event: NSEvent) {
         if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             shiftKeyDown = true
@@ -288,7 +288,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.scaleFactor = win.backingScaleFactor
         }
     }
-        
+    
     @objc func defaultsChanged(_ notif: NSNotification) {
         if self.element != nil {
             buildScene()
@@ -1063,9 +1063,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-//    override func becomeFirstResponder() -> Bool {
-//        return true
-//    }
+    //    override func becomeFirstResponder() -> Bool {
+    //        return true
+    //    }
     
     @objc func duplicateItem() {
         guard let curElement = self.element else {
@@ -1200,23 +1200,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         
-//        if event.characters == "\u{0D}" {
-//            if let active = self.activeItems.first  {
-//                setActiveItem(active)
-//                if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
-//                    editTitle(active, .Body)
-//                }
-//                else {
-//                    editTitle(active, .Name)
-//                }
-//            }
-//        }
-//        if event.characters == "\u{7f}" {
-//            removeItem()
-//        }
-//        else if event.characters == " " {
-//            self.viewController?.showOperationBox()
-//        }
+        //        if event.characters == "\u{0D}" {
+        //            if let active = self.activeItems.first  {
+        //                setActiveItem(active)
+        //                if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
+        //                    editTitle(active, .Body)
+        //                }
+        //                else {
+        //                    editTitle(active, .Name)
+        //                }
+        //            }
+        //        }
+        //        if event.characters == "\u{7f}" {
+        //            removeItem()
+        //        }
+        //        else if event.characters == " " {
+        //            self.viewController?.showOperationBox()
+        //        }
         
         if let sk = event.specialKey, let sc = self.scene {
             var ops: [ElementOperation] = []
@@ -1377,7 +1377,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.dragMap.removeValue(forKey: de)
         }
         self.dragElements.removeAll()
-                
+        
         self.mode = .Normal
         showPopup()
     }
@@ -1841,7 +1841,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.restoreGState()
         }
-//        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
+        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
     }
     
     public func selectAllItems() {
@@ -1985,8 +1985,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     let image = NSImage(byReferencing: filename)
                     if let active = self.activeItems.first {
                         let name = filename.lastPathComponent
-//                        self.store?.setImage(self.element!, active, name: name, image: image,
-//                                             undoManager: self.undoManager,  refresh: {()->Void in})
+                        //                        self.store?.setImage(self.element!, active, name: name, image: image,
+                        //                                             undoManager: self.undoManager,  refresh: {()->Void in})
                         let newProps = active.toTennAsProps(.BlockExpr)
                         if let tiffData = image.tiffRepresentation {                            
                             let imageRep = NSBitmapImageRep(data: tiffData)
@@ -1995,7 +1995,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                             }
                         }
                         self.store?.setProperties(self.element!, active, newProps,
-                                             undoManager: self.undoManager,  refresh: {()->Void in})
+                                                  undoManager: self.undoManager,  refresh: {()->Void in})
                     }
                 }
             }
@@ -2009,7 +2009,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.setSubmenu(styleManager?.createMenu(), for: style)
     }
     
-
+    
     @objc func alignLeadingEdges(_ sender: NSMenuItem) {
         if self.activeItems.count == 0 {
             return
@@ -2029,6 +2029,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
             scheduleRedraw()
             return
+        }
+    }
+    
+    @objc func selectItemAtPoint(_ sender: NSMenuItem) {
+        if let itm = sender.representedObject as? DiagramItem {
+            setActiveItem(itm)
         }
     }
     
@@ -2149,8 +2155,36 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.addItem(NSMenuItem( title: "Trailing Edges", action: #selector(alignTrailingEdges(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem( title: "Top Edges", action: #selector(alignTopEdges(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem( title: "Bottom Edges", action: #selector(alignBottomEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        //        menu.addItem(
         
         menu.setSubmenu(menu, for: align)
+    }
+    
+    fileprivate func createSelection(_ menu: NSMenu) {
+        
+        let drawables = findElement(x: self.x, y: self.y)
+        if drawables.count <= 1 {
+            return
+        }
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        let selectItem = NSMenuItem(
+            title: "Select", action: nil, keyEquivalent: "")
+        menu.addItem(selectItem)
+        
+        let menu = NSMenu()
+        menu.autoenablesItems=true
+        
+        for dr in drawables {
+            if let itm = dr.item {
+                let mi = NSMenuItem( title: itm.name, action: #selector(selectItemAtPoint(_:)), keyEquivalent: "")
+                mi.representedObject = itm
+                menu.addItem(mi)
+            }
+        }
+        menu.setSubmenu(menu, for: selectItem)
     }
     
     override func menu(for event: NSEvent) -> NSMenu? {
@@ -2204,9 +2238,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 menu.addItem(NSMenuItem(
                     title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
             }
-            
+            self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
+            
             return menu
         }
         else {
@@ -2219,7 +2254,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(addAction)
             
             menu.addItem(NSMenuItem.separator())
-            createStylesMenu(menu)
+            self.createStylesMenu(menu)
+            self.createSelection(menu)
             
             return menu
         }
