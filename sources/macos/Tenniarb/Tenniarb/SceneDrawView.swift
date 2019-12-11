@@ -2032,6 +2032,37 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    @objc func moveItemForward(_ sender: NSMenuItem) {
+        if self.activeItems.count != 1 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        
+        for active in self.activeItems {
+            ops.append(contentsOf: store!.createUpdateOrder(item: active, newPos: nil))
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    @objc func moveItemBackward(_ sender: NSMenuItem) {
+        if self.activeItems.count != 1 {
+            return
+        }
+        var ops: [ElementOperation] = []
+        
+        for active in self.activeItems {
+            ops.append(contentsOf: store!.createUpdateOrder(item: active, newPos: 0))
+        }
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
     @objc func selectItemAtPoint(_ sender: NSMenuItem) {
         if let itm = sender.representedObject as? DiagramItem {
             setActiveItem(itm)
@@ -2161,6 +2192,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.setSubmenu(menu, for: align)
     }
     
+    fileprivate func createOrderMenu(_ menu: NSMenu) {
+        let order = NSMenuItem(
+            title: "Order", action: nil, keyEquivalent: "")
+        menu.addItem(order)
+        
+        let menu = NSMenu()
+        menu.autoenablesItems=true
+        
+        menu.addItem(NSMenuItem( title: "Move Forward", action: #selector(moveItemForward(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem( title: "Move backward", action: #selector(moveItemBackward(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        //        menu.addItem(
+        
+        menu.setSubmenu(menu, for: order)
+    }
+    
     fileprivate func createSelection(_ menu: NSMenu) {
         
         let drawables = findElement(x: self.x, y: self.y)
@@ -2196,13 +2243,26 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.dragMap.removeAll()
         self.dragElements.removeAll()
         
-        if let drawable = findElement(x: self.x, y:  self.y).first, let itm = drawable.item {
-            if !self.activeItems.contains(itm) {
-                self.setActiveItem(itm, immideateDraw: true)
+        // Check if some of figures are already
+        var checkSelection = true
+        let drawables = findElement(x: self.x, y:  self.y)
+        for itm in drawables {
+            if let itm = itm.item {
+                if self.activeItems.contains(itm) {
+                    checkSelection = false
+                }
             }
         }
-        else {
-            self.setActiveItem(nil, immideateDraw: true)
+        
+        if checkSelection {
+            if let drawable = findElement(x: self.x, y:  self.y).first, let itm = drawable.item {
+                if !self.activeItems.contains(itm) {
+                    self.setActiveItem(itm, immideateDraw: true)
+                }
+            }
+            else {
+                self.setActiveItem(nil, immideateDraw: true)
+            }
         }
         
         let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
@@ -2237,6 +2297,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 menu.addItem(NSMenuItem.separator())
                 menu.addItem(NSMenuItem(
                     title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
+                self.createOrderMenu(menu)
             }
             self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())

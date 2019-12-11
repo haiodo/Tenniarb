@@ -220,6 +220,13 @@ public class ElementModelStore {
         return UpdatePosition(self, item.parent!, item, old: CGPoint(x: item.x, y: item.y), new: newPos)
     }
     
+    public func createUpdateOrder( item: DiagramItem, newPos: Int?) -> [ElementOperation] {
+        var ops:[ElementOperation] = []
+        ops.append(RemoveItem(self, item.parent!, item))
+        ops.append(AddItem(self, item.parent!, item, at: newPos))
+        return ops
+    }
+    
     public func compositeOperation( notifier: Element, undoManaget: UndoManager?, refresh: @escaping () -> Void,
                                     _ operations: [ElementOperation] ) {
         let composite = CompositeOperation(self, notifier, operations )
@@ -491,14 +498,16 @@ class AddElement: ElementOperation {
 class AddItem: ElementOperation {
     let parent: Element
     let item: DiagramItem
-    init( _ store: ElementModelStore, _ element: Element, _ item: DiagramItem ) {
+    let at: Int?
+    init( _ store: ElementModelStore, _ element: Element, _ item: DiagramItem, at: Int? = nil ) {
         self.parent = element
         self.item = item
+        self.at = at
         super.init(store)
     }
     override var name:String { get { return "AddItem"} }
     override func apply() {
-        self.parent.add(item)
+        self.parent.add(item, at: at)
     }
     override func undo() {
         _ = self.parent.remove(item)
@@ -514,7 +523,6 @@ class AddItem: ElementOperation {
         }
     }
 }
-
 
 class RemoveElement: ElementOperation {
     let parent: Element

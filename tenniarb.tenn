@@ -961,14 +961,6 @@ to add linked item to diagram.}
                 line-width 15
                 line-style dotted
             }
-            item "Yellow" {
-                pos -935.0 66.0
-                display circle
-                width ${utils.textWidth(name)*3}
-                height ${width}
-                color "#ffeeff"
-                shadow -15 -15 15
-            }
             item "Box" {
                 pos -683.0 79.0
                 width 200
@@ -1053,6 +1045,14 @@ to add linked item to diagram.}
                 line-width 2
                 body "Body text"
                 line-style dashed
+            }
+            item "Yellow" {
+                pos -935.0 66.0
+                display circle
+                width ${utils.textWidth(name)*3}
+                height ${width}
+                color "#ffeeff"
+                shadow -15 -15 15
             }
             element "Docs" {
                 item "Display" {

@@ -1,87 +1,32 @@
 <html>
 
-<style>
-    body {
-        margin: 0 0 0 0;
-        overflow: hidden;
-    }
-    
-    .scene-panel {
-        /* Rectangle: */
-        /* background: #FDF6E3 transparent 100%; */
-        border: 1px solid #93A1A1;
-        position: relative;
-        left: 0px;
-        top: 0px;
-        width: 400px;
-        height: 350px;
-    }
-    
-    .scene-item {
-        background: #FFFFFF;
-        /*border: 2px solid #073642;*/
-        box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.50);
-        border-radius: 9px;
-        height: 50px;
-        line-height: 50px;
-        width: 131px;
-        position: relative;
-        vertical-align: middle;
-        /* cursor: pointer; */
-    }
-    
-    .scene-item-text {
-        /* Platform: */
-        font-family: ArialMT;
-        font-size: 24px;
-        color: #268BD2;
-        text-align: center;
-    }
-</style>
-
 <body>
-    <div class="main-layout">
-        <!-- <div class="title-bar">
-            Top bar
-        </div>
-        <div class="nav-panel">
-            Left bar
-        </div>
+    <svg class="arrsvg" style="position:relative; top:0; left:0; margin:0; width:1024; height:1024;">
+        <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refx="3" refy="4" orient="auto">
+                <path d="M1,1 L1,7 L7,4 L1,1" style="fill:black;" />
+            </marker>
+        </defs>
 
-        <div class="props-panel">
-            Bottom bar
-        </div>
+        <rect x="10" y="90" width="300" height="50" rx="15" style="stroke:black; fill: #eeeeee;" />
 
-        <div class="status-panel">
-            Status bar
-        </div> -->
+        <text x="20" y="125" style="font: bold 30px sans-serif;">
+            Hello
+            <tspan style="font: bold 25px sans-serif; stroke:red; fill: red">World</tspan>
+            <tspan>New line</tspan>
+        </text>
 
-        <div class="scene-panel">
-            <div class="scene-item" style="left:202px;top:144px;">
-                <div class="scene-item-text">Platform</div>
-            </div>
+        <path d="M310,115 L390,185" style="stroke:black; stroke-width: 2.3px; fill: none; marker-end: url(#arrow)" />
 
-            <div class="scene-item" style="left:10px;top:46px;">
-                <div class="scene-item-text">Repository</div>
-            </div>
-            <div class="scene-item" style="left:10px;top:143px;">
-                <div class="scene-item-text">Device</div>
-            </div>
+        <rect x="150" y="200" width="300" height="50" rx="15" style="stroke:black; fill: #eeeeee;" />
 
-            <div class="scene-item" style="left:200px;top:089px;">
-                <div class="scene-item-text">Driver</div>
-            </div>
+        <text x="160" y="235" style="font: bold 30px sans-serif;">
+            Hello
+            <tspan style="font: bold 25px sans-serif; stroke:red; fill: red">World</tspan>
+            <tspan>New line</tspan>
+        </text>
 
-            <!-- <svg class="arrsvg" style="position:relative; top:0; left:0; margin:0; width:99.8%; height:99.9%;">
-                <defs>
-                    <marker id="arrow" markerWidth="8" markerHeight="8" refx="3" refy="4" orient="auto">
-                        <path d="M1,1 L1,7 L7,4 L1,1" style="fill:#979797;" />
-                    </marker></defs>
-                    <path d="M235,150 L290,105" style="stroke:#979797; stroke-width: 2.3px; fill: none; marker-end: url(#arrow)"/>
-            </svg> -->
-        </div>
-    </div>
-
+    </svg>
 </body>
 
 </html>

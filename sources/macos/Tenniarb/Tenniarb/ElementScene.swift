@@ -1241,6 +1241,22 @@ open class DrawableScene: DrawableContainer {
         
         var finalTextBounds = CGRect( origin: CGPoint(x:offx, y:offy), size: CGSize(width: textBounds.width + shift.x, height: textBounds.height + shift.y))
         
+//        var resultHtmlText = ""
+//               do {
+//                   
+//                   let r = NSRange(location: 0, length: attrString.length)
+//                   let att = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
+//                   
+//                   let d = try attrString.data(from: r, documentAttributes: att)
+//                   
+//                   if let h = String(data: d, encoding: .utf8) {
+//                       resultHtmlText = h
+//                   }
+//               }
+//               catch {
+//                   print("utterly failed to convert to html!!! \n>\(x)<\n")
+//               }
+//               print(resultHtmlText)
         
         if finalTextBounds.size.width + offx*2 < width {
             finalTextBounds.size.width = width - offx*2
