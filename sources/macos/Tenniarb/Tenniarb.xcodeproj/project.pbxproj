@@ -36,12 +36,14 @@
 		0C6DEF5B2343667200EC44B6 /* MarkdownPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6DEF5A2343667200EC44B6 /* MarkdownPrinter.swift */; };
 		0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */; };
 		0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ED8C1224F3F25009145E1 /* OperationController.swift */; };
+		0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7211D523A3CB2100F49031 /* SpringLayout.swift */; };
 		0C7F8996233273FC0098B745 /* AttributedPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F8995233273FC0098B745 /* AttributedPrinter.swift */; };
 		0C7F899923328B7C0098B745 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F899823328B7C0098B745 /* MarkdownParser.swift */; };
 		0C7F899B233520880098B745 /* MarkDownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F899A233520880098B745 /* MarkDownTests.swift */; };
 		0C8114DE2338B63300F607BE /* TenniarbUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8114DD2338B63300F607BE /* TenniarbUITests.swift */; };
 		0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C83E507219085BD00AD0317 /* ResourcesViewController.swift */; };
 		0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C86047E1EF040F70009B205 /* SceneDraw3D.swift */; };
+		0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8D17E323A29B1E002547F6 /* GridLayout.swift */; };
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
 		0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ElementOperations.swift */; };
 		0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */; };
@@ -155,6 +157,7 @@
 		0C67960F210E215E00AEED63 /* SyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncViewController.swift; path = views/SyncViewController.swift; sourceTree = "<group>"; };
 		0C6DEF5A2343667200EC44B6 /* MarkdownPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPrinter.swift; sourceTree = "<group>"; };
 		0C6ED8C1224F3F25009145E1 /* OperationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OperationController.swift; path = views/OperationController.swift; sourceTree = "<group>"; };
+		0C7211D523A3CB2100F49031 /* SpringLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpringLayout.swift; sourceTree = "<group>"; };
 		0C7F8995233273FC0098B745 /* AttributedPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributedPrinter.swift; sourceTree = "<group>"; };
 		0C7F899823328B7C0098B745 /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
 		0C7F899A233520880098B745 /* MarkDownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkDownTests.swift; sourceTree = "<group>"; };
@@ -163,6 +166,7 @@
 		0C8114DF2338B63300F607BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C83E507219085BD00AD0317 /* ResourcesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ResourcesViewController.swift; path = views/ResourcesViewController.swift; sourceTree = "<group>"; };
 		0C86047E1EF040F70009B205 /* SceneDraw3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDraw3D.swift; sourceTree = "<group>"; };
+		0C8D17E323A29B1E002547F6 /* GridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridLayout.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
@@ -414,6 +418,8 @@
 			children = (
 				0C4C16071F2E369A000C5410 /* LayoutBase.swift */,
 				0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */,
+				0C8D17E323A29B1E002547F6 /* GridLayout.swift */,
+				0C7211D523A3CB2100F49031 /* SpringLayout.swift */,
 			);
 			path = layout;
 			sourceTree = "<group>";
@@ -692,9 +698,11 @@
 				1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */,
 				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
+				0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
+				0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */,
 				0C6DEF5B2343667200EC44B6 /* MarkdownPrinter.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
 				0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */,

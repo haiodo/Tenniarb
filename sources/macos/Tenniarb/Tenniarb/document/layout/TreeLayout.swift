@@ -22,8 +22,8 @@ public class TreeLayout: LayoutAlgorithm {
     private var layerSize: CGFloat = 0
     
     
-    public func apply(context: LayoutContext, clean: Bool) {
-        
+    public func apply(context: LayoutContext, clean: Bool) -> [ElementOperation] {
+        return []
     }
     
 }

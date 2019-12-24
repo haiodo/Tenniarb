@@ -4344,6 +4344,29 @@ Text on Green" {
                 display text
                 font-size 10
             }
+            element "bugs" {
+                item "x" {
+                    pos -176.40234375 279.0
+                    display circle
+                    width 15
+                    height 15
+                    use-style shadow
+                }
+                item "x" {
+                    pos -101.40234375 254.0
+                    display circle
+                    width 20
+                    height 20
+                    use-style shadow
+                }
+                item "x" {
+                    pos -26.40234375 229.0
+                    display circle
+                    width 22
+                    height 22
+                    use-style shadow
+                }
+            }
         }
         element "Body" {
             item "Named" {
@@ -8558,6 +8581,60 @@ days=5"
             item "Reference item" {
                 pos -190.82421875 96.15625
                 a 55
+            }
+        }
+    }
+    element "Layouts" {
+        element "GridLayout" {
+            item "1" {
+                pos -404.7271728515625 184.56031799316406
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%4)*30}
+            }
+            item "2" {
+                pos -287.127197265625 154.56031799316406
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%4)*30}
+            }
+            item "3" {
+                pos -169.52719116210938 124.56031036376953
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%4)*30}
+            }
+            item "4" {
+                pos -51.927188873291016 94.56031036376953
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "5" {
+                pos 65.67281341552734 185.36109924316406
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "6" {
+                pos 183.27281188964844 184.56031799316406
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "7" {
+                pos -404.7271728515625 19.260313034057617
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "8" {
+                pos -287.127197265625 -10.7396879196167
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "9" {
+                pos -169.52719116210938 -40.739688873291016
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
+            }
+            item "10" {
+                pos -51.927188873291016 50.061092376708984
+                width ${(parseInt(name)%3)*30}
+                height ${(parseInt(name)%5)*30}
             }
         }
     }

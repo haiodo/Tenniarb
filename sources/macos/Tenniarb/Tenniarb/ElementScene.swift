@@ -1205,6 +1205,16 @@ open class DrawableScene: DrawableContainer {
         parseLayout(style, &horizontal, &vertical)
         
         let attrString = DrawableScene.toAttributedString(tokens: titleTokens, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
+        
+//        do {
+//            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
+//            Swift.debugPrint(String(data: dta, encoding: String.Encoding.utf8))
+//        }
+//        catch let error {
+//            // Ignore
+//        }
+                
+        
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }

@@ -2009,6 +2009,35 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.setSubmenu(styleManager?.createMenu(), for: style)
     }
     
+    @objc public func performGridLayout(_ sender: NSMenuItem) {
+        let l = GridLayout()
+        let ctx = LayoutContext(self.element!, scene: self.scene!, store: self.store!, bounds: self.viewController!.view.bounds)
+        let ops = l.apply(context: ctx, clean: true)
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+            return
+        }
+    }
+    
+    @objc public func performSpringLayout(_ sender: NSMenuItem) {
+        let l = SpringLayout()
+        let vbounds = self.viewController!.scene.bounds
+        let bounds = CGRect(x: -1 * vbounds.width / 2, y: -1 * vbounds.height / 2, width: vbounds.width, height: vbounds.height)
+        let ctx = LayoutContext(self.element!, scene: self.scene!, store: self.store!, bounds: bounds )
+        let ops = l.apply(context: ctx, clean: true)
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: {
+                if let bounds = self.scene?.getBounds() {
+                    self.ox = -1 * bounds.midX
+                    self.oy = -1 * bounds.midY
+                }
+                self.pivotPoint = CGPoint(x:0, y:0)
+                self.scheduleRedraw()
+            }, ops)
+            return
+        }
+    }
     
     @objc func alignLeadingEdges(_ sender: NSMenuItem) {
         if self.activeItems.count == 0 {
@@ -2313,6 +2342,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
             menu.addItem(addAction)
+            
+//            let testLayout = NSMenuItem(title: "Test layout", action: #selector(performSpringLayout), keyEquivalent: "")
+//            menu.addItem(testLayout)
             
             menu.addItem(NSMenuItem.separator())
             self.createStylesMenu(menu)

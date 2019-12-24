@@ -10,7 +10,7 @@ import Foundation
 
 
 protocol LayoutAlgorithm {
-    func apply( context: LayoutContext, clean: Bool)
+    func apply( context: LayoutContext, clean: Bool) -> [ElementOperation]
 }
 
 
@@ -23,9 +23,23 @@ public class LayoutContext {
     public var postLayoutPass: [() -> Void] = []
     
     var layout: LayoutAlgorithm?
+    let scene: DrawableScene
     
-    public init(_ element: Element) {
+    
+    var nodes: [DiagramItem] = []
+    var edges: [LinkItem] = []
+    
+    var store: ElementModelStore
+    var bounds: CGRect
+    
+    public init(_ element: Element, scene: DrawableScene, store: ElementModelStore, bounds: CGRect) {
         self.element = element
+        self.scene = scene
+        self.store = store
+        self.bounds = bounds
+        
+        nodes = findNodes()
+        self.edges = findEdges()
     }
     
     public func preLayout() {
@@ -39,16 +53,32 @@ public class LayoutContext {
         }
     }
     
-    func apply(_ clean: Bool) {
-        guard let layout = self.layout else {
-            return
-        }
-        preLayout()
-        layout.apply(context: self, clean: clean)
-        postLayout()
+    public func getBounds() -> CGRect {
+        return scene.getBounds()
     }
     
-    func getNodes() -> [DiagramItem] {
+    public func getViewBounds() -> CGRect {
+        return self.bounds
+    }
+    
+    public func getBounds(node: DiagramItem) -> CGRect {
+        if let dr = scene.drawables[node] {
+            return dr.getBounds()
+        }
+        return CGRect()
+    }
+    
+    func apply(_ clean: Bool) -> [ElementOperation] {
+        guard let layout = self.layout else {
+            return []
+        }
+        preLayout()
+        let ops = layout.apply(context: self, clean: clean)
+        postLayout()
+        return ops
+    }
+    
+    func findNodes() -> [DiagramItem] {
         var result: [DiagramItem] = []
         
         for itm in self.element.items {
@@ -60,18 +90,24 @@ public class LayoutContext {
         return result
     }
     
-    public func getEdges() -> [DiagramItem] {
-        var result: [DiagramItem] = []
+    func findEdges() -> [LinkItem] {
+        var result: [LinkItem] = []
         
         for itm in self.element.items {
             if itm.kind == .Link {
-                result.append(itm)
+                result.append(itm as! LinkItem)
             }
         }
         
         return result
     }
-    
+    public func isMovable(_ node: DiagramItem) -> Bool {
+        // For now any item are movable.
+        return true
+    }
+    func getWeight(_ link: LinkItem ) -> CGFloat {
+        return 0;
+    }
 }
 
 
