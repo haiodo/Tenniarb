@@ -4344,29 +4344,6 @@ Text on Green" {
                 display text
                 font-size 10
             }
-            element "bugs" {
-                item "x" {
-                    pos -176.40234375 279.0
-                    display circle
-                    width 15
-                    height 15
-                    use-style shadow
-                }
-                item "x" {
-                    pos -101.40234375 254.0
-                    display circle
-                    width 20
-                    height 20
-                    use-style shadow
-                }
-                item "x" {
-                    pos -26.40234375 229.0
-                    display circle
-                    width 22
-                    height 22
-                    use-style shadow
-                }
-            }
         }
         element "Body" {
             item "Named" {
@@ -4525,10 +4502,28 @@ Text on Green" {
             }
             item "Fill" {
                 pos -489.0 -129.0
-                layout middle
+                layout fill
                 body {
                     text %{
     Right
+asdasd
+asdasd
+asdasd
+adasd
+asdasd
+asdasd
+}
+                    layout right
+                }
+                width 100
+                height 100
+            }
+            item "Middle" {
+                pos -358.0 -132.0
+                layout middle
+                body {
+                    text %{
+    Middle, right
 asdasd
 asdasd
 asdasd

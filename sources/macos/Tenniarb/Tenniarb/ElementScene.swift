@@ -11,6 +11,12 @@ import Foundation
 import Cocoa
 import JavaScriptCore
 
+// Some debug variabes
+
+let OPTION_perform_clip = true
+let OPTION_perform_text_stroke = false
+
+
 /// A basic drawable element
 public protocol Drawable {
     
@@ -1220,8 +1226,8 @@ open class DrawableScene: DrawableContainer {
         }
         let textBounds = DrawableScene.calculateSize(attrStr: attrString)
         
-        let offx = CGFloat(4)
-        let offy = CGFloat(4)
+        var offx = CGFloat(4)
+        var offy = CGFloat(4)
         
         var wx=offx*2
         var wy=offy*2
@@ -1283,8 +1289,8 @@ open class DrawableScene: DrawableContainer {
                 finalTextBounds.size.height -= yshift
             } else {
                 if bounds.height < finalTextBounds.height {
-                    let yshift = ( finalTextBounds.height - bounds.height )
-                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                    let yshift = ( finalTextBounds.height - bounds.height + offy )
+                    finalTextBounds.origin.y = offy - ( yshift / 2 )
                 }
             }
         case .Top:
@@ -1294,8 +1300,8 @@ open class DrawableScene: DrawableContainer {
                 finalTextBounds.size.height -= yshift
             } else {
                 if bounds.height < finalTextBounds.height {
-                    let yshift = ( finalTextBounds.height - bounds.height )
-                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                    let yshift = ( finalTextBounds.height - bounds.height + offy )
+                    finalTextBounds.origin.y = offy - ( yshift / 2 )
                 }
             }
             break
@@ -1312,8 +1318,8 @@ open class DrawableScene: DrawableContainer {
                 finalTextBounds.size.height -= yshift
             } else {
                 if bounds.height < finalTextBounds.height {
-                    let yshift = ( finalTextBounds.height - bounds.height )
-                    finalTextBounds.origin.y = -1 * ( offy + yshift)
+                    let yshift = ( finalTextBounds.height - bounds.height + offy )
+                    finalTextBounds.origin.y = offy - ( yshift / 2 )
                 }
             }
         default:
@@ -1496,7 +1502,9 @@ public class RoundBox: DrawableContainer {
         
         var clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
         clipBounds.size.width -= 1
-        context.clip(to: clipBounds )
+        if OPTION_perform_clip {
+            context.clip(to: clipBounds )
+        }
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1588,7 +1596,9 @@ public class EmptyBox: DrawableContainer {
             }
         }
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x, y: bounds.origin.y + point.y), size: bounds.size)
-        context.clip(to: clipBounds )
+        if OPTION_perform_clip {
+            context.clip(to: clipBounds )
+        }
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
     }
@@ -1662,7 +1672,9 @@ public class TextBox: Drawable {
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
         
-        //context.stroke(atr)
+        if OPTION_perform_text_stroke {
+            context.stroke(atr)
+        }
     }
     
     public func layout(_ parentBounds: CGRect, _ dirty: CGRect) {
@@ -2393,7 +2405,9 @@ public class CircleBox: DrawableContainer {
         context.restoreGState()
         let clipBounds = CGRect( origin: CGPoint(x: bounds.origin.x + point.x + 2, y: bounds.origin.y + point.y + 2), size: CGSize(width: bounds.size.width-4, height: bounds.size.height-4))
         context.addEllipse(in: clipBounds )
-        context.clip(using: .winding)
+        if OPTION_perform_clip {
+            context.clip(using: .winding)
+        }
         
         super.draw(context: context, at: CGPoint(x: self.bounds.minX + point.x, y: self.bounds.minY + point.y))
         context.restoreGState()
