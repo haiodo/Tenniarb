@@ -51,4 +51,10 @@ class ClipboardUtils {
         let value = node.toStr()
         NSPasteboard.general.setString(value, forType: .string)
     }
+    
+    static func copyHtml( _ value: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(value, forType: .html)
+        NSPasteboard.general.setString(value, forType: .string)
+    }
 }

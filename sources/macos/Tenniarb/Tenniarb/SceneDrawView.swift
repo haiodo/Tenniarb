@@ -1964,6 +1964,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             else if action == #selector(fontMenuAction) {
                 return true
             }
+            else if action == #selector(copyItemAsHTML) {
+                return true
+            }
             else if action == #selector(paste(_:)) {
                 return ClipboardUtils.canPaste()
             }            
@@ -2036,6 +2039,28 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 self.scheduleRedraw()
             }, ops)
             return
+        }
+    }
+    
+    @objc public func copyItemAsHTML(_ sender: NSMenuItem) {
+        if self.activeItems.count == 1 {
+            if let actItem = self.activeItems.first, let scene = self.scene, let itm = scene.drawables[actItem] {
+                itm.traverse {itm in
+                    if let textBox = itm as? TextBox {
+                        do {
+                            let attrString = textBox.attrStr
+                            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
+                            if let strValue = String(data: dta, encoding: String.Encoding.utf8) {
+                                ClipboardUtils.copyHtml(strValue)
+                            }
+                        }
+                        catch let error {
+                            // Ignore
+                        }
+                    }
+                    return true
+                }
+            }
         }
     }
     
@@ -2327,6 +2352,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 menu.addItem(NSMenuItem(
                     title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
                 self.createOrderMenu(menu)
+                
+                menu.addItem(NSMenuItem.separator())
+                let copyHtml = NSMenuItem(title: "Export text as html", action: #selector(copyItemAsHTML(_:)), keyEquivalent: "")
+                menu.addItem(copyHtml)
+
             }
             self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())

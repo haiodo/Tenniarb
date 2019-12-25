@@ -39,6 +39,8 @@ public protocol Drawable {
     
     /// Update from state.
     func update()
+    
+    func traverse(_ op: (_ itm: Drawable )->Bool)
 }
 
 open class ItemDrawable: Drawable {
@@ -69,6 +71,9 @@ open class ItemDrawable: Drawable {
     }
     public func update() {
     }
+    public func traverse(_ op: (_ itm: Drawable )->Bool) {
+        _ = op(self)
+    }
 }
 
 open class DrawableContainer: ItemDrawable {
@@ -88,6 +93,16 @@ open class DrawableContainer: ItemDrawable {
     
     convenience init( _ childs: Drawable...) {
         self.init(childs)
+    }
+    
+    public override func traverse(_ op: (_ itm: Drawable )->Bool) {
+        if op(self), let cc = self.children {
+            for c in cc {
+                if !op(c) {
+                    return
+                }
+            }
+        }
     }
     
     public func find( _ point: CGPoint ) -> [ItemDrawable] {
@@ -1226,8 +1241,8 @@ open class DrawableScene: DrawableContainer {
         }
         let textBounds = DrawableScene.calculateSize(attrStr: attrString)
         
-        var offx = CGFloat(4)
-        var offy = CGFloat(4)
+        let offx = CGFloat(4)
+        let offy = CGFloat(4)
         
         var wx=offx*2
         var wy=offy*2
@@ -1665,6 +1680,10 @@ public class TextBox: Drawable {
     
     public func drawBox(context: CGContext, at point: CGPoint) {
         
+    }
+    
+    public func traverse(_ op: (Drawable) -> Bool) {
+        _ = op(self)
     }
     
     public func draw(context: CGContext, at point: CGPoint) {
@@ -2196,6 +2215,9 @@ public class SelectorBox: Drawable {
         self.color = color
     }
     
+    public func traverse(_ op: (Drawable) -> Bool) {
+        _ = op(self)
+    }
     
     public func drawBox(context: CGContext, at point: CGPoint) {
         self.draw(context: context, at: point)
@@ -2339,6 +2361,10 @@ public class ImageBox: Drawable {
         self.pos = pos
         self.size = size
         self.img = img
+    }
+    
+    public func traverse(_ op: (Drawable) -> Bool) {
+        _ = op(self)
     }
     
     public func drawBox(context: CGContext, at point: CGPoint) {
