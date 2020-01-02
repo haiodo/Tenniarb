@@ -22,18 +22,38 @@ class ClipboardUtils {
         return false
     }
     static func paste( _ operation: (TennNode) -> Void ) {
-//        let av = NSPasteboard.general.availableType(from: [.png, .tiff, .URL])
+        //        let av = NSPasteboard.general.availableType(from: [.URL, .fileURL, .fileContents])
+        
+        if let url = NSPasteboard.general.string(forType: .fileURL) {
+            let lcUrl = url.lowercased()
+            if lcUrl.hasSuffix(".png") || lcUrl.hasSuffix(".jpg"), let rurl = URL(string: url) {
+                // Check if image format is supported.
+                let img = NSImage(contentsOf: rurl )
+                if let tiff = img?.tiffRepresentation,
+                    let imageRep = NSBitmapImageRep(data: tiff),
+                    let pngData = imageRep.representation(using: .png, properties: [:]),
+                    let name = rurl.pathComponents.last {
+                    let node = TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(pngData.base64EncodedString()))
+                    operation(node)
+                    return
+                }
+            }
+        }
+        
+        
         if let value = NSPasteboard.general.data(forType: .png) {
             if let name = NSPasteboard.general.string(forType: .string) {
                 let node = TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(value.base64EncodedString()))
-            operation(node)
+                operation(node)
+                return
             }
         }
         
         if let value = NSPasteboard.general.data(forType: .tiff) {
             if let name = NSPasteboard.general.string(forType: .string) {
                 let node = TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(value.base64EncodedString()))
-            operation(node)
+                operation(node)
+                return
             }
         }
         
