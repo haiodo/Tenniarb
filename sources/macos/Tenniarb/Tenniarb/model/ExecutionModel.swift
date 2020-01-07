@@ -658,7 +658,8 @@ public class ElementContext: NSObject {
         if needUpdateNamed {
             self.namedItems.removeAll()
             for itm in element.items {
-                self.namedItems[itm.name] = self.itemsMap[itm]
+                let itmVal = self.itemsMap[itm]
+                self.namedItems[convertNameJS(itm.name) ?? itm.name] = itmVal
             }
         }
         
@@ -690,14 +691,13 @@ public class ExecutionContextEval: ExecutionContextEvaluator {
     public func getEvaluated(_ item: DiagramItem) -> [TennToken : JSValue] {
         return self.context.getEvaluatedNoSync(item)
     }
-    
-    
 }
+
+let syncQueue = DispatchQueue(label: "Tenniarb.ExecutionContext")
 
 public class ExecutionContext:  ExecutionContextEvaluator {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
-    private let internalGroup: DispatchGroup = DispatchGroup()
 
     let evalContext: ExecutionContextEval = ExecutionContextEval()
     var scaleFactor: CGFloat = 1
@@ -717,21 +717,19 @@ public class ExecutionContext:  ExecutionContextEvaluator {
         self.elements[element] = rootCtx
     }
     public func updateAll(_ notifier: @escaping () -> Void) {
-        DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
-            if let root = self.rootCtx {
-                self.internalGroup.enter()
-                defer {
-                    self.internalGroup.leave()
-                }
-               _ = root.updateContext()
-                let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, scaleFactor: self.scaleFactor, buildChildren: false)
-                // We need to recalculate all stuff
-                for ci in root.itemsMap.values {
-                    if ci.hasExpressions {
-                        _ = ci.updateContext(scene)
+        DispatchQueue.global(qos: .utility).async( execute: {
+            syncQueue.sync {
+                if let root = self.rootCtx {                    
+                    _ = root.updateContext()
+                    let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, scaleFactor: self.scaleFactor, buildChildren: false)
+                    // We need to recalculate all stuff
+                    for ci in root.itemsMap.values {
+                        if ci.hasExpressions {
+                            _ = ci.updateContext(scene)
+                        }
                     }
+                    notifier()
                 }
-                notifier()
             }
         })
     }
@@ -739,22 +737,18 @@ public class ExecutionContext:  ExecutionContextEvaluator {
     public func notifyChanges(_ event: ModelEvent ) {
         if let root = self.rootCtx {
             if event.element == root.element {
-                self.internalGroup.enter()
-                defer {
-                    self.internalGroup.leave()
+                syncQueue.sync {
+                    root.processEvent(event)
                 }
-               root.processEvent(event)
             }
         }
     }
     public func getEvaluated(_ element: Element) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalGroup.enter()
-        defer {
-            self.internalGroup.leave()
-        }
-        if let root = self.rootCtx, root.element == element {
-            value = root.evaluated;
+        syncQueue.sync {
+            if let root = self.rootCtx, root.element == element {
+                value = root.evaluated;
+            }
         }
         return value
     }
@@ -767,12 +761,10 @@ public class ExecutionContext:  ExecutionContextEvaluator {
     }
     public func getEvaluated(_ item: DiagramItem) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalGroup.enter()
-        defer {
-            self.internalGroup.leave()
-        }
-        if let root = self.rootCtx, let ic = root.itemsMap[item] {
-            value = ic.evaluated;
+        syncQueue.sync {
+            if let root = self.rootCtx, let ic = root.itemsMap[item] {
+                value = ic.evaluated;
+            }
         }
         return value
     }
@@ -785,25 +777,21 @@ public class ExecutionContext:  ExecutionContextEvaluator {
     }
     public func getEvaluated(_ item: DiagramItem, _ node: TennNode, _ drawable: Drawable? ) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalGroup.enter()
-        defer {
-            self.internalGroup.leave()
-        }
-        if let root = self.rootCtx, let ic = root.itemsMap[item] {
-            var newItems: [String:Any] = [:]
-            _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, drawable)
+        syncQueue.sync {
+            if let root = self.rootCtx, let ic = root.itemsMap[item] {
+                var newItems: [String:Any] = [:]
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value, drawable)
+            }
         }
         return value
     }
     public func getEvaluated(_ element: Element, _ node: TennNode ) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]
-        self.internalGroup.enter()
-        defer {
-            self.internalGroup.leave()
-        }
-        if let ic = rootCtx, ic.element == element {
-            var newItems: [String:Any] = [:]
-            _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+        syncQueue.sync {
+            if let ic = rootCtx, ic.element == element {
+                var newItems: [String:Any] = [:]
+                _ = ic.updateGetContext(node, newItems: &newItems, newEvaluated: &value)
+            }
         }
         return value
     }
