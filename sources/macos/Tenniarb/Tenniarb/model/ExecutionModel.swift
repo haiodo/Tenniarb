@@ -694,13 +694,15 @@ public class ExecutionContextEval: ExecutionContextEvaluator {
     
 }
 
-public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator {
+public class ExecutionContext:  ExecutionContextEvaluator {
     var elements: [Element:ElementContext] = [:]
     var rootCtx: ElementContext?
     private let internalGroup: DispatchGroup = DispatchGroup()
 
     let evalContext: ExecutionContextEval = ExecutionContextEval()
     var scaleFactor: CGFloat = 1
+    
+    var refreshOp: ((_ evt: ModelEvent ) -> Void)!
     
     init() {
         self.evalContext.context = self
@@ -735,17 +737,15 @@ public class ExecutionContext: IElementModelListener, ExecutionContextEvaluator 
     }
     
     public func notifyChanges(_ event: ModelEvent ) {
-        DispatchQueue.global(qos: .utility).async( group: self.internalGroup, execute: {
-            if let root = self.rootCtx {
-                if event.element == root.element {
-                    self.internalGroup.enter()
-                    defer {
-                        self.internalGroup.leave()
-                    }
-                   root.processEvent(event)
+        if let root = self.rootCtx {
+            if event.element == root.element {
+                self.internalGroup.enter()
+                defer {
+                    self.internalGroup.leave()
                 }
+               root.processEvent(event)
             }
-        })
+        }
     }
     public func getEvaluated(_ element: Element) -> [TennToken:JSValue] {
         var value: [TennToken:JSValue] = [:]

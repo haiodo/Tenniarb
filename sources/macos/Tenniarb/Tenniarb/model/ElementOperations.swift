@@ -199,7 +199,6 @@ public class ElementModelStore {
                 self.modified(evt)
                 refresh()
             }
-            
         }
     }
     
