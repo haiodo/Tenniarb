@@ -47,7 +47,7 @@ open class ItemDrawable: Drawable {
     public var item: DiagramItem? = nil
     var visible: Bool = true
     
-    var bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
+    open var bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
     
     open func drawBox(context: CGContext, at point: CGPoint) {
     }
@@ -288,6 +288,16 @@ class DrawableStyle {
      */
     var layout: String?
     
+    /*
+     A layer define how element are displayed or selected.
+     
+     Supported values:
+     - default - how it works right now.
+     - background - item are drawn as first item before any other, item are not selected by default.
+     - hover - item are drawn as last element
+     */
+    var layer: String?
+    
     init( _ darkMode: Bool ) {
         self.darkMode = darkMode
         reset()
@@ -316,6 +326,7 @@ class DrawableStyle {
         result.shadowColor = self.shadowColor
         result.shadowBlur = self.shadowBlur
         result.lineWidth = self.lineWidth
+        result.layer = self.layer
         
         return result
     }
@@ -431,6 +442,10 @@ class DrawableStyle {
         case PersistenceStyleKind.Display.name:
             if let value = child.getIdent(1) {
                 self.display = value
+            }
+        case PersistenceStyleKind.Layer.name:
+            if let value = child.getIdent(1) {
+                self.layer = value
             }
         case PersistenceStyleKind.Layout.name:
             var layout = ""
@@ -948,6 +963,7 @@ open class DrawableScene: DrawableContainer {
                 box.control = pos
                 box.updateLayout(source: box.sourceRect, target: box.targetRect)
             }
+            
             // Update links
             if let links = itemToLink[item] {
                 for l in links {
@@ -1043,7 +1059,7 @@ open class DrawableScene: DrawableContainer {
         let fs = CTFramesetterCreateWithAttributedString(attrStr)
         
         // Need to have a attributed string without pictures, to have a proper sizes.
-        //        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
         
         //        var size = CGSize(width: frameSize.width, height: frameSize.height )
         // Correct size
@@ -1092,6 +1108,7 @@ open class DrawableScene: DrawableContainer {
             }
             size.width = maxWidth
         }
+        Swift.debugPrint(size)
         return size
     }
     
@@ -1227,22 +1244,22 @@ open class DrawableScene: DrawableContainer {
         
         let attrString = DrawableScene.toAttributedString(tokens: titleTokens, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift, imageProvider: imageProvider, layout: [horizontal, vertical] )
         
-//        do {
-//            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
-//            Swift.debugPrint(String(data: dta, encoding: String.Encoding.utf8))
-//        }
-//        catch let error {
-//            // Ignore
-//        }
-                
+        //        do {
+        //            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
+        //            Swift.debugPrint(String(data: dta, encoding: String.Encoding.utf8))
+        //        }
+        //        catch let error {
+        //            // Ignore
+        //        }
+        
         
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }
         let textBounds = DrawableScene.calculateSize(attrStr: attrString)
         
-        let offx = CGFloat(4)
-        let offy = CGFloat(4)
+        var offx = CGFloat(4)
+        var offy = CGFloat(4)
         
         var wx=offx*2
         var wy=offy*2
@@ -1260,34 +1277,36 @@ open class DrawableScene: DrawableContainer {
             wy = 0
         }
         
-        if width > textBounds.width {
+        if width - offx > textBounds.width {
             wx = 0
+            offx = (width - textBounds.width) / 2
         }
-        if height > textBounds.height {
+        if height - offy > textBounds.height {
             wy = 0
+            offy = (height - textBounds.height) / 2
         }
         
         let sz = CGSize(width: width + shift.x+wx, height: height + shift.y + wy )
-        bounds = CGRect(origin: CGPoint(x:e.x, y:e.y), size: sz)
+        bounds = CGRect(origin: CGPoint(x:e.x, y:e.y - sz.height), size: sz)
         
         var finalTextBounds = CGRect( origin: CGPoint(x:offx, y:offy), size: CGSize(width: textBounds.width + shift.x, height: textBounds.height + shift.y))
         
-//        var resultHtmlText = ""
-//               do {
-//                   
-//                   let r = NSRange(location: 0, length: attrString.length)
-//                   let att = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
-//                   
-//                   let d = try attrString.data(from: r, documentAttributes: att)
-//                   
-//                   if let h = String(data: d, encoding: .utf8) {
-//                       resultHtmlText = h
-//                   }
-//               }
-//               catch {
-//                   print("utterly failed to convert to html!!! \n>\(x)<\n")
-//               }
-//               print(resultHtmlText)
+        //        var resultHtmlText = ""
+        //               do {
+        //
+        //                   let r = NSRange(location: 0, length: attrString.length)
+        //                   let att = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
+        //
+        //                   let d = try attrString.data(from: r, documentAttributes: att)
+        //
+        //                   if let h = String(data: d, encoding: .utf8) {
+        //                       resultHtmlText = h
+        //                   }
+        //               }
+        //               catch {
+        //                   print("utterly failed to convert to html!!! \n>\(x)<\n")
+        //               }
+        //               print(resultHtmlText)
         
         if finalTextBounds.size.width + offx*2 < width {
             finalTextBounds.size.width = width - offx*2
@@ -2122,7 +2141,7 @@ public class DrawableLine: ItemDrawable {
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
         }
-    
+        
         let (aPath, _, drawArrow, _, _) = self.buildPath(CGPoint(x:0, y:0))
         
         let box = aPath.boundingBox
@@ -2138,7 +2157,7 @@ public class DrawableLine: ItemDrawable {
             maxX += 10
             maxY += 10
         }
-
+        
         
         
         return CGRect(x:minX, y:minY, width:abs(maxX-minX), height:max(abs(maxY-minY), 5.0)).insetBy(dx: -1*style.lineWidth, dy: -1*style.lineWidth)
@@ -2343,7 +2362,7 @@ public class SelectorLine: ItemDrawable {
             minY = min(ep.y, minY)
             maxY = max(ep.y, maxY)
         }
-                
+        
         return CGRect(x:minX, y:minY, width:(maxX-minX), height:max(maxY-minY, 5.0))
     }
     public override func update() {

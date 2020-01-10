@@ -53,7 +53,7 @@ element "Tenniarb" {
             }
         }
         item "Tenniarb" {
-            pos -263.0 129.0
+            pos -278.0 192.0
             color "#0022ee"
             font-size 25
             color red
@@ -79,7 +79,7 @@ element "Tenniarb" {
         }
         link "UI" "Editing"
         item "Editing" {
-            pos -92.0 -22.0
+            pos -86.0 4.0
             color "#00ee00"
             font-size 25
             display circle
@@ -238,7 +238,7 @@ testing" {
         }
         item "Functional
 testing" {
-            pos -125.0 282.0
+            pos -135.0 296.0
             font-size 12
         }
         link "Quality" "Performance"
@@ -400,7 +400,7 @@ Engine" "expr dsl"
         }
         link "Links" "Corrections"
         item "Keyboard\nshortcuts" {
-            pos -345.94921875 108.0
+            pos -363.94921875 111.0
             color red
             color green
         }
@@ -640,6 +640,17 @@ Positioning"
             pos -1.0 0.0
             layout quad
         }
+        item "Floating" {
+            pos -440.0679626464844 -28.0
+            color red
+        }
+        link "Links" "Floating"
+        item "Embedded
+diagram" {
+            pos -427.0289001464844 66.0
+        }
+        link "Scene Draw" "Embedded
+diagram"
     }
     element "Process" {
         item "Делай для себя" {
@@ -941,7 +952,7 @@ ${name}}
         }
         item "Properties
 panel" {
-            pos 293.5999871549718 -35.86595237075403
+            pos 293.5999755859375 -35.86595153808594
         }
         item "-" {
             pos 208.86306762695312 -146.86595153808594
@@ -1075,14 +1086,14 @@ panel" "-"
             }
             element "Docs" {
                 item "Display" {
-                    pos -385.0 100.0
+                    pos -378.0 174.0
                     body %{rect}
                     width ${items.MultiBody.width}
                     height ${items.MultiBody.height}
                     display rect
                 }
                 item "Named" {
-                    pos -254.0 103.0
+                    pos -247.0 177.0
                     body {
                         text %{no-fill}
                         text-color red
@@ -1092,7 +1103,7 @@ panel" "-"
                     display no-fill
                 }
                 item "Display" {
-                    pos -6.0 96.0
+                    pos 1.0 170.0
                     body {
                         text %{Stack}
                         text-color red
@@ -1102,7 +1113,7 @@ panel" "-"
                     display stack
                 }
                 item "Display" {
-                    pos -130.0 101.0
+                    pos -123.0 175.0
                     title "My title ${parent.items.length}"
                     width ${items.MultiBody.width}
                     height ${items.MultiBody.height}
@@ -1134,7 +1145,7 @@ panel" "-"
                     font-size 10
                 }
                 item "MultiBody" {
-                    pos 117.0 98.0
+                    pos 124.0 172.0
                     body {
                         text %{
         A
@@ -4324,20 +4335,20 @@ Text on Green" {
         }
         element "Font size" {
             item "Default item" {
-                pos -594.0 185.5078125
+                pos -592.0 216.0
                 body "Default body"
                 font-size 18
             }
             item "Font - 10" {
-                pos -245.0 194.5078125
+                pos -243.0 216.0
                 font-size 10
             }
             item "Font - 30" {
-                pos -162.0 180.5078125
+                pos -160.0 216.0
                 font-size 30
             }
             item "Default item - 10" {
-                pos -454.0 162.5078125
+                pos -452.0 216.0
                 body {
                     text "Body text - 30"
                     font-size 30
@@ -4398,32 +4409,27 @@ Text on Green" {
                 height ${items.MultiBody.height}
             }
             item "Variant 1" {
-                pos -367.0842590332031 225.0
+                pos -366.0842590332031 179.0
                 display text
                 font-size 10
             }
             item "Variant 2" {
-                pos -247.08425903320312 225.0
+                pos -246.08425903320312 179.0
                 display text
                 font-size 10
             }
             item "Variant 3" {
-                pos -120.0 225.0
+                pos -119.0 179.0
                 display text
                 font-size 10
             }
             item "Variant 4" {
-                pos -3.084259033203125 225.0
+                pos -2.084259033203125 179.0
                 display text
                 font-size 10
             }
         }
         element "Text positioning" {
-            item "Center\nMiddle" {
-                pos -619.0 130.0
-                width 100
-                height 100
-            }
             item "Center" {
                 pos -491.0 130.0
                 body {
@@ -4555,6 +4561,11 @@ asdasd
                 width 100
                 height 100
             }
+            item "Center\nMiddle" {
+                pos -615.0 132.0
+                width 100
+                height 100
+            }
         }
         element "Width/Height" {
             item "Variant 1" {
@@ -4627,7 +4638,7 @@ asdasd
                 pos -44.08984375 244.20077514648438
             }
             item "topics" {
-                pos -434.0 -3.0078125
+                pos -428.0 68.9921875
                 title %{
     # 1. Topic
     and value. Some text is here.
@@ -4639,27 +4650,27 @@ asdasd
                 pos -259.08984375 -48.0078125
             }
             item "Text is `code block\nwith new line`Inside text" {
-                pos -223.08984375 116.9921875
+                pos -226.08984375 180.9921875
                 layout left
             }
             item "Bullets
 * 1 variant 1
 * 2 variant 2
  * sub variant" {
-                pos -61.94482421875 114.14453125
+                pos -78.94482421875 185.14453125
                 layout left
             }
             item "Text is <underline>" {
                 pos -434.0 -48.0078125
             }
             item "Text is ~scratchs~" {
-                pos -87.08984375 18.9921875
+                pos -94.08984375 60.9921875
             }
             item "*Color* !(red)RED *and* !() *black* bold" {
                 pos -434.0 244.20077514648438
             }
             item "Text is !(red) `RED code`" {
-                pos -94.08984375 -50.0
+                pos -98.08984375 -48.0
             }
         }
         element "Circle image" {

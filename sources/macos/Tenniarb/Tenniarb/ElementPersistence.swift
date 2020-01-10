@@ -58,6 +58,7 @@ public enum PersistenceStyleKind {
     case Shadow
     case LineWidth
     case Marker
+    case Layer
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -78,6 +79,7 @@ public enum PersistenceStyleKind {
         case .Shadow: return "shadow";
         case .LineWidth: return "line-width";
         case .Marker: return "marker";
+        case .Layer: return "layer";
         }
     }
 }

@@ -1575,10 +1575,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     scheduleRedraw()
                 }
                 else {
-                    if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1) {
+                    if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1), let dde = self.scene?.drawables[de] {
                         let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
                         self.dragMap[de] = newPos
-                        newPositions[de] = newPos
+                        
+                        var viewPos = CGPoint( x: newPos.x, y: newPos.y)
+                        
+                        if let box = dde as? RoundBox {
+                            viewPos.y -= box.bounds.height
+                        }
+                        if let box = dde as? CircleBox {
+                            viewPos.y -= box.bounds.height
+                        }
+                        if let box = dde as? EmptyBox {
+                            viewPos.y -= box.bounds.height
+                        }
+                        newPositions[de] = viewPos
                     }
                 }
             }
@@ -1841,7 +1853,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.restoreGState()
         }
-        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
+//        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
     }
     
     public func selectAllItems() {
@@ -2158,19 +2170,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var topPos = CGFloat(roundf(Float(self.activeItems[0].y)))
         for active in self.activeItems {
-            if let dr = self.scene?.drawables[active] {
-                let bnds = dr.getBounds()
-                if active.y + bnds.height > topPos  {
-                    topPos = CGFloat(roundf(Float(active.y + bnds.height)))
-                }
+            if active.y  > topPos  {
+                topPos = CGFloat(roundf(Float(active.y )))
             }
         }
         for active in self.activeItems {
-            if let dr = self.scene?.drawables[active] {
-                let bnds = dr.getBounds()
-                let newPos = CGPoint( x: active.x, y: topPos - bnds.height)
-                ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
-            }
+            let newPos = CGPoint( x: active.x, y: topPos )
+            ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
         }
         if ops.count > 0 {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
@@ -2185,13 +2191,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var bottomPos = CGFloat(roundf(Float(self.activeItems[0].y)))
         for active in self.activeItems {
-            if active.y < bottomPos  {
-                bottomPos = CGFloat(roundf(Float(active.y)))
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                if active.y - bnds.height < bottomPos  {
+                    bottomPos = CGFloat(roundf(Float(active.y - bnds.height)))
+                }
             }
         }
         for active in self.activeItems {
-            let newPos = CGPoint( x: active.x, y: bottomPos)
-            ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+            if let dr = self.scene?.drawables[active] {
+                let bnds = dr.getBounds()
+                let newPos = CGPoint( x: active.x, y: bottomPos + bnds.height)
+                ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
+            }
         }
         if ops.count > 0 {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
