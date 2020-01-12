@@ -192,6 +192,40 @@ class MarkDownAttributedPrinter {
             lastLiteral = literal
         }
         
+//        var table = NSTextTable()
+//        table.numberOfColumns = 2
+//        table.collapsesBorders = true
+//        table.backgroundColor = .brown
+//
+//        func makeCell(row: Int, col column: Int, text: String) -> NSMutableAttributedString {
+//            let textBlock = NSTextTableBlock(table: table, startingRow: row, rowSpan: 1, startingColumn: column, columnSpan: 1)
+//
+//            textBlock.setBorderColor(.black)
+//            textBlock.setWidth(5.0, type: NSTextBlock.ValueType.absoluteValueType, for: NSTextBlock.Layer.border)
+//            textBlock.setWidth(5.0, type: NSTextBlock.ValueType.absoluteValueType, for: NSTextBlock.Layer.padding)
+//            
+//            let paragraph = NSMutableParagraphStyle()
+//            paragraph.textBlocks = [textBlock]
+//
+//            let cell = NSMutableAttributedString(string: text + "\n", attributes: [
+//                .paragraphStyle: paragraph,
+//            ])
+//
+//            return cell
+//        }
+//
+//        let content = NSMutableAttributedString(string: "some text")
+//        content.append(NSAttributedString(string: "\n")) // this newline is required in case content is not empty.
+//
+//        //If you append table cells to some text without newline, the first row might not show properly.
+//        content.append(makeCell(row: 0, col: 0, text: "c00"))
+//        content.append(makeCell(row: 0, col: 1, text: "c 0 1"))
+//        content.append(makeCell(row: 1, col: 0, text: "c 1 0"))
+//        content.append(makeCell(row: 1, col: 1, text: "c11"))
+//        
+//        result.append(content)
+        
         return result
     }
 }
+

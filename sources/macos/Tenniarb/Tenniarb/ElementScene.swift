@@ -1059,7 +1059,7 @@ open class DrawableScene: DrawableContainer {
         let fs = CTFramesetterCreateWithAttributedString(attrStr)
         
         // Need to have a attributed string without pictures, to have a proper sizes.
-        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+//        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
         
         //        var size = CGSize(width: frameSize.width, height: frameSize.height )
         // Correct size
@@ -1108,7 +1108,6 @@ open class DrawableScene: DrawableContainer {
             }
             size.width = maxWidth
         }
-        Swift.debugPrint(size)
         return size
     }
     
@@ -1279,9 +1278,16 @@ open class DrawableScene: DrawableContainer {
         
         if width - offx > textBounds.width {
             wx = 0
-            offx = (width - textBounds.width) / 2
         }
         if height - offy > textBounds.height {
+            wy = 0
+        }
+        
+        if width - offx > textBounds.width && width <= 20 {
+            wx = 0
+            offx = (width - textBounds.width) / 2
+        }
+        if height - offy > textBounds.height && height <= 20 {
             wy = 0
             offy = (height - textBounds.height) / 2
         }

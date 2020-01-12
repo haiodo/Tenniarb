@@ -794,7 +794,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     func getEditBoxBounds( item: Drawable ) -> CGRect {
-        var deBounds = self.editBoxItem!.getBounds()
+        var deBounds = self.editBoxItem!.getSelectorBounds()
         if let link =  item as? DrawableLine {
             deBounds = link.getLabelBounds()
         }
