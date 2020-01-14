@@ -216,6 +216,9 @@ public class MarkdownLexer {
                     if processUntilCharExceptNewLine(&r, "*") {
                         self.add(type: .bold, literal: r)
                     } else {
+                        if r == "" {
+                            r.append("*") // Just *
+                        }
                         self.add(type: .text, literal: r)
                     }
                     r.removeAll()//keepingCapacity: true)

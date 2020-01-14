@@ -79,6 +79,9 @@ class MarkDownAttributedPrinter {
             case .bullet:
                 let ps = paragraphStyle.mutableCopy() as! NSMutableParagraphStyle
                 ps.headIndent = CGFloat( 5 * literal.count )
+                let l = NSTextList(markerFormat: .diamond, options: 0)
+                l.startingItemNumber = 1
+                ps.textLists.append(l)
                 if ps.headIndent > shift.x {
                     shift.x = ps.headIndent
                 }
@@ -191,7 +194,7 @@ class MarkDownAttributedPrinter {
             pos += 1
             lastLiteral = literal
         }
-        
+    
 //        var table = NSTextTable()
 //        table.numberOfColumns = 2
 //        table.collapsesBorders = true
@@ -224,7 +227,6 @@ class MarkDownAttributedPrinter {
 //        content.append(makeCell(row: 1, col: 1, text: "c11"))
 //        
 //        result.append(content)
-        
         return result
     }
 }

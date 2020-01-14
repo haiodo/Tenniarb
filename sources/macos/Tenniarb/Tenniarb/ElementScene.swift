@@ -43,9 +43,17 @@ public protocol Drawable {
     func traverse(_ op: (_ itm: Drawable )->Bool)
 }
 
+public enum DrawableLayer {
+    case Background
+    case Default
+    case Hover
+}
+
+
 open class ItemDrawable: Drawable {
     public var item: DiagramItem? = nil
     var visible: Bool = true
+    var layer: DrawableLayer = .Default
     
     open var bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
     
@@ -180,8 +188,25 @@ open class DrawableContainer: ItemDrawable {
     
     open override func draw(context: CGContext, at point: CGPoint) {
         if let ch = self.children {
+            // Background draw
             for c in ch {
+                if let itemDraw = c as? ItemDrawable, itemDraw.layer == .Background, c.isVisible()  {
+                    c.draw(context: context, at: point)
+                }
+            }
+            // Normal draw
+            for c in ch {
+                // Skip background, hover ones one
+                if let itemDraw = c as? ItemDrawable, itemDraw.layer == .Background || itemDraw.layer == .Hover {
+                    continue
+                }
                 if c.isVisible() {
+                    c.draw(context: context, at: point)
+                }
+            }
+            // Hover draw
+            for c in ch {
+                if let itemDraw = c as? ItemDrawable, itemDraw.layer == .Hover, c.isVisible()  {
                     c.draw(context: context, at: point)
                 }
             }
@@ -1023,6 +1048,20 @@ open class DrawableScene: DrawableContainer {
         
     }
     
+    fileprivate func parseLayer(_ style: DrawableStyle ) -> DrawableLayer {
+        if let layer = style.layer {
+            switch layer {
+            case "background":
+                return .Background
+            case "hover":
+                return .Hover
+            default:
+                break
+            }
+        }
+        return .Default
+    }
+    
     fileprivate func buildRoundRect(_ bounds: CGRect, _ style: DrawableItemStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer, fill: Bool = true, stack:Int=0) {
         let rectBox = RoundBox( bounds: bounds,
                                 style, fill: fill)
@@ -1030,6 +1069,8 @@ open class DrawableScene: DrawableContainer {
         rectBox.append(textBox)
         
         rectBox.item = e
+        rectBox.layer = parseLayer(style)
+        
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
@@ -1041,6 +1082,7 @@ open class DrawableScene: DrawableContainer {
         rectBox.append(textBox)
         
         rectBox.item = e
+        rectBox.layer = parseLayer(style)
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
@@ -1050,6 +1092,16 @@ open class DrawableScene: DrawableContainer {
         let rectBox = EmptyBox( bounds: bounds, style )
         rectBox.append(textBox)
         rectBox.item = e
+        rectBox.layer = parseLayer(style)
+        
+        drawables[e] = rectBox
+        elementDrawable.append(rectBox)
+    }
+    fileprivate func buildInvisibleRect(_ bounds: CGRect, _ style: DrawableStyle, _ e: DiagramItem, _ textBox: TextBox, _ elementDrawable: DrawableContainer) {
+        let rectBox = InvisibleBox( bounds: bounds, style )
+        rectBox.append(textBox)
+        rectBox.item = e
+        rectBox.layer = parseLayer(style)
         
         drawables[e] = rectBox
         elementDrawable.append(rectBox)
@@ -1386,6 +1438,9 @@ open class DrawableScene: DrawableContainer {
                 buildRoundRect(bounds, style, e, textBox, elementDrawable, stack: 3)
             case "circle":
                 buildCircle(bounds, style, e, textBox, elementDrawable)
+                break
+            case "none":
+                buildInvisibleRect(bounds, style, e, textBox, elementDrawable)
                 break;
             default:
                 buildRoundRect(bounds, style, e, textBox, elementDrawable, fill: true)
@@ -1645,6 +1700,12 @@ public class EmptyBox: DrawableContainer {
     
     public override func getBounds() -> CGRect {
         return bounds
+    }
+}
+
+class InvisibleBox: EmptyBox {
+    override func isVisible() -> Bool {
+        return false
     }
 }
 
