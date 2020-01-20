@@ -2,18 +2,7 @@
       <title>readme</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      
-      <link rel="stylesheet" href="file:////Users/haiodo/.vscode/extensions/shd101wyy.markdown-preview-enhanced-0.4.3/node_modules/@shd101wyy/mume/dependencies/katex/katex.min.css">
-      
-      
-
-      
-      
-      
-      
-      
-      
-
+            
       <style>
       /**
  * prism.js Github theme based on GitHub's theme.
@@ -281,7 +270,7 @@ pre[data-line] .line-highlight[data-end]:after {
 <h3 class="mume-header" id="main-screen">Main screen</h3>
 
 <p>Main window:</p>
-<p><img src="main_screen.png" alt></p>
+<p><img src="general_info.png" alt></p>
 <p>Main window has following structural components:</p>
 <ul>
 <li>
@@ -361,10 +350,15 @@ Tenniarb support following item styles to define different look:</p>
 <td><img src="styling_items.png"></td>
 </tr>
 <tr>
-<td>Popup toolbar could be used for fast apply for basic display, color,font size, line width and marker fields. </td>
+<td>Popup toolbar could be used for fast apply for basic display, color,font size, line width and marker fields.
+</td>
 
 <td><img src="diagram_quick_styles.png"></td>
 </tr><tr>
+<td>
+Quick edit bar (press &apos;Space&apos; on item) could be used for fast editing of multiple properties. Use &apos;;&apos; as separator. Use of &apos;-command&apos; syntax will remove property from lit of item properties. This feature works for all selected items.</td><td><img src="quickbar_multiitems.png"></td>
+</tr>
+<tr>
 <td>All styles could be editing using textual representation in Tell language format. More details will be in Styling secrtion of this document.
 </td>
 <td><img src="textual_styles.png"></td>
@@ -396,10 +390,11 @@ text-color red // Define only text color.
     </tr>
 </tbody></table>
 <p>Background and text color by default will be automaticcaly ajusted to fit into selected user theme.</p>
-<h4 class="mume-header" id="title-and-body-properties">Title and Body properties.</h4>
+<h4 class="mume-header" id="titlebodyvalue-properties">Title/Body/value properties.</h4>
 
-<p>Every item on layer could be labeled by title and could have additional body field, if body is defined it will be shown udner title, and title will be on left of item.</p>
+<p>Every item on layer could be labeled by title and could have additional body/value fields, if body is defined it will be shown udner title, and title will be on left of item.</p>
 <p>By default <code>title</code> field uses name of item on layer. So it could be used without specificatio for most of situations. But could be changed, also <code>title</code> in compare to name support variable substituions and scripting.</p>
+<p><code>Value</code> property could be used inside body and title using <code>${value}</code> syntax, and could be easy edited using keyboard shortcuts or menu.</p>
 <table>
 <tbody><tr><th colspan="2"><img src="body_all.png" width="600px"></th>
 </tr><tr>
@@ -435,6 +430,11 @@ text-color red // Define only text color.
 }
     </pre>
     </td>
+</tr>
+<tr>
+<td>Title and body could be edited by using context menu or keyboard shortcuts.
+</td>
+<td><img src="edit_title_body_value.png"></td>
 </tr>
 </tbody></table>
 <h4 class="mume-header" id="font-size-and-body-font-size">Font size and body font size.</h4>
@@ -544,6 +544,29 @@ a usefull for writing some text descriptions and formatted text areas. A full <b
 </td>
 </tr>
 </tbody></table>
+<h3 class="mume-header" id="layout-property">Layout property.</h3>
+
+<table>
+<tbody><tr>
+<td>
+Layout could be used to define how text is diplayed:
+<p>Supported following valyes of layout property:</p>
+<ul>
+<li>left - display text on left</li>
+<li>center - diplay on center</li>
+<li>right - display on right</li>
+<li>middle - use middle layout</li>
+<li>top - on top</li>
+<li>bottom - on bottom</li>
+<li>fill - use all vertical space</li>
+</ul>
+<p>Property could be specified on top level and for body.</p>
+</td>
+<td>
+<img src="text-layout.png" width="400">
+</td>
+</tr>
+</tbody></table>
 <h3 class="mume-header" id="reusable-styles">Reusable styles</h3>
 
 <p>Every layer support it&apos;s own defined styles, this styles could be used to define look of items.</p>
@@ -581,20 +604,24 @@ On clicking to <code>Define new style</code> selection will switch to layer itse
     </td>
 </tr>
 <tr>
-    <td>2. <code>display arrow</code></td><td>draws arrow on target side.</td></tr>
-
+    <td>2. <code>display arrow</code></td><td>draws arrow on target side.</td>
+</tr>
 <tr>
-    <td>3. <code>display arrows</code></td><td>draws arrows on both sides.</td></tr>
-
+    <td>3. <code>display arrows</code></td><td>draws arrows on both sides.</td>
+</tr>
 <tr>
-    <td>4 <code>line-style dashed</code></td><td>draw line dashed.</td></tr>
-
+    <td>4 <code>line-style dashed</code></td><td>draw line dashed.</td>
+</tr>
 <tr>
-    <td>5 <code>line-style dotted</code></td><td>draw lines with dots.</td></tr>
-
+    <td>5 <code>line-style dotted</code></td><td>draw lines with dots.</td>
+</tr>
 <tr>
-    <td>6 <code>line-width 2</code> </td><td>control width of line.</td></tr>
-
+    <td>6 <code>line-width 2</code> </td><td>control width of line.</td>
+</tr>
+<tr>
+    <td>7 <code>layout quad</code> </td><td>Quad bezie line style</td>
+    <td><img src="quad-line-style.png"></td>
+</tr>
 </tbody></table>
 <p>Every line could be split and corrected by dragging line, it will add a <code>pos x y</code> property to controll offset from line central point, so this point will be moved every time line source/target will be moven.</p>
 <h2 class="mume-header" id="line-styles">Line styles.</h2>
@@ -606,6 +633,99 @@ On clicking to <code>Define new style</code> selection will switch to layer itse
 <li><code>line-style dotted</code> draw lines with dots.</li>
 <li><code>line-width 2</code> control width of line.</li>
 </ul>
+<h2 class="mume-header" id="markdown-support">Markdown support.</h2>
+
+<p>Since 1.1 Tenniab support basic markdown syntax in name/title/body fields.</p>
+<p>To display bold, italic and colored values. Also now it support embedded images.</p>
+<p>Supported Markdown styles:</p>
+<table>
+<tbody><tr>
+<td width="300">
+<pre data-role="codeBlock" data-info class="language-"><code>Bold style
+name &quot;Text is *bold*&quot;
+</code></pre></td>
+<td><img src="markdown_bold.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Italic
+name &quot;Text is _italic_&quot;
+</code></pre></td>
+<td><img src="markdown_italic.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Under line
+name &quot;Text is &lt;underline&gt;&quot;
+</code></pre></td>
+<td><img src="markdown_underline.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Code block
+name &quot;Text is `code`&quot;
+</code></pre></td>
+<td><img src="markdown_code.png" height="120"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Scratches
+name &quot;Text is ~scratchs~&quot;
+</code></pre></td>
+<td><img src="markdown_scratches.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Color selection
+name &quot;Color !(red)RED and !() black&quot;
+</code></pre></td>
+<td><img src="markdown_color.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Color word selection
+name &quot;Color !(red|RED) and !(blue|blue)&quot;
+</code></pre></td>
+<td><img src="markdown_color_word.png" height="70"></td>
+</tr>
+<tr>
+<td>
+<pre data-role="codeBlock" data-info class="language-"><code>Topics
+title %{
+    # 1. Topic
+    and value. Some text is here.
+    # 2. Topic
+    and value2. Some more text is here.
+}
+</code></pre></td><td><img src="markdown_topics.png" width="300"></td><td>
+</td></tr>
+</tbody></table>
+<h1 class="mume-header" id="image-attachments-support">Image attachments support</h1>
+
+<p>Since 1.1 Tenniarb support inline image attachments.</p>
+<ol>
+<li>
+<p>Attach image using context menu.<br>
+<img src="attach_image.png" width="300"></p>
+</li>
+<li>
+<p>Copy and paste image from browser.<br>
+<img src="copy_paste_images.png" width="300"></p>
+</li>
+<li>
+<p>Use images.<br>
+<img src="use_images_props.png" width="600"></p>
+</li>
+</ol>
+<p>Images could be inserted using syntax</p>
+<pre data-role="codeBlock" data-info class="language-"><code>@(image_name|[width][x][height])
+</code></pre><p>With optional size constrains:</p>
+<ul>
+<li>300 - width with aspect ration preserved</li>
+<li>x300 - just height with aspect ratio preserved</li>
+<li>200x300 - both width and height specified.</li>
+</ul>
+<p>Images at this version could be used only from same item as attached.</p>
 <h1 class="mume-header" id="advanced-details">Advanced details.</h1>
 
 <h2 class="mume-header" id="tenn-language-reference">Tenn language reference.</h2>
@@ -634,15 +754,5 @@ String support <code>\c</code> escaping.</li>
 <p>(!) All comments are fully removed at this versions of application during save and load.</p>
 
       </div>
-      
-      
-    
-    
-    
-    
-    
-    
-    
-    
-  
+
     </body></html>

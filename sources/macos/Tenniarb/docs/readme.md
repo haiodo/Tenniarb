@@ -542,6 +542,26 @@ title %{
 
 Since 1.1 Tenniarb support inline image attachments.
 
+1. Attach image using context menu.
+<img src="./Images/attach_image.png" width="300"/>
+
+2. Copy and paste image from browser.
+<img src="./Images/copy_paste_images.png" width="300"/>
+
+3. Use images.
+<img src="./Images/use_images_props.png" width="600"/>
+
+Images could be inserted using syntax
+```
+@(image_name|[width][x][height])
+```
+With optional size constrains:
+* 300 - width with aspect ration preserved
+* x300 - just height with aspect ratio preserved
+* 200x300 - both width and height specified.
+
+Images at this version could be used only from same item as attached.
+
 
 # Advanced details.
 
