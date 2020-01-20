@@ -45,6 +45,7 @@ class MarkDownAttributedPrinter {
         var pos = 0
         var prevMultiCode = false
         var lastLiteral = ""
+        var lastToken: MarkdownTokenType = .eof
         for t in tokens {
             var literal = t.literal
             if prevMultiCode {
@@ -59,6 +60,9 @@ class MarkDownAttributedPrinter {
                     attrType.foregroundColor: NSColor.black,
                     attrType.backgroundColor: colorValue,
                 ]))
+            }
+            if t.type != .eof {
+                lastToken = t.type
             }
             switch t.type {
             case .text:
@@ -193,6 +197,14 @@ class MarkDownAttributedPrinter {
             }
             pos += 1
             lastLiteral = literal
+        }
+        
+        if lastToken == .image {
+            result.append(attrStr("\n",[
+                attrType.font: font,
+                attrType.paragraphStyle: paragraphStyle,
+                attrType.foregroundColor: NSColor.black
+            ]))
         }
     
 //        var table = NSTextTable()

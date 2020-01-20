@@ -28,7 +28,7 @@ Where `element` is describing a logic structure of diagram layers embedded one i
 
 Main window:
 
-![](./Images/main_screen.png)
+![](./Images/general_info.png)
 
 Main window has following structural components:
 
@@ -443,52 +443,104 @@ Since 1.1 Tenniab support basic markdown syntax in name/title/body fields.
 
 To display bold, italic and colored values. Also now it support embedded images.
 
+Supported Markdown styles:
 <table>
 <tr>
 <td width="300">
-Supported Markdown styles
 
-* Bold -
-    ```
-    name "Text is *bold*"
-    ```
-* Italic -
-    ```
-    name "Text is _italic_"
-    ```
-* Under line -
-    ```
-    name "Text is <underline>"
-    ```
-* Code block -
-    ```
-    name "Text is `code`"
-    ```
-* Scratches -
-    ```
-    name "Text is ~scratchs~"
-    ```
-* Color selection -
-    ```
-    name "Color !(red)RED and !() black"
-    ```
-* Color word -
-    ```
-    name "Color !(red|RED) and !(blue|blue)"
-    ```
-* Topics -
-    ```
-    title %{
-        # 1. Topic
-        and value. Some text is here.
-        # 2. Topic
-        and value2. Some more text is here.
-    }
-    ```
+```
+Bold style
+name "Text is *bold*"
+```
 
-</td><td><img src="./Images/markdown-support.png" width="600"/><td/>
+</td>
+<td><img src="./Images/markdown_bold.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Italic
+name "Text is _italic_"
+```
+</td>
+<td><img src="./Images/markdown_italic.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Under line
+name "Text is <underline>"
+```
+
+</td>
+<td><img src="./Images/markdown_underline.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Code block
+name "Text is `code`"
+```
+
+</td>
+<td><img src="./Images/markdown_code.png" height="120"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Scratches
+name "Text is ~scratchs~"
+```
+
+</td>
+<td><img src="./Images/markdown_scratches.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Color selection
+name "Color !(red)RED and !() black"
+```
+
+</td>
+<td><img src="./Images/markdown_color.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Color word selection
+name "Color !(red|RED) and !(blue|blue)"
+```
+
+</td>
+<td><img src="./Images/markdown_color_word.png" height="70"/></td>
+</tr>
+<tr>
+<td>
+
+```
+Topics
+title %{
+    # 1. Topic
+    and value. Some text is here.
+    # 2. Topic
+    and value2. Some more text is here.
+}
+```
+
+</td><td><img src="./Images/markdown_topics.png" width="300"/><td/>
 </tr>
 </table>
+
+# Image attachments support
+
+Since 1.1 Tenniarb support inline image attachments.
 
 
 # Advanced details.

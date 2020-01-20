@@ -1111,7 +1111,7 @@ open class DrawableScene: DrawableContainer {
         let fs = CTFramesetterCreateWithAttributedString(attrStr)
         
         // Need to have a attributed string without pictures, to have a proper sizes.
-//        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
+        let frameSize = CTFramesetterSuggestFrameSizeWithConstraints(fs, CFRangeMake(0, attrStr.length), nil, CGSize(width: 30000, height: 30000), nil)
         
         //        var size = CGSize(width: frameSize.width, height: frameSize.height )
         // Correct size
@@ -1138,11 +1138,17 @@ open class DrawableScene: DrawableContainer {
                 var maxFontSize = ascent + descent
                 
                 maxHeight = ascent + descent + leading
-                
+                var psAdded = false
                 for i in 0..<range.length {
                     if let attr = attrStr.attribute(NSAttributedString.Key.font, at: range.location+i, effectiveRange: nil), let font = attr as? NSFont {
                         if font.pointSize > maxFontSize {
                             maxFontSize = font.pointSize
+                        }
+                    }
+                    if !psAdded {
+                        if let attr = attrStr.attribute(NSAttributedString.Key.paragraphStyle, at: range.location+i, effectiveRange: nil), let ps = attr as? NSParagraphStyle {
+                            maxHeight += ps.paragraphSpacing
+                            psAdded = true
                         }
                     }
                     if let attr = attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
@@ -1159,6 +1165,9 @@ open class DrawableScene: DrawableContainer {
                 size.height += maxHeight
             }
             size.width = maxWidth
+        }
+        if size.height < frameSize.height {
+            size.height = frameSize.height
         }
         return size
     }
