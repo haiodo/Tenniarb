@@ -313,7 +313,7 @@ class DrawableStyle {
      */
     var layout: String?
     
-    /*
+    /* 
      A layer define how element are displayed or selected.
      
      Supported values:

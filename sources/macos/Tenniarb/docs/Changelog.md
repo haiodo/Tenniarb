@@ -8,6 +8,7 @@ Fixed bugs:
 * Auto selection of items after addition, and other operations.
 * Fix floating point number rounding.
 * Fix link doubling when do duplicate.
+* Fix concurency issues with calculation engine operations.
 
 Improvements:
 * Improve parsing performance, up to 2x for some files.
@@ -23,6 +24,12 @@ Improvements:
     * Context menu for selection.
     * Move Front/Back.
     * Align modes for edges.
+
+Selection improvements:
+* Option + Click, select all items with outgoing relatives.
+
+Editing improvements:
+* Cmd+Enter -> edit value field for item.
 
 Breaking changes:
 * Positioning of items changes to grow down instead of grow up, so some diagrams could move up/down.
