@@ -14,12 +14,6 @@ li {
 a {
   color: #42b983;
 }
-// .check-img {
-//   display: inline-block;
-//   background-image: url("../assets/check_mark.svg");
-//   width: 24px !important;
-//   height: 24px !important;;
-// }
 </style>
 
 <script lang="ts">
@@ -37,11 +31,11 @@ export default class FeaturesPage extends Vue {}
 </script>
 
 <template>
-  <div>
+  <div class="content">
     <TextBlock title="Tenniarb" subtitle="Brain network modeling tool">
       <img width="128" height="128" src="../assets/logo.png" />
     </TextBlock>
-    <FeatureBlock title="What it is">
+    <FeatureBlock title="What it is?">
       <template v-slot:descr>Tenniarb is a generic diagram modeling tool capable of doing.</template>
       <template v-slot:items>
         <div>Simple/Complex diagramming</div>
@@ -53,7 +47,9 @@ export default class FeaturesPage extends Vue {}
       </template>
     </FeatureBlock>
     <FeatureBlock color="grey" title="Use Cases">
-      <template v-slot:descr>Tenniarb is designed for simplicity and could be used for following use-cases</template>
+      <template
+        v-slot:descr
+      >Tenniarb is designed for simplicity and could be used for following use-cases</template>
       <template v-slot:items>
         <div>Mind mapping</div>
         <div>Flow diagrams</div>
@@ -64,31 +60,13 @@ export default class FeaturesPage extends Vue {}
         <div>Visual calculations</div>
       </template>
     </FeatureBlock>
-    <FeatureBlock title="Use Cases">
-      <template v-slot:descr>Tenniarb is a generic diagram modeling tool capable of doing.</template>
+    <FeatureBlock title="How it works?">
+      <template v-slot:descr>Tenniarb is a MacOS native application providing</template>
       <template v-slot:items>
-        <div>Declarative</div>
-        <div>Free mind map</div>
-        <div>Simple</div>
-        <div>Complex</div>
-      </template>
-    </FeatureBlock>
-    <FeatureBlock color="grey" title="Use Cases">
-      <template v-slot:descr>Tenniarb is a generic diagram modeling tool capable of doing.</template>
-      <template v-slot:items>
-        <div>Declarative</div>
-        <div>Free mind map</div>
-        <div>Simple</div>
-        <div>Complex</div>
-      </template>
-    </FeatureBlock>
-    <FeatureBlock title="Use Cases">
-      <template v-slot:descr>Tenniarb is a generic diagram modeling tool capable of doing.</template>
-      <template v-slot:items>
-        <div>Declarative</div>
-        <div>Free mind map</div>
-        <div>Simple</div>
-        <div>Complex</div>
+        <div>Performance</div>
+        <div>Low memory footprint</div>
+        <div>MacApp store delivery</div>
+        <div>Free updates to for all versions</div>
       </template>
     </FeatureBlock>
   </div>

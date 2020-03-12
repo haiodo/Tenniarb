@@ -11,6 +11,7 @@
     </div>
     <div class="container">
       <router-view />
+      <div class="footer">Copyright © 2020 The Tenniarb app authors</div>
     </div>
   </div>
 </template>
@@ -50,12 +51,17 @@
 }
 .container {
   top: 3.5rem;
-  position: fixed;
-  margin: 0;
+  position: relative;
+  margin: -0.5rem;
   left: 0;
   right: 0;
   overflow-x: hidden;
   overflow-y: auto;
   height: 100%;
+}
+.footer {
+  text-align: center;
+  background-color: #f5f5f5;
+  padding: 5em;
 }
 </style>
