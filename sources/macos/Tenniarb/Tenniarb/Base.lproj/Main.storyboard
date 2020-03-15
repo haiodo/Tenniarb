@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15505"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15705"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -172,6 +173,12 @@ CQ
                                         <menuItem title="Duplicate" keyEquivalent="d" id="kq1-gn-p7j">
                                             <connections>
                                                 <action selector="duplicateItem:" target="Ady-hI-5gd" id="fDp-Cl-ozD"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Inherit" id="oIL-tA-jRH" userLabel="Inherit">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="inheritItem:" target="Ady-hI-5gd" id="tnM-WJ-qDI"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Delete" id="pa3-QI-u2k">
@@ -979,13 +986,13 @@ DQ
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <visualEffectView blendingMode="behindWindow" material="popover" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="HhD-Hx-tll">
-                                <rect key="frame" x="0.0" y="0.0" width="1138" height="178"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1138" height="176"/>
                                 <subviews>
                                     <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M3R-d3-NnX">
-                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="173"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="171"/>
                                         <subviews>
                                             <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V7F-7f-5hj">
-                                                <rect key="frame" x="0.0" y="138" width="893" height="35"/>
+                                                <rect key="frame" x="0.0" y="136" width="893" height="35"/>
                                                 <subviews>
                                                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vC0-IB-paJ">
                                                         <rect key="frame" x="0.0" y="5" width="30" height="30"/>
@@ -1017,13 +1024,13 @@ DQ
                                                 </customSpacing>
                                             </stackView>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2vJ-KE-k4m">
-                                                <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="1138" height="131"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="F2S-Yk-eo2">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1138" height="131"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" autoresizesOutlineColumn="YES" outlineTableColumn="fdS-FP-WJp" id="eHh-SB-Ufe">
-                                                            <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="1138" height="131"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>

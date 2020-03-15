@@ -831,7 +831,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     static func findFieldName(_ item:DiagramItem) -> String {
         var fieldName = "value"
-        if let field = item.properties.get("field-name"), let customFieldName = field.getIdent(1) {
+        if let field = item.properties.get(PersistenceStyleKind.FieldName.name), let customFieldName = field.getIdent(1) {
             fieldName = customFieldName
         }
         return fieldName

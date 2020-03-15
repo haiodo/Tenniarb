@@ -50,6 +50,16 @@ public class TennNode {
         }
         return result
     }
+    public func replace(_ node: TennNode) {
+        // Remove all existing children.
+        children = nil
+        // Just copy all from node
+        if let nc = node.children {
+            for c in nc {
+                add(c.clone())
+            }
+        }
+    }
     
     public func traverse(_ visitor: (_ node: TennNode) -> Void ) {
         visitor(self)

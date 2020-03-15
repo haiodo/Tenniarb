@@ -323,6 +323,17 @@ class DrawableStyle {
      */
     var layer: String?
     
+    /*
+        A pattern to include all properties during display from named parent element.
+     
+        Syntax are:
+            `.Name` to include values of local item.
+            `Name` to include a value from parent item.
+                
+     */
+    var inherit: String?
+    var inheritIndex: Int = 0
+    
     init( _ darkMode: Bool ) {
         self.darkMode = darkMode
         reset()
@@ -511,6 +522,14 @@ class DrawableStyle {
         case PersistenceStyleKind.LineWidth.name:
             if let value = getFloat(child.getChild(1), evaluations) {
                 self.lineWidth = CGFloat(value)
+            }
+        case PersistenceStyleKind.Inherit.name:
+            if let value = child.getIdent(0) {
+                self.inherit = value
+                
+                if let indexValue = child.getInt(1) {
+                    self.inheritIndex = indexValue
+                }
             }
         case PersistenceStyleKind.Shadow.name:
             if let xOffset = child.getFloat(1), let yOffset = child.getFloat(2)  {
@@ -1227,7 +1246,37 @@ open class DrawableScene: DrawableContainer {
         
         // parse uses with list of styles.
         
-        if let styleNode = e.properties.get( "use-style" ),
+        var properties = e.properties
+        var parentEl = e.parent
+        if let includeNode = e.properties.get( PersistenceStyleKind.Inherit.name ),
+            includeNode.count > 1 {
+            if let ident = includeNode.getIdent(1) {
+                var name = ident
+                while parentEl != nil && name.starts(with: "../") {
+                    name = String(name[name.index(name.startIndex, offsetBy: 3)...])
+                    parentEl = parentEl?.parent
+                }
+                let index = includeNode.getInt(2) ?? 0
+                if let parent = parentEl {
+                    let parentItems = parent.items.filter({ e in e.name == name })
+                    if index < parentItems.count {
+                        let parentItem = parentItems[index]
+                        properties = parentItem.properties.clone()
+                        // Smart overide of all paren properties with ours
+                        e.properties.forEach({node in
+                            if node.isNamedElement(), let name = node.getIdentText(), let override = properties.get(name) {
+                                override.replace(node)// Replace existing with new one.
+                            } else {
+                                // Just add
+                                properties.append(node.clone())
+                            }
+                        })
+                    }
+                }
+            }
+        }
+        
+        if let styleNode = e.properties.get( PersistenceStyleKind.UseStyle.name ),
             styleNode.count > 1,
             let childs = styleNode.children,
             let parent = e.parent,
@@ -1244,7 +1293,9 @@ open class DrawableScene: DrawableContainer {
             }
         }
         
-        style.parseStyle(e.properties, evaluatedValues )            
+        style.parseStyle(properties, evaluatedValues )
+        
+        // Check if we have include, we need to take values from it and do override.
         
         var titleValue = (name.count > 0 ? name :  " ")
         if let title = style.title {
@@ -1258,7 +1309,7 @@ open class DrawableScene: DrawableContainer {
         var shift = CGPoint(x:0, y:0)
         
         var bodyAttrString: NSAttributedString?
-        if let bodyNode = e.properties.get( "body" ) {
+        if let bodyNode = properties.get( "body" ) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
             let bodyStyle = style.copy()
             bodyStyle.fontSize -= 2 // Make a bit smaller for body

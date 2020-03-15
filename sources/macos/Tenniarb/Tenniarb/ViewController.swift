@@ -263,29 +263,34 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 action == #selector(self.showOperationBox(_:)) {
                 return !self.scene.activeItems.isEmpty
             }
-            if action == #selector(duplicateItem) {
+            if action == #selector(duplicateItem) || action == #selector(inheritItem) {
                 switch findTarget() {
-                case 1:
+                case .WorldTree:
                     return true
-                case 2:
+                case .SceneView:
                     return !self.scene.activeItems.isEmpty
                 default:
                     break
                 }
-                
             }
         }
         return false
     }
     
-    fileprivate func findTarget() -> Int {
-        var target = 0
+    enum FindTargetResult {
+        case Unknown
+        case WorldTree
+        case SceneView
+    }
+    
+    fileprivate func findTarget() -> FindTargetResult {
+        var target: FindTargetResult = .Unknown
         if let responder = self.view.window?.firstResponder {
             if responder == self.worldTree {
-                target = 1
+                target = .WorldTree
             }
             else if responder == self.scene {
-                target = 2
+                target = .SceneView
             }
             else {
                 // Check if first responsed has super view of worldTree
@@ -294,7 +299,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     var p: NSView? = view
                     while p != nil {
                         if p == self.worldTree {
-                            target = 1
+                            target = .WorldTree
                             break
                         }
                         p = p?.superview
@@ -308,7 +313,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     @IBAction public func duplicateItem( _ sender: NSMenuItem ) {
         switch findTarget() {
-        case 1:
+        case .WorldTree:
             if let active = self.selectedElement {
                 let elementCopy = active.clone()
                 
@@ -324,8 +329,45 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     })
                 })
             }
-        case 2:
+        case .SceneView:
             scene?.duplicateItem()
+        default:
+            break
+        }
+    }
+    
+    @IBAction public func inheritItem( _ sender: NSMenuItem ) {
+        switch findTarget() {
+        case .WorldTree,.SceneView:
+            if let active = self.selectedElement {
+                let elementCopy = active.clone()
+                
+                let refs = Element.prepareItemRefs(elementCopy.items)
+                
+                for itm in elementCopy.items {
+                    // Make clean propertirs
+                    itm.properties = ModelProperties()
+                    
+                    // Calculate index of item
+                    let cmd = TennNode.newCommand(PersistenceStyleKind.Inherit.name,TennNode.newStrNode("../\(itm.name)"))
+                    if let ind = refs[itm] {
+                        cmd.add(TennNode.newIntNode(ind))
+                    }
+                    itm.properties.append(cmd)
+                }
+                
+                self.elementStore?.add(active, elementCopy, undoManager: self.undoManager, refresh: {()->Void in
+                    DispatchQueue.main.async(execute: {
+                        if active.parent!.kind == .Root {
+                            self.worldTree.reloadData()
+                        }
+                        else {
+                            self.worldTree.reloadItem(active.parent!, reloadChildren: true )
+                            self.worldTree.expandItem(active.parent!)
+                        }
+                    })
+                })
+            }
         default:
             break
         }

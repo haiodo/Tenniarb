@@ -59,6 +59,9 @@ public enum PersistenceStyleKind {
     case LineWidth
     case Marker
     case Layer
+    case Inherit
+    case UseStyle
+    case FieldName
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -80,6 +83,9 @@ public enum PersistenceStyleKind {
         case .LineWidth: return "line-width";
         case .Marker: return "marker";
         case .Layer: return "layer";
+        case .Inherit: return "inherit";
+        case .UseStyle: return "use-style";
+        case .FieldName: return "field-name";
         }
     }
 }
@@ -200,7 +206,7 @@ extension Element {
         }
     }
     
-    func prepareItemRefs( _ items: [DiagramItem] ) -> [DiagramItem:Int] {
+    public static func prepareItemRefs( _ items: [DiagramItem] ) -> [DiagramItem:Int] {
         // Prepare element index map
         var itemRefNames:[DiagramItem:Int] = [:]
         
@@ -244,7 +250,7 @@ extension Element {
         
         buildElementData(e, enodeBlock)
         
-        let itemIndexes = self.prepareItemRefs(e.items)
+        let itemIndexes = Element.prepareItemRefs(e.items)
         
         if includeItems {
             Element.buildItems(e.items, enodeBlock, itemIndexes)
@@ -264,7 +270,7 @@ extension Element {
     public func storeItems( _ items: [DiagramItem] ) -> TennNode {
         let block = TennNode(kind: .Statements )
         
-        let itemIndexes = self.prepareItemRefs(items)
+        let itemIndexes = Element.prepareItemRefs(items)
         Element.buildItems(items, block, itemIndexes)
         return block
     }
