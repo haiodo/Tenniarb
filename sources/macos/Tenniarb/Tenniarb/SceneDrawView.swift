@@ -2017,11 +2017,60 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    @objc func applyShadow(_ sender: NSMenuItem ) {
+        // Apply shadow to  default or to selected item.
+        if self.activeItems.count == 0 {
+            // Apply for default style
+            if let active = self.element {
+                let newProps = active.properties.clone()
+                
+                var styleNode = newProps.get("styles")
+                if styleNode == nil {
+                    styleNode = TennNode.newCommand("styles", TennNode.newBlockExpr())
+                    newProps.append(styleNode!)
+                }
+                
+                var itemsStyleNode = styleNode?.getChild(1)?.getNamedElement("item")
+                if itemsStyleNode == nil {
+                    itemsStyleNode = TennNode.newCommand("item", TennNode.newBlockExpr())
+                    styleNode?.getChild(1)?.add(itemsStyleNode!)
+                }
+                
+                if let shadowItem = itemsStyleNode?.getChild(1)?.getNamedElement("shadow") {
+                    shadowItem.children = TennNode.newCommand("shadow", TennNode.newIntNode(-5), TennNode.newIntNode(-5), TennNode.newIntNode(5)).children
+                } else {
+                    // Add new sync config
+                    itemsStyleNode?.getChild(1)?.add(
+                        TennNode.newCommand("shadow", TennNode.newIntNode(-5), TennNode.newIntNode(-5), TennNode.newIntNode(5))
+                    )
+                }
+                //            self.controller.viewController?.mergeProperties(newProps.asNode())
+                self.store?.setProperties(active, newProps.asNode(),
+                                          undoManager: undoManager,  refresh: {()->Void in})
+            }
+            
+        } else {
+            //TODO:
+        }
+    }
+    
+    
     fileprivate func createStylesMenu(_ menu: NSMenu) {
         let style = NSMenuItem(
             title: "Style", action: nil, keyEquivalent: "")
         menu.addItem(style)
         menu.setSubmenu(styleManager?.createMenu(), for: style)
+        
+        if self.activeItems.count == 0 {
+            let quick = NSMenu()
+            quick.autoenablesItems=true
+            
+            quick.addItem(NSMenuItem(title: "Enable shadows", action: #selector(applyShadow), keyEquivalent: ""))
+            
+            let quickMenuItem = NSMenuItem(title: "Global Styles", action: nil, keyEquivalent: "")
+            menu.addItem(quickMenuItem)
+            menu.setSubmenu(quick, for: quickMenuItem)
+        }
     }
     
     @objc public func performGridLayout(_ sender: NSMenuItem) {
