@@ -534,7 +534,7 @@ Engine" "expr dsl"
         link "Movements" "Display rulers"
         item "Aligh on XXX" {
             pos -246.46054077148438 -198.0
-            use-style required
+            use-style done
         }
         link "Layout" "Aligh on XXX"
         item "Position calculation" {
@@ -547,7 +547,7 @@ Engine" "expr dsl"
         }
         item "Layering" {
             pos -396.3414001464844 -147.0
-            use-style required
+            use-style done
         }
         link "UI" "Layering" {
             pos -14.0 1.0
@@ -555,7 +555,7 @@ Engine" "expr dsl"
         }
         item "Front/Back" {
             pos -406.56561279296875 -214.0
-            use-style required
+            use-style done
         }
         link "Layering" "Front/Back"
         link "Selection" "Under"
@@ -698,6 +698,11 @@ diagram"
 }
 element "Documentation" {
     element "Basic steps" {
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
         item "Item" {
             pos -572.0 274.0
         }
@@ -4763,6 +4768,9 @@ ${name}}
                 child {
                     font-size 10
                 }
+                item {
+                    shadow -5 -5 5
+                }
             }
             item "Central" {
                 pos -351.94140625 172.265625
@@ -4855,7 +4863,7 @@ ${name}}
         element "Brainstorm" {
             styles {
                 item {
-                    shadow -5 -5
+                    shadow -5 -5 5
                 }
             }
             item "Brainstorm" {
@@ -5505,6 +5513,11 @@ Explode!🧨"
         return  'white'
     }
 }
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
         item "Use of Variables" {
             pos -1778.0 1262.0
             body {
@@ -5608,6 +5621,11 @@ Explode!🧨"
         }
         link "color" "Color value"
         element "Execution basics" {
+            styles {
+                item {
+                    shadow -5 -5 5
+                }
+            }
             item "1" {
                 pos -1011.23046875 260.46875
                 my_value 12
@@ -5699,6 +5717,11 @@ Explode!🧨"
             }
             link "Untitled 29" "Untitled 34"
             element "Items" {
+                styles {
+                    item {
+                        shadow -5 -5 5
+                    }
+                }
                 item "a" {
                     pos -443.18359375 85.609375
                     title "Value 1"
@@ -8644,6 +8667,11 @@ days=5"
     }
     element "Layouts" {
         element "GridLayout" {
+            styles {
+                item {
+                    shadow -5 -5 5
+                }
+            }
             item "1" {
                 pos -404.7271728515625 184.56031799316406
                 width ${(parseInt(name)%3)*30}
@@ -8694,6 +8722,26 @@ days=5"
                 width ${(parseInt(name)%3)*30}
                 height ${(parseInt(name)%5)*30}
             }
+        }
+    }
+}
+element "Bugs" {
+    element "Text positioning" {
+        item "Workflow" {
+            pos -597.2957153320312 365.0
+            body {
+                font-size 11
+                text %{1. NSMD2 die
+2. NSMD detect NSMD2 die, try to recovery as DST down.
+3. Loop for NSE to be available.
+4. NSMD2'.Request()
+5. All fine.
+
+NSMD2' on startup:
+1. Wait for dataplane, recieve active connections.
+2. Look for active client connections and do check if they are still alive.}
+            }
+            use-style shadow
         }
     }
 }

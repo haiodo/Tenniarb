@@ -1376,22 +1376,22 @@ open class DrawableScene: DrawableContainer {
         var wy=offy*2
         
         
-        var width = max(20, textBounds.width)
+        var width = textBounds.width
         if let styleWidth = style.width, styleWidth >= 1 {
             width = styleWidth //max(width, styleWidth)
             wx = 0
         }
         
-        var height = max(20, textBounds.height)
+        var height = textBounds.height
         if let styleHeight = style.height, styleHeight >= 1 {
             height = styleHeight//max(height, styleHeight)
             wy = 0
         }
         
-        if width - offx > textBounds.width {
+        if width - offx >= textBounds.width {
             wx = 0
         }
-        if height - offy > textBounds.height {
+        if height - offy >= textBounds.height {
             wy = 0
         }
         
@@ -1607,7 +1607,7 @@ public class RoundBox: DrawableContainer {
     var radius: CGFloat = 8
     var fill: Bool = true
     var stack: Int = 0
-    var stackStep = CGPoint(x:5, y:5)
+    var stackStep = CGPoint(x:2, y:2)
     
     var path: CGMutablePath?
     
@@ -1678,7 +1678,7 @@ public class RoundBox: DrawableContainer {
         if self.stack > 0 {
             for i in 1...self.stack {
                 context.saveGState()
-                
+                context.setShadow(offset: CGSize(width:1,height:1), blur: 5)
                 context.translateBy(x: self.stackStep.x * CGFloat(self.stack-i),
                                     y: self.stackStep.y * CGFloat(self.stack-i))
                 context.addPath(self.path!.copy()!)

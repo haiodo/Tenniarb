@@ -1,5 +1,11 @@
 #  Changelog
 
+## Version 1.2
+
+* Stack item now looks better with shadows.
+* Fix few minor font size glitches.
++ Global styles context menu with some usefull operations.
+
 ## Version 1.1
 
 Fixed bugs:
