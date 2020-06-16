@@ -8727,8 +8727,46 @@ days=5"
 }
 element "Bugs" {
     element "Text positioning" {
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
+        item "F13\na1\na2\n\a3\na4\na5" {
+            pos -781.2078247070312 498.0
+            font-size 13
+        }
+        item "F16\na1\na2\n\a3\na4\na5" {
+            pos -659.2078247070312 498.0
+            font-size 16
+        }
+        item "F10\na1\na2\n\a3\na4\na5" {
+            pos -892.2078247070312 498.0
+            font-size 10
+        }
+        item "F09\na1\na2\n\a3\na4\na5" {
+            pos -929.2078247070312 498.0
+            font-size 9
+        }
+        item "F14\na1\na2\n\a3\na4\na5" {
+            pos -741.2078247070312 498.0
+            font-size 14
+        }
+        item "F12\na1\na2\n\a3\na4\na5" {
+            pos -816.2078247070312 498.0
+            font-size 12
+        }
+        item "F15\na1\na2\n\a3\na4\na5" {
+            pos -704.2078247070312 498.0
+            font-size 15
+        }
+        item "F11\na1\na2\n\a3\na4\na5" {
+            pos -853.2078247070312 498.0
+            font-size 11
+        }
         item "Workflow" {
-            pos -597.2957153320312 365.0
+            pos -1316.295654296875 499.0
+            font-size 11
             body {
                 font-size 11
                 text %{1. NSMD2 die
@@ -8739,9 +8777,18 @@ element "Bugs" {
 
 NSMD2' on startup:
 1. Wait for dataplane, recieve active connections.
-2. Look for active client connections and do check if they are still alive.}
+2. Look for active client connections and do check if they are still alive.
+}
             }
-            use-style shadow
+        }
+        element "Bug2" {
+            item "Default item - 10" {
+                pos -442.0 206.0
+                body {
+                    text "Body text - 30\nr\nb\nd"
+                    font-size 37
+                }
+            }
         }
     }
 }

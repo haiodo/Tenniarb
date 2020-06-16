@@ -15,6 +15,7 @@ import JavaScriptCore
 
 let OPTION_perform_clip = true
 let OPTION_perform_text_stroke = false
+let OPTION_perform_text_line_stroke = false
 
 
 /// A basic drawable element
@@ -324,12 +325,12 @@ class DrawableStyle {
     var layer: String?
     
     /*
-        A pattern to include all properties during display from named parent element.
+     A pattern to include all properties during display from named parent element.
      
-        Syntax are:
-            `.Name` to include values of local item.
-            `Name` to include a value from parent item.
-                
+     Syntax are:
+     `.Name` to include values of local item.
+     `Name` to include a value from parent item.
+     
      */
     var inherit: String?
     var inheritIndex: Int = 0
@@ -1127,6 +1128,16 @@ open class DrawableScene: DrawableContainer {
     }
     
     static func calculateSize(attrStr: NSAttributedString) -> CGSize {
+        let textContainer = NSTextContainer(containerSize: NSSize(width: 3000, height: 3000))
+        let lm = NSLayoutManager()
+        let ts  = NSTextStorage(attributedString: attrStr)
+        lm.addTextContainer(textContainer)
+        ts.addLayoutManager(lm)
+        _ = lm.glyphRange(for: textContainer)
+        let usedRect = lm.usedRect(for: textContainer)
+        
+//        Swift.debugPrint("size of \(attrStr.string.replacingOccurrences(of: "\n", with: "\\n")) is (\(usedRect.width),\(usedRect.height))")
+        
         let fs = CTFramesetterCreateWithAttributedString(attrStr)
         
         // Need to have a attributed string without pictures, to have a proper sizes.
@@ -1135,7 +1146,7 @@ open class DrawableScene: DrawableContainer {
         //        var size = CGSize(width: frameSize.width, height: frameSize.height )
         // Correct size
         let path = CGMutablePath()
-        path.addRect(CGRect(x: 0, y: 0, width: 30000, height: 30000))
+        path.addRect(CGRect(x: 0, y: 0, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
         
         let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, attrStr.length), path, nil)
         
@@ -1154,20 +1165,21 @@ open class DrawableScene: DrawableContainer {
                 
                 let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
                 
-                var maxFontSize = ascent + descent
+                var maxFontSize: CGFloat = 0            
                 
-                maxHeight = ascent + descent + leading
-                var psAdded = false
+                maxHeight = floor(ascent + descent + leading)
+                var maxPsAdd: CGFloat = 0
                 for i in 0..<range.length {
                     if let attr = attrStr.attribute(NSAttributedString.Key.font, at: range.location+i, effectiveRange: nil), let font = attr as? NSFont {
-                        if font.pointSize > maxFontSize {
-                            maxFontSize = font.pointSize
+                        let fps = font.boundingRectForFont.height + font.descender
+                        if fps > maxFontSize {
+                            maxFontSize = fps
                         }
                     }
-                    if !psAdded {
-                        if let attr = attrStr.attribute(NSAttributedString.Key.paragraphStyle, at: range.location+i, effectiveRange: nil), let ps = attr as? NSParagraphStyle {
-                            maxHeight += ps.paragraphSpacing
-                            psAdded = true
+                    if let attr = attrStr.attribute(NSAttributedString.Key.paragraphStyle, at: range.location+i, effectiveRange: nil), let ps = attr as? NSParagraphStyle {
+                        let psAdd = ps.paragraphSpacingBefore + ps.paragraphSpacing + ps.lineSpacing
+                        if psAdd > maxPsAdd {
+                            maxPsAdd = psAdd
                         }
                     }
                     if let attr = attrStr.attribute(NSAttributedString.Key.attachment, at: range.location+i, effectiveRange: nil),
@@ -1181,13 +1193,15 @@ open class DrawableScene: DrawableContainer {
                 if imagesWidth + lineWidth > maxWidth {
                     maxWidth = imagesWidth + lineWidth
                 }
-                size.height += maxHeight
+                
+                size.height += max(maxFontSize + maxPsAdd, maxHeight + maxPsAdd) + 1
             }
             size.width = maxWidth
         }
         if size.height < frameSize.height {
             size.height = frameSize.height
         }
+//        size.height += 2
         return size
     }
     
@@ -1836,6 +1850,35 @@ public class TextBox: Drawable {
         let atp = CGPoint(x: point.x + self.frame.origin.x, y: point.y + self.frame.origin.y )
         let atr = CGRect(origin: atp, size: self.frame.size)
         self.attrStr.draw(in: atr)
+        
+        if OPTION_perform_text_line_stroke {
+            let fs = CTFramesetterCreateWithAttributedString(attrStr)
+            let path = CGMutablePath()
+            path.addRect(CGRect(x: 0, y: 0, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
+            
+            let frame = CTFramesetterCreateFrame(fs, CFRangeMake(0, attrStr.length), path, nil)
+            
+            var size = CGSize(width:0, height:0)
+            
+            if let lines = CTFrameGetLines(frame) as? [CTLine] {
+                var maxWidth = size.width
+                for l in lines {
+                    var maxHeight = CGFloat(0)
+                    var imagesWidth = CGFloat(0)
+                    let range = CTLineGetStringRange(l)
+                    
+                    var ascent: CGFloat = 0
+                    var descent: CGFloat = 0
+                    var leading: CGFloat = 0
+                    
+                    let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
+                    
+                    let hh = ascent + descent + leading
+                    context.stroke(CGRect(x: atp.x, y: atp.y+size.height, width: atr.width, height: hh), width: 0.5)
+                    size.height += hh
+                }
+            }
+        }
         
         if OPTION_perform_text_stroke {
             context.stroke(atr)

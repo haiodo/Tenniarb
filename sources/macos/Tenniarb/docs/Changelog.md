@@ -5,6 +5,7 @@
 * Stack item now looks better with shadows.
 * Fix few minor font size glitches.
 + Global styles context menu with some usefull operations.
++ Various size calculation fixes
 
 ## Version 1.1
 
