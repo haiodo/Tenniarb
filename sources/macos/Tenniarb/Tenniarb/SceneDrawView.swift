@@ -1199,24 +1199,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
             return
         }
-        
-        //        if event.characters == "\u{0D}" {
-        //            if let active = self.activeItems.first  {
-        //                setActiveItem(active)
-        //                if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
-        //                    editTitle(active, .Body)
-        //                }
-        //                else {
-        //                    editTitle(active, .Name)
-        //                }
-        //            }
-        //        }
-        //        if event.characters == "\u{7f}" {
-        //            removeItem()
-        //        }
-        //        else if event.characters == " " {
-        //            self.viewController?.showOperationBox()
-        //        }
+        if event.characters == "x" {
+            removeItem()
+            return
+        }               
         
         if let sk = event.specialKey, let sc = self.scene {
             var ops: [ElementOperation] = []
