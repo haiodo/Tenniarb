@@ -27,6 +27,12 @@ enum EditingMode {
     case Value // A custom edit field selection
 }
 
+public class NSOptionsPopup: NSView {
+    public override func draw(_ dirtyRect: NSRect) {
+        // Do not Draw background
+    }
+}
+
 public class PopupEditField: NSTextField {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -553,11 +559,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         let bounds = dr.getSelectorBounds()
-        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x, y: scene!.offset.y + bounds.origin.y + bounds.height)
+        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x + 5, y: scene!.offset.y + bounds.origin.y + bounds.height)
         
-        let segments = NSSegmentedControl(frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        let segments = NSSegmentedControl() //frame: CGRect(x: 0, y: 0, width: 300, height: 48))
         
-        segments.segmentStyle = .texturedRounded
+        segments.segmentStyle = .rounded
         segments.segmentCount = 10
         
         //        segments.action = #selector(segmentAction(_:))
@@ -607,7 +613,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         segm += 1
         //        segments.setLabel("Display", forSegment: segm)
-        segments.setImage(NSImage(named: NSImage.flowViewTemplateName), forSegment: segm)
+//        segments.setImage(NSImage(named: NSImage.flowViewTemplateName ), forSegment: segm)
+        segments.setLabel("❑", forSegment: segm)
         segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
         if act.kind == .Item {
             segments.setMenu(
@@ -667,16 +674,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.segmentCount = segm + 1
         
         segments.trackingMode = .momentary
-        
         var popup: NSView?
         
-        popup  = NSView(frame: NSRect(origin: origin, size: segments.bounds.size))
+        segments.frame = NSRect(origin: NSPoint(x: 0, y: 0 ), size: segments.fittingSize)
+        
+        popup  = NSOptionsPopup(frame: NSRect(origin: origin, size: segments.fittingSize))
+        Swift.debugPrint("segments size: \(segments.fittingSize)")
+
         self.popupView = popup
         popup!.addSubview(segments)
         
         let shadow = NSShadow()
         shadow.shadowOffset = NSSize(width: -5, height: -5)
-        shadow.shadowBlurRadius = 7
+        shadow.shadowBlurRadius = 10
         shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
         popup!.shadow = shadow
         
@@ -684,6 +694,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         popupItem = act
         
         popup!.allowedTouchTypes = []
+        popup?.frame = NSRect(origin: origin, size: segments.bounds.size)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
             if self.popupView != nil && self.popupView == popup {
@@ -1621,10 +1632,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let act = self.popupItem, let dr = scene?.drawables[act], let popupView = self.popupView {
             let bounds = dr.getSelectorBounds()
             let popupBounds = popupView.bounds
-            var rect = bounds.insetBy(dx: -30, dy: -50)
-            
-            rect.size = CGSize(width: max(rect.width, popupBounds.width), height: rect.height)
-            
+            var rect = bounds
+            rect.size = CGSize(width: max(rect.width, popupBounds.width), height: rect.height + popupBounds.height)
+            rect = rect.insetBy(dx: -30, dy: -30)
             let p = CGPoint(x: self.x, y: self.y)
             
             if !rect.contains(p) {
@@ -1836,6 +1846,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             context.restoreGState()
             
             drawRulers(scene, context)
+        
             
             context.restoreGState()
         }
