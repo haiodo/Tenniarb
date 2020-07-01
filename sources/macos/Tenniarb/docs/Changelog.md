@@ -1,4 +1,10 @@
 #  Changelog
+## Version 1.2
+
++ Support for corner-radius properly - to control from round corners to flat ones.
++ Support for line-spacing properly - to control text display spacing 
++ Support for Markdown font sizing - &(size|?Text)
+
 
 ## Version 1.1.1
 

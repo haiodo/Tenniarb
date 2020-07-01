@@ -679,7 +679,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.frame = NSRect(origin: NSPoint(x: 0, y: 0 ), size: segments.fittingSize)
         
         popup  = NSOptionsPopup(frame: NSRect(origin: origin, size: segments.fittingSize))
-        Swift.debugPrint("segments size: \(segments.fittingSize)")
 
         self.popupView = popup
         popup!.addSubview(segments)

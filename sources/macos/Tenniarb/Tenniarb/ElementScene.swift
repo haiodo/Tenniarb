@@ -599,11 +599,20 @@ class DrawableItemStyle: DrawableStyle {
     var title: String? = nil
     var marker: String? = nil
     
+    var cornerRadius: [CGFloat] = []
+    
+    var lineSpacing: CGFloat = 0
+    
     override func newCopy() -> DrawableStyle {
         return DrawableItemStyle(darkMode)
     }
     override func copy() -> DrawableItemStyle {
         let result = super.copy() as! DrawableItemStyle
+        result.title = self.title
+        result.marker = self.marker
+        result.cornerRadius.append(contentsOf: self.cornerRadius)
+        result.lineSpacing = self.lineSpacing
+        
         return result
     }
     
@@ -619,6 +628,18 @@ class DrawableItemStyle: DrawableStyle {
             if let ch =  child.getChild(1), let t = ch.token, let ev = evaluations[t] {
                 self.marker = ev.toString()
             }
+        case PersistenceStyleKind.CornerRadius.name:
+            self.cornerRadius.removeAll()
+            for ind in 1..<child.count {
+                if let val = child.getFloat(ind) {
+                    self.cornerRadius.append(CGFloat(val))
+                }
+            }
+        case PersistenceStyleKind.LineSpacing.name:
+            if let val = child.getFloat(1) {
+                self.lineSpacing = CGFloat(val)
+            }
+            
         default:
             super.parseStyleLine(cmdName, child, evaluations)
         }
@@ -1205,8 +1226,9 @@ open class DrawableScene: DrawableContainer {
         return size
     }
     
-    static func toAttributedString(tokens: [MarkdownToken], font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: [TextPosition]) -> NSMutableAttributedString {
+    static func toAttributedString(tokens: [MarkdownToken], font: NSFont, color: CGColor, shift: inout CGPoint, imageProvider: ImageProvider, layout: [TextPosition], lineSpacing: CGFloat = 0) -> NSMutableAttributedString {
         let textStyle = NSMutableParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        textStyle.lineSpacing = lineSpacing
         for pos in layout {
             switch pos {
             case .Center:
@@ -1346,7 +1368,7 @@ open class DrawableScene: DrawableContainer {
             var horizontal: TextPosition = .Left
             parseLayout(bodyStyle, &horizontal, &vertical)
             bodyAttrString =
-                DrawableScene.toAttributedString(tokens: MarkdownLexer.getTokens(code: (titleValue.count > 0 ? "\n": "") + prepareBodyText(textValue)), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal] )
+                DrawableScene.toAttributedString(tokens: MarkdownLexer.getTokens(code: (titleValue.count > 0 ? "\n": "") + prepareBodyText(textValue)), font: NSFont.systemFont(ofSize: bodyStyle.fontSize), color: bodyStyle.textColor, shift: &shift, imageProvider: imageProvider, layout: [vertical, horizontal], lineSpacing: style.lineSpacing )
         }
         
         var vertical: TextPosition = .Middle
@@ -1618,7 +1640,6 @@ func getShadowRect(_ bounds: CGRect, _ style:DrawableStyle) -> CGRect {
 public class RoundBox: DrawableContainer {
     var style: DrawableItemStyle
     
-    var radius: CGFloat = 8
     var fill: Bool = true
     var stack: Int = 0
     var stackStep = CGPoint(x:2, y:2)
@@ -1634,17 +1655,28 @@ public class RoundBox: DrawableContainer {
     }
     
     func setPath( _ rect: CGRect) {
+        
+        var radius = self.style.cornerRadius
+        var baseRadius = CGFloat(8)
+        if radius.count > 0 {
+            baseRadius = radius[0]
+        }
+        while radius.count < 4 {
+            radius.append(baseRadius)
+        }
+        
+//        let radius = self.style.
         self.bounds = rect
         self.path = CGMutablePath()
         self.path?.move( to: CGPoint(x:  rect.midX, y:rect.minY ))
         self.path?.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.minY ),
-                           tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius[2])
         self.path?.addArc( tangent1End: CGPoint(x: rect.maxX, y: rect.maxY ),
-                           tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
+                           tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius[1])
         self.path?.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.maxY ),
-                           tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
+                           tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius[0])
         self.path?.addArc( tangent1End: CGPoint(x: rect.minX, y: rect.minY ),
-                           tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
+                           tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius[3])
         self.path?.closeSubpath()
     }
     public override func drawBox(context: CGContext, at point: CGPoint) {

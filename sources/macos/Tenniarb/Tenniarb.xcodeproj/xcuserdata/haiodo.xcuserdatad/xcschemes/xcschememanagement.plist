@@ -3,13 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>SchemeUserState</key>
-	<dict>
-		<key>Tenniarb.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
-		</dict>
-	</dict>
+	<dict/>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>0C2375EA1ED838D900ECB516</key>
@@ -23,6 +17,11 @@
 			<true/>
 		</dict>
 		<key>0C5C6D191EFF655B00714971</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>0C8114DA2338B63300F607BE</key>
 		<dict>
 			<key>primary</key>
 			<true/>

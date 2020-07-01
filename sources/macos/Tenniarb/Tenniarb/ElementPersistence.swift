@@ -62,6 +62,7 @@ public enum PersistenceStyleKind {
     case Inherit
     case UseStyle
     case FieldName
+    case CornerRadius
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.

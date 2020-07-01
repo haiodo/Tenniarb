@@ -14,6 +14,7 @@ public enum MarkdownTokenType {
     case italic // _ italic \_ text * - all until next _
     case image // @(image name|640x480), @(image name|640), @(image name|x480)
     case color // !(red), !(#ffeeff), !(red|word) !()- default color => global text color
+    case font // &(20|word), &(20) Some text &() - Define a different font-size option
     case expression // ${expression}
     case title // ## Title value
     case bullet // * some value
@@ -194,6 +195,18 @@ public class MarkdownLexer {
                 let nc = self.next()
                 if nc == "(" {
                     readUntil(r: &r, startLit: "(", endLit: ")", type: .color, addEmpty: true)
+                }
+                else {
+                    r.append(cc)
+                    self.inc()
+                }
+                wasWhiteSpace = false
+                break;
+            case "&":
+                self.add(check: &r)
+                let nc = self.next()
+                if nc == "(" {
+                    readUntil(r: &r, startLit: "(", endLit: ")", type: .font, addEmpty: true)
                 }
                 else {
                     r.append(cc)

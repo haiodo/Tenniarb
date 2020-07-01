@@ -36,11 +36,11 @@ class MarkDownAttributedPrinter {
     private static func attrStr(_ text: String, _ attributes: [NSAttributedString.Key: Any]) -> NSAttributedString {
         return NSAttributedString(string: text, attributes: attributes)
     }
-    public static func toAttributedStr(_ tokens: [MarkdownToken], font: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSMutableAttributedString {
+    public static func toAttributedStr(_ tokens: [MarkdownToken], font originalFont: NSFont, paragraphStyle: NSParagraphStyle, foregroundColor: NSColor, shift: inout CGPoint, imageProvider: ImageProvider) -> NSMutableAttributedString {
         let result = NSMutableAttributedString()
         
         var currentColor = foregroundColor
-        let italicFont = NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask)
+        var font = originalFont
         
         var pos = 0
         var prevMultiCode = false
@@ -124,7 +124,7 @@ class MarkDownAttributedPrinter {
                 break;
             case .italic:
                 result.append(attrStr(literal, [
-                    attrType.font: italicFont,
+                    attrType.font: NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask),
                     attrType.paragraphStyle: paragraphStyle,
                     attrType.foregroundColor: currentColor
                 ]))
@@ -169,6 +169,29 @@ class MarkDownAttributedPrinter {
                         currentColor = foregroundColor
                     } else {
                         currentColor = NSColor(cgColor: parseColor(literal))!
+                    }
+                }
+                break
+            case .font:
+                if let splitPos = literal.firstIndex(of: "|") {
+                    if let fontSize = Double(String(literal.prefix(upTo: splitPos))) {
+                    let word = String(literal.suffix(from: literal.index(after: splitPos)))
+                    
+                        result.append(attrStr(word,[
+                            attrType.font: NSFont.systemFont(ofSize: CGFloat(fontSize)),
+                            attrType.paragraphStyle: paragraphStyle,
+                            attrType.foregroundColor: currentColor
+                        ]))
+                    }
+                } else {
+                    if literal.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).count == 0 {
+                        font = originalFont
+                    } else {
+                        if let fontSize = Double(String(literal)) {
+                            font = NSFont.systemFont(ofSize: CGFloat(fontSize))
+                        } else {
+                            font = originalFont
+                        }
                     }
                 }
                 break
