@@ -63,6 +63,7 @@ public enum PersistenceStyleKind {
     case UseStyle
     case FieldName
     case CornerRadius
+    case LineSpacing
     var name : String {
         switch self {
         // Use Internationalization, as appropriate.
@@ -87,6 +88,8 @@ public enum PersistenceStyleKind {
         case .Inherit: return "inherit";
         case .UseStyle: return "use-style";
         case .FieldName: return "field-name";
+        case .CornerRadius: return "corner-radius";
+        case .LineSpacing: return "line-spacing";
         }
     }
 }

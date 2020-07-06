@@ -1937,12 +1937,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 let items = Element.parseItems(node: node)
                 if items.count > 0 {
                     // Move items a bit,
-                    for i in items {
-                        if i.kind == .Item {
-                            i.x += 10
-                            i.y -= 10
-                        }
-                    }
+//                    for i in items {
+//                        if i.kind == .Item {
+//                            i.x += 10
+//                            i.y -= 10
+//                        }
+//                    }
                     self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
                     
                     self.setActiveItems(items)
