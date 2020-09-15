@@ -61,6 +61,7 @@ class ClipboardUtils {
             let p = TennParser()
             let node = p.parse(value)
             if p.errors.hasErrors() {
+                // But we could interpreter it as a list of individual nodes
                 return // If there is errors, we could not paste.
             }
             operation(node)

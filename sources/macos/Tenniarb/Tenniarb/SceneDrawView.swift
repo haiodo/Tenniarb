@@ -613,7 +613,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         segm += 1
         //        segments.setLabel("Display", forSegment: segm)
-//        segments.setImage(NSImage(named: NSImage.flowViewTemplateName ), forSegment: segm)
+        //        segments.setImage(NSImage(named: NSImage.flowViewTemplateName ), forSegment: segm)
         segments.setLabel("❑", forSegment: segm)
         segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
         if act.kind == .Item {
@@ -679,7 +679,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.frame = NSRect(origin: NSPoint(x: 0, y: 0 ), size: segments.fittingSize)
         
         popup  = NSOptionsPopup(frame: NSRect(origin: origin, size: segments.fittingSize))
-
+        
         self.popupView = popup
         popup!.addSubview(segments)
         
@@ -1086,7 +1086,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var links: [DiagramItem] = []
         
         let offsetx = CGFloat(75)
-        let offsety = CGFloat(-25)
+        let offsety = CGFloat(0)
         var processedLinks: [String] = []
         for active in self.activeItems {
             if active.kind == .Item {
@@ -1845,17 +1845,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             context.restoreGState()
             
             drawRulers(scene, context)
-        
+            
             
             context.restoreGState()
         }
-//        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
+        //        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
     }
     
     public func selectAllItems() {
         self.setActiveItems(self.element!.items)
         scheduleRedraw()
     }
+    
+    public func selectAllByKind(kind: ItemKind) {
+        self.setActiveItems(self.element!.items.filter({ it in it.kind == kind}))
+        scheduleRedraw()
+    }
+    
     public func selectNoneItems() {
         self.setActiveItems([])
         scheduleRedraw()
@@ -1894,6 +1900,55 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.activeItems.count > 0 {
             let block = self.element!.storeItems(self.activeItems)
             ClipboardUtils.copy(block)
+        }
+    }
+    
+    @objc func pasteAsItem( _ sender: NSObject ) {
+        if let value = NSPasteboard.general.string(forType: .string) {
+            let newEl = DiagramItem(kind: .Item, name: "pasted \(createIndex)")
+            self.createIndex += 1
+            
+            newEl.x = pivotPoint.x
+            newEl.y = pivotPoint.y
+            newEl.properties = ModelProperties()
+            
+            // Create text and title
+            newEl.properties.append(TennNode.newCommand("text", TennNode.newMarkdownNode(value)))
+            newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("${text}" )))
+            self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            
+            self.setActiveItem(newEl)
+        }
+    }
+    @objc func pasteAsItemSet( _ sender: NSObject ) {
+        if let value = NSPasteboard.general.string(forType: .string) {
+            let lines =  value.split(separator: "\n")
+            
+            var items:[DiagramItem] = []
+            
+            var rootItem: DiagramItem! = nil
+            var i = 0
+            for l in lines {
+                let newEl = DiagramItem(kind: .Item, name: String(l))
+                self.createIndex += 1
+                
+                newEl.x = pivotPoint.x
+                newEl.y = pivotPoint.y - 35 * CGFloat(i)
+                
+                if rootItem == nil {
+                    rootItem = newEl
+                } else {
+                    let li = LinkItem(kind: .Link, name: "", source: rootItem, target: newEl)
+                    li.properties.append(TennNode.newCommand("display", TennNode.newIdent("arrow")))
+                    items.append(li)
+                }
+                
+                i += 1
+                items.append(newEl)
+            }
+            
+            self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
+            
         }
     }
     
@@ -1937,12 +1992,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 let items = Element.parseItems(node: node)
                 if items.count > 0 {
                     // Move items a bit,
-//                    for i in items {
-//                        if i.kind == .Item {
-//                            i.x += 10
-//                            i.y -= 10
-//                        }
-//                    }
+                    //                    for i in items {
+                    //                        if i.kind == .Item {
+                    //                            i.x += 10
+                    //                            i.y -= 10
+                    //                        }
+                    //                    }
                     self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
                     
                     self.setActiveItems(items)
@@ -2128,11 +2183,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var leftPos = CGFloat(roundf(Float(self.activeItems[0].x)))
         for active in self.activeItems {
+            if active.kind != .Item {
+                           continue
+                       }
             if active.x < leftPos  {
                 leftPos = CGFloat(roundf(Float(active.x)))
             }
         }
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             let newPos = CGPoint( x: leftPos, y: active.y)
             ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
         }
@@ -2187,6 +2248,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var rightPos = CGFloat(roundf(Float(self.activeItems[0].x)))
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 if active.x + bnds.width > rightPos  {
@@ -2195,6 +2259,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 let newPos = CGPoint( x: rightPos - bnds.width, y: active.y)
@@ -2215,11 +2282,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var topPos = CGFloat(roundf(Float(self.activeItems[0].y)))
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if active.y  > topPos  {
                 topPos = CGFloat(roundf(Float(active.y )))
             }
         }
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             let newPos = CGPoint( x: active.x, y: topPos )
             ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
         }
@@ -2236,6 +2309,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var bottomPos = CGFloat(roundf(Float(self.activeItems[0].y)))
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 if active.y - bnds.height < bottomPos  {
@@ -2244,6 +2320,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 let newPos = CGPoint( x: active.x, y: bottomPos + bnds.height)
@@ -2264,6 +2343,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var ops: [ElementOperation] = []
         var topPos = CGFloat(roundf(Float(self.activeItems[0].y)))
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 if active.y + bnds.height > topPos  {
@@ -2272,6 +2354,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         for active in self.activeItems {
+            if active.kind != .Item {
+                continue
+            }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
                 let newPos = CGPoint( x: active.x, y: topPos - bnds.height)
@@ -2413,7 +2498,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 menu.addItem(NSMenuItem.separator())
                 let copyHtml = NSMenuItem(title: "Export text as html", action: #selector(copyItemAsHTML(_:)), keyEquivalent: "")
                 menu.addItem(copyHtml)
-
+                
             }
             self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())
@@ -2430,8 +2515,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
             menu.addItem(addAction)
             
-//            let testLayout = NSMenuItem(title: "Test layout", action: #selector(performSpringLayout), keyEquivalent: "")
-//            menu.addItem(testLayout)
+            //            let testLayout = NSMenuItem(title: "Test layout", action: #selector(performSpringLayout), keyEquivalent: "")
+            //            menu.addItem(testLayout)
             
             menu.addItem(NSMenuItem.separator())
             self.createStylesMenu(menu)

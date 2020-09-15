@@ -138,6 +138,21 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         operationBox = nil
     }
     
+    @IBAction func pasteAsItem(_ sender: NSMenuItem ) {
+        scene?.pasteAsItem(sender)
+    }
+    @IBAction func pasteAsItemSet(_ sender: NSMenuItem ) {
+        scene?.pasteAsItemSet(sender)
+    }
+    
+    @IBAction func selectAllItemsKind(_ sender: NSMenuItem ) {
+        scene.selectAllByKind(kind: ItemKind.Item)
+    }
+    
+    @IBAction func selectAllLinks(_ sender: NSMenuItem ) {
+        scene.selectAllByKind(kind: ItemKind.Link)
+    }
+    
     @IBAction func showSearchBox(_ sender: NSMenuItem ) {
         if let active = self.selectedElement {
             hideSearchBox()
@@ -251,12 +266,16 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if let action = menuItem.action {
+            
             if action == #selector(selectAllItems(_:)) {
                 if self.view.window?.firstResponder == self.scene {
                     return true
                 }
             }
             if action == #selector(self.showSearchBox(_:)) {
+                return true
+            }
+            if action == #selector(selectAllLinks) || action == #selector(selectAllItemsKind) {
                 return true
             }
             if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) || action == #selector(self.editValue(_:)) ||

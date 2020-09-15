@@ -17,6 +17,10 @@ let OPTION_perform_clip = true
 let OPTION_perform_text_stroke = false
 let OPTION_perform_text_line_stroke = false
 
+public enum RenderType {
+    case svg
+}
+
 
 /// A basic drawable element
 public protocol Drawable {
@@ -42,6 +46,8 @@ public protocol Drawable {
     func update()
     
     func traverse(_ op: (_ itm: Drawable )->Bool)
+    
+    func render( type: RenderType) -> String
 }
 
 public enum DrawableLayer {
@@ -82,6 +88,9 @@ open class ItemDrawable: Drawable {
     }
     public func traverse(_ op: (_ itm: Drawable )->Bool) {
         _ = op(self)
+    }
+    public func render( type: RenderType) -> String {
+        return ""
     }
 }
 
@@ -1928,6 +1937,9 @@ public class TextBox: Drawable {
     }
     public func update() {
     }
+    public func render( type: RenderType) -> String {
+        return ""
+    }
 }
 
 public class DrawableLine: ItemDrawable {
@@ -2415,6 +2427,9 @@ public class DrawableLine: ItemDrawable {
     }
     public override func update() {
     }
+    public override func render( type: RenderType) -> String {
+        return ""
+    }
 }
 
 public class SelectorBox: Drawable {
@@ -2494,6 +2509,9 @@ public class SelectorBox: Drawable {
         return CGRect(origin: self.pos, size: self.size)
     }
     public func update() {
+    }
+    public func render( type: RenderType) -> String {
+        return ""
     }
 }
 
@@ -2610,6 +2628,9 @@ public class ImageBox: Drawable {
         return CGRect(origin: self.pos, size: self.size)
     }
     public func update() {
+    }
+    public func render( type: RenderType) -> String {
+        return ""
     }
 }
 

@@ -4,6 +4,10 @@
 + Support for corner-radius properly - to control from round corners to flat ones.
 + Support for line-spacing properly - to control text display spacing 
 + Support for Markdown font sizing - &(size|?Text)
++ Ignore links on align operations.
++ Paste as Item/ Paste as Item set actions.
++ Select all items/ Select all link actions.
++ Move only right on duplicate and copy/paste
 
 
 ## Version 1.1.1

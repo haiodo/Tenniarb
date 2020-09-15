@@ -29,6 +29,8 @@
 		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
 		0C45B12E22A397BE00640305 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12B22A397BE00640305 /* readme.md */; };
 		0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4C16071F2E369A000C5410 /* LayoutBase.swift */; };
+		0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4F0EC524C74B340065918D /* TestSVGGenerate.swift */; };
+		0C4F0EC824C74BB10065918D /* Example.tenn in Resources */ = {isa = PBXBuildFile; fileRef = 0C4F0EC724C74BB10065918D /* Example.tenn */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
@@ -165,6 +167,8 @@
 		0C45B12A22A397BE00640305 /* main_screen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = main_screen.png; sourceTree = "<group>"; };
 		0C45B12B22A397BE00640305 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
+		0C4F0EC524C74B340065918D /* TestSVGGenerate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSVGGenerate.swift; sourceTree = "<group>"; };
+		0C4F0EC724C74BB10065918D /* Example.tenn */ = {isa = PBXFileReference; lastKnownFileType = text; name = Example.tenn; path = ../../docs/Example.tenn; sourceTree = "<group>"; };
 		0C571C59206A069600ACDC6D /* Tenniarb.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tenniarb.entitlements; sourceTree = "<group>"; };
 		0C5C6D1A1EFF655B00714971 /* TenniarbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
@@ -475,9 +479,19 @@
 			path = layout;
 			sourceTree = "<group>";
 		};
+		0C4F0EC424C74B180065918D /* svh-generate */ = {
+			isa = PBXGroup;
+			children = (
+				0C4F0EC724C74BB10065918D /* Example.tenn */,
+				0C4F0EC524C74B340065918D /* TestSVGGenerate.swift */,
+			);
+			path = "svh-generate";
+			sourceTree = "<group>";
+		};
 		0C5C6D1B1EFF655B00714971 /* TenniarbTests */ = {
 			isa = PBXGroup;
 			children = (
+				0C4F0EC424C74B180065918D /* svh-generate */,
 				0C5C6D241EFF669500714971 /* TennTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
@@ -715,6 +729,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C4F0EC824C74BB10065918D /* Example.tenn in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -783,6 +798,7 @@
 			files = (
 				0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */,
 				0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */,
+				0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */,
 				0C5C6D251EFF669500714971 /* TennTests.swift in Sources */,
 				0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */,
 				0C7F899B233520880098B745 /* MarkDownTests.swift in Sources */,
