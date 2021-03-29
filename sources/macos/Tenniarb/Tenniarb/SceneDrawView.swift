@@ -225,6 +225,24 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    override func scrollWheel(with event: NSEvent) {
+        Swift.debugPrint("SCROLL WHeel", event)
+        
+        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
+            return
+        }
+        
+        hidePopup()
+                    
+        let dx = event.deltaX * 3
+        let dy = event.deltaY * 3
+        self.ox += dx
+        self.oy -= dy
+        
+        scheduleRedraw()
+        
+    }
+    
     @objc override func touchesMoved(with event: NSEvent) {
         if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
@@ -1286,10 +1304,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         popover.show(relativeTo: bounds, of: self, preferredEdge: NSRectEdge.maxY)
     }
     
-    public func findElement(x: CGFloat, y: CGFloat) -> [ItemDrawable] {
+    public func findElement(x: CGFloat, y: CGFloat, allowAll: Bool = false) -> [ItemDrawable] {
         let point = CGPoint(x: x, y: y)
         
-        return self.scene?.find(point) ?? []
+        return self.scene?.find(point, allowAll: allowAll) ?? []
     }
     
     
@@ -1528,6 +1546,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    
     override func mouseDragged(with event: NSEvent) {
         //        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
         //            return
@@ -1548,7 +1567,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let drv = scene?.drawables {
                 for (it, d) in drv {
                     let db = d.getBounds()
-                    if selBox.intersects(db) {
+                    if selBox.intersects(db) && d.isSelectable() {
                         self.activeItems.append(it)
                     }
                 }
@@ -2397,7 +2416,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.autoenablesItems=true
         
         menu.addItem(NSMenuItem( title: "Move Forward", action: #selector(moveItemForward(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem( title: "Move backward", action: #selector(moveItemBackward(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem( title: "Move Backward", action: #selector(moveItemBackward(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         //        menu.addItem(
         
@@ -2406,8 +2425,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     fileprivate func createSelection(_ menu: NSMenu) {
         
-        let drawables = findElement(x: self.x, y: self.y)
-        if drawables.count <= 1 {
+        let drawablesLess = findElement(x: self.x, y: self.y)
+        let drawables = findElement(x: self.x, y: self.y, allowAll: true)
+        if drawablesLess.count == drawables.count && drawables.count <= 1 {
             return
         }
         
