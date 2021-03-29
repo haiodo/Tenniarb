@@ -27,6 +27,8 @@ public protocol Drawable {
     
     func isVisible() -> Bool
     
+    func isSelectable() -> Bool
+    
     /// raw drag
     func drawBox( context: CGContext, at point: CGPoint )
     
@@ -92,6 +94,9 @@ open class ItemDrawable: Drawable {
     public func render( type: RenderType) -> String {
         return ""
     }
+    public func isSelectable() -> Bool {
+        return layer == .Default
+    }
 }
 
 open class DrawableContainer: ItemDrawable {
@@ -123,14 +128,14 @@ open class DrawableContainer: ItemDrawable {
         }
     }
     
-    public func find( _ point: CGPoint ) -> [ItemDrawable] {
+    public func find( _ point: CGPoint, allowAll: Bool = false ) -> [ItemDrawable] {
         var lines:[DrawableLine] = []
         var result: [ItemDrawable] = []
         // Check activeDrawable first
         if let childs = children {
             for c in childs {
                 if let drEl = c as? DrawableContainer {
-                    result.append(contentsOf: drEl.find(point))
+                    result.append(contentsOf: drEl.find(point, allowAll: allowAll))
                 }
                 else if let cc = c as? ItemDrawable {
                     if let ccl = c as? DrawableLine {
@@ -139,7 +144,9 @@ open class DrawableContainer: ItemDrawable {
                     else {
                         // Just regular drawable check for bounds
                         if cc.getSelectorBounds().contains(point) && cc.item != nil {
-                            result.append(cc)
+                            if allowAll || cc.layer == .Default {
+                                result.append(cc)
+                            }
                         }
                     }
                 }
@@ -156,7 +163,9 @@ open class DrawableContainer: ItemDrawable {
         if self.item != nil {
             // Check self coords
             if self.getSelectorBounds().contains(point) {
-                result.append(self)
+                if allowAll || self.layer == .Default {
+                    result.append(self)
+                }
             }
         }
         return result
@@ -905,13 +914,15 @@ open class DrawableScene: DrawableContainer {
         self.append(buildElementScene(element, self.darkMode, buildChildren: buildChildren, items: buildItems))
     }
     
-    public override func find( _ point: CGPoint ) -> [ItemDrawable] {
+    public override func find( _ point: CGPoint, allowAll: Bool = false ) -> [ItemDrawable] {
         var result: [ItemDrawable] = []      
         // Add all other items
-        let findResult = super.find(point)
+        let findResult = super.find(point, allowAll: allowAll)
         for r in findResult  {
             if !result.contains(where: {e in e.item == r.item}) {
-                result.append(r)
+                if allowAll || r.layer == .Default {
+                    result.append(r)
+                }
             }
         }
         return result
@@ -1878,6 +1889,9 @@ public class TextBox: Drawable {
     public func isVisible() -> Bool {
         return true
     }
+    public func isSelectable() -> Bool {
+        return true
+    }
     
     public func drawBox(context: CGContext, at point: CGPoint) {
         
@@ -2502,6 +2516,9 @@ public class SelectorBox: Drawable {
     public func isVisible() -> Bool {
         return true
     }
+    public func isSelectable() -> Bool {
+        return true
+    }
     public func getSelectorBounds() -> CGRect {
         return getBounds()
     }
@@ -2619,6 +2636,9 @@ public class ImageBox: Drawable {
     }
     
     public func isVisible() -> Bool {
+        return true
+    }
+    public func isSelectable() -> Bool {
         return true
     }
     public func getSelectorBounds() -> CGRect {
