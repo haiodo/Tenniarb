@@ -225,9 +225,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    override func scrollWheel(with event: NSEvent) {
-        Swift.debugPrint("SCROLL WHeel", event)
-        
+    override func scrollWheel(with event: NSEvent) {        
         if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
         }
@@ -515,7 +513,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     @objc func colorMenuAction( _ sender: NSMenuItem ) {
-        let value = sender.title
+        let value = String(sender.title.dropFirst(1))
         changeItemProps("color", TennNode.newIdent(value))
     }
     
@@ -577,7 +575,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         let bounds = dr.getSelectorBounds()
-        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x + 5, y: scene!.offset.y + bounds.origin.y + bounds.height)
+        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x + 15, y: scene!.offset.y + bounds.origin.y + bounds.height + 10)
         
         let segments = NSSegmentedControl() //frame: CGRect(x: 0, y: 0, width: 300, height: 48))
         
@@ -652,10 +650,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         if act.kind == .Item {
             segm += 1
-            segments.setLabel("✎", forSegment: segm)
+            segments.setLabel("🔴", forSegment: segm)
             segments.setMenu(
                 createMenu(selector: #selector(colorMenuAction(_:)),
-                           items: ["red", "green", "blue", "yellow", "orange", "brown", "blue", "lightblue", "purple"]),
+                           items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"]),
                 forSegment: segm)
             if #available(OSX 10.13, *) {
                 segments.setShowsMenuIndicator(true, forSegment: segm)

@@ -110,8 +110,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2011"
-            endingLineNumber = "2011"
+            startingLineNumber = "2009"
+            endingLineNumber = "2009"
             landmarkName = "paste(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -174,8 +174,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1976"
-            endingLineNumber = "1976"
+            startingLineNumber = "1974"
+            endingLineNumber = "1974"
             landmarkName = "paste(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -190,8 +190,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1975"
-            endingLineNumber = "1975"
+            startingLineNumber = "1973"
+            endingLineNumber = "1973"
             landmarkName = "paste(_:)"
             landmarkType = "7">
             <Locations>
@@ -254,8 +254,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1943"
-            endingLineNumber = "1943"
+            startingLineNumber = "1941"
+            endingLineNumber = "1941"
             landmarkName = "pasteAsItemSet(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -270,8 +270,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1926"
-            endingLineNumber = "1926"
+            startingLineNumber = "1924"
+            endingLineNumber = "1924"
             landmarkName = "pasteAsItem(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -334,8 +334,8 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1402"
-            endingLineNumber = "1402"
+            startingLineNumber = "1400"
+            endingLineNumber = "1400"
             landmarkName = "mouseDown(with:)"
             landmarkType = "7">
          </BreakpointContent>
