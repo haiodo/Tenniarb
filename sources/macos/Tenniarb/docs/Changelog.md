@@ -8,6 +8,8 @@
 + Paste as Item/ Paste as Item set actions.
 + Select all items/ Select all link actions.
 + Move only right on duplicate and copy/paste
++ Support apple mouse scroll to drag canvas.
+
 
 
 ## Version 1.1.1
