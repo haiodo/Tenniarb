@@ -35,6 +35,13 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     }
     
     override func makeWindowControllers() {
+//        let frame = NSMakeRect(100, 100, 500, 300)
+//        let window = NSWindow(contentRect: frame ,
+//                              styleMask: [.closable, .resizable, .unifiedTitleAndToolbar, .titled] ,
+//                              backing: .buffered,
+//                              defer: false)
+//        let wc: NSWindowController = MasterWindowController.init(window: window)
+//        self.addWindowController(wc)
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController

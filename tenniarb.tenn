@@ -4656,6 +4656,11 @@ asdasd
             }
         }
         element "Markdown" {
+            styles {
+                item {
+                    shadow -5 -5 5
+                }
+            }
             item "Color !(red)RED and !() black" {
                 pos -434.0 185.0
             }
