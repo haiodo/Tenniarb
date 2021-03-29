@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097.3"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="16097.3"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="17701"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="17701"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -403,7 +403,7 @@ DQ
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zXZ-t3-Ua5">
-                                                                    <rect key="frame" x="167.5" y="-1" width="45" height="23"/>
+                                                                    <rect key="frame" x="164" y="-2" width="49" height="23"/>
                                                                     <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" segmentDistribution="fillProportionally" style="texturedRounded" trackingMode="momentary" id="97U-Ze-CM9">
                                                                         <font key="font" metaFont="system"/>
                                                                         <segments>
@@ -439,7 +439,7 @@ DQ
                                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                                                     <color key="gridColor" red="0.15686274509803921" green="0.19215686274509802" blue="0.25882352941176467" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <tableColumns>
-                                                                        <tableColumn width="217" minWidth="140" maxWidth="300" id="YFI-la-VX8" userLabel="Table Column" colorLabel="IBBuiltInLabel-Yellow">
+                                                                        <tableColumn width="185" minWidth="140" maxWidth="300" id="YFI-la-VX8" userLabel="Table Column" colorLabel="IBBuiltInLabel-Yellow">
                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Element">
                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -452,10 +452,10 @@ DQ
                                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                                             <prototypeCellViews>
                                                                                 <tableCellView identifier="ItemCell" id="wCm-He-3sR">
-                                                                                    <rect key="frame" x="0.0" y="2" width="217" height="20"/>
+                                                                                    <rect key="frame" x="10" y="2" width="197" height="20"/>
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                     <subviews>
-                                                                                        <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Voe-qM-8ec" userLabel="imageView">
+                                                                                        <imageView wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Voe-qM-8ec" userLabel="imageView">
                                                                                             <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                                                             <constraints>
                                                                                                 <constraint firstAttribute="width" constant="20" id="RH7-D2-EUT"/>
@@ -463,7 +463,7 @@ DQ
                                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="ico-group" id="Fh7-bi-C1x"/>
                                                                                         </imageView>
                                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="XGI-aq-4wA" userLabel="ItemCell">
-                                                                                            <rect key="frame" x="22" y="0.0" width="219" height="18"/>
+                                                                                            <rect key="frame" x="22" y="0.0" width="199" height="18"/>
                                                                                             <textFieldCell key="cell" selectable="YES" editable="YES" allowsUndo="NO" alignment="left" title="ItemCell" usesSingleLineMode="YES" id="GXh-Ub-nEp" userLabel="ItemCell" customClass="OutlineTextFieldCell" customModule="Tenniarb" customModuleProvider="target">
                                                                                                 <font key="font" metaFont="menu" size="14"/>
                                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -495,7 +495,7 @@ DQ
                                                             <nil key="backgroundColor"/>
                                                         </clipView>
                                                         <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="bYx-ah-exa">
-                                                            <rect key="frame" x="0.0" y="682" width="217" height="16"/>
+                                                            <rect key="frame" x="0.0" y="718" width="217" height="16"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Hyz-zw-8yA">
@@ -544,7 +544,7 @@ DQ
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zbO-zz-O9G">
-                                                                            <rect key="frame" x="645.5" y="6" width="54" height="23"/>
+                                                                            <rect key="frame" x="649" y="6" width="51" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="SpO-6s-HC2">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -559,7 +559,7 @@ DQ
                                                                             </connections>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SXa-LX-SJ4" userLabel="Export_printing">
-                                                                            <rect key="frame" x="600.5" y="6" width="26" height="23"/>
+                                                                            <rect key="frame" x="605" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="po3-ln-0Dn">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -568,7 +568,7 @@ DQ
                                                                             </segmentedCell>
                                                                         </segmentedControl>
                                                                         <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" springLoaded="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fzh-iN-2Fn" userLabel="HelpAction">
-                                                                            <rect key="frame" x="555.5" y="6" width="26" height="23"/>
+                                                                            <rect key="frame" x="561" y="6" width="26" height="23"/>
                                                                             <segmentedCell key="cell" refusesFirstResponder="YES" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="vqf-vq-Awc">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <segments>
@@ -714,15 +714,15 @@ DQ
                                     <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="0.0" horizontalStackHuggingPriority="250" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fD7-NG-FKl">
                                         <rect key="frame" x="0.0" y="10" width="280" height="30"/>
                                         <subviews>
-                                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="0CD-QR-GsY">
-                                                <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
+                                            <imageView wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="0CD-QR-GsY">
+                                                <rect key="frame" x="0.0" y="-3" width="30" height="36"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="30" id="GPI-A2-1Uj"/>
                                                     <constraint firstAttribute="height" constant="30" id="vke-xe-5Ut"/>
                                                 </constraints>
                                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSTouchBarAddDetailTemplate" id="0x8-7G-zgb"/>
                                             </imageView>
-                                            <textField focusRingType="none" verticalHuggingPriority="750" preferredMaxLayoutWidth="250" translatesAutoresizingMaskIntoConstraints="NO" id="AEj-0Q-XDA">
+                                            <textField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" preferredMaxLayoutWidth="250" translatesAutoresizingMaskIntoConstraints="NO" id="AEj-0Q-XDA">
                                                 <rect key="frame" x="28" y="0.0" width="254" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="250" id="XYp-hK-Zjw"/>
@@ -871,7 +871,7 @@ DQ
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
-                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background" id="EIa-Sc-Loq">
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background" id="XUm-Vs-8bc">
                                                     <dictionary key="options">
                                                         <string key="NSValueTransformerName">NSKeyedUnarchiveFromData</string>
                                                     </dictionary>
@@ -892,7 +892,7 @@ DQ
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
-                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background_dark" id="Vgj-ui-O52">
+                                                <binding destination="w1b-39-YrS" name="value" keyPath="values.preferences.colors.background_dark" id="Ih4-lX-auF">
                                                     <dictionary key="options">
                                                         <string key="NSValueTransformerName">NSKeyedUnarchiveFromData</string>
                                                     </dictionary>
@@ -1009,23 +1009,23 @@ DQ
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <visualEffectView blendingMode="behindWindow" material="popover" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="HhD-Hx-tll">
-                                <rect key="frame" x="0.0" y="0.0" width="1138" height="174"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1138" height="169"/>
                                 <subviews>
                                     <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M3R-d3-NnX">
-                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="169"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="164"/>
                                         <subviews>
                                             <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V7F-7f-5hj">
-                                                <rect key="frame" x="0.0" y="134" width="893" height="35"/>
+                                                <rect key="frame" x="0.0" y="129" width="893" height="35"/>
                                                 <subviews>
-                                                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vC0-IB-paJ">
-                                                        <rect key="frame" x="0.0" y="5" width="30" height="30"/>
+                                                    <imageView wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vC0-IB-paJ">
+                                                        <rect key="frame" x="0.0" y="2" width="30" height="36"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="30" id="R85-B7-A1O"/>
                                                             <constraint firstAttribute="width" constant="30" id="rHQ-Jb-wCy"/>
                                                         </constraints>
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSRevealFreestandingTemplate" id="Wy1-F3-ia2"/>
                                                     </imageView>
-                                                    <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="L4Z-5J-4qI">
+                                                    <textField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="L4Z-5J-4qI">
                                                         <rect key="frame" x="33" y="5" width="862" height="30"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="30" id="IxC-2H-ryb"/>
@@ -1047,13 +1047,13 @@ DQ
                                                 </customSpacing>
                                             </stackView>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2vJ-KE-k4m">
-                                                <rect key="frame" x="0.0" y="0.0" width="1138" height="129"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="1129" height="124"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="F2S-Yk-eo2">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1138" height="129"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1129" height="124"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" autoresizesOutlineColumn="YES" outlineTableColumn="fdS-FP-WJp" id="eHh-SB-Ufe">
-                                                            <rect key="frame" x="0.0" y="0.0" width="1138" height="129"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="1129" height="124"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1072,11 +1072,11 @@ DQ
                                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                     <prototypeCellViews>
                                                                         <tableCellView identifier="SearchItemCell" id="TjP-ZP-4VU">
-                                                                            <rect key="frame" x="1" y="1" width="1000" height="17"/>
+                                                                            <rect key="frame" x="11" y="1" width="1009" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="CIH-3C-Jzb">
-                                                                                    <rect key="frame" x="0.0" y="1" width="1000" height="16"/>
+                                                                                    <rect key="frame" x="0.0" y="1" width="1009" height="16"/>
                                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" identifier="textField" id="DGb-Xm-MK5">
                                                                                         <font key="font" metaFont="system"/>
                                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1149,15 +1149,15 @@ DQ
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="1PE-0t-Wrh"/>
+        <segue reference="vtn-ED-noe"/>
     </inferredMetricsTieBreakers>
     <resources>
-        <image name="NSAddTemplate" width="11" height="11"/>
-        <image name="NSBookmarksTemplate" width="17" height="18"/>
-        <image name="NSRemoveTemplate" width="11" height="11"/>
-        <image name="NSRevealFreestandingTemplate" width="14" height="14"/>
-        <image name="NSShareTemplate" width="11" height="16"/>
-        <image name="NSTouchBarAddDetailTemplate" width="18" height="30"/>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSBookmarksTemplate" width="18" height="15"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+        <image name="NSRevealFreestandingTemplate" width="15" height="15"/>
+        <image name="NSShareTemplate" width="15" height="17"/>
+        <image name="NSTouchBarAddDetailTemplate" width="15" height="15"/>
         <image name="ico-group" width="22" height="20"/>
     </resources>
 </document>
