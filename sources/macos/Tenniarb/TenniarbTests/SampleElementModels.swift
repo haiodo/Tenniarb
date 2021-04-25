@@ -15,7 +15,7 @@ public class TestElementFactory {
         let elementModel = ElementModel()
         
         let pl = Element(name: "platform", createSelf: true)
-        _ = elementModel.add(pl)
+        elementModel.add(pl)
         
         let index = pl.add( makeItem: Element(name: "Index"))
         index.x = -84

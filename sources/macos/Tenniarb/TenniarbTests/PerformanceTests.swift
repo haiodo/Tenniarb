@@ -196,9 +196,7 @@ class PerformanceTests: XCTestCase {
         let str: String = generateString()
         let now = Date()
         var count = 0
-        
-        let i = str.unicodeScalars.makeIterator()
-        
+                
         for cc in str.unicodeScalars {
             let c = Character(cc)
             if c == "A" {
@@ -277,6 +275,17 @@ class PerformanceTests: XCTestCase {
         measure {
             let now = Date()
             _ = TennParser().parse(str)
+            Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
+        }
+    }
+    
+    func testSlowLexerParsingPerformance() {
+        let str: String = generateString()
+        measure {
+            let now = Date()
+            let p = TennParser()
+            p.factory =  { source in SlowLexer( source )}
+            _ = p.parse(str)
             Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
         }
     }

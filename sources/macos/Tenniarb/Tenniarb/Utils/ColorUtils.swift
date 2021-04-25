@@ -481,13 +481,14 @@ public let ColorNames: [String: String] = [
 
 
 public func hexStringToUIColor (hexString:String, alpha: CGFloat = 1.0) -> CGColor {
-    let hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-    let scanner = Scanner(string: hexString)
+    var hexString: String = hexString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    
     if (hexString.hasPrefix("#")) {
-        scanner.scanLocation = 1
+        hexString = String(hexString.suffix(from: hexString.index(hexString.startIndex, offsetBy: 1)))
     }
-    var color: UInt32 = 0
-    scanner.scanHexInt32(&color)
+    let scanner = Scanner(string: hexString)
+    var color: UInt64 = 0
+    scanner.scanHexInt64(&color)
     let mask = 0x000000FF
     let r = Int(color >> 16) & mask
     let g = Int(color >> 8) & mask

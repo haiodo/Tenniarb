@@ -55,7 +55,7 @@ class PersistenceTests: XCTestCase {
     func testSaveOneElement() {
         let model = ElementModel()
         
-        _ = model.add(Element( name: "Item1"))
+        model.add(Element( name: "Item1"))
         
         let storedValue = model.toTennStr()
         XCTAssertEqual("element \"Item1\" {\n}", storedValue)

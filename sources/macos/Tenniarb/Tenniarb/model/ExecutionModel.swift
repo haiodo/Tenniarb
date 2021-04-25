@@ -720,7 +720,7 @@ public class ExecutionContext:  ExecutionContextEvaluator {
         DispatchQueue.global(qos: .utility).async( execute: {
             syncQueue.sync {
                 if let root = self.rootCtx {                    
-                    _ = root.updateContext()
+                    root.updateContext()
                     let scene = DrawableScene(root.element, darkMode: false, executionContext: self.evalContext, scaleFactor: self.scaleFactor, buildChildren: false)
                     // We need to recalculate all stuff
                     for ci in root.itemsMap.values {

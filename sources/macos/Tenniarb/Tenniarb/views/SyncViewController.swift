@@ -67,7 +67,7 @@ class SyncViewController: NSViewController {
 
         syncOutline.reloadData()
 
-        syncOutline.calcSize()
+        syncOutline.layout()
 
         var width = CGFloat(0)
         var height = CGFloat(0)
@@ -85,7 +85,7 @@ class SyncViewController: NSViewController {
 
         self.view.frame = CGRect(origin: self.view.frame.origin, size: CGSize(width: width, height: height))
         
-        syncOutline.calcSize()
+        syncOutline.layout()
     }
     fileprivate func addSyncConfig() {
         if let active = element {

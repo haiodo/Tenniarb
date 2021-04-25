@@ -1175,7 +1175,7 @@ open class DrawableScene: DrawableContainer {
         lm.addTextContainer(textContainer)
         ts.addLayoutManager(lm)
         _ = lm.glyphRange(for: textContainer)
-        let usedRect = lm.usedRect(for: textContainer)
+//        let usedRect = lm.usedRect(for: textContainer)
         
 //        Swift.debugPrint("size of \(attrStr.string.replacingOccurrences(of: "\n", with: "\\n")) is (\(usedRect.width),\(usedRect.height))")
         
@@ -1916,17 +1916,12 @@ public class TextBox: Drawable {
             var size = CGSize(width:0, height:0)
             
             if let lines = CTFrameGetLines(frame) as? [CTLine] {
-                var maxWidth = size.width
                 for l in lines {
-                    var maxHeight = CGFloat(0)
-                    var imagesWidth = CGFloat(0)
-                    let range = CTLineGetStringRange(l)
-                    
                     var ascent: CGFloat = 0
                     var descent: CGFloat = 0
                     var leading: CGFloat = 0
                     
-                    let lineWidth = CGFloat(CTLineGetTypographicBounds(l, &ascent, &descent, &leading))
+                    CTLineGetTypographicBounds(l, &ascent, &descent, &leading)
                     
                     let hh = ascent + descent + leading
                     context.stroke(CGRect(x: atp.x, y: atp.y+size.height, width: atr.width, height: hh), width: 0.5)

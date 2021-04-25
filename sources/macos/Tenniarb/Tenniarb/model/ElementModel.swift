@@ -413,6 +413,6 @@ public class ElementModelFactory {
         self.elementModel = ElementModel()
         
         let pl = Element(name: "Unnamed diagram", createSelf: false)
-        _ = self.elementModel.add(pl)        
+        self.elementModel.add(pl)        
     }
 }

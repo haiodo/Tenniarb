@@ -1832,7 +1832,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.scene?.darkMode != nDarkMode {
             buildScene()
         }
-        let now = Date()
+//        let now = Date()
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             context.saveGState()
             // Draw background
@@ -2183,7 +2183,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                                 ClipboardUtils.copyHtml(strValue)
                             }
                         }
-                        catch let error {
+                        catch _ {
                             // Ignore
                         }
                     }
