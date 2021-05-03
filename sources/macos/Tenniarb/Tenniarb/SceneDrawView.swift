@@ -138,6 +138,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     var viewController: ViewController?
     
+    var zoomLevel: CGFloat = 1
+    
     var ox: CGFloat {
         set {
             if let active = element {
@@ -219,9 +221,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             })
         }
         else {
-            if lastInvalidRect != nil && invalidRect != nil {
-                lastInvalidRect = lastInvalidRect!.union(invalidRect!)
-            }
+            lastInvalidRect = nil
         }
     }
     
@@ -354,6 +354,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.store = store
             self.store?.onUpdate.append( self )
         }
+        zoomLevel = 1
     }
     
     public func setActiveElement(_ elementModel: Element ) {
@@ -813,22 +814,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
-        if finalBounds != nil {
-            return finalBounds!
+        if let fb = finalBounds{
+            return CGRect(x: fb.origin.x * zoomLevel, y: fb.origin.y * zoomLevel, width: fb.width * zoomLevel, height: fb.height * zoomLevel)
         }
         return self.frame
     }
     
-    func getEditBoxBounds( item: Drawable ) -> CGRect {
+    func getEditBoxBounds( item: Drawable, _ zoomLevel: CGFloat ) -> CGRect {
         var deBounds = self.editBoxItem!.getSelectorBounds()
         if let link =  item as? DrawableLine {
             deBounds = link.getLabelBounds()
         }
         let bounds = CGRect(
-            x: deBounds.origin.x + scene!.offset.x,
-            y: deBounds.origin.y + scene!.offset.y,
-            width: max(deBounds.width, 100),
-            height: max(deBounds.height, 20)
+            x: (deBounds.origin.x + scene!.offset.x) * zoomLevel,
+            y: (deBounds.origin.y + scene!.offset.y) * zoomLevel,
+            width: max(deBounds.width, 100) * zoomLevel,
+            height: max(deBounds.height, 20) * zoomLevel
         )
         
         return bounds
@@ -991,9 +992,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         self.editBoxItem = de
         
-        let bounds = getEditBoxBounds(item: de)
+        let bounds = getEditBoxBounds(item: de, self.zoomLevel)
         editBox = PopupEditField(frame: bounds)
-        scene?.editBoxBounds = bounds
+        scene?.editBoxBounds = getEditBoxBounds(item: de, 1)
         scene?.editingMode = true
         
         editBox?.wantsLayer = true
@@ -1015,15 +1016,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         switch self.editingMode {
         case .Name:
             editBox?.stringValue = active.name
-            editBox?.font = NSFont.systemFont(ofSize: style.fontSize)
+            editBox?.font = NSFont.systemFont(ofSize: style.fontSize * zoomLevel)
         case .Body:
             let (text, fontSize) = self.getBody(active, style)
             editBox?.stringValue = text
-            editBox?.font = NSFont.systemFont(ofSize: fontSize)
+            editBox?.font = NSFont.systemFont(ofSize: fontSize * zoomLevel)
         case .Value:
             if let (text, fontSize) = self.getCustomField(active, style) {
                 editBox?.stringValue = text
-                editBox?.font = NSFont.systemFont(ofSize: fontSize)
+                editBox?.font = NSFont.systemFont(ofSize: fontSize * zoomLevel)
             } else {
                 mode = .Normal
                 return
@@ -1304,7 +1305,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     public func findElement(x: CGFloat, y: CGFloat, allowAll: Bool = false) -> [ItemDrawable] {
         let point = CGPoint(x: x, y: y)
-        
         return self.scene?.find(point, allowAll: allowAll) ?? []
     }
     
@@ -1552,7 +1552,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.hidePopup()
         self.updateMousePosition(event)
-        
+                
         if self.mode == .Selection {
             let minX = min(self.selectionStart.x, self.x)
             let minY = min(self.selectionStart.y, self.y)
@@ -1582,14 +1582,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             for de in dragElements {
                 if self.mode == .LineDrawing {
-                    self.lineToPoint = CGPoint(x: self.x, y: self.y )
+                    self.lineToPoint = CGPoint(x: self.x, y: self.y)
                     self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
                     
                     scheduleRedraw()
                 }
                 else {
                     if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1), let dde = self.scene?.drawables[de] {
-                        let newPos = CGPoint(x: pos.x + event.deltaX, y:pos.y - event.deltaY)
+                        let newPos = CGPoint(x: pos.x + event.deltaX / zoomLevel, y:pos.y - event.deltaY / zoomLevel)
                         self.dragMap[de] = newPos
                         
                         var viewPos = CGPoint( x: newPos.x, y: newPos.y)
@@ -1613,13 +1613,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 // Operation.
                 let dirtyRegion = self.scene!.updateLayout(newPositions)
                 
-                let p = CGPoint(x: self.ox + bounds.midX + dirtyRegion.origin.x, y: self.oy + bounds.midY + dirtyRegion.origin.y)
-                scheduleRedraw(invalidRect: CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width, height: dirtyRegion.size.height)))
+                let sceneBounds = zoomBounds()
+                
+                let p = CGPoint(x: (self.ox +  sceneBounds.midX + dirtyRegion.origin.x ) * zoomLevel, y: ( self.oy + sceneBounds.midY + dirtyRegion.origin.y ) * zoomLevel)
+                let newDirty = CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width * zoomLevel, height: dirtyRegion.size.height * zoomLevel ))
+                scheduleRedraw(invalidRect: newDirty)
             }
         }
         else {
-            ox += event.deltaX
-            oy -= event.deltaY
+            ox += event.deltaX / zoomLevel
+            oy -= event.deltaY / zoomLevel
             
             self.mode = .DiagramMove
             
@@ -1627,11 +1630,21 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    func zoomBounds()-> CGRect {
+        return CGRect(x: bounds.origin.x / zoomLevel,
+                                 y: bounds.origin.y / zoomLevel,
+                                 width: bounds.width / zoomLevel,
+                                 height: bounds.height / zoomLevel)
+    }
+    
     func updateMousePosition(_ event: NSEvent) {
         let wloc = event.locationInWindow
         
         let vp = self.convert(wloc, from: nil)
-        let pos = CGPoint(x: vp.x - bounds.midX - ox, y: vp.y - bounds.midY - oy )
+        
+        let sceneBounds = zoomBounds()
+        
+        let pos = CGPoint(x: ( vp.x / zoomLevel ) - sceneBounds.midX - ox, y: ( vp.y / zoomLevel )  - sceneBounds.midY - oy )
         
         self.x = pos.x
         self.y = pos.y
@@ -1671,6 +1684,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let ycount = 20
         let xcount = 30
         
+        let sceneBounds = zoomBounds()
+        
         var leftBoxes: [Int] = []
         var rightBoxes: [Int] = []
         
@@ -1688,8 +1703,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         
-        let ystep = bounds.height / CGFloat(ycount)
-        let xstep = bounds.width / CGFloat(xcount)
+        let ystep = sceneBounds.height / CGFloat(ycount)
+        let xstep = sceneBounds.width / CGFloat(xcount)
+        
         
         for d in scene.drawables.values {
             let db = d.getBounds()
@@ -1707,7 +1723,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
                 leftBoxes[ypos] += 1
             }
-            if x > bounds.width {
+            if x > sceneBounds.width {
                 var ypos = Int((y + db.height/2) / ystep)
                 if ypos > ycount {
                     ypos = ycount
@@ -1731,7 +1747,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     bottomBoxes[xpos] +=  1
                 }
             }
-            if y > bounds.height {
+            if y > sceneBounds.height {
                 var xpos = Int((x + db.width/2) / xstep)
                 if xpos >= xcount {
                     xpos = xcount
@@ -1782,9 +1798,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     cr = 50
                 }
                 if i == ycount {
-                    newy = bounds.height - CGFloat(cr)*cx - 7
+                    newy = sceneBounds.height - CGFloat(cr)*cx - 7
                 }
-                context.addEllipse(in: CGRect(x: bounds.width - 7 - CGFloat(cr)*cx, y: newy, width: 5 + CGFloat(cr)*cx, height: 5 + CGFloat(cr)*cx))
+                context.addEllipse(in: CGRect(x: sceneBounds.width - 7 - CGFloat(cr)*cx, y: newy, width: 5 + CGFloat(cr)*cx, height: 5 + CGFloat(cr)*cx))
                 needDraw = true
             }
         }
@@ -1812,7 +1828,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 if i == xcount {
                     newx = newx - CGFloat(cr)*cy - 7
                 }
-                context.addEllipse(in: CGRect(x: newx, y: bounds.height - 7 - CGFloat(cr)*cy, width: 5 + CGFloat(cr)*cy, height: 5 + CGFloat(cr)*cy))
+                context.addEllipse(in: CGRect(x: newx, y: sceneBounds.height - 7 - CGFloat(cr)*cy, width: 5 + CGFloat(cr)*cy, height: 5 + CGFloat(cr)*cy))
                 needDraw = true
             }
         }
@@ -1825,8 +1841,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if( self.element == nil) {
             return
         }
-        // Check if apperance changed
         
+        // Check if apperance changed
         
         let nDarkMode = PreferenceConstants.preference.isDiagramDarkMode()
         if self.scene?.darkMode != nDarkMode {
@@ -1846,24 +1862,32 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.setShouldAntialias(true)
             context.fill(self.bounds)
-            //            context.stroke(dirtyRect, width: 1)
+                        
+            let sceneBounds = zoomBounds()
             
-            scene.offset = CGPoint(x: self.ox + bounds.midX, y: self.oy + bounds.midY)
+            let sceneDirtyRect = CGRect(x: dirtyRect.origin.x / zoomLevel,
+                                     y: dirtyRect.origin.y  / zoomLevel,
+                                     width: dirtyRect.width  / zoomLevel,
+                                     height: dirtyRect.height / zoomLevel)
+            
+            scene.offset = CGPoint(x: self.ox + sceneBounds.midX, y: self.oy + sceneBounds.midY)
             
             let sceneDirty = CGRect(
-                origin: CGPoint(x: dirtyRect.origin.x - scene.offset.x, y: dirtyRect.origin.y-scene.offset.y),
-                size:dirtyRect.size
+                origin: CGPoint(x: sceneDirtyRect.origin.x - scene.offset.x, y: sceneDirtyRect.origin.y - scene.offset.y),
+                size:sceneDirtyRect.size
             )
-            
+                        
+                        
             context.saveGState()
             
-            scene.layout(bounds, sceneDirty)
+            context.scaleBy(x: zoomLevel, y: zoomLevel)
+            
+            scene.layout(sceneBounds, sceneDirty)
             scene.draw(context: context)
-            context.restoreGState()
             
             drawRulers(scene, context)
             
-            
+            context.restoreGState()
             context.restoreGState()
         }
         //        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
@@ -1886,6 +1910,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     
     /// Selectors
+    
+    @objc public func zoomIn(_ sender: NSMenuItem) {
+        zoomLevel /= 0.75
+        scheduleRedraw()
+    }
+    
+    @objc public func zoomOut(_ sender: NSMenuItem) {
+        zoomLevel *= 0.75
+        scheduleRedraw()
+    }
     
     @objc public func removeItmAction(_ sender: NSMenuItem) {
         removeItem()

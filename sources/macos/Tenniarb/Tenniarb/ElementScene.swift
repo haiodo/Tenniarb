@@ -666,7 +666,6 @@ class DrawableItemStyle: DrawableStyle {
 
 
 class SceneStyle: DrawableStyle {
-    var zoomLevel: CGFloat = 1
     var gridSpan = CGPoint( x: 5, y: 5)
     
     var defaultItemStyle: DrawableItemStyle
@@ -683,10 +682,6 @@ class SceneStyle: DrawableStyle {
     
     override func parseStyleLine(_ cmdName: String, _ child: TennNode, _ evaluations: [TennToken: JSValue ]) {
         switch cmdName {
-        case PersistenceStyleKind.ZoomLevel.name:
-            if let value = child.getFloat(1) {
-                self.zoomLevel = CGFloat(value)
-            }
         case PersistenceStyleKind.Styles.name:
             // Default styles for entire diagram
             if let childBlock = child.getChild(1), childBlock.kind == .BlockExpr, let children = childBlock.children {
@@ -1080,9 +1075,7 @@ open class DrawableScene: DrawableContainer {
         super.layout(self.bounds, dirty)
     }
     
-    open func draw(context: CGContext) {
-        
-        context.scaleBy(x: self.sceneStyle.zoomLevel, y: self.sceneStyle.zoomLevel)
+    open func draw(context: CGContext) {                
         draw(context: context, at: offset)
         
         for selBox in self.activeDrawables {

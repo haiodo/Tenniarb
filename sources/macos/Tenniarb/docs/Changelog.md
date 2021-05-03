@@ -9,6 +9,8 @@
 + Select all items/ Select all link actions.
 + Move only right on duplicate and copy/paste
 + Support apple mouse scroll to drag canvas.
+* Use #colors for background in preferences.
++ Support Zooming of diagram canvas.
 
 
 
