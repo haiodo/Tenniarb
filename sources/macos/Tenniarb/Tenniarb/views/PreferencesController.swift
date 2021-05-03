@@ -82,14 +82,11 @@ public class PreferenceConstants {
             if backgroundColorCache != nil {
                 return backgroundColorCache!
             }
-            guard let obj = defaults.data(forKey: preferenceColorsBackground) else {
+            guard let obj = defaults.string(forKey: preferenceColorsBackground) else {
                 return backgroundDefault
             }
-            guard let clr = NSKeyedUnarchiver.unarchiveObject(with: obj) as? NSColor else {
-                return backgroundDefault
-            }
-            self.backgroundColorCache = clr.cgColor
-            return clr.cgColor
+            self.backgroundColorCache =  parseColor(obj)
+            return self.backgroundColorCache!
         }
     }
     
@@ -98,14 +95,11 @@ public class PreferenceConstants {
             if backgroundColorDarkCache != nil {
                 return backgroundColorDarkCache!
             }
-            guard let obj = defaults.data(forKey: preferenceColorsBackgroundDark) else {
+            guard let obj = defaults.string(forKey: preferenceColorsBackgroundDark) else {
                 return backgroundDarkDefault
             }
-            guard let clr = NSKeyedUnarchiver.unarchiveObject(with: obj) as? NSColor else {
-                return backgroundDarkDefault
-            }
-            self.backgroundColorDarkCache = clr.cgColor
-            return clr.cgColor
+            self.backgroundColorDarkCache =  parseColor(obj)
+            return self.backgroundColorDarkCache!
         }
     }
     
@@ -160,7 +154,7 @@ public class PreferenceConstants {
     @objc func darkModeChanged(_ notif: NSNotification) {
         self.darkMode = !self.darkMode
     }
-    
+        
     func checkDefaults() {
         if self.initDone {
             return
@@ -169,8 +163,8 @@ public class PreferenceConstants {
         defaults.register(defaults: [
             preferenceAutoExpand: true,
             preferenceExpandLevel: 2,
-            preferenceColorsBackground: NSKeyedArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDefault)!),
-            preferenceColorsBackgroundDark: NSKeyedArchiver.archivedData(withRootObject: NSColor(cgColor: backgroundDarkDefault)!),
+            preferenceColorsBackground: colorToHex(backgroundDefault),
+            preferenceColorsBackgroundDark: colorToHex( backgroundDarkDefault),
             
             preferenceExportRenderBackground: true,
             preferenceExportUseNativeScale: true,
@@ -189,16 +183,16 @@ public class PreferenceConstants {
 
 
 class PreferencesGeneralController: NSViewController {
-    @IBOutlet weak var background: NSColorWell!
-    @IBOutlet weak var backgroundDark: NSColorWell!
+    @IBOutlet weak var background: NSTextField!
+    @IBOutlet weak var backgroundDark: NSTextField!
     @IBAction func resetBackground(_ sender: Any) {
         PreferenceConstants.preference.defaults.removeObject(forKey: preferenceColorsBackground)
-        background.color = NSColor(cgColor: PreferenceConstants.preference.backgroundGet)!
+        background.stringValue = colorToHex(PreferenceConstants.preference.backgroundGet)
     }
     
     @IBAction func resetDarkBackground(_ sender: Any) {
         PreferenceConstants.preference.defaults.removeObject(forKey: preferenceColorsBackgroundDark)
-        backgroundDark.color = NSColor(cgColor: PreferenceConstants.preference.backgroundDarkGet)!
+        backgroundDark.stringValue = colorToHex(PreferenceConstants.preference.backgroundDarkGet)
     }
     override func viewDidAppear() {
         super.viewDidAppear()

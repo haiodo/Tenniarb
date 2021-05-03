@@ -509,3 +509,20 @@ public func parseColor(_ color: String, alpha: CGFloat = 1.0  ) -> CGColor {
     
     return CGColor.black.copy(alpha: alpha)!
 }
+
+func colorToHex(_ color: CGColor) -> String {
+    let components = color.components
+    let r: CGFloat = components?[0] ?? 0.0
+    let g: CGFloat = components?[1] ?? 0.0
+    let b: CGFloat = components?[2] ?? 0.0
+    
+    let hexString = String(format: "#%02lX%02lX%02lX", lroundf(Float(r * 255)), lroundf(Float(g * 255)), lroundf(Float(b * 255)))
+    
+    for (key, value) in ColorNames {
+        if value == hexString {
+            return key
+        }
+    }
+    
+    return hexString
+}

@@ -55,17 +55,27 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         vc?.setElementModel(elementStore: self.store!)
         
         if let uri = self.fileURL?.absoluteString, let window = self.vc?.view.window,
-            let data = PreferenceConstants.preference.defaults.value(forKey: windowPositionOption + uri)  {
-            if let dta = data as? Data, let frame = NSKeyedUnarchiver.unarchiveObject(with: dta) as? NSRect {
-                window.setFrame(frame, display: true)
+            let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)  {
+            let p = TennParser()
+            let node = p.parse(data)
+            if( !p.errors.hasErrors()) {
+                if let pos = node.getChild(0) {
+                    let frame = CGRect(x: CGFloat(pos.getFloat(1) ?? 0), y: CGFloat(pos.getFloat(2) ?? 0), width: CGFloat(pos.getFloat(3) ?? 0), height: CGFloat(pos.getFloat(4) ?? 0))
+                    window.setFrame(frame, display: true)
+                }
             }
         }
     }
     
     func saveWindowPosition() {
         if let frame = vc?.view.window?.frame, let uri = self.fileURL?.absoluteString {
-            let value = NSKeyedArchiver.archivedData(withRootObject: frame)
-            PreferenceConstants.preference.defaults.set(value, forKey: windowPositionOption + uri)
+            let nde = TennNode.newCommand("pos",
+                                          TennNode.newFloatNode( Double(frame.origin.x)),
+                                          TennNode.newFloatNode( Double(frame.origin.y)),
+                                          TennNode.newFloatNode( Double(frame.size.width)),
+                                          TennNode.newFloatNode( Double(frame.size.height))
+            )
+            PreferenceConstants.preference.defaults.set(nde.toStr(), forKey: windowPositionOption + uri)
         }
     }
     func windowDidMove(_ notification: Notification) {
