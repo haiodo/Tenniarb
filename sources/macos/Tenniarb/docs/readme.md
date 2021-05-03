@@ -125,7 +125,15 @@ Quick edit bar (press 'Space' on item) could be used for fast editing of multipl
 </td>
 <td><img src="./Images/textual_styles.png"/></td>
 </tr>
+<tr>
+  <td>Corner radious could be changed for items with 
+    <code>corner-radius 5 15 5 15</code></td>
+	<td>
+    <img src="./Images/corner.png" width="500px">
+  </td>
+</tr>
 </table>
+
 
 ### Colors
 
@@ -258,7 +266,16 @@ body {
 </td>
 <td>Title font are changed.</td>
 </tr>
+  <tr>
+    <td>Line spacing
+      <pre><code>line-spacing 11</code></pre>
+    </td>
+    <td>
+      <img src="./Images/corner-radius.png" width="300px">
+    </td>
+  </tr>
 </table>
+
 
 In all situations boundaries of item are calculated to fit both title and body.
 
@@ -444,87 +461,87 @@ Since 1.1 Tenniab support basic markdown syntax in name/title/body fields.
 To display bold, italic and colored values. Also now it support embedded images.
 
 Supported Markdown styles:
+
+
+
 <table>
 <tr>
 <td width="300">
-
-```
+<pre>
 Bold style
 name "Text is *bold*"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_bold.png" height="70"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Italic
 name "Text is _italic_"
-```
+</pre>
 </td>
 <td><img src="./Images/markdown_italic.png" height="70"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Under line
 name "Text is <underline>"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_underline.png" height="70"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Code block
 name "Text is `code`"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_code.png" height="120"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Scratches
 name "Text is ~scratchs~"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_scratches.png" height="70"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Color selection
 name "Color !(red)RED and !() black"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_color.png" height="70"/></td>
 </tr>
 <tr>
 <td>
-
-```
+<pre>
 Color word selection
 name "Color !(red|RED) and !(blue|blue)"
-```
-
+</pre>
 </td>
 <td><img src="./Images/markdown_color_word.png" height="70"/></td>
 </tr>
 <tr>
 <td>
+<pre>
+Font word selection
+name "Font is &(30)!(red|RED)code &()size"
+</pre>
+</td>
+<td><img src="./Images/markdown_font_size.png" height="70"/></td>
+</tr>
 
-```
+<tr>
+<td>
+
+<pre>
 Topics
 title %{
     # 1. Topic
@@ -532,8 +549,7 @@ title %{
     # 2. Topic
     and value2. Some more text is here.
 }
-```
-
+</pre>
 </td><td><img src="./Images/markdown_topics.png" width="300"/><td/>
 </tr>
 </table>

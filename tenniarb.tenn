@@ -4712,6 +4712,25 @@ asdasd
             item "Text is !(blue)&(20|BIG)!() enought to &(10) be !(red)small!() enought to &()fit" {
                 pos -428.0 -118.2007827758789
             }
+            item "Font is &(30)!(red|RED)code &()size" {
+                pos -431.6185607910156 -169.20077514648438
+            }
+            item "Corner 5 15 5 15" {
+                pos 152.03294372558594 -28.596542358398438
+                body
+                corner-radius 5 15 5 15
+                layout left
+                width 150
+                height 75
+            }
+            item "Corner 5 15 5 15" {
+                pos 151.03294372558594 -116.59654235839844
+                body
+                corner-radius 30 0 30 0
+                layout left
+                width 150
+                height 75
+            }
         }
         element "Circle image" {
             item "Circle item" {
