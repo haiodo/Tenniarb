@@ -4723,8 +4723,9 @@ asdasd
                 width 150
                 height 75
             }
-            item "Corner 5 15 5 15" {
+            item "Corner 30 0 30 0" {
                 pos 151.03294372558594 -116.59654235839844
+                text-layout middle
                 body
                 corner-radius 30 0 30 0
                 layout left

@@ -386,7 +386,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.oy = -1 * bounds.midY
         }
         self.pivotPoint = CGPoint(x:0, y:0)
-        
+        zoomLevel = 1
         needsDisplay = true
     }
     
