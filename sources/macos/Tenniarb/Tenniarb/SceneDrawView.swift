@@ -558,6 +558,33 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    fileprivate func createMarkerMenus() -> NSMenu {
+        let menu = NSMenu()
+        let smiles = menu.addItem(withTitle: "😀 Emoji", action: nil, keyEquivalent: "")
+        smiles.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["😀","😛","😱","😵","😷","🐶","🐱","🐭","🐰","🦊","🌻","🌧","🌎","🔥","❄️","💦","☂️"])
+        
+        let numbers = menu.addItem(withTitle: "🔢 Numbers", action: nil, keyEquivalent: "")
+        numbers.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"])
+        
+        let objects = menu.addItem(withTitle: "🖥 Objects", action: nil, keyEquivalent: "")
+        objects.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["⌚️","🖥","🖨","⌛️","⏰","⚒","🧲","💣","🔒","✂️","🧸","🎁"])
+        
+        let symbols = menu.addItem(withTitle: "🔠 Symbols", action: nil, keyEquivalent: "")
+        symbols.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["🆗","🆖","#️⃣","🔤","ℹ️","🚻","🔃","➕","➖","➗","✖️","♾","💲","✔️","♠️","♣️","♥️","♦️"])
+        
+        return menu
+    }
+    
+    fileprivate func createFontMenu() -> NSMenu {
+        return createMenu(selector: #selector(fontMenuAction(_:)),
+                          items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"])
+    }
+    
+    fileprivate func createDisplayMenu() -> NSMenu {
+        return createMenu(selector: #selector(displayMenuAction(_:)),
+                          items: itemDisplayVariants )
+    }
+    
     fileprivate func showPopup() {
         if self.popupView != nil {
             self.popupView?.removeFromSuperview()
@@ -590,19 +617,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             segm += 1
             segments.setLabel("✑", forSegment: segm)
             
-            let menu = NSMenu()
-            
-            let smiles = menu.addItem(withTitle: "😀 Emoji", action: nil, keyEquivalent: "")
-            smiles.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["😀","😛","😱","😵","😷","🐶","🐱","🐭","🐰","🦊","🌻","🌧","🌎","🔥","❄️","💦","☂️"])
-            
-            let numbers = menu.addItem(withTitle: "🔢 Numbers", action: nil, keyEquivalent: "")
-            numbers.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"])
-            
-            let objects = menu.addItem(withTitle: "🖥 Objects", action: nil, keyEquivalent: "")
-            objects.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["⌚️","🖥","🖨","⌛️","⏰","⚒","🧲","💣","🔒","✂️","🧸","🎁"])
-            
-            let symbols = menu.addItem(withTitle: "🔠 Symbols", action: nil, keyEquivalent: "")
-            symbols.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["🆗","🆖","#️⃣","🔤","ℹ️","🚻","🔃","➕","➖","➗","✖️","♾","💲","✔️","♠️","♣️","♥️","♦️"])
+            let menu = createMarkerMenus()
             
             segments.setMenu(
                 menu,
@@ -617,8 +632,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             segm += 1
             segments.setLabel("Ƭ", forSegment: segm)
             segments.setMenu(
-                createMenu(selector: #selector(fontMenuAction(_:)),
-                           items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"]),
+                createFontMenu(),
                 forSegment: segm)
             if #available(OSX 10.13, *) {
                 segments.setShowsMenuIndicator(true, forSegment: segm)
@@ -635,8 +649,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
         if act.kind == .Item {
             segments.setMenu(
-                createMenu(selector: #selector(displayMenuAction(_:)),
-                           items: itemDisplayVariants ),
+                createDisplayMenu(),
                 forSegment: segm)
         } else {
             segments.setMenu(

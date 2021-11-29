@@ -74,9 +74,9 @@ public class ModelProperties: Sequence {
     }
 }
 
-public class Element {
+public class Element: Identifiable  {
     var kind: ElementKind
-    var id: UUID
+    public var id: UUID
     var name: String
     var elements: [Element] = []
     
@@ -100,6 +100,15 @@ public class Element {
         self.id = UUID()
         self.name = name
         self.kind = .Element
+    }
+    
+    var asElements: [Element]? {
+        get {
+            if (self.elements.isEmpty) {
+                return nil
+            }
+            return self.elements
+        }
     }
     
     // Doing a full clone of this element with all childrens.

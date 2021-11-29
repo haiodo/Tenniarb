@@ -1,5 +1,10 @@
 element "Tenniarb" {
     element "Naming" {
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
         item "Product naming" {
             pos -262.0 170.0
         }
@@ -653,6 +658,11 @@ diagram" {
 diagram"
     }
     element "Process" {
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
         item "Делай для себя" {
             pos -444.0 57.0
             color green
