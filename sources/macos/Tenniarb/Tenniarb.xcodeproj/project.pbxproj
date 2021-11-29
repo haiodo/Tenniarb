@@ -317,6 +317,7 @@
 		0C2375ED1ED838D900ECB516 /* Tenniarb */ = {
 			isa = PBXGroup;
 			children = (
+				0CF0C34327490F1100E3F41D /* Preview Content */,
 				0C45B12722A397BE00640305 /* docs */,
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
@@ -407,12 +408,12 @@
 		0C44D7571EE316F8001B7D01 /* views */ = {
 			isa = PBXGroup;
 			children = (
-				0CC8B19B2567662D002B391C /* MainView.swift */,
 				0CC7005A22E2E51A00DF2071 /* Utils */,
 				0C3A36BC2085B3D500CC646C /* controllers */,
 				0CB496991F11D8D600F5CB4C /* scene */,
 				0CBF20D31EF98F0200FE17D5 /* WindowController.swift */,
 				0C2375F01ED838D900ECB516 /* ViewController.swift */,
+				0C9EA46D27414A4800B10EB5 /* mainView.swift */,
 			);
 			name = views;
 			sourceTree = "<group>";
@@ -551,6 +552,14 @@
 				0C16C06A2321328800F77855 /* ImageUtils.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		0CF0C34327490F1100E3F41D /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				0CF0C3492749115D00E3F41D /* DemoData.swift */,
+			);
+			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		0CFBC7A41F0CAF190072E4FF /* document */ = {
@@ -777,6 +786,7 @@
 				0C16C06B2321328800F77855 /* ImageUtils.swift in Sources */,
 				0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
+				0C9EA46E27414A4800B10EB5 /* mainView.swift in Sources */,
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
 				0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */,
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
@@ -788,7 +798,6 @@
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
 				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
-				0CC8B19C2567662D002B391C /* MainView.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
 				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
 				0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */,
@@ -798,6 +807,7 @@
 				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
 				0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */,
+				0CF0C34A2749115D00E3F41D /* DemoData.swift in Sources */,
 				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
@@ -984,7 +994,8 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 42;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_ASSET_PATHS = "Tenniarb/Preview\\ Content";
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -993,13 +1004,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				MARKETING_VERSION = 1.2;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Debug;
 		};
@@ -1012,7 +1024,8 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 42;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_ASSET_PATHS = "Tenniarb/Preview\\ Content";
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
@@ -1021,13 +1034,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				MARKETING_VERSION = 1.2;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Release;
 		};
@@ -1048,12 +1062,13 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Debug;
 		};
@@ -1074,11 +1089,12 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Release;
 		};
@@ -1099,13 +1115,14 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Tenniarb;
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Debug;
 		};
@@ -1126,12 +1143,13 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Tenniarb;
+				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Release;
 		};
