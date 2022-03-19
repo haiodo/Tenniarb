@@ -650,7 +650,7 @@ class DrawableItemStyle: DrawableStyle {
             self.cornerRadius.removeAll()
             for ind in 1..<child.count {
                 if let val = child.getFloat(ind) {
-                    self.cornerRadius.append(CGFloat(val))
+                    self.cornerRadius.append(min(CGFloat(val), 15))
                 }
             }
         case PersistenceStyleKind.LineSpacing.name:
@@ -2280,6 +2280,14 @@ public class DrawableLine: ItemDrawable {
         context.setLineWidth( self.lineWidth )
         context.setStrokeColor(self.style.color)
         context.setFillColor(self.style.color)
+        
+        if let pos = self.style.shadow {
+            if let col = self.style.shadowColor {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur, color: col)
+            } else {
+                context.setShadow(offset: pos, blur: self.style.shadowBlur)
+            }
+        }
         
         updateLineStyle(context, style)
         

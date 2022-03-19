@@ -110,9 +110,9 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2080"
-            endingLineNumber = "2080"
-            landmarkName = "validateMenuItem(_:)"
+            startingLineNumber = "2104"
+            endingLineNumber = "2104"
+            landmarkName = "paste(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -174,9 +174,9 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2045"
-            endingLineNumber = "2045"
-            landmarkName = "paste(_:)"
+            startingLineNumber = "2069"
+            endingLineNumber = "2069"
+            landmarkName = "pasteAsItemSet(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -190,9 +190,9 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2044"
-            endingLineNumber = "2044"
-            landmarkName = "paste(_:)"
+            startingLineNumber = "2068"
+            endingLineNumber = "2068"
+            landmarkName = "pasteAsItemSet(_:)"
             landmarkType = "7">
             <Locations>
                <Location
@@ -254,9 +254,9 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2012"
-            endingLineNumber = "2012"
-            landmarkName = "pasteAsItemSet(_:)"
+            startingLineNumber = "2036"
+            endingLineNumber = "2036"
+            landmarkName = "pasteAsItem(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -270,10 +270,10 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1995"
-            endingLineNumber = "1995"
-            landmarkName = "pasteAsItemSet(_:)"
-            landmarkType = "7">
+            startingLineNumber = "2019"
+            endingLineNumber = "2019"
+            landmarkName = "SceneDrawView"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -318,9 +318,9 @@
             filePath = "Tenniarb/SceneDrawView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1431"
-            endingLineNumber = "1431"
-            landmarkName = "mouseDown(with:)"
+            startingLineNumber = "1455"
+            endingLineNumber = "1455"
+            landmarkName = "mouseUp(with:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

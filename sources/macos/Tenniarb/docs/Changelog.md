@@ -1,4 +1,12 @@
 #  Changelog
+
+## Version 1.3
+
++ Support Quick Style context menu
++ Allow to define line shadows
+- Disable by default popup menu
+
+
 ## Version 1.2
 
 + Support for corner-radius properly - to control from round corners to flat ones.

@@ -74,7 +74,7 @@ public enum PersistenceStyleKind {
         case .LineStyle: return "line-style";
         case .Width: return "width";
         case .Height: return "height";
-        case .BorderColor: return "borderColor";
+        case .BorderColor: return "border-color";
         case .ZoomLevel: return "zoom";
         case .TextColor: return "text-color";
         case .Styles: return "styles";

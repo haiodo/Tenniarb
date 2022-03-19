@@ -457,7 +457,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
     
-    func changeItemProps( _ property: String, _ value: TennNode) {
+    func changeItemProps( _ property: String, _ values: TennNode...) {
+        self.changeItemProps(property, values)
+    }
+    func changeItemProps( _ property: String, _ values: [TennNode]) {
         guard let itm = self.activeItems.first, activeItems.count == 1 else {
             return
         }
@@ -466,15 +469,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var changed = false
         if let itmProp = newItemProps.getNamedElement(property) {
             // Property exists, we need to replace value
-            if itmProp.getIdent(1) != value.getIdentText() {
-                itmProp.children?.removeAll()
-                itmProp.add(TennNode.newIdent(property), value)
-                changed = true
-            }
+            itmProp.children?.removeAll()
+            itmProp.add(TennNode.newIdent(property))
+            itmProp.add(values)
+            changed = true
         }
         else {
             // Just add new property
-            newItemProps.add(TennNode.newCommand(property, value))
+            let cmd = TennNode.newCommand(property)
+            cmd.add(values)
+            newItemProps.add(cmd)
             changed = true
         }
         
@@ -504,6 +508,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let value = sender.title
         changeItemProps("font-size", TennNode.newIdent(value))
     }
+    
+    @objc func layoutMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        let svalue = value.split(separator: " ")
+        let vars = svalue.map( { (e) in return TennNode.newIdent(String(e)) } )
+        changeItemProps("layout", vars)
+    }
+    
+    @objc func bodyFontMenuAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("font-size", TennNode.newIdent(value))
+    }
+    
     @objc func markerMenuAction( _ sender: NSMenuItem ) {
         let value = sender.title
         changeItemProps("marker", TennNode.newStrNode(value))
@@ -512,10 +529,33 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let value = sender.title
         changeItemProps("line-width", TennNode.newIdent(value))
     }
+        
+    @objc func heightAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        changeItemProps("height", TennNode.newIdent(value))
+    }
+    
+    @objc func commandAction( _ sender: NSMenuItem ) {
+        let value = sender.title
+        var split = value.split(separator: " ")
+        if split.count >= 2 {
+            let cmd = split.removeFirst()
+            let nodes = split.map({(it) -> TennNode in TennNode.newIdent(String(it))})
+            changeItemProps(String(cmd), nodes)
+        }
+    }
     
     @objc func colorMenuAction( _ sender: NSMenuItem ) {
         let value = String(sender.title.dropFirst(1))
         changeItemProps("color", TennNode.newIdent(value))
+    }
+    @objc func borderColorMenuAction( _ sender: NSMenuItem ) {
+        let value = String(sender.title.dropFirst(1))
+        changeItemProps("border-color", TennNode.newIdent(value))
+    }
+    @objc func textColorMenuAction( _ sender: NSMenuItem ) {
+        let value = String(sender.title.dropFirst(1))
+        changeItemProps("text-color", TennNode.newIdent(value))
     }
     
     @objc func lineStyleMenuAction( _ sender: NSMenuItem ) {
@@ -580,9 +620,39 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                           items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"])
     }
     
-    fileprivate func createDisplayMenu() -> NSMenu {
+    fileprivate func createLayoutMenu() -> NSMenu {
+        return createMenu(selector: #selector(layoutMenuAction(_:)),
+                          items: ["left", "right", "center", "top", "top right", "bottom", "bottom right"])
+    }
+    
+    fileprivate func createDisplayMenu(_ item: Bool) -> NSMenu {
         return createMenu(selector: #selector(displayMenuAction(_:)),
-                          items: itemDisplayVariants )
+                          items: item ? itemDisplayVariants : linkDisplayVariants )
+    }
+    
+    fileprivate func createColorMenu() -> NSMenu {
+        return createMenu(selector: #selector(colorMenuAction(_:)),
+                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+    }
+    
+    fileprivate func createBorderColorMenu() -> NSMenu {
+        return createMenu(selector: #selector(borderColorMenuAction(_:)),
+                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+    }
+    
+    fileprivate func createTextColorMenu() -> NSMenu {
+        return createMenu(selector: #selector(textColorMenuAction(_:)),
+                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+    }
+    
+    fileprivate func createLineWidthMenu() -> NSMenu {
+        return createMenu(selector: #selector(lineWidthAction(_:)),
+                          items: ["0.3", "0.5", "1", "1.5", "2", "5"])
+    }
+    
+    fileprivate func createLineStyleMenu() -> NSMenu {
+        return createMenu(selector: #selector(lineStyleMenuAction(_:)),
+                          items: lineStyleDisplayVariants)
     }
     
     fileprivate func showPopup() {
@@ -647,16 +717,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         //        segments.setImage(NSImage(named: NSImage.flowViewTemplateName ), forSegment: segm)
         segments.setLabel("❑", forSegment: segm)
         segments.setImageScaling(.scaleProportionallyUpOrDown, forSegment: segm)
-        if act.kind == .Item {
-            segments.setMenu(
-                createDisplayMenu(),
-                forSegment: segm)
-        } else {
-            segments.setMenu(
-                createMenu(selector: #selector(displayMenuAction(_:)),
-                           items: linkDisplayVariants),
-                forSegment: segm)
-        }
+        
+        segments.setMenu(
+            createDisplayMenu(act.kind == .Item),
+            forSegment: segm)
+        
         if #available(OSX 10.13, *) {
             segments.setShowsMenuIndicator(true, forSegment: segm)
         }
@@ -666,8 +731,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             segm += 1
             segments.setLabel("🔴", forSegment: segm)
             segments.setMenu(
-                createMenu(selector: #selector(colorMenuAction(_:)),
-                           items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"]),
+                createColorMenu(),
                 forSegment: segm)
             if #available(OSX 10.13, *) {
                 segments.setShowsMenuIndicator(true, forSegment: segm)
@@ -680,8 +744,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segm += 1
         segments.setLabel("⊞", forSegment: segm)
         segments.setMenu(
-            createMenu(selector: #selector(lineStyleMenuAction(_:)),
-                       items: lineStyleDisplayVariants),
+            createLineStyleMenu(),
             forSegment: segm)
         if #available(OSX 10.13, *) {
             segments.setShowsMenuIndicator(true, forSegment: segm)
@@ -692,8 +755,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segm += 1
         segments.setLabel("〰", forSegment: segm)
         segments.setMenu(
-            createMenu(selector: #selector(lineWidthAction(_:)),
-                       items: ["0.3", "0.5", "1", "1.5", "2", "5"]),
+            createLineWidthMenu(),
             forSegment: segm)
         if #available(OSX 10.13, *) {
             segments.setShowsMenuIndicator(true, forSegment: segm)
@@ -2169,6 +2231,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
+    fileprivate func addChildMenu(menu: NSMenu, title: String, submenu: NSMenu) {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        menu.addItem(item)
+        menu.setSubmenu(submenu, for: item)
+    }
     
     fileprivate func createStylesMenu(_ menu: NSMenu) {
         let style = NSMenuItem(
@@ -2186,6 +2253,56 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(quickMenuItem)
             menu.setSubmenu(quick, for: quickMenuItem)
         }
+    }
+    
+    fileprivate func createQuickStyleMenu(_ menu: NSMenu) {
+        let qstyle = NSMenuItem(
+            title: "Quick Style", action: nil, keyEquivalent: "")
+                
+        let qstyleMenu = NSMenu()
+        
+        guard let act = self.activeItems.first, activeItems.count == 1 else {
+            return
+        }
+                    
+        addChildMenu(menu: qstyleMenu, title: "Color", submenu: createColorMenu())
+        if act.kind != .Link {
+            addChildMenu(menu: qstyleMenu, title: "Border color", submenu: createBorderColorMenu())
+        }
+        addChildMenu(menu: qstyleMenu, title: "Text Color", submenu: createTextColorMenu())
+        qstyleMenu.addItem(NSMenuItem.separator())
+        addChildMenu(menu: qstyleMenu, title: "Font", submenu: createFontMenu())
+        if act.kind != .Link {
+            addChildMenu(menu: qstyleMenu, title: "Markers", submenu: createMarkerMenus())
+        }
+        qstyleMenu.addItem(NSMenuItem.separator())
+        addChildMenu(menu: qstyleMenu, title: "Display", submenu: createDisplayMenu(act.kind == .Item))
+        addChildMenu(menu: qstyleMenu, title: "Layout", submenu: createLayoutMenu())
+        qstyleMenu.addItem(NSMenuItem.separator())
+        addChildMenu(menu: qstyleMenu, title: "Line style", submenu: createLineStyleMenu())
+        addChildMenu(menu: qstyleMenu, title: "Line width", submenu: createLineWidthMenu())
+        qstyleMenu.addItem(NSMenuItem.separator())
+        
+        if act.kind != .Link {
+        addChildMenu(menu: qstyleMenu, title: "Width", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                           items: ["width 10", "width 50", "width 100", "width 300", "width 500"]))
+        addChildMenu(menu: qstyleMenu, title: "Height", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                            items: ["height 10", "height 50", "height 100", "height 300", "height 500"]))
+        }
+        
+        qstyleMenu.addItem(NSMenuItem.separator())
+        addChildMenu(menu: qstyleMenu, title: "Layer", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                            items: ["layer background", "layer hover"]))
+        if act.kind != .Link {
+            addChildMenu(menu: qstyleMenu, title: "Corner Radius", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                            items: ["corner-radius 0", "corner-radius 5", "corner-radius 15"]))
+        }
+        
+        addChildMenu(menu: qstyleMenu, title: "Shadow", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                            items: ["shadow 5 -5", "shadow 5 5"]))
+        
+        menu.addItem(qstyle)
+        menu.setSubmenu(qstyleMenu, for: qstyle)
     }
     
     @objc public func performGridLayout(_ sender: NSMenuItem) {
@@ -2547,6 +2664,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(addLinkedCopyAction)
             menu.addItem(NSMenuItem.separator())
             createStylesMenu(menu)
+            createQuickStyleMenu(menu)
             if self.activeItems.count > 1 {
                 menu.addItem(NSMenuItem.separator())
                 createAlighMenu(menu)
