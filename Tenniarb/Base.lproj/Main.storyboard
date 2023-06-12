@@ -404,7 +404,7 @@ DQ
                                         <rect key="frame" x="0.0" y="0.0" width="944" height="760"/>
                                         <subviews>
                                             <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" detachesHiddenViews="YES" id="PLC-po-3K0">
-                                                <rect key="frame" x="0.0" y="0.0" width="219" height="760"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="217" height="760"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <subviews>
                                                     <box boxType="custom" borderType="none" borderWidth="0.0" title="Box" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Ho7-Qj-jbR">
@@ -523,15 +523,15 @@ DQ
                                                 </customSpacing>
                                             </stackView>
                                             <splitView fixedFrame="YES" id="K1v-Qh-bIf">
-                                                <rect key="frame" x="228" y="0.0" width="716" height="760"/>
+                                                <rect key="frame" x="226" y="0.0" width="718" height="760"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <subviews>
-                                                    <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" id="9yr-Jl-A59">
-                                                        <rect key="frame" x="0.0" y="0.0" width="716" height="623"/>
+                                                    <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" misplaced="YES" detachesHiddenViews="YES" id="9yr-Jl-A59">
+                                                        <rect key="frame" x="0.0" y="0.0" width="718" height="624"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <subviews>
                                                             <box borderType="none" title="Editor Title" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Xdg-bT-e2l">
-                                                                <rect key="frame" x="0.0" y="593" width="709" height="30"/>
+                                                                <rect key="frame" x="0.0" y="594" width="709" height="30"/>
                                                                 <view key="contentView" id="s5a-YQ-Uz7">
                                                                     <rect key="frame" x="0.0" y="0.0" width="709" height="30"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -598,7 +598,7 @@ DQ
                                                                 </view>
                                                             </box>
                                                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="oxI-2Z-wAL" customClass="SceneDrawView" customModule="Tenniarb" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="-3" width="713" height="596"/>
+                                                                <rect key="frame" x="0.0" y="-2" width="713" height="596"/>
                                                             </customView>
                                                         </subviews>
                                                         <constraints>
@@ -614,18 +614,18 @@ DQ
                                                         </customSpacing>
                                                     </stackView>
                                                     <scrollView fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" id="ClA-kj-FQy">
-                                                        <rect key="frame" x="0.0" y="632" width="716" height="128"/>
+                                                        <rect key="frame" x="0.0" y="633" width="718" height="127"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="hGw-pF-IPC">
-                                                            <rect key="frame" x="0.0" y="0.0" width="716" height="128"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="718" height="127"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textView drawsBackground="NO" horizontallyResizable="YES" verticallyResizable="YES" findStyle="panel" allowsCharacterPickerTouchBarItem="NO" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" textCompletion="NO" textReplacement="YES" smartInsertDelete="YES" id="LDJ-EQ-s6n" customClass="TennTextView" customModule="Tenniarb" customModuleProvider="target">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="716" height="128"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="718" height="127"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                    <size key="minSize" width="716" height="128"/>
+                                                                    <size key="minSize" width="718" height="127"/>
                                                                     <size key="maxSize" width="10000000" height="10000000"/>
                                                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 </textView>
@@ -637,7 +637,7 @@ DQ
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="NO" id="31O-35-GFX">
-                                                            <rect key="frame" x="702" y="0.0" width="16" height="128"/>
+                                                            <rect key="frame" x="702" y="0.0" width="16" height="127"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                     </scrollView>
@@ -1030,13 +1030,13 @@ DQ
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <visualEffectView blendingMode="behindWindow" material="popover" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="HhD-Hx-tll">
-                                <rect key="frame" x="0.0" y="0.0" width="1138" height="135"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1138" height="133"/>
                                 <subviews>
                                     <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M3R-d3-NnX">
-                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="130"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="1138" height="128"/>
                                         <subviews>
                                             <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V7F-7f-5hj">
-                                                <rect key="frame" x="0.0" y="95" width="893" height="35"/>
+                                                <rect key="frame" x="0.0" y="93" width="893" height="35"/>
                                                 <subviews>
                                                     <imageView wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vC0-IB-paJ">
                                                         <rect key="frame" x="0.0" y="0.0" width="30" height="40"/>
@@ -1068,13 +1068,13 @@ DQ
                                                 </customSpacing>
                                             </stackView>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2vJ-KE-k4m">
-                                                <rect key="frame" x="0.0" y="0.0" width="1129" height="90"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="1129" height="88"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="F2S-Yk-eo2">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1129" height="90"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1129" height="88"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" autoresizesOutlineColumn="YES" outlineTableColumn="fdS-FP-WJp" id="eHh-SB-Ufe">
-                                                            <rect key="frame" x="0.0" y="0.0" width="1129" height="90"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="1129" height="88"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1170,7 +1170,7 @@ DQ
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="vtn-ED-noe"/>
+        <segue reference="1PE-0t-Wrh"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="NSAddTemplate" width="18" height="16"/>

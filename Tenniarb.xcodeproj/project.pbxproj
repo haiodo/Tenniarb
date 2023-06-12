@@ -169,7 +169,7 @@
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
 		0C45B12822A397BE00640305 /* examples.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = examples.md; sourceTree = "<group>"; };
 		0C45B12A22A397BE00640305 /* main_screen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = main_screen.png; sourceTree = "<group>"; };
-		0C45B12B22A397BE00640305 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		0C45B12B22A397BE00640305 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = ../readme.md; sourceTree = "<group>"; };
 		0C4C16071F2E369A000C5410 /* LayoutBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutBase.swift; sourceTree = "<group>"; };
 		0C4F0EC524C74B340065918D /* TestSVGGenerate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSVGGenerate.swift; sourceTree = "<group>"; };
 		0C4F0EC724C74BB10065918D /* Example.tenn */ = {isa = PBXFileReference; lastKnownFileType = text; name = Example.tenn; path = ../../docs/Example.tenn; sourceTree = "<group>"; };
@@ -470,8 +470,7 @@
 				0CD1709922D5BB6400E217D4 /* width_height.png */,
 				0C45B12A22A397BE00640305 /* main_screen.png */,
 			);
-			name = Images;
-			path = docs/Images;
+			path = Images;
 			sourceTree = SOURCE_ROOT;
 		};
 		0C4C16061F2E3685000C5410 /* layout */ = {
@@ -986,7 +985,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "Tenniarb/Preview\\ Content";
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -997,7 +996,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1016,7 +1015,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "Tenniarb/Preview\\ Content";
 				DEVELOPMENT_TEAM = 594YM2Y457;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1027,7 +1026,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = andrey.sobolev.Tenniarb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
