@@ -52,6 +52,7 @@
 		0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */; };
 		0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9C9410201F749800E67794 /* ElementOperations.swift */; };
 		0C9EA46E27414A4800B10EB5 /* (null) in Sources */ = {isa = PBXBuildFile; };
+		0CB75C8E2A36F1CB0084BFC7 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 0CB75C8D2A36F1CB0084BFC7 /* LICENSE */; };
 		0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */; };
 		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
@@ -179,7 +180,6 @@
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
-		0C5FAB4628771B9A00F8D1D7 /* SroreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SroreKitConfiguration.storekit; sourceTree = "<group>"; };
 		0C6375BC263FE9BF00E0BE20 /* corner.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = corner.png; sourceTree = "<group>"; };
 		0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_font_size.png; sourceTree = "<group>"; };
 		0C6375BE263FE9BF00E0BE20 /* corner-radius.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "corner-radius.png"; sourceTree = "<group>"; };
@@ -198,6 +198,7 @@
 		0C8D17E323A29B1E002547F6 /* GridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridLayout.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
+		0CB75C8D2A36F1CB0084BFC7 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -330,7 +331,7 @@
 				0C2375FC1ED838D900ECB516 /* Info.plist */,
 				0CD170CD22D6571400E217D4 /* TennIco.icns */,
 				0CCAE77122AACB560083F898 /* Application.swift */,
-				0C5FAB4628771B9A00F8D1D7 /* SroreKitConfiguration.storekit */,
+				0CB75C8D2A36F1CB0084BFC7 /* LICENSE */,
 			);
 			path = Tenniarb;
 			sourceTree = "<group>";
@@ -712,6 +713,7 @@
 				1E7CDF0C2394F3FF0005C824 /* Changelog.md in Resources */,
 				0CD170A722D5BB6500E217D4 /* links_variants.png in Resources */,
 				0CFC3DF523D624F10016A7B7 /* markdown_color.png in Resources */,
+				0CB75C8E2A36F1CB0084BFC7 /* LICENSE in Resources */,
 				0CFC3DEC23D624F10016A7B7 /* text-layout.png in Resources */,
 				0CD170B422D5BB6500E217D4 /* styling_items.png in Resources */,
 				0CD170AE22D5BB6500E217D4 /* width_height.png in Resources */,
