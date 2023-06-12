@@ -228,16 +228,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
     }
     
     func highlight() {
-        //get the range of the entire run of text
-        let area = NSMakeRange(0, view.textStorage!.length)
-        
-        //remove existing coloring
-        view.textStorage?.removeAttribute(NSAttributedString.Key.foregroundColor, range: area)
-        
-        //add new coloring
-        view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
-        
-        let lexer = SlowLexer((view.textStorage?.string)!)
+        let lexer = TennLexer((view.textStorage?.string)!)
         
         let darkMode = PreferenceConstants.preference.darkMode
         
@@ -245,6 +236,23 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
         let stringColor = !darkMode ? TennColors.stringColorWhite: TennColors.stringColorDark
         let numberColor = !darkMode ? TennColors.numberColorWhite: TennColors.numberColorDark
         let expressionColor = !darkMode ? TennColors.expressionColorWhite: TennColors.expressionColorDark
+        
+        //get the range of the entire run of text
+        let textLength = view.textStorage!.length
+        let area = NSMakeRange(0, textLength)
+
+        class Attr {
+            let key: NSAttributedString.Key
+            let value: Any
+            let range: NSRange
+            init(key: NSAttributedString.Key, value: Any, range: NSRange) {
+                self.key = key
+                self.value = value
+                self.range = range
+            }
+        }
+        
+        var attrs: [Attr] = []
         
         while( true ) {
             guard let tok = lexer.getToken() else {
@@ -256,8 +264,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             switch tok.type {
             case .symbol:
                 if tok.size > 0 {
-                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                        symbolColor, range: NSMakeRange(tok.pos, tok.size))
+                    attrs.append(Attr(key: NSAttributedString.Key.foregroundColor, value: symbolColor, range: NSMakeRange(tok.pos, tok.size)))
                 }
             case .stringLit:
                 // Check to include ", ' as part of sumbols.
@@ -265,41 +272,50 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
                 let size = tok.size + 2
                 
                 if size > 0  {
-                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                        stringColor, range: NSMakeRange(start, size))
+                    attrs.append(Attr(key: NSAttributedString.Key.foregroundColor, value: stringColor, range: NSMakeRange(start, size)))
                 }
             case .markdownLit:
                 // Check to include ", ' as part of sumbols.
                 let start = tok.pos - 2 // Since we have ' or "
                 let size = tok.size + 3
                 
-                if size > 0  {
-                    view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                        stringColor, range: NSMakeRange(start, size))
+                if size > 0 {
+                    attrs.append(Attr(key: NSAttributedString.Key.foregroundColor, value: stringColor, range: NSMakeRange(start, size)))
                 }
             case .expression, .expressionBlock:
                 // Check to include "${' or $( as part of sumbols.
                 let start = tok.pos - 1 // Since we have } or ) at end
                 let size = tok.size + 2
                 
-                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    expressionColor, range: NSMakeRange(start, size))
+                attrs.append(Attr(key: NSAttributedString.Key.foregroundColor, value: expressionColor, range: NSMakeRange(start, size)))
                 
             case .floatLit, .intLit:
-                view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value:
-                    numberColor, range: NSMakeRange(tok.pos, tok.size))
+                attrs.append(Attr(key: NSAttributedString.Key.foregroundColor, value: numberColor, range: NSMakeRange(tok.pos, tok.size)))
             default:
                 break
             }
         }
+        //remove existing coloring
+        view.textStorage?.removeAttribute(NSAttributedString.Key.foregroundColor, range: area)
         
+        //add new coloring
+        view.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: NSColor.textColor, range: area)
+        
+        for attr in attrs {
+            var r = attr.range
+            if r.upperBound >= view.textStorage!.length {
+                r = NSMakeRange(r.lowerBound, view.textStorage!.length - r.upperBound - 1)
+            }
+            if r.length > 0 {
+                view.textStorage?.addAttribute(attr.key, value: attr.value, range: r)
+            }
+            
+        }
         view.needsDisplay=true
     }
     
     func textDidEndEditing(_ notification: Notification) {
-        DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
-            self.highlight()
-        })
+        sheduleUpdate()        
     }
     
     func generateTextContent(_ parser: TennParser) -> TennNode {

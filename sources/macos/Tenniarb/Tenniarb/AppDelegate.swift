@@ -7,13 +7,11 @@
 //
 
 import Cocoa
+import StoreKit
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     var terminateOnLastWindowClose = true
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
-    }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
@@ -24,6 +22,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     public func setTerminateWindows(_ value: Bool ) {
         self.terminateOnLastWindowClose = value
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        Swift.print("Launching application")
     }
  }
 

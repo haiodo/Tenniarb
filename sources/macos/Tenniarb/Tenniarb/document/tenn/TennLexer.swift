@@ -39,6 +39,7 @@ public class TennLexer: TennLexerProtocol {
     public func revert(tok: TennToken) {
         tokenBuffer.insert(tok, at: 0)
     }
+    
     private func add(type: TennTokenType, literal: String) {
         let c = literal.count
         self.tokenBuffer.append(
@@ -58,7 +59,9 @@ public class TennLexer: TennLexerProtocol {
             TennToken(type: .stringLit, literal: literal, line: currentLine, col: currentChar, pos: self.pos-c, size: c)
         )
     }
-    private func detectSymbolType( pattern value: String ) -> TennTokenType {
+    
+    @inlinable
+    func detectSymbolType( pattern value: String ) -> TennTokenType {
         var skipFirst = false
         if !value.isEmpty && value.hasPrefix("-") {
             skipFirst = true
@@ -243,10 +246,9 @@ public class TennLexer: TennLexerProtocol {
         
     }
     
+    @inline(__always)
     fileprivate func returnToken() -> TennToken? {
         return self.tokenBuffer.removeFirst()
-//        Swift.debugPrint("token: \(t.type) \(t.literal) \(t.line) \(t.col) ")
-//        return t
     }
     
     public func getToken() -> TennToken? {

@@ -78,14 +78,18 @@ public class TennParser {
         }
     }
     
+    @inline(__always)
     private func getTok() -> TennToken? {
         self.tok = self.lexer?.getToken()
         return self.tok
     }
+    
+    @inline(__always)
     private func nextTok() {
         self.tok = self.lexer?.getToken()
     }
     
+    @inline(__always)
     private func eat(tokenType: TennTokenType) {
         if self.tok?.type == tokenType {
             self.nextTok()
@@ -143,6 +147,7 @@ public class TennParser {
             return nil
         }
         
+        @inline(__always)
         func checkEnd()-> Bool {
             if self.tok != nil && endTokens.contains(self.tok!.type) {
                 if self.tok!.type == .semiColon && "\n" == tok?.literal {
@@ -249,35 +254,55 @@ public class TennParser {
 }
 
 extension TennNode {
+    
+    @inlinable
     public static func newIdent(_ token: TennToken) -> TennNode {
         return TennNode(kind: .Ident, tok: token )
     }
+    
+    @inlinable
     public static func newIdent(_ literal: String) -> TennNode {
         return TennNode(kind: .Ident, tok: TennToken(type: .symbol, literal: literal) )
     }
+    
+    @inlinable
     public static func newStrNode(_ literal: String) -> TennNode {
         return TennNode(kind: .StringLit, tok: TennToken(type: .stringLit, literal: literal) )
     }
+    
+    @inlinable
     public static func newImageNode(_ literal: String) -> TennNode {
         return TennNode(kind: .Image, tok: TennToken(type: .imageData, literal: literal) )
     }
+    
+    @inlinable
     public static func newMarkdownNode(_ literal: String) -> TennNode {
         return TennNode(kind: .MarkdownLit, tok: TennToken(type: .markdownLit, literal: literal) )
     }
+    
+    @inlinable
     public static func newFloatNode(_ value: Double ) -> TennNode {
         return TennNode(kind: .FloatLit, tok: TennToken(type: .floatLit, literal: String(value)) )
     }
+    
+    @inlinable
     public static func newIntNode(_ value: Int ) -> TennNode {
         return TennNode(kind: .IntLit, tok: TennToken(type: .intLit, literal: String(value)) )
     }
+    
+    @inlinable
     public static func newNode(kind: TennNodeKind, _ token: TennToken? = nil) -> TennNode {
         return TennNode(kind: kind, tok: token )
     }
+    
+    @inlinable
     public static func newBlockExpr(_ children: TennNode...) -> TennNode {
         let nde = TennNode(kind: .BlockExpr, tok: nil )
         nde.add(children)
         return nde
     }
+    
+    @inlinable
     public static func newCommand( _ name: String, _ childNodes: TennNode... ) -> TennNode {
         let nde = TennNode(kind: .Command)
         nde.add(newIdent(name))

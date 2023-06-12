@@ -34,6 +34,8 @@ public class TennToken {
     public let pos: Int
     public let size: Int
     
+    
+    @inlinable
     init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0, pos:Int = 0, size:Int = 0) {
         self.type = type
         self.literal = literal

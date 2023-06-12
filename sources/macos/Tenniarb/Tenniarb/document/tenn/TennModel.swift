@@ -31,6 +31,7 @@ public class TennNode {
     
     var named: [String:TennNode]?
     
+    @inlinable
     public var count: Int {
         get {
             if let c = children {
@@ -78,12 +79,14 @@ public class TennNode {
         self.token = tok
     }
     
+    @inlinable
     public func add( _ nodes: TennNode...) {
         for n in nodes {
             self.add(n)
         }
     }
     
+    @inlinable
     public func add( _ nodes: [TennNode]) {
         for n in nodes {
             self.add(n)
@@ -132,6 +135,7 @@ public class TennNode {
         return []
     }
     
+    @inlinable
     public func getIdentText() -> String? {
         if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression || kind == .MarkdownLit || kind == .Image  {
             return token?.literal
@@ -165,6 +169,7 @@ public class TennNode {
         return nil
     }
     
+    @inlinable
     public func isNamedElement( )-> Bool {
         return kind == .Command && count > 0 && self.children?[0].kind == .Ident
     }
