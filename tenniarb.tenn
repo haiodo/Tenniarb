@@ -5945,6 +5945,11 @@ days=5"
         return [Math.abs(pos.x), Math.abs(pos.y),50]
     }
 }
+            styles {
+                item {
+                    shadow -5 -5 5
+                }
+            }
             item "0:0" {
                 pos 10.0 -10.0
                 color $(my_color())
