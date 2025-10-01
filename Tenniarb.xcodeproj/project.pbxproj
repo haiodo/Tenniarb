@@ -129,6 +129,27 @@
 			remoteGlobalIDString = 0C2375EA1ED838D900ECB516;
 			remoteInfo = Tenniarb;
 		};
+		0CB19A092E88366A00CF5735 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0CB199D52E88366800CF5735;
+			remoteInfo = tenniarb2;
+		};
+		0CB19A0B2E88366A00CF5735 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0CB199E52E88366900CF5735;
+			remoteInfo = tenniarb2Tests;
+		};
+		0CB19A0D2E88366A00CF5735 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0CB199EF2E88366900CF5735;
+			remoteInfo = tenniarb2UITests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -198,6 +219,7 @@
 		0C8D17E323A29B1E002547F6 /* GridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridLayout.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
+		0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = tenniarb2.xcodeproj; path = tenniarb2/tenniarb2.xcodeproj; sourceTree = "<group>"; };
 		0CB75C8D2A36F1CB0084BFC7 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
@@ -298,6 +320,7 @@
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
+				0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C8114DC2338B63300F607BE /* TenniarbUITests */,
@@ -527,6 +550,16 @@
 			path = TenniarbUITests;
 			sourceTree = "<group>";
 		};
+		0CB19A042E88366900CF5735 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0CB19A0A2E88366A00CF5735 /* tenniarb2.app */,
+				0CB19A0C2E88366A00CF5735 /* tenniarb2Tests.xctest */,
+				0CB19A0E2E88366A00CF5735 /* tenniarb2UITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		0CB496991F11D8D600F5CB4C /* scene */ = {
 			isa = PBXGroup;
 			children = (
@@ -676,6 +709,12 @@
 			mainGroup = 0C2375E21ED838D900ECB516;
 			productRefGroup = 0C2375EC1ED838D900ECB516 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0CB19A042E88366900CF5735 /* Products */;
+					ProjectRef = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				0C2375EA1ED838D900ECB516 /* Tenniarb */,
@@ -684,6 +723,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		0CB19A0A2E88366A00CF5735 /* tenniarb2.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = tenniarb2.app;
+			remoteRef = 0CB19A092E88366A00CF5735 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0CB19A0C2E88366A00CF5735 /* tenniarb2Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = tenniarb2Tests.xctest;
+			remoteRef = 0CB19A0B2E88366A00CF5735 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0CB19A0E2E88366A00CF5735 /* tenniarb2UITests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = tenniarb2UITests.xctest;
+			remoteRef = 0CB19A0D2E88366A00CF5735 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		0C2375E91ED838D900ECB516 /* Resources */ = {

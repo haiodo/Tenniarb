@@ -1935,6 +1935,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
 //        let now = Date()
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
+            context.clip(to: self.bounds)
             context.saveGState()
             // Draw background
             var color = PreferenceConstants.preference.background

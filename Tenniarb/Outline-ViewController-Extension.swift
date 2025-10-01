@@ -106,7 +106,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
             }
         }
     }
-    
+        
     override func keyDown(with event: NSEvent) {
         if let delegate = self.delegate as? OutlineViewControllerDelegate {
             if delegate.keyDown(for: event, self) {
@@ -135,6 +135,8 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     
     init(_ controller: ViewController ) {
         self.controller = controller
+        controller.worldTree.autosaveName = "tenniarb.worldTree"
+        controller.worldTree.autosaveExpandedItems = true
         controller.worldTree.registerForDraggedTypes([NSPasteboard.PasteboardType.string])
         super.init()
         controller.worldTree.menu = createMenu()
@@ -254,8 +256,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         
         return false
-    }
-    
+    }    
     
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
         //1
@@ -376,6 +377,17 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         
         draggingItem = nil
         return true
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, persistentObjectForItem item: Any?) -> Any? {
+        if let el = item as? Element {
+            return el.id.uuidString
+        }
+        return nil
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, itemForPersistentObject object: Any) -> Any? {
+        Swift.debugPrint(object)
     }
 }
 

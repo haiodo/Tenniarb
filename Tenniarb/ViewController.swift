@@ -569,7 +569,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             }
         }
     }
-
+    
     func notifyChanges(_ evt: ModelEvent) {
         if self.updatingProperties {
             self.updateWindowTitle()
