@@ -77,18 +77,22 @@ public class PopupEditField: NSTextField {
 }
 
 class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
-    var view: SceneDrawView
+    var view: SceneDrawView?
     init( _ view: SceneDrawView) {
         self.view = view
     }
     
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        guard let view = view as? SceneDrawView else {
+            return false
+        }
+        
         if commandSelector == #selector(NSView.cancelOperation(_:)) {
-            self.view.commitTitleEditing(nil)
+            view.commitTitleEditing(nil)
             return true
         }
         if commandSelector == #selector(NSView.insertNewline(_:)) {
-            if self.view.editBox?.shiftKeyDown ?? false {
+            if view.editBox?.shiftKeyDown ?? false {
                 // Just shift click
                 let loc = textView.selectedRange().location
                 let insertPart = "\n"
@@ -100,7 +104,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
                 textView.textStorage?.insert(str, at: loc)
                 return true
             }
-            self.view.commitTitleEditing(textView)
+            view.commitTitleEditing(textView)
             return true
         }
         // TODO: Resize both text and drawed item to fit value smoothly.
@@ -235,13 +239,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
     
-    override func scrollWheel(with event: NSEvent) {        
+    override func scrollWheel(with event: NSEvent) {
         if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
             return
         }
         
         hidePopup()
-                    
+        
         let dx = event.deltaX * 3
         let dy = event.deltaY * 3
         self.ox += dx
@@ -276,11 +280,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
             if touch != nil {
-                let np1 = prevTouch!.normalizedPosition
+                guard let prevTouchValue = prevTouch else { return }
+                let np1 = prevTouchValue.normalizedPosition
                 let np2 = touch!.normalizedPosition
                 
-                let dx = (np2.x-np1.x)*prevTouch!.deviceSize.width*3
-                let dy = (np2.y-np1.y)*prevTouch!.deviceSize.height*3
+                let dx = (np2.x-np1.x)*prevTouchValue.deviceSize.width*3
+                let dy = (np2.y-np1.y)*prevTouchValue.deviceSize.height*3
                 self.ox += dx
                 self.oy += dy
                 
@@ -312,7 +317,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.scaleFactor = win.backingScaleFactor
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)        
+        NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
     }
     
     func onAppear( ) {
@@ -539,7 +544,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let value = sender.title
         changeItemProps("line-width", TennNode.newIdent(value))
     }
-        
+    
     @objc func heightAction( _ sender: NSMenuItem ) {
         let value = sender.title
         changeItemProps("height", TennNode.newIdent(value))
@@ -590,7 +595,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 break
             }
         } else {
-            switch sender.selectedSegment {            
+            switch sender.selectedSegment {
             case 1:
                 self.removeItem()
             default:
@@ -791,15 +796,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.7)
         popup!.shadow = shadow
         
-        segments.allowedTouchTypes = []        
+        segments.allowedTouchTypes = []
         popupItem = act
         
         popup!.allowedTouchTypes = []
         popup?.frame = NSRect(origin: origin, size: segments.bounds.size)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { [weak self] in
+            guard let self = self else { return }
             if self.popupView != nil && self.popupView == popup {
-                self.addSubview(popup!)
+                if let popupView = popup {
+                    self.addSubview(popupView)
+                }
             }
         })
     }
@@ -1314,7 +1322,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if event.characters == "x" {
             removeItem()
             return
-        }               
+        }
         
         if let sk = event.specialKey, let sc = self.scene {
             var ops: [ElementOperation] = []
@@ -1352,7 +1360,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
                 //                self.setActiveItems(self.activeItems)
                 scheduleRedraw()
-                return 
+                return
             }
         }
         super.keyDown(with: event)
@@ -1563,7 +1571,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 return
             }
             if self.activeItems.contains(itm) {
-                self.activeItems.remove(at: self.activeItems.firstIndex(of: itm)!)
+                if let index = self.activeItems.firstIndex(of: itm) {
+                    self.activeItems.remove(at: index)
+                }
             }
             else {
                 self.activeItems.append(itm)
@@ -1637,7 +1647,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         
         self.hidePopup()
         self.updateMousePosition(event)
-                
+        
         if self.mode == .Selection {
             let minX = min(self.selectionStart.x, self.x)
             let minY = min(self.selectionStart.y, self.y)
@@ -1668,7 +1678,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             for de in dragElements {
                 if self.mode == .LineDrawing {
                     self.lineToPoint = CGPoint(x: self.x, y: self.y)
-                    self.lineTarget = scene?.updateLineTo( de, self.lineToPoint! )
+                    if let linePoint = self.lineToPoint {
+                        self.lineTarget = scene?.updateLineTo(de, linePoint)
+                    }
                     
                     scheduleRedraw()
                 }
@@ -1717,9 +1729,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     
     func zoomBounds()-> CGRect {
         return CGRect(x: bounds.origin.x / zoomLevel,
-                                 y: bounds.origin.y / zoomLevel,
-                                 width: bounds.width / zoomLevel,
-                                 height: bounds.height / zoomLevel)
+                      y: bounds.origin.y / zoomLevel,
+                      width: bounds.width / zoomLevel,
+                      height: bounds.height / zoomLevel)
     }
     
     func updateMousePosition(_ event: NSEvent) {
@@ -1763,7 +1775,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.mode == .Editing {
             commitTitleEditing(nil)
         }
-    }        
+    }
     
     fileprivate func drawRulers(_ scene: DrawableScene, _ context: CGContext) {
         let ycount = 20
@@ -1933,7 +1945,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.scene?.darkMode != nDarkMode {
             buildScene()
         }
-//        let now = Date()
+        //        let now = Date()
         if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
             context.clip(to: self.bounds)
             context.saveGState()
@@ -1948,13 +1960,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             
             context.setShouldAntialias(true)
             context.fill(self.bounds)
-                        
+            
             let sceneBounds = zoomBounds()
             
             let sceneDirtyRect = CGRect(x: dirtyRect.origin.x / zoomLevel,
-                                     y: dirtyRect.origin.y  / zoomLevel,
-                                     width: dirtyRect.width  / zoomLevel,
-                                     height: dirtyRect.height / zoomLevel)
+                                        y: dirtyRect.origin.y  / zoomLevel,
+                                        width: dirtyRect.width  / zoomLevel,
+                                        height: dirtyRect.height / zoomLevel)
             
             scene.offset = CGPoint(x: self.ox + sceneBounds.midX, y: self.oy + sceneBounds.midY)
             
@@ -1962,8 +1974,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 origin: CGPoint(x: sceneDirtyRect.origin.x - scene.offset.x, y: sceneDirtyRect.origin.y - scene.offset.y),
                 size:sceneDirtyRect.size
             )
-                        
-                        
+            
+            
             context.saveGState()
             
             context.scaleBy(x: zoomLevel, y: zoomLevel)
@@ -2169,7 +2181,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             else if action == #selector(paste(_:)) {
                 return ClipboardUtils.canPaste()
-            }            
+            }
         }
         return true
     }
@@ -2191,7 +2203,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                         //                        self.store?.setImage(self.element!, active, name: name, image: image,
                         //                                             undoManager: self.undoManager,  refresh: {()->Void in})
                         let newProps = active.toTennAsProps(.BlockExpr)
-                        if let tiffData = image.tiffRepresentation {                            
+                        if let tiffData = image.tiffRepresentation {
                             let imageRep = NSBitmapImageRep(data: tiffData)
                             if let pngData = imageRep?.representation(using: .png, properties: [:]) {
                                 newProps.add(TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(pngData.base64EncodedString())))
@@ -2221,7 +2233,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 var itemsStyleNode = styleNode?.getChild(1)?.getNamedElement("item")
                 if itemsStyleNode == nil {
                     itemsStyleNode = TennNode.newCommand("item", TennNode.newBlockExpr())
-                    styleNode?.getChild(1)?.add(itemsStyleNode!)
+                    if let unwrappedStyleNode = styleNode {
+                        newProps.append(unwrappedStyleNode)
+                        
+                        if let itemsStyle = itemsStyleNode {
+                            unwrappedStyleNode.getChild(1)?.add(itemsStyle)
+                        }
+                    }
                 }
                 
                 if let shadowItem = itemsStyleNode?.getChild(1)?.getNamedElement("shadow") {
@@ -2269,13 +2287,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     fileprivate func createQuickStyleMenu(_ menu: NSMenu) {
         let qstyle = NSMenuItem(
             title: "Quick Style", action: nil, keyEquivalent: "")
-                
+        
         let qstyleMenu = NSMenu()
         
         guard let act = self.activeItems.first, activeItems.count == 1 else {
             return
         }
-                    
+        
         addChildMenu(menu: qstyleMenu, title: "Color", submenu: createColorMenu())
         if act.kind != .Link {
             addChildMenu(menu: qstyleMenu, title: "Border color", submenu: createBorderColorMenu())
@@ -2295,18 +2313,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         qstyleMenu.addItem(NSMenuItem.separator())
         
         if act.kind != .Link {
-        addChildMenu(menu: qstyleMenu, title: "Width", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                           items: ["width 10", "width 50", "width 100", "width 300", "width 500"]))
-        addChildMenu(menu: qstyleMenu, title: "Height", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                            items: ["height 10", "height 50", "height 100", "height 300", "height 500"]))
+            addChildMenu(menu: qstyleMenu, title: "Width", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                               items: ["width 10", "width 50", "width 100", "width 300", "width 500"]))
+            addChildMenu(menu: qstyleMenu, title: "Height", submenu: createMenu(selector: #selector(commandAction(_:)),
+                                                                                items: ["height 10", "height 50", "height 100", "height 300", "height 500"]))
         }
         
         qstyleMenu.addItem(NSMenuItem.separator())
         addChildMenu(menu: qstyleMenu, title: "Layer", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                            items: ["layer background", "layer hover"]))
+                                                                           items: ["layer background", "layer hover"]))
         if act.kind != .Link {
             addChildMenu(menu: qstyleMenu, title: "Corner Radius", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                            items: ["corner-radius 0", "corner-radius 5", "corner-radius 15"]))
+                                                                                       items: ["corner-radius 0", "corner-radius 5", "corner-radius 15"]))
         }
         
         addChildMenu(menu: qstyleMenu, title: "Shadow", submenu: createMenu(selector: #selector(commandAction(_:)),
@@ -2376,8 +2394,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         var leftPos = CGFloat(roundf(Float(self.activeItems[0].x)))
         for active in self.activeItems {
             if active.kind != .Item {
-                           continue
-                       }
+                continue
+            }
             if active.x < leftPos  {
                 leftPos = CGFloat(roundf(Float(active.x)))
             }
