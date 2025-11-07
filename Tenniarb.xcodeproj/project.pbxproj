@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,6 +28,7 @@
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
 		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
 		0C45B12E22A397BE00640305 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12B22A397BE00640305 /* readme.md */; };
+		0C48D4FD2EBE2E4E008582D8 /* cmkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 0C48D4FC2EBE2E4E008582D8 /* cmkdown */; };
 		0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4C16071F2E369A000C5410 /* LayoutBase.swift */; };
 		0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4F0EC524C74B340065918D /* TestSVGGenerate.swift */; };
 		0C4F0EC824C74BB10065918D /* Example.tenn in Resources */ = {isa = PBXBuildFile; fileRef = 0C4F0EC724C74BB10065918D /* Example.tenn */; };
@@ -38,12 +39,10 @@
 		0C6375C0263FE9BF00E0BE20 /* markdown_font_size.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */; };
 		0C6375C1263FE9BF00E0BE20 /* corner-radius.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BE263FE9BF00E0BE20 /* corner-radius.png */; };
 		0C679610210E215E00AEED63 /* SyncViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C67960F210E215E00AEED63 /* SyncViewController.swift */; };
-		0C6DEF5B2343667200EC44B6 /* MarkdownPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6DEF5A2343667200EC44B6 /* MarkdownPrinter.swift */; };
 		0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C185AA921B2647C00D174B6 /* JavaScriptCore.framework */; };
 		0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ED8C1224F3F25009145E1 /* OperationController.swift */; };
 		0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7211D523A3CB2100F49031 /* SpringLayout.swift */; };
 		0C7F8996233273FC0098B745 /* AttributedPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F8995233273FC0098B745 /* AttributedPrinter.swift */; };
-		0C7F899923328B7C0098B745 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F899823328B7C0098B745 /* MarkdownParser.swift */; };
 		0C7F899B233520880098B745 /* MarkDownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7F899A233520880098B745 /* MarkDownTests.swift */; };
 		0C8114DE2338B63300F607BE /* TenniarbUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8114DD2338B63300F607BE /* TenniarbUITests.swift */; };
 		0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C83E507219085BD00AD0317 /* ResourcesViewController.swift */; };
@@ -91,7 +90,6 @@
 		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
 		0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */; };
 		0CF0C34A2749115D00E3F41D /* (null) in Sources */ = {isa = PBXBuildFile; };
-		0CF801F42344E4DC00E5E08E /* ColorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF801F32344E4DC00E5E08E /* ColorUtils.swift */; };
 		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
 		0CFC3DE823D624F10016A7B7 /* markdown_scratches.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CFC3DD723D624F00016A7B7 /* markdown_scratches.png */; };
 		0CFC3DE923D624F10016A7B7 /* markdown-support.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CFC3DD823D624F00016A7B7 /* markdown-support.png */; };
@@ -128,27 +126,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 0C2375EA1ED838D900ECB516;
 			remoteInfo = Tenniarb;
-		};
-		0CB19A092E88366A00CF5735 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0CB199D52E88366800CF5735;
-			remoteInfo = tenniarb2;
-		};
-		0CB19A0B2E88366A00CF5735 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0CB199E52E88366900CF5735;
-			remoteInfo = tenniarb2Tests;
-		};
-		0CB19A0D2E88366A00CF5735 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0CB199EF2E88366900CF5735;
-			remoteInfo = tenniarb2UITests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -205,11 +182,9 @@
 		0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_font_size.png; sourceTree = "<group>"; };
 		0C6375BE263FE9BF00E0BE20 /* corner-radius.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "corner-radius.png"; sourceTree = "<group>"; };
 		0C67960F210E215E00AEED63 /* SyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncViewController.swift; path = views/SyncViewController.swift; sourceTree = "<group>"; };
-		0C6DEF5A2343667200EC44B6 /* MarkdownPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPrinter.swift; sourceTree = "<group>"; };
 		0C6ED8C1224F3F25009145E1 /* OperationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OperationController.swift; path = views/OperationController.swift; sourceTree = "<group>"; };
 		0C7211D523A3CB2100F49031 /* SpringLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpringLayout.swift; sourceTree = "<group>"; };
 		0C7F8995233273FC0098B745 /* AttributedPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributedPrinter.swift; sourceTree = "<group>"; };
-		0C7F899823328B7C0098B745 /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
 		0C7F899A233520880098B745 /* MarkDownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkDownTests.swift; sourceTree = "<group>"; };
 		0C8114DB2338B63300F607BE /* TenniarbUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenniarbUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C8114DD2338B63300F607BE /* TenniarbUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbUITests.swift; sourceTree = "<group>"; };
@@ -219,7 +194,6 @@
 		0C8D17E323A29B1E002547F6 /* GridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridLayout.swift; sourceTree = "<group>"; };
 		0C9A4C721FCBD3C30043FD52 /* ElementPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementPersistence.swift; sourceTree = "<group>"; };
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
-		0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = tenniarb2.xcodeproj; path = tenniarb2/tenniarb2.xcodeproj; sourceTree = "<group>"; };
 		0CB75C8D2A36F1CB0084BFC7 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
 		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
@@ -258,7 +232,6 @@
 		0CD5B315282A47B700D2E5A8 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
 		0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayout.swift; sourceTree = "<group>"; };
-		0CF801F32344E4DC00E5E08E /* ColorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorUtils.swift; sourceTree = "<group>"; };
 		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
 		0CFC3DD723D624F00016A7B7 /* markdown_scratches.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_scratches.png; sourceTree = "<group>"; };
 		0CFC3DD823D624F00016A7B7 /* markdown-support.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "markdown-support.png"; sourceTree = "<group>"; };
@@ -288,6 +261,7 @@
 			files = (
 				0CD5B316282A47B700D2E5A8 /* StoreKit.framework in Frameworks */,
 				0CD170BE22D5CF0E00E217D4 /* WebKit.framework in Frameworks */,
+				0C48D4FD2EBE2E4E008582D8 /* cmkdown in Frameworks */,
 				0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -320,7 +294,6 @@
 		0C2375E21ED838D900ECB516 = {
 			isa = PBXGroup;
 			children = (
-				0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */,
 				0C2375ED1ED838D900ECB516 /* Tenniarb */,
 				0C5C6D1B1EFF655B00714971 /* TenniarbTests */,
 				0C8114DC2338B63300F607BE /* TenniarbUITests */,
@@ -535,8 +508,6 @@
 		0C7F899723328B6E0098B745 /* markdown */ = {
 			isa = PBXGroup;
 			children = (
-				0C7F899823328B7C0098B745 /* MarkdownParser.swift */,
-				0C6DEF5A2343667200EC44B6 /* MarkdownPrinter.swift */,
 			);
 			path = markdown;
 			sourceTree = "<group>";
@@ -548,16 +519,6 @@
 				0C8114DF2338B63300F607BE /* Info.plist */,
 			);
 			path = TenniarbUITests;
-			sourceTree = "<group>";
-		};
-		0CB19A042E88366900CF5735 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0CB19A0A2E88366A00CF5735 /* tenniarb2.app */,
-				0CB19A0C2E88366A00CF5735 /* tenniarb2Tests.xctest */,
-				0CB19A0E2E88366A00CF5735 /* tenniarb2UITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		0CB496991F11D8D600F5CB4C /* scene */ = {
@@ -573,7 +534,6 @@
 		0CC7005A22E2E51A00DF2071 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				0CF801F32344E4DC00E5E08E /* ColorUtils.swift */,
 				0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */,
 				0C16C06A2321328800F77855 /* ImageUtils.swift */,
 			);
@@ -707,14 +667,11 @@
 				Base,
 			);
 			mainGroup = 0C2375E21ED838D900ECB516;
+			packageReferences = (
+				0C48D4FB2EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "cmkdown" */,
+			);
 			productRefGroup = 0C2375EC1ED838D900ECB516 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 0CB19A042E88366900CF5735 /* Products */;
-					ProjectRef = 0CB19A032E88366900CF5735 /* tenniarb2.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				0C2375EA1ED838D900ECB516 /* Tenniarb */,
@@ -723,30 +680,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		0CB19A0A2E88366A00CF5735 /* tenniarb2.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = tenniarb2.app;
-			remoteRef = 0CB19A092E88366A00CF5735 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		0CB19A0C2E88366A00CF5735 /* tenniarb2Tests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = tenniarb2Tests.xctest;
-			remoteRef = 0CB19A0B2E88366A00CF5735 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		0CB19A0E2E88366A00CF5735 /* tenniarb2UITests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = tenniarb2UITests.xctest;
-			remoteRef = 0CB19A0D2E88366A00CF5735 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		0C2375E91ED838D900ECB516 /* Resources */ = {
@@ -835,7 +768,6 @@
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,
 				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C3160422242ADC00021E4D9 /* PreferencesController.swift in Sources */,
-				0C7F899923328B7C0098B745 /* MarkdownParser.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C7F8996233273FC0098B745 /* AttributedPrinter.swift in Sources */,
 				0C00D682230FE2F100ECF221 /* TennLexerModel.swift in Sources */,
@@ -849,7 +781,6 @@
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
-				0CF801F42344E4DC00E5E08E /* ColorUtils.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
@@ -868,7 +799,6 @@
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
 				0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */,
-				0C6DEF5B2343667200EC44B6 /* MarkdownPrinter.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
 				0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */,
 			);
@@ -1249,6 +1179,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0C48D4FB2EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "cmkdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/haiodo/cmkdown";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0C48D4FC2EBE2E4E008582D8 /* cmkdown */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C48D4FB2EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "cmkdown" */;
+			productName = cmkdown;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0C2375E31ED838D900ECB516 /* Project object */;
 }

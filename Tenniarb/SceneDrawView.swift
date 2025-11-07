@@ -2727,8 +2727,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
             menu.addItem(addAction)
             
-            //            let testLayout = NSMenuItem(title: "Test layout", action: #selector(performSpringLayout), keyEquivalent: "")
-            //            menu.addItem(testLayout)
+            let testLayout = NSMenuItem(title: "Test layout", action: #selector(performSpringLayout), keyEquivalent: "")
+            menu.addItem(testLayout)
             
             menu.addItem(NSMenuItem.separator())
             self.createStylesMenu(menu)

@@ -1,0 +1,15 @@
+{
+  "originHash" : "f388ad9de7fca36026122f51d02cc696e4a5ce117f664d8a5a9447358ebe674d",
+  "pins" : [
+    {
+      "identity" : "cmkdown",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/haiodo/cmkdown",
+      "state" : {
+        "branch" : "main",
+        "revision" : "ab7d4e3a3d3cfc64fe019207602ba3e8587e8686"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -20,6 +20,7 @@ import Foundation
 
 import Cocoa
 import JavaScriptCore
+import cmkdown
 
 // Some debug variabes
 
@@ -779,80 +780,31 @@ public func prepareBodyText(_ textValue: String) -> String {
 /**
  Cache images inside items with required processing.
  */
-open class ImageProvider {
+open class ElementImageProvider: ImageProvider {
     // Image cache
     var item: DiagramItem
-    let scaleFactor: CGFloat
     
     init(_ item: DiagramItem, _ scaleFactor: CGFloat ) {
         self.item = item
-        self.scaleFactor = scaleFactor
+        super.init(scaleFactor)
     }
     
-    // path is named and style combimned parsed from @(name|style)
-    public func resolveImage(path: String ) -> (NSImage?, CGRect?) {
-        // If image already cached.
-        var image: CachedImage? = self.item.images[path]
-        if image != nil {
-            return (image!.image, CGRect(origin: CGPoint(x:0, y:0), size: image!.size))
-        }
-        var name = path
-        var style = ""
-        if let pos = path.firstIndex(of: "|") {
-            name = String(path.prefix(upTo: pos))
-            style = String(path.suffix(from: path.index(after: pos)))
-        }
-        
-        if image == nil {
-            // Retrieve image data from properties, if not cached
-            self.item.properties.node.traverse {child in
-                if let cmdName = child.getIdent(0), let imgName = child.getIdent(1), let imgData = child.getIdent(2) {
-                    if cmdName == "image" && imgName == name {
-                        if let dta = Data(base64Encoded: imgData, options: .ignoreUnknownCharacters) {
-                            if let img = NSImage(data: dta) {
-                                image = CachedImage( image: img, size: img.size)
-                            }
+    public override func resolveImage(name: String) -> CachedImage? {
+        var result: CachedImage?
+        self.item.properties.node.traverse {child in
+            if let cmdName = child.getIdent(0), let imgName = child.getIdent(1), let imgData = child.getIdent(2) {
+                if cmdName == "image" && imgName == name {
+                    if let dta = Data(base64Encoded: imgData, options: .ignoreUnknownCharacters) {
+                        if let img = NSImage(data: dta) {
+                            result = CachedImage( image: img, size: img.size)
+                            return false
                         }
                     }
                 }
             }
+            return true
         }
-        
-        if let img = image {
-            var width = img.size.width
-            var height = img.size.height
-            if style != "" {
-                var widthStr = style
-                var heightStr = ""
-                // We need to apply style is applicable
-                if let xPos = style.firstIndex(of: "x") {
-                    widthStr = String(style.prefix(upTo: xPos)).trimmingCharacters(in: .whitespacesAndNewlines)
-                    heightStr = String(style.suffix(from: style.index(after: xPos))).trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-                
-                // This is aspect scale.
-                if !widthStr.isEmpty, let newWidth = Int(widthStr, radix: 10) {
-                    width = CGFloat(newWidth)
-                }
-                if !heightStr.isEmpty, let newHeight = Int(heightStr, radix: 10) {
-                    height = CGFloat(newHeight)
-                }
-                
-                if widthStr.isEmpty || heightStr.isEmpty {
-                    let r = getMaxRect(maxWidth: width, maxHeight: height, imageWidth: img.size.width, imageHeight: img.size.height)
-                    width = r.width
-                    height = r.height
-                }
-            }
-            img.image = rescaleImage(img.image, width * self.scaleFactor, height * self.scaleFactor)
-            img.size = CGSize(width: width, height: height)
-            
-            //            Swift.debugPrint("image size:\(image?.size) and \(width):\(height)")
-            self.item.images[path] = image
-            return (img.image, CGRect(x: 0, y: 0, width: width, height: height))
-        }
-        
-        return (nil, nil)
+        return result
     }
 }
 
@@ -1301,7 +1253,7 @@ open class DrawableScene: DrawableContainer {
         let style = self.sceneStyle.defaultItemStyle.copy()
         let evaluatedValues = self.executionContext?.getEvaluated(e) ?? [:]
         
-        let imageProvider = ImageProvider(e, self.scaleFactor)
+        let imageProvider = ElementImageProvider(e, self.scaleFactor)
         
         // parse uses with list of styles.
         
@@ -1604,7 +1556,7 @@ open class DrawableScene: DrawableContainer {
                         control: CGPoint(x: e.x, y: e.y ))
                     
                     if data.name.count > 0 {
-                        linkDr.addLabel(data.name, imageProvider: ImageProvider(e, self.scaleFactor))
+                        linkDr.addLabel(data.name, imageProvider: ElementImageProvider(e, self.scaleFactor))
                     }
                     
                     linkDr.item = e

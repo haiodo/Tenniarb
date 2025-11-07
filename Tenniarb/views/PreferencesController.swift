@@ -18,6 +18,7 @@
 
 import Foundation
 import Cocoa
+import cmkdown
 
 let preferenceAutoExpand = "preferences.structure.auto_expand"
 let preferenceExpandLevel = "preferences.structure.expand_level"

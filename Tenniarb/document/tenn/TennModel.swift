@@ -72,14 +72,19 @@ public class TennNode {
         }
     }
     
-    public func traverse(_ visitor: (_ node: TennNode) -> Void ) {
-        visitor(self)
+    public func traverse(_ visitor: (_ node: TennNode) -> Bool )-> Bool {
+        if( !visitor(self)) {
+            return false
+        }
         
         if children != nil {
             for c in self.children! {
-                c.traverse(visitor)
+                if( !c.traverse(visitor)) {
+                    return false
+                }
             }
         }
+        return true
     }
     
     

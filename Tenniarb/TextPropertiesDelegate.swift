@@ -364,6 +364,7 @@ class TextPropertiesDelegate: NSObject, NSTextViewDelegate, NSTextDelegate, IEle
             if nde.kind == .Image, let t = nde.token, let imgData = images[t.literal] {
                 nde.token = TennToken(type: .imageData, literal: imgData)
             }
+            return true
         }
         
         return node

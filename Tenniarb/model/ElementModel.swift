@@ -18,6 +18,7 @@
 
 import Foundation
 import Cocoa
+import cmkdown
 
 public enum ElementKind {
     case Root
@@ -337,15 +338,6 @@ public enum ItemKind {
     }
 }
 
-public class CachedImage {
-    var image: NSImage
-    var size: CGSize
-    
-    init( image: NSImage, size: CGSize) {
-        self.image = image
-        self.size = size
-    }
-}
 public class DiagramItem {
     var kind: ItemKind
     var name: String
