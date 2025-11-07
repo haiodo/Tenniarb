@@ -134,6 +134,7 @@ public class TennLexer: TennLexerProtocol {
         var foundEnd = false
         var stPos = self.pos
         var r = ""
+        r.reserveCapacity(128)
         while self.pos < self.bufferCount {
             if  currentCharValue == "\n" {
                 self.currentLine += 1;
@@ -267,6 +268,7 @@ public class TennLexer: TennLexerProtocol {
         }
         
         var r = ""
+        r.reserveCapacity(128)
         var stPos = self.pos
         
         let appendFunc: () -> Bool = {

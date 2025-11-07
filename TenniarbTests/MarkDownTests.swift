@@ -19,6 +19,7 @@
 import Foundation
 
 import XCTest
+import cmkdown
 
 @testable import Tenniarb
 
