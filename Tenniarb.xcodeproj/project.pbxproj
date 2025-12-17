@@ -468,7 +468,7 @@
 				0C45B12A22A397BE00640305 /* main_screen.png */,
 			);
 			path = Images;
-			sourceTree = SOURCE_ROOT;
+			sourceTree = "<group>";
 		};
 		0C4C16061F2E3685000C5410 /* layout */ = {
 			isa = PBXGroup;
@@ -503,13 +503,6 @@
 				0C7F899A233520880098B745 /* MarkDownTests.swift */,
 			);
 			path = TenniarbTests;
-			sourceTree = "<group>";
-		};
-		0C7F899723328B6E0098B745 /* markdown */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = markdown;
 			sourceTree = "<group>";
 		};
 		0C8114DC2338B63300F607BE /* TenniarbUITests */ = {
@@ -550,7 +543,6 @@
 		0CFBC7A41F0CAF190072E4FF /* document */ = {
 			isa = PBXGroup;
 			children = (
-				0C7F899723328B6E0098B745 /* markdown */,
 				0C1155282108C90E007FD827 /* extensions */,
 				0C439D23200336BB0031AE78 /* tenn */,
 				0C4C16061F2E3685000C5410 /* layout */,
