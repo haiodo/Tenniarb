@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and Test (macOS / Xcode)
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Show environment info
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Build (Debug)
+        run: |
+          set -euo pipefail
+          echo "Building Tenniarb (Debug configuration)..."
+          xcodebuild -project Tenniarb.xcodeproj -scheme Tenniarb -configuration Debug \
+            -derivedDataPath build clean build CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
+        # Let a failing build fail the job; logs are captured for post-mortem.
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          echo "Running tests..."
+          xcodebuild test -project Tenniarb.xcodeproj -scheme Tenniarb \
+            -destination 'platform=macOS' -configuration Debug -derivedDataPath build | tee xcodebuild-test.log
+
+      - name: Upload build & test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-logs
+          path: |
+            xcodebuild.log
+            xcodebuild-test.log

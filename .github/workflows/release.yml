@@ -1,0 +1,141 @@
+name: Release (build & publish)
+
+on:
+  push:
+    tags:
+      - '*'          # trigger on any tag push
+  workflow_dispatch:  # allow manual runs
+
+permissions:
+  contents: write    # needed to push commits and create releases
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build on tag and publish release
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Extract tag and version
+        id: extract
+        run: |
+          set -euo pipefail
+          echo "GITHUB_REF=$GITHUB_REF"
+          TAG="${GITHUB_REF#refs/tags/}"
+          # strip a leading 'v' (v1.2.3 -> 1.2.3) but keep others untouched
+          VERSION="${TAG#v}"
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate version format
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.extract.outputs.version }}"
+          # simple semver-ish check; adjust if you allow other formats
+          if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}([.-][A-Za-z0-9]+)?$ ]]; then
+            echo "Version \"$VERSION\" doesn't look like a supported version (expected e.g. 1.2.3 or 1.2)"
+            exit 1
+          fi
+
+      - name: Set MARKETING_VERSION in project (for build)
+        env:
+          VERSION: ${{ steps.extract.outputs.version }}
+        run: |
+          set -euo pipefail
+          FILE="Tenniarb.xcodeproj/project.pbxproj"
+          if [ ! -f "$FILE" ]; then
+            echo "::error file=$FILE::Xcode project file not found"
+            exit 1
+          fi
+          echo "Setting MARKETING_VERSION to $VERSION in $FILE (temporary for this build)"
+          # Use perl to replace all occurrences robustly (works on macOS)
+          perl -0777 -pe "s/(MARKETING_VERSION\\s*=\\s*)([^;\\n]+);/\\${1}${VERSION};/g" -i "$FILE"
+          echo "Diff after update:"
+          git --no-pager diff -- "$FILE" || true
+
+      - name: Build macOS app
+        run: |
+          set -euo pipefail
+          echo "Building Tenniarb (Release)..."
+          xcodebuild -project Tenniarb.xcodeproj -scheme Tenniarb -configuration Release \
+            -derivedDataPath build clean build CODE_SIGNING_ALLOWED=NO
+
+      - name: Package built app into zip
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.extract.outputs.version }}"
+          APP_PATH=$(find build -name "Tenniarb.app" -print -quit || true)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::Could not find built Tenniarb.app under derived data"
+            exit 1
+          fi
+          ZIP_NAME="Tenniarb-${VERSION}.zip"
+          echo "Packaging $APP_PATH -> $ZIP_NAME"
+          # Use ditto to create an archive preserving macOS resource forks
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
+          ls -lh "$ZIP_NAME"
+          echo "asset=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract.outputs.tag }}
+          release_name: ${{ steps.extract.outputs.tag }}
+          body: "Automated release created from tag ${{ steps.extract.outputs.tag }}."
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Tenniarb-${{ steps.extract.outputs.version }}.zip
+          asset_name: Tenniarb-${{ steps.extract.outputs.version }}.zip
+          asset_content_type: application/zip
+
+      - name: Push MARKETING_VERSION change to default branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          VERSION: ${{ steps.extract.outputs.version }}
+          TAG_NAME: ${{ steps.extract.outputs.tag }}
+        run: |
+          set -euo pipefail
+          FILE="Tenniarb.xcodeproj/project.pbxproj"
+          echo "Preparing to push version bump to default branch: $DEFAULT_BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Fetch and checkout the default branch
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
+          git reset --hard "origin/$DEFAULT_BRANCH"
+          # Re-apply the same version replacement on the default branch to ensure it's committed there
+          if [ ! -f "$FILE" ]; then
+            echo "::error file=$FILE::project file not found on $DEFAULT_BRANCH"
+            exit 1
+          fi
+          perl -0777 -pe "s/(MARKETING_VERSION\\s*=\\s*)([^;\\n]+);/\\${1}${VERSION};/g" -i "$FILE"
+          if git diff --quiet -- "$FILE"; then
+            echo "No MARKETING_VERSION changes to commit on $DEFAULT_BRANCH"
+          else
+            git add "$FILE"
+            git commit -m "ci: set MARKETING_VERSION to ${VERSION} (from tag ${TAG_NAME}) [skip ci]"
+            git push origin "$DEFAULT_BRANCH"
+            echo "Pushed MARKETING_VERSION update to $DEFAULT_BRANCH"
+          fi
