@@ -1,5 +1,7 @@
 # Tenniarb: Mind Map Meets Calculation Engine
 
+Available in: [English](readme.md) · [Русский](readme.ru.md)
+
 ## Reimagine working with mind maps
 
 Tenniarb is a macOS application that combines the intuitive visualization of mind maps with the power of a built-in calculation engine. Work with complex data structures and perform calculations without switching between apps.

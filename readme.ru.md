@@ -1,4 +1,5 @@
 # Tenniarb: Mind Map Meets Calculation Engine
+English version: [readme.md](readme.md)
 
 ## Переосмыслите работу с интеллект-картами
 
