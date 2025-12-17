@@ -327,9 +327,20 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
     
     @objc func defaultsChanged(_ notif: NSNotification) {
-        if self.element != nil {
-            buildScene()
-            scheduleRedraw()
+        // Notifications from UserDefaults can be delivered on a background thread.
+        // Make sure any UI-related work happens on the main thread.
+        func handle() {
+            if self.element != nil {
+                self.buildScene()
+                self.scheduleRedraw()
+            }
+        }
+        if Thread.isMainThread {
+            handle()
+        } else {
+            DispatchQueue.main.async {
+                handle()
+            }
         }
     }
     
