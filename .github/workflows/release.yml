@@ -65,7 +65,7 @@ jobs:
           fi
           echo "Setting MARKETING_VERSION to $VERSION in $FILE (temporary for this build)"
           # Use perl to replace all occurrences robustly (works on macOS)
-          perl -0777 -pe "s/(MARKETING_VERSION\\s*=\\s*)([^;\\n]+);/\\${1}${VERSION};/g" -i "$FILE"
+          perl -0777 -pe 'BEGIN{$v=$ENV{"VERSION"}} s/(MARKETING_VERSION\s*=\s*)([^;\n]+);/${1}$v;/g' -i "$FILE"
           echo "Diff after update:"
           git --no-pager diff -- "$FILE" || true
 
@@ -134,7 +134,7 @@ jobs:
             echo "::error file=$FILE::project file not found on $DEFAULT_BRANCH"
             exit 1
           fi
-          perl -0777 -pe "s/(MARKETING_VERSION\\s*=\\s*)([^;\\n]+);/\\${1}${VERSION};/g" -i "$FILE"
+          perl -0777 -pe 'BEGIN{$v=$ENV{"VERSION"}} s/(MARKETING_VERSION\s*=\s*)([^;\n]+);/${1}$v;/g' -i "$FILE"
           if git diff --quiet -- "$FILE"; then
             echo "No MARKETING_VERSION changes to commit on $DEFAULT_BRANCH"
           else
