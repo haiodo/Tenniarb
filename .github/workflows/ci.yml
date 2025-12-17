@@ -49,8 +49,10 @@ jobs:
         run: |
           set -euo pipefail
           echo "Running tests..."
+          # Disable code signing and related settings so tests can run on hosted runner without certificates
           xcodebuild test -project Tenniarb.xcodeproj -scheme Tenniarb \
-            -destination 'platform=macOS' -configuration Debug -derivedDataPath build | tee xcodebuild-test.log
+            -destination 'platform=macOS' -configuration Debug -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" | tee xcodebuild-test.log
 
       - name: Upload build & test logs
         if: always()

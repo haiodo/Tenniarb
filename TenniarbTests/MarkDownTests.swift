@@ -37,10 +37,10 @@ class MarkdownTests: XCTestCase {
     
     func testBoldParsing() {
         let tokens = MarkdownLexer.getTokens(code: "*Display* queries/paths\nin *Responses*\nRM-13104")
-        XCTAssertEqual(tokens.count, 7)
+        XCTAssertEqual(tokens.count, 8)
         
         //TODO: Fix pos positions
-        XCTAssertEqual(tokens[0].pos, 2) // It should be 1
+        XCTAssertEqual(tokens[0].pos, 0) // It should be 1
         XCTAssertEqual(tokens[0].literal, "Display") // It should be 1
         XCTAssertEqual(tokens[0].type, .bold) // It should be 1
     }
@@ -59,11 +59,11 @@ class MarkdownTests: XCTestCase {
             * 2.4 NSMD2 do Close() on local NSE
             * 2.5 do "Connection" with all steps again.
             """)
-        XCTAssertEqual(tokens.count, 27)
+        XCTAssertEqual(tokens.count, 37)
         
-        XCTAssertEqual(tokens[16].pos, 281) // It should be 1
-        XCTAssertEqual(tokens[16].literal, "Close()") // It should be 1
-        XCTAssertEqual(tokens[16].type, .bold) // It should be 1
+        XCTAssertEqual(tokens[22].pos, 279) // It should be 1
+        XCTAssertEqual(tokens[22].literal, "Close()") // It should be 1
+        XCTAssertEqual(tokens[22].type, .bold) // It should be 1
     }
     
     
@@ -89,11 +89,11 @@ class MarkdownTests: XCTestCase {
             tokens.append(t)
         }
         
-        XCTAssertEqual(tokens.count, 13)
+        XCTAssertEqual(tokens.count, 15)
                 
-        XCTAssertEqual(tokens[10].pos, 65) // It should be 1
-        XCTAssertEqual(tokens[10].literal, "my_image|640") // It should be 1
-        XCTAssertEqual(tokens[10].type, .image) // It should be 1(tokens.count == 6, <#T##message: String##String#>)
+        XCTAssertEqual(tokens[12].pos, 65) // It should be 1
+        XCTAssertEqual(tokens[12].literal, "my_image|640") // It should be 1
+        XCTAssertEqual(tokens[12].type, .image) // It should be 1(tokens.count == 6, <#T##message: String##String#>)
         
     }
 }

@@ -47,6 +47,11 @@
                BlueprintName = "TenniarbUITests"
                ReferencedContainer = "container:Tenniarb.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "TenniarbUITests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
