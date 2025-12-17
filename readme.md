@@ -1,6 +1,6 @@
 # Tenniarb: Mind Map Meets Calculation Engine
 
-Available in: [English](readme.md) · [Русский](readme.ru.md)
+Russian version: [readme.ru.md](readme.ru.md)
 
 ## Reimagine working with mind maps
 
@@ -85,7 +85,7 @@ Visualize mathematical concepts with live formulas that learners can change and 
 ## Why Tenniarb, not other tools?
 
 | | Tenniarb | Excel | Mind Map Apps |
-|---|---:|---:|---:|
+|---|---|---|---|
 | **Visual hierarchy** | ✅ Natural | ⚠️ Complex | ✅ Excellent |
 | **Built-in calculations** | ✅ Yes | ✅ Yes | ❌ No |
 | **Single interface** | ✅ Yes | ⚠️ Requires macros | ✅ Yes (but no calculations) |
