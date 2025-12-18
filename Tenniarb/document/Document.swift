@@ -35,23 +35,30 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     }
     
     fileprivate func updateStore(_ elementModel: ElementModel) {
-        self.store?.onUpdate.append( self )
+        // If we had a previous store, unregister from its listeners first.
+        if let old = self.store {
+            old.onUpdate.removeAll(where: { ($0 as AnyObject) === (self as AnyObject) })
+        }
+        // Create a new store and register this Document as its listener.
         self.store = ElementModelStore(elementModel)
+        if !(self.store!.onUpdate.contains(where: { ($0 as AnyObject) === (self as AnyObject) })) {
+            self.store!.onUpdate.append(self)
+        }
     }
-
+    
     func notifyChanges(_ evt: ModelEvent ) {
         updateChangeCount(.changeDone)
         vc?.updateWindowTitle()
     }
     
     override func makeWindowControllers() {
-//        let frame = NSMakeRect(100, 100, 500, 300)
-//        let window = NSWindow(contentRect: frame ,
-//                              styleMask: [.closable, .resizable, .unifiedTitleAndToolbar, .titled] ,
-//                              backing: .buffered,
-//                              defer: false)
-//        let wc: NSWindowController = MasterWindowController.init(window: window)
-//        self.addWindowController(wc)
+        //        let frame = NSMakeRect(100, 100, 500, 300)
+        //        let window = NSWindow(contentRect: frame ,
+        //                              styleMask: [.closable, .resizable, .unifiedTitleAndToolbar, .titled] ,
+        //                              backing: .buffered,
+        //                              defer: false)
+        //        let wc: NSWindowController = MasterWindowController.init(window: window)
+        //        self.addWindowController(wc)
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController
@@ -65,7 +72,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         vc?.setElementModel(elementStore: self.store!)
         
         if let uri = self.fileURL?.absoluteString, let window = self.vc?.view.window,
-            let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)  {
+           let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)  {
             let p = TennParser()
             let node = p.parse(data)
             if( !p.errors.hasErrors()) {
@@ -118,10 +125,11 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
             
             elementModel.modelName = url.lastPathComponent
             
+            // Update the store first so callers receive the new store instance,
+            // then attach it to the view controller.
+            self.updateStore(elementModel)
             vc?.setElementModel(elementStore: self.store!)
             
-            
-            self.updateStore(elementModel)
             self.fileURL = url
         }
         catch {

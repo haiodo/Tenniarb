@@ -23,85 +23,85 @@ class SpringLayout: LayoutAlgorithm {
      * The default value for the spring layout number of iterations.
      */
     let DEFAULT_SPRING_ITERATIONS = 1000;
-
+    
     /**
      * the default value for the time algorithm runs.
      */
     let MAX_SPRING_TIME = 1;
-
+    
     /**
      * The default value for positioning nodes randomly.
      */
     let DEFAULT_SPRING_RANDOM = false;
-
+    
     /**
      * The default value for the spring layout move-control.
      */
     let DEFAULT_SPRING_MOVE = CGFloat(1.0);
-
+    
     /**
      * The default value for the spring layout strain-control.
      */
     let DEFAULT_SPRING_STRAIN = CGFloat(1.0);
-
+    
     /**
      * The default value for the spring layout length-control.
      */
     let DEFAULT_SPRING_LENGTH = CGFloat(3.0);
-
+    
     /**
      * The default value for the spring layout gravitation-control.
      */
     let DEFAULT_SPRING_GRAVITATION = CGFloat(2);
-
+    
     /**
      * Minimum distance considered between nodes
      */
     let MIN_DISTANCE = CGFloat(50.0);
-
+    
     /**
      * The variable can be customized to set the number of iterations used.
      */
     var sprIterations: Int
-
+    
     /**
      * This variable can be customized to set the max number of MS the algorithm
      * should run
      */
     var maxTimeMS: Int
-
+    
     /**
      * The variable can be customized to set whether or not the spring layout
      * nodes are positioned randomly before beginning iterations.
      */
     var sprRandom: Bool
-
+    
     /**
      * The variable can be customized to set the spring layout move-control.
      */
     var sprMove: CGFloat
-
+    
     /**
      * The variable can be customized to set the spring layout strain-control.
      */
     var sprStrain: CGFloat
-
+    
     /**
      * The variable can be customized to set the spring layout length-control.
      */
     var sprLength: CGFloat
-
+    
     /**
      * The variable can be customized to set the spring layout
      * gravitation-control.
      */
     var sprGravitation: CGFloat
-
+    
     /**
      * Variable indicating whether the algorithm should resize elements.
      */
     var resize = false;
-
+    
     var iteration: Int = 0;
     var srcDestToSumOfWeights: [[CGFloat]] = [];
     var entities: [DiagramItem] = [];
@@ -114,10 +114,10 @@ class SpringLayout: LayoutAlgorithm {
     var bounds: CGRect = CGRect();
     var boundsScaleX = CGFloat(1);
     var boundsScaleY = CGFloat(1);
-
+    
     // XXX: Needed by performNIteration(int), see below.
     var layoutContext: LayoutContext!
-
+    
     // TODO: expose field
     var fitWithinBounds = true;
     
@@ -132,23 +132,23 @@ class SpringLayout: LayoutAlgorithm {
         sprLength = DEFAULT_SPRING_LENGTH;
         sprGravitation = DEFAULT_SPRING_GRAVITATION;
     }
-
+    
     func apply(context: LayoutContext, clean: Bool) -> [ElementOperation] {
         self.layoutContext = context;
         self.initLayout(context);
         if !clean {
             return [];
         }
-
+        
         while self.performAnotherNonContinuousIteration() {
             self.computeOneIteration();
         }
-
+        
         self.saveLocations();
         if (resize) {
-//            AlgorithmHelper.maximizeSizes(entities);
+            //            AlgorithmHelper.maximizeSizes(entities);
         }
-
+        
         if self.fitWithinBounds {
             var bounds2 = CGRect(origin: bounds.origin, size: bounds.size)
             let insets = CGFloat(4);
@@ -192,9 +192,9 @@ class SpringLayout: LayoutAlgorithm {
             return;
         }
         let startingBounds = getLayoutBounds();
-//        let sizeScale = min(
-//                destinationBounds.width / startingBounds.width,
-//                destinationBounds.height / startingBounds.height);
+        //        let sizeScale = min(
+        //                destinationBounds.width / startingBounds.width,
+        //                destinationBounds.height / startingBounds.height);
         for i in 0..<self.entities.count{
             let entity = entities[i];
             let size = self.layoutContext.getBounds(node: entity);
@@ -202,17 +202,17 @@ class SpringLayout: LayoutAlgorithm {
                 let locationX = self.locationsX[i]
                 let locationY = self.locationsY[i]
                 let percentX = startingBounds.width == 0 ? 0
-                    : (locationX - startingBounds.origin.x)
-                                / (startingBounds.width);
+                : (locationX - startingBounds.origin.x)
+                / (startingBounds.width);
                 let percentY = startingBounds.height == 0 ? 0
-                    : (locationY - startingBounds.origin.y)
-                                / (startingBounds.height);
+                : (locationY - startingBounds.origin.y)
+                / (startingBounds.height);
                 self.locationsX[i] = destinationBounds.origin.x + size.width / 2 + percentX * (destinationBounds.width - size.width);
                 self.locationsY[i] = destinationBounds.origin.y + size.height / 2 + percentY * (destinationBounds.height - size.height);
             }
         }
     }
-
+    
     /**
      * Performs the given number of iterations.
      *
@@ -233,7 +233,7 @@ class SpringLayout: LayoutAlgorithm {
         }
         layoutContext.postLayout();
     }
-
+    
     /**
      * Performs one single iteration.
      *
@@ -250,7 +250,7 @@ class SpringLayout: LayoutAlgorithm {
         self.saveLocations();
         layoutContext.postLayout();
     }
-
+    
     /**
      *
      * @return true if this algorithm is set to resize elements
@@ -258,7 +258,7 @@ class SpringLayout: LayoutAlgorithm {
     func isResizing() -> Bool {
         return self.resize;
     }
-
+    
     /**
      *
      * @param resizing
@@ -268,7 +268,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setResizing(_ resizing: Bool) {
         resize = resizing;
     }
-
+    
     /**
      * Sets the spring layout move-control.
      *
@@ -278,7 +278,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setSpringMove(_ move: CGFloat) {
         sprMove = move;
     }
-
+    
     /**
      * Returns the move-control value of this SpringLayoutAlgorithm in double
      * precision.
@@ -288,7 +288,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getSpringMove() -> CGFloat {
         return sprMove;
     }
-
+    
     /**
      * Sets the spring layout strain-control.
      *
@@ -298,7 +298,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setSpringStrain(_ strain: CGFloat) {
         sprStrain = strain;
     }
-
+    
     /**
      * Returns the strain-control value of this SpringLayoutAlgorithm in double
      * precision.
@@ -308,7 +308,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getSpringStrain() -> CGFloat {
         return sprStrain;
     }
-
+    
     /**
      * Sets the spring layout length-control.
      *
@@ -318,7 +318,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setSpringLength(_ length: CGFloat) {
         sprLength = length;
     }
-
+    
     /**
      * Gets the max time this algorithm will run for
      *
@@ -327,7 +327,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getSpringTimeout()-> Int {
         return maxTimeMS;
     }
-
+    
     /**
      * Sets the spring timeout to the given value (in millis).
      *
@@ -337,7 +337,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setSpringTimeout(_ timeout: Int) {
         maxTimeMS = timeout;
     }
-
+    
     /**
      * Returns the length-control value of this {@link SpringLayoutAlgorithm} in
      * double precision.
@@ -347,7 +347,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getSpringLength() -> CGFloat {
         return sprLength;
     }
-
+    
     /**
      * Sets the spring layout gravitation-control.
      *
@@ -357,7 +357,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setSpringGravitation(_ gravitation: CGFloat) {
         sprGravitation = gravitation;
     }
-
+    
     /**
      * Returns the gravitation-control value of this SpringLayoutAlgorithm in
      * double precision.
@@ -367,7 +367,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getSpringGravitation() -> CGFloat {
         return sprGravitation;
     }
-
+    
     /**
      * Sets the number of iterations to be used.
      *
@@ -377,7 +377,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setIterations(_ iterations: Int) {
         sprIterations = iterations;
     }
-
+    
     /**
      * Returns the number of iterations to be used.
      *
@@ -386,7 +386,7 @@ class SpringLayout: LayoutAlgorithm {
     public func getIterations() -> Int {
         return sprIterations;
     }
-
+    
     /**
      * Sets whether or not this SpringLayoutAlgorithm will layout the nodes
      * randomly before beginning iterations.
@@ -397,7 +397,7 @@ class SpringLayout: LayoutAlgorithm {
     public func setRandom(_ random: Bool ) {
         sprRandom = random;
     }
-
+    
     /**
      * Returns whether or not this {@link SpringLayoutAlgorithm} will layout the
      * nodes randomly before beginning iterations.
@@ -408,20 +408,20 @@ class SpringLayout: LayoutAlgorithm {
     public func getRandom() -> Bool {
         return sprRandom;
     }
-
+    
     var startTime: Date = Date()
-
+    
     private func initLayout(_ context: LayoutContext) {
         entities = context.nodes
         bounds = context.getViewBounds()
         self.loadLocations();
-
+        
         srcDestToSumOfWeights = Array(repeating: Array(repeating: 0, count: entities.count), count: entities.count)
         var entityToPosition: [DiagramItem: Int] = [:]
         for i in 0..<entities.count {
             entityToPosition[entities[i]] =  i
         }
-
+        
         let connections = context.edges
         for i in 0..<connections.count {
             let connection = connections[i];
@@ -435,16 +435,16 @@ class SpringLayout: LayoutAlgorithm {
                 srcDestToSumOfWeights[target][source] += weight;
             }
         }
-
+        
         if sprRandom {
             self.placeRandomly(); // put vertices in random places
         }
-
+        
         iteration = 1;
-
+        
         startTime = Date()
     }
-
+    
     private func loadLocations() {
         if (locationsX.count != entities.count) {
             let length = entities.count;
@@ -464,7 +464,7 @@ class SpringLayout: LayoutAlgorithm {
             sizeH[i] = size.height;
         }
     }
-
+    
     private func saveLocations() {
         if entities.count == 0 {
             return;
@@ -481,7 +481,7 @@ class SpringLayout: LayoutAlgorithm {
             self.operations.append(layoutContext.store.createUpdatePosition(item: entities[i], newPos: CGPoint(x: locationsX[i], y: locationsY[i])))
         }
     }
-
+    
     /**
      * Scales the current iteration counter based on how long the algorithm has
      * been running for. You can set the MaxTime in maxTimeMS!
@@ -490,7 +490,7 @@ class SpringLayout: LayoutAlgorithm {
         if maxTimeMS <= 0 {
             return
         }
-
+        
         let currentTime = Date();
         let since = currentTime.timeIntervalSince(startTime)
         let fractionComplete = Double(since) / Double(maxTimeMS)
@@ -499,7 +499,7 @@ class SpringLayout: LayoutAlgorithm {
             iteration = currentIteration
         }
     }
-
+    
     /**
      * Performs one iteration based on time.
      *
@@ -510,7 +510,7 @@ class SpringLayout: LayoutAlgorithm {
         self.setSprIterationsBasedOnTime()
         return iteration <= sprIterations
     }
-
+    
     /**
      * Returns the current iteration.
      *
@@ -519,7 +519,7 @@ class SpringLayout: LayoutAlgorithm {
     func getCurrentLayoutStep() -> Int {
         return iteration;
     }
-
+    
     /**
      * Returns the maximum number of iterations.
      *
@@ -528,7 +528,7 @@ class SpringLayout: LayoutAlgorithm {
     func getTotalNumberOfLayoutSteps() -> Int {
         return sprIterations;
     }
-
+    
     /**
      * Computes one iteration (forces, positions) and increases the iteration
      * counter.
@@ -542,7 +542,7 @@ class SpringLayout: LayoutAlgorithm {
         self.moveToCenter(currentBounds)
         self.iteration += 1
     }
-
+    
     /**
      * Puts vertices in random places, all between (0,0) and (1,1).
      */
@@ -550,7 +550,7 @@ class SpringLayout: LayoutAlgorithm {
         if locationsX.count == 0 {
             return
         }
-
+        
         // If only one node in the data repository, put it in the middle
         if locationsX.count == 1 {
             // If only one node in the data repository, put it in the middle
@@ -560,22 +560,22 @@ class SpringLayout: LayoutAlgorithm {
             locationsX[0] = bounds.origin.x
             locationsY[0] = bounds.origin.y
             locationsX[1] = bounds.origin.x + bounds.width;
-            locationsY[1] = bounds.origin.x + bounds.height;
+            locationsY[1] = bounds.origin.y + bounds.height;
             for i in 2..<locationsX.count {
                 locationsX[i] = bounds.origin.x
-                    + CGFloat(drand48()) * bounds.width;
+                + CGFloat(drand48()) * bounds.width;
                 locationsY[i] = bounds.origin.y
-                        + CGFloat(drand48()) * bounds.height;
+                + CGFloat(drand48()) * bounds.height;
             }
         }
     }
-
+    
     /**
      * Computes the force for each node in this SpringLayoutAlgorithm. The
      * computed force will be stored in the data repository
      */
     func computeForces() {
-
+        
         var forcesX:[[CGFloat]] = Array(repeating: Array(repeating: CGFloat(0), count: self.forcesX.count), count: 2)
         var forcesY:[[CGFloat]] = Array(repeating: Array(repeating: CGFloat(0), count: self.forcesX.count), count: 2)
         var locationsX:[CGFloat] = Array(repeating: CGFloat(0), count: self.forcesX.count)
@@ -589,52 +589,56 @@ class SpringLayout: LayoutAlgorithm {
                 locationsY[i] = self.locationsY[i];
             }
         }
-
+        
         // TODO: Again really really slow!
-
+        
         for k in 0..<2 {
             for i in 0..<self.locationsX.count {
-
+                
                 for j in i + 1..<self.locationsX.count{
-                    let dx = (locationsX[i] - locationsX[j]) / bounds.width / boundsScaleX;
-                    let dy = (locationsY[i] - locationsY[j]) / bounds.height / boundsScaleY;
+                    // Avoid division by zero when bounds width/height are zero.
+                    // Use a tiny epsilon to preserve scale behaviour while preventing crashes/NaNs.
+                    let bw = max(bounds.width, CGFloat(1e-6))
+                    let bh = max(bounds.height, CGFloat(1e-6))
+                    let dx = (locationsX[i] - locationsX[j]) / bw / boundsScaleX;
+                    let dy = (locationsY[i] - locationsY[j]) / bh / boundsScaleY;
                     var distance_sq = dx * dx + dy * dy;
                     // make sure distance and distance squared not too small
                     distance_sq = max(MIN_DISTANCE * MIN_DISTANCE, distance_sq);
                     let distance = sqrt(distance_sq);
-
+                    
                     // If there are relationships between srcObj and destObj
                     // then decrease force on srcObj (a pull) in direction of
                     // destObj
                     // If no relation between srcObj and destObj then increase
                     // force on srcObj (a push) from direction of destObj.
                     let sumOfWeights = srcDestToSumOfWeights[i][j];
-
+                    
                     var f: CGFloat;
                     if sumOfWeights > 0 {
                         // nodes are pulled towards each other
                         f = -sprStrain * log(distance / sprLength)
-                                * sumOfWeights;
+                        * sumOfWeights;
                     } else {
                         // nodes are repelled from each other
                         f = sprGravitation / (distance_sq);
                     }
                     let dfx = f * dx / distance;
                     let dfy = f * dy / distance;
-
+                    
                     forcesX[k][i] += dfx;
                     forcesY[k][i] += dfy;
-
+                    
                     forcesX[k][j] -= dfx;
                     forcesY[k][j] -= dfy;
                 }
             }
-
+            
             for i in 0..<entities.count {
                 if self.layoutContext.isMovable(entities[i]) {
                     var deltaX = sprMove * forcesX[k][i];
                     var deltaY = sprMove * forcesY[k][i];
-
+                    
                     // constrain movement, so that nodes don't shoot way off to
                     // the
                     // edge
@@ -644,12 +648,12 @@ class SpringLayout: LayoutAlgorithm {
                         deltaX = deltaX * maxMovement / dist;
                         deltaY = deltaY * maxMovement / dist;
                     }
-
+                    
                     locationsX[i] += deltaX * bounds.width * boundsScaleX;
                     locationsY[i] += deltaY * bounds.height * boundsScaleY;
                 }
             }
-
+            
         }
         // // initialize all forces to zero
         for i in 0..<self.entities.count {
@@ -658,7 +662,7 @@ class SpringLayout: LayoutAlgorithm {
             } else {
                 self.forcesX[i] = forcesX[1][i];
             }
-
+            
             if (forcesY[0][i] * forcesY[1][i] < 0) {
                 self.forcesY[i] = 0;
             } else {
@@ -666,7 +670,7 @@ class SpringLayout: LayoutAlgorithm {
             }
         }
     }
-
+    
     /**
      * Computes the position for each node in this SpringLayoutAlgorithm. The
      * computed position will be stored in the data repository. position =
@@ -677,7 +681,7 @@ class SpringLayout: LayoutAlgorithm {
             if self.layoutContext.isMovable(entities[i]) {
                 var deltaX = sprMove * forcesX[i];
                 var deltaY = sprMove * forcesY[i];
-
+                
                 // constrain movement, so that nodes don't shoot way off to the
                 // edge
                 let dist = CGFloat(sqrt(deltaX * deltaX + deltaY * deltaY))
@@ -686,13 +690,13 @@ class SpringLayout: LayoutAlgorithm {
                     deltaX = deltaX * maxMovement / dist;
                     deltaY = deltaY * maxMovement / dist;
                 }
-
+                
                 locationsX[i] += deltaX * bounds.width * boundsScaleX;
                 locationsY[i] += deltaY * bounds.height * boundsScaleY;
             }
         }
     }
-
+    
     private func getLayoutBounds() -> CGRect {
         var minX: CGFloat
         var maxX: CGFloat
@@ -702,7 +706,7 @@ class SpringLayout: LayoutAlgorithm {
         minY = CGFloat.infinity
         maxX = -1 * CGFloat.infinity;
         maxY = -1 * CGFloat.infinity;
-
+        
         for i in 0..<locationsX.count {
             maxX = max(maxX, locationsX[i] + sizeW[i] );
             minX = min(minX, locationsX[i] - sizeW[i] );
@@ -711,7 +715,7 @@ class SpringLayout: LayoutAlgorithm {
         }
         return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
-
+    
     private func improveBoundScaleX(_ currentBounds: CGRect ) {
         let boundaryProportionX = currentBounds.width / bounds.width;
         if boundaryProportionX < 0.9 {
@@ -723,7 +727,7 @@ class SpringLayout: LayoutAlgorithm {
             boundsScaleX /= 1.01;
         }
     }
-
+    
     private func improveBoundScaleY(_ currentBounds: CGRect) {
         let boundaryProportionY = currentBounds.height / bounds.height
         if boundaryProportionY < 0.9 {
@@ -735,7 +739,7 @@ class SpringLayout: LayoutAlgorithm {
             boundsScaleY /= 1.01;
         }
     }
-
+    
     private func moveToCenter(_ currentBounds: CGRect) {
         let moveX = (currentBounds.origin.x + currentBounds.width / 2) - (bounds.origin.x + bounds.width / 2);
         let moveY = (currentBounds.origin.y + currentBounds.height / 2) - (bounds.origin.y + bounds.height / 2);

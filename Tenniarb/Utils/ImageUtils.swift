@@ -63,7 +63,7 @@ public func getMaxRect( maxWidth: CGFloat, maxHeight: CGFloat, imageWidth: CGFlo
     let ratioy = maxHeight / imageHeight
     
     var ratio = min(ratiox, ratioy)
-        
+    
     // Calculate new size based on the ratio
     if ratio > 1 {
         ratio = 1
@@ -91,12 +91,14 @@ public func scaleImage(_ image: CGImage, maxWidth: Float, maxHeight: Float ) -> 
     if ratio > 1 {
         ratio = 1
     }
-        
+    
     let filter = CIFilter(name: "CILanczosScaleTransform")!
     filter.setValue(ciImage, forKey: "inputImage")
     filter.setValue(ratio, forKey: "inputScale")
     filter.setValue(1.0, forKey: "inputAspectRatio")
-    let outputImage = filter.value(forKey: "outputImage") as! CIImage
+    guard let outputImage = filter.outputImage ?? filter.value(forKey: "outputImage") as? CIImage else {
+        return nil
+    }
     
     let context = CIContext(options: [CIContextOption.useSoftwareRenderer: false])
     return context.createCGImage(outputImage, from: outputImage.extent)

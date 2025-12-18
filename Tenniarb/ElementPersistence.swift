@@ -34,13 +34,13 @@ public enum PersistenceItemKind {
     
     var commandName : String {
         switch self {
-        // Use Internationalization, as appropriate.
+            // Use Internationalization, as appropriate.
         case .Item: return "item";
         case .Link: return "link";
         case .Element: return "element";
         case .Model: return "model";
         case .Annontation: return "annotation";
-        case .Description: return "desription";
+        case .Description: return "description";
         case .SourceIndex: return "source-index";
         case .TargetIndex: return "target-index";
         case .Position: return "pos";
@@ -76,7 +76,7 @@ public enum PersistenceStyleKind {
     case LineSpacing
     var name : String {
         switch self {
-        // Use Internationalization, as appropriate.
+            // Use Internationalization, as appropriate.
         case .Color: return "color";
         case .FontSize: return "font-size";
         case .Display: return "display";
@@ -191,7 +191,7 @@ extension Element {
             }
             
             let linkDataBlock = TennNode.newBlockExpr()
-                        
+            
             if let src = linkData.source, let sourceIndex = indexes[src], sourceIndex != 0 {
                 linkDataBlock.add(TennNode.newCommand(PersistenceItemKind.SourceIndex.commandName, TennNode.newIntNode(sourceIndex)))
             }
@@ -239,7 +239,7 @@ extension Element {
                 itemRefNames[item] = 0
             }
         }
-
+        
         return itemRefNames
     }
     func buildElementData(_ e: Element, _ enodeBlock: TennNode) {
@@ -448,13 +448,13 @@ extension Element {
         traverseBlock(node, { (cmdName, blChild) -> Void in
             parseElementData(el, cmdName, blChild, &linkElements)
         })
-    
+        
         let refs = prepareRefs(el.items)
-    
+        
         for (node, link) in linkElements {
             processLink(link, node, refs)
         }
-    
+        
         return el.items
     }
     static func parseItemData(_ el: DiagramItem, _ cmdName: String, _ blChild: TennNode) {
@@ -472,7 +472,7 @@ extension Element {
             else {
                 el.properties.append(blChild);
             }
-        case PersistenceItemKind.Description.commandName:
+        case PersistenceItemKind.Description.commandName, "desription":
             el.description = blChild.getIdent(1)
         default:
             el.properties.append(blChild);
@@ -505,7 +505,7 @@ extension Element {
     
     static func parseLinkData(_ link: DiagramItem, _ cmdName: String, _ blChild: TennNode, _ sourceIndex: inout Int, _ targetIndex: inout Int) {
         switch cmdName  {
-        case PersistenceItemKind.Description.commandName:
+        case PersistenceItemKind.Description.commandName, "desription":
             link.description = blChild.getIdent(1)
         case PersistenceItemKind.Label.commandName:
             link.name = blChild.getIdent(1) ?? ""

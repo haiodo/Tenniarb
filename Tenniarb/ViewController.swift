@@ -19,7 +19,7 @@
 import Cocoa
 
 class ViewController: NSViewController, IElementModelListener, NSMenuItemValidation {
-
+    
     @IBOutlet weak var scene: SceneDrawView!
     
     @IBOutlet weak var worldTree: NSOutlineView!
@@ -29,7 +29,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var elementStore: ElementModelStore?
     
     var selectedElement: Element?
-
+    
     var activeItems: [DiagramItem] = []
     
     var updateScheduled: Int = 0
@@ -51,7 +51,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var operationBox: OperationController?
     
     var exportMgr = ExportManager()
-        
+    
     @IBOutlet weak var exportSegments: NSSegmentedCell!
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
@@ -79,7 +79,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             
         }
     }
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -102,6 +102,15 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         exportSegments.setMenu(exportMenu, forSegment: 0)
         
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(darkModeChanged), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
+        
+    }
+    deinit {
+        // Unregister distributed notifications
+        DistributedNotificationCenter.default().removeObserver(self)
+        // Unregister from element store listeners if present
+        if let es = self.elementStore {
+            es.onUpdate.removeAll(where: { ($0 as AnyObject) === (self as AnyObject) })
+        }
     }
     
     override func viewDidAppear() {
@@ -117,7 +126,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         })
     }
     
-        
+    
     @IBAction func elementToolbarAction(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
         case 0: // This is add of new element.
@@ -251,11 +260,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
     
     @IBAction func editValue(_ sender: NSMenuItem ) {
-           if let active = self.scene?.activeItems.first  {
-               scene.setActiveItem(active)
-               scene?.editTitle(active, .Value)
-           }
-       }
+        if let active = self.scene?.activeItems.first  {
+            scene.setActiveItem(active)
+            scene?.editTitle(active, .Value)
+        }
+    }
     
     @IBAction func quickEdit(_ sender: NSMenuItem ) {
         showOperationBox()
@@ -401,7 +410,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             break
         }
     }
-
+    
     public func handleAddElement() {
         let newEl = Element(name: "Unnamed element: " + String(itemIndex))
         self.itemIndex += 1
@@ -431,7 +440,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     public func handleRemoveElement() {
         if let active = self.selectedElement {
             if let parent = active.parent {
-//                _ = parent.remove(active)
+                //                _ = parent.remove(active)
                 
                 if parent.kind == .Root {
                     selectedElement = nil
@@ -450,17 +459,17 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                             self.worldTree.expandItem(parent)
                         }
                     })
-                })              
+                })
             }
         }
     }
     private func handleElementOptions() {
         
-    }    
+    }
     
     override var representedObject: Any? {
         didSet {
-        // Update the view, if already loaded.
+            // Update the view, if already loaded.
         }
     }
     
@@ -495,7 +504,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             
             if let el = element {
                 self.scene.setActiveElement(el)
-            
+                
                 self.updateTextProperties()
             }
         }
@@ -515,7 +524,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             value = String(value[value.startIndex..<value.index(value.endIndex, offsetBy: -5)])
         }
         if self.elementStore?.modified ?? false {
-           value += "*"
+            value += "*"
         }
         self.title = value
         self.windowTitle.stringValue = value
@@ -525,6 +534,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         
         if let es = self.elementStore,  es.model == elementStore.model {
             return
+        }
+        // Unregister from previous store listeners if needed
+        if let old = self.elementStore {
+            old.onUpdate.removeAll(where: { ($0 as AnyObject) === (self as AnyObject) })
         }
         self.elementStore = elementStore
         
@@ -539,22 +552,25 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             um.removeAllActions()
         }
         
-        elementStore.onUpdate.append(self)
-
+        // Register as listener if not already present (avoid duplicates)
+        if !(elementStore.onUpdate.contains(where: { ($0 as AnyObject) === (self as AnyObject) })) {
+            elementStore.onUpdate.append(self)
+        }
+        
         scene.setModel(store: self.elementStore!)
         scene.onSelection.removeAll()
         scene.onSelection.append({( element ) -> Void in
             self.activeItems = element
             self.updateTextProperties()
         })
-
+        
         scene.setActiveElement(elementStore.model)
         
         worldTree.reloadData()
         // Expand all top level elements
         
         self.updateWindowTitle()
-                
+        
         if PreferenceConstants.preference.autoExpand {
             self.expandItems(elementStore.model.elements, PreferenceConstants.preference.autoExpandLevel)
         }
@@ -613,14 +629,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     self.worldTree.selectRowIndexes(IndexSet.init(arrayLiteral: childIndex),
                                                     byExtendingSelection: false)
                 }
-                                
+                
                 self.updateScheduled = 0
                 
                 self.updateWindowTitle()
             })
         }
     }
-
+    
     func mergeProperties(_ node: TennNode ) {
         updatingProperties = true
         if let active = activeItems.first {

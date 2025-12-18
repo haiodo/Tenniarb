@@ -320,6 +320,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     func onAppear( ) {
         if let win = self.window {
             self.scaleFactor = win.backingScaleFactor
@@ -377,8 +381,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         
         if self.store?.model != store.model {
+            // Unregister from previous store to avoid duplicate notifications
+            if let oldStore = self.store {
+                oldStore.onUpdate.removeAll(where: { ($0 as AnyObject) === (self as AnyObject) })
+            }
             self.store = store
-            self.store?.onUpdate.append( self )
+            // Register only if not already present
+            if !(self.store!.onUpdate.contains(where: { ($0 as AnyObject) === (self as AnyObject) })) {
+                self.store!.onUpdate.append(self)
+            }
         }
         zoomLevel = 1
     }

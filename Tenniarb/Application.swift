@@ -24,17 +24,19 @@ public class TenniarbApplication: NSApplication {
     override public func sendEvent(_ event: NSEvent) {
         if event.type == NSEvent.EventType.keyDown {
             if (event.modifierFlags.contains(NSEvent.ModifierFlags.command)) {
-                switch event.charactersIgnoringModifiers!.lowercased() {
-                case "x":
-                    if NSApp.sendAction(#selector(NSText.cut(_:)), to:nil, from:self) { return }
-                case "c":
-                    if NSApp.sendAction(#selector(NSText.copy(_:)), to:nil, from:self) { return }
-                case "v":
-                    if NSApp.sendAction(#selector(NSText.paste(_:)), to:nil, from:self) { return }
-                case "a":
-                    if NSApp.sendAction(#selector(NSText.selectAll(_:)), to:nil, from:self) { return }
-                default:
-                    break
+                if let chars = event.charactersIgnoringModifiers?.lowercased() {
+                    switch chars {
+                    case "x":
+                        if NSApp.sendAction(#selector(NSText.cut(_:)), to:nil, from:self) { return }
+                    case "c":
+                        if NSApp.sendAction(#selector(NSText.copy(_:)), to:nil, from:self) { return }
+                    case "v":
+                        if NSApp.sendAction(#selector(NSText.paste(_:)), to:nil, from:self) { return }
+                    case "a":
+                        if NSApp.sendAction(#selector(NSText.selectAll(_:)), to:nil, from:self) { return }
+                    default:
+                        break
+                    }
                 }
             }
         }
