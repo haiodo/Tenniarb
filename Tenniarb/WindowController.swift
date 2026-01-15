@@ -26,7 +26,9 @@ class WindowController: NSWindowController {
         return displayName
     }
     override func windowDidLoad() {
-        // Init default preferences
+        super.windowDidLoad()
+        
+        // Init default preferences (lazy initialization ensures AppKit is ready)
         PreferenceConstants.preference.checkDefaults()
         
         let ver = ProcessInfo.processInfo.operatingSystemVersion

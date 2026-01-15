@@ -29,7 +29,7 @@ class OperationTextDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
         if commandSelector == #selector(NSView.insertNewline(_:)) {
             self.controller.commit()
             return true
-        }        
+        }
         return false
     }
 }
@@ -41,38 +41,76 @@ class OperationController: NSViewController, NSTextViewDelegate {
     var element: Element!
     var items: [DiagramItem] = []
     var controller: ViewController!
-    
+
+    override func loadView() {
+        // Build the popover UI programmatically so this controller can be used without a storyboard
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 50))
+        root.wantsLayer = true
+        self.view = root
+
+        let vfx = NSVisualEffectView(frame: .zero)
+        vfx.translatesAutoresizingMaskIntoConstraints = false
+        vfx.blendingMode = .behindWindow
+        vfx.material = .popover
+        vfx.state = .followsWindowActiveState
+        root.addSubview(vfx)
+
+        NSLayoutConstraint.activate([
+            vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            vfx.topAnchor.constraint(equalTo: root.topAnchor),
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+        ])
+
+        let textField = NSTextField(string: "")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.isEditable = true
+        textField.isBordered = true
+        textField.focusRingType = .none
+        textField.placeholderString = "Operation..."
+        vfx.addSubview(textField)
+
+        NSLayoutConstraint.activate([
+            textField.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
+            textField.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
+            textField.centerYAnchor.constraint(equalTo: vfx.centerYAnchor),
+            textField.heightAnchor.constraint(equalToConstant: 30)
+        ])
+
+        self.operationsTextBox = textField
+        self.preferredContentSize = NSSize(width: 300, height: 50)
+    }
+
     override func viewDidLoad() {
+        super.viewDidLoad()
         operationsTextBox.stringValue = ""
-        
         self.delegate.controller = self
         operationsTextBox.delegate = self.delegate
     }
-    
+
     override func viewDidAppear() {
         self.operationsTextBox.becomeFirstResponder()
-//        self.view.window?.center()
     }
-    
+
     func setController(_ controller: ViewController ) {
         self.controller = controller
     }
-    
+
     func setStore(_ store: ElementModelStore ) {
         self.store = store
     }
     func setElement(_ element: Element) {
         self.element = element
     }
-    
+
     func setItems(_ items: [DiagramItem] ) {
         self.items.append(contentsOf: items)
     }
-    
+
     func createOperation( _ item: DiagramItem, _ node: TennNode ) -> ElementOperation? {
         let newItemProps = item.toTennAsProps(.BlockExpr)
         var changed = false
-        
+
         Element.traverseBlock(node, {(cmdName, node) in
             if cmdName.starts(with: "-") {
                 let commandName = String(cmdName.suffix(from: cmdName.index(cmdName.startIndex, offsetBy: 1)))
@@ -98,27 +136,27 @@ class OperationController: NSViewController, NSTextViewDelegate {
         }
         return nil
     }
-    
+
     func commit() {
         // We need to validate if content is valid one.
-        
+
         let parser = TennParser()
         let node = parser.parse(operationsTextBox.stringValue)
         if parser.errors.hasErrors() {
             operationsTextBox.backgroundColor = NSColor.red
             return
         }
-        
+
         // Apply to all items
         var operations: [ElementOperation] = []
-        
+
         for itm in self.items {
             if let op = createOperation(itm, node) {
                 operations.append(op)
             }
         }
-        
-        
+
+
         self.store.compositeOperation(notifier: element, undoManaget: self.controller.view.undoManager, refresh: self.controller.scene.scheduleRedraw, operations)
         self.controller?.hideOperationBox()
     }

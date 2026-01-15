@@ -20,20 +20,20 @@ import Cocoa
 
 class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     var store: ElementModelStore?
-    
+
     var vc: ViewController?
-    
-    
+
+
     override init() {
         super.init()
-        
+
         // By default create with sample scene.
         let elementModel = ElementModelFactory().elementModel
         elementModel.modelName = "Unnamed"
-        
+
         updateStore(elementModel)
     }
-    
+
     fileprivate func updateStore(_ elementModel: ElementModel) {
         // If we had a previous store, unregister from its listeners first.
         if let old = self.store {
@@ -45,33 +45,48 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
             self.store!.onUpdate.append(self)
         }
     }
-    
+
     func notifyChanges(_ evt: ModelEvent ) {
         updateChangeCount(.changeDone)
         vc?.updateWindowTitle()
     }
-    
+
     override func makeWindowControllers() {
-        //        let frame = NSMakeRect(100, 100, 500, 300)
-        //        let window = NSWindow(contentRect: frame ,
-        //                              styleMask: [.closable, .resizable, .unifiedTitleAndToolbar, .titled] ,
-        //                              backing: .buffered,
-        //                              defer: false)
-        //        let wc: NSWindowController = MasterWindowController.init(window: window)
-        //        self.addWindowController(wc)
-        // Returns the Storyboard that contains your Document window.
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController
-        windowController.window?.acceptsMouseMovedEvents = true
+        // Create window programmatically instead of loading it from the storyboard.
+        // The layout and controllers are still the same classes (WindowController / ViewController)
+        // but instantiated in code so the UI can be managed and changed more easily.
+        let contentRect = NSMakeRect(196, 240, 944, 764)
+        var style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .resizable]
+        style.insert(.fullSizeContentView)
+        let window = NSWindow(contentRect: contentRect,
+                              styleMask: style,
+                              backing: .buffered,
+                              defer: false)
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.acceptsMouseMovedEvents = true
+        window.isReleasedWhenClosed = false
+
+        let windowController = WindowController(window: window)
+
+        // Instantiate the main content view controller programmatically.
+        let contentVC = ViewController()
+        windowController.contentViewController = contentVC
+
+        // Force the view to load so outlets / view setup run before we set the model.
+        let _ = contentVC.view
+
+        // Register the window controller with the document.
         self.addWindowController(windowController)
-        
-        
-        vc = windowController.contentViewController as? ViewController
-        vc?.view.window?.delegate = self
-        
-        vc?.setElementModel(elementStore: self.store!)
-        
-        if let uri = self.fileURL?.absoluteString, let window = self.vc?.view.window,
+
+        // Keep a reference to the view controller and wire things up.
+        self.vc = contentVC
+        windowController.window?.delegate = self
+
+        self.vc?.setElementModel(elementStore: self.store!)
+
+        // Restore saved window position (if any).
+        if let uri = self.fileURL?.absoluteString, let window = windowController.window,
            let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)  {
             let p = TennParser()
             let node = p.parse(data)
@@ -82,8 +97,10 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
                 }
             }
         }
+
+
     }
-    
+
     func saveWindowPosition() {
         if let frame = vc?.view.window?.frame, let uri = self.fileURL?.absoluteString {
             let nde = TennNode.newCommand("pos",
@@ -104,52 +121,52 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     func windowDidExpose(_ notification: Notification) {
         saveWindowPosition()
     }
-    
+
     override func read(from url: URL, ofType typeName: String) throws {
-        
+
         do {
             let storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
-            
+
             let now = Date()
-            
+
             let parser = TennParser()
             let node = parser.parse(storedValue)
-            
+
             if parser.errors.hasErrors() {
                 return
             }
-            
+
             let elementModel = ElementModel.parseTenn(node: node)
-            
+
             Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
-            
+
             elementModel.modelName = url.lastPathComponent
-            
+
             // Update the store first so callers receive the new store instance,
             // then attach it to the view controller.
             self.updateStore(elementModel)
             vc?.setElementModel(elementStore: self.store!)
-            
+
             self.fileURL = url
         }
         catch {
             Swift.print("Failed to load file")
         }
     }
-    
+
     override var isDocumentEdited: Bool {
         get {
             return store?.modified ?? true
         }
     }
-    
+
     override func write(to url: URL, ofType typeName: String) throws {
         do {
             if let es = self.store {
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 es.modified = false
-                
+
                 es.model.modelName = url.lastPathComponent
                 updateChangeCount(.changeCleared)
                 vc?.updateWindowTitle()

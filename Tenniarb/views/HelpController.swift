@@ -21,11 +21,34 @@ import Cocoa
 import WebKit
 
 class HelpController: NSViewController  {
-    @IBOutlet weak var webView: WKWebView!
+    var webView: WKWebView!
+
+    override func loadView() {
+        // Build the view programmatically so this controller doesn't rely on the storyboard.
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: 1024, height: 768))
+        root.wantsLayer = true
+
+        let config = WKWebViewConfiguration()
+        let wk = WKWebView(frame: .zero, configuration: config)
+        wk.translatesAutoresizingMaskIntoConstraints = false
+
+        root.addSubview(wk)
+        NSLayoutConstraint.activate([
+            wk.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            wk.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            wk.topAnchor.constraint(equalTo: root.topAnchor),
+            wk.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+        ])
+
+        self.view = root
+        self.webView = wk
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        let filePath = Bundle.main.path(forResource: "readme", ofType: "html")
-        let request = URLRequest(url: URL(fileURLWithPath: filePath!))
-        webView.load(request)
+        if let filePath = Bundle.main.path(forResource: "readme", ofType: "html") {
+            let request = URLRequest(url: URL(fileURLWithPath: filePath))
+            webView.load(request)
+        }
     }
 }

@@ -21,7 +21,7 @@ import Cocoa
 
 class OutlineTextFieldCell: NSTextFieldCell {
     static let myTextColor: NSColor = NSColor(red: 253/255, green: 246/255, blue: 227/255, alpha: 1.0)
-    
+
     override func edit(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, event: NSEvent?) {
         super.edit(withFrame: rect, in: controlView, editor: textObj, delegate: delegate, event: event)
         textObj.textColor = NSColor.black
@@ -32,7 +32,7 @@ class OutlineTextFieldCell: NSTextFieldCell {
         textObj.textColor = NSColor.black
         textObj.backgroundColor = NSColor.white
     }
-    
+
 }
 class OutlineNSTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
@@ -51,7 +51,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if let action = menuItem.action {
             let el = item(atRow: selectedRow) as? Element
-            
+
             if action == #selector(cut) {
                 return el != nil
             }
@@ -65,7 +65,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
                 return ClipboardUtils.canPaste()
             }
         }
-        
+
         if let menuDelegate = delegate as? NSMenuItemValidation {
             return menuDelegate.validateMenuItem(menuItem)
         }
@@ -76,15 +76,15 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
         if let delegate = self.delegate as? OutlineViewControllerDelegate {
             delegate.controller.handleRemoveElement()
         }
-        
+
     }
-    
+
     @objc func copy( _ sender: NSObject ) {
         if let el = item(atRow: selectedRow) as? Element {
             ClipboardUtils.copy(el.toTenn())
         }
     }
-    
+
     @objc func paste( _ sender: NSObject ) {
         if let delegate = self.delegate as? OutlineViewControllerDelegate,
             let root = item(atRow: selectedRow) as? Element {
@@ -106,7 +106,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
             }
         }
     }
-        
+
     override func keyDown(with event: NSEvent) {
         if let delegate = self.delegate as? OutlineViewControllerDelegate {
             if delegate.keyDown(for: event, self) {
@@ -123,7 +123,18 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
         super.mouseDown(with: event)
     }
     override func editColumn(_ column: Int, row: Int, with event: NSEvent?, select: Bool) {
-        if let evt = event, evt.characters == "\u{0D}" {
+        // Allow editing on double-click (event is nil) or Enter key press
+        if event == nil || event?.characters == "\u{0D}" {
+            // For view-based outline, manually make the textField first responder
+            if let rowView = self.rowView(atRow: row, makeIfNecessary: false),
+               let cellView = rowView.view(atColumn: column) as? NSTableCellView,
+               let textField = cellView.textField,
+               textField.acceptsFirstResponder {
+                if self.window?.makeFirstResponder(textField) == true && select {
+                    textField.selectText(nil)
+                }
+                return
+            }
             super.editColumn(column, row: row, with: event, select: select)
         }
     }
@@ -132,7 +143,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
 class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate,NSMenuItemValidation {
     let controller: ViewController
     var draggingItem: Element? = nil
-    
+
     init(_ controller: ViewController ) {
         self.controller = controller
         controller.worldTree.autosaveName = "tenniarb.worldTree"
@@ -141,15 +152,15 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         super.init()
         controller.worldTree.menu = createMenu()
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, shouldEdit tableColumn: NSTableColumn?, item: Any) -> Bool {
-        return false
+        return true
     }
-    
+
     func control(_ control: NSControl, textShouldBeginEditing fieldEditor: NSText) -> Bool {
         return true
     }
-    
+
     func keyDown( for event: NSEvent, _ outline: OutlineNSOutlineView ) -> Bool {
         if event.characters == "\t" {
             self.controller.scene?.addTopItem()
@@ -158,7 +169,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         if event.characters == "\u{0D}" {
             let selectedIndex = controller.worldTree.selectedRow
-            
+
             if let _ = controller.worldTree.item(atRow: selectedIndex) as? Element {
                 outline.editColumn(0, row: selectedIndex, with: event, select: true)
                 return true
@@ -169,18 +180,18 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
     @objc  func addElementAction(_ sender: NSMenuItem) {
         controller.handleAddElement()
     }
-    
+
     @objc  func duplicateElementAction(_ sender: NSMenuItem) {
         controller.duplicateItem(sender)
     }
-    
+
     @objc  func deleteElementAction(_ sender: NSMenuItem) {
         controller.handleRemoveElement()
     }
-    
+
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         let selectedIndex = controller.worldTree.selectedRow
-        
+
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
             if el.kind == .Root && menuItem.action == #selector(deleteElementAction) {
                 return false
@@ -189,18 +200,18 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         return true
     }
-    
+
     func createMenu() -> NSMenu? {
         let menu = NSMenu()
         let addAction = NSMenuItem(
             title: "New element", action: #selector(addElementAction), keyEquivalent: "")
         addAction.target = self
-        
+
         let duplicateAction = NSMenuItem(
             title: "Duplicate", action: #selector(duplicateElementAction), keyEquivalent: "")
-        
+
         duplicateAction.target = self
-        
+
         let deleteAction = NSMenuItem(
             title: "Delete", action: #selector(deleteElementAction), keyEquivalent: "")
         deleteAction.target = self
@@ -210,7 +221,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         menu.addItem(deleteAction)
         return menu
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         // Elements and diagram items
         if let el = item as? Element {
@@ -244,7 +255,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             }
             return el.elements[index]
         }
-        
+
         if let es = controller.elementStore {
             return es.model.elements[index]
         }
@@ -254,10 +265,10 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         if let el = item as? Element {
             return el.elements.count > 0
         }
-        
+
         return false
-    }    
-    
+    }
+
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
         //1
         if let el = item as? Element {
@@ -265,42 +276,99 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         return nil
     }
-    
+
     //    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
     //        if let el = item as? Element {
     //            return el.elements.count > 0
     //        }
     //        return false
     //    }
-    
+
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? NSTableCellView {
-                if let textField = view.textField {
-                    textField.stringValue = el.name
-                }
-                
-                if let imageField = view.viewWithTag(0) as? NSImageView {
-                    if el.items.count > 0 {
-                        imageField.image = NSImage.init(named: "ico-group")
-                    }
-                    else {
-                        imageField.image = NSImage.init(named: "ico-component")
-                    }
-                }
-                return view
+            let identifier = NSUserInterfaceItemIdentifier(rawValue: "ItemCell")
+
+            // Reuse existing cell or create new one
+            var cellView = outlineView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView
+
+            if cellView == nil {
+                let view = NSTableCellView(frame: NSRect(x: 0, y: 0, width: 200, height: 22))
+                view.identifier = identifier
+
+                // Image on the left
+                let imageView = NSImageView(frame: .zero)
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                imageView.tag = 0
+                imageView.imageScaling = .scaleProportionallyDown
+                view.addSubview(imageView)
+                view.imageView = imageView
+
+                // Editable text field
+                let textField = NSTextField(frame: .zero)
+                textField.translatesAutoresizingMaskIntoConstraints = false
+                textField.isBordered = false
+                textField.focusRingType = .none
+                textField.drawsBackground = false
+                textField.backgroundColor = NSColor.clear
+                textField.font = NSFont.menuFont(ofSize: 14)
+                textField.isEditable = true
+                textField.isSelectable = true
+                textField.usesSingleLineMode = true
+                textField.lineBreakMode = .byTruncatingTail
+                textField.setContentCompressionResistancePriority(NSLayoutConstraint.Priority(250), for: .horizontal)
+
+                // Configure cell for editing
+                let cell = OutlineTextFieldCell()
+                cell.usesSingleLineMode = true
+                cell.lineBreakMode = .byTruncatingTail
+                cell.truncatesLastVisibleLine = true
+                cell.isEditable = true
+                cell.isSelectable = true
+                textField.cell = cell
+
+                textField.target = self.controller
+                textField.action = #selector(ViewController.outlineTextChanged(_:))
+                view.addSubview(textField)
+                view.textField = textField
+
+                NSLayoutConstraint.activate([
+                    imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+                    imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                    imageView.widthAnchor.constraint(equalToConstant: 20),
+                    imageView.heightAnchor.constraint(equalToConstant: 20),
+
+                    textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 4),
+                    textField.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                    textField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -4),
+                ])
+
+                cellView = view
             }
+
+            // Populate cell content
+            if let tf = cellView?.textField {
+                tf.stringValue = el.name
+            }
+
+            if let imageField = cellView?.imageView {
+                if el.items.count > 0 {
+                    imageField.image = NSImage(named: "ico-group")
+                } else {
+                    imageField.image = NSImage(named: "ico-component")
+                }
+            }
+            return cellView
         }
         return nil
     }
     func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
         return OutlineNSTableRowView()
     }
-    
-    
+
+
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         let selectedIndex = controller.worldTree.selectedRow
-        
+
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
             self.controller.onElementSelected(el)
         }
@@ -308,11 +376,11 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             self.controller.onElementSelected(controller.elementStore?.model)
         }
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any) -> NSPasteboardWriting? {
-        
+
         let pp = NSPasteboardItem()
-        
+
         // working as expected here
         if let fi = item as? Element {
             if fi.kind == .Root {
@@ -321,13 +389,13 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             draggingItem = fi
             pp.setString( fi.toTennStr(), forType: NSPasteboard.PasteboardType.string )
         }
-        
+
         return pp
     }
-    
+
     func isParentOf(_ rootElement: Element, _ element: Element) -> Bool {
         var e:Element? = element
-        
+
         while e != nil {
             if e == rootElement {
                 return true
@@ -336,33 +404,33 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         return false
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
-        
+
         if let element = item as? Element, let dragItem = self.draggingItem {
             // Check if not moving item into one of its parents.
-            
+
             if self.isParentOf(dragItem, element) {
                 return NSDragOperation.copy
             }
         }
-        
+
         return NSDragOperation.move
         //
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
-        
+
         if let dragItem = self.draggingItem {
             if let element = item as? Element {
                 // Check if not moving item into one of its parents.
-                
+
                 if self.isParentOf(dragItem, element) {
                     // Do copy of element diagram only
                     let diCopy = dragItem.clone(cloneItems: true, cloneElement: false)
-                    
+
                     controller.elementStore?.add(element, diCopy, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadItem(element)}, index: index)
-                    
+
                 }
                 else {
                     // Do move of element
@@ -373,21 +441,20 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                 controller.elementStore?.move(dragItem, controller.elementStore!.model, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadData()}, index: index)
             }
         }
-        
-        
+
+
         draggingItem = nil
         return true
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, persistentObjectForItem item: Any?) -> Any? {
         if let el = item as? Element {
             return el.id.uuidString
         }
         return nil
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, itemForPersistentObject object: Any) -> Any? {
         Swift.debugPrint(object)
     }
 }
-

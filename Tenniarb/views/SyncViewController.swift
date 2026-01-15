@@ -29,7 +29,7 @@ class SyncInfo {
     let name: String
     let node: TennNode?
     let operation: SyncOperation
-    
+
     init( _ name: String, _ node: TennNode?, _ operation: SyncOperation) {
         self.name = name
         self.node = node
@@ -38,27 +38,74 @@ class SyncInfo {
 }
 
 class SyncViewController: NSViewController {
-    
+
     var delegate: SyncViewControllerDelegate?
-    
-    @IBOutlet weak var syncOutline: NSOutlineView!
-    
+
+    // Programmatic outline view (no storyboard)
+    var syncOutline: NSOutlineView!
+
     var element: Element?
 
     var viewController: ViewController?
-    
+
     var syncTypes: [SyncInfo] = []
-    
+
+    override func loadView() {
+        // Build the popover UI programmatically so this controller can be used without a storyboard
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: 200, height: 120))
+        root.wantsLayer = true
+        self.view = root
+
+        let vfx = NSVisualEffectView(frame: .zero)
+        vfx.translatesAutoresizingMaskIntoConstraints = false
+        vfx.blendingMode = .behindWindow
+        vfx.material = .popover
+        vfx.state = .followsWindowActiveState
+        root.addSubview(vfx)
+
+        NSLayoutConstraint.activate([
+            vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            vfx.topAnchor.constraint(equalTo: root.topAnchor),
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+        ])
+
+        let scroll = NSScrollView(frame: .zero)
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
+        vfx.addSubview(scroll)
+
+        NSLayoutConstraint.activate([
+            scroll.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
+            scroll.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
+            scroll.topAnchor.constraint(equalTo: vfx.topAnchor, constant: 8),
+            scroll.bottomAnchor.constraint(equalTo: vfx.bottomAnchor, constant: -8)
+        ])
+
+        let outline = NSOutlineView(frame: .zero)
+        outline.translatesAutoresizingMaskIntoConstraints = false
+        let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "ExportColumn"))
+        col.title = "Sync"
+        outline.addTableColumn(col)
+        outline.outlineTableColumn = col
+        outline.headerView = nil
+        outline.rowHeight = 22
+        scroll.documentView = outline
+
+        self.syncOutline = outline
+    }
+
     func setElement(element: Element) {
         self.element = element
     }
     func setViewController(_ viewcontroller: ViewController ) {
         self.viewController = viewcontroller;
     }
-    
+
     override func viewDidLoad() {
         syncTypes.append(SyncInfo("Add sync config...", nil, .AddSyncConfig))
-        
+
         if let active = self.element {
             if let syncNode = active.properties.get("sync") {
                 for syncChild in syncNode.getBlock(1) {
@@ -67,10 +114,10 @@ class SyncViewController: NSViewController {
                     }
                 }
             }
-            
+
         }
-        
-        
+
+
         self.delegate = SyncViewControllerDelegate(self)
         syncOutline.delegate = delegate!
         syncOutline.dataSource = delegate!
@@ -94,13 +141,13 @@ class SyncViewController: NSViewController {
         height = (height + syncOutline.intercellSpacing.height ) * CGFloat(syncTypes.count) + 15
 
         self.view.frame = CGRect(origin: self.view.frame.origin, size: CGSize(width: width, height: height))
-        
+
         syncOutline.layout()
     }
     fileprivate func addSyncConfig() {
         if let active = element {
             let newProps = active.properties.clone()
-            
+
             var syncNode = newProps.get("sync")
             if syncNode == nil {
                 syncNode = TennNode.newCommand("sync", TennNode.newBlockExpr())
@@ -121,7 +168,7 @@ class SyncViewController: NSViewController {
         }
     }
     fileprivate func doSync( _ node: TennNode ) {
-        
+
     }
 }
 
@@ -131,7 +178,7 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
     init(_ controller: SyncViewController) {
         self.controller = controller
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         if item == nil {
             return controller.syncTypes.count
@@ -147,33 +194,51 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
         return false
     }
-    
-    
+
+
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
         if let el = item as? SyncInfo {
             return el.name
         }
         return nil
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? SyncInfo {
             if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ExportCellView"), owner: self) as? NSTableCellView {
                 if let textField = view.textField {
                     textField.stringValue = el.name
                 }
-                
-//                if let imageField = view.viewWithTag(0) as? NSImageView {
-//                    imageField.image = NSImage.init(named: NSImage.Name.init(el.imgName))
-//                }
                 return view
+            } else {
+                // Fallback when no prototype cell is registered (programmatic UI)
+                let cell = NSTableCellView(frame: .zero)
+                cell.identifier = NSUserInterfaceItemIdentifier(rawValue: "ExportCellView")
+
+                let textField = NSTextField(labelWithString: el.name)
+                textField.translatesAutoresizingMaskIntoConstraints = false
+                textField.isEditable = false
+                textField.isBordered = false
+                textField.drawsBackground = false
+
+                cell.addSubview(textField)
+                cell.textField = textField
+
+                NSLayoutConstraint.activate([
+                    textField.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 4),
+                    textField.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -4),
+                    textField.topAnchor.constraint(equalTo: cell.topAnchor, constant: 2),
+                    textField.bottomAnchor.constraint(equalTo: cell.bottomAnchor, constant: -2)
+                ])
+
+                return cell
             }
         }
         return nil
     }
-    
+
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
-        
+
         let selectedIndex = controller.syncOutline.selectedRow
         if let el = controller.syncOutline.item(atRow: selectedIndex) as? SyncInfo {
             if el.operation == .AddSyncConfig {
