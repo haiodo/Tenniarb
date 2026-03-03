@@ -20,6 +20,7 @@
 import Cocoa
 import CoreText
 import CoreImage
+import UniformTypeIdentifiers
 
 
 enum SceneMode {
@@ -2224,7 +2225,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     @objc func attachImage( _ sender: NSObject ) {
         let myOpen = NSOpenPanel()
-        myOpen.allowedFileTypes = ["png", "jpg", "jpeg"]
+        if #available(macOS 12.0, *) {
+            myOpen.allowedContentTypes = [.png, .jpeg]
+        } else {
+            myOpen.allowedFileTypes = ["png", "jpg", "jpeg"]
+        }
         myOpen.allowsOtherFileTypes = false
         myOpen.isExtensionHidden = true
         myOpen.nameFieldStringValue = self.element!.name

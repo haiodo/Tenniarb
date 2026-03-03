@@ -18,6 +18,7 @@
 
 import Foundation
 import Cocoa
+import UniformTypeIdentifiers
 
 enum ExportKind: Int {
     case png = 1
@@ -151,7 +152,11 @@ class ExportManager: NSObject, NSMenuDelegate {
             if let pngData = bitmapImage.representation(using: .png, properties: [:]) {
                 if writeFile {
                     let mySave = NSSavePanel()
-                    mySave.allowedFileTypes = ["png"]
+                    if #available(macOS 12.0, *) {
+                        mySave.allowedContentTypes = [.png]
+                    } else {
+                        mySave.allowedFileTypes = ["png"]
+                    }
                     mySave.allowsOtherFileTypes = false
                     mySave.isExtensionHidden = true
                     mySave.nameFieldStringValue = self.element!.name
@@ -209,7 +214,11 @@ class ExportManager: NSObject, NSMenuDelegate {
     
     fileprivate func exportHtmlFile(_ htmlContent: String) {
         let mySave = NSSavePanel()
-        mySave.allowedFileTypes = ["html"]
+        if #available(macOS 12.0, *) {
+            mySave.allowedContentTypes = [.html]
+        } else {
+            mySave.allowedFileTypes = ["html"]
+        }
         mySave.allowsOtherFileTypes = false
         mySave.isExtensionHidden = true
         mySave.nameFieldStringValue = self.element!.name
@@ -249,7 +258,11 @@ class ExportManager: NSObject, NSMenuDelegate {
             let tennSource = element.toTennStr()
             
             let mySave = NSSavePanel()
-            mySave.allowedFileTypes = ["tenn"]
+            if #available(macOS 12.0, *) {
+                mySave.allowedContentTypes = [UTType(filenameExtension: "tenn")!]
+            } else {
+                mySave.allowedFileTypes = ["tenn"]
+            }
             mySave.allowsOtherFileTypes = false
             mySave.isExtensionHidden = true
             mySave.nameFieldStringValue = element.name
@@ -277,7 +290,11 @@ class ExportManager: NSObject, NSMenuDelegate {
             
             if saveFile {
                 let mySave = NSSavePanel()
-                mySave.allowedFileTypes = ["json"]
+                if #available(macOS 12.0, *) {
+                    mySave.allowedContentTypes = [.json]
+                } else {
+                    mySave.allowedFileTypes = ["json"]
+                }
                 mySave.allowsOtherFileTypes = false
                 mySave.isExtensionHidden = true
                 mySave.nameFieldStringValue = element.name

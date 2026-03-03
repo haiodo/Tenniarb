@@ -65,7 +65,13 @@ public class PreferenceConstants {
     static func isDarkModeRaw() -> Bool {
         let isDarkMode: Bool
 
-        if #available(macOS 10.14, *) {
+        if #available(macOS 12.0, *) {
+            if NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+                isDarkMode = true
+            } else {
+                isDarkMode = false
+            }
+        } else if #available(macOS 10.14, *) {
             if NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
                 isDarkMode = true
             } else {

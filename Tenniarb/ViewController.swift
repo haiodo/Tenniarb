@@ -146,8 +146,8 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             leftToolbar.setImage(removeImg, forSegment: 1)
         }
         leftToolbarBox.contentView!.addSubview(leftToolbar)
-        leftToolbar.trailingAnchor.constraint(equalTo: leftToolbarBox.contentView!.trailingAnchor, constant: -5).isActive = true
-        leftToolbar.topAnchor.constraint(equalTo: leftToolbarBox.contentView!.topAnchor, constant: 6).isActive = true
+        leftToolbar.trailingAnchor.constraint(equalTo: leftToolbarBox.contentView!.trailingAnchor, constant: 0).isActive = true
+        leftToolbar.topAnchor.constraint(equalTo: leftToolbarBox.contentView!.topAnchor, constant: 0).isActive = true
 
         // Outline scroll view with transparent background
         let outlineScroll = NSScrollView()
