@@ -546,7 +546,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
             self.operationBox = operations
 
-            self.present(operations, asPopoverRelativeTo: self.view.frame, of: self.view, preferredEdge: .maxX, behavior: .semitransient)
+            let bounds = self.scene.getSelectionBounds()
+            self.present(operations, asPopoverRelativeTo: NSRect(origin: bounds.origin, size: bounds.size),
+                         of: self.scene, preferredEdge: .minY, behavior: .transient)
         }
     }
 

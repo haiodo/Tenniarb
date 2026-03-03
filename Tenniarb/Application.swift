@@ -219,7 +219,7 @@ public class TenniarbApplication: NSApplication {
         editMenu.addItem(NSMenuItem(title: "Paste as Item", action: #selector(ViewController.pasteAsItem(_:)), keyEquivalent: ""))
         editMenu.addItem(NSMenuItem(title: "Paste as Item set", action: #selector(ViewController.pasteAsItemSet(_:)), keyEquivalent: ""))
         editMenu.addItem(NSMenuItem.separator())
-        editMenu.addItem(NSMenuItem(title: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a"))
+        editMenu.addItem(NSMenuItem(title: "Select All", action: #selector(ViewController.selectAllItems(_:)), keyEquivalent: "a"))
 
         let selectAllItemsItem = NSMenuItem(title: "Select All Items", action: #selector(ViewController.selectAllItemsKind(_:)), keyEquivalent: "a")
         selectAllItemsItem.keyEquivalentModifierMask = [.shift, .command]
@@ -238,6 +238,20 @@ public class TenniarbApplication: NSApplication {
         gotoItem.keyEquivalentModifierMask = [.command]
         navigateMenu.addItem(gotoItem)
 
+        // MARK: - View menu
+        let viewMenuItem = NSMenuItem()
+        mainMenu.addItem(viewMenuItem)
+        let viewMenu = NSMenu(title: "View")
+        viewMenuItem.submenu = viewMenu
+
+        let fullScreenItem = NSMenuItem(title: "Enter Full Screen", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
+        fullScreenItem.keyEquivalentModifierMask = [.control, .command]
+        viewMenu.addItem(fullScreenItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+        viewMenu.addItem(NSMenuItem(title: "Zoom In", action: #selector(SceneDrawView.zoomIn(_:)), keyEquivalent: "="))
+        viewMenu.addItem(NSMenuItem(title: "Zoom Out", action: #selector(SceneDrawView.zoomOut(_:)), keyEquivalent: "-"))
+
         // MARK: - Window menu
         let windowMenuItem = NSMenuItem()
         mainMenu.addItem(windowMenuItem)
@@ -245,7 +259,7 @@ public class TenniarbApplication: NSApplication {
         windowMenuItem.submenu = windowMenu
 
         windowMenu.addItem(NSMenuItem(title: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m"))
-        windowMenu.addItem(NSMenuItem(title: "Zoom", action: #selector(NSWindow.zoom(_:)), keyEquivalent: ""))
+        windowMenu.addItem(NSMenuItem(title: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: ""))
         windowMenu.addItem(NSMenuItem.separator())
         windowMenu.addItem(NSMenuItem(title: "Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: ""))
 
