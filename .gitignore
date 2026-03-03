@@ -19,3 +19,4 @@ sources/macos/Tenniarb/Tenniarb.xcodeproj/project.xcworkspace/xcuserdata/haiodo.
 sources/macos/Tenniarb/Tenniarb.xcodeproj/xcuserdata/haiodo.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
 sources/macos/Tenniarb/Tenniarb.xcodeproj/xcuserdata/haiodo.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
 build
+.swiftlint-cache/

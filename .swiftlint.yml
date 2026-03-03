@@ -1,0 +1,28 @@
+cache_path: .swiftlint-cache
+
+included:
+  - Tenniarb
+  - TenniarbTests
+  - TenniarbUITests
+
+excluded:
+  - Tenniarb/Assets.xcassets
+  - Tenniarb/Preview Content
+  - Tenniarb/Experiments
+  - Tenniarb.xcodeproj
+  - docs
+  - design
+  - screenshots
+
+only_rules:
+  - force_cast
+  - force_try
+  - unused_import
+
+force_cast:
+  severity: warning
+
+force_try:
+  severity: warning
+
+reporter: "xcode"

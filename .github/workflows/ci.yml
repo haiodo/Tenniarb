@@ -37,6 +37,16 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: SwiftLint
+        run: |
+          set -euo pipefail
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            echo "SwiftLint is not installed, installing via Homebrew..."
+            brew install swiftlint
+          fi
+          swiftlint version
+          swiftlint lint --config .swiftlint.yml --reporter github-actions-logging
+
       - name: Build (Debug)
         run: |
           set -euo pipefail
