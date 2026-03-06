@@ -35,16 +35,7 @@ class OutlineTextFieldCell: NSTextFieldCell {
 
 }
 class OutlineNSTableRowView: NSTableRowView {
-    override func drawSelection(in dirtyRect: NSRect) {
-        if self.selectionHighlightStyle != .none {
-            let selectionRect = NSInsetRect(self.bounds, 1.5, 1.5)
-            NSColor(calibratedWhite: 0.35, alpha: 1).setStroke()
-            NSColor(calibratedWhite: 0.62, alpha: 1).setFill()
-            let selectionPath = NSBezierPath.init(roundedRect: selectionRect, xRadius: 6, yRadius: 6)
-            selectionPath.fill()
-            selectionPath.stroke()
-        }
-    }
+    // Use default system selection drawing
 }
 
 class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate {
