@@ -65,6 +65,8 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     @IBOutlet weak var windowTitle: NSTextField!
 
+    weak var zoomLabel: NSTextField!
+
     @IBAction func outlineTextChanged(_ sender: Any) {
         if let newValue = (sender as? NSTextField)?.stringValue, let active = selectedElement {
             let selectedRow = self.worldTree.selectedRow
@@ -208,21 +210,29 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         editorStackView.autoresizingMask = [.width, .height]
         rightSplitView.addSubview(editorStackView)
 
-        // Top part: Text properties scroll view (127px height as in storyboard)
-        // Second subview is at top (y = editorHeight + divider)
-        let textScroll = NSScrollView(frame: NSRect(x: 0, y: editorHeight + dividerThickness, width: rightWidth, height: textScrollHeight))
+        // Top part: Properties panel with text editor and zoom toolbar
+        // Container stack view for text scroll and zoom toolbar
+        let propertiesContainer = NSStackView(frame: NSRect(x: 0, y: editorHeight + dividerThickness, width: rightWidth, height: textScrollHeight))
+        propertiesContainer.orientation = .vertical
+        propertiesContainer.alignment = .centerX
+        propertiesContainer.spacing = 0
+        propertiesContainer.distribution = .fill
+        propertiesContainer.autoresizingMask = [.width, .height]
+        rightSplitView.addSubview(propertiesContainer)
+
+        // Text properties scroll view (fills most of the space)
+        let textScroll = NSScrollView()
+        textScroll.translatesAutoresizingMaskIntoConstraints = false
         textScroll.hasVerticalScroller = true
         textScroll.hasHorizontalScroller = false
         textScroll.autohidesScrollers = true
         textScroll.borderType = .noBorder
         textScroll.drawsBackground = false
-        textScroll.autoresizingMask = [.width, .height]
         // Semi-transparent background for clip view (matches storyboard alpha=0.80171767979452058)
-        // Use layer-backed view with background color for proper transparency
         textScroll.contentView.wantsLayer = true
         textScroll.contentView.layer?.backgroundColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.8).cgColor
         textScroll.contentView.drawsBackground = false
-        rightSplitView.addSubview(textScroll)
+        propertiesContainer.addArrangedSubview(textScroll)
 
         // Text view for properties (drawsBackground=NO as in storyboard)
         let textView = TennTextView(frame: NSRect(x: 0, y: 0, width: rightWidth, height: textScrollHeight))
@@ -275,6 +285,52 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             titleField.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
         ])
 
+        // Zoom controls group in title bar (as a single unit)
+        let zoomStack = NSStackView()
+        zoomStack.translatesAutoresizingMaskIntoConstraints = false
+        zoomStack.orientation = .horizontal
+        zoomStack.spacing = 2
+        zoomStack.alignment = .centerY
+        zoomStack.distribution = .fill
+        titleBar.contentView!.addSubview(zoomStack)
+
+        let zoomOutButton = NSButton()
+        zoomOutButton.bezelStyle = .texturedRounded
+        zoomOutButton.image = NSImage(named: NSImage.removeTemplateName)
+        zoomOutButton.imagePosition = .imageOnly
+        zoomOutButton.target = self
+        zoomOutButton.action = #selector(zoomOutAction(_:))
+        zoomStack.addArrangedSubview(zoomOutButton)
+
+        let zoomLabel = NSTextField()
+        zoomLabel.translatesAutoresizingMaskIntoConstraints = false
+        zoomLabel.isEditable = false
+        zoomLabel.isSelectable = false
+        zoomLabel.isBordered = false
+        zoomLabel.drawsBackground = false
+        zoomLabel.alignment = .center
+        zoomLabel.font = NSFont.systemFont(ofSize: 11)
+        zoomLabel.textColor = NSColor.labelColor
+        zoomLabel.stringValue = "100%"
+        zoomLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        zoomStack.addArrangedSubview(zoomLabel)
+
+        let zoomInButton = NSButton()
+        zoomInButton.bezelStyle = .texturedRounded
+        zoomInButton.image = NSImage(named: NSImage.addTemplateName)
+        zoomInButton.imagePosition = .imageOnly
+        zoomInButton.target = self
+        zoomInButton.action = #selector(zoomInAction(_:))
+        zoomStack.addArrangedSubview(zoomInButton)
+
+        let resetZoomButton = NSButton()
+        resetZoomButton.bezelStyle = .texturedRounded
+        resetZoomButton.title = "100%"
+        resetZoomButton.font = NSFont.systemFont(ofSize: 11)
+        resetZoomButton.target = self
+        resetZoomButton.action = #selector(resetZoomAction(_:))
+        zoomStack.addArrangedSubview(resetZoomButton)
+
         // Extra buttons (add/remove) on right side of title bar
         let extraSeg = NSSegmentedControl(labels: ["", ""], trackingMode: .momentary, target: self, action: #selector(extraSegmentAction(_:)))
         extraSeg.segmentStyle = .texturedRounded
@@ -286,28 +342,6 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if let addImg = NSImage(named: NSImage.addTemplateName) { extraSeg.setImage(addImg, forSegment: 0) }
         if let remImg = NSImage(named: NSImage.removeTemplateName) { extraSeg.setImage(remImg, forSegment: 1) }
         titleBar.contentView!.addSubview(extraSeg)
-
-        NSLayoutConstraint.activate([
-            extraSeg.trailingAnchor.constraint(equalTo: titleBar.contentView!.trailingAnchor, constant: -10),
-            extraSeg.centerYAnchor.constraint(equalTo: titleField.centerYAnchor)
-        ])
-
-        // Export segmented control
-        let exportControl = NSSegmentedControl(labels: [""], trackingMode: .momentary, target: nil, action: nil)
-        exportControl.segmentStyle = .texturedRounded
-        exportControl.controlSize = .regular
-        exportControl.translatesAutoresizingMaskIntoConstraints = false
-        // Set segment width to match storyboard (20px)
-        exportControl.setWidth(20, forSegment: 0)
-        if let shareImg = NSImage(named: NSImage.shareTemplateName) {
-            exportControl.setImage(shareImg, forSegment: 0)
-        }
-        titleBar.contentView!.addSubview(exportControl)
-
-        NSLayoutConstraint.activate([
-            exportControl.trailingAnchor.constraint(equalTo: extraSeg.leadingAnchor, constant: -20),
-            exportControl.firstBaselineAnchor.constraint(equalTo: extraSeg.firstBaselineAnchor)
-        ])
 
         // Help button (bookmarks icon as in storyboard)
         let helpSeg = NSSegmentedControl(labels: [""], trackingMode: .momentary, target: self, action: #selector(showHelp(_:)))
@@ -321,9 +355,32 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         titleBar.contentView!.addSubview(helpSeg)
 
+        // Export segmented control (Share)
+        let exportControl = NSSegmentedControl(labels: [""], trackingMode: .momentary, target: nil, action: nil)
+        exportControl.segmentStyle = .texturedRounded
+        exportControl.controlSize = .regular
+        exportControl.translatesAutoresizingMaskIntoConstraints = false
+        // Set segment width to match storyboard (20px)
+        exportControl.setWidth(20, forSegment: 0)
+        if let shareImg = NSImage(named: NSImage.shareTemplateName) {
+            exportControl.setImage(shareImg, forSegment: 0)
+        }
+        titleBar.contentView!.addSubview(exportControl)
+
+        // Layout: [Title] ... [ZoomGroup] [Help] [Share] [+/-]
         NSLayoutConstraint.activate([
-            helpSeg.trailingAnchor.constraint(equalTo: exportControl.leadingAnchor, constant: -20),
-            helpSeg.firstBaselineAnchor.constraint(equalTo: exportControl.firstBaselineAnchor)
+            zoomStack.leadingAnchor.constraint(greaterThanOrEqualTo: titleField.trailingAnchor, constant: 20),
+            zoomStack.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
+            
+            helpSeg.leadingAnchor.constraint(greaterThanOrEqualTo: zoomStack.trailingAnchor, constant: 16),
+            helpSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
+            
+            exportControl.leadingAnchor.constraint(greaterThanOrEqualTo: helpSeg.trailingAnchor, constant: 16),
+            exportControl.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
+            
+            extraSeg.leadingAnchor.constraint(greaterThanOrEqualTo: exportControl.trailingAnchor, constant: 16),
+            extraSeg.trailingAnchor.constraint(equalTo: titleBar.contentView!.trailingAnchor, constant: -10),
+            extraSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
         ])
 
         // Scene drawing view (fills remaining space in editor stack)
@@ -347,6 +404,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         self.worldTree = outline
         self.textView = textView
         self.exportSegments = exportControl.cell as? NSSegmentedCell
+        self.zoomLabel = zoomLabel
 
         // Set initial split positions after layout
         DispatchQueue.main.async {
@@ -406,6 +464,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         self.textViewDelegate = TextPropertiesDelegate(self, self.textView!)
 
         scene.onLoad(self)
+
+        // Set up zoom level callback to update the label
+        scene.onZoomChanged = { [weak self] percentage in
+            self?.updateZoomLabel(percentage)
+        }
 
         if elementStore != nil && self.scene != nil {
             setElementModel(elementStore: elementStore!)
@@ -562,6 +625,22 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         helpWindow.contentViewController = helpController
         let wc = NSWindowController(window: helpWindow)
         wc.showWindow(self)
+    }
+
+    @objc func zoomOutAction(_ sender: NSButton) {
+        scene?.zoomOut(nil)
+    }
+
+    @objc func zoomInAction(_ sender: NSButton) {
+        scene?.zoomIn(nil)
+    }
+
+    @objc func resetZoomAction(_ sender: NSButton) {
+        scene?.resetZoom(nil)
+    }
+
+    func updateZoomLabel(_ percentage: Int) {
+        zoomLabel?.stringValue = "\(percentage)%"
     }
 
     @IBAction func selectAllItems(_ sender: NSMenuItem) {

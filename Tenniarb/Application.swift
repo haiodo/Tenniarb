@@ -251,6 +251,7 @@ public class TenniarbApplication: NSApplication {
         viewMenu.addItem(NSMenuItem.separator())
         viewMenu.addItem(NSMenuItem(title: "Zoom In", action: #selector(SceneDrawView.zoomIn(_:)), keyEquivalent: "="))
         viewMenu.addItem(NSMenuItem(title: "Zoom Out", action: #selector(SceneDrawView.zoomOut(_:)), keyEquivalent: "-"))
+        viewMenu.addItem(NSMenuItem(title: "Reset Zoom", action: #selector(SceneDrawView.resetZoom(_:)), keyEquivalent: "0"))
 
         // MARK: - Window menu
         let windowMenuItem = NSMenuItem()

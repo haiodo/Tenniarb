@@ -153,7 +153,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     var viewController: ViewController?
 
-    var zoomLevel: CGFloat = 1
+    var zoomLevel: CGFloat = 1 {
+        didSet {
+            onZoomChanged?(Int(zoomLevel * 100))
+        }
+    }
+
+    var onZoomChanged: ((Int) -> Void)?
 
     var ox: CGFloat {
         set {
@@ -2078,13 +2084,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     /// Selectors
 
-    @objc public func zoomIn(_ sender: NSMenuItem) {
+    @objc public func zoomIn(_ sender: NSMenuItem?) {
         zoomLevel /= 0.75
         scheduleRedraw()
     }
 
-    @objc public func zoomOut(_ sender: NSMenuItem) {
+    @objc public func zoomOut(_ sender: NSMenuItem?) {
         zoomLevel *= 0.75
+        scheduleRedraw()
+    }
+
+    @objc public func resetZoom(_ sender: NSMenuItem? = nil) {
+        // Center diagram to fit all items
+        if let bounds = scene?.getBounds() {
+            self.ox = -1 * bounds.midX
+            self.oy = -1 * bounds.midY
+        }
+        zoomLevel = 1
         scheduleRedraw()
     }
 
