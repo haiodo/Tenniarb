@@ -65,16 +65,17 @@ class OperationController: NSViewController, NSTextViewDelegate {
         let textField = NSTextField(string: "")
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.isEditable = true
-        textField.isBordered = true
+        textField.isBordered = false
         textField.focusRingType = .none
         textField.placeholderString = "Operation..."
+        textField.drawsBackground = false
         vfx.addSubview(textField)
 
         NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
-            textField.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
-            textField.centerYAnchor.constraint(equalTo: vfx.centerYAnchor),
-            textField.heightAnchor.constraint(equalToConstant: 30)
+            textField.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 12),
+            textField.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -12),
+            textField.topAnchor.constraint(equalTo: vfx.topAnchor, constant: 12),
+            textField.heightAnchor.constraint(equalToConstant: 26)
         ])
 
         self.operationsTextBox = textField
