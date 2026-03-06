@@ -1758,10 +1758,42 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             ox += event.deltaX / zoomLevel
             oy -= event.deltaY / zoomLevel
 
-            self.mode = .DiagramMove
-
             scheduleRedraw()
         }
+    }
+
+    override func magnify(with event: NSEvent) {
+        if self.mode == .Editing || self.mode == .LineDrawing || self.mode == .Dragging {
+            return
+        }
+
+        hidePopup()
+
+        // Get mouse location in view coordinates before zoom
+        let mouseLocation = self.convert(event.locationInWindow, from: nil)
+
+        // Convert to scene coordinates before zoom change
+        let sceneBounds = zoomBounds()
+        let sceneMouseX = (mouseLocation.x / zoomLevel) - sceneBounds.midX - ox
+        let sceneMouseY = (mouseLocation.y / zoomLevel) - sceneBounds.midY - oy
+
+        // Apply zoom with limits
+        let zoomFactor = 1.0 + event.magnification
+        let newZoomLevel = zoomLevel * zoomFactor
+
+        // Limit zoom range (0.1x to 10x)
+        if newZoomLevel < 0.1 || newZoomLevel > 10.0 {
+            return
+        }
+
+        zoomLevel = newZoomLevel
+
+        // Adjust offset to keep mouse position stable
+        let newSceneBounds = zoomBounds()
+        ox = (mouseLocation.x / zoomLevel) - newSceneBounds.midX - sceneMouseX
+        oy = (mouseLocation.y / zoomLevel) - newSceneBounds.midY - sceneMouseY
+
+        scheduleRedraw()
     }
 
     func zoomBounds()-> CGRect {
