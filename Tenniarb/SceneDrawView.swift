@@ -137,6 +137,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     var mode: SceneMode = .Normal
 
+    var spaceKeyDown = false
+
     var editBox: PopupEditField? = nil
     var editBoxItem: Drawable? = nil
     var editBoxDelegate: EditTitleDelegate?
@@ -228,6 +230,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let touches = event.touches(matching: NSTouch.Phase.touching, in: self)
         if touches.count == 2 && self.bounds.contains(vp) {
             prevTouch = touches.first
+            NSCursor.closedHand.set()
         }
     }
 
@@ -317,6 +320,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     @objc override func touchesEnded(with event: NSEvent) {
         prevTouch = nil
+        if self.mode == .Normal {
+            NSCursor.arrow.set()
+        }
     }
 
     override var mouseDownCanMoveWindow: Bool {
@@ -1409,6 +1415,34 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         super.keyDown(with: event)
     }
 
+    override func keyUp(with event: NSEvent) {
+        if event.characters == " " {
+            spaceKeyDown = false
+            if mode == .DiagramMove {
+                mode = .Normal
+                NSCursor.arrow.set()
+            }
+        }
+        super.keyUp(with: event)
+    }
+
+    override func flagsChanged(with event: NSEvent) {
+        // Track space key state
+        if event.keyCode == 49 { // Space key
+            let isSpacePressed = event.modifierFlags.contains(.function)
+            if isSpacePressed && !spaceKeyDown {
+                spaceKeyDown = true
+            } else if !isSpacePressed && spaceKeyDown {
+                spaceKeyDown = false
+                if mode == .DiagramMove {
+                    mode = .Normal
+                    NSCursor.arrow.set()
+                }
+            }
+        }
+        super.flagsChanged(with: event)
+    }
+
     public func getActiveItemBounds() -> CGRect? {
         if let active = self.activeItems.first, let drawable = scene?.drawables[active] {
             let drBounds = drawable.getBounds()
@@ -1527,6 +1561,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.dragElements.removeAll()
 
         self.mode = .Normal
+        NSCursor.arrow.set()
         showPopup()
     }
 
@@ -1594,14 +1629,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
 
         if drawables.count == 0 {
-            //            if event.clickCount == 2 {
-            //                self.setActiveItem(nil)
-            //                self.mode = .DiagramMove
-            //                self.scene?.selectionBox = nil
-            //            }
-
-            self.pivotPoint = CGPoint(x: self.x , y: self.y)
-
+            // Enter diagram panning mode when clicking on empty space
+            self.mode = .DiagramMove
+            NSCursor.closedHand.set()
+            self.pivotPoint = CGPoint(x: self.x, y: self.y)
             return
         }
 
@@ -1670,6 +1701,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         else {
             self.mode = .Dragging
+            NSCursor.closedHand.set()
             for de in self.dragElements  {
                 self.dragMap[de] = CGPoint(x: de.x, y: de.y)
             }
@@ -1827,6 +1859,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         self.updateMousePosition(event)
+
+        // Show open hand cursor when space is held and hovering over empty space
+        if spaceKeyDown && self.mode == .Normal {
+            let drawables = findElement(x: self.x, y: self.y)
+            if drawables.count == 0 {
+                NSCursor.openHand.set()
+            }
+        }
 
         // Process hide of popup if we go out to much
 
