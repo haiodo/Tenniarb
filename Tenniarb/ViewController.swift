@@ -53,6 +53,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var exportMgr = ExportManager()
 
     @IBOutlet weak var exportSegments: NSSegmentedCell!
+    
+    // MARK: - Component Controllers
+    var outlineSidebarController: OutlineSidebarController!
+    var editorViewController: EditorViewController!
+    var propertiesPanelController: PropertiesPanelController!
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch(sender.selectedSegment) {
         case 0:
@@ -83,12 +88,12 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     override func loadView() {
-        // Build UI programmatically to match storyboard structure
+        // Build UI programmatically using component controllers
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 944, height: 764))
         root.wantsLayer = true
         self.view = root
 
-        // Visual effect background (matches storyboard: blendingMode="behindWindow" material="underWindowBackground")
+        // Visual effect background
         let vfx = NSVisualEffectView(frame: .zero)
         vfx.translatesAutoresizingMaskIntoConstraints = false
         vfx.blendingMode = .behindWindow
@@ -103,7 +108,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
         ])
 
-        // Main split view (left: outline, right: editor) - vertical=YES means left/right split
+        // Main split view (left: outline, right: editor)
         let splitView = NSSplitView(frame: .zero)
         splitView.translatesAutoresizingMaskIntoConstraints = false
         splitView.isVertical = true
@@ -117,74 +122,15 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             splitView.bottomAnchor.constraint(equalTo: vfx.bottomAnchor)
         ])
 
-        // MARK: - Left panel (outline tree)
-        let leftStackView = NSStackView()
-        leftStackView.translatesAutoresizingMaskIntoConstraints = false
-        leftStackView.orientation = .vertical
-        leftStackView.alignment = .leading
-        leftStackView.spacing = 0
-        leftStackView.distribution = .fill
-        splitView.addArrangedSubview(leftStackView)
+        // Create component controllers
+        outlineSidebarController = OutlineSidebarController()
+        outlineSidebarController.viewController = self
+        let leftPanel = outlineSidebarController.createView()
+        splitView.addArrangedSubview(leftPanel)
 
-        // Top toolbar box in left panel (30px height as in storyboard)
-        let leftToolbarBox = NSBox()
-        leftToolbarBox.translatesAutoresizingMaskIntoConstraints = false
-        leftToolbarBox.boxType = .custom
-        leftToolbarBox.borderType = .noBorder
-        leftToolbarBox.titlePosition = .noTitle
-        leftToolbarBox.fillColor = .clear
-        leftStackView.addArrangedSubview(leftToolbarBox)
-        leftToolbarBox.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        leftToolbarBox.widthAnchor.constraint(equalTo: leftStackView.widthAnchor).isActive = true
-
-        // Left toolbar segmented control (add/remove only, 2 segments as in storyboard)
-        let leftToolbar = NSSegmentedControl(labels: ["", ""], trackingMode: .momentary, target: self, action: #selector(leftToolbarAction(_:)))
-        leftToolbar.segmentStyle = .texturedRounded
-        leftToolbar.translatesAutoresizingMaskIntoConstraints = false
-        if let addImg = NSImage(named: NSImage.addTemplateName) {
-            leftToolbar.setImage(addImg, forSegment: 0)
-        }
-        if let removeImg = NSImage(named: NSImage.removeTemplateName) {
-            leftToolbar.setImage(removeImg, forSegment: 1)
-        }
-        leftToolbarBox.contentView!.addSubview(leftToolbar)
-        leftToolbar.trailingAnchor.constraint(equalTo: leftToolbarBox.contentView!.trailingAnchor, constant: 0).isActive = true
-        leftToolbar.topAnchor.constraint(equalTo: leftToolbarBox.contentView!.topAnchor, constant: 0).isActive = true
-
-        // Outline scroll view with transparent background
-        let outlineScroll = NSScrollView()
-        outlineScroll.translatesAutoresizingMaskIntoConstraints = false
-        outlineScroll.hasVerticalScroller = true
-        outlineScroll.hasHorizontalScroller = false
-        outlineScroll.autohidesScrollers = true
-        outlineScroll.borderType = .noBorder
-        outlineScroll.drawsBackground = false  // Transparent background
-        outlineScroll.contentView.drawsBackground = false
-        leftStackView.addArrangedSubview(outlineScroll)
-
-        // Outline view with transparent background (matches storyboard backgroundColor alpha=0)
-        let outline = OutlineNSOutlineView(frame: .zero)
-        outline.translatesAutoresizingMaskIntoConstraints = false
-        let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "YFI-la-VX8"))
-        col.title = "Element"
-        col.width = 185
-        col.minWidth = 140
-        col.maxWidth = 300
-        outline.addTableColumn(col)
-        outline.outlineTableColumn = col
-        outline.headerView = nil
-        outline.backgroundColor = NSColor.clear  // Transparent to show vibrancy
-        outline.selectionHighlightStyle = .sourceList
-        outline.rowHeight = 22
-        outline.intercellSpacing = NSSize(width: 0, height: 5)
-        outline.indentationPerLevel = 10
-        outlineScroll.documentView = outline
-
-        // MARK: - Right panel (editor area) - uses NSSplitView like storyboard
-        // The right side has a horizontal split: bottom = editor stack, top = text properties
-        // In storyboard: splitView with fixedFrame, stackView at y=0 height=628, scrollView at y=637 height=127
+        // Right split view (editor + properties)
         let rightSplitView = NSSplitView()
-        rightSplitView.isVertical = false  // false = top/bottom split (horizontal divider)
+        rightSplitView.isVertical = false
         rightSplitView.dividerStyle = .thin
         splitView.addArrangedSubview(rightSplitView)
 
@@ -193,230 +139,37 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         mainSplitView = splitView
         self.editorSplitView = rightSplitView
 
-        // Calculate initial sizes based on expected right panel size (~718x764)
-        let rightWidth: CGFloat = 718
-        let rightHeight: CGFloat = 764
-        let textScrollHeight: CGFloat = 127
-        let dividerThickness: CGFloat = 1
-        let editorHeight = rightHeight - textScrollHeight - dividerThickness
+        // Create editor view controller
+        editorViewController = EditorViewController()
+        editorViewController.viewController = self
+        let editorPanel = editorViewController.createView()
+        rightSplitView.addSubview(editorPanel)
 
-        // Bottom part: Editor stack view (contains title bar and scene view)
-        // First subview in NSSplitView with isVertical=false is at bottom (y=0)
-        let editorStackView = NSStackView(frame: NSRect(x: 0, y: 0, width: rightWidth, height: editorHeight))
-        editorStackView.orientation = .vertical
-        editorStackView.alignment = .centerX  // Center alignment to avoid leading edge conflicts
-        editorStackView.spacing = 0
-        editorStackView.distribution = .fill
-        editorStackView.autoresizingMask = [.width, .height]
-        rightSplitView.addSubview(editorStackView)
+        // Create properties panel controller
+        propertiesPanelController = PropertiesPanelController()
+        propertiesPanelController.viewController = self
+        let propertiesPanel = propertiesPanelController.createView()
+        rightSplitView.addSubview(propertiesPanel)
 
-        // Top part: Properties panel with text editor and zoom toolbar
-        // Container stack view for text scroll and zoom toolbar
-        let propertiesContainer = NSStackView(frame: NSRect(x: 0, y: editorHeight + dividerThickness, width: rightWidth, height: textScrollHeight))
-        propertiesContainer.orientation = .vertical
-        propertiesContainer.alignment = .centerX
-        propertiesContainer.spacing = 0
-        propertiesContainer.distribution = .fill
-        propertiesContainer.autoresizingMask = [.width, .height]
-        rightSplitView.addSubview(propertiesContainer)
-
-        // Text properties scroll view (fills most of the space)
-        let textScroll = NSScrollView()
-        textScroll.translatesAutoresizingMaskIntoConstraints = false
-        textScroll.hasVerticalScroller = true
-        textScroll.hasHorizontalScroller = false
-        textScroll.autohidesScrollers = true
-        textScroll.borderType = .noBorder
-        textScroll.drawsBackground = false
-        // Semi-transparent background for clip view (matches storyboard alpha=0.80171767979452058)
-        textScroll.contentView.wantsLayer = true
-        textScroll.contentView.layer?.backgroundColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.8).cgColor
-        textScroll.contentView.drawsBackground = false
-        propertiesContainer.addArrangedSubview(textScroll)
-
-        // Text view for properties (drawsBackground=NO as in storyboard)
-        let textView = TennTextView(frame: NSRect(x: 0, y: 0, width: rightWidth, height: textScrollHeight))
-        textView.drawsBackground = false
-        textView.isVerticallyResizable = true
-        textView.isHorizontallyResizable = true
-        textView.autoresizingMask = [.width, .height]
-        textView.textContainer?.widthTracksTextView = true
-        textView.textContainer?.heightTracksTextView = false
-        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-        textView.minSize = NSSize(width: rightWidth, height: textScrollHeight)
-        textScroll.documentView = textView
-
-        // Set holding priorities: both to 1 as in storyboard
+        // Set holding priorities
         rightSplitView.setHoldingPriority(NSLayoutConstraint.Priority(1), forSubviewAt: 0)
         rightSplitView.setHoldingPriority(NSLayoutConstraint.Priority(1), forSubviewAt: 1)
 
-        // Title bar box (34px height as in storyboard, transparent, contains title and buttons)
-        let titleBar = NSBox()
-        titleBar.translatesAutoresizingMaskIntoConstraints = false
-        titleBar.boxType = .custom
-        titleBar.borderType = .noBorder
-        titleBar.titlePosition = .noTitle
-        titleBar.fillColor = .clear
-        editorStackView.addArrangedSubview(titleBar)
-        let titleBarHeightConstraint = titleBar.heightAnchor.constraint(equalToConstant: 34)
-        titleBarHeightConstraint.priority = NSLayoutConstraint.Priority(999)  // High but not required, to allow recovery during init
-        titleBarHeightConstraint.isActive = true
-        // Width constraint with lower priority to avoid conflicts during initial layout
-        let titleBarWidthConstraint = titleBar.widthAnchor.constraint(equalTo: editorStackView.widthAnchor)
-        titleBarWidthConstraint.priority = .defaultHigh
-        titleBarWidthConstraint.isActive = true
+        // Wire up legacy properties for compatibility
+        self.scene = editorViewController.sceneView
+        self.windowTitle = editorViewController.titleField
+        self.toolsSegmentedControl = outlineSidebarController.toolbar
+        self.worldTree = outlineSidebarController.outlineView
+        self.textView = propertiesPanelController.textView
+        self.exportSegments = editorViewController.exportSegments
+        self.zoomLabel = editorViewController.zoomLabel
 
-        // Window title text field (font size 15, labelColor as in storyboard)
-        let titleField = NSTextField(string: "Window title")
-        titleField.translatesAutoresizingMaskIntoConstraints = false
-        titleField.isBordered = false
-        titleField.isEditable = false
-        titleField.isSelectable = false
-        titleField.drawsBackground = false
-        titleField.focusRingType = .none
-        titleField.font = NSFont.systemFont(ofSize: 15)
-        titleField.textColor = NSColor.labelColor
-        titleField.cell?.lineBreakMode = .byClipping
-        titleField.cell?.isScrollable = true
-        titleBar.contentView!.addSubview(titleField)
-
-        NSLayoutConstraint.activate([
-            titleField.leadingAnchor.constraint(equalTo: titleBar.contentView!.leadingAnchor, constant: 15),
-            titleField.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
-        ])
-
-        // Zoom controls group in title bar (as a single unit)
-        let zoomStack = NSStackView()
-        zoomStack.translatesAutoresizingMaskIntoConstraints = false
-        zoomStack.orientation = .horizontal
-        zoomStack.spacing = 2
-        zoomStack.alignment = .centerY
-        zoomStack.distribution = .fill
-        titleBar.contentView!.addSubview(zoomStack)
-
-        let zoomOutButton = NSButton()
-        zoomOutButton.bezelStyle = .texturedRounded
-        zoomOutButton.image = NSImage(named: NSImage.removeTemplateName)
-        zoomOutButton.imagePosition = .imageOnly
-        zoomOutButton.target = self
-        zoomOutButton.action = #selector(zoomOutAction(_:))
-        zoomStack.addArrangedSubview(zoomOutButton)
-
-        let zoomLabel = NSTextField()
-        zoomLabel.translatesAutoresizingMaskIntoConstraints = false
-        zoomLabel.isEditable = false
-        zoomLabel.isSelectable = false
-        zoomLabel.isBordered = false
-        zoomLabel.drawsBackground = false
-        zoomLabel.alignment = .center
-        zoomLabel.font = NSFont.systemFont(ofSize: 11)
-        zoomLabel.textColor = NSColor.labelColor
-        zoomLabel.stringValue = "100%"
-        zoomLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        zoomStack.addArrangedSubview(zoomLabel)
-
-        let zoomInButton = NSButton()
-        zoomInButton.bezelStyle = .texturedRounded
-        zoomInButton.image = NSImage(named: NSImage.addTemplateName)
-        zoomInButton.imagePosition = .imageOnly
-        zoomInButton.target = self
-        zoomInButton.action = #selector(zoomInAction(_:))
-        zoomStack.addArrangedSubview(zoomInButton)
-
-        let resetZoomButton = NSButton()
-        resetZoomButton.bezelStyle = .texturedRounded
-        resetZoomButton.title = "100%"
-        resetZoomButton.font = NSFont.systemFont(ofSize: 11)
-        resetZoomButton.target = self
-        resetZoomButton.action = #selector(resetZoomAction(_:))
-        zoomStack.addArrangedSubview(resetZoomButton)
-
-        // Extra buttons (add/remove) on right side of title bar
-        let extraSeg = NSSegmentedControl(labels: ["", ""], trackingMode: .momentary, target: self, action: #selector(extraSegmentAction(_:)))
-        extraSeg.segmentStyle = .texturedRounded
-        extraSeg.controlSize = .regular
-        extraSeg.translatesAutoresizingMaskIntoConstraints = false
-        // Set segment widths to match storyboard (20px each)
-        extraSeg.setWidth(20, forSegment: 0)
-        extraSeg.setWidth(20, forSegment: 1)
-        if let addImg = NSImage(named: NSImage.addTemplateName) { extraSeg.setImage(addImg, forSegment: 0) }
-        if let remImg = NSImage(named: NSImage.removeTemplateName) { extraSeg.setImage(remImg, forSegment: 1) }
-        titleBar.contentView!.addSubview(extraSeg)
-
-        // Help button (bookmarks icon as in storyboard)
-        let helpSeg = NSSegmentedControl(labels: [""], trackingMode: .momentary, target: self, action: #selector(showHelp(_:)))
-        helpSeg.segmentStyle = .texturedRounded
-        helpSeg.controlSize = .regular
-        helpSeg.translatesAutoresizingMaskIntoConstraints = false
-        // Set segment width to match storyboard (20px)
-        helpSeg.setWidth(20, forSegment: 0)
-        if let bookmarkImg = NSImage(named: NSImage.bookmarksTemplateName) {
-            helpSeg.setImage(bookmarkImg, forSegment: 0)
-        }
-        titleBar.contentView!.addSubview(helpSeg)
-
-        // Export segmented control (Share)
-        let exportControl = NSSegmentedControl(labels: [""], trackingMode: .momentary, target: nil, action: nil)
-        exportControl.segmentStyle = .texturedRounded
-        exportControl.controlSize = .regular
-        exportControl.translatesAutoresizingMaskIntoConstraints = false
-        // Set segment width to match storyboard (20px)
-        exportControl.setWidth(20, forSegment: 0)
-        if let shareImg = NSImage(named: NSImage.shareTemplateName) {
-            exportControl.setImage(shareImg, forSegment: 0)
-        }
-        titleBar.contentView!.addSubview(exportControl)
-
-        // Layout: [Title] ... [ZoomGroup] [Help] [Share] [+/-]
-        NSLayoutConstraint.activate([
-            zoomStack.leadingAnchor.constraint(greaterThanOrEqualTo: titleField.trailingAnchor, constant: 20),
-            zoomStack.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
-            helpSeg.leadingAnchor.constraint(greaterThanOrEqualTo: zoomStack.trailingAnchor, constant: 16),
-            helpSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
-            exportControl.leadingAnchor.constraint(greaterThanOrEqualTo: helpSeg.trailingAnchor, constant: 16),
-            exportControl.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
-            extraSeg.leadingAnchor.constraint(greaterThanOrEqualTo: exportControl.trailingAnchor, constant: 16),
-            extraSeg.trailingAnchor.constraint(equalTo: titleBar.contentView!.trailingAnchor, constant: -10),
-            extraSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
-        ])
-
-        // Scene drawing view (fills remaining space in editor stack)
-        let sceneView = SceneDrawView(frame: .zero)
-        sceneView.translatesAutoresizingMaskIntoConstraints = false
-        editorStackView.addArrangedSubview(sceneView)
-
-        // Scene view should expand to fill available space
-        sceneView.setContentHuggingPriority(.defaultLow, for: .vertical)
-        sceneView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-
-        // Width constraint for scene view with lower priority to avoid conflicts
-        let sceneWidthConstraint = sceneView.widthAnchor.constraint(equalTo: editorStackView.widthAnchor, constant: -5)
-        sceneWidthConstraint.priority = .defaultHigh
-        sceneWidthConstraint.isActive = true
-
-        // Wire up properties used elsewhere in the controller
-        self.scene = sceneView
-        self.windowTitle = titleField
-        self.toolsSegmentedControl = leftToolbar
-        self.worldTree = outline
-        self.textView = textView
-        self.exportSegments = exportControl.cell as? NSSegmentedCell
-        self.zoomLabel = zoomLabel
-
-        // Set initial split positions after layout
+        // Set initial split positions
         DispatchQueue.main.async {
-            // Left panel width: 217px as in storyboard
             splitView.setPosition(217, ofDividerAt: 0)
-
-            // Right split: position divider so editor gets most space, text scroll gets 127px at top
-            // setPosition for horizontal split (isVertical=false) sets position from bottom
             let totalHeight = rightSplitView.bounds.height
             if totalHeight > 0 {
                 let textScrollHeight: CGFloat = 127
-                // Position = height of bottom pane (editor)
                 rightSplitView.setPosition(totalHeight - textScrollHeight - rightSplitView.dividerThickness, ofDividerAt: 0)
             }
         }
@@ -457,13 +210,18 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // Setup component controllers
+        outlineSidebarController.setupDelegate()
+        propertiesPanelController.setupDelegate(self)
+        editorViewController.onLoad(self)
+        editorViewController.setupExportMenu(viewController: self)
+
+        // Legacy delegate setup for compatibility
         self.outlineViewDelegate = OutlineViewControllerDelegate(self)
         worldTree.delegate = self.outlineViewDelegate
         worldTree.dataSource = self.outlineViewDelegate
 
         self.textViewDelegate = TextPropertiesDelegate(self, self.textView!)
-
-        scene.onLoad(self)
 
         // Set up zoom level callback to update the label
         scene.onZoomChanged = { [weak self] percentage in
@@ -492,7 +250,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     override func viewDidAppear() {
-        scene.onAppear()
+        editorViewController?.onAppear()
     }
 
     @objc func darkModeChanged(_ notif: NSNotification) {
@@ -1073,7 +831,4 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         updatingProperties = false
     }
-
-
-
 }

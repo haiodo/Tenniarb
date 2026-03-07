@@ -23,6 +23,9 @@
 		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
+		FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000004 /* OutlineSidebarController.swift */; };
+		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
+		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
 		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
 		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
@@ -162,6 +165,9 @@
 		0C3E178620FD053A00AB9D3D /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = views/ExportManager.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
+		FA00D0000000000000000004 /* OutlineSidebarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutlineSidebarController.swift; path = controllers/OutlineSidebarController.swift; sourceTree = "<group>"; };
+		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
+		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
 		0C439D21200335A10031AE78 /* TennModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennModel.swift; sourceTree = "<group>"; };
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
 		0C45B12822A397BE00640305 /* examples.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = examples.md; sourceTree = "<group>"; };
@@ -367,6 +373,9 @@
 				0C3160412242ADC00021E4D9 /* PreferencesController.swift */,
 				0C6ED8C1224F3F25009145E1 /* OperationController.swift */,
 				0CD170BB22D5C8BB00E217D4 /* HelpController.swift */,
+				FA00D0000000000000000004 /* OutlineSidebarController.swift */,
+				FA00D0000000000000000005 /* EditorViewController.swift */,
+				FA00D0000000000000000006 /* PropertiesPanelController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -769,6 +778,9 @@
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
+				FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */,
+				FA00D0000000000000000002 /* EditorViewController.swift in Sources */,
+				FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
