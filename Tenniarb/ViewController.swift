@@ -89,12 +89,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     override func loadView() {
         // Build UI programmatically using component controllers
-        let root = NSView(frame: NSRect(x: 0, y: 0, width: 944, height: 764))
+        let initialFrame = NSRect(x: 0, y: 0, width: 944, height: 764)
+        let root = NSView(frame: initialFrame)
         root.wantsLayer = true
         self.view = root
 
         // Visual effect background
-        let vfx = NSVisualEffectView(frame: .zero)
+        let vfx = NSVisualEffectView(frame: initialFrame)
         vfx.translatesAutoresizingMaskIntoConstraints = false
         vfx.blendingMode = .behindWindow
         vfx.material = .underWindowBackground
@@ -109,7 +110,8 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         ])
 
         // Main split view (left: outline, right: editor)
-        let splitView = NSSplitView(frame: .zero)
+        // Use constraints with proper frame to avoid zero-size issues
+        let splitView = NSSplitView(frame: initialFrame)
         splitView.translatesAutoresizingMaskIntoConstraints = false
         splitView.isVertical = true
         splitView.dividerStyle = .thin
@@ -130,6 +132,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
         // Right split view (editor + properties)
         let rightSplitView = NSSplitView()
+        rightSplitView.translatesAutoresizingMaskIntoConstraints = false
         rightSplitView.isVertical = false
         rightSplitView.dividerStyle = .thin
         splitView.addArrangedSubview(rightSplitView)
@@ -143,13 +146,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         editorViewController = EditorViewController()
         editorViewController.viewController = self
         let editorPanel = editorViewController.createView()
-        rightSplitView.addSubview(editorPanel)
+        rightSplitView.addArrangedSubview(editorPanel)
 
         // Create properties panel controller
         propertiesPanelController = PropertiesPanelController()
         propertiesPanelController.viewController = self
         let propertiesPanel = propertiesPanelController.createView()
-        rightSplitView.addSubview(propertiesPanel)
+        rightSplitView.addArrangedSubview(propertiesPanel)
 
         // Set holding priorities
         rightSplitView.setHoldingPriority(NSLayoutConstraint.Priority(1), forSubviewAt: 0)

@@ -23,6 +23,9 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
 
     var vc: ViewController?
 
+    override class var autosavesInPlace: Bool {
+        return true
+    }
 
     override init() {
         super.init()
@@ -66,22 +69,23 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.acceptsMouseMovedEvents = true
         window.isReleasedWhenClosed = false
+        window.minSize = NSSize(width: 600, height: 400)
 
         let windowController = WindowController(window: window)
 
+        // Register the window controller with the document first.
+        self.addWindowController(windowController)
+
         // Instantiate the main content view controller programmatically.
         let contentVC = ViewController()
-        windowController.contentViewController = contentVC
-
-        // Force the view to load so outlets / view setup run before we set the model.
-        let _ = contentVC.view
-
-        // Register the window controller with the document.
-        self.addWindowController(windowController)
 
         // Keep a reference to the view controller and wire things up.
         self.vc = contentVC
         windowController.window?.delegate = self
+
+        // Set contentViewController after window is registered to avoid zero-size constraint conflicts
+        // The view will be properly sized by the window's content rect
+        windowController.contentViewController = contentVC
 
         self.vc?.setElementModel(elementStore: self.store!)
 

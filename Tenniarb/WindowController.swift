@@ -27,13 +27,16 @@ class WindowController: NSWindowController {
     }
     override func windowDidLoad() {
         super.windowDidLoad()
-        
+
         // Init default preferences (lazy initialization ensures AppKit is ready)
         PreferenceConstants.preference.checkDefaults()
-        
+
+        // Set minimum window size to prevent constraint conflicts
+        self.window?.minSize = NSSize(width: 600, height: 400)
+
         let ver = ProcessInfo.processInfo.operatingSystemVersion
-        
-        if ver.majorVersion == 10 && ver.minorVersion == 12 {    
+
+        if ver.majorVersion == 10 && ver.minorVersion == 12 {
             self.window?.titleVisibility = .visible
             self.window?.titlebarAppearsTransparent = true
             self.window?.styleMask.remove(NSWindow.StyleMask.fullSizeContentView)

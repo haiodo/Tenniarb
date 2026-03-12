@@ -33,7 +33,7 @@ class PropertiesPanelController: NSObject {
         stackView.alignment = .centerX
         stackView.spacing = 0
         stackView.distribution = .fill
-        stackView.autoresizingMask = [.width, .height]
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
         
         // Scroll view

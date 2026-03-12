@@ -35,7 +35,7 @@ class EditorViewController: NSObject {
         stackView.alignment = .centerX
         stackView.spacing = 0
         stackView.distribution = .fill
-        stackView.autoresizingMask = [.width, .height]
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
         
         // Title bar
@@ -67,9 +67,22 @@ class EditorViewController: NSObject {
         titleBar.titlePosition = .noTitle
         titleBar.fillColor = .clear
         
+        // Disable autoresizing mask for content view to avoid constraint conflicts
+        titleBar.contentView?.translatesAutoresizingMaskIntoConstraints = false
+        
         let heightConstraint = titleBar.heightAnchor.constraint(equalToConstant: 34)
         heightConstraint.priority = NSLayoutConstraint.Priority(999)
         heightConstraint.isActive = true
+        
+        // Add constraints for content view to fill the box
+        if let contentView = titleBar.contentView {
+            NSLayoutConstraint.activate([
+                contentView.leadingAnchor.constraint(equalTo: titleBar.leadingAnchor),
+                contentView.trailingAnchor.constraint(equalTo: titleBar.trailingAnchor),
+                contentView.topAnchor.constraint(equalTo: titleBar.topAnchor),
+                contentView.bottomAnchor.constraint(equalTo: titleBar.bottomAnchor)
+            ])
+        }
         
         // Title field
         let titleField = NSTextField(string: "Window title")
@@ -108,17 +121,32 @@ class EditorViewController: NSObject {
         titleBar.contentView!.addSubview(exportControl)
         
         // Layout
+        // Lower priority for spacing constraints to avoid conflicts during initial layout with zero width
+        let spacingPriority = NSLayoutConstraint.Priority(750)
+        
+        let zoomLeading = zoomStack.leadingAnchor.constraint(greaterThanOrEqualTo: titleField.trailingAnchor, constant: 20)
+        zoomLeading.priority = spacingPriority
+        
+        let helpLeading = helpSeg.leadingAnchor.constraint(greaterThanOrEqualTo: zoomStack.trailingAnchor, constant: 16)
+        helpLeading.priority = spacingPriority
+        
+        let exportLeading = exportControl.leadingAnchor.constraint(greaterThanOrEqualTo: helpSeg.trailingAnchor, constant: 16)
+        exportLeading.priority = spacingPriority
+        
+        let extraLeading = extraSeg.leadingAnchor.constraint(greaterThanOrEqualTo: exportControl.trailingAnchor, constant: 16)
+        extraLeading.priority = spacingPriority
+        
         NSLayoutConstraint.activate([
-            zoomStack.leadingAnchor.constraint(greaterThanOrEqualTo: titleField.trailingAnchor, constant: 20),
+            zoomLeading,
             zoomStack.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
             
-            helpSeg.leadingAnchor.constraint(greaterThanOrEqualTo: zoomStack.trailingAnchor, constant: 16),
+            helpLeading,
             helpSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
             
-            exportControl.leadingAnchor.constraint(greaterThanOrEqualTo: helpSeg.trailingAnchor, constant: 16),
+            exportLeading,
             exportControl.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
             
-            extraSeg.leadingAnchor.constraint(greaterThanOrEqualTo: exportControl.trailingAnchor, constant: 16),
+            extraLeading,
             extraSeg.trailingAnchor.constraint(equalTo: titleBar.contentView!.trailingAnchor, constant: -10),
             extraSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
         ])
@@ -152,7 +180,9 @@ class EditorViewController: NSObject {
         zoomLabel.font = NSFont.systemFont(ofSize: 11)
         zoomLabel.textColor = NSColor.labelColor
         zoomLabel.stringValue = "100%"
-        zoomLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        let widthConstraint = zoomLabel.widthAnchor.constraint(equalToConstant: 40)
+        widthConstraint.priority = .defaultHigh
+        widthConstraint.isActive = true
         zoomStack.addArrangedSubview(zoomLabel)
         self.zoomLabel = zoomLabel
         
