@@ -1432,11 +1432,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let propWidth = item.properties.get(PersistenceStyleKind.Width.name)?.getFloat(1)
         let propHeight = item.properties.get(PersistenceStyleKind.Height.name)?.getFloat(1)
         
-        // If not set in properties, get from drawable bounds
+        // If not set in properties, get from drawable bounds (adjusted for shadows/lineWidth)
         let currentWidth: Float
         let currentHeight: Float
         if let dr = scene.drawables[item] {
-            let bounds = dr.getBounds()
+            var bounds = dr.getSelectorBounds()
+            // For RoundBox, subtract lineWidth to get content size (see ElementScene.swift:1743)
+            if let roundBox = dr as? RoundBox {
+                let lineWidth = roundBox.style.lineWidth
+                bounds = bounds.insetBy(dx: lineWidth, dy: lineWidth)
+            }
+            // For CircleBox, getShadowRect adds shadow but no lineWidth inset (ElementScene.swift:2701)
+            // Note: CircleBox bounds includes shadow, but it's typically small (4-8 points)
             currentWidth = propWidth ?? Float(bounds.width)
             currentHeight = propHeight ?? Float(bounds.height)
         } else {
@@ -1469,13 +1476,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             // Decrease height
             newHeight = max(10, currentHeight - gridSpanY)
             if isFromCenter {
-                newY = item.y + CGFloat((currentHeight - newHeight) / 2)
+                newY = item.y - CGFloat((currentHeight - newHeight) / 2)
             }
         case NSEvent.SpecialKey.downArrow:
             // Increase height (in macOS Y grows upward)
             newHeight = currentHeight + gridSpanY
             if isFromCenter {
-                newY = item.y - CGFloat((newHeight - currentHeight) / 2)
+                newY = item.y + CGFloat((newHeight - currentHeight) / 2)
             }
         default:
             return
@@ -1484,38 +1491,47 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         // Create operations for resize
         var ops: [ElementOperation] = []
         
-        // Update position if resizing from center
-        if isFromCenter && (newX != item.x || newY != item.y) {
+        // Update only the changed dimension property
+        let newProps = item.toTennAsProps(.BlockExpr)
+        let widthChanged = newWidth != currentWidth
+        let heightChanged = newHeight != currentHeight
+        
+        // Update width only if it changed
+        if widthChanged {
+            if let widthProp = newProps.getNamedElement(PersistenceStyleKind.Width.name) {
+                widthProp.children?.removeAll()
+                widthProp.add(TennNode.newIdent(PersistenceStyleKind.Width.name))
+                widthProp.add(TennNode.newFloatNode(Double(newWidth)))
+            } else {
+                let cmd = TennNode.newCommand(PersistenceStyleKind.Width.name)
+                cmd.add(TennNode.newFloatNode(Double(newWidth)))
+                newProps.add(cmd)
+            }
+        }
+        
+        // Update height only if it changed
+        if heightChanged {
+            if let heightProp = newProps.getNamedElement(PersistenceStyleKind.Height.name) {
+                heightProp.children?.removeAll()
+                heightProp.add(TennNode.newIdent(PersistenceStyleKind.Height.name))
+                heightProp.add(TennNode.newFloatNode(Double(newHeight)))
+            } else {
+                let cmd = TennNode.newCommand(PersistenceStyleKind.Height.name)
+                cmd.add(TennNode.newFloatNode(Double(newHeight)))
+                newProps.add(cmd)
+            }
+        }
+        
+        // Only add properties operation if something actually changed
+        if widthChanged || heightChanged {
+            ops.append(store!.createProperties(self.element!, item, newProps))
+        }
+        
+        // Update position if resizing from center (always update when isFromCenter is true)
+        if isFromCenter {
             let newPos = CGPoint(x: newX, y: newY)
             ops.append(store!.createUpdatePosition(item: item, newPos: newPos))
         }
-        
-        // Update width and height properties
-        let newProps = item.toTennAsProps(.BlockExpr)
-        
-        // Update width
-        if let widthProp = newProps.getNamedElement(PersistenceStyleKind.Width.name) {
-            widthProp.children?.removeAll()
-            widthProp.add(TennNode.newIdent(PersistenceStyleKind.Width.name))
-            widthProp.add(TennNode.newFloatNode(Double(newWidth)))
-        } else {
-            let cmd = TennNode.newCommand(PersistenceStyleKind.Width.name)
-            cmd.add(TennNode.newFloatNode(Double(newWidth)))
-            newProps.add(cmd)
-        }
-        
-        // Update height
-        if let heightProp = newProps.getNamedElement(PersistenceStyleKind.Height.name) {
-            heightProp.children?.removeAll()
-            heightProp.add(TennNode.newIdent(PersistenceStyleKind.Height.name))
-            heightProp.add(TennNode.newFloatNode(Double(newHeight)))
-        } else {
-            let cmd = TennNode.newCommand(PersistenceStyleKind.Height.name)
-            cmd.add(TennNode.newFloatNode(Double(newHeight)))
-            newProps.add(cmd)
-        }
-        
-        ops.append(store!.createProperties(self.element!, item, newProps))
         
         if ops.count > 0 {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
