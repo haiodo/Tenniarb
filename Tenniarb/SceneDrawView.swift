@@ -1374,6 +1374,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
 
         if let sk = event.specialKey, let sc = self.scene {
+            let isShiftPressed = event.modifierFlags.contains(.shift)
+            let isCommandPressed = event.modifierFlags.contains(.command)
+            
+            // Handle resize with Shift or Command modifier (only for arrow keys)
+            let isArrowKey = sk == .leftArrow || sk == .rightArrow || sk == .upArrow || sk == .downArrow
+            if isArrowKey && (isShiftPressed || isCommandPressed) && self.activeItems.count == 1,
+               let active = self.activeItems.first {
+                handleResizeItem(item: active, specialKey: sk, scene: sc,
+                                 isFromCenter: isCommandPressed)
+                return
+            }
+
             var ops: [ElementOperation] = []
             for active in self.activeItems {
                 switch sk {
@@ -1413,6 +1425,102 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
         }
         super.keyDown(with: event)
+    }
+    
+    private func handleResizeItem(item: DiagramItem, specialKey: NSEvent.SpecialKey, scene: DrawableScene, isFromCenter: Bool) {
+        // Get current width and height from properties or drawable bounds
+        let propWidth = item.properties.get(PersistenceStyleKind.Width.name)?.getFloat(1)
+        let propHeight = item.properties.get(PersistenceStyleKind.Height.name)?.getFloat(1)
+        
+        // If not set in properties, get from drawable bounds
+        let currentWidth: Float
+        let currentHeight: Float
+        if let dr = scene.drawables[item] {
+            let bounds = dr.getBounds()
+            currentWidth = propWidth ?? Float(bounds.width)
+            currentHeight = propHeight ?? Float(bounds.height)
+        } else {
+            currentWidth = propWidth ?? 100
+            currentHeight = propHeight ?? 50
+        }
+        
+        let gridSpanX = Float(scene.sceneStyle.gridSpan.x)
+        let gridSpanY = Float(scene.sceneStyle.gridSpan.y)
+        
+        var newWidth = currentWidth
+        var newHeight = currentHeight
+        var newX = item.x
+        var newY = item.y
+        
+        switch specialKey {
+        case NSEvent.SpecialKey.leftArrow:
+            // Decrease width
+            newWidth = max(10, currentWidth - gridSpanX)
+            if isFromCenter {
+                newX = item.x + CGFloat((currentWidth - newWidth) / 2)
+            }
+        case NSEvent.SpecialKey.rightArrow:
+            // Increase width
+            newWidth = currentWidth + gridSpanX
+            if isFromCenter {
+                newX = item.x - CGFloat((newWidth - currentWidth) / 2)
+            }
+        case NSEvent.SpecialKey.upArrow:
+            // Decrease height
+            newHeight = max(10, currentHeight - gridSpanY)
+            if isFromCenter {
+                newY = item.y + CGFloat((currentHeight - newHeight) / 2)
+            }
+        case NSEvent.SpecialKey.downArrow:
+            // Increase height (in macOS Y grows upward)
+            newHeight = currentHeight + gridSpanY
+            if isFromCenter {
+                newY = item.y - CGFloat((newHeight - currentHeight) / 2)
+            }
+        default:
+            return
+        }
+        
+        // Create operations for resize
+        var ops: [ElementOperation] = []
+        
+        // Update position if resizing from center
+        if isFromCenter && (newX != item.x || newY != item.y) {
+            let newPos = CGPoint(x: newX, y: newY)
+            ops.append(store!.createUpdatePosition(item: item, newPos: newPos))
+        }
+        
+        // Update width and height properties
+        let newProps = item.toTennAsProps(.BlockExpr)
+        
+        // Update width
+        if let widthProp = newProps.getNamedElement(PersistenceStyleKind.Width.name) {
+            widthProp.children?.removeAll()
+            widthProp.add(TennNode.newIdent(PersistenceStyleKind.Width.name))
+            widthProp.add(TennNode.newFloatNode(Double(newWidth)))
+        } else {
+            let cmd = TennNode.newCommand(PersistenceStyleKind.Width.name)
+            cmd.add(TennNode.newFloatNode(Double(newWidth)))
+            newProps.add(cmd)
+        }
+        
+        // Update height
+        if let heightProp = newProps.getNamedElement(PersistenceStyleKind.Height.name) {
+            heightProp.children?.removeAll()
+            heightProp.add(TennNode.newIdent(PersistenceStyleKind.Height.name))
+            heightProp.add(TennNode.newFloatNode(Double(newHeight)))
+        } else {
+            let cmd = TennNode.newCommand(PersistenceStyleKind.Height.name)
+            cmd.add(TennNode.newFloatNode(Double(newHeight)))
+            newProps.add(cmd)
+        }
+        
+        ops.append(store!.createProperties(self.element!, item, newProps))
+        
+        if ops.count > 0 {
+            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
+            scheduleRedraw()
+        }
     }
 
     override func keyUp(with event: NSEvent) {
