@@ -18,7 +18,9 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
-- `TenniarbTests/` - unit tests; `PerformanceTests` вынесены в схему `Tenniarb-Performance`
+- `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
+  в схему `Tenniarb-Performance`. Схема скипает все остальные suite поимённо - при
+  добавлении нового тестового класса список надо дополнить, иначе он попадёт в perf-прогон.
 - `TenniarbUITests/` - UI tests (таргет собирается, но в схеме `Tenniarb` отключен: `skipped = "YES"`)
 - `.github/workflows/` - CI и release pipeline
 

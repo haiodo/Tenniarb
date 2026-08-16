@@ -71,6 +71,11 @@
 		AE01EC01000000000000012 /* PanelControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000012 /* PanelControllerTests.swift */; };
 		AE01EC01000000000000013 /* PreferencesUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000013 /* PreferencesUtilsTests.swift */; };
 		AE01EC01000000000000014 /* SceneDrawViewCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000014 /* SceneDrawViewCommandTests.swift */; };
+		AE01EC01000000000000015 /* OutlineAndTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000015 /* OutlineAndTextTests.swift */; };
+		AE01EC01000000000000016 /* DocumentExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000016 /* DocumentExportTests.swift */; };
+		AE01EC01000000000000017 /* PreferencesPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000017 /* PreferencesPanelTests.swift */; };
+		AE01EC01000000000000018 /* SyncPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000018 /* SyncPanelTests.swift */; };
+		AE01EC01000000000000019 /* SceneEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000019 /* SceneEditingTests.swift */; };
 		0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */; };
 		0CCAE77222AACB560083F898 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCAE77122AACB560083F898 /* Application.swift */; };
 		0CD170A322D5BB6500E217D4 /* draw_line_items.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1708E22D5BB6300E217D4 /* draw_line_items.png */; };
@@ -230,6 +235,11 @@
 		AE01EC00000000000000012 /* PanelControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelControllerTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000013 /* PreferencesUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesUtilsTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000014 /* SceneDrawViewCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDrawViewCommandTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000015 /* OutlineAndTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineAndTextTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000016 /* DocumentExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentExportTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000017 /* PreferencesPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesPanelTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000018 /* SyncPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPanelTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000019 /* SceneEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEditingTests.swift; sourceTree = "<group>"; };
 		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = Tenniarb/Utils/ClipboardUtils.swift; sourceTree = SOURCE_ROOT; };
 		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CD1708E22D5BB6300E217D4 /* draw_line_items.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = draw_line_items.png; sourceTree = "<group>"; };
@@ -547,6 +557,11 @@
 				AE01EC00000000000000012 /* PanelControllerTests.swift */,
 				AE01EC00000000000000013 /* PreferencesUtilsTests.swift */,
 				AE01EC00000000000000014 /* SceneDrawViewCommandTests.swift */,
+				AE01EC00000000000000015 /* OutlineAndTextTests.swift */,
+				AE01EC00000000000000016 /* DocumentExportTests.swift */,
+				AE01EC00000000000000017 /* PreferencesPanelTests.swift */,
+				AE01EC00000000000000018 /* SyncPanelTests.swift */,
+				AE01EC00000000000000019 /* SceneEditingTests.swift */,
 				0CD4B31F230D997A002F8D78 /* PerformanceTests.swift */,
 				0C7F899A233520880098B745 /* MarkDownTests.swift */,
 			);
@@ -866,6 +881,11 @@
 				AE01EC01000000000000012 /* PanelControllerTests.swift in Sources */,
 				AE01EC01000000000000013 /* PreferencesUtilsTests.swift in Sources */,
 				AE01EC01000000000000014 /* SceneDrawViewCommandTests.swift in Sources */,
+				AE01EC01000000000000015 /* OutlineAndTextTests.swift in Sources */,
+				AE01EC01000000000000016 /* DocumentExportTests.swift in Sources */,
+				AE01EC01000000000000017 /* PreferencesPanelTests.swift in Sources */,
+				AE01EC01000000000000018 /* SyncPanelTests.swift in Sources */,
+				AE01EC01000000000000019 /* SceneEditingTests.swift in Sources */,
 				0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */,
 				0C5C6D251EFF669500714971 /* TennTests.swift in Sources */,
 				0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */,

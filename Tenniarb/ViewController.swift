@@ -837,12 +837,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     func mergeProperties(_ node: TennNode) {
         updatingProperties = true
+        // setProperties takes an optional manager: there is no undo stack until the window
+        // is key, and force-unwrapping here crashed the edit.
         if let active = activeItems.first {
             if let element = self.selectedElement {
-                self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: { () -> Void in })
+                self.elementStore?.setProperties(element, active, node, undoManager: undoManager, refresh: { () -> Void in })
             }
         } else if let element = self.selectedElement {
-            self.elementStore?.setProperties(element, node, undoManager: undoManager!, refresh: { () -> Void in })
+            self.elementStore?.setProperties(element, node, undoManager: undoManager, refresh: { () -> Void in })
         }
         updatingProperties = false
     }

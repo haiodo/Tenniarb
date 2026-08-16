@@ -39,7 +39,67 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "AttributedPrinterTests">
+               </Test>
+               <Test
+                  Identifier = "BodyTextTests">
+               </Test>
+               <Test
+                  Identifier = "ClipboardUtilsTests">
+               </Test>
+               <Test
+                  Identifier = "ColorParsingTests">
+               </Test>
+               <Test
+                  Identifier = "DocumentTests">
+               </Test>
+               <Test
+                  Identifier = "DrawableItemStyleTests">
+               </Test>
+               <Test
+                  Identifier = "DrawableLineTests">
+               </Test>
+               <Test
+                  Identifier = "DrawablePrimitiveTests">
+               </Test>
+               <Test
+                  Identifier = "DrawableSceneTests">
+               </Test>
+               <Test
+                  Identifier = "DrawableStyleEvaluationTests">
+               </Test>
+               <Test
+                  Identifier = "DrawableStyleTests">
+               </Test>
+               <Test
+                  Identifier = "ElementImageProviderTests">
+               </Test>
+               <Test
+                  Identifier = "ElementPropertiesTests">
+               </Test>
+               <Test
                   Identifier = "ExecutionContextTests">
+               </Test>
+               <Test
+                  Identifier = "ExecutionModelExtraTests">
+               </Test>
+               <Test
+                  Identifier = "ExportManagerRemainingTests">
+               </Test>
+               <Test
+                  Identifier = "ExportManagerTests">
+               </Test>
+               <Test
+                  Identifier = "ImageUtilsTests">
+               </Test>
+               <Test
+                  Identifier = "LayoutAlgorithmTests">
+               </Test>
+               <Test
+                  Identifier = "LayoutContextTests">
+               </Test>
+               <Test
+                  Identifier = "LexerConformanceTests">
                </Test>
                <Test
                   Identifier = "LexerTests">
@@ -48,13 +108,124 @@
                   Identifier = "MarkdownTests">
                </Test>
                <Test
+                  Identifier = "OperationControllerTests">
+               </Test>
+               <Test
+                  Identifier = "OperationsTests">
+               </Test>
+               <Test
+                  Identifier = "OutlineDelegateTests">
+               </Test>
+               <Test
+                  Identifier = "OutlineViewCommandTests">
+               </Test>
+               <Test
                   Identifier = "PersistenceTests">
+               </Test>
+               <Test
+                  Identifier = "PreferenceConstantsTests">
+               </Test>
+               <Test
+                  Identifier = "PreferencesGeneralControllerTests">
+               </Test>
+               <Test
+                  Identifier = "PreferencesTabControllerTests">
                </Test>
                <Test
                   Identifier = "SVGExport">
                </Test>
                <Test
+                  Identifier = "SceneBodyTextTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewAlignmentTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewBoundsTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewEditingTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewInteractionTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewKeyboardTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewMenuTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewModelTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewMouseTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewPropertyTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDrawViewSelectionTests">
+               </Test>
+               <Test
+                  Identifier = "SceneMathTests">
+               </Test>
+               <Test
+                  Identifier = "SceneNestedElementTests">
+               </Test>
+               <Test
+                  Identifier = "SceneRemainingTests">
+               </Test>
+               <Test
+                  Identifier = "SceneRenderTests">
+               </Test>
+               <Test
+                  Identifier = "SceneStyleTests">
+               </Test>
+               <Test
+                  Identifier = "SceneTextTests">
+               </Test>
+               <Test
+                  Identifier = "SceneTitleEditingTests">
+               </Test>
+               <Test
+                  Identifier = "SceneZoomTests">
+               </Test>
+               <Test
+                  Identifier = "SearchBoxTests">
+               </Test>
+               <Test
+                  Identifier = "SmallControllerTests">
+               </Test>
+               <Test
+                  Identifier = "SpringLayoutOptionTests">
+               </Test>
+               <Test
+                  Identifier = "StyleManagerTests">
+               </Test>
+               <Test
+                  Identifier = "SyncPanelTests">
+               </Test>
+               <Test
+                  Identifier = "SyncSerializationTests">
+               </Test>
+               <Test
+                  Identifier = "SyncViewControllerTests">
+               </Test>
+               <Test
+                  Identifier = "TennNodeTests">
+               </Test>
+               <Test
                   Identifier = "TenniarbTests">
+               </Test>
+               <Test
+                  Identifier = "TextPropertiesDelegateTests">
+               </Test>
+               <Test
+                  Identifier = "ViewControllerTests">
+               </Test>
+               <Test
+                  Identifier = "WindowAndAppTests">
                </Test>
             </SkippedTests>
          </TestableReference>
