@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 import cmkdown
 
 let preferenceAutoExpand = "preferences.structure.auto_expand"
@@ -42,10 +42,10 @@ public class PreferenceConstants {
     private static let backgroundDarkDefaultHex = "#2e2e2eff"
 
     public var backgroundDefault: CGColor {
-        return CGColor(red: 0xe7/255, green: 0xe9/255, blue: 0xeb/255, alpha:1)
+        return CGColor(red: 0xe7 / 255, green: 0xe9 / 255, blue: 0xeb / 255, alpha: 1)
     }
     public var backgroundDarkDefault: CGColor {
-        return CGColor(red: 0x2e/255, green: 0x2e/255, blue: 0x2e/255, alpha:1)
+        return CGColor(red: 0x2e / 255, green: 0x2e / 255, blue: 0x2e / 255, alpha: 1)
     }
 
     var backgroundColorCache: CGColor? = nil
@@ -55,7 +55,7 @@ public class PreferenceConstants {
     var isInitializing = false
     var defaults: UserDefaults
 
-    private static var _isInitializing = false
+    nonisolated(unsafe) private static var _isInitializing = false
     public static var isInitializing: Bool {
         return _isInitializing
     }
@@ -65,21 +65,7 @@ public class PreferenceConstants {
     static func isDarkModeRaw() -> Bool {
         let isDarkMode: Bool
 
-        if #available(macOS 12.0, *) {
-            if NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-                isDarkMode = true
-            } else {
-                isDarkMode = false
-            }
-        } else if #available(macOS 10.14, *) {
-            if NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-                isDarkMode = true
-            } else {
-                isDarkMode = false
-            }
-        } else {
-            isDarkMode = false
-        }
+        isDarkMode = NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
 
         return isDarkMode
     }
@@ -98,7 +84,8 @@ public class PreferenceConstants {
         get {
             if backgroundColorCache == nil {
                 if let str = defaults.string(forKey: preferenceColorsBackground),
-                   let clr = parseColor(str) {
+                    let clr = parseColor(str)
+                {
                     backgroundColorCache = clr
                 } else {
                     backgroundColorCache = backgroundDefault
@@ -115,7 +102,8 @@ public class PreferenceConstants {
     public var backgroundGet: CGColor {
         if backgroundColorCache == nil {
             if let str = defaults.string(forKey: preferenceColorsBackground),
-               let clr = parseColor(str) {
+                let clr = parseColor(str)
+            {
                 backgroundColorCache = clr
             } else {
                 backgroundColorCache = backgroundDefault
@@ -128,7 +116,8 @@ public class PreferenceConstants {
         get {
             if backgroundColorDarkCache == nil {
                 if let str = defaults.string(forKey: preferenceColorsBackgroundDark),
-                   let clr = parseColor(str) {
+                    let clr = parseColor(str)
+                {
                     backgroundColorDarkCache = clr
                 } else {
                     backgroundColorDarkCache = backgroundDarkDefault
@@ -145,7 +134,8 @@ public class PreferenceConstants {
     public var backgroundDarkGet: CGColor {
         if backgroundColorDarkCache == nil {
             if let str = defaults.string(forKey: preferenceColorsBackgroundDark),
-               let clr = parseColor(str) {
+                let clr = parseColor(str)
+            {
                 backgroundColorDarkCache = clr
             } else {
                 backgroundColorDarkCache = backgroundDarkDefault
@@ -182,7 +172,7 @@ public class PreferenceConstants {
         return defaults.bool(forKey: prererenceUITransparentBackground)
     }
 
-    private static var _preference: PreferenceConstants?
+    nonisolated(unsafe) private static var _preference: PreferenceConstants?
     private static let _lock = NSLock()
 
     init() {
@@ -203,10 +193,7 @@ public class PreferenceConstants {
             object: nil)
 
         self.initDone = true
-
-        DispatchQueue.main.async {
-            self.darkMode = PreferenceConstants.isDarkModeRaw()
-        }
+        self.darkMode = PreferenceConstants.isDarkModeRaw()
     }
 
     @objc func interfaceModeChanged(sender: NSNotification) {
@@ -215,10 +202,7 @@ public class PreferenceConstants {
 
     public func checkDefaults() {
         let center = NotificationCenter.default
-        var removedObservers: [(NSObjectProtocol, Notification.Name)] = []
-
-        if self.isInitializing {
-        }
+        let removedObservers: [(NSObjectProtocol, Notification.Name)] = []
 
         defaults.register(defaults: [
             preferenceAutoExpand: true,
@@ -230,7 +214,7 @@ public class PreferenceConstants {
             renderEnableBackgroundKey: true,
             renderUseNativeResolutionKey: true,
             preferenceUIQuickPanelOnTop: true,
-            prererenceUITransparentBackground: false
+            prererenceUITransparentBackground: false,
         ])
 
         for (observer, name) in removedObservers {
@@ -284,9 +268,10 @@ func colorToHex(_ color: CGColor) -> String {
 
 func colorToHexSafe(_ color: CGColor) -> String {
     guard let colorSpace = color.colorSpace,
-          colorSpace.model == .rgb,
-          let components = color.components,
-          components.count >= 3 else {
+        colorSpace.model == .rgb,
+        let components = color.components,
+        components.count >= 3
+    else {
         return "#000000ff"
     }
 
@@ -350,7 +335,6 @@ class PreferencesGeneralController: NSViewController {
 
         let leftX: CGFloat = 20
         let rightX: CGFloat = 270
-        let colWidth: CGFloat = 220
 
         // ===== LEFT COLUMN =====
 
@@ -430,7 +414,8 @@ class PreferencesGeneralController: NSViewController {
         renderEnableButton.frame = NSRect(x: rightX + 10, y: 140, width: 180, height: 18)
         root.addSubview(renderEnableButton)
 
-        renderNativeScaleButton = NSButton(checkboxWithTitle: "Use Native resolution", target: self, action: #selector(renderNativeScaleChanged(_:)))
+        renderNativeScaleButton = NSButton(
+            checkboxWithTitle: "Use Native resolution", target: self, action: #selector(renderNativeScaleChanged(_:)))
         renderNativeScaleButton.frame = NSRect(x: rightX + 10, y: 118, width: 180, height: 18)
         root.addSubview(renderNativeScaleButton)
 
@@ -444,7 +429,8 @@ class PreferencesGeneralController: NSViewController {
         uiQuickPanelButton.frame = NSRect(x: rightX + 10, y: 60, width: 180, height: 18)
         root.addSubview(uiQuickPanelButton)
 
-        uiTransparentButton = NSButton(checkboxWithTitle: "Transparent background", target: self, action: #selector(uiTransparentChanged(_:)))
+        uiTransparentButton = NSButton(
+            checkboxWithTitle: "Transparent background", target: self, action: #selector(uiTransparentChanged(_:)))
         uiTransparentButton.frame = NSRect(x: rightX + 10, y: 38, width: 180, height: 18)
         root.addSubview(uiTransparentButton)
     }
@@ -570,12 +556,22 @@ class PreferencesController: NSTabViewController {
         window.animator().setFrame(frame, display: true)
     }
 
-    override func transition(from fromViewController: NSViewController, to toViewController: NSViewController, options: NSViewController.TransitionOptions = [], completionHandler completion: (() -> Void)? = nil) {
-
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.5
-            setWindowFrame(for: toViewController)
-            super.transition(from: fromViewController, to: toViewController, options: [.crossfade, .allowUserInteraction], completionHandler: completion)
-        }, completionHandler: nil)
+    override func transition(
+        from fromViewController: NSViewController, to toViewController: NSViewController, options: NSViewController.TransitionOptions = [],
+        completionHandler completion: (() -> Void)? = nil
+    ) {
+        // AppKit invokes the handler on the main thread; the wrapper only satisfies @Sendable checking.
+        nonisolated(unsafe) let completion = completion
+        let sendableCompletion: @Sendable () -> Void = {
+            completion?()
+        }
+        NSAnimationContext.runAnimationGroup(
+            { context in
+                context.duration = 0.5
+                setWindowFrame(for: toViewController)
+                super.transition(
+                    from: fromViewController, to: toViewController, options: [.crossfade, .allowUserInteraction],
+                    completionHandler: sendableCompletion)
+            }, completionHandler: nil)
     }
 }

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "indentation": { "spaces": 4 },
+  "lineLength": 140,
+  "maximumBlankLines": 1,
+  "respectsExistingLineBreaks": true,
+  "lineBreakBeforeControlFlowKeywords": false,
+  "lineBreakBeforeEachArgument": false,
+  "indentConditionalCompilationBlocks": true,
+  "indentSwitchCaseLabels": false,
+  "rules": {
+    "AlwaysUseLowerCamelCase": false,
+    "NoBlockComments": false,
+    "OrderedImports": true,
+    "UseLetInEveryBoundCaseVariable": false,
+    "UseSynthesizedInitializer": false,
+    "ReturnVoidInsteadOfEmptyTuple": true,
+    "UseShorthandTypeNames": true,
+    "NoParensAroundConditions": true,
+    "OneVariableDeclarationPerLine": true
+  }
+}

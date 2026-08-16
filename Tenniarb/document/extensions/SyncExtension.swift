@@ -43,31 +43,30 @@ struct SyncPos: Codable {
 extension TennNode {
     func toSync() -> [String] {
         if self.count > 0 {
-            return self.children!.map {(itm) in itm.toStr(0, true).replacingOccurrences(of: "\n", with: "\\n")}
-        }
-        else {
+            return self.children!.map { (itm) in itm.toStr(0, true).replacingOccurrences(of: "\n", with: "\\n") }
+        } else {
             return []
         }
     }
 }
 
 extension Element {
-    
+
     func toSyncJson() -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dataEncodingStrategy = .base64
-        
+
         let syncModel = self.toSync()
         let data = try! encoder.encode(syncModel)
-        let txtValue = String( data: data, encoding: .utf8)!
+        let txtValue = String(data: data, encoding: .utf8)!
         return txtValue
     }
     func toSync() -> SyncElement {
-        
+
         var items: [SyncItem]? = []
         var edges: [SyncItem]? = []
-        
+
         self.items.forEach {
             (itm) in
             var source: String? = nil
@@ -82,8 +81,9 @@ extension Element {
                 kind: itm.kind.commandName,
                 name: itm.name.replacingOccurrences(of: "\n", with: "\\n"),
                 id: itm.id.uuidString,
-                pos: SyncPos(x: itm.x,
-                             y: itm.y),
+                pos: SyncPos(
+                    x: itm.x,
+                    y: itm.y),
                 description: itm.description?.replacingOccurrences(of: "\n", with: "\\n"),
                 properties: itm.properties.count == 0 ? nil : itm.properties.map { (prop) in prop.toSync() },
                 source: source,
@@ -91,11 +91,10 @@ extension Element {
             )
             if lnkKind {
                 edges?.append(itm)
-            }
-            else {
+            } else {
                 items?.append(itm)
             }
-            
+
         }
         if items?.count == 0 {
             items = nil
@@ -103,23 +102,23 @@ extension Element {
         if edges?.count == 0 {
             edges = nil
         }
- 
+
         let result = SyncElement(
-            name:self.name,
+            name: self.name,
             description: self.description,
             items: items,
             edges: edges
         )
-        
+
         return result
     }
 }
 
-func runScriptWithDictionary(arguments:[String], content: String) -> String? {
+func runScriptWithDictionary(arguments: [String], content: String) -> String? {
     let outPipe = Pipe()
     let errPipe = Pipe()
     let inPipe = Pipe()
-    
+
     let task = Process()
     task.launchPath = arguments[0]
     task.arguments = arguments
@@ -127,17 +126,17 @@ func runScriptWithDictionary(arguments:[String], content: String) -> String? {
     task.standardOutput = outPipe
     task.standardError = errPipe
     task.launch()
-    
+
     inPipe.fileHandleForWriting.write(content.data(using: String.Encoding.utf8)!)
-    
+
     let data = outPipe.fileHandleForReading.readDataToEndOfFile()
     task.waitUntilExit()
-    
+
     let exitCode = task.terminationStatus
-    if (exitCode != 0) {
+    if exitCode != 0 {
         print("ERROR: \(exitCode)")
         return nil
     }
-    
+
     return String(data: data, encoding: String.Encoding.utf8)
 }

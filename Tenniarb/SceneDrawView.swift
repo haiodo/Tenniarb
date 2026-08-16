@@ -16,26 +16,24 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-
 import Cocoa
-import CoreText
 import CoreImage
+import CoreText
 import UniformTypeIdentifiers
 
-
 enum SceneMode {
-    case Normal // A usual selection mode
+    case Normal  // A usual selection mode
     case Editing  // Title editing mode
-    case Dragging // Dragging mode
+    case Dragging  // Dragging mode
     case DiagramMove
-    case LineDrawing // Line dragging mode
+    case LineDrawing  // Line dragging mode
     case Selection  // Selection with shift key
 }
 
 enum EditingMode {
-    case Name // edvarng of name/title
-    case Body // editing of body, shift + enter
-    case Value // A custom edit field selection
+    case Name  // edvarng of name/title
+    case Body  // editing of body, shift + enter
+    case Value  // A custom edit field selection
 }
 
 public class NSOptionsPopup: NSView {
@@ -79,12 +77,12 @@ public class PopupEditField: NSTextField {
 
 class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     var view: SceneDrawView?
-    init( _ view: SceneDrawView) {
+    init(_ view: SceneDrawView) {
         self.view = view
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        guard let view = view as? SceneDrawView else {
+        guard let view = view else {
             return false
         }
 
@@ -99,8 +97,8 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
                 let insertPart = "\n"
 
                 let str = NSAttributedString(
-                    string:insertPart,
-                    attributes:[NSAttributedString.Key.font: textView.font ?? NSFont.systemFont(ofSize: 12)]
+                    string: insertPart,
+                    attributes: [NSAttributedString.Key.font: textView.font ?? NSFont.systemFont(ofSize: 12)]
                 )
                 textView.textStorage?.insert(str, at: loc)
                 return true
@@ -114,7 +112,7 @@ class EditTitleDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     }
 }
 
-
+@MainActor
 class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     //    let background = CGColor(red: 253/255, green: 246/255, blue: 227/255, alpha:1)
     var store: ElementModelStore?
@@ -125,7 +123,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     var dragElements: [DiagramItem] = []
 
-    var dragMap:[DiagramItem: CGPoint] = [:]
+    var dragMap: [DiagramItem: CGPoint] = [:]
 
     var lineToPoint: CGPoint?
     var lineTarget: DiagramItem?
@@ -143,17 +141,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var editBoxItem: Drawable? = nil
     var editBoxDelegate: EditTitleDelegate?
 
-    var pivotPoint: CGPoint = CGPoint(x:0, y:0)
+    var pivotPoint: CGPoint = CGPoint(x: 0, y: 0)
 
     var styleManager: StyleManager?
 
-    var selectionStart: CGPoint = CGPoint(x:0, y:0)
+    var selectionStart: CGPoint = CGPoint(x: 0, y: 0)
 
     var editingMode: EditingMode = .Name
 
     var clickCounter = 0
 
     var viewController: ViewController?
+    nonisolated(unsafe) private var defaultsObserver: NSObjectProtocol?
 
     var zoomLevel: CGFloat = 1 {
         didSet {
@@ -192,7 +191,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     var mouseDownState = false
 
-    var onSelection: [( [DiagramItem] ) -> Void] = []
+    var onSelection: [([DiagramItem]) -> Void] = []
 
     var scene: DrawableScene?
 
@@ -238,22 +237,22 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         scheduleRedraw(invalidRect: nil)
     }
 
-    fileprivate func scheduleRedraw( invalidRect: CGRect? ) {
+    fileprivate func scheduleRedraw(invalidRect: CGRect?) {
         if !self.drawScheduled {
             drawScheduled = true
             lastInvalidRect = invalidRect
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
-                if let rect = invalidRect {
-                    self.setNeedsDisplay(rect)
-                    self.lastInvalidRect = nil
-                }
-                else {
-                    self.needsDisplay = true
-                }
-                self.drawScheduled = false
-            })
-        }
-        else {
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + 0.01,
+                execute: {
+                    if let rect = invalidRect {
+                        self.setNeedsDisplay(rect)
+                        self.lastInvalidRect = nil
+                    } else {
+                        self.needsDisplay = true
+                    }
+                    self.drawScheduled = false
+                })
+        } else {
             lastInvalidRect = nil
         }
     }
@@ -303,8 +302,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 let np1 = prevTouchValue.normalizedPosition
                 let np2 = touch!.normalizedPosition
 
-                let dx = (np2.x-np1.x)*prevTouchValue.deviceSize.width*3
-                let dy = (np2.y-np1.y)*prevTouchValue.deviceSize.height*3
+                let dx = (np2.x - np1.x) * prevTouchValue.deviceSize.width * 3
+                let dy = (np2.y - np1.y) * prevTouchValue.deviceSize.height * 3
                 self.ox += dx
                 self.oy += dy
 
@@ -331,7 +330,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
 
-    func onLoad(_ vc: ViewController ) {
+    func onLoad(_ vc: ViewController) {
         styleManager = StyleManager(scene: self)
         self.viewController = vc
 
@@ -339,42 +338,48 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.scaleFactor = win.backingScaleFactor
         }
 
-        NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
+        // Block-based observer on main queue — UserDefaults.didChangeNotification
+        // is posted on background threads by the system; routing via .main ensures
+        // MainActor-isolated handlers (Swift 6 strict concurrency) are safe.
+        // Note: weak self is captured but `notif` is intentionally not — it would be
+        // a non-Sendable value crossing into the MainActor closure under Swift 6.
+        self.defaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.defaultsChanged()
+            }
+        }
     }
 
     deinit {
+        // Capture observer through a nonisolated read; NSObjectProtocol token is opaque
+        // and safe to remove from any thread.
+        let obs = self.defaultsObserver
+        if let obs = obs {
+            NotificationCenter.default.removeObserver(obs)
+        }
         NotificationCenter.default.removeObserver(self)
     }
 
-    func onAppear( ) {
+    func onAppear() {
         if let win = self.window {
             self.scaleFactor = win.backingScaleFactor
         }
     }
 
-    @objc func defaultsChanged(_ notif: NSNotification) {
-        // Ignore notifications during PreferenceConstants initialization to prevent infinite recursion
+    @MainActor func defaultsChanged() {
+        // Observer registered on .main queue, so always invoked on main thread.
         if PreferenceConstants.isInitializing {
             return
         }
-        
-        // Notifications from UserDefaults can be delivered on a background thread.
-        // Make sure any UI-related work happens on the main thread.
-        func handle() {
-            if self.element != nil {
-                self.buildScene()
-                self.scheduleRedraw()
-            }
-        }
-        if Thread.isMainThread {
-            handle()
-        } else {
-            DispatchQueue.main.async {
-                handle()
-            }
+        if self.element != nil {
+            self.buildScene()
+            self.scheduleRedraw()
         }
     }
-
 
     func notifyChanges(_ evt: ModelEvent) {
 
@@ -382,7 +387,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if evt.items.count > 0 {
             var removedItems: [DiagramItem] = []
             for (k, v) in evt.items {
-                if v == .Remove  {
+                if v == .Remove {
                     if self.activeItems.contains(k) {
                         removedItems.append(k)
                     }
@@ -393,16 +398,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 setActiveItems(newActive, force: true)
             }
         }
-        if evt.kind == .Structure  {
+        if evt.kind == .Structure {
             self.buildScene()
             scheduleRedraw()
-        }
-        else {
+        } else {
             scheduleRedraw()
         }
     }
 
-    public func setModel( store: ElementModelStore ) {
+    public func setModel(store: ElementModelStore) {
         if let um = self.undoManager {
             um.removeAllActions()
         }
@@ -421,7 +425,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         zoomLevel = 1
     }
 
-    public func setActiveElement(_ elementModel: Element ) {
+    public func setActiveElement(_ elementModel: Element) {
 
         if self.element == elementModel {
             return
@@ -449,12 +453,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.ox = -1 * bounds.midX
             self.oy = -1 * bounds.midY
         }
-        self.pivotPoint = CGPoint(x:0, y:0)
+        self.pivotPoint = CGPoint(x: 0, y: 0)
         zoomLevel = 1
         needsDisplay = true
     }
 
-    func centerItem( _ item: DiagramItem, _ offset: CGFloat ) {
+    func centerItem(_ item: DiagramItem, _ offset: CGFloat) {
 
         if let dr = self.scene?.drawables[item] {
             let bounds = dr.getBounds()
@@ -470,10 +474,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             count += 1
             if self.mode == .Normal {
                 self.store!.executionContext.updateAll({
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: {
-                        self.buildScene()
-                        self.needsDisplay = true
-                    })
+                    DispatchQueue.main.asyncAfter(
+                        deadline: DispatchTime.now() + Double(delay),
+                        execute: {
+                            self.buildScene()
+                            self.needsDisplay = true
+                        })
                 })
             } else {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: self.animate)
@@ -496,14 +502,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         let darkMode = PreferenceConstants.preference.isDiagramDarkMode()
 
-        let scene = DrawableScene(self.element!, darkMode: darkMode, executionContext: self.store!.executionContext,
-                                  scaleFactor: self.scaleFactor)
+        let scene = DrawableScene(
+            self.element!, darkMode: darkMode, executionContext: self.store!.executionContext,
+            scaleFactor: self.scaleFactor)
 
         if oldActiveItem.count > 0 {
             scene.updateActiveElements(oldActiveItem)
             scene.editingMode = oldEditMode
         }
-
 
         if let fps = element?.properties.get("animation"), let delay = fps.getFloat(1) {
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(delay), execute: self.animate)
@@ -512,7 +518,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.scene = scene
     }
 
-    public func setActiveItem( _ element: DiagramItem?, immideateDraw: Bool = false ) {
+    public func setActiveItem(_ element: DiagramItem?, immideateDraw: Bool = false) {
         var els: [DiagramItem] = []
         if let act = element {
             els.append(act)
@@ -521,10 +527,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.setActiveItems(els, immideateDraw: immideateDraw)
     }
 
-    func changeItemProps( _ property: String, _ values: TennNode...) {
+    func changeItemProps(_ property: String, _ values: TennNode...) {
         self.changeItemProps(property, values)
     }
-    func changeItemProps( _ property: String, _ values: [TennNode]) {
+    func changeItemProps(_ property: String, _ values: [TennNode]) {
         guard let itm = self.activeItems.first, activeItems.count == 1 else {
             return
         }
@@ -537,8 +543,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             itmProp.add(TennNode.newIdent(property))
             itmProp.add(values)
             changed = true
-        }
-        else {
+        } else {
             // Just add new property
             let cmd = TennNode.newCommand(property)
             cmd.add(values)
@@ -552,77 +557,77 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     let itemDisplayVariants = ["■ rect", "□ no-fill", "● circle", "❐ stack", "≣ text"]
-    let linkDisplayVariants = ["– solid","→ arrow", "↔︎ arrows", "← arrow-source"]
+    let linkDisplayVariants = ["– solid", "→ arrow", "↔︎ arrows", "← arrow-source"]
     let lineStyleDisplayVariants = ["– solid", "⤍ dashed", "⤑ dotted"]
 
-    @objc func displayMenuAction( _ sender: NSMenuItem ) {
+    @objc func displayMenuAction(_ sender: NSMenuItem) {
         let val = sender.title
         let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
         changeItemProps("display", TennNode.newIdent(String(value)))
     }
 
-    func createMenu( selector: Selector, items: [String]) -> NSMenu {
+    func createMenu(selector: Selector, items: [String]) -> NSMenu {
         let menu = NSMenu()
         for i in items {
             menu.addItem(NSMenuItem(title: i, action: selector, keyEquivalent: ""))
         }
         return menu
     }
-    @objc func fontMenuAction( _ sender: NSMenuItem ) {
+    @objc func fontMenuAction(_ sender: NSMenuItem) {
         let value = sender.title
         changeItemProps("font-size", TennNode.newIdent(value))
     }
 
-    @objc func layoutMenuAction( _ sender: NSMenuItem ) {
+    @objc func layoutMenuAction(_ sender: NSMenuItem) {
         let value = sender.title
         let svalue = value.split(separator: " ")
-        let vars = svalue.map( { (e) in return TennNode.newIdent(String(e)) } )
+        let vars = svalue.map({ (e) in return TennNode.newIdent(String(e)) })
         changeItemProps("layout", vars)
     }
 
-    @objc func bodyFontMenuAction( _ sender: NSMenuItem ) {
+    @objc func bodyFontMenuAction(_ sender: NSMenuItem) {
         let value = sender.title
         changeItemProps("font-size", TennNode.newIdent(value))
     }
 
-    @objc func markerMenuAction( _ sender: NSMenuItem ) {
+    @objc func markerMenuAction(_ sender: NSMenuItem) {
         let value = sender.title
         changeItemProps("marker", TennNode.newStrNode(value))
     }
-    @objc func lineWidthAction( _ sender: NSMenuItem ) {
+    @objc func lineWidthAction(_ sender: NSMenuItem) {
         let value = sender.title
         changeItemProps("line-width", TennNode.newIdent(value))
     }
 
-    @objc func heightAction( _ sender: NSMenuItem ) {
+    @objc func heightAction(_ sender: NSMenuItem) {
         let value = sender.title
         changeItemProps("height", TennNode.newIdent(value))
     }
 
-    @objc func commandAction( _ sender: NSMenuItem ) {
+    @objc func commandAction(_ sender: NSMenuItem) {
         let value = sender.title
         var split = value.split(separator: " ")
         if split.count >= 2 {
             let cmd = split.removeFirst()
-            let nodes = split.map({(it) -> TennNode in TennNode.newIdent(String(it))})
+            let nodes = split.map({ (it) -> TennNode in TennNode.newIdent(String(it)) })
             changeItemProps(String(cmd), nodes)
         }
     }
 
-    @objc func colorMenuAction( _ sender: NSMenuItem ) {
+    @objc func colorMenuAction(_ sender: NSMenuItem) {
         let value = String(sender.title.dropFirst(1))
         changeItemProps("color", TennNode.newIdent(value))
     }
-    @objc func borderColorMenuAction( _ sender: NSMenuItem ) {
+    @objc func borderColorMenuAction(_ sender: NSMenuItem) {
         let value = String(sender.title.dropFirst(1))
         changeItemProps("border-color", TennNode.newIdent(value))
     }
-    @objc func textColorMenuAction( _ sender: NSMenuItem ) {
+    @objc func textColorMenuAction(_ sender: NSMenuItem) {
         let value = String(sender.title.dropFirst(1))
         changeItemProps("text-color", TennNode.newIdent(value))
     }
 
-    @objc func lineStyleMenuAction( _ sender: NSMenuItem ) {
+    @objc func lineStyleMenuAction(_ sender: NSMenuItem) {
         let val = sender.title
         let value = val.suffix(from: val.index(val.startIndex, offsetBy: 2))
         changeItemProps("line-style", TennNode.newIdent(String(value)))
@@ -665,58 +670,72 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     fileprivate func createMarkerMenus() -> NSMenu {
         let menu = NSMenu()
         let smiles = menu.addItem(withTitle: "😀 Emoji", action: nil, keyEquivalent: "")
-        smiles.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["😀","😛","😱","😵","😷","🐶","🐱","🐭","🐰","🦊","🌻","🌧","🌎","🔥","❄️","💦","☂️"])
+        smiles.submenu = createMenu(
+            selector: #selector(markerMenuAction(_:)),
+            items: ["😀", "😛", "😱", "😵", "😷", "🐶", "🐱", "🐭", "🐰", "🦊", "🌻", "🌧", "🌎", "🔥", "❄️", "💦", "☂️"])
 
         let numbers = menu.addItem(withTitle: "🔢 Numbers", action: nil, keyEquivalent: "")
-        numbers.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"])
+        numbers.submenu = createMenu(
+            selector: #selector(markerMenuAction(_:)), items: ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"])
 
         let objects = menu.addItem(withTitle: "🖥 Objects", action: nil, keyEquivalent: "")
-        objects.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["⌚️","🖥","🖨","⌛️","⏰","⚒","🧲","💣","🔒","✂️","🧸","🎁"])
+        objects.submenu = createMenu(
+            selector: #selector(markerMenuAction(_:)), items: ["⌚️", "🖥", "🖨", "⌛️", "⏰", "⚒", "🧲", "💣", "🔒", "✂️", "🧸", "🎁"])
 
         let symbols = menu.addItem(withTitle: "🔠 Symbols", action: nil, keyEquivalent: "")
-        symbols.submenu = createMenu(selector: #selector(markerMenuAction(_:)), items: ["🆗","🆖","#️⃣","🔤","ℹ️","🚻","🔃","➕","➖","➗","✖️","♾","💲","✔️","♠️","♣️","♥️","♦️"])
+        symbols.submenu = createMenu(
+            selector: #selector(markerMenuAction(_:)),
+            items: ["🆗", "🆖", "#️⃣", "🔤", "ℹ️", "🚻", "🔃", "➕", "➖", "➗", "✖️", "♾", "💲", "✔️", "♠️", "♣️", "♥️", "♦️"])
 
         return menu
     }
 
     fileprivate func createFontMenu() -> NSMenu {
-        return createMenu(selector: #selector(fontMenuAction(_:)),
-                          items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"])
+        return createMenu(
+            selector: #selector(fontMenuAction(_:)),
+            items: ["8", "10", "12", "14", "16", "18", "20", "22", "26", "32", "36"])
     }
 
     fileprivate func createLayoutMenu() -> NSMenu {
-        return createMenu(selector: #selector(layoutMenuAction(_:)),
-                          items: ["left", "right", "center", "top", "top right", "bottom", "bottom right"])
+        return createMenu(
+            selector: #selector(layoutMenuAction(_:)),
+            items: ["left", "right", "center", "top", "top right", "bottom", "bottom right"])
     }
 
     fileprivate func createDisplayMenu(_ item: Bool) -> NSMenu {
-        return createMenu(selector: #selector(displayMenuAction(_:)),
-                          items: item ? itemDisplayVariants : linkDisplayVariants )
+        return createMenu(
+            selector: #selector(displayMenuAction(_:)),
+            items: item ? itemDisplayVariants : linkDisplayVariants)
     }
 
     fileprivate func createColorMenu() -> NSMenu {
-        return createMenu(selector: #selector(colorMenuAction(_:)),
-                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+        return createMenu(
+            selector: #selector(colorMenuAction(_:)),
+            items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
     }
 
     fileprivate func createBorderColorMenu() -> NSMenu {
-        return createMenu(selector: #selector(borderColorMenuAction(_:)),
-                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+        return createMenu(
+            selector: #selector(borderColorMenuAction(_:)),
+            items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
     }
 
     fileprivate func createTextColorMenu() -> NSMenu {
-        return createMenu(selector: #selector(textColorMenuAction(_:)),
-                          items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
+        return createMenu(
+            selector: #selector(textColorMenuAction(_:)),
+            items: ["🔴red", "🟢green", "🔵blue", "🟡yellow", "🟠orange", "🟤brown", "⚫️black", "🟣purple"])
     }
 
     fileprivate func createLineWidthMenu() -> NSMenu {
-        return createMenu(selector: #selector(lineWidthAction(_:)),
-                          items: ["0.3", "0.5", "1", "1.5", "2", "5"])
+        return createMenu(
+            selector: #selector(lineWidthAction(_:)),
+            items: ["0.3", "0.5", "1", "1.5", "2", "5"])
     }
 
     fileprivate func createLineStyleMenu() -> NSMenu {
-        return createMenu(selector: #selector(lineStyleMenuAction(_:)),
-                          items: lineStyleDisplayVariants)
+        return createMenu(
+            selector: #selector(lineStyleMenuAction(_:)),
+            items: lineStyleDisplayVariants)
     }
 
     fileprivate func showPopup() {
@@ -737,9 +756,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         let bounds = dr.getSelectorBounds()
-        let origin =  CGPoint(x: scene!.offset.x + bounds.origin.x + 15, y: scene!.offset.y + bounds.origin.y + bounds.height + 10)
+        let origin = CGPoint(x: scene!.offset.x + bounds.origin.x + 15, y: scene!.offset.y + bounds.origin.y + bounds.height + 10)
 
-        let segments = NSSegmentedControl() //frame: CGRect(x: 0, y: 0, width: 300, height: 48))
+        let segments = NSSegmentedControl()  //frame: CGRect(x: 0, y: 0, width: 300, height: 48))
 
         segments.segmentStyle = .rounded
         segments.segmentCount = 10
@@ -761,7 +780,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
             }
             segments.setWidth(36, forSegment: segm)
-
 
             segm += 1
             segments.setLabel("Ƭ", forSegment: segm)
@@ -832,9 +850,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         segments.trackingMode = .momentary
         var popup: NSView?
 
-        segments.frame = NSRect(origin: NSPoint(x: 0, y: 0 ), size: segments.fittingSize)
+        segments.frame = NSRect(origin: NSPoint(x: 0, y: 0), size: segments.fittingSize)
 
-        popup  = NSOptionsPopup(frame: NSRect(origin: origin, size: segments.fittingSize))
+        popup = NSOptionsPopup(frame: NSRect(origin: origin, size: segments.fittingSize))
 
         self.popupView = popup
         popup!.addSubview(segments)
@@ -851,14 +869,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         popup!.allowedTouchTypes = []
         popup?.frame = NSRect(origin: origin, size: segments.bounds.size)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { [weak self] in
-            guard let self = self else { return }
-            if self.popupView != nil && self.popupView == popup {
-                if let popupView = popup {
-                    self.addSubview(popupView)
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.2,
+            execute: { [weak self] in
+                guard let self = self else { return }
+                if self.popupView != nil && self.popupView == popup {
+                    if let popupView = popup {
+                        self.addSubview(popupView)
+                    }
                 }
-            }
-        })
+            })
     }
 
     fileprivate func hidePopup() {
@@ -870,7 +890,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
 
-    public func setActiveItems( _ items: [DiagramItem], immideateDraw: Bool = false, force: Bool = false ) {
+    public func setActiveItems(_ items: [DiagramItem], immideateDraw: Bool = false, force: Bool = false) {
         if items.count == 0 && self.activeItems.count == 0 {
             return
         }
@@ -881,7 +901,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if let dr = scene?.drawables[act] {
                 offset = CGFloat(dr.getBounds().width + 10)
             }
-            self.pivotPoint = CGPoint(x: act.x + offset , y: act.y)
+            self.pivotPoint = CGPoint(x: act.x + offset, y: act.y)
         }
 
         if !force && activeItems.elementsEqual(items) {
@@ -897,13 +917,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         // We need to rebuild scene as active element is changed
         scene?.updateActiveElements(items)
 
-
         showPopup()
 
         if immideateDraw {
             needsDisplay = true
-        }
-        else {
+        } else {
             scheduleRedraw()
         }
     }
@@ -956,15 +974,16 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
             }
         }
-        if let fb = finalBounds{
-            return CGRect(x: fb.origin.x * zoomLevel, y: fb.origin.y * zoomLevel, width: fb.width * zoomLevel, height: fb.height * zoomLevel)
+        if let fb = finalBounds {
+            return CGRect(
+                x: fb.origin.x * zoomLevel, y: fb.origin.y * zoomLevel, width: fb.width * zoomLevel, height: fb.height * zoomLevel)
         }
         return self.frame
     }
 
-    func getEditBoxBounds( item: Drawable, _ zoomLevel: CGFloat ) -> CGRect {
+    func getEditBoxBounds(item: Drawable, _ zoomLevel: CGFloat) -> CGRect {
         var deBounds = self.editBoxItem!.getSelectorBounds()
-        if let link =  item as? DrawableLine {
+        if let link = item as? DrawableLine {
             deBounds = link.getLabelBounds()
         }
         let bounds = CGRect(
@@ -978,12 +997,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     static func getBodyText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) {
-        if let bodyNode = item.properties.get( "body" ) {
+        if let bodyNode = item.properties.get("body") {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
                     if let style = bodyStyle {
-                        style.parseStyle(bodyBlock, [:] )
+                        style.parseStyle(bodyBlock, [:])
                     }
 
                     if let bodyText = bodyBlock.getNamedElement("text"), let txtNode = bodyText.getChild(1) {
@@ -991,14 +1010,13 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                             textValue = txt
                         }
                     }
-                }
-                else if let txt = getString(bodyBlock, [:]) {
+                } else if let txt = getString(bodyBlock, [:]) {
                     textValue = txt
                 }
             }
         }
     }
-    static func findFieldName(_ item:DiagramItem) -> String {
+    static func findFieldName(_ item: DiagramItem) -> String {
         var fieldName = "value"
         if let field = item.properties.get(PersistenceStyleKind.FieldName.name), let customFieldName = field.getIdent(1) {
             fieldName = customFieldName
@@ -1008,7 +1026,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     static func getCustomText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) {
         let fieldName = findFieldName(item)
 
-        if let bodyNode = item.properties.get( fieldName ) {
+        if let bodyNode = item.properties.get(fieldName) {
             // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
             if let bodyBlock = bodyNode.getChild(1) {
                 if let txt = getString(bodyBlock, [:]) {
@@ -1018,25 +1036,25 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
 
-    func getBody( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat) {
+    func getBody(_ item: DiagramItem, _ style: DrawableStyle) -> (String, CGFloat) {
         let bodyStyle = style.copy()
-        bodyStyle.fontSize -= 2 // Make a bit smaller for body
+        bodyStyle.fontSize -= 2  // Make a bit smaller for body
         var textValue = ""
 
         SceneDrawView.getBodyText(item, bodyStyle, &textValue)
         return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
-    func getCustomField( _ item: DiagramItem, _ style: DrawableStyle ) -> (String, CGFloat)? {
+    func getCustomField(_ item: DiagramItem, _ style: DrawableStyle) -> (String, CGFloat)? {
         let bodyStyle = style.copy()
-        bodyStyle.fontSize -= 2 // Make a bit smaller for body
+        bodyStyle.fontSize -= 2  // Make a bit smaller for body
         var textValue = ""
 
         SceneDrawView.getCustomText(item, bodyStyle, &textValue)
         return (prepareBodyText(textValue), bodyStyle.fontSize)
     }
-    fileprivate func setBody( _ item: DiagramItem, _ body: String ) {
+    fileprivate func setBody(_ item: DiagramItem, _ body: String) {
         let newProps = item.toTennAsProps(.BlockExpr)
-        if let bodyNode = newProps.getNamedElement( "body" ) {
+        if let bodyNode = newProps.getNamedElement("body") {
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
                     if let bodyText = bodyBlock.getNamedElement("text") {
@@ -1044,16 +1062,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                         bodyText.add(TennNode.newIdent("text"))
                         bodyText.add(TennNode.newMarkdownNode(body))
                     }
-                }
-                else {
+                } else {
                     // just replace existing text
                     bodyNode.children?.removeAll()
                     bodyNode.add(TennNode.newIdent("body"))
                     bodyNode.add(TennNode.newMarkdownNode(body))
                 }
             }
-        }
-        else {
+        } else {
             let cmd = TennNode.newCommand("body")
             if body.contains("\n") || body.contains("\\n") {
                 cmd.add(TennNode.newMarkdownNode(body))
@@ -1065,7 +1081,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.store?.setProperties(self.element!, item, newProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
     }
 
-    private static func detectSymbolType( pattern value: String ) -> (TennNodeKind, TennTokenType) {
+    private static func detectSymbolType(pattern value: String) -> (TennNodeKind, TennTokenType) {
         var skipFirst = false
         if !value.isEmpty && value.hasPrefix("-") {
             skipFirst = true
@@ -1078,8 +1094,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 continue
             }
             if c == "." {
-                if i == 0  || dot {
-                    return (.Ident,.symbol)
+                if i == 0 || dot {
+                    return (.Ident, .symbol)
                 }
                 dot = true
                 continue
@@ -1088,32 +1104,31 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 return (.StringLit, .stringLit)
             }
             if !CharacterSet.decimalDigits.contains(c.unicodeScalars.first!) {
-                return (.Ident,.symbol)
+                return (.Ident, .symbol)
             }
             i += 1
         }
         if dot {
-            return (.FloatLit,.floatLit)
+            return (.FloatLit, .floatLit)
         }
-        return (.IntLit,.intLit)
+        return (.IntLit, .intLit)
     }
 
-    fileprivate func setValue( _ item: DiagramItem, _ value: String ) {
+    fileprivate func setValue(_ item: DiagramItem, _ value: String) {
         let fieldName = SceneDrawView.findFieldName(item)
         let newProps = item.toTennAsProps(.BlockExpr)
         let (nType, tType) = SceneDrawView.detectSymbolType(pattern: value)
 
-        if let bodyNode = newProps.getNamedElement( fieldName ) {
+        if let bodyNode = newProps.getNamedElement(fieldName) {
             // just replace existing text
             bodyNode.children?.removeAll()
             bodyNode.add(TennNode.newIdent(fieldName))
 
             // Try detect field type
-            bodyNode.add(TennNode(kind: nType , tok: TennToken(type: tType, literal: value) ))
-        }
-        else {
+            bodyNode.add(TennNode(kind: nType, tok: TennToken(type: tType, literal: value)))
+        } else {
             let cmd = TennNode.newCommand(fieldName)
-            cmd.add(TennNode(kind: nType , tok: TennToken(type: tType, literal: value) ))
+            cmd.add(TennNode(kind: nType, tok: TennToken(type: tType, literal: value)))
             newProps.add(cmd)
         }
         self.store?.setProperties(self.element!, item, newProps, undoManager: self.undoManager, refresh: self.scheduleRedraw)
@@ -1204,7 +1219,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         scheduleRedraw()
     }
 
-    func addNewItem(copyProps:Bool = false) {
+    func addNewItem(copyProps: Bool = false) {
         guard let active = self.activeItems.first else {
             self.addTopItem()
             return
@@ -1214,10 +1229,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let newEl = DiagramItem(kind: .Item, name: "Untitled \(createIndex)")
             self.createIndex += 1
 
-
             newEl.x = pivotPoint.x
             newEl.y = pivotPoint.y
-
 
             if copyProps {
                 // Copy parent properties
@@ -1241,7 +1254,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return
         }
         var items: [DiagramItem] = []
-        var oldNewItems: [DiagramItem:DiagramItem] = [:]
+        var oldNewItems: [DiagramItem: DiagramItem] = [:]
         var links: [DiagramItem] = []
 
         let offsetx = CGFloat(75)
@@ -1250,7 +1263,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         for active in self.activeItems {
             if active.kind == .Item {
                 // Create and add to activeEl
-                let newEl = DiagramItem(kind: .Item, name: active.name )
+                let newEl = DiagramItem(kind: .Item, name: active.name)
                 newEl.description = active.description
                 oldNewItems[active] = newEl
 
@@ -1263,8 +1276,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
 
                 items.append(newEl)
-            }
-            else if active.kind == .Link {
+            } else if active.kind == .Link {
                 if processedLinks.contains(active.id.uuidString) {
                     continue
                 }
@@ -1274,7 +1286,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 items.append(li)
             }
 
-            for itm  in curElement.getRelatedItems(active, source: false) {
+            for itm in curElement.getRelatedItems(active, source: false) {
                 if itm.kind == .Link {
                     if processedLinks.contains(itm.id.uuidString) {
                         continue
@@ -1317,7 +1329,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     func removeItem() {
         // Backspace character
-        if self.activeItems.count > 0  {
+        if self.activeItems.count > 0 {
             self.store?.remove(self.element!, items: self.activeItems, undoManager: self.undoManager, refresh: self.scheduleRedraw)
             scheduleRedraw()
         }
@@ -1376,13 +1388,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let sk = event.specialKey, let sc = self.scene {
             let isShiftPressed = event.modifierFlags.contains(.shift)
             let isCommandPressed = event.modifierFlags.contains(.command)
-            
+
             // Handle resize with Shift or Command modifier (only for arrow keys)
             let isArrowKey = sk == .leftArrow || sk == .rightArrow || sk == .upArrow || sk == .downArrow
             if isArrowKey && (isShiftPressed || isCommandPressed) && self.activeItems.count == 1,
-               let active = self.activeItems.first {
-                handleResizeItem(item: active, specialKey: sk, scene: sc,
-                                 isFromCenter: isCommandPressed)
+                let active = self.activeItems.first
+            {
+                handleResizeItem(
+                    item: active, specialKey: sk, scene: sc,
+                    isFromCenter: isCommandPressed)
                 return
             }
 
@@ -1393,25 +1407,25 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     var x = roundf(Float(active.x - sc.sceneStyle.gridSpan.x))
                     x = x - Float(Int(x) % Int(sc.sceneStyle.gridSpan.x))
                     let y = active.y
-                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    let newPos = CGPoint(x: CGFloat(x), y: CGFloat(y))
                     ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
                 case NSEvent.SpecialKey.rightArrow:
                     var x = roundf(Float(active.x + sc.sceneStyle.gridSpan.x))
                     x = x - Float(Int(x) % Int(sc.sceneStyle.gridSpan.x))
                     let y = active.y
-                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    let newPos = CGPoint(x: CGFloat(x), y: CGFloat(y))
                     ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
                 case NSEvent.SpecialKey.upArrow:
                     let x = active.x
                     var y = roundf(Float(active.y + sc.sceneStyle.gridSpan.y))
                     y = y - Float(Int(y) % Int(sc.sceneStyle.gridSpan.y))
-                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    let newPos = CGPoint(x: CGFloat(x), y: CGFloat(y))
                     ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
                 case NSEvent.SpecialKey.downArrow:
                     let x = active.x
                     var y = roundf(Float(active.y - sc.sceneStyle.gridSpan.y))
                     y = y - Float(Int(y) % Int(sc.sceneStyle.gridSpan.y))
-                    let newPos = CGPoint( x: CGFloat(x), y: CGFloat(y))
+                    let newPos = CGPoint(x: CGFloat(x), y: CGFloat(y))
                     ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
                 default:
                     break;
@@ -1426,12 +1440,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
         super.keyDown(with: event)
     }
-    
+
     private func handleResizeItem(item: DiagramItem, specialKey: NSEvent.SpecialKey, scene: DrawableScene, isFromCenter: Bool) {
         // Get current width and height from properties or drawable bounds
         let propWidth = item.properties.get(PersistenceStyleKind.Width.name)?.getFloat(1)
         let propHeight = item.properties.get(PersistenceStyleKind.Height.name)?.getFloat(1)
-        
+
         // If not set in properties, get from drawable bounds (adjusted for shadows/lineWidth)
         let currentWidth: Float
         let currentHeight: Float
@@ -1450,15 +1464,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             currentWidth = propWidth ?? 100
             currentHeight = propHeight ?? 50
         }
-        
+
         let gridSpanX = Float(scene.sceneStyle.gridSpan.x)
         let gridSpanY = Float(scene.sceneStyle.gridSpan.y)
-        
+
         var newWidth = currentWidth
         var newHeight = currentHeight
         var newX = item.x
         var newY = item.y
-        
+
         switch specialKey {
         case NSEvent.SpecialKey.leftArrow:
             // Decrease width
@@ -1487,15 +1501,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         default:
             return
         }
-        
+
         // Create operations for resize
         var ops: [ElementOperation] = []
-        
+
         // Update only the changed dimension property
         let newProps = item.toTennAsProps(.BlockExpr)
         let widthChanged = newWidth != currentWidth
         let heightChanged = newHeight != currentHeight
-        
+
         // Update width only if it changed
         if widthChanged {
             if let widthProp = newProps.getNamedElement(PersistenceStyleKind.Width.name) {
@@ -1508,7 +1522,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 newProps.add(cmd)
             }
         }
-        
+
         // Update height only if it changed
         if heightChanged {
             if let heightProp = newProps.getNamedElement(PersistenceStyleKind.Height.name) {
@@ -1521,18 +1535,18 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 newProps.add(cmd)
             }
         }
-        
+
         // Only add properties operation if something actually changed
         if widthChanged || heightChanged {
             ops.append(store!.createProperties(self.element!, item, newProps))
         }
-        
+
         // Update position if resizing from center (always update when isFromCenter is true)
         if isFromCenter {
             let newPos = CGPoint(x: newX, y: newY)
             ops.append(store!.createUpdatePosition(item: item, newPos: newPos))
         }
-        
+
         if ops.count > 0 {
             store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: scheduleRedraw, ops)
             scheduleRedraw()
@@ -1552,7 +1566,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     override func flagsChanged(with event: NSEvent) {
         // Track space key state
-        if event.keyCode == 49 { // Space key
+        if event.keyCode == 49 {  // Space key
             let isSpacePressed = event.modifierFlags.contains(.function)
             if isSpacePressed && !spaceKeyDown {
                 spaceKeyDown = true
@@ -1602,7 +1616,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return self.scene?.find(point, allowAll: allowAll) ?? []
     }
 
-
     override func mouseUp(with event: NSEvent) {
         self.updateMousePosition(event)
         if self.mode == .Editing {
@@ -1633,15 +1646,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 // Create a new line if not yet pressent between elements
 
                 //TennNode.newCommand("display", TennNode.newStrNode("arrow"))
-                store?.add(element!, source:source, target: target, undoManager: self.undoManager, refresh: self.scheduleRedraw, props: [])
+                store?.add(element!, source: source, target: target, undoManager: self.undoManager, refresh: self.scheduleRedraw, props: [])
             }
 
             scene?.removeLineTo()
             self.lineToPoint = nil
             self.lineTarget = nil
             scheduleRedraw()
-        }
-        else {
+        } else {
             // Check if up/down interval is appropriate for dragging.
 
             let now = Date()
@@ -1689,7 +1701,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         showPopup()
     }
 
-    var downDate:Date? = nil
+    var downDate: Date? = nil
 
     override func mouseDown(with event: NSEvent) {
         self.updateMousePosition(event)
@@ -1700,7 +1712,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             // No dragging allowed until editing is not done
             self.commitTitleEditing(nil)
         }
-
 
         self.mouseDownState = true
 
@@ -1733,8 +1744,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                                     result.append(act)
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             if let act = activeDr as? ItemDrawable {
                                 result.append(act)
                             }
@@ -1772,14 +1782,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 if let index = self.activeItems.firstIndex(of: itm) {
                     self.activeItems.remove(at: index)
                 }
-            }
-            else {
+            } else {
                 self.activeItems.append(itm)
             }
-            setActiveItems(self.activeItems, force: true )
+            setActiveItems(self.activeItems, force: true)
             return
-        }
-        else {
+        } else {
             var itemsToSelect: [DiagramItem] = []
             for newDrawable in drawables {
                 if let newItem = newDrawable.item, !self.activeItems.contains(newItem) {
@@ -1821,12 +1829,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         if event.modifierFlags.contains(NSEvent.ModifierFlags.control) && self.dragElements.count == 1 {
             self.mode = .LineDrawing
-            self.lineToPoint = CGPoint(x: self.x, y: self.y )
-        }
-        else {
+            self.lineToPoint = CGPoint(x: self.x, y: self.y)
+        } else {
             self.mode = .Dragging
             NSCursor.closedHand.set()
-            for de in self.dragElements  {
+            for de in self.dragElements {
                 self.dragMap[de] = CGPoint(x: de.x, y: de.y)
             }
         }
@@ -1837,7 +1844,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return true
         }
     }
-
 
     override func mouseDragged(with event: NSEvent) {
         //        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
@@ -1882,13 +1888,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     }
 
                     scheduleRedraw()
-                }
-                else {
-                    if let pos = self.dragMap[de], (de.kind == .Item || self.dragElements.count == 1), let dde = self.scene?.drawables[de] {
-                        let newPos = CGPoint(x: pos.x + event.deltaX / zoomLevel, y:pos.y - event.deltaY / zoomLevel)
+                } else {
+                    if let pos = self.dragMap[de], de.kind == .Item || self.dragElements.count == 1, let dde = self.scene?.drawables[de] {
+                        let newPos = CGPoint(x: pos.x + event.deltaX / zoomLevel, y: pos.y - event.deltaY / zoomLevel)
                         self.dragMap[de] = newPos
 
-                        var viewPos = CGPoint( x: newPos.x, y: newPos.y)
+                        var viewPos = CGPoint(x: newPos.x, y: newPos.y)
 
                         if let box = dde as? RoundBox {
                             viewPos.y -= box.bounds.height
@@ -1911,12 +1916,14 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
                 let sceneBounds = zoomBounds()
 
-                let p = CGPoint(x: (self.ox +  sceneBounds.midX + dirtyRegion.origin.x ) * zoomLevel, y: ( self.oy + sceneBounds.midY + dirtyRegion.origin.y ) * zoomLevel)
-                let newDirty = CGRect(origin: p, size: CGSize(width: dirtyRegion.size.width * zoomLevel, height: dirtyRegion.size.height * zoomLevel ))
+                let p = CGPoint(
+                    x: (self.ox + sceneBounds.midX + dirtyRegion.origin.x) * zoomLevel,
+                    y: (self.oy + sceneBounds.midY + dirtyRegion.origin.y) * zoomLevel)
+                let newDirty = CGRect(
+                    origin: p, size: CGSize(width: dirtyRegion.size.width * zoomLevel, height: dirtyRegion.size.height * zoomLevel))
                 scheduleRedraw(invalidRect: newDirty)
             }
-        }
-        else {
+        } else {
             ox += event.deltaX / zoomLevel
             oy -= event.deltaY / zoomLevel
 
@@ -1958,11 +1965,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         scheduleRedraw()
     }
 
-    func zoomBounds()-> CGRect {
-        return CGRect(x: bounds.origin.x / zoomLevel,
-                      y: bounds.origin.y / zoomLevel,
-                      width: bounds.width / zoomLevel,
-                      height: bounds.height / zoomLevel)
+    func zoomBounds() -> CGRect {
+        return CGRect(
+            x: bounds.origin.x / zoomLevel,
+            y: bounds.origin.y / zoomLevel,
+            width: bounds.width / zoomLevel,
+            height: bounds.height / zoomLevel)
     }
 
     func updateMousePosition(_ event: NSEvent) {
@@ -1972,7 +1980,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         let sceneBounds = zoomBounds()
 
-        let pos = CGPoint(x: ( vp.x / zoomLevel ) - sceneBounds.midX - ox, y: ( vp.y / zoomLevel )  - sceneBounds.midY - oy )
+        let pos = CGPoint(x: (vp.x / zoomLevel) - sceneBounds.midX - ox, y: (vp.y / zoomLevel) - sceneBounds.midY - oy)
 
         self.x = pos.x
         self.y = pos.y
@@ -2038,10 +2046,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             bottomBoxes.append(0)
         }
 
-
         let ystep = sceneBounds.height / CGFloat(ycount)
         let xstep = sceneBounds.width / CGFloat(xcount)
-
 
         for d in scene.drawables.values {
             let db = d.getBounds()
@@ -2050,7 +2056,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             let y = db.minY + scene.offset.y
 
             if x + db.width < 0 {
-                var ypos = Int((y + db.height/2) / ystep)
+                var ypos = Int((y + db.height / 2) / ystep)
                 if ypos > ycount {
                     ypos = ycount
                 }
@@ -2060,7 +2066,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 leftBoxes[ypos] += 1
             }
             if x > sceneBounds.width {
-                var ypos = Int((y + db.height/2) / ystep)
+                var ypos = Int((y + db.height / 2) / ystep)
                 if ypos > ycount {
                     ypos = ycount
                 }
@@ -2070,47 +2076,40 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 rightBoxes[ypos] += 1
             }
             if y + db.height < 0 {
-                var xpos = Int((x + db.width/2) / xstep)
+                var xpos = Int((x + db.width / 2) / xstep)
                 if xpos >= xcount {
                     xpos = xcount
                     rightBoxes[0] += 1
-                }
-                else if xpos <= 0 {
+                } else if xpos <= 0 {
                     xpos = 0
                     leftBoxes[0] += 1
-                }
-                else {
-                    bottomBoxes[xpos] +=  1
+                } else {
+                    bottomBoxes[xpos] += 1
                 }
             }
             if y > sceneBounds.height {
-                var xpos = Int((x + db.width/2) / xstep)
+                var xpos = Int((x + db.width / 2) / xstep)
                 if xpos >= xcount {
                     xpos = xcount
                     rightBoxes[ycount] += 1
-                }
-                else if xpos <= 0 {
+                } else if xpos <= 0 {
                     xpos = 0
                     leftBoxes[ycount] += 1
-                }
-                else {
+                } else {
                     topBoxes[xpos] += 1
                 }
             }
         }
 
         if PreferenceConstants.preference.darkMode {
-            context.setStrokeColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
-            context.setFillColor(CGColor(red: 227 / 255.0 , green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
-            context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
-        }
-        else {
+            context.setStrokeColor(CGColor(red: 227 / 255.0, green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
+            context.setFillColor(CGColor(red: 227 / 255.0, green: 157 / 255.0, blue: 68 / 255.0, alpha: 1))
+            context.setShadow(offset: CGSize(width: 3, height: -3), blur: 5.0)
+        } else {
             context.setStrokeColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
             context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-            context.setShadow(offset: CGSize(width:3, height: -3), blur: 5.0)
+            context.setShadow(offset: CGSize(width: 3, height: -3), blur: 5.0)
         }
-
-
 
         var needDraw = false
         for i in 0...ycount {
@@ -2122,9 +2121,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     c = 50
                 }
                 if i == ycount {
-                    newy = newy - CGFloat(c)*cx - 7
+                    newy = newy - CGFloat(c) * cx - 7
                 }
-                context.addEllipse(in: CGRect(x: CGFloat(2), y: newy, width: 5 + CGFloat(c)*cx, height: 5 + CGFloat(c)*cx))
+                context.addEllipse(in: CGRect(x: CGFloat(2), y: newy, width: 5 + CGFloat(c) * cx, height: 5 + CGFloat(c) * cx))
                 needDraw = true
             }
 
@@ -2134,9 +2133,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     cr = 50
                 }
                 if i == ycount {
-                    newy = sceneBounds.height - CGFloat(cr)*cx - 7
+                    newy = sceneBounds.height - CGFloat(cr) * cx - 7
                 }
-                context.addEllipse(in: CGRect(x: sceneBounds.width - 7 - CGFloat(cr)*cx, y: newy, width: 5 + CGFloat(cr)*cx, height: 5 + CGFloat(cr)*cx))
+                context.addEllipse(
+                    in: CGRect(
+                        x: sceneBounds.width - 7 - CGFloat(cr) * cx, y: newy, width: 5 + CGFloat(cr) * cx, height: 5 + CGFloat(cr) * cx))
                 needDraw = true
             }
         }
@@ -2150,9 +2151,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     c = 50
                 }
                 if i == xcount {
-                    newx = newx - CGFloat(c)*cy - 7
+                    newx = newx - CGFloat(c) * cy - 7
                 }
-                context.addEllipse(in: CGRect(x: newx, y: CGFloat(2), width: 5 + CGFloat(c)*cy, height: 5 + CGFloat(c)*cy))
+                context.addEllipse(in: CGRect(x: newx, y: CGFloat(2), width: 5 + CGFloat(c) * cy, height: 5 + CGFloat(c) * cy))
                 needDraw = true
             }
 
@@ -2162,9 +2163,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     cr = 50
                 }
                 if i == xcount {
-                    newx = newx - CGFloat(cr)*cy - 7
+                    newx = newx - CGFloat(cr) * cy - 7
                 }
-                context.addEllipse(in: CGRect(x: newx, y: sceneBounds.height - 7 - CGFloat(cr)*cy, width: 5 + CGFloat(cr)*cy, height: 5 + CGFloat(cr)*cy))
+                context.addEllipse(
+                    in: CGRect(
+                        x: newx, y: sceneBounds.height - 7 - CGFloat(cr) * cy, width: 5 + CGFloat(cr) * cy, height: 5 + CGFloat(cr) * cy))
                 needDraw = true
             }
         }
@@ -2174,7 +2177,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        if( self.element == nil) {
+        if self.element == nil {
             return
         }
 
@@ -2185,7 +2188,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             buildScene()
         }
         //        let now = Date()
-        if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene  {
+        if let context = NSGraphicsContext.current?.cgContext, let scene = self.scene {
             context.clip(to: self.bounds)
             context.saveGState()
             // Draw background
@@ -2195,25 +2198,25 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 color = color.copy(alpha: 0.1)!
             }
 
-            context.setFillColor( color )
+            context.setFillColor(color)
 
             context.setShouldAntialias(true)
             context.fill(self.bounds)
 
             let sceneBounds = zoomBounds()
 
-            let sceneDirtyRect = CGRect(x: dirtyRect.origin.x / zoomLevel,
-                                        y: dirtyRect.origin.y  / zoomLevel,
-                                        width: dirtyRect.width  / zoomLevel,
-                                        height: dirtyRect.height / zoomLevel)
+            let sceneDirtyRect = CGRect(
+                x: dirtyRect.origin.x / zoomLevel,
+                y: dirtyRect.origin.y / zoomLevel,
+                width: dirtyRect.width / zoomLevel,
+                height: dirtyRect.height / zoomLevel)
 
             scene.offset = CGPoint(x: self.ox + sceneBounds.midX, y: self.oy + sceneBounds.midY)
 
             let sceneDirty = CGRect(
                 origin: CGPoint(x: sceneDirtyRect.origin.x - scene.offset.x, y: sceneDirtyRect.origin.y - scene.offset.y),
-                size:sceneDirtyRect.size
+                size: sceneDirtyRect.size
             )
-
 
             context.saveGState()
 
@@ -2236,7 +2239,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     public func selectAllByKind(kind: ItemKind) {
-        self.setActiveItems(self.element!.items.filter({ it in it.kind == kind}))
+        self.setActiveItems(self.element!.items.filter({ it in it.kind == kind }))
         scheduleRedraw()
     }
 
@@ -2244,7 +2247,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         self.setActiveItems([])
         scheduleRedraw()
     }
-
 
     /// Selectors
 
@@ -2284,24 +2286,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         addNewItem(copyProps: true)
     }
 
-    @objc func delete( _ sender: NSObject ) {
+    @objc func delete(_ sender: NSObject) {
         removeItem()
     }
 
-
-    @objc func cut( _ sender: NSObject ) {
+    @objc func cut(_ sender: NSObject) {
         copy(sender)
         removeItem()
     }
 
-    @objc func copy( _ sender: NSObject ) {
+    @objc func copy(_ sender: NSObject) {
         if self.activeItems.count > 0 {
             let block = self.element!.storeItems(self.activeItems)
             ClipboardUtils.copy(block)
         }
     }
 
-    @objc func pasteAsItem( _ sender: NSObject ) {
+    @objc func pasteAsItem(_ sender: NSObject) {
         if let value = NSPasteboard.general.string(forType: .string) {
             let newEl = DiagramItem(kind: .Item, name: "pasted \(createIndex)")
             self.createIndex += 1
@@ -2312,17 +2313,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
             // Create text and title
             newEl.properties.append(TennNode.newCommand("text", TennNode.newMarkdownNode(value)))
-            newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("${text}" )))
+            newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("${text}")))
             self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
 
             self.setActiveItem(newEl)
         }
     }
-    @objc func pasteAsItemSet( _ sender: NSObject ) {
+    @objc func pasteAsItemSet(_ sender: NSObject) {
         if let value = NSPasteboard.general.string(forType: .string) {
-            let lines =  value.split(separator: "\n")
+            let lines = value.split(separator: "\n")
 
-            var items:[DiagramItem] = []
+            var items: [DiagramItem] = []
 
             var rootItem: DiagramItem! = nil
             var i = 0
@@ -2350,7 +2351,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
 
-    @objc func paste( _ sender: NSObject ) {
+    @objc func paste(_ sender: NSObject) {
         ClipboardUtils.paste { node in
             if node.kind == .Command {
                 if let activeItem = self.activeItems.first {
@@ -2360,11 +2361,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                         if let titleItem = props.getNamedElement("title") {
                             // Prepend image to title
                             if let bodyText = titleItem.getIdent(1) {
-                                titleItem.children![1] = TennNode.newMarkdownNode("@(\(imgName)|96)\n\(bodyText)" )
+                                titleItem.children![1] = TennNode.newMarkdownNode("@(\(imgName)|96)\n\(bodyText)")
                             }
                         } else {
                             // Create title from name and image.
-                            props.add(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
+                            props.add(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}")))
                         }
                     }
                     self.store?.setProperties(self.element!, activeItem, props, undoManager: self.undoManager, refresh: self.scheduleRedraw)
@@ -2380,7 +2381,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     newEl.properties.append(node)
                     if let cmdName = node.getIdent(0), let imgName = node.getIdent(1), cmdName == "image" {
                         // Create title from name and image.
-                        newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}" )))
+                        newEl.properties.append(TennNode.newCommand("title", TennNode.newMarkdownNode("@(\(imgName)|96)\n${name}")))
                     }
                     self.store?.add(self.element!, newEl, undoManager: self.undoManager, refresh: self.scheduleRedraw)
 
@@ -2409,33 +2410,26 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if let action = menuItem.action {
             if action == #selector(cut) {
                 return !self.activeItems.isEmpty
-            }
-            else if action == #selector(copy(_:)) {
+            } else if action == #selector(copy(_:)) {
                 return !self.activeItems.isEmpty
-            }
-            else if action == #selector(cut(_:)) {
+            } else if action == #selector(cut(_:)) {
                 return !self.activeItems.isEmpty
-            }
-            else if action == #selector(delete(_:)) {
+            } else if action == #selector(delete(_:)) {
                 return !self.activeItems.isEmpty
-            }
-            else if action == #selector(duplicateItem) {
+            } else if action == #selector(duplicateItem) {
                 return !self.activeItems.isEmpty
-            }
-            else if action == #selector(fontMenuAction) {
+            } else if action == #selector(fontMenuAction) {
                 return true
-            }
-            else if action == #selector(copyItemAsHTML) {
+            } else if action == #selector(copyItemAsHTML) {
                 return true
-            }
-            else if action == #selector(paste(_:)) {
+            } else if action == #selector(paste(_:)) {
                 return ClipboardUtils.canPaste()
             }
         }
         return true
     }
 
-    @objc func attachImage( _ sender: NSObject ) {
+    @objc func attachImage(_ sender: NSObject) {
         let myOpen = NSOpenPanel()
         if #available(macOS 12.0, *) {
             myOpen.allowedContentTypes = [.png, .jpeg]
@@ -2459,18 +2453,21 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                         if let tiffData = image.tiffRepresentation {
                             let imageRep = NSBitmapImageRep(data: tiffData)
                             if let pngData = imageRep?.representation(using: .png, properties: [:]) {
-                                newProps.add(TennNode.newCommand("image", TennNode.newStrNode(name), TennNode.newImageNode(pngData.base64EncodedString())))
+                                newProps.add(
+                                    TennNode.newCommand(
+                                        "image", TennNode.newStrNode(name), TennNode.newImageNode(pngData.base64EncodedString())))
                             }
                         }
-                        self.store?.setProperties(self.element!, active, newProps,
-                                                  undoManager: self.undoManager,  refresh: {()->Void in})
+                        self.store?.setProperties(
+                            self.element!, active, newProps,
+                            undoManager: self.undoManager, refresh: { () -> Void in })
                     }
                 }
             }
         }
     }
 
-    @objc func applyShadow(_ sender: NSMenuItem ) {
+    @objc func applyShadow(_ sender: NSMenuItem) {
         // Apply shadow to  default or to selected item.
         if self.activeItems.count == 0 {
             // Apply for default style
@@ -2496,7 +2493,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                 }
 
                 if let shadowItem = itemsStyleNode?.getChild(1)?.getNamedElement("shadow") {
-                    shadowItem.children = TennNode.newCommand("shadow", TennNode.newIntNode(-5), TennNode.newIntNode(-5), TennNode.newIntNode(5)).children
+                    shadowItem.children =
+                        TennNode.newCommand("shadow", TennNode.newIntNode(-5), TennNode.newIntNode(-5), TennNode.newIntNode(5)).children
                 } else {
                     // Add new sync config
                     itemsStyleNode?.getChild(1)?.add(
@@ -2504,8 +2502,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
                     )
                 }
                 //            self.controller.viewController?.mergeProperties(newProps.asNode())
-                self.store?.setProperties(active, newProps.asNode(),
-                                          undoManager: undoManager,  refresh: {()->Void in})
+                self.store?.setProperties(
+                    active, newProps.asNode(),
+                    undoManager: undoManager, refresh: { () -> Void in })
             }
 
         } else {
@@ -2527,7 +2526,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         if self.activeItems.count == 0 {
             let quick = NSMenu()
-            quick.autoenablesItems=true
+            quick.autoenablesItems = true
 
             quick.addItem(NSMenuItem(title: "Enable shadows", action: #selector(applyShadow), keyEquivalent: ""))
 
@@ -2566,22 +2565,37 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         qstyleMenu.addItem(NSMenuItem.separator())
 
         if act.kind != .Link {
-            addChildMenu(menu: qstyleMenu, title: "Width", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                               items: ["width 10", "width 50", "width 100", "width 300", "width 500"]))
-            addChildMenu(menu: qstyleMenu, title: "Height", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                                items: ["height 10", "height 50", "height 100", "height 300", "height 500"]))
+            addChildMenu(
+                menu: qstyleMenu, title: "Width",
+                submenu: createMenu(
+                    selector: #selector(commandAction(_:)),
+                    items: ["width 10", "width 50", "width 100", "width 300", "width 500"]))
+            addChildMenu(
+                menu: qstyleMenu, title: "Height",
+                submenu: createMenu(
+                    selector: #selector(commandAction(_:)),
+                    items: ["height 10", "height 50", "height 100", "height 300", "height 500"]))
         }
 
         qstyleMenu.addItem(NSMenuItem.separator())
-        addChildMenu(menu: qstyleMenu, title: "Layer", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                           items: ["layer background", "layer hover"]))
+        addChildMenu(
+            menu: qstyleMenu, title: "Layer",
+            submenu: createMenu(
+                selector: #selector(commandAction(_:)),
+                items: ["layer background", "layer hover"]))
         if act.kind != .Link {
-            addChildMenu(menu: qstyleMenu, title: "Corner Radius", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                                       items: ["corner-radius 0", "corner-radius 5", "corner-radius 15"]))
+            addChildMenu(
+                menu: qstyleMenu, title: "Corner Radius",
+                submenu: createMenu(
+                    selector: #selector(commandAction(_:)),
+                    items: ["corner-radius 0", "corner-radius 5", "corner-radius 15"]))
         }
 
-        addChildMenu(menu: qstyleMenu, title: "Shadow", submenu: createMenu(selector: #selector(commandAction(_:)),
-                                                                            items: ["shadow 5 -5", "shadow 5 5"]))
+        addChildMenu(
+            menu: qstyleMenu, title: "Shadow",
+            submenu: createMenu(
+                selector: #selector(commandAction(_:)),
+                items: ["shadow 5 -5", "shadow 5 5"]))
 
         menu.addItem(qstyle)
         menu.setSubmenu(qstyleMenu, for: qstyle)
@@ -2602,17 +2616,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let l = SpringLayout()
         let vbounds = self.viewController!.scene.bounds
         let bounds = CGRect(x: -1 * vbounds.width / 2, y: -1 * vbounds.height / 2, width: vbounds.width, height: vbounds.height)
-        let ctx = LayoutContext(self.element!, scene: self.scene!, store: self.store!, bounds: bounds )
+        let ctx = LayoutContext(self.element!, scene: self.scene!, store: self.store!, bounds: bounds)
         let ops = l.apply(context: ctx, clean: true)
         if ops.count > 0 {
-            store?.compositeOperation(notifier: self.element!, undoManaget: self.undoManager, refresh: {
-                if let bounds = self.scene?.getBounds() {
-                    self.ox = -1 * bounds.midX
-                    self.oy = -1 * bounds.midY
-                }
-                self.pivotPoint = CGPoint(x:0, y:0)
-                self.scheduleRedraw()
-            }, ops)
+            store?.compositeOperation(
+                notifier: self.element!, undoManaget: self.undoManager,
+                refresh: {
+                    if let bounds = self.scene?.getBounds() {
+                        self.ox = -1 * bounds.midX
+                        self.oy = -1 * bounds.midY
+                    }
+                    self.pivotPoint = CGPoint(x: 0, y: 0)
+                    self.scheduleRedraw()
+                }, ops)
             return
         }
     }
@@ -2620,16 +2636,19 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     @objc public func copyItemAsHTML(_ sender: NSMenuItem) {
         if self.activeItems.count == 1 {
             if let actItem = self.activeItems.first, let scene = self.scene, let itm = scene.drawables[actItem] {
-                itm.traverse {itm in
+                itm.traverse { itm in
                     if let textBox = itm as? TextBox {
                         do {
                             let attrString = textBox.attrStr
-                            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
+                            let dta = try attrString.data(
+                                from: NSMakeRange(0, attrString.length),
+                                documentAttributes: [
+                                    NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html
+                                ])
                             if let strValue = String(data: dta, encoding: String.Encoding.utf8) {
                                 ClipboardUtils.copyHtml(strValue)
                             }
-                        }
-                        catch _ {
+                        } catch _ {
                             // Ignore
                         }
                     }
@@ -2649,7 +2668,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if active.kind != .Item {
                 continue
             }
-            if active.x < leftPos  {
+            if active.x < leftPos {
                 leftPos = CGFloat(roundf(Float(active.x)))
             }
         }
@@ -2657,7 +2676,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if active.kind != .Item {
                 continue
             }
-            let newPos = CGPoint( x: leftPos, y: active.y)
+            let newPos = CGPoint(x: leftPos, y: active.y)
             ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
         }
         if ops.count > 0 {
@@ -2716,7 +2735,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                if active.x + bnds.width > rightPos  {
+                if active.x + bnds.width > rightPos {
                     rightPos = CGFloat(roundf(Float(active.x + bnds.width)))
                 }
             }
@@ -2727,7 +2746,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                let newPos = CGPoint( x: rightPos - bnds.width, y: active.y)
+                let newPos = CGPoint(x: rightPos - bnds.width, y: active.y)
                 ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
             }
         }
@@ -2748,15 +2767,15 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             if active.kind != .Item {
                 continue
             }
-            if active.y  > topPos  {
-                topPos = CGFloat(roundf(Float(active.y )))
+            if active.y > topPos {
+                topPos = CGFloat(roundf(Float(active.y)))
             }
         }
         for active in self.activeItems {
             if active.kind != .Item {
                 continue
             }
-            let newPos = CGPoint( x: active.x, y: topPos )
+            let newPos = CGPoint(x: active.x, y: topPos)
             ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
         }
         if ops.count > 0 {
@@ -2777,7 +2796,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                if active.y - bnds.height < bottomPos  {
+                if active.y - bnds.height < bottomPos {
                     bottomPos = CGFloat(roundf(Float(active.y - bnds.height)))
                 }
             }
@@ -2788,7 +2807,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                let newPos = CGPoint( x: active.x, y: bottomPos + bnds.height)
+                let newPos = CGPoint(x: active.x, y: bottomPos + bnds.height)
                 ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
             }
         }
@@ -2811,7 +2830,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                if active.y + bnds.height > topPos  {
+                if active.y + bnds.height > topPos {
                     topPos = CGFloat(roundf(Float(active.y + bnds.height)))
                 }
             }
@@ -2822,7 +2841,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
             if let dr = self.scene?.drawables[active] {
                 let bnds = dr.getBounds()
-                let newPos = CGPoint( x: active.x, y: topPos - bnds.height)
+                let newPos = CGPoint(x: active.x, y: topPos - bnds.height)
                 ops.append(store!.createUpdatePosition(item: active, newPos: newPos))
             }
         }
@@ -2839,12 +2858,12 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.addItem(align)
 
         let menu = NSMenu()
-        menu.autoenablesItems=true
+        menu.autoenablesItems = true
 
-        menu.addItem(NSMenuItem( title: "Leading Edges", action: #selector(alignLeadingEdges(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem( title: "Trailing Edges", action: #selector(alignTrailingEdges(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem( title: "Top Edges", action: #selector(alignTopEdges(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem( title: "Bottom Edges", action: #selector(alignBottomEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Leading Edges", action: #selector(alignLeadingEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Trailing Edges", action: #selector(alignTrailingEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Top Edges", action: #selector(alignTopEdges(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Bottom Edges", action: #selector(alignBottomEdges(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         //        menu.addItem(
 
@@ -2857,10 +2876,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.addItem(order)
 
         let menu = NSMenu()
-        menu.autoenablesItems=true
+        menu.autoenablesItems = true
 
-        menu.addItem(NSMenuItem( title: "Move Forward", action: #selector(moveItemForward(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem( title: "Move Backward", action: #selector(moveItemBackward(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Move Forward", action: #selector(moveItemForward(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Move Backward", action: #selector(moveItemBackward(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         //        menu.addItem(
 
@@ -2882,11 +2901,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         menu.addItem(selectItem)
 
         let menu = NSMenu()
-        menu.autoenablesItems=true
+        menu.autoenablesItems = true
 
         for dr in drawables {
             if let itm = dr.item {
-                let mi = NSMenuItem( title: itm.name, action: #selector(selectItemAtPoint(_:)), keyEquivalent: "")
+                let mi = NSMenuItem(title: itm.name, action: #selector(selectItemAtPoint(_:)), keyEquivalent: "")
                 mi.representedObject = itm
                 menu.addItem(mi)
             }
@@ -2905,7 +2924,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         // Check if some of figures are already
         var checkSelection = true
-        let drawables = findElement(x: self.x, y:  self.y)
+        let drawables = findElement(x: self.x, y: self.y)
         for itm in drawables {
             if let itm = itm.item {
                 if self.activeItems.contains(itm) {
@@ -2915,12 +2934,11 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
 
         if checkSelection {
-            if let drawable = findElement(x: self.x, y:  self.y).first, let itm = drawable.item {
+            if let drawable = findElement(x: self.x, y: self.y).first, let itm = drawable.item {
                 if !self.activeItems.contains(itm) {
                     self.setActiveItem(itm, immideateDraw: true)
                 }
-            }
-            else {
+            } else {
                 self.setActiveItem(nil, immideateDraw: true)
             }
         }
@@ -2956,8 +2974,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
             if self.activeItems.count == 1 {
                 menu.addItem(NSMenuItem.separator())
-                menu.addItem(NSMenuItem(
-                    title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
+                menu.addItem(
+                    NSMenuItem(
+                        title: "Attach image", action: #selector(attachImage), keyEquivalent: ""))
                 self.createOrderMenu(menu)
 
                 menu.addItem(NSMenuItem.separator())
@@ -2970,8 +2989,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(deleteAction)
 
             return menu
-        }
-        else {
+        } else {
 
             self.pivotPoint = CGPoint(x: self.x, y: self.y)
             // No items selected.

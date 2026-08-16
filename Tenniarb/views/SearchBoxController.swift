@@ -16,9 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
-
+import Foundation
 
 class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate, NSPopoverDelegate {
 
@@ -28,7 +27,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
 
     var element: Element?
 
-    var changes:Int = 0
+    var changes: Int = 0
 
     var currentItems: [DiagramItem] = []
 
@@ -55,7 +54,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             vfx.topAnchor.constraint(equalTo: root.topAnchor),
-            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         // Search field
@@ -131,18 +130,18 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             return true
         }
 
-//        if commandSelector == #selector(NSView.keyDown(with:)) {
-//            return true
-//        }
+        //        if commandSelector == #selector(NSView.keyDown(with:)) {
+        //            return true
+        //        }
 
         if commandSelector == #selector(NSView.moveUp(_:)) {
             let row = self.resultView.selectedRow
             if row > 0 {
                 self.resultView.selectRowIndexes(NSIndexSet(index: row - 1) as IndexSet, byExtendingSelection: false)
-                self.resultView.scrollRowToVisible(row - 1 )
+                self.resultView.scrollRowToVisible(row - 1)
             } else {
                 self.resultView.selectRowIndexes(NSIndexSet(index: self.currentItems.count - 1) as IndexSet, byExtendingSelection: false)
-                self.resultView.scrollRowToVisible( self.currentItems.count - 1 )
+                self.resultView.scrollRowToVisible(self.currentItems.count - 1)
             }
 
             return true
@@ -151,10 +150,10 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             let row = self.resultView.selectedRow
             if row + 1 < self.currentItems.count {
                 self.resultView.selectRowIndexes(NSIndexSet(index: row + 1) as IndexSet, byExtendingSelection: false)
-                self.resultView.scrollRowToVisible(row + 1 )
+                self.resultView.scrollRowToVisible(row + 1)
             } else {
                 self.resultView.selectRowIndexes(NSIndexSet(index: 0) as IndexSet, byExtendingSelection: false)
-                self.resultView.scrollRowToVisible(0 )
+                self.resultView.scrollRowToVisible(0)
             }
             return true
         }
@@ -165,7 +164,7 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     }
 
     override func selectAll(_ sender: Any?) {
-        self.searchBox.selectAll( sender )
+        self.searchBox.selectAll(sender)
     }
 
     func controlTextDidChange(_ notification: Notification) {
@@ -173,34 +172,36 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
         sheduleUpdate()
     }
 
-    fileprivate func sheduleUpdate( ) {
+    fileprivate func sheduleUpdate() {
         let curChanges = self.changes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-            if curChanges == self.changes {
-                let textContent = self.searchBox.stringValue
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.3,
+            execute: {
+                if curChanges == self.changes {
+                    let textContent = self.searchBox.stringValue
 
-                if let el = self.element {
-                    self.currentItems = el.items.filter({(item) in
+                    if let el = self.element {
+                        self.currentItems = el.items.filter({ (item) in
 
-                        let nameMatched = item.name.lowercased().contains(textContent.lowercased())
+                            let nameMatched = item.name.lowercased().contains(textContent.lowercased())
 
-                        var textValue = ""
-                        SceneDrawView.getBodyText(item, nil , &textValue)
+                            var textValue = ""
+                            SceneDrawView.getBodyText(item, nil, &textValue)
 
-                        let bodyMatched = textValue.lowercased().contains(textContent.lowercased())
+                            let bodyMatched = textValue.lowercased().contains(textContent.lowercased())
 
-                        return nameMatched || bodyMatched
-                    }).sorted(by: {(a,b) in a.name.lexicographicallyPrecedes(b.name)})
+                            return nameMatched || bodyMatched
+                        }).sorted(by: { (a, b) in a.name.lexicographicallyPrecedes(b.name) })
 
-                    self.resultView.reloadData()
-                    if self.currentItems.count > 0 {
-                        self.resultView.selectRowIndexes(NSIndexSet(index: 0) as IndexSet, byExtendingSelection: false)
+                        self.resultView.reloadData()
+                        if self.currentItems.count > 0 {
+                            self.resultView.selectRowIndexes(NSIndexSet(index: 0) as IndexSet, byExtendingSelection: false)
+                        }
                     }
-                }
 
-                self.view.needsDisplay = true
-            }
-        })
+                    self.view.needsDisplay = true
+                }
+            })
     }
 
     override func keyDown(with event: NSEvent) {
@@ -216,15 +217,14 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
     }
 }
 
-
 class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
     let controller: SearchBoxViewController
-    init(_ controller: SearchBoxViewController ) {
+    init(_ controller: SearchBoxViewController) {
         self.controller = controller
     }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        if item ==  nil {
+        if item == nil {
             return self.controller.currentItems.count
         }
         return 0
@@ -240,8 +240,7 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
         return false
     }
 
-
-    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
+    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
         //1
         if let el = item as? DiagramItem {
             return el.name
@@ -251,10 +250,12 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
 
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? DiagramItem {
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "SearchItemCell"), owner: self) as? NSTableCellView {
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "SearchItemCell"), owner: self)
+                as? NSTableCellView
+            {
                 if let textField = view.textField {
                     var textValue = ""
-                    SceneDrawView.getBodyText(el, nil , &textValue)
+                    SceneDrawView.getBodyText(el, nil, &textValue)
 
                     if textValue.count > 0 {
                         textField.stringValue = (el.name + " - " + textValue).replacingOccurrences(of: "\n", with: "\\n")
@@ -279,7 +280,7 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
                 NSLayoutConstraint.activate([
                     textField.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 2),
                     textField.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -2),
-                    textField.centerYAnchor.constraint(equalTo: cell.centerYAnchor)
+                    textField.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
                 ])
 
                 var textValue = ""

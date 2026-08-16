@@ -18,10 +18,10 @@
 
 import Cocoa
 
-class Document: NSDocument, IElementModelListener, NSWindowDelegate {
-    var store: ElementModelStore?
+class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked Sendable {
+    @MainActor var store: ElementModelStore?
 
-    var vc: ViewController?
+    @MainActor var vc: ViewController?
 
     override class var autosavesInPlace: Bool {
         return true
@@ -49,7 +49,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         }
     }
 
-    func notifyChanges(_ evt: ModelEvent ) {
+    func notifyChanges(_ evt: ModelEvent) {
         updateChangeCount(.changeDone)
         vc?.updateWindowTitle()
     }
@@ -61,10 +61,11 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
         let contentRect = NSMakeRect(196, 240, 944, 764)
         var style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .resizable]
         style.insert(.fullSizeContentView)
-        let window = NSWindow(contentRect: contentRect,
-                              styleMask: style,
-                              backing: .buffered,
-                              defer: false)
+        let window = NSWindow(
+            contentRect: contentRect,
+            styleMask: style,
+            backing: .buffered,
+            defer: false)
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.acceptsMouseMovedEvents = true
@@ -91,27 +92,30 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
 
         // Restore saved window position (if any).
         if let uri = self.fileURL?.absoluteString, let window = windowController.window,
-           let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)  {
+            let data = PreferenceConstants.preference.defaults.string(forKey: windowPositionOption + uri)
+        {
             let p = TennParser()
             let node = p.parse(data)
-            if( !p.errors.hasErrors()) {
+            if !p.errors.hasErrors() {
                 if let pos = node.getChild(0) {
-                    let frame = CGRect(x: CGFloat(pos.getFloat(1) ?? 0), y: CGFloat(pos.getFloat(2) ?? 0), width: CGFloat(pos.getFloat(3) ?? 0), height: CGFloat(pos.getFloat(4) ?? 0))
+                    let frame = CGRect(
+                        x: CGFloat(pos.getFloat(1) ?? 0), y: CGFloat(pos.getFloat(2) ?? 0), width: CGFloat(pos.getFloat(3) ?? 0),
+                        height: CGFloat(pos.getFloat(4) ?? 0))
                     window.setFrame(frame, display: true)
                 }
             }
         }
 
-
     }
 
     func saveWindowPosition() {
         if let frame = vc?.view.window?.frame, let uri = self.fileURL?.absoluteString {
-            let nde = TennNode.newCommand("pos",
-                                          TennNode.newFloatNode( Double(frame.origin.x)),
-                                          TennNode.newFloatNode( Double(frame.origin.y)),
-                                          TennNode.newFloatNode( Double(frame.size.width)),
-                                          TennNode.newFloatNode( Double(frame.size.height))
+            let nde = TennNode.newCommand(
+                "pos",
+                TennNode.newFloatNode(Double(frame.origin.x)),
+                TennNode.newFloatNode(Double(frame.origin.y)),
+                TennNode.newFloatNode(Double(frame.size.width)),
+                TennNode.newFloatNode(Double(frame.size.height))
             )
             PreferenceConstants.preference.defaults.set(nde.toStr(), forKey: windowPositionOption + uri)
         }
@@ -146,14 +150,23 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
 
             elementModel.modelName = url.lastPathComponent
 
-            // Update the store first so callers receive the new store instance,
-            // then attach it to the view controller.
-            self.updateStore(elementModel)
-            vc?.setElementModel(elementStore: self.store!)
+            // AppKit may call read() off the main queue (autosave, open-in-place, iCloud).
+            if Thread.isMainThread {
+                MainActor.assumeIsolated {
+                    self.updateStore(elementModel)
+                    vc?.setElementModel(elementStore: self.store!)
+                }
+            } else {
+                DispatchQueue.main.sync {
+                    MainActor.assumeIsolated {
+                        self.updateStore(elementModel)
+                        self.vc?.setElementModel(elementStore: self.store!)
+                    }
+                }
+            }
 
             self.fileURL = url
-        }
-        catch {
+        } catch {
             Swift.print("Failed to load file")
         }
     }
@@ -165,19 +178,34 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate {
     }
 
     override func write(to url: URL, ofType typeName: String) throws {
+        // AppKit calls write() off the main queue when autosavesInPlace is true.
+        let readStore: () -> ElementModelStore? = {
+            if Thread.isMainThread {
+                return MainActor.assumeIsolated { self.store }
+            }
+            return DispatchQueue.main.sync { MainActor.assumeIsolated { self.store } }
+        }
+        let finish: (String) -> Void = { name in
+            let work = {
+                MainActor.assumeIsolated {
+                    self.updateChangeCount(.changeCleared)
+                    self.vc?.updateWindowTitle()
+                }
+            }
+            if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+            _ = name
+        }
         do {
-            if let es = self.store {
+            if let es = readStore() {
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 es.modified = false
 
                 es.model.modelName = url.lastPathComponent
-                updateChangeCount(.changeCleared)
-                vc?.updateWindowTitle()
+                finish(url.lastPathComponent)
                 self.fileURL = url
             }
-        }
-        catch {
+        } catch {
             Swift.print("Some error happen")
         }
     }

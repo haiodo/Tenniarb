@@ -6,21 +6,21 @@
 //  Copyright © 2017 Andrey Sobolev. All rights reserved.
 //
 
-import Foundation
 import Cocoa
+import Foundation
 
-class WordsView:NSOutlineView {
+class WordsView: NSOutlineView {
     override var isOpaque: Bool {
         get {
             return false
         }
     }
-    
-//    override func drawBackground(inClipRect clipRect: NSRect) {
-//        // No code here
-//        clipRect.fill(using: .clear)
-//        // NSRectFillUsingOperation(clipRect, NSCompositingOperation.clear);
-//    }
+
+    //    override func drawBackground(inClipRect clipRect: NSRect) {
+    //        // No code here
+    //        clipRect.fill(using: .clear)
+    //        // NSRectFillUsingOperation(clipRect, NSCompositingOperation.clear);
+    //    }
     override func drawCell(_ cell: NSCell) {
         Swift.debugPrint("Draw cell:")
     }

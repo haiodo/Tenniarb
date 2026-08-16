@@ -18,36 +18,34 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
-- `TenniarbTests/` - unit/performance tests
-- `TenniarbUITests/` - UI tests (в shared scheme таргет подключен, но `TenniarbUITests` отмечен как skipped)
+- `TenniarbTests/` - unit tests; `PerformanceTests` вынесены в схему `Tenniarb-Performance`
+- `TenniarbUITests/` - UI tests (таргет собирается, но в схеме `Tenniarb` отключен: `skipped = "YES"`)
 - `.github/workflows/` - CI и release pipeline
 
 ## Локальная сборка и тесты
 
-Основные команды (как в CI):
+Все команды собраны в `Makefile`, `make help` показывает список:
 
 ```bash
-swiftlint lint --config .swiftlint.yml
+make build          # сборка Debug
+make test           # unit-тесты (без performance)
+make test-only T=TenniarbTests/LexerTests
+make perf           # только performance-тесты (схема Tenniarb-Performance)
+make lint           # SwiftLint
+make lint-fix       # автокоррекции SwiftLint
+make format         # swift-format --in-place
+make format-check   # падает если код не отформатирован
+make ci             # lint + build + test, то же что в CI
+make clean
 ```
 
-```bash
-xcodebuild -project Tenniarb.xcodeproj -scheme Tenniarb -configuration Debug \
-  -derivedDataPath build clean build CODE_SIGNING_ALLOWED=NO
-```
+Инструменты:
+- **Линтер** - SwiftLint (`.swiftlint.yml`), ставится через `brew install swiftlint`.
+- **Форматтер** - `swift-format` из Xcode toolchain (`.swift-format`), ставить нечего.
 
-```bash
-xcodebuild test -project Tenniarb.xcodeproj -scheme Tenniarb \
-  -destination 'platform=macOS' -configuration Debug -derivedDataPath build \
-  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM=""
-```
-
-Точечный запуск тестов:
-
-```bash
-xcodebuild test -project Tenniarb.xcodeproj -scheme Tenniarb \
-  -destination 'platform=macOS' \
-  -only-testing:TenniarbTests/LexerTests
-```
+Performance-тесты исключены из основного прогона (36 сек из 36.5) через `SkippedTests` в схеме
+`Tenniarb`. `-only-testing` не перекрывает `SkippedTests`, поэтому для них заведена отдельная
+схема `Tenniarb-Performance`, а не флаг.
 
 Если `xcodebuild` падает из-за plugin/runtime окружения Xcode, сначала привести локальный Xcode в рабочее состояние (`xcodebuild -runFirstLaunch`) и повторить.
 

@@ -18,17 +18,18 @@
 
 import Cocoa
 
+@MainActor
 class EditorViewController: NSObject {
     weak var viewController: ViewController?
-    
+
     private(set) var sceneView: SceneDrawView!
     private(set) var titleField: NSTextField!
     private(set) var zoomLabel: NSTextField!
     private(set) var containerView: NSView!
     private(set) var exportSegments: NSSegmentedCell!
-    
+
     private var exportMgr = ExportManager()
-    
+
     func createView() -> NSView {
         let stackView = NSStackView()
         stackView.orientation = .vertical
@@ -37,53 +38,53 @@ class EditorViewController: NSObject {
         stackView.distribution = .fill
         stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
-        
+
         // Title bar
         let titleBar = createTitleBar()
         stackView.addArrangedSubview(titleBar)
-        
+
         // Scene view
         let scene = SceneDrawView(frame: .zero)
         scene.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(scene)
-        
+
         scene.setContentHuggingPriority(.defaultLow, for: .vertical)
         scene.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-        
+
         let sceneWidthConstraint = scene.widthAnchor.constraint(equalTo: stackView.widthAnchor, constant: -5)
         sceneWidthConstraint.priority = .defaultHigh
         sceneWidthConstraint.isActive = true
-        
+
         self.sceneView = scene
-        
+
         return stackView
     }
-    
+
     private func createTitleBar() -> NSBox {
         let titleBar = NSBox()
         titleBar.translatesAutoresizingMaskIntoConstraints = false
         titleBar.boxType = .custom
-        titleBar.borderType = .noBorder
+        titleBar.borderWidth = 0
         titleBar.titlePosition = .noTitle
         titleBar.fillColor = .clear
-        
+
         // Disable autoresizing mask for content view to avoid constraint conflicts
         titleBar.contentView?.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let heightConstraint = titleBar.heightAnchor.constraint(equalToConstant: 34)
         heightConstraint.priority = NSLayoutConstraint.Priority(999)
         heightConstraint.isActive = true
-        
+
         // Add constraints for content view to fill the box
         if let contentView = titleBar.contentView {
             NSLayoutConstraint.activate([
                 contentView.leadingAnchor.constraint(equalTo: titleBar.leadingAnchor),
                 contentView.trailingAnchor.constraint(equalTo: titleBar.trailingAnchor),
                 contentView.topAnchor.constraint(equalTo: titleBar.topAnchor),
-                contentView.bottomAnchor.constraint(equalTo: titleBar.bottomAnchor)
+                contentView.bottomAnchor.constraint(equalTo: titleBar.bottomAnchor),
             ])
         }
-        
+
         // Title field
         let titleField = NSTextField(string: "Window title")
         titleField.translatesAutoresizingMaskIntoConstraints = false
@@ -98,62 +99,62 @@ class EditorViewController: NSObject {
         titleField.cell?.isScrollable = true
         titleBar.contentView!.addSubview(titleField)
         self.titleField = titleField
-        
+
         NSLayoutConstraint.activate([
             titleField.leadingAnchor.constraint(equalTo: titleBar.contentView!.leadingAnchor, constant: 15),
-            titleField.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
+            titleField.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
         ])
-        
+
         // Zoom controls
         let zoomStack = createZoomControls()
         titleBar.contentView!.addSubview(zoomStack)
-        
+
         // Extra buttons
         let extraSeg = createExtraButtons()
         titleBar.contentView!.addSubview(extraSeg)
-        
+
         // Help button
         let helpSeg = createHelpButton()
         titleBar.contentView!.addSubview(helpSeg)
-        
+
         // Export button
         let exportControl = createExportButton()
         titleBar.contentView!.addSubview(exportControl)
-        
+
         // Layout
         // Lower priority for spacing constraints to avoid conflicts during initial layout with zero width
         let spacingPriority = NSLayoutConstraint.Priority(750)
-        
+
         let zoomLeading = zoomStack.leadingAnchor.constraint(greaterThanOrEqualTo: titleField.trailingAnchor, constant: 20)
         zoomLeading.priority = spacingPriority
-        
+
         let helpLeading = helpSeg.leadingAnchor.constraint(greaterThanOrEqualTo: zoomStack.trailingAnchor, constant: 16)
         helpLeading.priority = spacingPriority
-        
+
         let exportLeading = exportControl.leadingAnchor.constraint(greaterThanOrEqualTo: helpSeg.trailingAnchor, constant: 16)
         exportLeading.priority = spacingPriority
-        
+
         let extraLeading = extraSeg.leadingAnchor.constraint(greaterThanOrEqualTo: exportControl.trailingAnchor, constant: 16)
         extraLeading.priority = spacingPriority
-        
+
         NSLayoutConstraint.activate([
             zoomLeading,
             zoomStack.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
+
             helpLeading,
             helpSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
+
             exportLeading,
             exportControl.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
-            
+
             extraLeading,
             extraSeg.trailingAnchor.constraint(equalTo: titleBar.contentView!.trailingAnchor, constant: -10),
-            extraSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor)
+            extraSeg.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
         ])
-        
+
         return titleBar
     }
-    
+
     private func createZoomControls() -> NSStackView {
         let zoomStack = NSStackView()
         zoomStack.translatesAutoresizingMaskIntoConstraints = false
@@ -161,7 +162,7 @@ class EditorViewController: NSObject {
         zoomStack.spacing = 2
         zoomStack.alignment = .centerY
         zoomStack.distribution = .fill
-        
+
         let zoomOutButton = NSButton()
         zoomOutButton.bezelStyle = .texturedRounded
         zoomOutButton.image = NSImage(named: NSImage.removeTemplateName)
@@ -169,7 +170,7 @@ class EditorViewController: NSObject {
         zoomOutButton.target = self
         zoomOutButton.action = #selector(zoomOutAction(_:))
         zoomStack.addArrangedSubview(zoomOutButton)
-        
+
         let zoomLabel = NSTextField()
         zoomLabel.translatesAutoresizingMaskIntoConstraints = false
         zoomLabel.isEditable = false
@@ -185,7 +186,7 @@ class EditorViewController: NSObject {
         widthConstraint.isActive = true
         zoomStack.addArrangedSubview(zoomLabel)
         self.zoomLabel = zoomLabel
-        
+
         let zoomInButton = NSButton()
         zoomInButton.bezelStyle = .texturedRounded
         zoomInButton.image = NSImage(named: NSImage.addTemplateName)
@@ -193,7 +194,7 @@ class EditorViewController: NSObject {
         zoomInButton.target = self
         zoomInButton.action = #selector(zoomInAction(_:))
         zoomStack.addArrangedSubview(zoomInButton)
-        
+
         let resetZoomButton = NSButton()
         resetZoomButton.bezelStyle = .texturedRounded
         resetZoomButton.title = "100%"
@@ -201,10 +202,10 @@ class EditorViewController: NSObject {
         resetZoomButton.target = self
         resetZoomButton.action = #selector(resetZoomAction(_:))
         zoomStack.addArrangedSubview(resetZoomButton)
-        
+
         return zoomStack
     }
-    
+
     private func createExtraButtons() -> NSSegmentedControl {
         let extraSeg = NSSegmentedControl(
             labels: ["", ""],
@@ -221,7 +222,7 @@ class EditorViewController: NSObject {
         if let remImg = NSImage(named: NSImage.removeTemplateName) { extraSeg.setImage(remImg, forSegment: 1) }
         return extraSeg
     }
-    
+
     private func createHelpButton() -> NSSegmentedControl {
         let helpSeg = NSSegmentedControl(
             labels: [""],
@@ -238,7 +239,7 @@ class EditorViewController: NSObject {
         }
         return helpSeg
     }
-    
+
     private func createExportButton() -> NSSegmentedControl {
         let exportControl = NSSegmentedControl(
             labels: [""],
@@ -256,7 +257,7 @@ class EditorViewController: NSObject {
         self.exportSegments = exportControl.cell as? NSSegmentedCell
         return exportControl
     }
-    
+
     func setupExportMenu(viewController: ViewController) {
         exportMgr.setViewController(viewController)
         let exportMenu = exportMgr.createMenu()
@@ -266,37 +267,37 @@ class EditorViewController: NSObject {
     func onLoad(_ viewController: ViewController) {
         sceneView?.onLoad(viewController)
     }
-    
+
     func onAppear() {
         sceneView?.onAppear()
     }
-    
+
     func setModel(_ store: ElementModelStore) {
         sceneView?.setModel(store: store)
     }
-    
+
     func setActiveElement(_ element: Element) {
         sceneView?.setActiveElement(element)
     }
-    
+
     func scheduleRedraw() {
         sceneView?.scheduleRedraw()
     }
-    
+
     // MARK: - Actions
-    
+
     @objc private func zoomOutAction(_ sender: NSButton) {
         sceneView?.zoomOut(nil)
     }
-    
+
     @objc private func zoomInAction(_ sender: NSButton) {
         sceneView?.zoomIn(nil)
     }
-    
+
     @objc private func resetZoomAction(_ sender: NSButton) {
         sceneView?.resetZoom(nil)
     }
-    
+
     @objc private func extraSegmentAction(_ sender: NSSegmentedControl) {
         switch sender.selectedSegment {
         case 0:
@@ -307,75 +308,75 @@ class EditorViewController: NSObject {
             break
         }
     }
-    
+
     @objc private func showHelp(_ sender: Any?) {
         viewController?.showHelp(nil)
     }
-    
+
     func updateZoomLabel(_ percentage: Int) {
         zoomLabel?.stringValue = "\(percentage)%"
     }
-    
+
     func updateTitle(_ title: String) {
         titleField?.stringValue = title
     }
-    
+
     // MARK: - Scene Proxy Methods
-    
+
     var activeItems: [DiagramItem] {
         return sceneView?.activeItems ?? []
     }
-    
+
     func addNewItem() {
         sceneView?.addNewItem()
     }
-    
+
     func removeItem() {
         sceneView?.removeItem()
     }
-    
+
     func duplicateItem() {
         sceneView?.duplicateItem()
     }
-    
+
     func addTopItem() {
         sceneView?.addTopItem()
     }
-    
+
     func selectAllItems() {
         sceneView?.selectAllItems()
     }
-    
+
     func selectNoneItems() {
         sceneView?.selectNoneItems()
     }
-    
+
     func selectAllByKind(kind: ItemKind) {
         sceneView?.selectAllByKind(kind: kind)
     }
-    
+
     func setActiveItem(_ item: DiagramItem?) {
         sceneView?.setActiveItem(item)
     }
-    
+
     func centerItem(_ item: DiagramItem, _ offset: CGFloat) {
         sceneView?.centerItem(item, offset)
     }
-    
+
     func editTitle(_ item: DiagramItem, _ type: Int) {
         // Use raw value or convert as needed
         // For now just call with Name as default
         sceneView?.editTitle(item, .Name)
     }
-    
+
     func getSelectionBounds() -> NSRect {
         return sceneView?.getSelectionBounds() ?? .zero
     }
-    
+
     func pasteAsItem(_ sender: NSMenuItem) {
         sceneView?.pasteAsItem(sender)
     }
-    
+
     func pasteAsItemSet(_ sender: NSMenuItem) {
         sceneView?.pasteAsItemSet(sender)
     }

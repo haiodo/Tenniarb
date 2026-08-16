@@ -47,6 +47,9 @@ jobs:
           swiftlint version
           swiftlint lint --config .swiftlint.yml --reporter github-actions-logging
 
+      - name: Format check
+        run: make format-check
+
       - name: Build (Debug)
         run: |
           set -euo pipefail

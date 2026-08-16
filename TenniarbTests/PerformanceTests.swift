@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 import XCTest
 
 @testable import Tenniarb
@@ -26,21 +26,21 @@ class PerformanceTests: XCTestCase {
     override func setUp() {
         super.setUp()
     }
-    
+
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
     func randomString(length: Int) -> String {
         let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        let randomCharacters = (0..<length).map{_ in letters.randomElement()!}
+        let randomCharacters = (0..<length).map { _ in letters.randomElement()! }
         return String(randomCharacters)
     }
-    
+
     func generateString() -> String {
         let nde = TennNode(kind: .Statements)
-        
+
         var now = Date()
         let value = randomString(length: 1024000)
         for i in 0...10 {
@@ -50,13 +50,13 @@ class PerformanceTests: XCTestCase {
             nde.add(TennNode.newCommand("cmd_\(i)_int", TennNode.newMarkdownNode(value)))
         }
         Swift.debugPrint("Elapsed generate \(Date().timeIntervalSince(now))")
-        
+
         now = Date()
         let str = nde.toStr()
         Swift.debugPrint("Elapsed toStr \(Date().timeIntervalSince(now))")
         return str
     }
-    
+
     func doTestIterateOverString() -> String {
         let str: String = generateString()
         let now = Date()
@@ -68,14 +68,14 @@ class PerformanceTests: XCTestCase {
         }
         return "---------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestIterateOverStringIndex() -> String {
         let str: String = generateString()
         let now = Date()
         var count: Int = 0
         let strLen = str.count
         let st = str.startIndex
-        
+
         var idx = str.index(st, offsetBy: 0)
         for _ in 0..<strLen {
             let c = str[idx]
@@ -86,7 +86,7 @@ class PerformanceTests: XCTestCase {
         }
         return "-------- \(#function) ------ Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestIterateOverStringArray() -> String {
         let str: String = generateString()
         let now = Date()
@@ -100,7 +100,7 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestIterateOverStringPrimitiveArray() -> String {
         let str: String = generateString()
         let now = Date()
@@ -110,7 +110,7 @@ class PerformanceTests: XCTestCase {
         for c in str {
             arr.append(c)
         }
-        
+
         Swift.debugPrint("Build array Elapsed: \(Date().timeIntervalSince(now))")
         for c in arr {
             if c == "A" {
@@ -172,7 +172,7 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ---------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestIterateOverUnicodeScalarsArray() -> String {
         let str: String = generateString()
         let now = Date()
@@ -201,12 +201,12 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestIterateOverUnicodeScalars() -> String {
         let str: String = generateString()
         let now = Date()
         var count = 0
-                
+
         for cc in str.unicodeScalars {
             let c = Character(cc)
             if c == "A" {
@@ -215,14 +215,14 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
-    func testIterateOverUnicodeScalarsIterator(){
+
+    func testIterateOverUnicodeScalarsIterator() {
         let str: String = generateString()
         let now = Date()
         var count = 0
-        
+
         var i = str.unicodeScalars.makeIterator()
-        
+
         while true {
             guard let sc = i.next() else {
                 break
@@ -234,7 +234,7 @@ class PerformanceTests: XCTestCase {
         }
         Swift.print("--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))")
     }
-    
+
     func doTestIterateOverUnicodeScalarsIndex() -> String {
         let str: String = generateString()
         let now = Date()
@@ -251,11 +251,11 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func doTestGenerateTokenArray() -> String {
         let str: String = generateString()
         let now = Date()
-        var result:[Character] = []
+        var result: [Character] = []
         result.reserveCapacity(1024)
         for c in str {
             result.append(c)
@@ -279,7 +279,7 @@ class PerformanceTests: XCTestCase {
         }
         return "--------- \(#function) ------- Elapsed: \(Date().timeIntervalSince(now))"
     }
-    
+
     func testLexerParsingPerformance() {
         let str: String = generateString()
         measure {
@@ -288,18 +288,18 @@ class PerformanceTests: XCTestCase {
             Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
         }
     }
-    
+
     func testSlowLexerParsingPerformance() {
         let str: String = generateString()
         measure {
             let now = Date()
             let p = TennParser()
-            p.factory =  { source in SlowLexer( source )}
+            p.factory = { source in SlowLexer(source) }
             _ = p.parse(str)
             Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
         }
     }
-    
+
     func _testPerformance() {
         var values: [String] = []
         values.append(doTestIterateOverString())
@@ -315,21 +315,21 @@ class PerformanceTests: XCTestCase {
         values.append(doTestIterateOverUnicodeScalarsArrayIndex())
         values.append(doTestIterateOverStringPrimitiveArrayIndex())
         values.append(doTestIterateOverStringPrimitiveScalarArrayIndex())
-        Swift.print("Results: \n \(values.joined(separator: "\n"))" )
+        Swift.print("Results: \n \(values.joined(separator: "\n"))")
     }
-    
+
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     func testStringBuilding() {
         measure {
             var s = ""
             s.makeContiguousUTF8()
-                        
+
             let randomChar = letters.randomElement()!
-            
+
             for _ in 0..<1000000 {
                 s.append(randomChar)
             }
-            
+
             let ss = s as String
             var cc = 0
             for _ in ss {
@@ -339,42 +339,41 @@ class PerformanceTests: XCTestCase {
     }
     func testStringBuildViaArray() {
         measure {
-            var s = Array<Character>()
-            
+            var s = [Character]()
+
             let randomChar = letters.randomElement()!
-            
+
             for _ in 0..<1000000 {
                 s.append(randomChar)
             }
             let ss = String(s)
-            
+
             var cc = 0
             for _ in ss {
                 cc += 1
             }
-            
+
         }
     }
     func testStringBuildViaContiguousArray() {
         measure {
             var s = ContiguousArray<Character>()
-            
+
             let randomChar = letters.randomElement()!
-            
+
             for _ in 0..<1000000 {
                 s.append(randomChar)
             }
             let ss = String(s)
-            
+
             var cc = 0
             for _ in ss {
                 cc += 1
             }
-            
+
         }
     }
 }
-
 
 /*
  string:                    1.0s

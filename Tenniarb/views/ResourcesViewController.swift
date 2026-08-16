@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 class ResourcesViewController: NSViewController {
 
@@ -41,11 +41,12 @@ class ResourcesViewController: NSViewController {
             vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             vfx.topAnchor.constraint(equalTo: root.topAnchor),
-            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         // Simple segmented control for operations
-        let segmented = NSSegmentedControl(labels: ["Add", "Remove"], trackingMode: .momentary, target: self, action: #selector(handleResourceSegment(_:)))
+        let segmented = NSSegmentedControl(
+            labels: ["Add", "Remove"], trackingMode: .momentary, target: self, action: #selector(handleResourceSegment(_:)))
         segmented.translatesAutoresizingMaskIntoConstraints = false
         segmented.segmentStyle = .texturedRounded
         vfx.addSubview(segmented)
@@ -64,7 +65,7 @@ class ResourcesViewController: NSViewController {
             scroll.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
             scroll.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
             scroll.topAnchor.constraint(equalTo: segmented.bottomAnchor, constant: 8),
-            scroll.bottomAnchor.constraint(equalTo: vfx.bottomAnchor, constant: -8)
+            scroll.bottomAnchor.constraint(equalTo: vfx.bottomAnchor, constant: -8),
         ])
 
         let outline = NSOutlineView(frame: .zero)
@@ -92,7 +93,7 @@ class ResourcesViewController: NSViewController {
         }
     }
 
-    @IBAction func handleResourceOperation(_ sender: NSSegmentedCell ) {
+    @IBAction func handleResourceOperation(_ sender: NSSegmentedCell) {
         // Implement resource operations here.
         // Example: switch on sender.selectedSegment to add/remove resource entries.
         // Left intentionally minimal; the original method was empty and this preserves behavior.

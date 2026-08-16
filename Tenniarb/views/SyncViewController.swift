@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 enum SyncOperation {
     case Sync
@@ -30,7 +30,7 @@ class SyncInfo {
     let node: TennNode?
     let operation: SyncOperation
 
-    init( _ name: String, _ node: TennNode?, _ operation: SyncOperation) {
+    init(_ name: String, _ node: TennNode?, _ operation: SyncOperation) {
         self.name = name
         self.node = node
         self.operation = operation
@@ -67,7 +67,7 @@ class SyncViewController: NSViewController {
             vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             vfx.topAnchor.constraint(equalTo: root.topAnchor),
-            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         let scroll = NSScrollView(frame: .zero)
@@ -80,7 +80,7 @@ class SyncViewController: NSViewController {
             scroll.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
             scroll.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
             scroll.topAnchor.constraint(equalTo: vfx.topAnchor, constant: 8),
-            scroll.bottomAnchor.constraint(equalTo: vfx.bottomAnchor, constant: -8)
+            scroll.bottomAnchor.constraint(equalTo: vfx.bottomAnchor, constant: -8),
         ])
 
         let outline = NSOutlineView(frame: .zero)
@@ -99,7 +99,7 @@ class SyncViewController: NSViewController {
     func setElement(element: Element) {
         self.element = element
     }
-    func setViewController(_ viewcontroller: ViewController ) {
+    func setViewController(_ viewcontroller: ViewController) {
         self.viewController = viewcontroller;
     }
 
@@ -109,14 +109,13 @@ class SyncViewController: NSViewController {
         if let active = self.element {
             if let syncNode = active.properties.get("sync") {
                 for syncChild in syncNode.getBlock(1) {
-                    if syncChild.isNamedElement() && syncChild.getIdent(0) == "config", let syncName = syncChild.getIdent(1)  {
-                        syncTypes.append(SyncInfo("Sync - " + syncName, syncChild, .Sync ))
+                    if syncChild.isNamedElement() && syncChild.getIdent(0) == "config", let syncName = syncChild.getIdent(1) {
+                        syncTypes.append(SyncInfo("Sync - " + syncName, syncChild, .Sync))
                     }
                 }
             }
 
         }
-
 
         self.delegate = SyncViewControllerDelegate(self)
         syncOutline.delegate = delegate!
@@ -138,7 +137,7 @@ class SyncViewController: NSViewController {
                 height = frame.height
             }
         }
-        height = (height + syncOutline.intercellSpacing.height ) * CGFloat(syncTypes.count) + 15
+        height = (height + syncOutline.intercellSpacing.height) * CGFloat(syncTypes.count) + 15
 
         self.view.frame = CGRect(origin: self.view.frame.origin, size: CGSize(width: width, height: height))
 
@@ -155,19 +154,21 @@ class SyncViewController: NSViewController {
             }
             // Add new sync config
             syncNode?.getChild(1)?.add(
-                TennNode.newCommand("config",
-                                    TennNode.newStrNode("sync-config-" + String(syncNode!.getBlock(1).count + 1)),
-                                    TennNode.newBlockExpr(
-                                        TennNode.newCommand("command", TennNode.newStrNode("cmd-line"))
+                TennNode.newCommand(
+                    "config",
+                    TennNode.newStrNode("sync-config-" + String(syncNode!.getBlock(1).count + 1)),
+                    TennNode.newBlockExpr(
+                        TennNode.newCommand("command", TennNode.newStrNode("cmd-line"))
                     )
                 )
             )
             //            self.controller.viewController?.mergeProperties(newProps.asNode())
-            viewController?.elementStore?.setProperties(active, newProps.asNode(),
-                                                                        undoManager: viewController?.undoManager,  refresh: {()->Void in})
+            viewController?.elementStore?.setProperties(
+                active, newProps.asNode(),
+                undoManager: viewController?.undoManager, refresh: { () -> Void in })
         }
     }
-    fileprivate func doSync( _ node: TennNode ) {
+    fileprivate func doSync(_ node: TennNode) {
 
     }
 }
@@ -195,8 +196,7 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
         return false
     }
 
-
-    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
+    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
         if let el = item as? SyncInfo {
             return el.name
         }
@@ -205,7 +205,9 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
 
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? SyncInfo {
-            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ExportCellView"), owner: self) as? NSTableCellView {
+            if let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ExportCellView"), owner: self)
+                as? NSTableCellView
+            {
                 if let textField = view.textField {
                     textField.stringValue = el.name
                 }
@@ -228,7 +230,7 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
                     textField.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 4),
                     textField.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -4),
                     textField.topAnchor.constraint(equalTo: cell.topAnchor, constant: 2),
-                    textField.bottomAnchor.constraint(equalTo: cell.bottomAnchor, constant: -2)
+                    textField.bottomAnchor.constraint(equalTo: cell.bottomAnchor, constant: -2),
                 ])
 
                 return cell
@@ -244,11 +246,9 @@ class SyncViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineVi
             if el.operation == .AddSyncConfig {
                 self.controller.addSyncConfig()
                 self.controller.viewController?.scene.setActiveItem(nil)
-            }
-            else if el.operation == .ShowConfig {
+            } else if el.operation == .ShowConfig {
                 self.controller.viewController?.scene.setActiveItem(nil)
-            }
-            else if el.operation == .Sync, let nde = el.node {
+            } else if el.operation == .Sync, let nde = el.node {
                 self.controller.doSync(nde)
             }
         }

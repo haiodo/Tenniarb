@@ -77,23 +77,23 @@ public class GridLayout: LayoutAlgorithm {
         self.numChildren = context.nodes.count
         let bounds = context.getBounds()
         self.calculateGrid(bounds)
-        
+
         var operations: [ElementOperation] = []
 
         var index = 0
-        for i  in  0 ..< rows {
-            for j in 0 ..< cols {
+        for i in 0..<rows {
+            for j in 0..<cols {
                 if (i * cols + j) < numChildren {
                     let node = context.nodes[index]
                     index += 1
-                    let isResizable = false // LayoutProperties.isResizable(node)
+                    let isResizable = false  // LayoutProperties.isResizable(node)
                     if resize && isResizable {
-//                        LayoutProperties.setSize(node, new Dimension(
-//                                Math.max(childrenWidth, MIN_ENTITY_SIZE),
-//                                Math.max(childrenHeight, MIN_ENTITY_SIZE)));
+                        //                        LayoutProperties.setSize(node, new Dimension(
+                        //                                Math.max(childrenWidth, MIN_ENTITY_SIZE),
+                        //                                Math.max(childrenHeight, MIN_ENTITY_SIZE)));
                     }
                     let size = context.getBounds(node: node)
-                    let xmove = bounds.origin.x + CGFloat(j) * colWidth + offsetX ;//- size.width / 2;
+                    let xmove = bounds.origin.x + CGFloat(j) * colWidth + offsetX;  //- size.width / 2;
                     let ymove = bounds.origin.y + bounds.size.height - CGFloat(i) * rowHeight + offsetY - size.height;
                     if context.isMovable(node) {
                         operations.append(context.store.createUpdatePosition(item: node, newPos: CGPoint(x: xmove, y: ymove)))
@@ -103,7 +103,7 @@ public class GridLayout: LayoutAlgorithm {
         }
         return operations
     }
-    func calculateGrid(_ bounds: CGRect ) {
+    func calculateGrid(_ bounds: CGRect) {
         (cols, rows) = self.calculateNumberOfRowsAndCols(numChildren, bounds.origin.x, bounds.origin.y, bounds.width, bounds.height)
 
         colWidth = bounds.width / CGFloat(cols)
@@ -112,13 +112,15 @@ public class GridLayout: LayoutAlgorithm {
         let nodeSize = self.calculateNodeSize(colWidth, rowHeight)
         childrenWidth = nodeSize.width
         childrenHeight = nodeSize.height
-        offsetX = (colWidth - childrenWidth) / 2.0; // half of the space between
-                                                    // columns
-        offsetY = (rowHeight - childrenHeight) / 2.0; // half of the space
-                                                        // between rows
+        offsetX = (colWidth - childrenWidth) / 2.0;  // half of the space between
+        // columns
+        offsetY = (rowHeight - childrenHeight) / 2.0;  // half of the space
+        // between rows
     }
-    func calculateNumberOfRowsAndCols(_ numChildren: Int, _ boundX: CGFloat, _ boundY: CGFloat, _ boundWidth: CGFloat, _ boundHeight: CGFloat) -> (Int, Int) {
-        if (aspectRatio == 1.0) {
+    func calculateNumberOfRowsAndCols(
+        _ numChildren: Int, _ boundX: CGFloat, _ boundY: CGFloat, _ boundWidth: CGFloat, _ boundHeight: CGFloat
+    ) -> (Int, Int) {
+        if aspectRatio == 1.0 {
             return calculateNumberOfRowsAndCols_square(numChildren, boundX, boundY, boundWidth, boundHeight);
         } else {
             return calculateNumberOfRowsAndCols_rectangular(numChildren)
@@ -129,9 +131,11 @@ public class GridLayout: LayoutAlgorithm {
         let cols = max(1, ceil(sqrt(CGFloat(numChildren))))
         return (Int(rows), Int(cols))
     }
-    func calculateNumberOfRowsAndCols_square(_ numChildren: Int,
-                                             _ boundX: CGFloat, _ boundY: CGFloat, _ boundWidth: CGFloat,
-                                             _ boundHeight: CGFloat) -> (Int, Int) {
+    func calculateNumberOfRowsAndCols_square(
+        _ numChildren: Int,
+        _ boundX: CGFloat, _ boundY: CGFloat, _ boundWidth: CGFloat,
+        _ boundHeight: CGFloat
+    ) -> (Int, Int) {
         var rows = Int(max(1, sqrt(CGFloat(numChildren) * boundHeight / boundWidth)))
         var cols = Int(max(1, sqrt(CGFloat(numChildren) * boundWidth / boundHeight)))
 

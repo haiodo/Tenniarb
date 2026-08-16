@@ -16,11 +16,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 import WebKit
 
-class HelpController: NSViewController  {
+class HelpController: NSViewController {
     var webView: WKWebView!
 
     override func loadView() {
@@ -37,7 +37,7 @@ class HelpController: NSViewController  {
             wk.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             wk.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             wk.topAnchor.constraint(equalTo: root.topAnchor),
-            wk.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            wk.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         self.view = root

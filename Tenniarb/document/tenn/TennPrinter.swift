@@ -21,14 +21,14 @@ import Foundation
 // A printing extension
 extension TennNode {
     private static let spaces = "    "
-    private func makeSeq(_ sb: inout String, pattern: String, count: Int ) {
+    private func makeSeq(_ sb: inout String, pattern: String, count: Int) {
         if count > 0 {
             for _ in 0..<count {
                 sb.append(pattern)
             }
         }
     }
-    private func getSeq(pattern: String, count: Int ) -> String {
+    private func getSeq(pattern: String, count: Int) -> String {
         var sb = ""
         if count > 0 {
             for _ in 0..<count {
@@ -49,8 +49,7 @@ extension TennNode {
                 if i != children.count - 1 {
                     if self.kind == .BlockExpr || self.kind == .Statements {
                         result.append("\n")
-                    }
-                    else {
+                    } else {
                         result.append(" ")
                     }
                 }
@@ -58,10 +57,10 @@ extension TennNode {
             }
         }
     }
-    
-    public func toStr( _ indent: Int = 0, _ clean: Bool = false) -> String {
+
+    public func toStr(_ indent: Int = 0, _ clean: Bool = false) -> String {
         var result = ""
-        
+
         if self.kind == .Command {
             makeSeq(&result, pattern: TennNode.spaces, count: indent)
         }
@@ -72,8 +71,7 @@ extension TennNode {
             case .StringLit:
                 if clean {
                     result.append(tok.literal)
-                }
-                else {
+                } else {
                     result.append("\"\(quote(tok.literal))\"")
                 }
             case .Expression:
@@ -96,8 +94,7 @@ extension TennNode {
             result.append("{\n")
             if self.count > 0 {
                 postfix = "\n\(getSeq(pattern: TennNode.spaces, count: indent))}"
-            }
-            else {
+            } else {
                 postfix = "\(getSeq(pattern: TennNode.spaces, count: indent))}"
             }
             ind += 1
@@ -106,7 +103,7 @@ extension TennNode {
         if let p = postfix {
             result.append(p)
         }
-        
+
         return result
     }
 }

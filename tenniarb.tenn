@@ -5348,7 +5348,7 @@ Explode!🧨"
                 kind Person
             }
             item "Task5" {
-                pos -155.0 252.0
+                pos -145.0 252.0
                 body %{Metadata}
                 days 5
                 width ${days_width()}
@@ -5356,7 +5356,7 @@ Explode!🧨"
                 Person1 1
             }
             item "Task4" {
-                pos -230.0 252.0
+                pos -220.0 252.0
                 body %{Parser}
                 days 4
                 width ${days_width()}
@@ -5381,7 +5381,7 @@ Explode!🧨"
             }
             item "Person3" {
                 pos -764.0 111.0
-                color green
+                color blue
                 body "${sum('Person3','days')}"
                 kind Person
             }
@@ -5412,7 +5412,7 @@ Explode!🧨"
             item "Task3" {
                 pos -321.0 252.0
                 body %{Cleanup}
-                days 5
+                days 6
                 width ${days_width()}
                 display rect
                 kind Task
@@ -5582,7 +5582,7 @@ Explode!🧨"
             item "Task2/UI - Phase2" {
                 pos -370.0 182.0
                 body %{do some UI}
-                days 19
+                days 25
                 width ${days_width()}
                 color orange
                 kind Task
@@ -8761,11 +8761,11 @@ days=5"
     ${a}
     ${a_}
     ${font_size}
-    ${items.Reference_Item.a}
+    ${items.Reference_item.a}
 }
             }
             item "Reference item" {
-                pos -190.82421875 96.15625
+                pos -470.82421875 78.15625
                 a 55
             }
         }

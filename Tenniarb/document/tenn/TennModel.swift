@@ -34,13 +34,13 @@ public enum TennNodeKind {
     case Image
 }
 
-public class TennNode {
+public class TennNode: @unchecked Sendable {
     public let kind: TennNodeKind
     public var token: TennToken?
     public var children: [TennNode]?
-    
-    var named: [String:TennNode]?
-    
+
+    var named: [String: TennNode]?
+
     @inlinable
     public var count: Int {
         get {
@@ -50,7 +50,7 @@ public class TennNode {
             return 0
         }
     }
-    
+
     public func clone() -> TennNode {
         let result = TennNode(kind: self.kind, tok: self.token)
         if children != nil {
@@ -71,49 +71,48 @@ public class TennNode {
             }
         }
     }
-    
-    public func traverse(_ visitor: (_ node: TennNode) -> Bool )-> Bool {
-        if( !visitor(self)) {
+
+    @discardableResult
+    public func traverse(_ visitor: (_ node: TennNode) -> Bool) -> Bool {
+        if !visitor(self) {
             return false
         }
-        
+
         if children != nil {
             for c in self.children! {
-                if( !c.traverse(visitor)) {
+                if !c.traverse(visitor) {
                     return false
                 }
             }
         }
         return true
     }
-    
-    
-    
+
     public init(kind: TennNodeKind, tok: TennToken? = nil) {
         self.kind = kind
         self.token = tok
     }
-    
+
     @inlinable
-    public func add( _ nodes: TennNode...) {
+    public func add(_ nodes: TennNode...) {
         for n in nodes {
             self.add(n)
         }
     }
-    
+
     @inlinable
-    public func add( _ nodes: [TennNode]) {
+    public func add(_ nodes: [TennNode]) {
         for n in nodes {
             self.add(n)
         }
     }
-    
-    public func add( _ node: TennNode) {
+
+    public func add(_ node: TennNode) {
         if children == nil {
             children = []
         }
         children?.append(node)
-        
+
         if kind == .BlockExpr {
             if named == nil {
                 named = [:]
@@ -123,36 +122,38 @@ public class TennNode {
             }
         }
     }
-    
+
     public func getNamedElement(_ name: String) -> TennNode? {
         if kind != .BlockExpr {
             return nil
         }
         return named?[name]
     }
-    public func removeNamed( _ name: String ) -> Bool {
+    public func removeNamed(_ name: String) -> Bool {
         if var n = self.named {
             n.removeValue(forKey: name)
         }
         if let chld = children {
             let oldSize = chld.count
-            self.children = chld.filter({itm in itm.getIdent(0) != name})
+            self.children = chld.filter({ itm in itm.getIdent(0) != name })
             // Do we really removd any field
             return oldSize != self.children!.count
         }
         return false
     }
-    
+
     public func getBlock(_ index: Int) -> [TennNode] {
         if let bl = getChild(index), let childs = bl.children {
             return childs
         }
         return []
     }
-    
+
     @inlinable
     public func getIdentText() -> String? {
-        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock || kind == .Expression || kind == .MarkdownLit || kind == .Image  {
+        if kind == .Ident || kind == .StringLit || kind == .IntLit || kind == .FloatLit || kind == .CharLit || kind == .ExpressionBlock
+            || kind == .Expression || kind == .MarkdownLit || kind == .Image
+        {
             return token?.literal
         }
         return nil
@@ -164,7 +165,7 @@ public class TennNode {
         }
         return nil
     }
-    
+
     public func getInt(_ childIndex: Int...) -> Int? {
         let nde = getChild(childIndex)
         if let n = nde {
@@ -183,12 +184,12 @@ public class TennNode {
         }
         return nil
     }
-    
+
     @inlinable
-    public func isNamedElement( )-> Bool {
+    public func isNamedElement() -> Bool {
         return kind == .Command && count > 0 && self.children?[0].kind == .Ident
     }
-    
+
     public func getChild(_ childIndex: Int) -> TennNode? {
         return getChild([childIndex])
     }
@@ -199,19 +200,18 @@ public class TennNode {
                 let pos = childIndex[i]
                 if 0 <= pos && pos < nchilds.count {
                     nde = nchilds[pos]
-                }
-                else {
+                } else {
                     return nil
                 }
-                
+
             } else {
                 return nil
             }
         }
         return nde;
     }
-    
-    func getValueStr( _ name: String ) -> String? {
+
+    func getValueStr(_ name: String) -> String? {
         if let cmd = self.getNamedElement(name) {
             if cmd.count > 1 {
                 return cmd.getIdent(1)
@@ -233,7 +233,7 @@ public class TennNode {
         }
         return defaultValue
     }
-    
+
     public func getValue(name: String, defaultValue: Bool = false) -> Bool {
         if let value = getValueStr(name) {
             if let r = Bool(value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)) {

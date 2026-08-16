@@ -23,9 +23,6 @@
 		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
-		FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000004 /* OutlineSidebarController.swift */; };
-		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
-		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
 		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
 		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
@@ -60,6 +57,7 @@
 		0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */; };
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
 		0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3551F930FE700875F9E /* SampleElementModels.swift */; };
+		AE01EC01000000000000001 /* ExecutionContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000001 /* ExecutionContextTests.swift */; };
 		0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */; };
 		0CCAE77222AACB560083F898 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCAE77122AACB560083F898 /* Application.swift */; };
 		0CD170A322D5BB6500E217D4 /* draw_line_items.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1708E22D5BB6300E217D4 /* draw_line_items.png */; };
@@ -112,6 +110,9 @@
 		0CFC3DF823D624F10016A7B7 /* general_info.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CFC3DE723D624F10016A7B7 /* general_info.png */; };
 		1E7CDF0C2394F3FF0005C824 /* Changelog.md in Resources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0B2394F3FF0005C824 /* Changelog.md */; };
 		1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0D2394FF140005C824 /* SlowLexer.swift */; };
+		FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000004 /* OutlineSidebarController.swift */; };
+		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
+		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -165,9 +166,6 @@
 		0C3E178620FD053A00AB9D3D /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = views/ExportManager.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
-		FA00D0000000000000000004 /* OutlineSidebarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutlineSidebarController.swift; path = controllers/OutlineSidebarController.swift; sourceTree = "<group>"; };
-		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
-		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
 		0C439D21200335A10031AE78 /* TennModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennModel.swift; sourceTree = "<group>"; };
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
 		0C45B12822A397BE00640305 /* examples.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = examples.md; sourceTree = "<group>"; };
@@ -205,6 +203,7 @@
 		0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextPropertiesDelegate.swift; sourceTree = "<group>"; };
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		0CC4D3551F930FE700875F9E /* SampleElementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleElementModels.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000001 /* ExecutionContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutionContextTests.swift; sourceTree = "<group>"; };
 		0CC7005B22E2E53300DF2071 /* ClipboardUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardUtils.swift; path = Tenniarb/Utils/ClipboardUtils.swift; sourceTree = SOURCE_ROOT; };
 		0CCAE77122AACB560083F898 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0CD1708E22D5BB6300E217D4 /* draw_line_items.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = draw_line_items.png; sourceTree = "<group>"; };
@@ -256,6 +255,9 @@
 		0CFC3DE723D624F10016A7B7 /* general_info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = general_info.png; sourceTree = "<group>"; };
 		1E7CDF0B2394F3FF0005C824 /* Changelog.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
 		1E7CDF0D2394FF140005C824 /* SlowLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlowLexer.swift; sourceTree = "<group>"; };
+		FA00D0000000000000000004 /* OutlineSidebarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutlineSidebarController.swift; path = controllers/OutlineSidebarController.swift; sourceTree = "<group>"; };
+		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
+		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -505,6 +507,7 @@
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
 				0CC4D3531F930F5500875F9E /* PersistenceTests.swift */,
 				0CC4D3551F930FE700875F9E /* SampleElementModels.swift */,
+				AE01EC00000000000000001 /* ExecutionContextTests.swift */,
 				0CD4B31F230D997A002F8D78 /* PerformanceTests.swift */,
 				0C7F899A233520880098B745 /* MarkDownTests.swift */,
 			);
@@ -622,7 +625,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1100;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 2660;
 				ORGANIZATIONNAME = "Andrey Sobolev";
 				TargetAttributes = {
 					0C2375EA1ED838D900ECB516 = {
@@ -810,6 +813,7 @@
 			files = (
 				0CC4D3561F930FE700875F9E /* SampleElementModels.swift in Sources */,
 				0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */,
+				AE01EC01000000000000001 /* ExecutionContextTests.swift in Sources */,
 				0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */,
 				0C5C6D251EFF669500714971 /* TennTests.swift in Sources */,
 				0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */,
@@ -893,14 +897,15 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
@@ -950,12 +955,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Release;
@@ -985,7 +991,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Debug;
@@ -1015,7 +1022,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				VALID_ARCHS = "x86_64 arm64";
 			};
 			name = Release;
@@ -1041,7 +1049,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
 				VALID_ARCHS = "x86_64 arm64";
 			};
@@ -1067,7 +1076,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tenniarb.app/Contents/MacOS/Tenniarb";
 				VALID_ARCHS = "x86_64 arm64";
 			};
@@ -1095,7 +1105,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Tenniarb;
 				VALID_ARCHS = "x86_64 arm64";
 			};
@@ -1122,7 +1133,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = andery.sobolev.TenniarbUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Tenniarb;
 				VALID_ARCHS = "x86_64 arm64";
 			};

@@ -30,23 +30,22 @@ public enum TennTokenType {
     case comma
     case colon
     case semiColon
-    case expression         // $(expression)
-    case expressionBlock    // ${expression block}
-    case markdownLit // %{}
+    case expression  // $(expression)
+    case expressionBlock  // ${expression block}
+    case markdownLit  // %{}
     case imageData  // @"base64" - encoded png image
 }
 
-public class TennToken {
+public class TennToken: @unchecked Sendable {
     public let type: TennTokenType
     public let literal: String
     public let line: Int
     public let col: Int
     public let pos: Int
     public let size: Int
-    
-    
+
     @inlinable
-    init( type: TennTokenType, literal: String, line: Int = 0, col:Int = 0, pos:Int = 0, size:Int = 0) {
+    init(type: TennTokenType, literal: String, line: Int = 0, col: Int = 0, pos: Int = 0, size: Int = 0) {
         self.type = type
         self.literal = literal
         self.line = line
@@ -58,7 +57,8 @@ public class TennToken {
 
 extension TennToken: Hashable {
     public static func == (lhs: TennToken, rhs: TennToken) -> Bool {
-        return lhs.type == rhs.type && lhs.literal == rhs.literal && lhs.line == rhs.line && lhs.col == lhs.col && lhs.pos == rhs.pos && lhs.size == rhs.size;
+        return lhs.type == rhs.type && lhs.literal == rhs.literal && lhs.line == rhs.line && lhs.col == lhs.col && lhs.pos == rhs.pos
+            && lhs.size == rhs.size;
     }
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.type)
@@ -78,8 +78,8 @@ public enum LexerError {
 public protocol TennLexerProtocol {
     func getToken() -> TennToken?
     func revert(tok: TennToken)
-    
-    var errorHandler: ((_ error: LexerError, _ startPos:Int, _ pos: Int ) -> Void)? {
+
+    var errorHandler: ((_ error: LexerError, _ startPos: Int, _ pos: Int) -> Void)? {
         set
         get
     }

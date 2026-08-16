@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 class OperationTextDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     var controller: OperationController!
@@ -59,7 +59,7 @@ class OperationController: NSViewController, NSTextViewDelegate {
             vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             vfx.topAnchor.constraint(equalTo: root.topAnchor),
-            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         let textField = NSTextField(string: "")
@@ -75,7 +75,7 @@ class OperationController: NSViewController, NSTextViewDelegate {
             textField.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 12),
             textField.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -12),
             textField.topAnchor.constraint(equalTo: vfx.topAnchor, constant: 12),
-            textField.heightAnchor.constraint(equalToConstant: 26)
+            textField.heightAnchor.constraint(equalToConstant: 26),
         ])
 
         self.operationsTextBox = textField
@@ -93,46 +93,47 @@ class OperationController: NSViewController, NSTextViewDelegate {
         self.operationsTextBox.becomeFirstResponder()
     }
 
-    func setController(_ controller: ViewController ) {
+    func setController(_ controller: ViewController) {
         self.controller = controller
     }
 
-    func setStore(_ store: ElementModelStore ) {
+    func setStore(_ store: ElementModelStore) {
         self.store = store
     }
     func setElement(_ element: Element) {
         self.element = element
     }
 
-    func setItems(_ items: [DiagramItem] ) {
+    func setItems(_ items: [DiagramItem]) {
         self.items.append(contentsOf: items)
     }
 
-    func createOperation( _ item: DiagramItem, _ node: TennNode ) -> ElementOperation? {
+    func createOperation(_ item: DiagramItem, _ node: TennNode) -> ElementOperation? {
         let newItemProps = item.toTennAsProps(.BlockExpr)
         var changed = false
 
-        Element.traverseBlock(node, {(cmdName, node) in
-            if cmdName.starts(with: "-") {
-                let commandName = String(cmdName.suffix(from: cmdName.index(cmdName.startIndex, offsetBy: 1)))
-                if newItemProps.removeNamed(commandName) {
+        Element.traverseBlock(
+            node,
+            { (cmdName, node) in
+                if cmdName.starts(with: "-") {
+                    let commandName = String(cmdName.suffix(from: cmdName.index(cmdName.startIndex, offsetBy: 1)))
+                    if newItemProps.removeNamed(commandName) {
+                        changed = true
+                    }
+                    return
+                }
+                if let itmProp = newItemProps.getNamedElement(cmdName), let children = node.children {
+                    // Property exists, we need to replace value
+                    itmProp.children?.removeAll()
+                    itmProp.add(children)
+                    changed = true
+                } else {
+                    // Just add new property
+                    newItemProps.add(node)
                     changed = true
                 }
-                return
-            }
-            if let itmProp = newItemProps.getNamedElement(cmdName), let children = node.children {
-                // Property exists, we need to replace value
-                itmProp.children?.removeAll()
-                itmProp.add( children)
-                    changed = true
-            }
-            else {
-                // Just add new property
-                newItemProps.add(node)
-                changed = true
-            }
-        })
-        if changed  {
+            })
+        if changed {
             return self.store.createProperties(self.element, item, newItemProps)
         }
         return nil
@@ -157,8 +158,8 @@ class OperationController: NSViewController, NSTextViewDelegate {
             }
         }
 
-
-        self.store.compositeOperation(notifier: element, undoManaget: self.controller.view.undoManager, refresh: self.controller.scene.scheduleRedraw, operations)
+        self.store.compositeOperation(
+            notifier: element, undoManaget: self.controller.view.undoManager, refresh: self.controller.scene.scheduleRedraw, operations)
         self.controller?.hideOperationBox()
     }
 }

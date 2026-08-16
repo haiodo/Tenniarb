@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 public class TenniarbApplication: NSApplication {
 
@@ -66,10 +66,11 @@ public class TenniarbApplication: NSApplication {
 
         // Create window with proper initial size
         let contentRect = NSRect(x: 0, y: 0, width: 500, height: 200)
-        let window = NSWindow(contentRect: contentRect,
-                              styleMask: [.titled, .closable],
-                              backing: .buffered,
-                              defer: false)
+        let window = NSWindow(
+            contentRect: contentRect,
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false)
         window.title = "Preferences"
         window.contentViewController = prefs
         window.center()
@@ -78,8 +79,10 @@ public class TenniarbApplication: NSApplication {
         TenniarbApplication.preferencesWindowController = wc
 
         // When the window closes, clear the stored reference
-        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: nil) { _ in
-            TenniarbApplication.preferencesWindowController = nil
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { _ in
+            MainActor.assumeIsolated {
+                TenniarbApplication.preferencesWindowController = nil
+            }
         }
 
         wc.showWindow(self)
@@ -97,7 +100,8 @@ public class TenniarbApplication: NSApplication {
         let appMenu = NSMenu(title: appName)
         appMenuItem.submenu = appMenu
 
-        appMenu.addItem(NSMenuItem(title: "About \(appName)", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: ""))
+        appMenu.addItem(
+            NSMenuItem(title: "About \(appName)", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: ""))
         appMenu.addItem(NSMenuItem.separator())
 
         // Settings menu item - target is self (TenniarbApplication) which forwards to AppDelegate
@@ -118,7 +122,8 @@ public class TenniarbApplication: NSApplication {
 
         appMenu.addItem(NSMenuItem(title: "Hide \(appName)", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h"))
 
-        let hideOthersItem = NSMenuItem(title: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
+        let hideOthersItem = NSMenuItem(
+            title: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
         hideOthersItem.keyEquivalentModifierMask = [.option, .command]
         appMenu.addItem(hideOthersItem)
 
@@ -182,7 +187,8 @@ public class TenniarbApplication: NSApplication {
         addSubmenuItem.submenu = addSubmenu
         addSubmenu.addItem(NSMenuItem(title: "New item", action: #selector(ViewController.addFreeItem(_:)), keyEquivalent: "n"))
         addSubmenu.addItem(NSMenuItem(title: "New Linked item", action: #selector(ViewController.addLinkedItem(_:)), keyEquivalent: ""))
-        let linkedStyledItem = NSMenuItem(title: "Linked styled item", action: #selector(ViewController.addLinkedStyledItem(_:)), keyEquivalent: "\t")
+        let linkedStyledItem = NSMenuItem(
+            title: "Linked styled item", action: #selector(ViewController.addLinkedStyledItem(_:)), keyEquivalent: "\t")
         linkedStyledItem.keyEquivalentModifierMask = [.option]
         addSubmenu.addItem(linkedStyledItem)
         editMenu.addItem(addSubmenuItem)
@@ -221,7 +227,8 @@ public class TenniarbApplication: NSApplication {
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(NSMenuItem(title: "Select All", action: #selector(ViewController.selectAllItems(_:)), keyEquivalent: "a"))
 
-        let selectAllItemsItem = NSMenuItem(title: "Select All Items", action: #selector(ViewController.selectAllItemsKind(_:)), keyEquivalent: "a")
+        let selectAllItemsItem = NSMenuItem(
+            title: "Select All Items", action: #selector(ViewController.selectAllItemsKind(_:)), keyEquivalent: "a")
         selectAllItemsItem.keyEquivalentModifierMask = [.shift, .command]
         editMenu.addItem(selectAllItemsItem)
 
@@ -282,17 +289,17 @@ public class TenniarbApplication: NSApplication {
 
     override public func sendEvent(_ event: NSEvent) {
         if event.type == NSEvent.EventType.keyDown {
-            if (event.modifierFlags.contains(NSEvent.ModifierFlags.command)) {
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
                 if let chars = event.charactersIgnoringModifiers?.lowercased() {
                     switch chars {
                     case "x":
-                        if NSApp.sendAction(#selector(NSText.cut(_:)), to:nil, from:self) { return }
+                        if NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: self) { return }
                     case "c":
-                        if NSApp.sendAction(#selector(NSText.copy(_:)), to:nil, from:self) { return }
+                        if NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: self) { return }
                     case "v":
-                        if NSApp.sendAction(#selector(NSText.paste(_:)), to:nil, from:self) { return }
+                        if NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: self) { return }
                     case "a":
-                        if NSApp.sendAction(#selector(NSText.selectAll(_:)), to:nil, from:self) { return }
+                        if NSApp.sendAction(#selector(NSText.selectAll(_:)), to: nil, from: self) { return }
                     default:
                         break
                     }

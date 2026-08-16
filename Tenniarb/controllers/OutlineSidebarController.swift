@@ -18,15 +18,16 @@
 
 import Cocoa
 
+@MainActor
 class OutlineSidebarController: NSObject {
     weak var viewController: ViewController?
-    
+
     private(set) var outlineView: NSOutlineView!
     private(set) var toolbar: NSSegmentedControl!
     private(set) var containerView: NSView!
-    
+
     private var outlineViewDelegate: OutlineViewControllerDelegate?
-    
+
     func createView() -> NSView {
         let stackView = NSStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,18 +36,18 @@ class OutlineSidebarController: NSObject {
         stackView.spacing = 0
         stackView.distribution = .fill
         self.containerView = stackView
-        
+
         // Top toolbar box
         let toolbarBox = NSBox()
         toolbarBox.translatesAutoresizingMaskIntoConstraints = false
         toolbarBox.boxType = .custom
-        toolbarBox.borderType = .noBorder
+        toolbarBox.borderWidth = 0
         toolbarBox.titlePosition = .noTitle
         toolbarBox.fillColor = .clear
         stackView.addArrangedSubview(toolbarBox)
         toolbarBox.heightAnchor.constraint(equalToConstant: 30).isActive = true
         toolbarBox.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
-        
+
         // Toolbar segmented control
         let toolbarControl = NSSegmentedControl(
             labels: ["", ""],
@@ -66,7 +67,7 @@ class OutlineSidebarController: NSObject {
         toolbarControl.trailingAnchor.constraint(equalTo: toolbarBox.contentView!.trailingAnchor).isActive = true
         toolbarControl.topAnchor.constraint(equalTo: toolbarBox.contentView!.topAnchor).isActive = true
         self.toolbar = toolbarControl
-        
+
         // Outline scroll view
         let outlineScroll = NSScrollView()
         outlineScroll.translatesAutoresizingMaskIntoConstraints = false
@@ -77,7 +78,7 @@ class OutlineSidebarController: NSObject {
         outlineScroll.drawsBackground = false
         outlineScroll.contentView.drawsBackground = false
         stackView.addArrangedSubview(outlineScroll)
-        
+
         // Outline view
         let outline = OutlineNSOutlineView(frame: .zero)
         outline.translatesAutoresizingMaskIntoConstraints = false
@@ -90,25 +91,25 @@ class OutlineSidebarController: NSObject {
         outline.outlineTableColumn = col
         outline.headerView = nil
         outline.backgroundColor = NSColor.clear
-        outline.selectionHighlightStyle = .sourceList
+        outline.style = .sourceList
         outline.rowHeight = 22
         outline.intercellSpacing = NSSize(width: 0, height: 5)
         outline.indentationPerLevel = 10
         outlineScroll.documentView = outline
-        
+
         self.outlineView = outline
-        
+
         return stackView
     }
-    
+
     func setupDelegate() {
         guard let vc = viewController else { return }
-        
+
         self.outlineViewDelegate = OutlineViewControllerDelegate(vc)
         outlineView.delegate = self.outlineViewDelegate
         outlineView.dataSource = self.outlineViewDelegate
     }
-    
+
     @objc private func toolbarAction(_ sender: NSSegmentedControl) {
         switch sender.selectedSegment {
         case 0:
@@ -119,45 +120,45 @@ class OutlineSidebarController: NSObject {
             break
         }
     }
-    
+
     // MARK: - Public API
-    
+
     func reloadData() {
         outlineView?.reloadData()
     }
-    
+
     func reloadItem(_ item: Any?, reloadChildren: Bool = false) {
         outlineView?.reloadItem(item, reloadChildren: reloadChildren)
     }
-    
+
     func expandItem(_ item: Any?, expandChildren: Bool = false) {
         outlineView?.expandItem(item, expandChildren: expandChildren)
     }
-    
+
     func selectRowIndexes(_ indexes: IndexSet, byExtendingSelection extend: Bool) {
         outlineView?.selectRowIndexes(indexes, byExtendingSelection: extend)
     }
-    
+
     func selectedRow() -> Int {
         return outlineView?.selectedRow ?? -1
     }
-    
+
     func item(atRow row: Int) -> Any? {
         return outlineView?.item(atRow: row)
     }
-    
+
     func row(forItem item: Any) -> Int {
         return outlineView?.row(forItem: item) ?? -1
     }
-    
+
     func beginUpdates() {
         outlineView?.beginUpdates()
     }
-    
+
     func endUpdates() {
         outlineView?.endUpdates()
     }
-    
+
     func setSelectedElement(_ element: Element?) {
         if let el = element {
             let row = outlineView.row(forItem: el)

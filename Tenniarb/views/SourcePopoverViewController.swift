@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 /// Programmatic popover controller that shows source text for an `Element`.
 /// This replaces the storyboard-based layout so the popover can be instantiated
@@ -68,7 +68,7 @@ class SourcePopoverViewController: NSViewController {
             scroll.leadingAnchor.constraint(equalTo: vfx.leadingAnchor, constant: 8),
             scroll.trailingAnchor.constraint(equalTo: vfx.trailingAnchor, constant: -8),
             scroll.topAnchor.constraint(equalTo: vfx.topAnchor, constant: 8),
-            scroll.bottomAnchor.constraint(equalTo: closeButton.topAnchor, constant: -8)
+            scroll.bottomAnchor.constraint(equalTo: closeButton.topAnchor, constant: -8),
         ])
 
         // Configure the text view to be non-editable and monospaced

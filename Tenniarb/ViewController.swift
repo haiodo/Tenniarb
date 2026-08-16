@@ -35,7 +35,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var updateScheduled: Int = 0
     var updateKindScheduled: ModelEventKind = .Layout
 
-    var updateElements:[Element] = []
+    var updateElements: [Element] = []
 
     var itemIndex = 0
 
@@ -53,13 +53,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var exportMgr = ExportManager()
 
     @IBOutlet weak var exportSegments: NSSegmentedCell!
-    
+
     // MARK: - Component Controllers
     var outlineSidebarController: OutlineSidebarController!
     var editorViewController: EditorViewController!
     var propertiesPanelController: PropertiesPanelController!
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
-        switch(sender.selectedSegment) {
+        switch sender.selectedSegment {
         case 0:
             self.scene.addNewItem()
         case 1:
@@ -77,10 +77,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             let selectedRow = self.worldTree.selectedRow
             if let item = self.worldTree.item(atRow: selectedRow) as? Element {
                 if item != active {
-                    return; // Do not rename in this case
+                    return;  // Do not rename in this case
                 }
                 if item.name != newValue {
-                    self.elementStore?.updateName(element: item, newValue, undoManager: self.undoManager, refresh: {() -> Void in } )
+                    self.elementStore?.updateName(element: item, newValue, undoManager: self.undoManager, refresh: { () -> Void in })
                 }
             }
 
@@ -106,7 +106,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             vfx.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             vfx.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             vfx.topAnchor.constraint(equalTo: root.topAnchor),
-            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+            vfx.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
         // Main split view (left: outline, right: editor)
@@ -121,7 +121,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             splitView.leadingAnchor.constraint(equalTo: vfx.leadingAnchor),
             splitView.trailingAnchor.constraint(equalTo: vfx.trailingAnchor),
             splitView.topAnchor.constraint(equalTo: vfx.topAnchor),
-            splitView.bottomAnchor.constraint(equalTo: vfx.bottomAnchor)
+            splitView.bottomAnchor.constraint(equalTo: vfx.bottomAnchor),
         ])
 
         // Create component controllers
@@ -188,7 +188,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         return false  // Prevent collapsing of subviews
     }
 
-    func splitView(_ splitView: NSSplitView, constrainMinCoordinate proposedMinimumPosition: CGFloat, ofSubviewAt dividerIndex: Int) -> CGFloat {
+    func splitView(_ splitView: NSSplitView, constrainMinCoordinate proposedMinimumPosition: CGFloat, ofSubviewAt dividerIndex: Int)
+        -> CGFloat
+    {
         if splitView == mainSplitView {
             // Minimum left panel width
             return 150
@@ -199,7 +201,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         return proposedMinimumPosition
     }
 
-    func splitView(_ splitView: NSSplitView, constrainMaxCoordinate proposedMaximumPosition: CGFloat, ofSubviewAt dividerIndex: Int) -> CGFloat {
+    func splitView(_ splitView: NSSplitView, constrainMaxCoordinate proposedMaximumPosition: CGFloat, ofSubviewAt dividerIndex: Int)
+        -> CGFloat
+    {
         if splitView == mainSplitView {
             // Maximum left panel width
             return 400
@@ -241,15 +245,13 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
         exportSegments.setMenu(exportMenu, forSegment: 0)
 
-        DistributedNotificationCenter.default().addObserver(self, selector: #selector(darkModeChanged), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
+        DistributedNotificationCenter.default().addObserver(
+            self, selector: #selector(darkModeChanged), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"),
+            object: nil)
     }
     deinit {
         // Unregister distributed notifications
         DistributedNotificationCenter.default().removeObserver(self)
-        // Unregister from element store listeners if present
-        if let es = self.elementStore {
-            es.onUpdate.removeAll(where: { ($0 as AnyObject) === (self as AnyObject) })
-        }
     }
 
     override func viewDidAppear() {
@@ -257,22 +259,23 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     @objc func darkModeChanged(_ notif: NSNotification) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-            self.scene.scheduleRedraw()
-            if let delegate = self.textViewDelegate {
-                delegate.highlight()
-            }
-        })
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.2,
+            execute: {
+                self.scene.scheduleRedraw()
+                if let delegate = self.textViewDelegate {
+                    delegate.highlight()
+                }
+            })
     }
 
-
     @IBAction func elementToolbarAction(_ sender: NSSegmentedCell) {
-        switch(sender.selectedSegment) {
-        case 0: // This is add of new element.
+        switch sender.selectedSegment {
+        case 0:  // This is add of new element.
             handleAddElement()
-        case 1: // This is remove of selected element.
+        case 1:  // This is remove of selected element.
             handleRemoveElement()
-        case 2: // This is options for selected element.
+        case 2:  // This is options for selected element.
             handleElementOptions()
         default:
             break
@@ -299,7 +302,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         searchBox = nil
     }
 
-    fileprivate func hideView(_ controller: NSViewController? ) {
+    fileprivate func hideView(_ controller: NSViewController?) {
         if let c = controller {
             if c.view.window != nil {
                 dismiss(c)
@@ -311,22 +314,22 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         operationBox = nil
     }
 
-    @IBAction func pasteAsItem(_ sender: NSMenuItem ) {
+    @IBAction func pasteAsItem(_ sender: NSMenuItem) {
         scene?.pasteAsItem(sender)
     }
-    @IBAction func pasteAsItemSet(_ sender: NSMenuItem ) {
+    @IBAction func pasteAsItemSet(_ sender: NSMenuItem) {
         scene?.pasteAsItemSet(sender)
     }
 
-    @IBAction func selectAllItemsKind(_ sender: NSMenuItem ) {
+    @IBAction func selectAllItemsKind(_ sender: NSMenuItem) {
         scene.selectAllByKind(kind: ItemKind.Item)
     }
 
-    @IBAction func selectAllLinks(_ sender: NSMenuItem ) {
+    @IBAction func selectAllLinks(_ sender: NSMenuItem) {
         scene.selectAllByKind(kind: ItemKind.Link)
     }
 
-    @IBAction func showSearchBox(_ sender: NSMenuItem ) {
+    @IBAction func showSearchBox(_ sender: NSMenuItem) {
         if let active = self.selectedElement {
             hideSearchBox()
 
@@ -353,7 +356,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    @IBAction func showOperationBox(_ sender: NSMenuItem ) {
+    @IBAction func showOperationBox(_ sender: NSMenuItem) {
         showOperationBox()
     }
     func showOperationBox() {
@@ -371,18 +374,20 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             self.operationBox = operations
 
             let bounds = self.scene.getSelectionBounds()
-            self.present(operations, asPopoverRelativeTo: NSRect(origin: bounds.origin, size: bounds.size),
-                         of: self.scene, preferredEdge: .minY, behavior: .transient)
+            self.present(
+                operations, asPopoverRelativeTo: NSRect(origin: bounds.origin, size: bounds.size),
+                of: self.scene, preferredEdge: .minY, behavior: .transient)
         }
     }
 
     @objc func showHelp(_ sender: Any?) {
         // Show help in a separate window (programmatic)
         let helpController = HelpController()
-        let helpWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
-                                  styleMask: [.titled, .closable, .resizable],
-                                  backing: .buffered,
-                                  defer: false)
+        let helpWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false)
         helpWindow.contentViewController = helpController
         let wc = NSWindowController(window: helpWindow)
         wc.showWindow(self)
@@ -408,11 +413,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         guard let responder = self.view.window?.firstResponder else {
             return
         }
-        if responder  == self.scene {
+        if responder == self.scene {
             self.scene.selectAllItems()
             return
-        }
-        else if responder == self.textView {
+        } else if responder == self.textView {
             self.textView.selectAll(sender)
             return
         }
@@ -425,46 +429,44 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         if responder == self.scene {
             self.scene.selectNoneItems()
-        }
-        else if responder == self.textView {
+        } else if responder == self.textView {
             self.textView.setSelectedRange(NSRange(location: 0, length: 0))
         }
     }
 
-    @IBAction func editTitle(_ sender: NSMenuItem ) {
-        if let active = self.scene?.activeItems.first  {
+    @IBAction func editTitle(_ sender: NSMenuItem) {
+        if let active = self.scene?.activeItems.first {
             scene.setActiveItem(active)
             scene?.editTitle(active, .Name)
         }
     }
-    @IBAction func editBody(_ sender: NSMenuItem ) {
-        if let active = self.scene?.activeItems.first  {
+    @IBAction func editBody(_ sender: NSMenuItem) {
+        if let active = self.scene?.activeItems.first {
             scene.setActiveItem(active)
             scene?.editTitle(active, .Body)
         }
     }
 
-    @IBAction func editValue(_ sender: NSMenuItem ) {
-        if let active = self.scene?.activeItems.first  {
+    @IBAction func editValue(_ sender: NSMenuItem) {
+        if let active = self.scene?.activeItems.first {
             scene.setActiveItem(active)
             scene?.editTitle(active, .Value)
         }
     }
 
-    @IBAction func quickEdit(_ sender: NSMenuItem ) {
+    @IBAction func quickEdit(_ sender: NSMenuItem) {
         showOperationBox()
     }
 
-
-    @IBAction func addLinkedItem(_ sender: NSMenuItem ) {
+    @IBAction func addLinkedItem(_ sender: NSMenuItem) {
         scene?.addNewItem()
     }
 
-    @IBAction func addLinkedStyledItem(_ sender: NSMenuItem ) {
+    @IBAction func addLinkedStyledItem(_ sender: NSMenuItem) {
         scene?.addNewItem(copyProps: true)
     }
 
-    @IBAction func addFreeItem(_ sender: NSMenuItem ) {
+    @IBAction func addFreeItem(_ sender: NSMenuItem) {
         scene?.addTopItem()
     }
 
@@ -482,8 +484,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if action == #selector(selectAllLinks) || action == #selector(selectAllItemsKind) {
                 return true
             }
-            if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) || action == #selector(self.editValue(_:)) ||
-                action == #selector(self.showOperationBox(_:)) {
+            if action == #selector(self.editTitle(_:)) || action == #selector(self.editBody(_:)) || action == #selector(self.editValue(_:))
+                || action == #selector(self.showOperationBox(_:))
+            {
                 return !self.scene.activeItems.isEmpty
             }
             if action == #selector(duplicateItem) || action == #selector(inheritItem) {
@@ -511,11 +514,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if let responder = self.view.window?.firstResponder {
             if responder == self.worldTree {
                 target = .WorldTree
-            }
-            else if responder == self.scene {
+            } else if responder == self.scene {
                 target = .SceneView
-            }
-            else {
+            } else {
                 // Check if first responsed has super view of worldTree
                 if let view = responder as? NSView {
 
@@ -534,23 +535,24 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         return target
     }
 
-    @IBAction public func duplicateItem( _ sender: NSMenuItem ) {
+    @IBAction public func duplicateItem(_ sender: NSMenuItem) {
         switch findTarget() {
         case .WorldTree:
             if let active = self.selectedElement {
                 let elementCopy = active.clone()
 
-                self.elementStore?.add(active.parent!, elementCopy, undoManager: self.undoManager, refresh: {()->Void in
-                    DispatchQueue.main.async(execute: {
-                        if active.parent!.kind == .Root {
-                            self.worldTree.reloadData()
-                        }
-                        else {
-                            self.worldTree.reloadItem(active.parent!, reloadChildren: true )
-                            self.worldTree.expandItem(active.parent!)
-                        }
+                self.elementStore?.add(
+                    active.parent!, elementCopy, undoManager: self.undoManager,
+                    refresh: { () -> Void in
+                        DispatchQueue.main.async(execute: {
+                            if active.parent!.kind == .Root {
+                                self.worldTree.reloadData()
+                            } else {
+                                self.worldTree.reloadItem(active.parent!, reloadChildren: true)
+                                self.worldTree.expandItem(active.parent!)
+                            }
+                        })
                     })
-                })
             }
         case .SceneView:
             scene?.duplicateItem()
@@ -559,9 +561,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    @IBAction public func inheritItem( _ sender: NSMenuItem ) {
+    @IBAction public func inheritItem(_ sender: NSMenuItem) {
         switch findTarget() {
-        case .WorldTree,.SceneView:
+        case .WorldTree, .SceneView:
             if let active = self.selectedElement {
                 let elementCopy = active.clone()
 
@@ -572,24 +574,25 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     itm.properties = ModelProperties()
 
                     // Calculate index of item
-                    let cmd = TennNode.newCommand(PersistenceStyleKind.Inherit.name,TennNode.newStrNode("../\(itm.name)"))
+                    let cmd = TennNode.newCommand(PersistenceStyleKind.Inherit.name, TennNode.newStrNode("../\(itm.name)"))
                     if let ind = refs[itm] {
                         cmd.add(TennNode.newIntNode(ind))
                     }
                     itm.properties.append(cmd)
                 }
 
-                self.elementStore?.add(active, elementCopy, undoManager: self.undoManager, refresh: {()->Void in
-                    DispatchQueue.main.async(execute: {
-                        if active.parent!.kind == .Root {
-                            self.worldTree.reloadData()
-                        }
-                        else {
-                            self.worldTree.reloadItem(active.parent!, reloadChildren: true )
-                            self.worldTree.expandItem(active.parent!)
-                        }
+                self.elementStore?.add(
+                    active, elementCopy, undoManager: self.undoManager,
+                    refresh: { () -> Void in
+                        DispatchQueue.main.async(execute: {
+                            if active.parent!.kind == .Root {
+                                self.worldTree.reloadData()
+                            } else {
+                                self.worldTree.reloadItem(active.parent!, reloadChildren: true)
+                                self.worldTree.expandItem(active.parent!)
+                            }
+                        })
                     })
-                })
             }
         default:
             break
@@ -602,23 +605,23 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         var active: Element?
         if let sel = self.selectedElement {
             active = sel
-        }
-        else {
+        } else {
             // Add root item
             active = self.elementStore?.model
         }
         if let act = active {
-            self.elementStore?.add(act, newEl, undoManager: self.undoManager, refresh: {()->Void in
-                DispatchQueue.main.async(execute: {
-                    if act.kind == .Root {
-                        self.worldTree.reloadData()
-                    }
-                    else {
-                        self.worldTree.reloadItem(act, reloadChildren: true )
-                        self.worldTree.expandItem(act)
-                    }
+            self.elementStore?.add(
+                act, newEl, undoManager: self.undoManager,
+                refresh: { () -> Void in
+                    DispatchQueue.main.async(execute: {
+                        if act.kind == .Root {
+                            self.worldTree.reloadData()
+                        } else {
+                            self.worldTree.reloadItem(act, reloadChildren: true)
+                            self.worldTree.expandItem(act)
+                        }
+                    })
                 })
-            })
         }
 
     }
@@ -629,22 +632,22 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
                 if parent.kind == .Root {
                     selectedElement = nil
-                }
-                else {
+                } else {
                     selectedElement = parent
                 }
 
-                self.elementStore?.remove(parent, active, undoManager: self.undoManager, refresh: {()->Void in
-                    DispatchQueue.main.async(execute: {
-                        if parent.kind == .Root {
-                            self.worldTree.reloadData()
-                        }
-                        else {
-                            self.worldTree.reloadItem(parent, reloadChildren: true )
-                            self.worldTree.expandItem(parent)
-                        }
+                self.elementStore?.remove(
+                    parent, active, undoManager: self.undoManager,
+                    refresh: { () -> Void in
+                        DispatchQueue.main.async(execute: {
+                            if parent.kind == .Root {
+                                self.worldTree.reloadData()
+                            } else {
+                                self.worldTree.reloadItem(parent, reloadChildren: true)
+                                self.worldTree.expandItem(parent)
+                            }
+                        })
                     })
-                })
             }
         }
     }
@@ -658,13 +661,18 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    override func present(_ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge, behavior: NSPopover.Behavior) {
+    override func present(
+        _ viewController: NSViewController, asPopoverRelativeTo positioningRect: NSRect, of positioningView: NSView,
+        preferredEdge: NSRectEdge, behavior: NSPopover.Behavior
+    ) {
 
         if let vc = viewController as? SourcePopoverViewController {
             if let active = self.selectedElement {
                 vc.setElement(element: active)
 
-                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                super.present(
+                    viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge,
+                    behavior: behavior)
                 return
             }
         }
@@ -674,12 +682,15 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 vc.setElement(element: active)
                 vc.setViewController(self)
 
-                super.present(viewController, asPopoverRelativeTo: positioningRect , of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+                super.present(
+                    viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge,
+                    behavior: behavior)
                 return
             }
         }
 
-        super.present(viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
+        super.present(
+            viewController, asPopoverRelativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge, behavior: behavior)
     }
 
     func onElementSelected(_ element: Element?) {
@@ -695,7 +706,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    func updateTextProperties( ) {
+    func updateTextProperties() {
         if let element = self.selectedElement, let delegate = self.textViewDelegate {
             DispatchQueue.main.async(execute: {
                 delegate.setTextValue(element, self.activeItems.first)
@@ -717,7 +728,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     public func setElementModel(elementStore: ElementModelStore) {
 
-        if let es = self.elementStore,  es.model == elementStore.model {
+        if let es = self.elementStore, es.model == elementStore.model {
             return
         }
         // Unregister from previous store listeners if needed
@@ -726,7 +737,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         self.elementStore = elementStore
 
-        if let um = self.undoManager{
+        if let um = self.undoManager {
             um.removeAllActions()
         }
         if self.scene == nil {
@@ -744,7 +755,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
         scene.setModel(store: self.elementStore!)
         scene.onSelection.removeAll()
-        scene.onSelection.append({( element ) -> Void in
+        scene.onSelection.append({ (element) -> Void in
             self.activeItems = element
             self.updateTextProperties()
         })
@@ -760,7 +771,6 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             self.expandItems(elementStore.model.elements, PreferenceConstants.preference.autoExpandLevel)
         }
     }
-
 
     func expandItems(_ elements: [Element], _ level: Int) {
         for e in elements {
@@ -779,58 +789,60 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         //TODO: Add optimizations based on particular element
 
         self.updateElements.append(evt.element)
-        if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && evt.kind == .Structure ) {
+        if self.updateScheduled == 0 || (self.updateKindScheduled == .Layout && evt.kind == .Structure) {
             self.updateKindScheduled = evt.kind
             self.updateScheduled = 1
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + 0.2,
+                execute: {
 
-                self.worldTree.beginUpdates()
+                    self.worldTree.beginUpdates()
 
-                // Check if operation added some items and in this case select it.
-                var selectionUpdated = false
-                for (el, kind) in evt.elements {
-                    if kind == .Append {
-                        if self.selectedElement != el {
-                            self.onElementSelected(el)
-                            selectionUpdated = true
+                    // Check if operation added some items and in this case select it.
+                    var selectionUpdated = false
+                    for (el, kind) in evt.elements {
+                        if kind == .Append {
+                            if self.selectedElement != el {
+                                self.onElementSelected(el)
+                                selectionUpdated = true
+                            }
                         }
                     }
-                }
-                if !selectionUpdated {
-                    if self.selectedElement != evt.element {
-                        self.onElementSelected(evt.element)
+                    if !selectionUpdated {
+                        if self.selectedElement != evt.element {
+                            self.onElementSelected(evt.element)
+                        }
                     }
-                }
-                for el in self.updateElements {
-                    self.worldTree.reloadItem(el, reloadChildren: true)
-                }
-                self.updateElements.removeAll()
+                    for el in self.updateElements {
+                        self.worldTree.reloadItem(el, reloadChildren: true)
+                    }
+                    self.updateElements.removeAll()
 
-                self.worldTree.endUpdates()
+                    self.worldTree.endUpdates()
 
-                if let sel = self.selectedElement {
-                    let childIndex = self.worldTree.row(forItem: sel)
-                    self.worldTree.selectRowIndexes(IndexSet.init(arrayLiteral: childIndex),
-                                                    byExtendingSelection: false)
-                }
+                    if let sel = self.selectedElement {
+                        let childIndex = self.worldTree.row(forItem: sel)
+                        self.worldTree.selectRowIndexes(
+                            IndexSet.init(arrayLiteral: childIndex),
+                            byExtendingSelection: false)
+                    }
 
-                self.updateScheduled = 0
+                    self.updateScheduled = 0
 
-                self.updateWindowTitle()
-            })
+                    self.updateWindowTitle()
+                })
         }
     }
 
-    func mergeProperties(_ node: TennNode ) {
+    func mergeProperties(_ node: TennNode) {
         updatingProperties = true
         if let active = activeItems.first {
             if let element = self.selectedElement {
-                self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: {()->Void in} )
+                self.elementStore?.setProperties(element, active, node, undoManager: undoManager!, refresh: { () -> Void in })
             }
-        }
-        else if let element = self.selectedElement {
-            self.elementStore?.setProperties(element, node, undoManager: undoManager!,  refresh: {()->Void in})
+        } else if let element = self.selectedElement {
+            self.elementStore?.setProperties(element, node, undoManager: undoManager!, refresh: { () -> Void in })
         }
         updatingProperties = false
     }

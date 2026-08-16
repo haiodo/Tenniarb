@@ -20,7 +20,8 @@
 import Cocoa
 import StoreKit
 
-@NSApplicationMain
+@main
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var terminateOnLastWindowClose = true
     var preferencesWindowController: NSWindowController?
@@ -33,7 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return terminateOnLastWindowClose
     }
 
-    public func setTerminateWindows(_ value: Bool ) {
+    public func setTerminateWindows(_ value: Bool) {
         self.terminateOnLastWindowClose = value
     }
 
@@ -94,8 +95,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.preferencesWindowController = wc
 
         // When the window closes, clear the stored reference so it can be recreated.
-        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: nil) { [weak self] _ in
-            self?.preferencesWindowController = nil
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.preferencesWindowController = nil
+            }
         }
 
         wc.showWindow(self)

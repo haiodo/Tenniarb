@@ -30,10 +30,9 @@ public class TreeLayout: LayoutAlgorithm {
     private var bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
     private var leftSize: CGFloat = 0
     private var layerSize: CGFloat = 0
-    
-    
+
     public func apply(context: LayoutContext, clean: Bool) -> [ElementOperation] {
         return []
     }
-    
+
 }

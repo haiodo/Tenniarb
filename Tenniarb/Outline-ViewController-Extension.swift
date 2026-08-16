@@ -16,18 +16,20 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import Cocoa
+import Foundation
 
 class OutlineTextFieldCell: NSTextFieldCell {
-    static let myTextColor: NSColor = NSColor(red: 253/255, green: 246/255, blue: 227/255, alpha: 1.0)
+    static let myTextColor: NSColor = NSColor(red: 253 / 255, green: 246 / 255, blue: 227 / 255, alpha: 1.0)
 
     override func edit(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, event: NSEvent?) {
         super.edit(withFrame: rect, in: controlView, editor: textObj, delegate: delegate, event: event)
         textObj.textColor = NSColor.black
         textObj.backgroundColor = NSColor.white
     }
-    override func select(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, start selStart: Int, length selLength: Int) {
+    override func select(
+        withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, start selStart: Int, length selLength: Int
+    ) {
         super.select(withFrame: rect, in: controlView, editor: textObj, delegate: delegate, start: selStart, length: selLength)
         textObj.textColor = NSColor.black
         textObj.backgroundColor = NSColor.white
@@ -45,14 +47,11 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
 
             if action == #selector(cut) {
                 return el != nil
-            }
-            else if action == #selector(copy(_:)) {
+            } else if action == #selector(copy(_:)) {
                 return el != nil
-            }
-            else if action == #selector(cut(_:)) {
+            } else if action == #selector(cut(_:)) {
                 return el != nil
-            }
-            else if action == #selector(paste(_:)) {
+            } else if action == #selector(paste(_:)) {
                 return ClipboardUtils.canPaste()
             }
         }
@@ -62,7 +61,7 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
         }
         return true
     }
-    @objc func cut( _ sender: NSObject ) {
+    @objc func cut(_ sender: NSObject) {
         self.copy(sender)
         if let delegate = self.delegate as? OutlineViewControllerDelegate {
             delegate.controller.handleRemoveElement()
@@ -70,29 +69,31 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
 
     }
 
-    @objc func copy( _ sender: NSObject ) {
+    @objc func copy(_ sender: NSObject) {
         if let el = item(atRow: selectedRow) as? Element {
             ClipboardUtils.copy(el.toTenn())
         }
     }
 
-    @objc func paste( _ sender: NSObject ) {
+    @objc func paste(_ sender: NSObject) {
         if let delegate = self.delegate as? OutlineViewControllerDelegate,
-            let root = item(atRow: selectedRow) as? Element {
+            let root = item(atRow: selectedRow) as? Element
+        {
             ClipboardUtils.paste { node in
                 let elModel = Element.parseTenn(node: node)
                 if elModel.elements.count > 0 {
-                    delegate.controller.elementStore?.addElements(root, elModel.elements, undoManager: self.undoManager, refresh: {()->Void in
-                        DispatchQueue.main.async(execute: {
-                            if root.kind == .Root {
-                                self.reloadData()
-                            }
-                            else {
-                                self.reloadItem(root, reloadChildren: true )
-                                self.expandItem(root)
-                            }
+                    delegate.controller.elementStore?.addElements(
+                        root, elModel.elements, undoManager: self.undoManager,
+                        refresh: { () -> Void in
+                            DispatchQueue.main.async(execute: {
+                                if root.kind == .Root {
+                                    self.reloadData()
+                                } else {
+                                    self.reloadItem(root, reloadChildren: true)
+                                    self.expandItem(root)
+                                }
+                            })
                         })
-                    })
                 }
             }
         }
@@ -118,9 +119,10 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
         if event == nil || event?.characters == "\u{0D}" {
             // For view-based outline, manually make the textField first responder
             if let rowView = self.rowView(atRow: row, makeIfNecessary: false),
-               let cellView = rowView.view(atColumn: column) as? NSTableCellView,
-               let textField = cellView.textField,
-               textField.acceptsFirstResponder {
+                let cellView = rowView.view(atColumn: column) as? NSTableCellView,
+                let textField = cellView.textField,
+                textField.acceptsFirstResponder
+            {
                 if self.window?.makeFirstResponder(textField) == true && select {
                     textField.selectText(nil)
                 }
@@ -131,11 +133,12 @@ class OutlineNSOutlineView: NSOutlineView, NSMenuItemValidation, NSMenuDelegate 
     }
 }
 
-class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate,NSMenuItemValidation {
+@MainActor
+class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate, NSMenuItemValidation {
     let controller: ViewController
     var draggingItem: Element? = nil
 
-    init(_ controller: ViewController ) {
+    init(_ controller: ViewController) {
         self.controller = controller
         controller.worldTree.autosaveName = "tenniarb.worldTree"
         controller.worldTree.autosaveExpandedItems = true
@@ -152,7 +155,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return true
     }
 
-    func keyDown( for event: NSEvent, _ outline: OutlineNSOutlineView ) -> Bool {
+    func keyDown(for event: NSEvent, _ outline: OutlineNSOutlineView) -> Bool {
         if event.characters == "\t" {
             self.controller.scene?.addTopItem()
             self.controller.scene.window?.makeFirstResponder(self.controller.scene)
@@ -168,15 +171,15 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         }
         return false
     }
-    @objc  func addElementAction(_ sender: NSMenuItem) {
+    @objc func addElementAction(_ sender: NSMenuItem) {
         controller.handleAddElement()
     }
 
-    @objc  func duplicateElementAction(_ sender: NSMenuItem) {
+    @objc func duplicateElementAction(_ sender: NSMenuItem) {
         controller.duplicateItem(sender)
     }
 
-    @objc  func deleteElementAction(_ sender: NSMenuItem) {
+    @objc func deleteElementAction(_ sender: NSMenuItem) {
         controller.handleRemoveElement()
     }
 
@@ -260,7 +263,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return false
     }
 
-    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) ->  Any? {
+    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
         //1
         if let el = item as? Element {
             return el.name
@@ -356,14 +359,12 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return OutlineNSTableRowView()
     }
 
-
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
         let selectedIndex = controller.worldTree.selectedRow
 
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
             self.controller.onElementSelected(el)
-        }
-        else {
+        } else {
             self.controller.onElementSelected(controller.elementStore?.model)
         }
     }
@@ -378,14 +379,14 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                 return nil
             }
             draggingItem = fi
-            pp.setString( fi.toTennStr(), forType: NSPasteboard.PasteboardType.string )
+            pp.setString(fi.toTennStr(), forType: NSPasteboard.PasteboardType.string)
         }
 
         return pp
     }
 
     func isParentOf(_ rootElement: Element, _ element: Element) -> Bool {
-        var e:Element? = element
+        var e: Element? = element
 
         while e != nil {
             if e == rootElement {
@@ -396,7 +397,9 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return false
     }
 
-    func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+    func outlineView(
+        _ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int
+    ) -> NSDragOperation {
 
         if let element = item as? Element, let dragItem = self.draggingItem {
             // Check if not moving item into one of its parents.
@@ -420,19 +423,22 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
                     // Do copy of element diagram only
                     let diCopy = dragItem.clone(cloneItems: true, cloneElement: false)
 
-                    controller.elementStore?.add(element, diCopy, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadItem(element)}, index: index)
+                    controller.elementStore?.add(
+                        element, diCopy, undoManager: controller.undoManager,
+                        refresh: { () in self.controller.worldTree.reloadItem(element) }, index: index)
 
-                }
-                else {
+                } else {
                     // Do move of element
-                    controller.elementStore?.move(dragItem, element, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadData()}, index: index)
+                    controller.elementStore?.move(
+                        dragItem, element, undoManager: controller.undoManager, refresh: { () in self.controller.worldTree.reloadData() },
+                        index: index)
                 }
-            }
-            else {
-                controller.elementStore?.move(dragItem, controller.elementStore!.model, undoManager: controller.undoManager, refresh:{() in self.controller.worldTree.reloadData()}, index: index)
+            } else {
+                controller.elementStore?.move(
+                    dragItem, controller.elementStore!.model, undoManager: controller.undoManager,
+                    refresh: { () in self.controller.worldTree.reloadData() }, index: index)
             }
         }
-
 
         draggingItem = nil
         return true

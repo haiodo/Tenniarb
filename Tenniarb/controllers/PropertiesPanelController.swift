@@ -18,15 +18,16 @@
 
 import Cocoa
 
+@MainActor
 class PropertiesPanelController: NSObject {
     weak var viewController: ViewController?
-    
+
     private(set) var textView: NSTextView!
     private(set) var scrollView: NSScrollView!
     private(set) var containerView: NSView!
-    
+
     private var textViewDelegate: TextPropertiesDelegate?
-    
+
     func createView(width: CGFloat = 718, height: CGFloat = 127) -> NSView {
         let stackView = NSStackView(frame: NSRect(x: 0, y: 0, width: width, height: height))
         stackView.orientation = .vertical
@@ -35,7 +36,7 @@ class PropertiesPanelController: NSObject {
         stackView.distribution = .fill
         stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
-        
+
         // Scroll view
         let textScroll = NSScrollView()
         textScroll.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +50,7 @@ class PropertiesPanelController: NSObject {
         textScroll.contentView.drawsBackground = false
         stackView.addArrangedSubview(textScroll)
         self.scrollView = textScroll
-        
+
         // Text view
         let textView = TennTextView(frame: NSRect(x: 0, y: 0, width: width, height: height))
         textView.drawsBackground = false
@@ -62,36 +63,36 @@ class PropertiesPanelController: NSObject {
         textView.minSize = NSSize(width: width, height: height)
         textScroll.documentView = textView
         self.textView = textView
-        
+
         return stackView
     }
-    
+
     func setupDelegate(_ viewController: NSViewController) {
         self.textViewDelegate = TextPropertiesDelegate(viewController as! ViewController, textView)
     }
-    
+
     func updateProperties(for element: Element, item: DiagramItem? = nil) {
         textViewDelegate?.setTextValue(element, item)
     }
-    
+
     func highlight() {
         textViewDelegate?.highlight()
     }
-    
+
     // MARK: - Text View Proxy Methods
-    
+
     func selectAll(_ sender: Any?) {
         textView?.selectAll(sender)
     }
-    
+
     func setSelectedRange(_ range: NSRange) {
         textView?.setSelectedRange(range)
     }
-    
+
     var isFirstResponder: Bool {
         return textView?.window?.firstResponder == textView
     }
-    
+
     func makeFirstResponder() -> Bool {
         return textView?.window?.makeFirstResponder(textView) ?? false
     }
