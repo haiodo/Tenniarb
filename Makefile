@@ -10,6 +10,10 @@ XCB := xcodebuild -project $(PROJECT) -destination '$(DEST)' -configuration $(CO
 
 SWIFT_SRC := $(shell find Tenniarb TenniarbTests TenniarbUITests -name '*.swift' -not -path '*/Preview Content/*' -not -path '*/Experiments/*')
 
+# Via xcrun, not `swift format`: a toolchain on PATH (e.g. swift-actions/setup-swift)
+# would shadow it with a different version and report bogus diffs.
+SWIFT_FORMAT := xcrun swift-format
+
 .DEFAULT_GOAL := help
 .PHONY: help build test test-only perf lint lint-fix format format-check ci clean
 
@@ -35,10 +39,10 @@ lint-fix: ## Apply SwiftLint autocorrections
 	swiftlint --fix --config .swiftlint.yml
 
 format: ## Reformat sources in place (swift-format from Xcode toolchain)
-	swift format --in-place --configuration .swift-format $(SWIFT_SRC)
+	$(SWIFT_FORMAT) --in-place --configuration .swift-format $(SWIFT_SRC)
 
 format-check: ## Fail if sources are not formatted
-	swift format lint --strict --configuration .swift-format $(SWIFT_SRC)
+	$(SWIFT_FORMAT) lint --strict --configuration .swift-format $(SWIFT_SRC)
 
 ci: lint build test ## What CI runs: lint + build + unit tests
 

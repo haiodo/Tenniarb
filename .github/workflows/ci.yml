@@ -26,16 +26,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
-      - name: Setup Swift 6.2
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: '6.2'
-
+      # No setup-swift here on purpose: xcodebuild and swift-format both come from the
+      # Xcode toolchain, and a toolchain on PATH shadows them with a different version.
       - name: Show environment info
         run: |
           sw_vers
           xcodebuild -version
           swift --version
+          xcrun swift-format --version
 
       - name: SwiftLint
         run: |
@@ -53,19 +51,12 @@ jobs:
       - name: Build (Debug)
         run: |
           set -euo pipefail
-          echo "Building Tenniarb (Debug configuration)..."
-          xcodebuild -project Tenniarb.xcodeproj -scheme Tenniarb -configuration Debug \
-            -derivedDataPath build clean build CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
-        # Let a failing build fail the job; logs are captured for post-mortem.
+          make build | tee xcodebuild.log
 
       - name: Run tests
         run: |
           set -euo pipefail
-          echo "Running tests..."
-          # Disable code signing and related settings so tests can run on hosted runner without certificates
-          xcodebuild test -project Tenniarb.xcodeproj -scheme Tenniarb \
-            -destination 'platform=macOS' -configuration Debug -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" | tee xcodebuild-test.log
+          make test | tee xcodebuild-test.log
 
       - name: Upload build & test logs
         if: always()
