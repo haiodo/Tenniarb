@@ -120,6 +120,10 @@ public class GridLayout: LayoutAlgorithm {
     func calculateNumberOfRowsAndCols(
         _ numChildren: Int, _ boundX: CGFloat, _ boundY: CGFloat, _ boundWidth: CGFloat, _ boundHeight: CGFloat
     ) -> (Int, Int) {
+        // Both loops below only shrink or grow towards numChildren, so zero never terminates them.
+        if numChildren <= 0 {
+            return (1, 1)
+        }
         if aspectRatio == 1.0 {
             return calculateNumberOfRowsAndCols_square(numChildren, boundX, boundY, boundWidth, boundHeight);
         } else {

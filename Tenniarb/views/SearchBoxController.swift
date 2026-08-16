@@ -305,7 +305,7 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
 
         let selectedIndex = controller.resultView.selectedRow
         if let el = controller.resultView.item(atRow: selectedIndex) as? DiagramItem {
-            self.controller.setActive!(el)
+            self.controller.setActive?(el)
         }
     }
 }
