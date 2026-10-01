@@ -1,0 +1,111 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "items.B.bval + 1",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : "NaN"
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "items.A.aval + 1",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : "NaN"
+              }
+            }
+          ],
+          "index" : 1,
+          "kind" : "Item",
+          "name" : "B"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "(items.D.dval || 0) + 1",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 200
+              }
+            }
+          ],
+          "index" : 2,
+          "kind" : "Item",
+          "name" : "C"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "(items.C.cval || 0) + 1",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 201
+              }
+            }
+          ],
+          "index" : 3,
+          "kind" : "Item",
+          "name" : "D"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "sv + 1",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "message" : "Can't find variable: sv",
+                "name" : "ReferenceError",
+                "t" : "error"
+              }
+            }
+          ],
+          "index" : 4,
+          "kind" : "Item",
+          "name" : "S"
+        }
+      ],
+      "name" : "Cycles",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

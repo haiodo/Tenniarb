@@ -1,0 +1,199 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "color red\ncolor #ffeeff\ntext-color red",
+  "printedClean" : "color red\ncolor #ffeeff\ntext-color red",
+  "tokens" : [
+    {
+      "col" : 5,
+      "line" : 0,
+      "literal" : "color",
+      "pos" : 0,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 9,
+      "line" : 0,
+      "literal" : "red",
+      "pos" : 6,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 30,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 5,
+      "line" : 2,
+      "literal" : "color",
+      "pos" : 31,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 13,
+      "line" : 2,
+      "literal" : "#ffeeff",
+      "pos" : 37,
+      "size" : 7,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 4,
+      "literal" : "\n",
+      "pos" : 72,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 10,
+      "line" : 4,
+      "literal" : "text-color",
+      "pos" : 73,
+      "size" : 10,
+      "type" : "symbol"
+    },
+    {
+      "col" : 14,
+      "line" : 4,
+      "literal" : "red",
+      "pos" : 84,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 6,
+      "literal" : "\n",
+      "pos" : 114,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 6,
+      "literal" : "\u0000",
+      "pos" : 114,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 5,
+              "line" : 0,
+              "literal" : "color",
+              "pos" : 0,
+              "size" : 5,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 9,
+              "line" : 0,
+              "literal" : "red",
+              "pos" : 6,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 5,
+          "line" : 0,
+          "literal" : "color",
+          "pos" : 0,
+          "size" : 5,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 5,
+              "line" : 2,
+              "literal" : "color",
+              "pos" : 31,
+              "size" : 5,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 13,
+              "line" : 2,
+              "literal" : "#ffeeff",
+              "pos" : 37,
+              "size" : 7,
+              "type" : "symbol"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 5,
+          "line" : 2,
+          "literal" : "color",
+          "pos" : 31,
+          "size" : 5,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 10,
+              "line" : 4,
+              "literal" : "text-color",
+              "pos" : 73,
+              "size" : 10,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 14,
+              "line" : 4,
+              "literal" : "red",
+              "pos" : 84,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 10,
+          "line" : 4,
+          "literal" : "text-color",
+          "pos" : 73,
+          "size" : 10,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

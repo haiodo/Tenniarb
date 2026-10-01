@@ -1,0 +1,36 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "",
+  "printedClean" : "",
+  "tokens" : [
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 6,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\u0000",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "kind" : "Statements"
+  }
+}

@@ -1,0 +1,15 @@
+element "Chain" {
+    item "A"
+    item "Second item" {
+        pos 100.0 40.0
+    }
+    item "C" {
+        pos 30.0 -90.0
+    }
+    item "Dddddd" {
+        pos -80.0 60.0
+    }
+    link "A" "Second item"
+    link "Second item" "C"
+    link "C" "Dddddd"
+}

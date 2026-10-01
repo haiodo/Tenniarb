@@ -1,0 +1,10 @@
+zoom 2
+element "D" {
+    item "A" {
+        description ""
+    }
+    item "B" { description "multi word" }
+    link "A" "B" { target-index 3 }
+    link "A" "Gone" { label "x" }
+}
+stray 1 2

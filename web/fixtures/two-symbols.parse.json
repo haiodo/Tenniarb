@@ -1,0 +1,81 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "qwe asd",
+  "printedClean" : "qwe asd",
+  "tokens" : [
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "qwe",
+      "pos" : 0,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 7,
+      "line" : 0,
+      "literal" : "asd",
+      "pos" : 4,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 3,
+              "line" : 0,
+              "literal" : "qwe",
+              "pos" : 0,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 7,
+              "line" : 0,
+              "literal" : "asd",
+              "pos" : 4,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 3,
+          "line" : 0,
+          "literal" : "qwe",
+          "pos" : 0,
+          "size" : 3,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

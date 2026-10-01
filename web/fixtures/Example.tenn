@@ -1,0 +1,297 @@
+element "Documentation" {
+    element "Basic steps" {
+        styles {
+            item {
+                shadow -5 -5 5
+            }
+        }
+        item "Item" {
+            pos -572.0 274.0
+        }
+        item "Adding new items" {
+            pos -592.5537109375 358.0
+            body {
+                text %{
+        * 1. Press 'Tab' to add new item to diagram
+        * 2. Select item and press 'Tab' to add linked item to diagram.
+    }
+            }
+        }
+        item "press 'Tab'" {
+            pos -498.5537109375 211.0
+            font-size 10
+        }
+        link "Item" "press 'Tab'" {
+            display arrow
+        }
+        item "New Item" {
+            pos -411.5712890625 274.0
+        }
+        link "press 'Tab'" "New Item" {
+            display arrow
+        }
+        link "Item" "New Item" {
+            display arrow
+        }
+        item "Adding link between items" {
+            pos -585.0693359375 136.0
+            body {
+                text %{
+        * 1. Select existing item
+        * 2. Hold `Ctrl` key and draw line to any new item.
+    }
+            }
+        }
+        item "Item" {
+            pos -577.5537109375 51.0
+        }
+        item "New Item" {
+            pos -417.185546875 51.0
+        }
+        item "hold 'Ctrl'" {
+            pos -525.5712890625 -30.0
+            font-size 10
+        }
+        link "Item" "hold 'Ctrl'" {
+            source-index 1
+            display arrow
+        }
+        item "Draw line" {
+            pos -437.7744140625 -30.0
+            font-size 10
+        }
+        link "hold 'Ctrl'" "Draw line"
+        link "Draw line" "New Item" {
+            target-index 1
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 1
+            target-index 1
+            display arrow
+        }
+        item "Basic editing functions" {
+            pos -604.0693359375 414.0
+            display text
+            font-size 20
+        }
+        item "Duplicate items" {
+            pos -63.0693359375 359.0
+            body {
+                text %{
+        * 1. Select one or more items
+        * 2. Press `Cmd+d` to duplicate selection
+    }
+            }
+        }
+        item "Item" {
+            pos -55.5537109375 272.0
+        }
+        item "New Item" {
+            pos 145.814453125 273.0
+        }
+        item "press 'Cmd+D'" {
+            pos 34.4287109375 209.0
+            font-size 10
+        }
+        link "press 'Cmd+D'" "New Item" {
+            target-index 2
+            display arrow
+        }
+        link "Item" "press 'Cmd+D'" {
+            source-index 2
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 2
+            target-index 2
+            display arrow
+        }
+        item "Styling items" {
+            pos -70.2177734375 127.0
+            body {
+                text %{
+        * 1. Select *existing* item
+        * 2. Edit style properties.
+          * 2.1 color red    // Set one of colors
+          * 2.2 font-size 10   //Change font size
+    }
+            }
+        }
+        item "Big yellow item" {
+            pos -65.7998046875 -18.0
+            color red
+            text-color yellow
+            font-size 30
+        }
+        item "ColorAnnotation" {
+            pos 159.1083984375 -11.0
+            title ""
+            body {
+                text-color #1c00cf
+                text %{
+        name "Big blue item"
+        color red
+        text-color yellow
+        font-size 30
+    }
+            }
+        }
+        link "Big yellow item" "ColorAnnotation"
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+        link "Item" "Item" {
+            source-index 1
+            target-index 1
+        }
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+        link "New Item" "New Item" {
+            source-index 1
+            target-index 1
+        }
+        item "hold 'Ctrl'" {
+            pos -525.5712890625 -30.0
+            font-size 10
+        }
+        item "Draw line" {
+            pos -437.7744140625 -30.0
+            font-size 10
+        }
+        link "hold 'Ctrl'" "Draw line" {
+            source-index 1
+            target-index 1
+        }
+        link "Item" "hold 'Ctrl'" {
+            source-index 3
+            target-index 1
+            display arrow
+        }
+        link "Draw line" "New Item" {
+            source-index 1
+            target-index 3
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 3
+            target-index 3
+            display arrow
+        }
+        item "Item" {
+            pos -577.5537109375 51.0
+        }
+        link "Item" "Item" {
+            source-index 3
+            target-index 3
+        }
+        item "New Item" {
+            pos -417.185546875 51.0
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
+        link "New Item" "New Item" {
+            source-index 3
+            target-index 3
+        }
+        item "New Item" {
+            pos -394.5712890625 -189.0
+            color green
+        }
+        link "press 'Option+Tab'" "New Item" {
+            target-index 4
+            display arrow
+        }
+        item "press 'Option+Tab'" {
+            pos -481.5537109375 -252.0
+            font-size 10
+        }
+        link "Item" "press 'Option+Tab'" {
+            source-index 4
+            display arrow
+        }
+        link "press 'Option+Tab'" "New Item" {
+            target-index 4
+            display arrow
+        }
+        item "Item" {
+            pos -555.0 -189.0
+            color green
+        }
+        item "Adding new items/ copy style" {
+            pos -569.5537109375 -99.0
+            body {
+                text %{
+        * 1. Select item and press `Option+Tab` to add 
+           linked item to diagram.
+    }
+            }
+        }
+        link "Item" "press 'Option+Tab'" {
+            source-index 4
+            display arrow
+        }
+        link "Item" "New Item" {
+            source-index 4
+            target-index 4
+            display arrow
+        }
+    }
+    element "General info" {
+        item "Main Window" {
+            pos -499.3359375 -98.12109375
+            image "Screenshot 2020-01-02 at 19.34.24.png" @(iVBORw0KGgoAAAANSUhEUgAACxIAAAbKCAYAAADoUqJrAAAMTWlDQ1BJQ0MgUHJvZmlsZQAASImVVwdc)
+            title %{${name}
+@(Screenshot 2020-01-02 at 19.34.24.png|800)}
+            display text
+            layer background
+        }
+        item "Properties
+panel" {
+            pos 113.5999755859375 -597.865966796875
+            body "A full tree of styles and execution propeties"
+        }
+        item "properties-target" {
+            pos -124.13693237304688 -532.865966796875
+            display none
+            title ""
+        }
+        link "Properties
+panel" "properties-target" {
+            display arrow
+        }
+        item "Outline" {
+            pos -502.3025207519531 -602.2598266601562
+            body %{Hierarchy of
+diagrams}
+        }
+        item "outline-target" {
+            pos -365.3782958984375 -467.25982666015625
+            title ""
+            display none
+        }
+        link "Outline" "outline-target" {
+            display arrow
+        }
+        item "Diagram area" {
+            pos 124.13561248779297 -59.77185821533203
+        }
+        item "diagram-target" {
+            pos 83.95144653320312 -222.7718505859375
+            title ""
+            display none
+        }
+        link "Diagram area" "diagram-target" {
+            display arrow
+        }
+    }
+}

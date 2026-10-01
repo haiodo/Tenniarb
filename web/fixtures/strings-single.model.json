@@ -1,0 +1,58 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 4,
+            "line" : 0,
+            "literal" : "name",
+            "pos" : 0,
+            "size" : 4,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 11,
+            "line" : 0,
+            "literal" : "hello",
+            "pos" : 6,
+            "size" : 5,
+            "type" : "stringLit"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 22,
+            "line" : 0,
+            "literal" : "it works",
+            "pos" : 14,
+            "size" : 8,
+            "type" : "stringLit"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 4,
+        "line" : 0,
+        "literal" : "name",
+        "pos" : 0,
+        "size" : 4,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

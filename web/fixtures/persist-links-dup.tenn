@@ -1,0 +1,17 @@
+element "Root" {
+    item "A" { pos 1 2 }
+    item "A" { pos 3 4 }
+    item "B"
+    link "A" "B" {
+        source-index 1
+        label "second A to B"
+        description "a link"
+        pos 5 6
+        display arrow
+    }
+    link "A" "A" { target-index 1 }
+    link "A" "Missing"
+    link "A" "A" { source-index 7 }
+    link "A" "B" { source-index "x" }
+    link "B"
+}

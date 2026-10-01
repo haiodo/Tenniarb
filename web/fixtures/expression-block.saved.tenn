@@ -1,0 +1,6 @@
+x ${var a = 1; a}
+y ${
+  var s = 0;
+  for (var i = 0; i < 3; i++) { s += i }
+  s
+}

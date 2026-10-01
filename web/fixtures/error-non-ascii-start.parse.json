@@ -1,0 +1,49 @@
+{
+  "errors" : [
+    {
+      "code" : "invalidCommandStart",
+      "col" : 2,
+      "line" : 0,
+      "message" : "Invalid command start symbol: ٣ "
+    }
+  ],
+  "printed" : "",
+  "printedClean" : "",
+  "tokens" : [
+    {
+      "col" : 2,
+      "line" : 0,
+      "literal" : "٣",
+      "pos" : 1,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 4,
+      "line" : 0,
+      "literal" : "x",
+      "pos" : 3,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 4,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 4,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "kind" : "Statements"
+  }
+}

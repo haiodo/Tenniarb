@@ -1,0 +1,185 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "items.B.val + 1",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 21
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "pos.x + pos.y",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 12
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "name",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "A"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "kind",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "item"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "parent.items.length",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 3
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "parent.links.length",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "items.Nope",
+              "path" : [
+                7,
+                1
+              ],
+              "value" : {
+                "t" : "undefined"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "items.my_item.val",
+              "path" : [
+                8,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 7
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "items.A.val * 2",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 20
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "items.A.val + items.B.val",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 30
+              }
+            }
+          ],
+          "index" : 1,
+          "kind" : "Item",
+          "name" : "B"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "items[\"my item\"]",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "undefined"
+              }
+            }
+          ],
+          "index" : 2,
+          "kind" : "Item",
+          "name" : "my item"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "kind",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "link"
+              }
+            }
+          ],
+          "index" : 3,
+          "kind" : "Link",
+          "name" : ""
+        }
+      ],
+      "name" : "Siblings",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

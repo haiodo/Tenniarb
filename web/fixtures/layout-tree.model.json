@@ -1,0 +1,133 @@
+{
+  "elements" : [
+    {
+      "elements" : [
+
+      ],
+      "items" : [
+        {
+          "kind" : "Item",
+          "name" : "root",
+          "properties" : [
+
+          ],
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Item",
+          "name" : "l1",
+          "properties" : [
+
+          ],
+          "x" : -60,
+          "y" : 50
+        },
+        {
+          "kind" : "Item",
+          "name" : "r1",
+          "properties" : [
+
+          ],
+          "x" : 70,
+          "y" : 45
+        },
+        {
+          "kind" : "Item",
+          "name" : "l1a",
+          "properties" : [
+
+          ],
+          "x" : -110,
+          "y" : 120
+        },
+        {
+          "kind" : "Item",
+          "name" : "l1b",
+          "properties" : [
+
+          ],
+          "x" : -20,
+          "y" : 130
+        },
+        {
+          "kind" : "Item",
+          "name" : "r1a",
+          "properties" : [
+
+          ],
+          "x" : 90,
+          "y" : 110
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 0,
+          "target" : 1,
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 0,
+          "target" : 2,
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 1,
+          "target" : 3,
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 1,
+          "target" : 4,
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 2,
+          "target" : 5,
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "kind" : "Element",
+      "name" : "Tree",
+      "properties" : [
+
+      ]
+    }
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+
+  ]
+}

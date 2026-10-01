@@ -1,0 +1,23 @@
+element "Tree" {
+    item "root"
+    item "l1" {
+        pos -60.0 50.0
+    }
+    item "r1" {
+        pos 70.0 45.0
+    }
+    item "l1a" {
+        pos -110.0 120.0
+    }
+    item "l1b" {
+        pos -20.0 130.0
+    }
+    item "r1a" {
+        pos 90.0 110.0
+    }
+    link "root" "l1"
+    link "root" "r1"
+    link "l1" "l1a"
+    link "l1" "l1b"
+    link "r1" "r1a"
+}

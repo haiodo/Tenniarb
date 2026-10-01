@@ -1,0 +1,159 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "img @(AAAA)\nimage \"pic.png\" @(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==)",
+  "printedClean" : "img @(AAAA)\nimage pic.png @(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==)",
+  "tokens" : [
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "img",
+      "pos" : 0,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 10,
+      "line" : 0,
+      "literal" : "AAAA",
+      "pos" : 6,
+      "size" : 4,
+      "type" : "imageData"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 11,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 5,
+      "line" : 1,
+      "literal" : "image",
+      "pos" : 12,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 14,
+      "line" : 1,
+      "literal" : "pic.png",
+      "pos" : 19,
+      "size" : 7,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 114,
+      "line" : 1,
+      "literal" : "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "pos" : 30,
+      "size" : 96,
+      "type" : "imageData"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 127,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\u0000",
+      "pos" : 127,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 3,
+              "line" : 0,
+              "literal" : "img",
+              "pos" : 0,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Image",
+            "token" : {
+              "col" : 10,
+              "line" : 0,
+              "literal" : "AAAA",
+              "pos" : 6,
+              "size" : 4,
+              "type" : "imageData"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 3,
+          "line" : 0,
+          "literal" : "img",
+          "pos" : 0,
+          "size" : 3,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 5,
+              "line" : 1,
+              "literal" : "image",
+              "pos" : 12,
+              "size" : 5,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 14,
+              "line" : 1,
+              "literal" : "pic.png",
+              "pos" : 19,
+              "size" : 7,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "kind" : "Image",
+            "token" : {
+              "col" : 114,
+              "line" : 1,
+              "literal" : "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+              "pos" : 30,
+              "size" : 96,
+              "type" : "imageData"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 5,
+          "line" : 1,
+          "literal" : "image",
+          "pos" : 12,
+          "size" : 5,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

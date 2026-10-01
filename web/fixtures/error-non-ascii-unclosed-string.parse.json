@@ -1,0 +1,150 @@
+{
+  "errors" : [
+    {
+      "code" : "EndOfFileDuringStringRead",
+      "col" : 0,
+      "line" : 0,
+      "message" : "Unclosed string terminal"
+    }
+  ],
+  "printed" : "item \"日本語\" {\n    title \"café\n\"\n}",
+  "printedClean" : "item 日本語 {\n    title café\n\n}",
+  "tokens" : [
+    {
+      "col" : 4,
+      "line" : 0,
+      "literal" : "item",
+      "pos" : 0,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 15,
+      "line" : 0,
+      "literal" : "日本語",
+      "pos" : 12,
+      "size" : 3,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 18,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 17,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 24,
+      "line" : 0,
+      "literal" : "title",
+      "pos" : 19,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "café\n",
+      "pos" : 27,
+      "size" : 5,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 31,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 4,
+              "line" : 0,
+              "literal" : "item",
+              "pos" : 0,
+              "size" : 4,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 15,
+              "line" : 0,
+              "literal" : "日本語",
+              "pos" : 12,
+              "size" : 3,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 24,
+                      "line" : 0,
+                      "literal" : "title",
+                      "pos" : 19,
+                      "size" : 5,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 1,
+                      "line" : 1,
+                      "literal" : "café\n",
+                      "pos" : 27,
+                      "size" : 5,
+                      "type" : "stringLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 24,
+                  "line" : 0,
+                  "literal" : "title",
+                  "pos" : 19,
+                  "size" : 5,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 18,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 17,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 4,
+          "line" : 0,
+          "literal" : "item",
+          "pos" : 0,
+          "size" : 4,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

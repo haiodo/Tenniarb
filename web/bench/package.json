@@ -1,0 +1,16 @@
+{
+  "name": "tenniarb-bench",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "chromium": "node pw.mjs chromium headed 2 results/mac-chromium-headed.json",
+    "webkit": "node pw.mjs webkit headed 2 results/mac-webkit-headed.json",
+    "node-render": "node render-node.mjs",
+    "tauri-dist": "mkdir -p tauri/dist && cp bench.html tauri/dist/index.html && cp scene.js tauri/dist/",
+    "table": "node table.mjs"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "playwright": "^1.63.0"
+  }
+}

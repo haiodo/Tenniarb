@@ -1,0 +1,17 @@
+element "Cycle" {
+    item "A"
+    item "B" {
+        pos 80.0 10.0
+    }
+    item "C" {
+        pos 40.0 90.0
+    }
+    item "D" {
+        pos -50.0 70.0
+    }
+    link "A" "B"
+    link "B" "C"
+    link "C" "A"
+    link "C" "D"
+    link "D" "D"
+}

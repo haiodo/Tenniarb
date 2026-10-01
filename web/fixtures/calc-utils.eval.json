@@ -1,0 +1,105 @@
+{
+  "elements" : [
+    {
+      "element" : [
+        {
+          "kind" : "Expression",
+          "literal" : "other + 1",
+          "path" : [
+            2,
+            1
+          ],
+          "value" : {
+            "t" : "number",
+            "v" : 6
+          }
+        }
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "typeof utils.now()",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "number"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "typeof utils.textWidth(\"abc\", 12)",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "number"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "utils.textSize(\"abc\", 12).length",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "typeof id",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "string"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "typeof width",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "number"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "typeof defaults",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "object"
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        }
+      ],
+      "name" : "Utils",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

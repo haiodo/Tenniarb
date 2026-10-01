@@ -15,7 +15,8 @@ SWIFT_SRC := $(shell find Tenniarb TenniarbTests TenniarbUITests -name '*.swift'
 SWIFT_FORMAT := xcrun swift-format
 
 .DEFAULT_GOAL := help
-.PHONY: help build test test-only perf lint lint-fix format format-check ci clean
+N ?= 2000
+.PHONY: help build test test-only golden perf lint lint-fix format format-check ci clean web web-test tenn-fuzz
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -28,6 +29,9 @@ test: ## Run unit tests (performance tests excluded)
 
 test-only: ## Run a single suite: make test-only T=TenniarbTests/LexerTests
 	$(XCB) -scheme $(SCHEME) -only-testing:$(T) test
+
+golden: ## Regenerate web/fixtures/*.parse.json from the Swift parser
+	TEST_RUNNER_TENN_GOLDEN_UPDATE=1 $(XCB) -scheme $(SCHEME) -only-testing:TenniarbTests/TennGoldenTests test
 
 perf: ## Run performance tests only
 	$(XCB) -scheme $(PERF_SCHEME) test
@@ -45,6 +49,19 @@ format-check: ## Fail if sources are not formatted
 	$(SWIFT_FORMAT) lint --strict --configuration .swift-format $(SWIFT_SRC)
 
 ci: lint build test ## What CI runs: lint + build + unit tests
+
+web/node_modules: web/package-lock.json
+	cd web && npm ci
+	@touch $@
+
+web: web/node_modules ## Build web packages (web/)
+	cd web && npm run build
+
+web-test: web/node_modules ## Typecheck and test web packages
+	cd web && npm run typecheck && npm test
+
+tenn-fuzz: web/node_modules ## Differential fuzz: Swift vs TS .tenn parser
+	node web/packages/core/fuzz/fuzz.ts $(N)
 
 clean: ## Remove derived data and lint cache
 	rm -rf $(DERIVED) .swiftlint-cache

@@ -1,0 +1,10 @@
+element "Single" {
+    item "Only" {
+        pos 15.0 25.0
+    }
+}
+element "Pair" {
+    item "P"
+    item "Q"
+    link "P" "Q"
+}

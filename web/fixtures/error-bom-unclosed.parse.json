@@ -1,0 +1,131 @@
+{
+  "errors" : [
+    {
+      "code" : "EndOfFileDuringStringRead",
+      "col" : 0,
+      "line" : 0,
+      "message" : "Unclosed string terminal"
+    }
+  ],
+  "printed" : "é {\n    a \"x\n\"\n}",
+  "printedClean" : "é {\n    a x\n\n}",
+  "tokens" : [
+    {
+      "col" : 2,
+      "line" : 0,
+      "literal" : "é",
+      "pos" : 1,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 4,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 3,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 9,
+      "line" : 0,
+      "literal" : "a",
+      "pos" : 8,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "x\n",
+      "pos" : 11,
+      "size" : 2,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 12,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 2,
+              "line" : 0,
+              "literal" : "é",
+              "pos" : 1,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 9,
+                      "line" : 0,
+                      "literal" : "a",
+                      "pos" : 8,
+                      "size" : 1,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 1,
+                      "line" : 1,
+                      "literal" : "x\n",
+                      "pos" : 11,
+                      "size" : 2,
+                      "type" : "stringLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 9,
+                  "line" : 0,
+                  "literal" : "a",
+                  "pos" : 8,
+                  "size" : 1,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 4,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 3,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 2,
+          "line" : 0,
+          "literal" : "é",
+          "pos" : 1,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

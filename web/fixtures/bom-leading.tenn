@@ -1,0 +1,3 @@
+﻿element "A" {
+  item "é" { pos 1 2 }
+}

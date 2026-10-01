@@ -1,0 +1,17 @@
+element "Root" {
+    styles {
+        s1 {
+            color red
+            font-size 12
+        }
+    }
+    item "A" {
+        pos 10.5 -20.0
+    }
+    item "B" {
+        pos 100.0 200.0
+    }
+    link "A" "B" {
+        display arrow
+    }
+}

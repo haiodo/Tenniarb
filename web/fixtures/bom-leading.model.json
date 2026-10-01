@@ -1,0 +1,33 @@
+{
+  "elements" : [
+    {
+      "elements" : [
+
+      ],
+      "items" : [
+        {
+          "kind" : "Item",
+          "name" : "é",
+          "properties" : [
+
+          ],
+          "x" : 1,
+          "y" : 2
+        }
+      ],
+      "kind" : "Element",
+      "name" : "A",
+      "properties" : [
+
+      ]
+    }
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+
+  ]
+}

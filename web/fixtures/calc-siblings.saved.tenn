@@ -1,0 +1,27 @@
+element "Siblings" {
+    item "A" {
+        pos 5.0 7.0
+        val 10
+        refb $(items.B.val + 1)
+        mypos $(pos.x + pos.y)
+        nm $(name)
+        kd $(kind)
+        pcount $(parent.items.length)
+        lcount $(parent.links.length)
+        missing $(items.Nope)
+        spaced $(items.my_item.val)
+    }
+    item "B" {
+        pos -3.0 4.0
+        val 20
+        refa $(items.A.val * 2)
+        sumab $(items.A.val + items.B.val)
+    }
+    item "my item" {
+        val 7
+        self $(items["my item"])
+    }
+    link "A" "B" {
+        kd $(kind)
+    }
+}

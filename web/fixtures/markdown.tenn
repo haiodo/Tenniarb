@@ -1,0 +1,7 @@
+doc %{**bold** text}
+body {
+    text %{
+        * item 1
+        * item `code`
+    }
+}

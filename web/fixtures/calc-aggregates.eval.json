@@ -1,0 +1,300 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "sum(\"cost\")",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 16
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "byTag(\"cost\").length",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 3
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "byTag(\"cost\").map(function(i) { return i.name })",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "array",
+                "v" : [
+                  {
+                    "t" : "string",
+                    "v" : "A"
+                  },
+                  {
+                    "t" : "string",
+                    "v" : "B"
+                  },
+                  {
+                    "t" : "string",
+                    "v" : "C"
+                  }
+                ]
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "outputs().length",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "inputs().length",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 0
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "edges().length",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "outputs().map(function(i) { return i.cost })",
+              "path" : [
+                7,
+                1
+              ],
+              "value" : {
+                "t" : "array",
+                "v" : [
+                  {
+                    "t" : "number",
+                    "v" : 5
+                  },
+                  {
+                    "t" : "number",
+                    "v" : 1
+                  }
+                ]
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "sum(\"cost\", \"weight\")",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 5
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "outputs().length",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "inputs().length",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "inputs().map(function(i) { return i.cost })",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "array",
+                "v" : [
+                  {
+                    "t" : "number",
+                    "v" : 10
+                  }
+                ]
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "edges().length",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            }
+          ],
+          "index" : 1,
+          "kind" : "Item",
+          "name" : "B"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "outputs().length",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 0
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "inputs().length",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "edges().length",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "edges()[0].name",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "B"
+              }
+            }
+          ],
+          "index" : 2,
+          "kind" : "Item",
+          "name" : "C"
+        },
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "edges().length",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 0
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "sum(\"cost\")",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 16
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "byTag(\"nothing\")",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "array",
+                "v" : [
+
+                ]
+              }
+            }
+          ],
+          "index" : 3,
+          "kind" : "Item",
+          "name" : "D"
+        }
+      ],
+      "name" : "Aggregates",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

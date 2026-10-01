@@ -1,0 +1,37 @@
+element "Aggregates" {
+    item "A" {
+        cost 10
+        total $(sum("cost"))
+        tagged $(byTag("cost").length)
+        names $(byTag("cost").map(function(i) { return i.name }))
+        outs $(outputs().length)
+        ins $(inputs().length)
+        edg $(edges().length)
+        outcost $(outputs().map(function(i) { return i.cost }))
+    }
+    item "B" {
+        cost 5
+        weight 2
+        wsum $(sum("cost", "weight"))
+        outs $(outputs().length)
+        ins $(inputs().length)
+        incost $(inputs().map(function(i) { return i.cost }))
+        edg $(edges().length)
+    }
+    item "C" {
+        cost 1
+        weight 3
+        outs $(outputs().length)
+        ins $(inputs().length)
+        edg $(edges().length)
+        peer $(edges()[0].name)
+    }
+    item "D" {
+        edg $(edges().length)
+        total $(sum("cost"))
+        none $(byTag("nothing"))
+    }
+    link "A" "B"
+    link "B" "C"
+    link "A" "C"
+}

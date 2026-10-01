@@ -1,0 +1,33 @@
+element "Arith" {
+    item "A" {
+        pos 10 20
+        a $(1 + 2)
+        b $(a * 4)
+        c $(10 / 4)
+        d $(7 % 3)
+        e $(2 ** 10)
+        s $("x" + 1)
+        nan $(0 / 0)
+        inf $(1 / 0)
+        ninf $(-1 / 0)
+        u $(undefined)
+        nl $(null)
+        t $(true)
+        f $(1 == 2)
+        arr $([1, "two", [3], {four: 4}])
+        obj $(({k: 1, z: [2], a: "s", n: null}))
+        blk ${var q = 2; q * 21}
+        multi ${
+            var s = 0;
+            for (var i = 0; i < 5; i++) { s += i }
+            s
+        }
+        fn $(Math.max(1, 5, 3))
+        date $(typeof new Date().getTime())
+        fun $((function() {}))
+        plain 42
+        word hello
+        tail $(plain + 1)
+    }
+    item "B"
+}

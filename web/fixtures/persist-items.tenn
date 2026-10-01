@@ -1,0 +1,17 @@
+element "Items" {
+    item "plain"
+    item "zero" { pos 0 0 }
+    item "only-x" { pos 5 0 }
+    item "int-pos" { pos 3 -4 }
+    item "bad-pos" { pos 1 }
+    item "str-pos" { pos "a" "b" }
+    item "described" { description "text"; desription "typo wins" }
+    item "expr" {
+        width (1 + 2)
+        height $(foo)
+        color #ff0000
+        body { text %{ * md } }
+    }
+    item "noname-block" { }
+    item
+}

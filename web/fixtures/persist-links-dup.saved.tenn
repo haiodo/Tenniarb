@@ -1,0 +1,27 @@
+element "Root" {
+    link "A" "Missing"
+    link "A" "A" {
+        source-index 7
+    }
+    link "B"
+    item "A" {
+        pos 1.0 2.0
+    }
+    item "A" {
+        pos 3.0 4.0
+    }
+    item "B"
+    link "A" "B" {
+        source-index 1
+        description "a link"
+        label "second A to B"
+        pos 5.0 6.0
+        display arrow
+    }
+    link "A" "A" {
+        target-index 1
+    }
+    link "A" "B" {
+        source-index "x"
+    }
+}

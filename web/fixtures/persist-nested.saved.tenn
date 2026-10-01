@@ -1,0 +1,25 @@
+zoom 2
+element "Top" {
+    description "top element"
+    zoom 1.5
+    grid 20
+    styles {
+        box {
+            color blue
+        }
+    }
+    element
+    unknown-cmd 1 2 3
+    item "X"
+    element "Child" {
+        item "Y"
+        link "Y" "Y"
+        element "Grandchild" {
+        }
+    }
+    element "Sibling" {
+    }
+}
+element "ModelCmd" {
+    item "M"
+}

@@ -1,0 +1,81 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "doc %{a {b} c}",
+  "printedClean" : "doc %{a {b} c}",
+  "tokens" : [
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "doc",
+      "pos" : 0,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 13,
+      "line" : 0,
+      "literal" : "a {b} c",
+      "pos" : 6,
+      "size" : 7,
+      "type" : "markdownLit"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 14,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 14,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 3,
+              "line" : 0,
+              "literal" : "doc",
+              "pos" : 0,
+              "size" : 3,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "MarkdownLit",
+            "token" : {
+              "col" : 13,
+              "line" : 0,
+              "literal" : "a {b} c",
+              "pos" : 6,
+              "size" : 7,
+              "type" : "markdownLit"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 3,
+          "line" : 0,
+          "literal" : "doc",
+          "pos" : 0,
+          "size" : 3,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

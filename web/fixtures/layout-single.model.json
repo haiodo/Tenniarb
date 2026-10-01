@@ -1,0 +1,74 @@
+{
+  "elements" : [
+    {
+      "elements" : [
+
+      ],
+      "items" : [
+        {
+          "kind" : "Item",
+          "name" : "Only",
+          "properties" : [
+
+          ],
+          "x" : 15,
+          "y" : 25
+        }
+      ],
+      "kind" : "Element",
+      "name" : "Single",
+      "properties" : [
+
+      ]
+    },
+    {
+      "elements" : [
+
+      ],
+      "items" : [
+        {
+          "kind" : "Item",
+          "name" : "P",
+          "properties" : [
+
+          ],
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Item",
+          "name" : "Q",
+          "properties" : [
+
+          ],
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 0,
+          "target" : 1,
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "kind" : "Element",
+      "name" : "Pair",
+      "properties" : [
+
+      ]
+    }
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+
+  ]
+}

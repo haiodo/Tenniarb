@@ -1,0 +1,114 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "1 + 2",
+              "path" : [
+                1,
+                3
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 3
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "a + 1",
+              "path" : [
+                2,
+                1,
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "vals.length",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 3
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "vals[0]",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "x * 2",
+              "path" : [
+                5,
+                1,
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 10
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "y + 1",
+              "path" : [
+                5,
+                1,
+                2,
+                1,
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 11
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "cfg.y",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 10
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        }
+      ],
+      "name" : "Arrays",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

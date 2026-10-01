@@ -162,4 +162,57 @@ class PersistenceTests: XCTestCase {
         XCTAssertEqual("Demo element 2", item1.name)
     }
 
+    private func load(_ text: String) -> ElementModel {
+        let parser = TennParser()
+        let node = parser.parse(text)
+        XCTAssertFalse(parser.errors.hasErrors())
+        return ElementModel.parseTenn(node: node)
+    }
+
+    func testItemDescriptionSurvivesSave() {
+        let model = load("element \"D\" {\n    item \"A\" {\n        description \"hello\"\n        pos 1 2\n    }\n}")
+        XCTAssertEqual("hello", model.elements[0].items[0].description)
+
+        let saved = model.toTennStr()
+        XCTAssertEqual("element \"D\" {\n    item \"A\" {\n        description \"hello\"\n        pos 1.0 2.0\n    }\n}", saved)
+        XCTAssertEqual("hello", load(saved).elements[0].items[0].description)
+    }
+
+    func testRootPropertiesSurviveSave() {
+        let model = load("zoom 2\nelement \"D\" {\n}\nstray")
+        XCTAssertEqual(2, model.properties.count)
+
+        let saved = model.toTennStr()
+        XCTAssertEqual("zoom 2\nstray\nelement \"D\" {\n}", saved)
+        let again = load(saved)
+        XCTAssertEqual(2, again.properties.count)
+        XCTAssertEqual(1, again.elements.count)
+        XCTAssertEqual(saved, again.toTennStr())
+    }
+
+    func testUnresolvedLinkSurvivesSave() {
+        let text = [
+            "element \"D\" {",
+            "    item \"A\"",
+            "    item \"A\"",
+            "    link \"A\" \"Missing\"",
+            "    link \"A\" \"A\" {",
+            "        target-index 7",
+            "    }",
+            "    link \"A\" \"A\" {",
+            "        target-index 1",
+            "    }",
+            "}",
+        ].joined(separator: "\n")
+        let diagram = load(text).elements[0]
+        XCTAssertEqual(3, diagram.items.count)  // two items + the resolved link
+        XCTAssertEqual(2, diagram.properties.count)
+
+        let saved = load(text).toTennStr()
+        XCTAssertTrue(saved.contains("link \"A\" \"Missing\""))
+        XCTAssertTrue(saved.contains("target-index 7"))
+        XCTAssertTrue(saved.contains("target-index 1"))
+        XCTAssertEqual(saved, load(saved).toTennStr())
+    }
+
 }

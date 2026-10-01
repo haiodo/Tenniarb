@@ -66,3 +66,25 @@ jobs:
           path: |
             xcodebuild.log
             xcodebuild-test.log
+
+  web:
+    name: Web packages (Node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Typecheck and test
+        run: make web-test
+
+      - name: Build
+        run: make web

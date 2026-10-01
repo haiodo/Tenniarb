@@ -1,0 +1,12 @@
+element "Errors" {
+    item "A" {
+        syntax $(1 +)
+        ref $(nosuch + 1)
+        type $(null.x)
+        thrown ${throw new Error("boom")}
+        thrownstr ${throw "str"}
+        okafter $(1 + 1)
+        blk ${var q = ; q}
+        call $((1)())
+    }
+}

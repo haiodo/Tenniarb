@@ -1,0 +1,319 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "1 + 2",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 3
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "a * 4",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 12
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "10 / 4",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2.5
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "7 % 3",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "2 ** 10",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 1024
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "\"x\" + 1",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "x1"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "0 / 0",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : "NaN"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "1 / 0",
+              "path" : [
+                7,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : "Infinity"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "-1 / 0",
+              "path" : [
+                8,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : "-Infinity"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "undefined",
+              "path" : [
+                9,
+                1
+              ],
+              "value" : {
+                "t" : "undefined"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "null",
+              "path" : [
+                10,
+                1
+              ],
+              "value" : {
+                "t" : "null"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "true",
+              "path" : [
+                11,
+                1
+              ],
+              "value" : {
+                "t" : "boolean",
+                "v" : true
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "1 == 2",
+              "path" : [
+                12,
+                1
+              ],
+              "value" : {
+                "t" : "boolean",
+                "v" : false
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "[1, \"two\", [3], {four: 4}]",
+              "path" : [
+                13,
+                1
+              ],
+              "value" : {
+                "t" : "array",
+                "v" : [
+                  {
+                    "t" : "number",
+                    "v" : 1
+                  },
+                  {
+                    "t" : "string",
+                    "v" : "two"
+                  },
+                  {
+                    "t" : "array",
+                    "v" : [
+                      {
+                        "t" : "number",
+                        "v" : 3
+                      }
+                    ]
+                  },
+                  {
+                    "t" : "object",
+                    "v" : {
+                      "four" : {
+                        "t" : "number",
+                        "v" : 4
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "({k: 1, z: [2], a: \"s\", n: null})",
+              "path" : [
+                14,
+                1
+              ],
+              "value" : {
+                "t" : "object",
+                "v" : {
+                  "a" : {
+                    "t" : "string",
+                    "v" : "s"
+                  },
+                  "k" : {
+                    "t" : "number",
+                    "v" : 1
+                  },
+                  "n" : {
+                    "t" : "null"
+                  },
+                  "z" : {
+                    "t" : "array",
+                    "v" : [
+                      {
+                        "t" : "number",
+                        "v" : 2
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "kind" : "ExpressionBlock",
+              "literal" : "var q = 2; q * 21",
+              "path" : [
+                15,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 42
+              }
+            },
+            {
+              "kind" : "ExpressionBlock",
+              "literal" : "\n            var s = 0;\n            for (var i = 0; i < 5; i++) { s += i }\n            s\n        ",
+              "path" : [
+                16,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 10
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "Math.max(1, 5, 3)",
+              "path" : [
+                17,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 5
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "typeof new Date().getTime()",
+              "path" : [
+                18,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "number"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "(function() {})",
+              "path" : [
+                19,
+                1
+              ],
+              "value" : {
+                "t" : "function"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "plain + 1",
+              "path" : [
+                22,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 43
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        }
+      ],
+      "name" : "Arith",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

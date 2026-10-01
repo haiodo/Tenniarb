@@ -1,0 +1,65 @@
+{
+  "errors" : [
+    {
+      "code" : "invalidCommandStart",
+      "col" : 1,
+      "line" : 0,
+      "message" : "Invalid command start symbol: { "
+    }
+  ],
+  "printed" : "",
+  "printedClean" : "",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "a",
+      "pos" : 2,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 5,
+      "line" : 0,
+      "literal" : "1",
+      "pos" : 4,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 7,
+      "line" : 0,
+      "literal" : "}",
+      "pos" : 6,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "kind" : "Statements"
+  }
+}

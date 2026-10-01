@@ -1,0 +1,72 @@
+{
+  "elements" : [
+    {
+      "edges" : [
+
+      ],
+      "grid" : {
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 1.1598848113417624,
+            "y" : -21.737811415493489
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : 0,
+          "y" : 0
+        }
+      },
+      "name" : "A",
+      "nodes" : [
+        {
+          "bounds" : {
+            "height" : 30.600000000000001,
+            "width" : 18.395392453670503,
+            "x" : 0.69999999999999996,
+            "y" : -28.300000000000001
+          },
+          "item" : 0,
+          "name" : "é",
+          "x" : 1,
+          "y" : 2
+        }
+      ],
+      "path" : [
+        0
+      ],
+      "sceneBounds" : {
+        "height" : 30.600000000000001,
+        "width" : 18.395392453670503,
+        "x" : 0.69999999999999996,
+        "y" : -28.300000000000001
+      },
+      "spring" : {
+        "params" : {
+          "gravitation" : 2,
+          "iterations" : 1000,
+          "length" : 3,
+          "maxTimeMS" : 0,
+          "move" : 1,
+          "random" : false,
+          "strain" : 1
+        },
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0,
+            "y" : 0
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : -400,
+          "y" : -300
+        }
+      }
+    }
+  ]
+}

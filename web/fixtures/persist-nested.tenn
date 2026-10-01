@@ -1,0 +1,20 @@
+zoom 2
+element "Top" {
+    description "top element"
+    zoom 1.5
+    grid 20
+    styles { box { color blue } }
+    item "X" { pos 0 0 }
+    element "Child" {
+        item "Y"
+        link "Y" "Y"
+        element "Grandchild" { }
+    }
+    element "Sibling"
+    element
+    unknown-cmd 1 2 3
+}
+model "ModelCmd" {
+    item "M"
+}
+"stray string"

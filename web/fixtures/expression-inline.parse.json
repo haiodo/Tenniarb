@@ -1,0 +1,140 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "x $(1 + 2)\ny $(a.b('c') * 2)",
+  "printedClean" : "x $(1 + 2)\ny $(a.b('c') * 2)",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "x",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 9,
+      "line" : 0,
+      "literal" : "1 + 2",
+      "pos" : 4,
+      "size" : 5,
+      "type" : "expression"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 10,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "y",
+      "pos" : 11,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 16,
+      "line" : 1,
+      "literal" : "a.b('c') * 2",
+      "pos" : 15,
+      "size" : 12,
+      "type" : "expression"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 28,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\u0000",
+      "pos" : 28,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 0,
+              "literal" : "x",
+              "pos" : 0,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Expression",
+            "token" : {
+              "col" : 9,
+              "line" : 0,
+              "literal" : "1 + 2",
+              "pos" : 4,
+              "size" : 5,
+              "type" : "expression"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 0,
+          "literal" : "x",
+          "pos" : 0,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 1,
+              "literal" : "y",
+              "pos" : 11,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Expression",
+            "token" : {
+              "col" : 16,
+              "line" : 1,
+              "literal" : "a.b('c') * 2",
+              "pos" : 15,
+              "size" : 12,
+              "type" : "expression"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 1,
+          "literal" : "y",
+          "pos" : 11,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

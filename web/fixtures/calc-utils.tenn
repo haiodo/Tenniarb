@@ -1,0 +1,14 @@
+element "Utils" {
+    description "d"
+    other 5
+    ctx $(other + 1)
+    item "A" {
+        pos 3 4
+        tnow $(typeof utils.now())
+        tw $(typeof utils.textWidth("abc", 12))
+        ts $(utils.textSize("abc", 12).length)
+        id $(typeof id)
+        w $(typeof width)
+        dflt $(typeof defaults)
+    }
+}

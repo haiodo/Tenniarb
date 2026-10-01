@@ -33,6 +33,7 @@
 		0C4F0EC824C74BB10065918D /* Example.tenn in Resources */ = {isa = PBXBuildFile; fileRef = 0C4F0EC724C74BB10065918D /* Example.tenn */; };
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
+		AE01EC01000000000000099 /* TennGoldenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000099 /* TennGoldenTests.swift */; };
 		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C6375BF263FE9BF00E0BE20 /* corner.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BC263FE9BF00E0BE20 /* corner.png */; };
 		0C6375C0263FE9BF00E0BE20 /* markdown_font_size.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */; };
@@ -197,6 +198,7 @@
 		0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniarbTests.swift; sourceTree = "<group>"; };
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
+		AE01EC00000000000000099 /* TennGoldenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennGoldenTests.swift; sourceTree = "<group>"; };
 		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C6375BC263FE9BF00E0BE20 /* corner.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = corner.png; sourceTree = "<group>"; };
 		0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_font_size.png; sourceTree = "<group>"; };
@@ -539,6 +541,7 @@
 			children = (
 				0C4F0EC424C74B180065918D /* svh-generate */,
 				0C5C6D241EFF669500714971 /* TennTests.swift */,
+				AE01EC00000000000000099 /* TennGoldenTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
 				0CC4D3531F930F5500875F9E /* PersistenceTests.swift */,
@@ -888,6 +891,7 @@
 				AE01EC01000000000000019 /* SceneEditingTests.swift in Sources */,
 				0C4F0EC624C74B340065918D /* TestSVGGenerate.swift in Sources */,
 				0C5C6D251EFF669500714971 /* TennTests.swift in Sources */,
+				AE01EC01000000000000099 /* TennGoldenTests.swift in Sources */,
 				0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */,
 				0C7F899B233520880098B745 /* MarkDownTests.swift in Sources */,
 				0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */,

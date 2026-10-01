@@ -1,0 +1,8 @@
+element "Disconnected" {
+    item "A" { pos 0 0 }
+    item "B" { pos 50 10 }
+    item "C" { pos -40 70 }
+    item "Lonely with long title" { pos 120 -60 }
+    item "E" { pos 10 90 }
+    link "A" "B"
+}

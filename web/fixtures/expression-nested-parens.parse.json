@@ -1,0 +1,81 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "x $((1 + 2) * (3 + 4))",
+  "printedClean" : "x $((1 + 2) * (3 + 4))",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "x",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 21,
+      "line" : 0,
+      "literal" : "(1 + 2) * (3 + 4)",
+      "pos" : 4,
+      "size" : 17,
+      "type" : "expression"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 22,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 22,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 0,
+              "literal" : "x",
+              "pos" : 0,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "Expression",
+            "token" : {
+              "col" : 21,
+              "line" : 0,
+              "literal" : "(1 + 2) * (3 + 4)",
+              "pos" : 4,
+              "size" : 17,
+              "type" : "expression"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 0,
+          "literal" : "x",
+          "pos" : 0,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

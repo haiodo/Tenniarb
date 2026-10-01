@@ -1,0 +1,47 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 1,
+            "line" : 0,
+            "literal" : "x",
+            "pos" : 0,
+            "size" : 1,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Expression",
+          "token" : {
+            "col" : 21,
+            "line" : 0,
+            "literal" : "(1 + 2) * (3 + 4)",
+            "pos" : 4,
+            "size" : 17,
+            "type" : "expression"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 1,
+        "line" : 0,
+        "literal" : "x",
+        "pos" : 0,
+        "size" : 1,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

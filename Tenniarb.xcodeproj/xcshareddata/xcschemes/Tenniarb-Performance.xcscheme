@@ -213,6 +213,9 @@
                   Identifier = "SyncViewControllerTests">
                </Test>
                <Test
+                  Identifier = "TennGoldenTests">
+               </Test>
+               <Test
                   Identifier = "TennNodeTests">
                </Test>
                <Test

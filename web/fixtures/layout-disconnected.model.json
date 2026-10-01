@@ -1,0 +1,80 @@
+{
+  "elements" : [
+    {
+      "elements" : [
+
+      ],
+      "items" : [
+        {
+          "kind" : "Item",
+          "name" : "A",
+          "properties" : [
+
+          ],
+          "x" : 0,
+          "y" : 0
+        },
+        {
+          "kind" : "Item",
+          "name" : "B",
+          "properties" : [
+
+          ],
+          "x" : 50,
+          "y" : 10
+        },
+        {
+          "kind" : "Item",
+          "name" : "C",
+          "properties" : [
+
+          ],
+          "x" : -40,
+          "y" : 70
+        },
+        {
+          "kind" : "Item",
+          "name" : "Lonely with long title",
+          "properties" : [
+
+          ],
+          "x" : 120,
+          "y" : -60
+        },
+        {
+          "kind" : "Item",
+          "name" : "E",
+          "properties" : [
+
+          ],
+          "x" : 10,
+          "y" : 90
+        },
+        {
+          "kind" : "Link",
+          "name" : "",
+          "properties" : [
+
+          ],
+          "source" : 0,
+          "target" : 1,
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "kind" : "Element",
+      "name" : "Disconnected",
+      "properties" : [
+
+      ]
+    }
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+
+  ]
+}

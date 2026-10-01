@@ -1,0 +1,952 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "element \"Order\" {\n    link \"B\" \"A\"\n    item \"B\"\n    item \"A\"\n    styles {\n        s {\n            color red\n        }\n    }\n    item \"C\" {\n        styles {\n            x {\n                layout vertical\n            }\n        } display none\n    }\n    link \"A\" \"C\" {\n        display arrow\n    }\n}",
+  "printedClean" : "element Order {\n    link B A\n    item B\n    item A\n    styles {\n        s {\n            color red\n        }\n    }\n    item C {\n        styles {\n            x {\n                layout vertical\n            }\n        } display none\n    }\n    link A C {\n        display arrow\n    }\n}",
+  "tokens" : [
+    {
+      "col" : 7,
+      "line" : 0,
+      "literal" : "element",
+      "pos" : 0,
+      "size" : 7,
+      "type" : "symbol"
+    },
+    {
+      "col" : 14,
+      "line" : 0,
+      "literal" : "Order",
+      "pos" : 9,
+      "size" : 5,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 17,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 16,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 17,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 8,
+      "line" : 1,
+      "literal" : "link",
+      "pos" : 22,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 11,
+      "line" : 1,
+      "literal" : "B",
+      "pos" : 28,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 15,
+      "line" : 1,
+      "literal" : "A",
+      "pos" : 32,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 34,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 8,
+      "line" : 2,
+      "literal" : "item",
+      "pos" : 39,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 11,
+      "line" : 2,
+      "literal" : "B",
+      "pos" : 45,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 0,
+      "line" : 3,
+      "literal" : "\n",
+      "pos" : 47,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 8,
+      "line" : 3,
+      "literal" : "item",
+      "pos" : 52,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 11,
+      "line" : 3,
+      "literal" : "A",
+      "pos" : 58,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 0,
+      "line" : 4,
+      "literal" : "\n",
+      "pos" : 60,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 10,
+      "line" : 4,
+      "literal" : "styles",
+      "pos" : 65,
+      "size" : 6,
+      "type" : "symbol"
+    },
+    {
+      "col" : 12,
+      "line" : 4,
+      "literal" : "{",
+      "pos" : 72,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 14,
+      "line" : 4,
+      "literal" : "s",
+      "pos" : 74,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 16,
+      "line" : 4,
+      "literal" : "{",
+      "pos" : 76,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 22,
+      "line" : 4,
+      "literal" : "color",
+      "pos" : 78,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 26,
+      "line" : 4,
+      "literal" : "red",
+      "pos" : 84,
+      "size" : 3,
+      "type" : "symbol"
+    },
+    {
+      "col" : 28,
+      "line" : 4,
+      "literal" : "}",
+      "pos" : 88,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 30,
+      "line" : 4,
+      "literal" : "}",
+      "pos" : 90,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 5,
+      "literal" : "\n",
+      "pos" : 91,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 8,
+      "line" : 5,
+      "literal" : "item",
+      "pos" : 96,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 11,
+      "line" : 5,
+      "literal" : "C",
+      "pos" : 102,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 14,
+      "line" : 5,
+      "literal" : "{",
+      "pos" : 105,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 21,
+      "line" : 5,
+      "literal" : "styles",
+      "pos" : 107,
+      "size" : 6,
+      "type" : "symbol"
+    },
+    {
+      "col" : 23,
+      "line" : 5,
+      "literal" : "{",
+      "pos" : 114,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 25,
+      "line" : 5,
+      "literal" : "x",
+      "pos" : 116,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 27,
+      "line" : 5,
+      "literal" : "{",
+      "pos" : 118,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 34,
+      "line" : 5,
+      "literal" : "layout",
+      "pos" : 120,
+      "size" : 6,
+      "type" : "symbol"
+    },
+    {
+      "col" : 43,
+      "line" : 5,
+      "literal" : "vertical",
+      "pos" : 127,
+      "size" : 8,
+      "type" : "symbol"
+    },
+    {
+      "col" : 45,
+      "line" : 5,
+      "literal" : "}",
+      "pos" : 136,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 47,
+      "line" : 5,
+      "literal" : "}",
+      "pos" : 138,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 55,
+      "line" : 5,
+      "literal" : "display",
+      "pos" : 140,
+      "size" : 7,
+      "type" : "symbol"
+    },
+    {
+      "col" : 60,
+      "line" : 5,
+      "literal" : "none",
+      "pos" : 148,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 62,
+      "line" : 5,
+      "literal" : "}",
+      "pos" : 153,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 6,
+      "literal" : "\n",
+      "pos" : 154,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 8,
+      "line" : 6,
+      "literal" : "link",
+      "pos" : 159,
+      "size" : 4,
+      "type" : "symbol"
+    },
+    {
+      "col" : 11,
+      "line" : 6,
+      "literal" : "A",
+      "pos" : 165,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 15,
+      "line" : 6,
+      "literal" : "C",
+      "pos" : 169,
+      "size" : 1,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 18,
+      "line" : 6,
+      "literal" : "{",
+      "pos" : 172,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 26,
+      "line" : 6,
+      "literal" : "display",
+      "pos" : 174,
+      "size" : 7,
+      "type" : "symbol"
+    },
+    {
+      "col" : 32,
+      "line" : 6,
+      "literal" : "arrow",
+      "pos" : 182,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 34,
+      "line" : 6,
+      "literal" : "}",
+      "pos" : 188,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 7,
+      "literal" : "\n",
+      "pos" : 189,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 1,
+      "line" : 7,
+      "literal" : "}",
+      "pos" : 190,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 8,
+      "literal" : "\n",
+      "pos" : 191,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 8,
+      "literal" : "\u0000",
+      "pos" : 191,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 7,
+              "line" : 0,
+              "literal" : "element",
+              "pos" : 0,
+              "size" : 7,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 14,
+              "line" : 0,
+              "literal" : "Order",
+              "pos" : 9,
+              "size" : 5,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 8,
+                      "line" : 1,
+                      "literal" : "link",
+                      "pos" : 22,
+                      "size" : 4,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 1,
+                      "literal" : "B",
+                      "pos" : 28,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 15,
+                      "line" : 1,
+                      "literal" : "A",
+                      "pos" : 32,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 8,
+                  "line" : 1,
+                  "literal" : "link",
+                  "pos" : 22,
+                  "size" : 4,
+                  "type" : "symbol"
+                }
+              },
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 8,
+                      "line" : 2,
+                      "literal" : "item",
+                      "pos" : 39,
+                      "size" : 4,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 2,
+                      "literal" : "B",
+                      "pos" : 45,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 8,
+                  "line" : 2,
+                  "literal" : "item",
+                  "pos" : 39,
+                  "size" : 4,
+                  "type" : "symbol"
+                }
+              },
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 8,
+                      "line" : 3,
+                      "literal" : "item",
+                      "pos" : 52,
+                      "size" : 4,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 3,
+                      "literal" : "A",
+                      "pos" : 58,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 8,
+                  "line" : 3,
+                  "literal" : "item",
+                  "pos" : 52,
+                  "size" : 4,
+                  "type" : "symbol"
+                }
+              },
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 10,
+                      "line" : 4,
+                      "literal" : "styles",
+                      "pos" : 65,
+                      "size" : 6,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "children" : [
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 14,
+                              "line" : 4,
+                              "literal" : "s",
+                              "pos" : 74,
+                              "size" : 1,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "children" : [
+                              {
+                                "children" : [
+                                  {
+                                    "kind" : "Ident",
+                                    "token" : {
+                                      "col" : 22,
+                                      "line" : 4,
+                                      "literal" : "color",
+                                      "pos" : 78,
+                                      "size" : 5,
+                                      "type" : "symbol"
+                                    }
+                                  },
+                                  {
+                                    "kind" : "Ident",
+                                    "token" : {
+                                      "col" : 26,
+                                      "line" : 4,
+                                      "literal" : "red",
+                                      "pos" : 84,
+                                      "size" : 3,
+                                      "type" : "symbol"
+                                    }
+                                  }
+                                ],
+                                "kind" : "Command",
+                                "token" : {
+                                  "col" : 22,
+                                  "line" : 4,
+                                  "literal" : "color",
+                                  "pos" : 78,
+                                  "size" : 5,
+                                  "type" : "symbol"
+                                }
+                              }
+                            ],
+                            "kind" : "BlockExpr",
+                            "token" : {
+                              "col" : 16,
+                              "line" : 4,
+                              "literal" : "{",
+                              "pos" : 76,
+                              "size" : 1,
+                              "type" : "curlyLe"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 14,
+                          "line" : 4,
+                          "literal" : "s",
+                          "pos" : 74,
+                          "size" : 1,
+                          "type" : "symbol"
+                        }
+                      }
+                    ],
+                    "kind" : "BlockExpr",
+                    "token" : {
+                      "col" : 12,
+                      "line" : 4,
+                      "literal" : "{",
+                      "pos" : 72,
+                      "size" : 1,
+                      "type" : "curlyLe"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 10,
+                  "line" : 4,
+                  "literal" : "styles",
+                  "pos" : 65,
+                  "size" : 6,
+                  "type" : "symbol"
+                }
+              },
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 8,
+                      "line" : 5,
+                      "literal" : "item",
+                      "pos" : 96,
+                      "size" : 4,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 5,
+                      "literal" : "C",
+                      "pos" : 102,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  },
+                  {
+                    "children" : [
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 21,
+                              "line" : 5,
+                              "literal" : "styles",
+                              "pos" : 107,
+                              "size" : 6,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "children" : [
+                              {
+                                "children" : [
+                                  {
+                                    "kind" : "Ident",
+                                    "token" : {
+                                      "col" : 25,
+                                      "line" : 5,
+                                      "literal" : "x",
+                                      "pos" : 116,
+                                      "size" : 1,
+                                      "type" : "symbol"
+                                    }
+                                  },
+                                  {
+                                    "children" : [
+                                      {
+                                        "children" : [
+                                          {
+                                            "kind" : "Ident",
+                                            "token" : {
+                                              "col" : 34,
+                                              "line" : 5,
+                                              "literal" : "layout",
+                                              "pos" : 120,
+                                              "size" : 6,
+                                              "type" : "symbol"
+                                            }
+                                          },
+                                          {
+                                            "kind" : "Ident",
+                                            "token" : {
+                                              "col" : 43,
+                                              "line" : 5,
+                                              "literal" : "vertical",
+                                              "pos" : 127,
+                                              "size" : 8,
+                                              "type" : "symbol"
+                                            }
+                                          }
+                                        ],
+                                        "kind" : "Command",
+                                        "token" : {
+                                          "col" : 34,
+                                          "line" : 5,
+                                          "literal" : "layout",
+                                          "pos" : 120,
+                                          "size" : 6,
+                                          "type" : "symbol"
+                                        }
+                                      }
+                                    ],
+                                    "kind" : "BlockExpr",
+                                    "token" : {
+                                      "col" : 27,
+                                      "line" : 5,
+                                      "literal" : "{",
+                                      "pos" : 118,
+                                      "size" : 1,
+                                      "type" : "curlyLe"
+                                    }
+                                  }
+                                ],
+                                "kind" : "Command",
+                                "token" : {
+                                  "col" : 25,
+                                  "line" : 5,
+                                  "literal" : "x",
+                                  "pos" : 116,
+                                  "size" : 1,
+                                  "type" : "symbol"
+                                }
+                              }
+                            ],
+                            "kind" : "BlockExpr",
+                            "token" : {
+                              "col" : 23,
+                              "line" : 5,
+                              "literal" : "{",
+                              "pos" : 114,
+                              "size" : 1,
+                              "type" : "curlyLe"
+                            }
+                          },
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 55,
+                              "line" : 5,
+                              "literal" : "display",
+                              "pos" : 140,
+                              "size" : 7,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 60,
+                              "line" : 5,
+                              "literal" : "none",
+                              "pos" : 148,
+                              "size" : 4,
+                              "type" : "symbol"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 21,
+                          "line" : 5,
+                          "literal" : "styles",
+                          "pos" : 107,
+                          "size" : 6,
+                          "type" : "symbol"
+                        }
+                      }
+                    ],
+                    "kind" : "BlockExpr",
+                    "token" : {
+                      "col" : 14,
+                      "line" : 5,
+                      "literal" : "{",
+                      "pos" : 105,
+                      "size" : 1,
+                      "type" : "curlyLe"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 8,
+                  "line" : 5,
+                  "literal" : "item",
+                  "pos" : 96,
+                  "size" : 4,
+                  "type" : "symbol"
+                }
+              },
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 8,
+                      "line" : 6,
+                      "literal" : "link",
+                      "pos" : 159,
+                      "size" : 4,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 6,
+                      "literal" : "A",
+                      "pos" : 165,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  },
+                  {
+                    "kind" : "StringLit",
+                    "token" : {
+                      "col" : 15,
+                      "line" : 6,
+                      "literal" : "C",
+                      "pos" : 169,
+                      "size" : 1,
+                      "type" : "stringLit"
+                    }
+                  },
+                  {
+                    "children" : [
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 26,
+                              "line" : 6,
+                              "literal" : "display",
+                              "pos" : 174,
+                              "size" : 7,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 32,
+                              "line" : 6,
+                              "literal" : "arrow",
+                              "pos" : 182,
+                              "size" : 5,
+                              "type" : "symbol"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 26,
+                          "line" : 6,
+                          "literal" : "display",
+                          "pos" : 174,
+                          "size" : 7,
+                          "type" : "symbol"
+                        }
+                      }
+                    ],
+                    "kind" : "BlockExpr",
+                    "token" : {
+                      "col" : 18,
+                      "line" : 6,
+                      "literal" : "{",
+                      "pos" : 172,
+                      "size" : 1,
+                      "type" : "curlyLe"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 8,
+                  "line" : 6,
+                  "literal" : "link",
+                  "pos" : 159,
+                  "size" : 4,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 17,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 16,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 7,
+          "line" : 0,
+          "literal" : "element",
+          "pos" : 0,
+          "size" : 7,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

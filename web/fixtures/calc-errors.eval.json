@@ -1,0 +1,124 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "1 +",
+              "path" : [
+                0,
+                1
+              ],
+              "value" : {
+                "message" : "Unexpected end of script",
+                "name" : "SyntaxError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "nosuch + 1",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "message" : "Can't find variable: nosuch",
+                "name" : "ReferenceError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "null.x",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "message" : "null is not an object (evaluating 'null.x')",
+                "name" : "TypeError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "ExpressionBlock",
+              "literal" : "throw new Error(\"boom\")",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "message" : "boom",
+                "name" : "Error",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "ExpressionBlock",
+              "literal" : "throw \"str\"",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "str"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "1 + 1",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 2
+              }
+            },
+            {
+              "kind" : "ExpressionBlock",
+              "literal" : "var q = ; q",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "message" : "Unexpected token ';'",
+                "name" : "SyntaxError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "(1)()",
+              "path" : [
+                7,
+                1
+              ],
+              "value" : {
+                "message" : "(1) is not a function. (In '(1)()', '(1)' is 1)",
+                "name" : "TypeError",
+                "t" : "error"
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        }
+      ],
+      "name" : "Errors",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

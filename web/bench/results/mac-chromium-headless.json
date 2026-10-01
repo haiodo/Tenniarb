@@ -1,0 +1,93 @@
+{
+ "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+ "dpr": 2,
+ "w": 1280,
+ "h": 800,
+ "runs": [
+  {
+   "n": 100,
+   "shadows": true,
+   "frames": 181,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.7,
+   "fps": 59.88,
+   "medianDrawMs": 7.5,
+   "p95DrawMs": 9.5
+  },
+  {
+   "n": 500,
+   "shadows": true,
+   "frames": 179,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.8,
+   "fps": 59.88,
+   "medianDrawMs": 15.7,
+   "p95DrawMs": 17.6
+  },
+  {
+   "n": 1000,
+   "shadows": true,
+   "frames": 164,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 33.3,
+   "fps": 59.88,
+   "medianDrawMs": 18.1,
+   "p95DrawMs": 20.4
+  },
+  {
+   "n": 2000,
+   "shadows": true,
+   "frames": 139,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 33.4,
+   "fps": 59.88,
+   "medianDrawMs": 21.3,
+   "p95DrawMs": 24.6
+  },
+  {
+   "n": 100,
+   "shadows": false,
+   "frames": 181,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.8,
+   "fps": 59.88,
+   "medianDrawMs": 4,
+   "p95DrawMs": 5.5
+  },
+  {
+   "n": 500,
+   "shadows": false,
+   "frames": 181,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.7,
+   "fps": 59.88,
+   "medianDrawMs": 10,
+   "p95DrawMs": 11.7
+  },
+  {
+   "n": 1000,
+   "shadows": false,
+   "frames": 181,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.7,
+   "fps": 59.88,
+   "medianDrawMs": 13.7,
+   "p95DrawMs": 16.8
+  },
+  {
+   "n": 2000,
+   "shadows": false,
+   "frames": 173,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.8,
+   "fps": 59.88,
+   "medianDrawMs": 16.2,
+   "p95DrawMs": 18.8
+  }
+ ],
+ "env": {
+  "browser": "chromium",
+  "mode": "headless",
+  "version": "153.0.8010.12"
+ }
+}

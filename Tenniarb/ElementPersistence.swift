@@ -112,6 +112,10 @@ extension Element {
         let result = TennNode(kind: TennNodeKind.Statements)
 
         if self.kind == .Root {
+            // Top-level non-element statements go first; their original interleaving with elements is not kept.
+            for p in self.properties {
+                result.add(p.clone())
+            }
             buildElements(topParent: result, elements: self.elements, includeSubElements: includeSubElements, includeItems: includeItems)
         } else {
             buildElements(topParent: result, elements: [self], includeSubElements: includeSubElements, includeItems: includeItems)
@@ -126,6 +130,10 @@ extension Element {
     }
 
     static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode, addPos: Bool) {
+        if let descr = item.description {
+            itemBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
+        }
+
         let nx = item.x != 0
         let ny = item.y != 0
 
@@ -424,6 +432,11 @@ extension Element {
 
             for (node, link) in linkElements {
                 processLink(link, node, refs)
+                // Keep unresolved links verbatim so a save does not lose their name/index references.
+                if link.source == nil || link.target == nil {
+                    el.items.removeAll { $0 === link }
+                    el.properties.append(node)
+                }
             }
 
             return el

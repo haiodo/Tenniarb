@@ -1,0 +1,213 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 6,
+            "line" : 0,
+            "literal" : "styles",
+            "pos" : 0,
+            "size" : 6,
+            "type" : "symbol"
+          }
+        },
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "kind" : "Ident",
+                  "token" : {
+                    "col" : 14,
+                    "line" : 1,
+                    "literal" : "annotation",
+                    "pos" : 13,
+                    "size" : 10,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "children" : [
+                        {
+                          "kind" : "Ident",
+                          "token" : {
+                            "col" : 13,
+                            "line" : 2,
+                            "literal" : "color",
+                            "pos" : 34,
+                            "size" : 5,
+                            "type" : "symbol"
+                          }
+                        },
+                        {
+                          "kind" : "Ident",
+                          "token" : {
+                            "col" : 22,
+                            "line" : 2,
+                            "literal" : "gray-400",
+                            "pos" : 40,
+                            "size" : 8,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "Command",
+                      "token" : {
+                        "col" : 13,
+                        "line" : 2,
+                        "literal" : "color",
+                        "pos" : 34,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "kind" : "Ident",
+                          "token" : {
+                            "col" : 17,
+                            "line" : 3,
+                            "literal" : "font-size",
+                            "pos" : 57,
+                            "size" : 9,
+                            "type" : "symbol"
+                          }
+                        },
+                        {
+                          "kind" : "IntLit",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 3,
+                            "literal" : "12",
+                            "pos" : 67,
+                            "size" : 2,
+                            "type" : "intLit"
+                          }
+                        }
+                      ],
+                      "kind" : "Command",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 3,
+                        "literal" : "font-size",
+                        "pos" : 57,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "kind" : "Ident",
+                          "token" : {
+                            "col" : 14,
+                            "line" : 4,
+                            "literal" : "shadow",
+                            "pos" : 78,
+                            "size" : 6,
+                            "type" : "symbol"
+                          }
+                        },
+                        {
+                          "kind" : "IntLit",
+                          "token" : {
+                            "col" : 16,
+                            "line" : 4,
+                            "literal" : "5",
+                            "pos" : 85,
+                            "size" : 1,
+                            "type" : "intLit"
+                          }
+                        },
+                        {
+                          "kind" : "IntLit",
+                          "token" : {
+                            "col" : 19,
+                            "line" : 4,
+                            "literal" : "-5",
+                            "pos" : 87,
+                            "size" : 2,
+                            "type" : "intLit"
+                          }
+                        },
+                        {
+                          "kind" : "IntLit",
+                          "token" : {
+                            "col" : 21,
+                            "line" : 4,
+                            "literal" : "5",
+                            "pos" : 90,
+                            "size" : 1,
+                            "type" : "intLit"
+                          }
+                        }
+                      ],
+                      "kind" : "Command",
+                      "token" : {
+                        "col" : 14,
+                        "line" : 4,
+                        "literal" : "shadow",
+                        "pos" : 78,
+                        "size" : 6,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "BlockExpr",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 1,
+                    "literal" : "{",
+                    "pos" : 24,
+                    "size" : 1,
+                    "type" : "curlyLe"
+                  }
+                }
+              ],
+              "kind" : "Command",
+              "token" : {
+                "col" : 14,
+                "line" : 1,
+                "literal" : "annotation",
+                "pos" : 13,
+                "size" : 10,
+                "type" : "symbol"
+              }
+            }
+          ],
+          "kind" : "BlockExpr",
+          "token" : {
+            "col" : 8,
+            "line" : 0,
+            "literal" : "{",
+            "pos" : 7,
+            "size" : 1,
+            "type" : "curlyLe"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 6,
+        "line" : 0,
+        "literal" : "styles",
+        "pos" : 0,
+        "size" : 6,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

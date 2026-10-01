@@ -1,0 +1,93 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 3,
+            "line" : 0,
+            "literal" : "img",
+            "pos" : 0,
+            "size" : 3,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Image",
+          "token" : {
+            "col" : 10,
+            "line" : 0,
+            "literal" : "AAAA",
+            "pos" : 6,
+            "size" : 4,
+            "type" : "imageData"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 3,
+        "line" : 0,
+        "literal" : "img",
+        "pos" : 0,
+        "size" : 3,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 5,
+            "line" : 1,
+            "literal" : "image",
+            "pos" : 12,
+            "size" : 5,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 14,
+            "line" : 1,
+            "literal" : "pic.png",
+            "pos" : 19,
+            "size" : 7,
+            "type" : "stringLit"
+          }
+        },
+        {
+          "kind" : "Image",
+          "token" : {
+            "col" : 114,
+            "line" : 1,
+            "literal" : "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+            "pos" : 30,
+            "size" : 96,
+            "type" : "imageData"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 5,
+        "line" : 1,
+        "literal" : "image",
+        "pos" : 12,
+        "size" : 5,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

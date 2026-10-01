@@ -18,6 +18,8 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
+- `web/` - TypeScript-версия (план в `plans/plan.md`, раздел 3). npm workspaces `packages/*`,
+  тесты `node:test` на `.ts` без компиляции. `web/bench/` - бенчмарки рендера, вне workspaces.
 - `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
   в схему `Tenniarb-Performance`. Схема скипает все остальные suite поимённо - при
   добавлении нового тестового класса список надо дополнить, иначе он попадёт в perf-прогон.
@@ -39,6 +41,8 @@ make format         # swift-format --in-place
 make format-check   # падает если код не отформатирован
 make ci             # lint + build + test, то же что в CI
 make clean
+make web            # сборка web/packages
+make web-test       # typecheck + тесты web/
 ```
 
 Инструменты:

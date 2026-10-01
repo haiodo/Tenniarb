@@ -1,0 +1,35 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "Expression",
+              "literal" : "foo",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "message" : "Can't find variable: foo",
+                "name" : "ReferenceError",
+                "t" : "error"
+              }
+            }
+          ],
+          "index" : 7,
+          "kind" : "Item",
+          "name" : "expr"
+        }
+      ],
+      "name" : "Items",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

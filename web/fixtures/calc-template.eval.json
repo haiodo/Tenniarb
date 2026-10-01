@@ -1,0 +1,150 @@
+{
+  "elements" : [
+    {
+      "element" : [
+
+      ],
+      "items" : [
+        {
+          "entries" : [
+            {
+              "kind" : "StringLit",
+              "literal" : "Hello ${name}",
+              "path" : [
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "Hello A"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "n+1 = ${n + 1}",
+              "path" : [
+                2,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "n+1 = 4"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "${n}-${n * 2}",
+              "path" : [
+                3,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "3-6"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "list: ${[1, 2, 3]}",
+              "path" : [
+                4,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "list: 1,2,3"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "obj: ${items.A.n}",
+              "path" : [
+                5,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "obj: 3"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "oops ${nosuch}",
+              "path" : [
+                6,
+                1
+              ],
+              "value" : {
+                "message" : "Can't find variable: nosuch",
+                "name" : "ReferenceError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "bad syntax ${1 +}",
+              "path" : [
+                7,
+                1
+              ],
+              "value" : {
+                "message" : "Unexpected token '}'",
+                "name" : "SyntaxError",
+                "t" : "error"
+              }
+            },
+            {
+              "kind" : "MarkdownLit",
+              "literal" : " value ${n * 10} here ",
+              "path" : [
+                9,
+                1,
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : " value 30 here "
+              }
+            },
+            {
+              "kind" : "StringLit",
+              "literal" : "in ${n}",
+              "path" : [
+                10,
+                1,
+                0,
+                1
+              ],
+              "value" : {
+                "t" : "string",
+                "v" : "in 3"
+              }
+            },
+            {
+              "kind" : "Expression",
+              "literal" : "n + 100",
+              "path" : [
+                10,
+                1,
+                1,
+                1
+              ],
+              "value" : {
+                "t" : "number",
+                "v" : 103
+              }
+            }
+          ],
+          "index" : 0,
+          "kind" : "Item",
+          "name" : "A"
+        }
+      ],
+      "name" : "Templates",
+      "path" : [
+        0
+      ]
+    }
+  ]
+}

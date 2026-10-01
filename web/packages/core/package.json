@@ -1,0 +1,8 @@
+{
+  "name": "@tenniarb/core",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --format=esm --platform=neutral --outfile=dist/index.js"
+  }
+}

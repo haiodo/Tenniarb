@@ -1,0 +1,82 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 1,
+            "line" : 0,
+            "literal" : "x",
+            "pos" : 0,
+            "size" : 1,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "ExpressionBlock",
+          "token" : {
+            "col" : 16,
+            "line" : 0,
+            "literal" : "var a = 1; a",
+            "pos" : 4,
+            "size" : 12,
+            "type" : "expressionBlock"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 1,
+        "line" : 0,
+        "literal" : "x",
+        "pos" : 0,
+        "size" : 1,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 1,
+            "line" : 1,
+            "literal" : "y",
+            "pos" : 18,
+            "size" : 1,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "ExpressionBlock",
+          "token" : {
+            "col" : 1,
+            "line" : 1,
+            "literal" : "\n  var s = 0;\n  for (var i = 0; i < 3; i++) { s += i }\n  s\n",
+            "pos" : 22,
+            "size" : 59,
+            "type" : "expressionBlock"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 1,
+        "line" : 1,
+        "literal" : "y",
+        "pos" : 18,
+        "size" : 1,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

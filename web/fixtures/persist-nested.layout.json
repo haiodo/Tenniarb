@@ -1,0 +1,213 @@
+{
+  "elements" : [
+    {
+      "edges" : [
+
+      ],
+      "grid" : {
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0.20853438317775713,
+            "y" : -24.662153280377389
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : 0,
+          "y" : 0
+        }
+      },
+      "name" : "Top",
+      "nodes" : [
+        {
+          "bounds" : {
+            "height" : 30.600000000000001,
+            "width" : 20.341375327110292,
+            "x" : -0.29999999999999999,
+            "y" : -30.300000000000001
+          },
+          "item" : 0,
+          "name" : "X",
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "path" : [
+        0
+      ],
+      "sceneBounds" : {
+        "height" : 30.600000000000001,
+        "width" : 20.341375327110292,
+        "x" : -0.29999999999999999,
+        "y" : -30.300000000000001
+      },
+      "spring" : {
+        "params" : {
+          "gravitation" : 2,
+          "iterations" : 1000,
+          "length" : 3,
+          "maxTimeMS" : 0,
+          "move" : 1,
+          "random" : false,
+          "strain" : 1
+        },
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0,
+            "y" : 0
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : -400,
+          "y" : -300
+        }
+      }
+    },
+    {
+      "edges" : [
+        {
+          "item" : 1,
+          "source" : 0,
+          "target" : 0
+        }
+      ],
+      "grid" : {
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0.19800749063491879,
+            "y" : -24.462142322063446
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : 0,
+          "y" : 0
+        }
+      },
+      "name" : "Child",
+      "nodes" : [
+        {
+          "bounds" : {
+            "height" : 30.600000000000001,
+            "width" : 19.92029962539673,
+            "x" : -0.29999999999999999,
+            "y" : -30.300000000000001
+          },
+          "item" : 0,
+          "name" : "Y",
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "path" : [
+        0,
+        0
+      ],
+      "sceneBounds" : {
+        "height" : 30.600000000000001,
+        "width" : 19.92029962539673,
+        "x" : -0.29999999999999999,
+        "y" : -30.300000000000001
+      },
+      "spring" : {
+        "params" : {
+          "gravitation" : 2,
+          "iterations" : 1000,
+          "length" : 3,
+          "maxTimeMS" : 0,
+          "move" : 1,
+          "random" : false,
+          "strain" : 1
+        },
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0,
+            "y" : 0
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : -400,
+          "y" : -300
+        }
+      }
+    },
+    {
+      "edges" : [
+
+      ],
+      "grid" : {
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0.29644499063491808,
+            "y" : -26.332454822063447
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : 0,
+          "y" : 0
+        }
+      },
+      "name" : "ModelCmd",
+      "nodes" : [
+        {
+          "bounds" : {
+            "height" : 30.600000000000001,
+            "width" : 23.85779962539673,
+            "x" : -0.29999999999999999,
+            "y" : -30.300000000000001
+          },
+          "item" : 0,
+          "name" : "M",
+          "x" : 0,
+          "y" : 0
+        }
+      ],
+      "path" : [
+        1
+      ],
+      "sceneBounds" : {
+        "height" : 30.600000000000001,
+        "width" : 23.85779962539673,
+        "x" : -0.29999999999999999,
+        "y" : -30.300000000000001
+      },
+      "spring" : {
+        "params" : {
+          "gravitation" : 2,
+          "iterations" : 1000,
+          "length" : 3,
+          "maxTimeMS" : 0,
+          "move" : 1,
+          "random" : false,
+          "strain" : 1
+        },
+        "positions" : [
+          {
+            "item" : 0,
+            "x" : 0,
+            "y" : 0
+          }
+        ],
+        "viewBounds" : {
+          "height" : 600,
+          "width" : 800,
+          "x" : -400,
+          "y" : -300
+        }
+      }
+    }
+  ]
+}

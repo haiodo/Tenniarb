@@ -1,0 +1,128 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 4,
+            "line" : 0,
+            "literal" : "item",
+            "pos" : 0,
+            "size" : 4,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 14,
+            "line" : 0,
+            "literal" : "Platform",
+            "pos" : 6,
+            "size" : 8,
+            "type" : "stringLit"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 4,
+        "line" : 0,
+        "literal" : "item",
+        "pos" : 0,
+        "size" : 4,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 4,
+            "line" : 1,
+            "literal" : "item",
+            "pos" : 16,
+            "size" : 4,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 12,
+            "line" : 1,
+            "literal" : "Device",
+            "pos" : 22,
+            "size" : 6,
+            "type" : "stringLit"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 4,
+        "line" : 1,
+        "literal" : "item",
+        "pos" : 16,
+        "size" : 4,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 4,
+            "line" : 2,
+            "literal" : "link",
+            "pos" : 30,
+            "size" : 4,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 14,
+            "line" : 2,
+            "literal" : "Platform",
+            "pos" : 36,
+            "size" : 8,
+            "type" : "stringLit"
+          }
+        },
+        {
+          "kind" : "StringLit",
+          "token" : {
+            "col" : 23,
+            "line" : 2,
+            "literal" : "Device",
+            "pos" : 47,
+            "size" : 6,
+            "type" : "stringLit"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 4,
+        "line" : 2,
+        "literal" : "link",
+        "pos" : 30,
+        "size" : 4,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

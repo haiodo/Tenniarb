@@ -1,0 +1,391 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "styles {\n    annotation {\n        color gray-400\n        font-size 12\n        shadow 5 -5 5\n    }\n}",
+  "printedClean" : "styles {\n    annotation {\n        color gray-400\n        font-size 12\n        shadow 5 -5 5\n    }\n}",
+  "tokens" : [
+    {
+      "col" : 6,
+      "line" : 0,
+      "literal" : "styles",
+      "pos" : 0,
+      "size" : 6,
+      "type" : "symbol"
+    },
+    {
+      "col" : 8,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 7,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 8,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 14,
+      "line" : 1,
+      "literal" : "annotation",
+      "pos" : 13,
+      "size" : 10,
+      "type" : "symbol"
+    },
+    {
+      "col" : 16,
+      "line" : 1,
+      "literal" : "{",
+      "pos" : 24,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 25,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 13,
+      "line" : 2,
+      "literal" : "color",
+      "pos" : 34,
+      "size" : 5,
+      "type" : "symbol"
+    },
+    {
+      "col" : 22,
+      "line" : 2,
+      "literal" : "gray-400",
+      "pos" : 40,
+      "size" : 8,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 3,
+      "literal" : "\n",
+      "pos" : 48,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 17,
+      "line" : 3,
+      "literal" : "font-size",
+      "pos" : 57,
+      "size" : 9,
+      "type" : "symbol"
+    },
+    {
+      "col" : 20,
+      "line" : 3,
+      "literal" : "12",
+      "pos" : 67,
+      "size" : 2,
+      "type" : "intLit"
+    },
+    {
+      "col" : 0,
+      "line" : 4,
+      "literal" : "\n",
+      "pos" : 69,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 14,
+      "line" : 4,
+      "literal" : "shadow",
+      "pos" : 78,
+      "size" : 6,
+      "type" : "symbol"
+    },
+    {
+      "col" : 16,
+      "line" : 4,
+      "literal" : "5",
+      "pos" : 85,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 19,
+      "line" : 4,
+      "literal" : "-5",
+      "pos" : 87,
+      "size" : 2,
+      "type" : "intLit"
+    },
+    {
+      "col" : 21,
+      "line" : 4,
+      "literal" : "5",
+      "pos" : 90,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 0,
+      "line" : 5,
+      "literal" : "\n",
+      "pos" : 91,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 5,
+      "line" : 5,
+      "literal" : "}",
+      "pos" : 96,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 6,
+      "literal" : "\n",
+      "pos" : 97,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 1,
+      "line" : 6,
+      "literal" : "}",
+      "pos" : 98,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 0,
+      "line" : 7,
+      "literal" : "\n",
+      "pos" : 99,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 7,
+      "literal" : "\u0000",
+      "pos" : 99,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 6,
+              "line" : 0,
+              "literal" : "styles",
+              "pos" : 0,
+              "size" : 6,
+              "type" : "symbol"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 14,
+                      "line" : 1,
+                      "literal" : "annotation",
+                      "pos" : 13,
+                      "size" : 10,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "children" : [
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 13,
+                              "line" : 2,
+                              "literal" : "color",
+                              "pos" : 34,
+                              "size" : 5,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 22,
+                              "line" : 2,
+                              "literal" : "gray-400",
+                              "pos" : 40,
+                              "size" : 8,
+                              "type" : "symbol"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 13,
+                          "line" : 2,
+                          "literal" : "color",
+                          "pos" : 34,
+                          "size" : 5,
+                          "type" : "symbol"
+                        }
+                      },
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 17,
+                              "line" : 3,
+                              "literal" : "font-size",
+                              "pos" : 57,
+                              "size" : 9,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "IntLit",
+                            "token" : {
+                              "col" : 20,
+                              "line" : 3,
+                              "literal" : "12",
+                              "pos" : 67,
+                              "size" : 2,
+                              "type" : "intLit"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 17,
+                          "line" : 3,
+                          "literal" : "font-size",
+                          "pos" : 57,
+                          "size" : 9,
+                          "type" : "symbol"
+                        }
+                      },
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 14,
+                              "line" : 4,
+                              "literal" : "shadow",
+                              "pos" : 78,
+                              "size" : 6,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "IntLit",
+                            "token" : {
+                              "col" : 16,
+                              "line" : 4,
+                              "literal" : "5",
+                              "pos" : 85,
+                              "size" : 1,
+                              "type" : "intLit"
+                            }
+                          },
+                          {
+                            "kind" : "IntLit",
+                            "token" : {
+                              "col" : 19,
+                              "line" : 4,
+                              "literal" : "-5",
+                              "pos" : 87,
+                              "size" : 2,
+                              "type" : "intLit"
+                            }
+                          },
+                          {
+                            "kind" : "IntLit",
+                            "token" : {
+                              "col" : 21,
+                              "line" : 4,
+                              "literal" : "5",
+                              "pos" : 90,
+                              "size" : 1,
+                              "type" : "intLit"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 14,
+                          "line" : 4,
+                          "literal" : "shadow",
+                          "pos" : 78,
+                          "size" : 6,
+                          "type" : "symbol"
+                        }
+                      }
+                    ],
+                    "kind" : "BlockExpr",
+                    "token" : {
+                      "col" : 16,
+                      "line" : 1,
+                      "literal" : "{",
+                      "pos" : 24,
+                      "size" : 1,
+                      "type" : "curlyLe"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 14,
+                  "line" : 1,
+                  "literal" : "annotation",
+                  "pos" : 13,
+                  "size" : 10,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 8,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 7,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 6,
+          "line" : 0,
+          "literal" : "styles",
+          "pos" : 0,
+          "size" : 6,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

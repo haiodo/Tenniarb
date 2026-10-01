@@ -1,0 +1,21 @@
+element "Templates" {
+    item "A" {
+        pos 1 2
+        n 3
+        title "Hello ${name}"
+        sum "n+1 = ${n + 1}"
+        two "${n}-${n * 2}"
+        arr "list: ${[1, 2, 3]}"
+        obj "obj: ${items.A.n}"
+        bad "oops ${nosuch}"
+        syn "bad syntax ${1 +}"
+        plain "no substitution"
+        body {
+            text %{ value ${n * 10} here }
+        }
+        nested {
+            inner "in ${n}"
+            expr $(n + 100)
+        }
+    }
+}

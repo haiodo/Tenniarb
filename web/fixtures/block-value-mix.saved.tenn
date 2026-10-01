@@ -1,0 +1,3 @@
+cmd a "b" 1 2.5 $(x) ${y} %{z} @(w) {
+    inner 1
+} tail

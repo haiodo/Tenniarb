@@ -1,0 +1,134 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "a {\n    b 1\n}",
+  "printedClean" : "a {\n    b 1\n}",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "a",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 2,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 5,
+      "line" : 0,
+      "literal" : "b",
+      "pos" : 4,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 7,
+      "line" : 0,
+      "literal" : "1",
+      "pos" : 6,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 9,
+      "line" : 0,
+      "literal" : "}",
+      "pos" : 8,
+      "size" : 1,
+      "type" : "curlyRi"
+    },
+    {
+      "col" : 9,
+      "line" : 0,
+      "literal" : "\u0000",
+      "pos" : 8,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 0,
+              "literal" : "a",
+              "pos" : 0,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 5,
+                      "line" : 0,
+                      "literal" : "b",
+                      "pos" : 4,
+                      "size" : 1,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "kind" : "IntLit",
+                    "token" : {
+                      "col" : 7,
+                      "line" : 0,
+                      "literal" : "1",
+                      "pos" : 6,
+                      "size" : 1,
+                      "type" : "intLit"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 5,
+                  "line" : 0,
+                  "literal" : "b",
+                  "pos" : 4,
+                  "size" : 1,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 3,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 2,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 0,
+          "literal" : "a",
+          "pos" : 0,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

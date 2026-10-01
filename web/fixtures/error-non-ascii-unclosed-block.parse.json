@@ -1,0 +1,206 @@
+{
+  "errors" : [
+    {
+      "code" : "wrongBlockTerminator",
+      "col" : 0,
+      "line" : 1,
+      "message" : "Wrong statements terminator"
+    },
+    {
+      "code" : "wrongBlockTerminator",
+      "col" : 11,
+      "line" : 0,
+      "message" : "Wrong statements terminator"
+    }
+  ],
+  "printed" : "éé {\n    аб {\n        c d\n    }\n}",
+  "printedClean" : "éé {\n    аб {\n        c d\n    }\n}",
+  "tokens" : [
+    {
+      "col" : 4,
+      "line" : 0,
+      "literal" : "éé",
+      "pos" : 2,
+      "size" : 2,
+      "type" : "symbol"
+    },
+    {
+      "col" : 6,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 5,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 11,
+      "line" : 0,
+      "literal" : "аб",
+      "pos" : 9,
+      "size" : 2,
+      "type" : "symbol"
+    },
+    {
+      "col" : 13,
+      "line" : 0,
+      "literal" : "{",
+      "pos" : 12,
+      "size" : 1,
+      "type" : "curlyLe"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 13,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 3,
+      "line" : 1,
+      "literal" : "c",
+      "pos" : 16,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 5,
+      "line" : 1,
+      "literal" : "d",
+      "pos" : 18,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 19,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\u0000",
+      "pos" : 19,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 4,
+              "line" : 0,
+              "literal" : "éé",
+              "pos" : 2,
+              "size" : 2,
+              "type" : "symbol"
+            }
+          },
+          {
+            "children" : [
+              {
+                "children" : [
+                  {
+                    "kind" : "Ident",
+                    "token" : {
+                      "col" : 11,
+                      "line" : 0,
+                      "literal" : "аб",
+                      "pos" : 9,
+                      "size" : 2,
+                      "type" : "symbol"
+                    }
+                  },
+                  {
+                    "children" : [
+                      {
+                        "children" : [
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 3,
+                              "line" : 1,
+                              "literal" : "c",
+                              "pos" : 16,
+                              "size" : 1,
+                              "type" : "symbol"
+                            }
+                          },
+                          {
+                            "kind" : "Ident",
+                            "token" : {
+                              "col" : 5,
+                              "line" : 1,
+                              "literal" : "d",
+                              "pos" : 18,
+                              "size" : 1,
+                              "type" : "symbol"
+                            }
+                          }
+                        ],
+                        "kind" : "Command",
+                        "token" : {
+                          "col" : 3,
+                          "line" : 1,
+                          "literal" : "c",
+                          "pos" : 16,
+                          "size" : 1,
+                          "type" : "symbol"
+                        }
+                      }
+                    ],
+                    "kind" : "BlockExpr",
+                    "token" : {
+                      "col" : 13,
+                      "line" : 0,
+                      "literal" : "{",
+                      "pos" : 12,
+                      "size" : 1,
+                      "type" : "curlyLe"
+                    }
+                  }
+                ],
+                "kind" : "Command",
+                "token" : {
+                  "col" : 11,
+                  "line" : 0,
+                  "literal" : "аб",
+                  "pos" : 9,
+                  "size" : 2,
+                  "type" : "symbol"
+                }
+              }
+            ],
+            "kind" : "BlockExpr",
+            "token" : {
+              "col" : 6,
+              "line" : 0,
+              "literal" : "{",
+              "pos" : 5,
+              "size" : 1,
+              "type" : "curlyLe"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 4,
+          "line" : 0,
+          "literal" : "éé",
+          "pos" : 2,
+          "size" : 2,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

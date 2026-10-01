@@ -1,0 +1,59 @@
+{
+  "errors" : [
+    {
+      "code" : "wrongBlockTerminator",
+      "col" : 0,
+      "line" : 0,
+      "message" : "Unclosed expression terminal"
+    }
+  ],
+  "printed" : "é",
+  "printedClean" : "é",
+  "tokens" : [
+    {
+      "col" : 2,
+      "line" : 0,
+      "literal" : "é",
+      "pos" : 1,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "\u0000",
+      "pos" : 12,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 2,
+              "line" : 0,
+              "literal" : "é",
+              "pos" : 1,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 2,
+          "line" : 0,
+          "literal" : "é",
+          "pos" : 1,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

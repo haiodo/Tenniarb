@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "bench",
+  "version": "0.1.0",
+  "identifier": "dev.spike.bench",
+  "build": { "frontendDist": "../dist" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [{ "title": "bench", "width": 1280, "height": 800 }],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": true, "targets": "all", "icon": ["icons/icon.png"] }
+}

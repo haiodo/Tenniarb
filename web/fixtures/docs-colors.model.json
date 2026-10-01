@@ -1,0 +1,117 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 5,
+            "line" : 0,
+            "literal" : "color",
+            "pos" : 0,
+            "size" : 5,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 9,
+            "line" : 0,
+            "literal" : "red",
+            "pos" : 6,
+            "size" : 3,
+            "type" : "symbol"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 5,
+        "line" : 0,
+        "literal" : "color",
+        "pos" : 0,
+        "size" : 5,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 5,
+            "line" : 2,
+            "literal" : "color",
+            "pos" : 31,
+            "size" : 5,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 13,
+            "line" : 2,
+            "literal" : "#ffeeff",
+            "pos" : 37,
+            "size" : 7,
+            "type" : "symbol"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 5,
+        "line" : 2,
+        "literal" : "color",
+        "pos" : 31,
+        "size" : 5,
+        "type" : "symbol"
+      }
+    },
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 10,
+            "line" : 4,
+            "literal" : "text-color",
+            "pos" : 73,
+            "size" : 10,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 14,
+            "line" : 4,
+            "literal" : "red",
+            "pos" : 84,
+            "size" : 3,
+            "type" : "symbol"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 10,
+        "line" : 4,
+        "literal" : "text-color",
+        "pos" : 73,
+        "size" : 10,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

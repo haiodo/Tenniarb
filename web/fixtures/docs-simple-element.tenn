@@ -1,0 +1,6 @@
+element "Simple" {
+    item "Central" {
+        font-size 30
+        marker "🎁"
+    }
+}

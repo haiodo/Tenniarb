@@ -1,0 +1,20 @@
+element "Order" {
+    styles {
+        s {
+            color red
+        }
+    }
+    link "B" "A"
+    item "B"
+    item "A"
+    item "C" {
+        styles {
+            x {
+                layout vertical
+            }
+        } display none
+    }
+    link "A" "C" {
+        display arrow
+    }
+}

@@ -1,0 +1,124 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 3,
+            "line" : 0,
+            "literal" : "cmd",
+            "pos" : 0,
+            "size" : 3,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "IntLit",
+          "token" : {
+            "col" : 5,
+            "line" : 0,
+            "literal" : "1",
+            "pos" : 4,
+            "size" : 1,
+            "type" : "intLit"
+          }
+        },
+        {
+          "kind" : "IntLit",
+          "token" : {
+            "col" : 8,
+            "line" : 0,
+            "literal" : "-2",
+            "pos" : 6,
+            "size" : 2,
+            "type" : "intLit"
+          }
+        },
+        {
+          "kind" : "FloatLit",
+          "token" : {
+            "col" : 12,
+            "line" : 0,
+            "literal" : "3.5",
+            "pos" : 9,
+            "size" : 3,
+            "type" : "floatLit"
+          }
+        },
+        {
+          "kind" : "FloatLit",
+          "token" : {
+            "col" : 18,
+            "line" : 0,
+            "literal" : "-0.25",
+            "pos" : 13,
+            "size" : 5,
+            "type" : "floatLit"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 21,
+            "line" : 0,
+            "literal" : ".5",
+            "pos" : 19,
+            "size" : 2,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 27,
+            "line" : 0,
+            "literal" : "1.2.3",
+            "pos" : 22,
+            "size" : 5,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 33,
+            "line" : 0,
+            "literal" : "12abc",
+            "pos" : 28,
+            "size" : 5,
+            "type" : "symbol"
+          }
+        },
+        {
+          "kind" : "IntLit",
+          "token" : {
+            "col" : 35,
+            "line" : 0,
+            "literal" : "-",
+            "pos" : 34,
+            "size" : 1,
+            "type" : "intLit"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 3,
+        "line" : 0,
+        "literal" : "cmd",
+        "pos" : 0,
+        "size" : 3,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

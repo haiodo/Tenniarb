@@ -1,0 +1,2887 @@
+{
+  "elements" : [
+    {
+      "elements" : [
+        {
+          "elements" : [
+
+          ],
+          "items" : [
+            {
+              "kind" : "Item",
+              "name" : "Item",
+              "properties" : [
+
+              ],
+              "x" : -572,
+              "y" : 274
+            },
+            {
+              "kind" : "Item",
+              "name" : "Adding new items",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 12,
+                        "literal" : "body",
+                        "pos" : 290,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 13,
+                                "literal" : "text",
+                                "pos" : 313,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 13,
+                                "literal" : "\n        * 1. Press 'Tab' to add new item to diagram\n        * 2. Select item and press 'Tab' to add linked item to diagram.\n    ",
+                                "pos" : 320,
+                                "size" : 129,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 13,
+                            "literal" : "text",
+                            "pos" : 313,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 12,
+                        "literal" : "{",
+                        "pos" : 295,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 12,
+                    "literal" : "body",
+                    "pos" : 290,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -592.5537109375,
+              "y" : 358
+            },
+            {
+              "kind" : "Item",
+              "name" : "press 'Tab'",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 21,
+                        "literal" : "font-size",
+                        "pos" : 554,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 21,
+                        "literal" : "10",
+                        "pos" : 564,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 21,
+                    "literal" : "font-size",
+                    "pos" : 554,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -498.5537109375,
+              "y" : 211
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 24,
+                        "literal" : "display",
+                        "pos" : 625,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 24,
+                        "literal" : "arrow",
+                        "pos" : 633,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 24,
+                    "literal" : "display",
+                    "pos" : 625,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 0,
+              "target" : 2,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "New Item",
+              "properties" : [
+
+              ],
+              "x" : -411.5712890625,
+              "y" : 274
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 30,
+                        "literal" : "display",
+                        "pos" : 775,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 30,
+                        "literal" : "arrow",
+                        "pos" : 783,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 30,
+                    "literal" : "display",
+                    "pos" : 775,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 2,
+              "target" : 4,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 33,
+                        "literal" : "display",
+                        "pos" : 844,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 33,
+                        "literal" : "arrow",
+                        "pos" : 852,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 33,
+                    "literal" : "display",
+                    "pos" : 844,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 0,
+              "target" : 4,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Adding link between items",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 37,
+                        "literal" : "body",
+                        "pos" : 961,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 38,
+                                "literal" : "text",
+                                "pos" : 984,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 38,
+                                "literal" : "\n        * 1. Select existing item\n        * 2. Hold `Ctrl` key and draw line to any new item.\n    ",
+                                "pos" : 991,
+                                "size" : 99,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 38,
+                            "literal" : "text",
+                            "pos" : 984,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 37,
+                        "literal" : "{",
+                        "pos" : 966,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 37,
+                    "literal" : "body",
+                    "pos" : 961,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -585.0693359375,
+              "y" : 136
+            },
+            {
+              "kind" : "Item",
+              "name" : "Item",
+              "properties" : [
+
+              ],
+              "x" : -577.5537109375,
+              "y" : 51
+            },
+            {
+              "kind" : "Item",
+              "name" : "New Item",
+              "properties" : [
+
+              ],
+              "x" : -417.185546875,
+              "y" : 51
+            },
+            {
+              "kind" : "Item",
+              "name" : "hold 'Ctrl'",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 52,
+                        "literal" : "font-size",
+                        "pos" : 1336,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 52,
+                        "literal" : "10",
+                        "pos" : 1346,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 52,
+                    "literal" : "font-size",
+                    "pos" : 1336,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -525.5712890625,
+              "y" : -30
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 56,
+                        "literal" : "display",
+                        "pos" : 1434,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 56,
+                        "literal" : "arrow",
+                        "pos" : 1442,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 56,
+                    "literal" : "display",
+                    "pos" : 1434,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 8,
+              "target" : 10,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Draw line",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 60,
+                        "literal" : "font-size",
+                        "pos" : 1535,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 60,
+                        "literal" : "10",
+                        "pos" : 1545,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 60,
+                    "literal" : "font-size",
+                    "pos" : 1535,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -437.7744140625,
+              "y" : -30
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 10,
+              "target" : 12,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 65,
+                        "literal" : "display",
+                        "pos" : 1674,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 65,
+                        "literal" : "arrow",
+                        "pos" : 1682,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 65,
+                    "literal" : "display",
+                    "pos" : 1674,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 12,
+              "target" : 9,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 70,
+                        "literal" : "display",
+                        "pos" : 1797,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 70,
+                        "literal" : "arrow",
+                        "pos" : 1805,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 70,
+                    "literal" : "display",
+                    "pos" : 1797,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 8,
+              "target" : 9,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Basic editing functions",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 74,
+                        "literal" : "display",
+                        "pos" : 1912,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 74,
+                        "literal" : "text",
+                        "pos" : 1920,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 74,
+                    "literal" : "display",
+                    "pos" : 1912,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 75,
+                        "literal" : "font-size",
+                        "pos" : 1937,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 75,
+                        "literal" : "20",
+                        "pos" : 1947,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 75,
+                    "literal" : "font-size",
+                    "pos" : 1937,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -604.0693359375,
+              "y" : 414
+            },
+            {
+              "kind" : "Item",
+              "name" : "Duplicate items",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 79,
+                        "literal" : "body",
+                        "pos" : 2042,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 80,
+                                "literal" : "text",
+                                "pos" : 2065,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 80,
+                                "literal" : "\n        * 1. Select one or more items\n        * 2. Press `Cmd+d` to duplicate selection\n    ",
+                                "pos" : 2072,
+                                "size" : 93,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 80,
+                            "literal" : "text",
+                            "pos" : 2065,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 79,
+                        "literal" : "{",
+                        "pos" : 2047,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 79,
+                    "literal" : "body",
+                    "pos" : 2042,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -63.0693359375,
+              "y" : 359
+            },
+            {
+              "kind" : "Item",
+              "name" : "Item",
+              "properties" : [
+
+              ],
+              "x" : -55.5537109375,
+              "y" : 272
+            },
+            {
+              "kind" : "Item",
+              "name" : "New Item",
+              "properties" : [
+
+              ],
+              "x" : 145.814453125,
+              "y" : 273
+            },
+            {
+              "kind" : "Item",
+              "name" : "press 'Cmd+D'",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 94,
+                        "literal" : "font-size",
+                        "pos" : 2411,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 94,
+                        "literal" : "10",
+                        "pos" : 2421,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 94,
+                    "literal" : "font-size",
+                    "pos" : 2411,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : 34.4287109375,
+              "y" : 209
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 98,
+                        "literal" : "display",
+                        "pos" : 2515,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 98,
+                        "literal" : "arrow",
+                        "pos" : 2523,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 98,
+                    "literal" : "display",
+                    "pos" : 2515,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 20,
+              "target" : 19,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 102,
+                        "literal" : "display",
+                        "pos" : 2616,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 102,
+                        "literal" : "arrow",
+                        "pos" : 2624,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 102,
+                    "literal" : "display",
+                    "pos" : 2616,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 18,
+              "target" : 20,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 107,
+                        "literal" : "display",
+                        "pos" : 2739,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 107,
+                        "literal" : "arrow",
+                        "pos" : 2747,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 107,
+                    "literal" : "display",
+                    "pos" : 2739,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 18,
+              "target" : 19,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Styling items",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 111,
+                        "literal" : "body",
+                        "pos" : 2843,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 112,
+                                "literal" : "text",
+                                "pos" : 2866,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 112,
+                                "literal" : "\n        * 1. Select *existing* item\n        * 2. Edit style properties.\n          * 2.1 color red    // Set one of colors\n          * 2.2 font-size 10   //Change font size\n    ",
+                                "pos" : 2873,
+                                "size" : 177,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 112,
+                            "literal" : "text",
+                            "pos" : 2866,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 111,
+                        "literal" : "{",
+                        "pos" : 2848,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 111,
+                    "literal" : "body",
+                    "pos" : 2843,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -70.2177734375,
+              "y" : 127
+            },
+            {
+              "kind" : "Item",
+              "name" : "Big yellow item",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 122,
+                        "literal" : "color",
+                        "pos" : 3158,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 122,
+                        "literal" : "red",
+                        "pos" : 3164,
+                        "size" : 3,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 122,
+                    "literal" : "color",
+                    "pos" : 3158,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 22,
+                        "line" : 123,
+                        "literal" : "text-color",
+                        "pos" : 3180,
+                        "size" : 10,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 29,
+                        "line" : 123,
+                        "literal" : "yellow",
+                        "pos" : 3191,
+                        "size" : 6,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 22,
+                    "line" : 123,
+                    "literal" : "text-color",
+                    "pos" : 3180,
+                    "size" : 10,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 124,
+                        "literal" : "font-size",
+                        "pos" : 3210,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 124,
+                        "literal" : "30",
+                        "pos" : 3220,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 124,
+                    "literal" : "font-size",
+                    "pos" : 3210,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -65.7998046875,
+              "y" : -18
+            },
+            {
+              "kind" : "Item",
+              "name" : "ColorAnnotation",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 128,
+                        "literal" : "title",
+                        "pos" : 3315,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 128,
+                        "literal" : "",
+                        "pos" : 3322,
+                        "size" : 0,
+                        "type" : "stringLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 128,
+                    "literal" : "title",
+                    "pos" : 3315,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 129,
+                        "literal" : "body",
+                        "pos" : 3336,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 26,
+                                "line" : 130,
+                                "literal" : "text-color",
+                                "pos" : 3359,
+                                "size" : 10,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 34,
+                                "line" : 130,
+                                "literal" : "#1c00cf",
+                                "pos" : 3370,
+                                "size" : 7,
+                                "type" : "symbol"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 26,
+                            "line" : 130,
+                            "literal" : "text-color",
+                            "pos" : 3359,
+                            "size" : 10,
+                            "type" : "symbol"
+                          }
+                        },
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 131,
+                                "literal" : "text",
+                                "pos" : 3394,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 131,
+                                "literal" : "\n        name \"Big blue item\"\n        color red\n        text-color yellow\n        font-size 30\n    ",
+                                "pos" : 3401,
+                                "size" : 99,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 131,
+                            "literal" : "text",
+                            "pos" : 3394,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 129,
+                        "literal" : "{",
+                        "pos" : 3341,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 129,
+                    "literal" : "body",
+                    "pos" : 3336,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : 159.1083984375,
+              "y" : -11
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 25,
+              "target" : 26,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 9,
+              "target" : 9,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 8,
+              "target" : 8,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 9,
+              "target" : 9,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 9,
+              "target" : 9,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "hold 'Ctrl'",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 158,
+                        "literal" : "font-size",
+                        "pos" : 4050,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 158,
+                        "literal" : "10",
+                        "pos" : 4060,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 158,
+                    "literal" : "font-size",
+                    "pos" : 4050,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -525.5712890625,
+              "y" : -30
+            },
+            {
+              "kind" : "Item",
+              "name" : "Draw line",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 162,
+                        "literal" : "font-size",
+                        "pos" : 4150,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 162,
+                        "literal" : "10",
+                        "pos" : 4160,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 162,
+                    "literal" : "font-size",
+                    "pos" : 4150,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -437.7744140625,
+              "y" : -30
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 32,
+              "target" : 33,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 171,
+                        "literal" : "display",
+                        "pos" : 4380,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 171,
+                        "literal" : "arrow",
+                        "pos" : 4388,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 171,
+                    "literal" : "display",
+                    "pos" : 4380,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 38,
+              "target" : 32,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 176,
+                        "literal" : "display",
+                        "pos" : 4508,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 176,
+                        "literal" : "arrow",
+                        "pos" : 4516,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 176,
+                    "literal" : "display",
+                    "pos" : 4508,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 33,
+              "target" : 40,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 181,
+                        "literal" : "display",
+                        "pos" : 4631,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 181,
+                        "literal" : "arrow",
+                        "pos" : 4639,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 181,
+                    "literal" : "display",
+                    "pos" : 4631,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 38,
+              "target" : 40,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Item",
+              "properties" : [
+
+              ],
+              "x" : -577.5537109375,
+              "y" : 51
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 38,
+              "target" : 38,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "New Item",
+              "properties" : [
+
+              ],
+              "x" : -417.185546875,
+              "y" : 51
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 40,
+              "target" : 40,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 40,
+              "target" : 40,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+
+              ],
+              "source" : 40,
+              "target" : 40,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "New Item",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 207,
+                        "literal" : "color",
+                        "pos" : 5269,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 23,
+                        "line" : 207,
+                        "literal" : "green",
+                        "pos" : 5275,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 207,
+                    "literal" : "color",
+                    "pos" : 5269,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -394.5712890625,
+              "y" : -189
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 211,
+                        "literal" : "display",
+                        "pos" : 5377,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 211,
+                        "literal" : "arrow",
+                        "pos" : 5385,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 211,
+                    "literal" : "display",
+                    "pos" : 5377,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 46,
+              "target" : 44,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "press 'Option+Tab'",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 21,
+                        "line" : 215,
+                        "literal" : "font-size",
+                        "pos" : 5488,
+                        "size" : 9,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "IntLit",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 215,
+                        "literal" : "10",
+                        "pos" : 5498,
+                        "size" : 2,
+                        "type" : "intLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 21,
+                    "line" : 215,
+                    "literal" : "font-size",
+                    "pos" : 5488,
+                    "size" : 9,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -481.5537109375,
+              "y" : -252
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 219,
+                        "literal" : "display",
+                        "pos" : 5593,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 219,
+                        "literal" : "arrow",
+                        "pos" : 5601,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 219,
+                    "literal" : "display",
+                    "pos" : 5593,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 49,
+              "target" : 46,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 223,
+                        "literal" : "display",
+                        "pos" : 5703,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 223,
+                        "literal" : "arrow",
+                        "pos" : 5711,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 223,
+                    "literal" : "display",
+                    "pos" : 5703,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 46,
+              "target" : 44,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Item",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 227,
+                        "literal" : "color",
+                        "pos" : 5791,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 23,
+                        "line" : 227,
+                        "literal" : "green",
+                        "pos" : 5797,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 227,
+                    "literal" : "color",
+                    "pos" : 5791,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -555,
+              "y" : -189
+            },
+            {
+              "kind" : "Item",
+              "name" : "Adding new items/ copy style",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 231,
+                        "literal" : "body",
+                        "pos" : 5909,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "children" : [
+                        {
+                          "children" : [
+                            {
+                              "kind" : "Ident",
+                              "token" : {
+                                "col" : 20,
+                                "line" : 232,
+                                "literal" : "text",
+                                "pos" : 5932,
+                                "size" : 4,
+                                "type" : "symbol"
+                              }
+                            },
+                            {
+                              "kind" : "MarkdownLit",
+                              "token" : {
+                                "col" : 5,
+                                "line" : 232,
+                                "literal" : "\n        * 1. Select item and press `Option+Tab` to add \n           linked item to diagram.\n    ",
+                                "pos" : 5939,
+                                "size" : 96,
+                                "type" : "markdownLit"
+                              }
+                            }
+                          ],
+                          "kind" : "Command",
+                          "token" : {
+                            "col" : 20,
+                            "line" : 232,
+                            "literal" : "text",
+                            "pos" : 5932,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        }
+                      ],
+                      "kind" : "BlockExpr",
+                      "token" : {
+                        "col" : 18,
+                        "line" : 231,
+                        "literal" : "{",
+                        "pos" : 5914,
+                        "size" : 1,
+                        "type" : "curlyLe"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 231,
+                    "literal" : "body",
+                    "pos" : 5909,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -569.5537109375,
+              "y" : -99
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 240,
+                        "literal" : "display",
+                        "pos" : 6143,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 240,
+                        "literal" : "arrow",
+                        "pos" : 6151,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 240,
+                    "literal" : "display",
+                    "pos" : 6143,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 49,
+              "target" : 46,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 245,
+                        "literal" : "display",
+                        "pos" : 6266,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 245,
+                        "literal" : "arrow",
+                        "pos" : 6274,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 245,
+                    "literal" : "display",
+                    "pos" : 6266,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 49,
+              "target" : 44,
+              "x" : 0,
+              "y" : 0
+            }
+          ],
+          "kind" : "Element",
+          "name" : "Basic steps",
+          "properties" : [
+            {
+              "children" : [
+                {
+                  "kind" : "Ident",
+                  "token" : {
+                    "col" : 14,
+                    "line" : 2,
+                    "literal" : "styles",
+                    "pos" : 62,
+                    "size" : 6,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "children" : [
+                        {
+                          "kind" : "Ident",
+                          "token" : {
+                            "col" : 16,
+                            "line" : 3,
+                            "literal" : "item",
+                            "pos" : 83,
+                            "size" : 4,
+                            "type" : "symbol"
+                          }
+                        },
+                        {
+                          "children" : [
+                            {
+                              "children" : [
+                                {
+                                  "kind" : "Ident",
+                                  "token" : {
+                                    "col" : 22,
+                                    "line" : 4,
+                                    "literal" : "shadow",
+                                    "pos" : 106,
+                                    "size" : 6,
+                                    "type" : "symbol"
+                                  }
+                                },
+                                {
+                                  "kind" : "IntLit",
+                                  "token" : {
+                                    "col" : 25,
+                                    "line" : 4,
+                                    "literal" : "-5",
+                                    "pos" : 113,
+                                    "size" : 2,
+                                    "type" : "intLit"
+                                  }
+                                },
+                                {
+                                  "kind" : "IntLit",
+                                  "token" : {
+                                    "col" : 28,
+                                    "line" : 4,
+                                    "literal" : "-5",
+                                    "pos" : 116,
+                                    "size" : 2,
+                                    "type" : "intLit"
+                                  }
+                                },
+                                {
+                                  "kind" : "IntLit",
+                                  "token" : {
+                                    "col" : 30,
+                                    "line" : 4,
+                                    "literal" : "5",
+                                    "pos" : 119,
+                                    "size" : 1,
+                                    "type" : "intLit"
+                                  }
+                                }
+                              ],
+                              "kind" : "Command",
+                              "token" : {
+                                "col" : 22,
+                                "line" : 4,
+                                "literal" : "shadow",
+                                "pos" : 106,
+                                "size" : 6,
+                                "type" : "symbol"
+                              }
+                            }
+                          ],
+                          "kind" : "BlockExpr",
+                          "token" : {
+                            "col" : 18,
+                            "line" : 3,
+                            "literal" : "{",
+                            "pos" : 88,
+                            "size" : 1,
+                            "type" : "curlyLe"
+                          }
+                        }
+                      ],
+                      "kind" : "Command",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 3,
+                        "literal" : "item",
+                        "pos" : 83,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "BlockExpr",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 2,
+                    "literal" : "{",
+                    "pos" : 69,
+                    "size" : 1,
+                    "type" : "curlyLe"
+                  }
+                }
+              ],
+              "kind" : "Command",
+              "token" : {
+                "col" : 14,
+                "line" : 2,
+                "literal" : "styles",
+                "pos" : 62,
+                "size" : 6,
+                "type" : "symbol"
+              }
+            }
+          ]
+        },
+        {
+          "elements" : [
+
+          ],
+          "items" : [
+            {
+              "kind" : "Item",
+              "name" : "Main Window",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 251,
+                        "literal" : "image",
+                        "pos" : 6408,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 56,
+                        "line" : 251,
+                        "literal" : "Screenshot 2020-01-02 at 19.34.24.png",
+                        "pos" : 6415,
+                        "size" : 37,
+                        "type" : "stringLit"
+                      }
+                    },
+                    {
+                      "kind" : "Image",
+                      "token" : {
+                        "col" : 140,
+                        "line" : 251,
+                        "literal" : "iVBORw0KGgoAAAANSUhEUgAACxIAAAbKCAYAAADoUqJrAAAMTWlDQ1BJQ0MgUHJvZmlsZQAASImVVwdc",
+                        "pos" : 6456,
+                        "size" : 80,
+                        "type" : "imageData"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 251,
+                    "literal" : "image",
+                    "pos" : 6408,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 252,
+                        "literal" : "title",
+                        "pos" : 6550,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "MarkdownLit",
+                      "token" : {
+                        "col" : 45,
+                        "line" : 252,
+                        "literal" : "${name}\n@(Screenshot 2020-01-02 at 19.34.24.png|800)",
+                        "pos" : 6558,
+                        "size" : 52,
+                        "type" : "markdownLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 252,
+                    "literal" : "title",
+                    "pos" : 6550,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 254,
+                        "literal" : "display",
+                        "pos" : 6624,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 254,
+                        "literal" : "text",
+                        "pos" : 6632,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 254,
+                    "literal" : "display",
+                    "pos" : 6624,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 255,
+                        "literal" : "layer",
+                        "pos" : 6649,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 28,
+                        "line" : 255,
+                        "literal" : "background",
+                        "pos" : 6655,
+                        "size" : 10,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 255,
+                    "literal" : "layer",
+                    "pos" : 6649,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -499.3359375,
+              "y" : -98.12109375
+            },
+            {
+              "kind" : "Item",
+              "name" : "Properties\npanel",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 260,
+                        "literal" : "body",
+                        "pos" : 6774,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 63,
+                        "line" : 260,
+                        "literal" : "A full tree of styles and execution propeties",
+                        "pos" : 6780,
+                        "size" : 45,
+                        "type" : "stringLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 260,
+                    "literal" : "body",
+                    "pos" : 6774,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : 113.5999755859375,
+              "y" : -597.865966796875
+            },
+            {
+              "kind" : "Item",
+              "name" : "properties-target",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 264,
+                        "literal" : "display",
+                        "pos" : 6938,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 264,
+                        "literal" : "none",
+                        "pos" : 6946,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 264,
+                    "literal" : "display",
+                    "pos" : 6938,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 265,
+                        "literal" : "title",
+                        "pos" : 6963,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 265,
+                        "literal" : "",
+                        "pos" : 6970,
+                        "size" : 0,
+                        "type" : "stringLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 265,
+                    "literal" : "title",
+                    "pos" : 6963,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -124.13693237304688,
+              "y" : -532.865966796875
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 269,
+                        "literal" : "display",
+                        "pos" : 7048,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 269,
+                        "literal" : "arrow",
+                        "pos" : 7056,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 269,
+                    "literal" : "display",
+                    "pos" : 7048,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 1,
+              "target" : 2,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Outline",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 16,
+                        "line" : 273,
+                        "literal" : "body",
+                        "pos" : 7163,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "MarkdownLit",
+                      "token" : {
+                        "col" : 9,
+                        "line" : 273,
+                        "literal" : "Hierarchy of\ndiagrams",
+                        "pos" : 7170,
+                        "size" : 21,
+                        "type" : "markdownLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 16,
+                    "line" : 273,
+                    "literal" : "body",
+                    "pos" : 7163,
+                    "size" : 4,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -502.30252075195312,
+              "y" : -602.25982666015625
+            },
+            {
+              "kind" : "Item",
+              "name" : "outline-target",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 278,
+                        "literal" : "title",
+                        "pos" : 7302,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 278,
+                        "literal" : "",
+                        "pos" : 7309,
+                        "size" : 0,
+                        "type" : "stringLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 278,
+                    "literal" : "title",
+                    "pos" : 7302,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 279,
+                        "literal" : "display",
+                        "pos" : 7323,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 279,
+                        "literal" : "none",
+                        "pos" : 7331,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 279,
+                    "literal" : "display",
+                    "pos" : 7323,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : -365.3782958984375,
+              "y" : -467.25982666015625
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 282,
+                        "literal" : "display",
+                        "pos" : 7400,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 282,
+                        "literal" : "arrow",
+                        "pos" : 7408,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 282,
+                    "literal" : "display",
+                    "pos" : 7400,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 4,
+              "target" : 5,
+              "x" : 0,
+              "y" : 0
+            },
+            {
+              "kind" : "Item",
+              "name" : "Diagram area",
+              "properties" : [
+
+              ],
+              "x" : 124.13561248779297,
+              "y" : -59.771858215332031
+            },
+            {
+              "kind" : "Item",
+              "name" : "diagram-target",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 17,
+                        "line" : 289,
+                        "literal" : "title",
+                        "pos" : 7615,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "StringLit",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 289,
+                        "literal" : "",
+                        "pos" : 7622,
+                        "size" : 0,
+                        "type" : "stringLit"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 17,
+                    "line" : 289,
+                    "literal" : "title",
+                    "pos" : 7615,
+                    "size" : 5,
+                    "type" : "symbol"
+                  }
+                },
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 290,
+                        "literal" : "display",
+                        "pos" : 7636,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 24,
+                        "line" : 290,
+                        "literal" : "none",
+                        "pos" : 7644,
+                        "size" : 4,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 290,
+                    "literal" : "display",
+                    "pos" : 7636,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "x" : 83.951446533203125,
+              "y" : -222.7718505859375
+            },
+            {
+              "kind" : "Link",
+              "name" : "",
+              "properties" : [
+                {
+                  "children" : [
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 19,
+                        "line" : 293,
+                        "literal" : "display",
+                        "pos" : 7718,
+                        "size" : 7,
+                        "type" : "symbol"
+                      }
+                    },
+                    {
+                      "kind" : "Ident",
+                      "token" : {
+                        "col" : 25,
+                        "line" : 293,
+                        "literal" : "arrow",
+                        "pos" : 7726,
+                        "size" : 5,
+                        "type" : "symbol"
+                      }
+                    }
+                  ],
+                  "kind" : "Command",
+                  "token" : {
+                    "col" : 19,
+                    "line" : 293,
+                    "literal" : "display",
+                    "pos" : 7718,
+                    "size" : 7,
+                    "type" : "symbol"
+                  }
+                }
+              ],
+              "source" : 7,
+              "target" : 8,
+              "x" : 0,
+              "y" : 0
+            }
+          ],
+          "kind" : "Element",
+          "name" : "General info",
+          "properties" : [
+
+          ]
+        }
+      ],
+      "items" : [
+
+      ],
+      "kind" : "Element",
+      "name" : "Documentation",
+      "properties" : [
+
+      ]
+    }
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+
+  ]
+}

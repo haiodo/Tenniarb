@@ -1,0 +1,216 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "a \"line1\\nline2\" \"tab\\there\" \"quote\\\"in\" \"back\\\\slash\" \"uni\\u00e9\"\nb \"single'q\"",
+  "printedClean" : "a line1\\nline2 tab\\there quote\"in back\\\\slash uni\\u00e9\nb single'q",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "a",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 15,
+      "line" : 0,
+      "literal" : "line1\\nline2",
+      "pos" : 3,
+      "size" : 12,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 27,
+      "line" : 0,
+      "literal" : "tab\\there",
+      "pos" : 18,
+      "size" : 9,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 39,
+      "line" : 0,
+      "literal" : "quote\"in",
+      "pos" : 31,
+      "size" : 8,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 53,
+      "line" : 0,
+      "literal" : "back\\\\slash",
+      "pos" : 42,
+      "size" : 11,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 65,
+      "line" : 0,
+      "literal" : "uni\\u00e9",
+      "pos" : 56,
+      "size" : 9,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 0,
+      "line" : 1,
+      "literal" : "\n",
+      "pos" : 66,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 1,
+      "line" : 1,
+      "literal" : "b",
+      "pos" : 67,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 12,
+      "line" : 1,
+      "literal" : "single'q",
+      "pos" : 71,
+      "size" : 8,
+      "type" : "stringLit"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 80,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\u0000",
+      "pos" : 80,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 0,
+              "literal" : "a",
+              "pos" : 0,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 15,
+              "line" : 0,
+              "literal" : "line1\\nline2",
+              "pos" : 3,
+              "size" : 12,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 27,
+              "line" : 0,
+              "literal" : "tab\\there",
+              "pos" : 18,
+              "size" : 9,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 39,
+              "line" : 0,
+              "literal" : "quote\"in",
+              "pos" : 31,
+              "size" : 8,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 53,
+              "line" : 0,
+              "literal" : "back\\\\slash",
+              "pos" : 42,
+              "size" : 11,
+              "type" : "stringLit"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 65,
+              "line" : 0,
+              "literal" : "uni\\u00e9",
+              "pos" : 56,
+              "size" : 9,
+              "type" : "stringLit"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 0,
+          "literal" : "a",
+          "pos" : 0,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 1,
+              "literal" : "b",
+              "pos" : 67,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "StringLit",
+            "token" : {
+              "col" : 12,
+              "line" : 1,
+              "literal" : "single'q",
+              "pos" : 71,
+              "size" : 8,
+              "type" : "stringLit"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 1,
+          "literal" : "b",
+          "pos" : 67,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

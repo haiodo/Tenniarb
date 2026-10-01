@@ -1,0 +1,148 @@
+{
+  "errors" : [
+
+  ],
+  "printed" : "a 1\nb 2",
+  "printedClean" : "a 1\nb 2",
+  "tokens" : [
+    {
+      "col" : 1,
+      "line" : 0,
+      "literal" : "a",
+      "pos" : 0,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 3,
+      "line" : 0,
+      "literal" : "1",
+      "pos" : 2,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 0,
+      "line" : 2,
+      "literal" : "\n",
+      "pos" : 14,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 4,
+      "literal" : "\n",
+      "pos" : 28,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 1,
+      "line" : 4,
+      "literal" : "b",
+      "pos" : 29,
+      "size" : 1,
+      "type" : "symbol"
+    },
+    {
+      "col" : 3,
+      "line" : 4,
+      "literal" : "2",
+      "pos" : 31,
+      "size" : 1,
+      "type" : "intLit"
+    },
+    {
+      "col" : 0,
+      "line" : 5,
+      "literal" : "\n",
+      "pos" : 32,
+      "size" : 1,
+      "type" : "semiColon"
+    },
+    {
+      "col" : 0,
+      "line" : 5,
+      "literal" : "\u0000",
+      "pos" : 32,
+      "size" : 1,
+      "type" : "eof"
+    }
+  ],
+  "tree" : {
+    "children" : [
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 0,
+              "literal" : "a",
+              "pos" : 0,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "IntLit",
+            "token" : {
+              "col" : 3,
+              "line" : 0,
+              "literal" : "1",
+              "pos" : 2,
+              "size" : 1,
+              "type" : "intLit"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 0,
+          "literal" : "a",
+          "pos" : 0,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      },
+      {
+        "children" : [
+          {
+            "kind" : "Ident",
+            "token" : {
+              "col" : 1,
+              "line" : 4,
+              "literal" : "b",
+              "pos" : 29,
+              "size" : 1,
+              "type" : "symbol"
+            }
+          },
+          {
+            "kind" : "IntLit",
+            "token" : {
+              "col" : 3,
+              "line" : 4,
+              "literal" : "2",
+              "pos" : 31,
+              "size" : 1,
+              "type" : "intLit"
+            }
+          }
+        ],
+        "kind" : "Command",
+        "token" : {
+          "col" : 1,
+          "line" : 4,
+          "literal" : "b",
+          "pos" : 29,
+          "size" : 1,
+          "type" : "symbol"
+        }
+      }
+    ],
+    "kind" : "Statements"
+  }
+}

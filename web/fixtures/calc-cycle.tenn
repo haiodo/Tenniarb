@@ -1,0 +1,20 @@
+element "Cycles" {
+    item "A" {
+        aval $(items.B.bval + 1)
+    }
+    item "B" {
+        bval $(items.A.aval + 1)
+    }
+    item "C" {
+        cval $((items.D.dval || 0) + 1)
+    }
+    item "D" {
+        dval $((items.C.cval || 0) + 1)
+    }
+    item "S" {
+        sv $(sv + 1)
+    }
+    item "Ok" {
+        v 1
+    }
+}

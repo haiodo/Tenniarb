@@ -1,0 +1,22 @@
+element "Arrays" {
+    item "A" {
+        vals 1 2 3
+        mixed 1 "two" $(1 + 2)
+        inner {
+            a 1
+            b $(a + 1)
+        }
+        sumv $(vals.length)
+        first $(vals[0])
+        cfg {
+            x 5
+            y $(x * 2)
+            z {
+                w $(y + 1)
+            }
+        }
+        usecfg $(cfg.y)
+        empty
+        col 1,2,3
+    }
+}

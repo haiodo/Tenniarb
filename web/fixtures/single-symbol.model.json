@@ -1,0 +1,36 @@
+{
+  "elements" : [
+
+  ],
+  "items" : [
+
+  ],
+  "kind" : "Root",
+  "name" : "Root",
+  "properties" : [
+    {
+      "children" : [
+        {
+          "kind" : "Ident",
+          "token" : {
+            "col" : 3,
+            "line" : 0,
+            "literal" : "qwe",
+            "pos" : 0,
+            "size" : 3,
+            "type" : "symbol"
+          }
+        }
+      ],
+      "kind" : "Command",
+      "token" : {
+        "col" : 3,
+        "line" : 0,
+        "literal" : "qwe",
+        "pos" : 0,
+        "size" : 3,
+        "type" : "symbol"
+      }
+    }
+  ]
+}

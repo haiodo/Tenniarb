@@ -1,0 +1,3 @@
+color red       // named color
+color #ffeeff   // Full RGB color in hex.
+text-color red // Define only text color.

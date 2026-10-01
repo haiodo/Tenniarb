@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>bench</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#fff;font:12px monospace}
+canvas{position:fixed;inset:0;width:100vw;height:100vh}
+#out{position:fixed;left:8px;top:8px;background:rgba(255,255,255,.9);padding:6px;white-space:pre;z-index:2}</style></head>
+<body><canvas id="c"></canvas><div id="out">starting...</div>
+<script type="module">
+import { makeScene, drawScene } from './scene.js';
+const cv = document.getElementById('c'), out = document.getElementById('out');
+const dpr = window.devicePixelRatio || 1;
+cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr);
+const ctx = cv.getContext('2d');
+const P = CanvasRenderingContext2D.prototype;
+const dBlur = Object.getOwnPropertyDescriptor(P, 'shadowBlur');
+const dCol = Object.getOwnPropertyDescriptor(P, 'shadowColor');
+const noop = { get() { return 0; }, set() {}, configurable: true };
+function setShadows(on) {
+  Object.defineProperty(P, 'shadowBlur', on ? dBlur : noop);
+  Object.defineProperty(P, 'shadowColor', on ? dCol : { get() { return 'rgba(0,0,0,0)'; }, set() {}, configurable: true });
+}
+const q = (a, p) => a.slice().sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(p * a.length))];
+const r2 = v => Math.round(v * 100) / 100;
+function run(n, shadows, ms) {
+  setShadows(shadows);
+  const scene = makeScene(n);
+  return new Promise(res => {
+    const frames = [], draws = [];
+    let t0 = null, last = null;
+    function f(t) {
+      if (t0 === null) t0 = t;
+      if (last !== null) frames.push(t - last);
+      last = t;
+      const a = (t - t0) / 1000;
+      const ox = -200 - 150 * a * 4 % 1500 , oy = -100 + 80 * Math.sin(a * 2);
+      const s = performance.now();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      drawScene(ctx, scene, ox, oy, 'sans-serif');
+      // tiny readback forces GPU-backed canvases to finish so draw time is honest
+      ctx.getImageData(0, 0, 1, 1);
+      draws.push(performance.now() - s);
+      if (t - t0 < ms) requestAnimationFrame(f);
+      else { const m = q(frames, .5);
+        res({ n, shadows, frames: frames.length, medianFrameMs: r2(m), p95FrameMs: r2(q(frames, .95)), fps: r2(1000 / m),
+              medianDrawMs: r2(q(draws, .5)), p95DrawMs: r2(q(draws, .95)) }); }
+    }
+    requestAnimationFrame(f);
+  });
+}
+async function main() {
+  const results = { ua: navigator.userAgent, dpr, w: innerWidth, h: innerHeight, runs: [] };
+  await run(100, true, 500); // warmup
+  for (const shadows of [true, false]) for (const n of [100, 500, 1000, 2000]) {
+    out.textContent = `running n=${n} shadows=${shadows}\n` + results.runs.map(r => JSON.stringify(r)).join('\n');
+    results.runs.push(await run(n, shadows, 3000));
+  }
+  window.__results = results;
+  out.textContent = JSON.stringify(results, null, 1);
+  document.title = 'done';
+  if (window.__TAURI__) window.__TAURI__.core.invoke('save_results', { json: JSON.stringify(results) });
+}
+main();
+</script></body></html>
