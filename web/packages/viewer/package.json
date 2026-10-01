@@ -1,0 +1,14 @@
+{
+  "name": "@tenniarb/viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "serve": "node scripts/serve.ts",
+    "smoke": "node scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@tenniarb/core": "*",
+    "@tenniarb/render": "*"
+  }
+}

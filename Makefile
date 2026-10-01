@@ -16,7 +16,7 @@ SWIFT_FORMAT := xcrun swift-format
 
 .DEFAULT_GOAL := help
 N ?= 2000
-.PHONY: help build test test-only golden perf lint lint-fix format format-check ci clean web web-test tenn-fuzz
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test view render tenn-fuzz md-fuzz
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -32,6 +32,9 @@ test-only: ## Run a single suite: make test-only T=TenniarbTests/LexerTests
 
 golden: ## Regenerate web/fixtures/*.parse.json from the Swift parser
 	TEST_RUNNER_TENN_GOLDEN_UPDATE=1 $(XCB) -scheme $(SCHEME) -only-testing:TenniarbTests/TennGoldenTests test
+
+swift-png: ## Export Swift reference PNGs (F=file.tenn O=dir; default web/fixtures)
+	TEST_RUNNER_TENN_SWIFT_PNG=$(abspath $(or $(O),.work/web-stage5/swift-png)) $(if $(F),TEST_RUNNER_TENN_SWIFT_IN=$(abspath $(F))) $(XCB) -scheme $(SCHEME) -only-testing:TenniarbTests/TennGoldenTests/testExportSwiftPNG test
 
 perf: ## Run performance tests only
 	$(XCB) -scheme $(PERF_SCHEME) test
@@ -60,8 +63,18 @@ web: web/node_modules ## Build web packages (web/)
 web-test: web/node_modules ## Typecheck and test web packages
 	cd web && npm run typecheck && npm test
 
+view: web/node_modules ## Open a .tenn in the browser viewer: make view F=tenniarb.tenn
+	cd web && npm run build -w @tenniarb/viewer
+	node web/packages/viewer/scripts/serve.ts $(F)
+
+render: web/node_modules ## Render a .tenn file: make render F=docs/Example.tenn O=out.pdf
+	node web/packages/render/src/cli.ts $(F) -o $(O)
+
 tenn-fuzz: web/node_modules ## Differential fuzz: Swift vs TS .tenn parser
 	node web/packages/core/fuzz/fuzz.ts $(N)
+
+md-fuzz: web/node_modules ## Differential fuzz: Swift vs TS markdown
+	node web/packages/markdown/fuzz/fuzz.ts $(N)
 
 clean: ## Remove derived data and lint cache
 	rm -rf $(DERIVED) .swiftlint-cache

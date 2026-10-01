@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenniarb viewer</title>
+<style>
+  :root {
+    --bg: #ffffff; --panel: #f3f3f5; --fg: #1d1d1f; --muted: #6e6e73; --hover: #e4e4e8; --sel: #0a66d9; --selfg: #fff; --border: #d8d8dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1e1e1e; --panel: #2a2a2c; --fg: #e8e8ea; --muted: #98989d; --hover: #3a3a3d; --sel: #0a84ff; --selfg: #fff; --border: #3c3c3f; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px/1.4 Inter, system-ui, sans-serif; }
+  body { display: flex; }
+  #nav { width: 260px; flex: none; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
+  #nav header { padding: 8px; display: flex; gap: 6px; }
+  #filter { flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--fg); }
+  #tree { overflow: auto; flex: 1; padding: 0 4px 8px; }
+  .row { display: flex; align-items: center; padding: 2px 4px; border-radius: 4px; cursor: default; white-space: nowrap; }
+  .row:hover { background: var(--hover); }
+  .row.sel { background: var(--sel); color: var(--selfg); }
+  .row .arrow { width: 14px; flex: none; text-align: center; color: var(--muted); font-size: 9px; cursor: pointer; }
+  .row.sel .arrow { color: var(--selfg); }
+  .row .name { overflow: hidden; text-overflow: ellipsis; }
+  .children { margin-left: 14px; }
+  .hidden { display: none; }
+  #main { flex: 1; position: relative; min-width: 0; }
+  #canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  #canvas.drag { cursor: grabbing; }
+  #toolbar { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; }
+  button { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--border); border-radius: 5px; padding: 3px 9px; cursor: pointer; }
+  button:hover { background: var(--hover); }
+  #status { position: absolute; left: 10px; bottom: 8px; color: var(--muted); font-size: 11px; pointer-events: none; }
+  #errors { position: absolute; inset: 0; overflow: auto; padding: 24px; background: var(--bg); }
+  #errors pre { font: 12px/1.5 ui-monospace, Menlo, monospace; }
+  #empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted); }
+  #empty.hidden, #errors.hidden { display: none; }
+  #main.over { outline: 2px dashed var(--sel); outline-offset: -6px; }
+</style>
+</head>
+<body>
+<aside id="nav">
+  <header>
+    <input id="filter" type="search" placeholder="Filter" autocomplete="off">
+    <button id="open" title="Open a .tenn file">Open</button>
+  </header>
+  <div id="tree"></div>
+</aside>
+<main id="main">
+  <canvas id="canvas"></canvas>
+  <div id="toolbar"><button id="zout" title="Zoom out (-)">-</button><button id="zin" title="Zoom in (+)">+</button><button id="z100" title="100% (0)">100%</button><button id="fit" title="Fit">Fit</button></div>
+  <div id="status"></div>
+  <div id="empty">Drop a .tenn file here or use ?file=URL</div>
+  <div id="errors" class="hidden"></div>
+</main>
+<input id="picker" type="file" accept=".tenn,text/plain" hidden>
+<script type="module" src="main.js"></script>
+</body>
+</html>

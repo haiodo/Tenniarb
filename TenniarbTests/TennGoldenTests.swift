@@ -428,4 +428,63 @@ class TennGoldenTests: XCTestCase {
             }
         }
     }
+
+    /// Mirrors ExportManager.renderImage (scale 2, light) for every non-root element; needs a window, so it is copied here.
+    func testExportSwiftPNG() throws {
+        guard let outDir = ProcessInfo.processInfo.environment["TENN_SWIFT_PNG"] else { return }
+        try FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
+        let scaleFactor: CGFloat = 2
+        let inputs: [URL]
+        if let input = ProcessInfo.processInfo.environment["TENN_SWIFT_IN"] {
+            inputs = [URL(fileURLWithPath: input)]
+        } else {
+            inputs = try FileManager.default.contentsOfDirectory(atPath: fixtures.path)
+                .filter { $0.hasSuffix(".tenn") && !$0.hasSuffix(".saved.tenn") }.sorted()
+                .map { fixtures.appendingPathComponent($0) }
+        }
+        for url in inputs {
+            let file = url.lastPathComponent
+            let source = try String(contentsOf: url, encoding: .utf8)
+            let parser = TennParser()
+            let tree = parser.parse(source)
+            if parser.errors.hasErrors() { continue }
+            let model = ElementModel.parseTenn(node: tree)
+            func visit(_ e: Element, _ path: [String]) {
+                let ctx = ExecutionContext()
+                ctx.setElement(e)
+                let scene = DrawableScene(e, darkMode: false, executionContext: ctx)
+                let bounds = scene.getBounds()
+                let imgBounds = bounds.insetBy(dx: -30, dy: -30)
+                let w = Int(imgBounds.width * scaleFactor)
+                let h = Int(imgBounds.height * scaleFactor)
+                if let cg = CGContext(
+                    data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                    space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+                {
+                    let old = NSGraphicsContext.current
+                    NSGraphicsContext.current = NSGraphicsContext(cgContext: cg, flipped: false)
+                    cg.scaleBy(x: scaleFactor, y: scaleFactor)
+                    cg.saveGState()
+                    scene.offset = CGPoint(
+                        x: 15 * scaleFactor - bounds.origin.x, y: 15 * scaleFactor - bounds.origin.y)
+                    scene.layout(bounds, bounds)
+                    cg.setFillColor(CGColor(red: 0xe7 / 255, green: 0xe9 / 255, blue: 0xeb / 255, alpha: 1))
+                    cg.fill(CGRect(x: 0, y: 0, width: w, height: h))
+                    scene.draw(context: cg)
+                    cg.restoreGState()
+                    NSGraphicsContext.current = old
+                    if let img = cg.makeImage(),
+                        let png = NSBitmapImageRep(cgImage: img).representation(using: .png, properties: [:])
+                    {
+                        let name = path.joined(separator: ".").replacingOccurrences(of: " ", with: "_")
+                            .replacingOccurrences(of: "/", with: "_")
+                        let base = String(file.dropLast(".tenn".count))
+                        try? png.write(to: URL(fileURLWithPath: outDir).appendingPathComponent("\(base).\(name).png"))
+                    }
+                }
+                for c in e.elements { visit(c, path + [c.name]) }
+            }
+            for c in model.elements { visit(c, [c.name]) }
+        }
+    }
 }

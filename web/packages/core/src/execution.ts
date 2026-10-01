@@ -276,7 +276,7 @@ class UtilsContext {
   }
 }
 
-// Placeholder until a real text measurer (stage 5) is passed in: average glyph width, one line.
+// Used when no measureText option is given; @tenniarb/render passes the real one (createExecutionContext).
 function estimateText(text: string, fontSize: number): Size {
   return { width: text.length * fontSize * 0.55, height: fontSize * 1.2 };
 }
