@@ -26,7 +26,7 @@ const results: { path: string; ms: number; build: number; blank: boolean }[] = [
 for (let i = 0; i < names.length; i++) {
   const row = (await page.$$(".row"))[i];
   await row.evaluate((r: HTMLElement) => r.click());
-  await page.waitForFunction((n: string) => (window as any).__viewer.name.endsWith("/" + n) || (window as any).__viewer.name === n, encodeURIComponent(names[i]));
+  await page.waitForFunction((n: string) => ((window as any).__viewer.name as string).endsWith(n), names[i]);
   const samples: number[] = [];
   for (let j = 0; j < 5; j++) {
     await page.mouse.move(800, 500);
@@ -35,7 +35,7 @@ for (let i = 0; i < names.length; i++) {
     samples.push(await page.evaluate(() => (window as any).__viewer.drawMs));
   }
   const info = await page.evaluate(() => {
-    const c = document.getElementById("canvas") as HTMLCanvasElement;
+    const c = document.querySelector("#stage canvas") as HTMLCanvasElement;
     const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
     let blank = true;
     for (let k = 3; k < d.length; k += 4) if (d[k] !== 0) { blank = false; break; }
@@ -49,7 +49,7 @@ writeFileSync(`${out}/results.json`, JSON.stringify({ problems, results }, null,
 await page.screenshot({ path: `${out}/page.png` });
 const biggest = [...results].sort((a, b) => b.ms - a.ms).slice(0, 3);
 for (const [i, r] of biggest.entries()) {
-  await page.evaluate((h: string) => (location.hash = h), r.path);
+  await page.evaluate((h: string) => (location.hash = "/" + h.split("/").map(encodeURIComponent).join("/")), r.path);
   await page.waitForFunction((n: string) => (window as any).__viewer.name === n, r.path);
   await page.waitForTimeout(200);
   await page.locator("#main").screenshot({ path: `${out}/big${i + 1}.png` });

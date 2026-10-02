@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "typecheck": "tsc -p . && tsc -p packages/viewer",
+    "typecheck": "tsc -p . && tsc -p packages/viewer && tsc -p packages/embed",
     "test": "node --test 'packages/*/test/**/*.test.ts'"
   },
   "devDependencies": {

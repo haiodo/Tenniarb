@@ -3,6 +3,7 @@ import type { Canvas } from "@napi-rs/canvas";
 import { GlobalFonts, PDFDocument, createCanvas, loadImage } from "@napi-rs/canvas";
 import { TennParser, parseTenn } from "@tenniarb/core";
 import type { Element, TennError } from "@tenniarb/core";
+import { allElements, findElement } from "./elements.ts";
 import { preloadImages } from "./images.ts";
 import { canvasQuirks } from "./drawable.ts";
 import { getSceneSize, renderElement } from "./render.ts";
@@ -43,16 +44,6 @@ function looksComplete(b: Buffer): boolean {
 }
 
 const dataUrlMime = (b: Buffer): string => (b[0] === 0xff ? "image/jpeg" : b[0] === 0x47 ? "image/gif" : b[0] === 0x52 ? "image/webp" : "image/png");
-
-function allElements(e: Element): Element[] {
-  return e.elements.flatMap((c) => [c, ...allElements(c)]);
-}
-
-function findElement(root: Element, spec: string): Element | null {
-  const parts = spec.split("/");
-  const byPath = parts.reduce<Element | null>((cur, p) => cur?.elements.find((c) => c.name === p) ?? null, root);
-  return byPath ?? allElements(root).find((c) => c.name === spec) ?? null;
-}
 
 export async function renderTenn(text: string, options: RenderTennOptions & { format: "svg" }): Promise<string>;
 export async function renderTenn(text: string, options: RenderTennOptions): Promise<Buffer>;

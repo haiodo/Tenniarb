@@ -6,7 +6,7 @@ import { extname, join, normalize } from "node:path";
 
 const dist = new URL("../dist/", import.meta.url).pathname;
 const doc = process.argv[2];
-const types: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".ttf": "font/ttf" };
+const types: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".woff2": "font/woff2" };
 
 const server = createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);

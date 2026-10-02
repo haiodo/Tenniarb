@@ -48,6 +48,13 @@ jobs:
       - name: Format check
         run: make format-check
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
       - name: Build (Debug)
         run: |
           set -euo pipefail
@@ -88,3 +95,4 @@ jobs:
 
       - name: Build
         run: make web
+

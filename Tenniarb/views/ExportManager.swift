@@ -31,6 +31,7 @@ enum ExportKind: Int {
     case separator
     case preview
     case pdf
+    case interactiveHtml
 }
 
 class ExportType: Hashable {
@@ -58,6 +59,7 @@ class ExportManager: NSObject, NSMenuDelegate {
 
     var exportTypes: [ExportType] = [
         ExportType(name: "Export as HTML", exportType: .html, imgName: "html_logo"),
+        ExportType(name: "Export as interactive HTML", exportType: .interactiveHtml, imgName: "html_logo"),
         ExportType(name: "Export as PNG", exportType: .png, imgName: "png_logo"),
         ExportType(name: "Export as JSON", exportType: .json, imgName: "json_logo"),
         ExportType(name: "-", exportType: .separator, imgName: "-"),
@@ -203,6 +205,59 @@ class ExportManager: NSObject, NSMenuDelegate {
         return nil
     }
 
+    static func elementPath(_ element: Element) -> String {
+        var names: [String] = []
+        var cur: Element? = element
+        // The parentless model root is not part of the path.
+        while let el = cur, el.parent != nil {
+            names.insert(el.name, at: 0)
+            cur = el.parent
+        }
+        return names.joined(separator: "/")
+    }
+
+    func generateInteractiveHtml() -> String? {
+        guard let element = self.element, let store = viewController?.elementStore,
+            let url = Bundle.main.url(forResource: "tenniarb-embed.min", withExtension: "js"),
+            let bundle = try? String(contentsOf: url, encoding: .utf8)
+        else { return nil }
+        let attr = { (v: String) in
+            v.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "\"", with: "&quot;")
+                .replacingOccurrences(of: "<", with: "&lt;")
+        }
+        return """
+            <!doctype html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            <title>\(attr(element.name))</title>
+            </head>
+            <body>
+            <script>\(bundle)</script>
+            <script type="text/x-tenn" data-encoding="base64" data-element="\(attr(Self.elementPath(element)))">\(Data(store.model.toTennStr().utf8).base64EncodedString())</script>
+            </body>
+            </html>
+            """
+    }
+
+    func exportInteractiveHtml() {
+        guard let element = self.element, let html = generateInteractiveHtml() else { return }
+        let mySave = NSSavePanel()
+        mySave.allowedContentTypes = [.html]
+        mySave.allowsOtherFileTypes = false
+        mySave.nameFieldStringValue = element.name + ".html"
+        mySave.title = "Export diagram as interactive HTML"
+        mySave.begin { (result) -> Void in
+            if result == NSApplication.ModalResponse.OK, let filename = mySave.url {
+                do {
+                    try html.write(to: filename, atomically: true, encoding: .utf8)
+                } catch {
+                    Swift.debugPrint("Error saving file")
+                }
+            }
+        }
+    }
+
     func hideExtension(_ url: URL) {
         do {
             try FileManager.default.setAttributes(
@@ -337,6 +392,8 @@ class ExportManager: NSObject, NSMenuDelegate {
                 exportTenn()
             case .pdf:
                 exportPdf()
+            case .interactiveHtml:
+                exportInteractiveHtml()
             case .preview:
                 let (img, bounds) = renderImage()
                 displayImageInPopup(viewController!.view, img, CGRect(x: 0, y: 0, width: bounds.width, height: bounds.height))

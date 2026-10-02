@@ -1,13 +1,16 @@
 {
-  "name": "@tenniarb/viewer",
+  "name": "@tenniarb/embed",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "build": "node scripts/build.ts",
-    "serve": "node scripts/serve.ts",
     "smoke": "node scripts/smoke.ts"
   },
   "dependencies": {
-    "@tenniarb/embed": "*"
+    "@tenniarb/core": "*",
+    "@tenniarb/render": "*"
   }
 }

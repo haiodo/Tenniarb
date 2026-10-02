@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
 		0C00D682230FE2F100ECF221 /* TennLexerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C00D681230FE2F100ECF221 /* TennLexerModel.swift */; };
 		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
 		0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1155292108C92C007FD827 /* SyncExtension.swift */; };
@@ -165,6 +166,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
 		0C00D681230FE2F100ECF221 /* TennLexerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexerModel.swift; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
@@ -371,6 +373,7 @@
 				0CD170CD22D6571400E217D4 /* TennIco.icns */,
 				0CCAE77122AACB560083F898 /* Application.swift */,
 				0CB75C8D2A36F1CB0084BFC7 /* LICENSE */,
+				AE01EC00000000000000090 /* tenniarb-embed.min.js */,
 			);
 			path = Tenniarb;
 			sourceTree = "<group>";
@@ -744,6 +747,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */,
 				0CFC3DF123D624F10016A7B7 /* quad-line-style.png in Resources */,
 				0CFC3DE823D624F10016A7B7 /* markdown_scratches.png in Resources */,
 				0CD170B722D5BB6500E217D4 /* duplicate_item.png in Resources */,

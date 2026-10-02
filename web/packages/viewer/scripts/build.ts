@@ -11,4 +11,4 @@ await build({
   outfile: new URL("main.js", dist).pathname,
 });
 cpSync(new URL("../index.html", import.meta.url), new URL("index.html", dist));
-cpSync(new URL("../../render/fonts/", import.meta.url), new URL("fonts/", dist), { recursive: true });
+cpSync(new URL("../../embed/fonts/", import.meta.url), new URL("fonts/", dist), { recursive: true });

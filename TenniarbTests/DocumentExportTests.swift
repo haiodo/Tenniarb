@@ -184,6 +184,48 @@ class ExportManagerRemainingTests: XCTestCase {
         XCTAssertNotNil(NSPasteboard.general.string(forType: .string))
     }
 
+    func testInteractiveHtmlEmbedsBundleAndRoundTripsTenn() throws {
+        let evil = "text \"a </script><script>alert(1)</script> <!-- b\""
+        let source = docSource.replacingOccurrences(of: "color red", with: "color red\n        \(evil)")
+        let (controller, store, diagram) = makeController(source)
+        let html = try XCTUnwrap(exporter(controller).generateInteractiveHtml())
+
+        XCTAssertTrue(html.hasPrefix("<!doctype html>"))
+        XCTAssertTrue(html.contains("<title>\(diagram.name)</title>"))
+        XCTAssertTrue(html.contains("<script type=\"text/x-tenn\" data-encoding=\"base64\" data-element=\"\(diagram.name)\">"))
+        let bundleURL = try XCTUnwrap(Bundle.main.url(forResource: "tenniarb-embed.min", withExtension: "js"))
+        let bundle = try String(contentsOf: bundleURL, encoding: .utf8)
+        XCTAssertTrue(html.contains(bundle))
+        XCTAssertFalse(bundle.lowercased().contains("</script"))
+        XCTAssertFalse(bundle.contains("<!--"))
+
+        // Payload is base64, so only the bundle script and the tenn script close.
+        XCTAssertEqual(html.components(separatedBy: "</script").count - 1, 2)
+
+        let open = "data-element=\"\(diagram.name)\">"
+        let body = try XCTUnwrap(html.components(separatedBy: open).last?.components(separatedBy: "</script>").first)
+        let decoded = try XCTUnwrap(Data(base64Encoded: body))
+        XCTAssertEqual(String(decoding: decoded, as: UTF8.self), store.model.toTennStr())
+        XCTAssertTrue(String(decoding: decoded, as: UTF8.self).contains("</script><script>alert(1)</script> <!--"))
+    }
+
+    func testInteractiveHtmlUsesNestedElementPath() throws {
+        let (controller, _, diagram) = makeController("element A {\n    element B {\n        item X {\n        }\n    }\n}")
+        let nested = diagram.elements[0]
+        controller.onElementSelected(nested)
+        let html = try XCTUnwrap(exporter(controller).generateInteractiveHtml())
+        XCTAssertTrue(html.contains("data-element=\"A/B\""))
+    }
+
+    func testWriteExampleInteractiveHtml() throws {
+        let example = try String(contentsOfFile: "/Users/haiodo/Develop/private/tenniarb/docs/Example.tenn", encoding: .utf8)
+        let (controller, _, _) = makeController(example)
+        let html = try XCTUnwrap(exporter(controller).generateInteractiveHtml())
+        let out = URL(fileURLWithPath: "/Users/haiodo/Develop/private/tenniarb/.work/embed/swift-export-Example.html")
+        try FileManager.default.createDirectory(at: out.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try html.write(to: out, atomically: true, encoding: .utf8)
+    }
+
     func testExportKindsCoverEveryMenuEntry() {
         let (controller, _, _) = makeController()
         let manager = exporter(controller)

@@ -11,5 +11,5 @@
     "types": ["node"]
   },
   "include": ["packages/*/src", "packages/*/test"],
-  "exclude": ["packages/viewer"]
+  "exclude": ["packages/viewer", "packages/embed"]
 }

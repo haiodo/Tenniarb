@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenniarb embed demo</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; }
+  .tenn-diagram, div.tenn { border: 1px solid #ccc; border-radius: 6px; margin: 12px 0; }
+</style>
+<!-- Serve this folder over http (node scripts/smoke.ts does); build first: npm run build -w @tenniarb/embed -->
+<script src="dist/tenniarb-embed.min.js"></script>
+</head>
+<body>
+<h1>Inline pre.tenn</h1>
+<pre class="tenn">
+element "Demo" {
+    item "Hello" {
+        pos 0 0
+    }
+    item "World" {
+        pos 160 0
+        fill-color "#ffe0a0"
+    }
+    link "Hello" "World" {
+        display arrow
+    }
+}
+</pre>
+
+<h1>script[type=text/x-tenn], element "Second/Inner", evaluate on</h1>
+<script type="text/x-tenn" data-element="Second/Inner">
+element "First" {
+    item "Not shown" {
+        pos 0 0
+    }
+}
+element "Second" {
+    element "Inner" {
+        item "Sum" {
+            pos 0 0
+            title %{Sum ${1 + 2}}
+        }
+        item "Drag to pan, ctrl+wheel to zoom" {
+            pos 0 -80
+        }
+    }
+}
+</script>
+
+<h1>Non-interactive, evaluate=false, parse error below</h1>
+<div class="tenn" data-interactive="false" data-evaluate="false" style="height: 120px">
+element "X" {
+    item "Sum" {
+        pos 0 0
+        title %{Sum ${1 + 2}}
+    }
+}
+</div>
+<pre class="tenn">
+element "Broken" {
+    item "oops" {
+</pre>
+</body>
+</html>

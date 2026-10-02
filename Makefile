@@ -14,29 +14,33 @@ SWIFT_SRC := $(shell find Tenniarb TenniarbTests TenniarbUITests -name '*.swift'
 # would shadow it with a different version and report bogus diffs.
 SWIFT_FORMAT := xcrun swift-format
 
+# Bundled into the app as a resource, so every xcodebuild target needs it.
+EMBED := Tenniarb/web/tenniarb-embed.min.js
+EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/packages/render/src web/packages/embed/src web/packages/embed/fonts -type f 2>/dev/null)
+
 .DEFAULT_GOAL := help
 N ?= 2000
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test view render tenn-fuzz md-fuzz
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test embed view render tenn-fuzz md-fuzz
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-build: ## Build the app (Debug)
+build: $(EMBED) ## Build the app (Debug)
 	$(XCB) -scheme $(SCHEME) build
 
-test: ## Run unit tests (performance tests excluded)
+test: $(EMBED) ## Run unit tests (performance tests excluded)
 	$(XCB) -scheme $(SCHEME) test
 
-test-only: ## Run a single suite: make test-only T=TenniarbTests/LexerTests
+test-only: $(EMBED) ## Run a single suite: make test-only T=TenniarbTests/LexerTests
 	$(XCB) -scheme $(SCHEME) -only-testing:$(T) test
 
-golden: ## Regenerate web/fixtures/*.parse.json from the Swift parser
+golden: $(EMBED) ## Regenerate web/fixtures/*.parse.json from the Swift parser
 	TEST_RUNNER_TENN_GOLDEN_UPDATE=1 $(XCB) -scheme $(SCHEME) -only-testing:TenniarbTests/TennGoldenTests test
 
-swift-png: ## Export Swift reference PNGs (F=file.tenn O=dir; default web/fixtures)
+swift-png: $(EMBED) ## Export Swift reference PNGs (F=file.tenn O=dir; default web/fixtures)
 	TEST_RUNNER_TENN_SWIFT_PNG=$(abspath $(or $(O),.work/web-stage5/swift-png)) $(if $(F),TEST_RUNNER_TENN_SWIFT_IN=$(abspath $(F))) $(XCB) -scheme $(SCHEME) -only-testing:TenniarbTests/TennGoldenTests/testExportSwiftPNG test
 
-perf: ## Run performance tests only
+perf: $(EMBED) ## Run performance tests only
 	$(XCB) -scheme $(PERF_SCHEME) test
 
 lint: ## Run SwiftLint
@@ -62,6 +66,11 @@ web: web/node_modules ## Build web packages (web/)
 
 web-test: web/node_modules ## Typecheck and test web packages
 	cd web && npm run typecheck && npm test
+
+embed: $(EMBED) ## Build Tenniarb/web/tenniarb-embed.min.js (self-contained, not in git)
+
+$(EMBED): web/node_modules $(EMBED_SRC)
+	cd web && node packages/embed/scripts/build.ts --swift
 
 view: web/node_modules ## Open a .tenn in the browser viewer: make view F=tenniarb.tenn
 	cd web && npm run build -w @tenniarb/viewer
