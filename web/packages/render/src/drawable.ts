@@ -4,7 +4,7 @@
 import type { Canvas2D } from "./canvas-types.ts";
 import { cssColor } from "./color.ts";
 import type { Color } from "./color.ts";
-import { crossBox, insetBy, intersects, maxX, maxY, midX, midY, minX, minY, rectZero, union } from "./geometry.ts";
+import { crossBox, crossPointLine, insetBy, intersects, maxX, maxY, midX, midY, minX, minY, rectZero, union } from "./geometry.ts";
 import type { Point, Rect, Size } from "./geometry.ts";
 import { DrawableLineStyle, DrawableStyle, DrawableItemStyle, updateLineStyle } from "./style.ts";
 import { TextBox, calculateSize, getTokens, toAttributedString } from "./text.ts";
@@ -744,6 +744,12 @@ export class DrawableLine extends ItemDrawable {
 
   override drawBox(context: Canvas2D, at: Point): void {
     this.draw(context, at);
+  }
+
+  /** Whether `point` is on the line. Swift also probes the path of "quad" lines; here a quad is hit along its polyline only. */
+  find(point: Point): boolean {
+    const ln = [this.source, ...this.extraPoints, this.target];
+    return ln.some((p, i) => i > 0 && crossPointLine(ln[i - 1]!, p, point));
   }
 
   private getLabelPosition(lbl: TextBox): Point {

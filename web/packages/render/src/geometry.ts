@@ -32,6 +32,9 @@ export function intersects(a: Rect, b: Rect): boolean {
   return minX(a) < maxX(b) && minX(b) < maxX(a) && minY(a) < maxY(b) && minY(b) < maxY(a);
 }
 
+/** CGRect.contains(point): min edges inclusive, max edges exclusive. */
+export const containsPoint = (r: Rect, p: Point): boolean => p.x >= minX(r) && p.x < maxX(r) && p.y >= minY(r) && p.y < maxY(r);
+
 export function insetBy(r: Rect, dx: number, dy: number): Rect {
   return { x: r.x + dx, y: r.y + dy, width: r.width - 2 * dx, height: r.height - 2 * dy };
 }
@@ -64,4 +67,30 @@ export function crossBox(p1: Point, p2: Point, rect: Rect): Point | null {
     crossLine(p1, p2, { x: ox, y: oy + rect.height }, { x: ox + rect.width, y: oy + rect.height }) ??
     crossLine(p1, p2, { x: ox + rect.width, y: oy }, { x: ox + rect.width, y: oy + rect.height })
   );
+}
+
+/** Hit test of a point against segment p1-p2 with a 7 unit tolerance (SceneMath.crossPointLine). */
+export function crossPointLine(p1: Point, p2: Point, p: Point): boolean {
+  if (Math.hypot(p1.x - p.x, p1.y - p.y) < 7 || Math.hypot(p2.x - p.x, p2.y - p.y) < 7) {
+    return true;
+  }
+  if (p1.x === p2.x && p1.y === p2.y) {
+    return false;
+  }
+  const a = p2.y - p1.y;
+  const b = p1.x - p2.x;
+  const c = -(p1.x * a + p1.y * b);
+  if (Math.abs(a * p.x + b * p.y + c) / Math.hypot(a, b) >= 7) {
+    return false;
+  }
+  // The foot of the perpendicular must fall inside the segment's box, padded to 5 for flat lines.
+  let r: Rect = { x: Math.min(p1.x, p2.x), y: Math.min(p1.y, p2.y), width: Math.abs(p1.x - p2.x), height: Math.abs(p1.y - p2.y) };
+  if (r.height < 5) {
+    r = { x: r.x, y: r.y - 2.5, width: r.width, height: r.height + 5 };
+  }
+  if (r.width < 5) {
+    r = { x: r.x - 2.5, y: r.y, width: r.width + 5, height: r.height };
+  }
+  const d = a * a + b * b;
+  return containsPoint(r, { x: (b * (b * p.x - a * p.y) - a * c) / d, y: (a * (-b * p.x + a * p.y) - b * c) / d });
 }

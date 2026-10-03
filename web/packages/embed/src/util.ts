@@ -19,11 +19,13 @@ export function pathOf(e: Element): string {
 export const elementTree = (e: Element): ElementNode[] =>
   e.elements.map((c) => ({ name: c.name, path: pathOf(c), hasItems: c.items.length > 0, children: elementTree(c) }));
 
+/** Nested elements that have something to draw, depth-first. */
+export const drawable = (e: Element): Element[] => allElements(e).filter((c) => c.items.length > 0);
+
 /** `spec` is a name or "A/B" path; without it the first element with items (else the first element). */
 export function pickElement(root: Element, spec?: string): Element | null {
   if (spec !== undefined) return findElement(root, spec);
-  const all = allElements(root);
-  return all.find((e) => e.items.length > 0) ?? all[0] ?? null;
+  return drawable(root)[0] ?? root.elements[0] ?? null;
 }
 
 export function parseBool(value: string | null, fallback: boolean): boolean {

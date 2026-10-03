@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenniarb editor demo</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 0; display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  header { padding: 8px 12px; border-bottom: 1px solid #ccc; display: flex; gap: 12px; align-items: center; }
+  #editor { min-height: 0; }
+</style>
+<!-- Build first (npm run build -w @tenniarb/editor), serve dist/ over http (node scripts/smoke.ts does). -->
+</head>
+<body>
+<header>
+  <button id="undo">Undo</button><button id="redo">Redo</button>
+  <label><input type="checkbox" id="ro"> readonly</label>
+  <span id="status">loading</span>
+</header>
+<div id="editor"></div>
+<script type="module">
+  import { mount } from "./editor.js";
+  const text = await (await fetch("Example.tenn")).text();
+  const status = document.getElementById("status");
+  window.changes = 0;
+  async function start(readonly) {
+    window.editor = await mount(document.getElementById("editor"), {
+      text,
+      element: "Documentation/Basic steps",
+      readonly,
+      fontBaseUrl: "fonts/",
+      onChange: (t) => { window.changes++; window.lastText = t; status.textContent = `changes: ${window.changes}`; },
+    });
+    status.textContent = readonly ? "readonly" : "ready";
+  }
+  document.getElementById("undo").onclick = () => window.editor.undo();
+  document.getElementById("redo").onclick = () => window.editor.redo();
+  document.getElementById("ro").onchange = (e) => start(e.target.checked);
+  await start(false);
+</script>
+</body>
+</html>

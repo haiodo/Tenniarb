@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { TennParser, parseTenn } from "@tenniarb/core";
 import { decodeSource, optionsFromAttrs } from "../src/run.ts";
-import { elementTree, parseBool, pathOf, pickElement } from "../src/util.ts";
+import { drawable, elementTree, parseBool, pathOf, pickElement } from "../src/util.ts";
 
 const parse = (text: string) => parseTenn(new TennParser().parse(text));
 const root = parse(`
@@ -26,6 +26,12 @@ test("pickElement: path, then name anywhere, else null", () => {
 test("pickElement: no items anywhere falls back to the first element", () => {
   assert.equal(pathOf(pickElement(parse(`element "X" {}`))!), "X");
   assert.equal(pickElement(parse("")), null);
+});
+
+test("drawable: nested elements with items, depth-first", () => {
+  assert.deepEqual(drawable(root).map(pathOf), ["Empty/Sub", "B", "Sub"]);
+  assert.deepEqual(drawable(root.elements[0]!).map(pathOf), ["Empty/Sub"]);
+  assert.deepEqual(drawable(root.elements[1]!), []);
 });
 
 test("elementTree", () => {

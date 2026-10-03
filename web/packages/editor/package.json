@@ -1,0 +1,17 @@
+{
+  "name": "@tenniarb/editor",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "smoke": "node scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@tenniarb/core": "*",
+    "@tenniarb/embed": "*",
+    "@tenniarb/render": "*"
+  }
+}

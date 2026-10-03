@@ -16,7 +16,7 @@ const url: string = await new Promise((res) => server.stdout.once("data", (d) =>
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 2 });
 const problems: string[] = [];
-page.on("console", (m: { type(): string; text(): string }) => m.type() === "error" && problems.push(m.text()));
+page.on("console", (m: { type(): string; text(): string }) => m.type() === "error" && !m.text().includes("has no items to draw") && problems.push(m.text()));
 page.on("pageerror", (e: Error) => problems.push(String(e)));
 await page.goto(url);
 await page.waitForSelector(".row");
@@ -35,10 +35,13 @@ for (let i = 0; i < names.length; i++) {
     samples.push(await page.evaluate(() => (window as any).__viewer.drawMs));
   }
   const info = await page.evaluate(() => {
-    const c = document.querySelector("#stage canvas") as HTMLCanvasElement;
-    const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+    const c = document.querySelector("#stage canvas") as HTMLCanvasElement | null;
     let blank = true;
-    for (let k = 3; k < d.length; k += 4) if (d[k] !== 0) { blank = false; break; }
+    // Container rows (no items) show the "has no items" message instead of a canvas.
+    if (c !== null) {
+      const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+      for (let k = 3; k < d.length; k += 4) if (d[k] !== 0) { blank = false; break; }
+    }
     return { blank, name: (window as any).__viewer.name, build: (window as any).__viewer.buildMs, items: (window as any).__viewer.items };
   });
   samples.sort((a, b) => a - b);

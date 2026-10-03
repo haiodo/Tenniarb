@@ -64,7 +64,9 @@ const sig = (p: any, i: number): Promise<string> => p.$$eval("canvas", (cs: HTML
 
 for (const [name, url] of [["demo", `${base}/demo.html`], ["single-file", `file://${process.cwd()}/${single}`]] as const) {
   const { p, problems } = await open(url, name);
-  check(problems.length === 0, `${name}: no console errors/warnings ${problems.slice(0, 3).join(" | ")}`);
+  // The demo has broken blocks on purpose; showError logs them as "tenniarb: ...".
+  const unexpected = name === "demo" ? problems.filter((m) => !m.startsWith("tenniarb:")) : problems;
+  check(unexpected.length === 0, `${name}: no console errors/warnings ${unexpected.slice(0, 3).join(" | ")}`);
   const b = await blank(p);
   const errors = await p.$$eval(".tenn-error", (e: HTMLElement[]) => e.map((x) => x.textContent));
   const expectedErrors = name === "demo" ? 1 : 0;

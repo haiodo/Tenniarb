@@ -3,7 +3,7 @@ import type { Element } from "@tenniarb/core";
 import { buildScene, findElement, preloadImages } from "@tenniarb/render";
 import type { DecodedImage } from "@tenniarb/render";
 import { defaultFontBase, loadFonts } from "./fonts.ts";
-import { elementTree, pathOf, pickElement } from "./util.ts";
+import { drawable, elementTree, pathOf, pickElement } from "./util.ts";
 import type { ElementNode } from "./util.ts";
 
 export interface EmbedOptions {
@@ -35,7 +35,7 @@ export interface EmbedHandle {
 
 const live = new WeakMap<HTMLElement, EmbedHandle>();
 
-async function decode(base64: string): Promise<DecodedImage | null> {
+export async function decode(base64: string): Promise<DecodedImage | null> {
   try {
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     const bmp = await createImageBitmap(new Blob([bytes]));
@@ -91,6 +91,7 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
   const ctx = canvas.getContext("2d")!;
   const dark = matchMedia("(prefers-color-scheme: dark)");
 
+  const navStrip = 32; // height reserved for the container picker
   let shown: { scene: ReturnType<typeof buildScene>; width: number; height: number } | null = null;
   const view = { x: 0, y: 0, k: 1 };
   let frame = 0;
@@ -122,10 +123,11 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
   function fit(): void {
     if (shown === null) return;
     const w = box.clientWidth;
-    const h = box.clientHeight;
+    const top = nav === null ? 0 : navStrip;
+    const h = box.clientHeight - top;
     view.k = Math.min(w / shown.width, h / shown.height, 1);
     view.x = (w - shown.width * view.k) / 2;
-    view.y = (h - shown.height * view.k) / 2;
+    view.y = top + (h - shown.height * view.k) / 2;
     redraw();
   }
 
@@ -137,10 +139,12 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
     redraw();
   }
 
+  let nav: HTMLSelectElement | null = null;
   let token = 0;
   async function show(e: Element): Promise<void> {
     const mine = ++token;
     if (e.items.length === 0) {
+      current = e;
       const names = e.elements.map((c) => pathOf(c));
       showError(el, `"${pathOf(e)}" has no items to draw`, names.length > 0 ? ["nested elements:", ...names] : []);
       return;
@@ -161,7 +165,7 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
     stats.buildMs = performance.now() - t0;
     current = e;
     if (!fixedHeight) {
-      box.style.aspectRatio = `${shown.width} / ${shown.height}`;
+      box.style.aspectRatio = `${shown.width} / ${shown.height + (nav === null ? 0 : navStrip)}`;
       box.style.maxWidth = `${Math.ceil(shown.width)}px`; // never upscale past 100%
     }
     fit();
@@ -174,6 +178,7 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
       return;
     }
     if (!el.contains(box)) el.replaceChildren(box);
+    if (nav !== null) nav.value = pathOf(e);
     await show(e);
   }
 
@@ -236,10 +241,22 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
     showError(el, `${parser.errors.errors.length} parse error(s)`, parser.errors.errors.map((er) => `${er.line}:${er.col} ${er.message}`));
     return handle;
   }
-  const first = pickElement(root, opts.element);
+  let first = pickElement(root, opts.element);
   if (first === null) {
     showError(el, opts.element === undefined ? "nothing to show: the document has no elements" : `element not found: ${opts.element}`, []);
     return handle;
+  }
+  // A container (e.g. an exported folder) gets a picker over its nested diagrams.
+  const targets = first.items.length === 0 ? drawable(first) : [];
+  if (targets.length > 0) {
+    const prefix = pathOf(first).length + 1;
+    nav = document.createElement("select");
+    nav.className = "tenn-nav";
+    nav.style.cssText = "position:absolute;top:8px;left:8px;z-index:1;max-width:calc(100% - 16px);font:12px system-ui,sans-serif";
+    for (const t of targets) nav.append(new Option(pathOf(t).slice(prefix), pathOf(t)));
+    nav.addEventListener("change", () => void setElement(nav!.value));
+    box.append(nav);
+    first = targets[0]!;
   }
   el.append(box);
   ro.observe(box);
