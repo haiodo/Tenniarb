@@ -1,8 +1,29 @@
 // Editor state without DOM: scene, selection, drag, undo. Points are scene coordinates (y up), as in the Swift SceneDrawView.
-import { ElementModel, ElementModelStore, LinkItem, UndoManager, toTennStr } from "@tenniarb/core";
-import type { DiagramItem, Element, ElementOperation, ExecutionContext } from "@tenniarb/core";
-import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, setMeasureContext } from "@tenniarb/render";
-import type { Canvas2D, DrawableScene, ImageDecoder, Point, Rect } from "@tenniarb/render";
+import {
+  DiagramItem,
+  Element as ModelElement,
+  ElementModel,
+  ElementModelStore,
+  LinkItem,
+  TennParser,
+  UndoManager,
+  newBlockExpr,
+  newCommand,
+  newIdent,
+  newIntNode,
+  newMarkdownNode,
+  newStrNode,
+  parseItems,
+  storeItems,
+  toStr,
+  toTennAsProps,
+  toTennStr,
+} from "@tenniarb/core";
+import type { Element, ElementOperation, ExecutionContext } from "@tenniarb/core";
+import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, prepareBodyText, setMeasureContext } from "@tenniarb/render";
+import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect } from "@tenniarb/render";
+import { bodyText } from "./search.ts";
+import { optionNodes } from "./styles.ts";
 import { drawSelection, hitTest, itemsInRect } from "./selection.ts";
 
 export interface SessionOptions {
@@ -16,9 +37,12 @@ export interface SessionOptions {
   onChange?: (text: string) => void;
   /** The scene was rebuilt or drawables moved; repaint. */
   onRedraw?: () => void;
+  /** The edited element changed (setElement, or the old one was removed by an undo / redo). */
+  onElement?: () => void;
 }
 
 type Mode = "none" | "drag" | "band";
+export type EditMode = "name" | "body";
 
 // Wide enough that DrawableContainer.layout never culls an item moved away from the original bounds.
 const EVERYWHERE: Rect = { x: -1e9, y: -1e9, width: 2e9, height: 2e9 };
@@ -32,14 +56,15 @@ export class EditorSession {
   selection: DiagramItem[] = [];
   band: Rect | null = null;
 
-  private readonly root: ElementModel;
+  readonly root: ElementModel;
+  private elementCount = 0;
   private readonly exec: ExecutionContext;
   private mode: Mode = "none";
   private origin: Point = { x: 0, y: 0 };
   private moved = false;
   private starts = new Map<DiagramItem, Point>();
 
-  readonly element: Element;
+  element: Element;
   private readonly opts: SessionOptions;
 
   constructor(element: Element, opts: SessionOptions = {}) {
@@ -74,10 +99,78 @@ export class EditorSession {
   }
 
   private refresh = (): void => {
-    this.rebuild();
+    if (!this.attached(this.element)) this.setElement(this.fallback());
+    else this.rebuild();
     this.opts.onChange?.(this.text());
     this.opts.onRedraw?.();
   };
+
+  private attached(e: Element): boolean {
+    for (let c = e; c.parent !== null; c = c.parent) if (!c.parent.elements.includes(c)) return false;
+    return true;
+  }
+
+  // Nearest ancestor that is still in the model, else the first top-level element.
+  private fallback(): Element {
+    let c = this.element;
+    while (c.parent !== null && !this.attached(c)) c = c.parent;
+    return c.kind === "Root" ? (this.root.elements[0] ?? this.element) : c;
+  }
+
+  /** Edit another element of the same document; the selection is dropped, undo history is kept. */
+  setElement(element: Element): void {
+    if (element === this.element) return;
+    this.element = element;
+    this.exec.setElement(element);
+    this.selection = [];
+    this.rebuild();
+    this.opts.onElement?.();
+    this.opts.onRedraw?.();
+  }
+
+  /** Show `item` in its element and select it. */
+  reveal(item: DiagramItem): void {
+    this.setElement(item.parent!);
+    this.selection = [item];
+    this.opts.onRedraw?.();
+  }
+
+  /** New child element (Swift handleAddElement); readonly: null. */
+  addElement(parent: Element = this.root): Element | null {
+    if (this.opts.readonly) return null;
+    const el = new ModelElement(`Unnamed element: ${this.elementCount++}`);
+    this.store.add(parent, el, this.undoManager, this.refresh);
+    return el;
+  }
+
+  /** Copy with items, next to the original (Swift duplicateItem for the outline). */
+  duplicateElement(element: Element): Element | null {
+    if (this.opts.readonly || element.parent === null) return null;
+    const copy = element.clone();
+    this.store.add(element.parent, copy, this.undoManager, this.refresh);
+    return copy;
+  }
+
+  renameElement(element: Element, name: string): void {
+    if (this.opts.readonly || name === element.name) return;
+    this.store.updateElementName(element, name, this.undoManager, this.refresh);
+  }
+
+  /** False: readonly, or it is the last top-level element (the editor needs one to show). */
+  removeElement(element: Element): boolean {
+    const parent = element.parent;
+    if (this.opts.readonly || parent === null || (parent === this.root && parent.elements.length === 1)) return false;
+    this.store.remove(parent, element, this.undoManager, this.refresh);
+    return true;
+  }
+
+  /** Into `parent` as the last child. False: readonly, or a drop into itself or its own subtree. */
+  moveElement(element: Element, parent: Element): boolean {
+    if (this.opts.readonly || element.parent === null) return false;
+    for (let c: Element | null = parent; c !== null; c = c.parent) if (c === element) return false;
+    this.store.move(element, parent, this.undoManager, this.refresh, parent.elements.length);
+    return true;
+  }
 
   undo(): void {
     if (!this.opts.readonly) this.undoManager.undo();
@@ -180,6 +273,217 @@ export class EditorSession {
       }
     }
     this.scene.layout(this.scene.getBounds(), EVERYWHERE);
+  }
+
+  /** What the text overlay shows for `item`: scene-space rect, current text and font size (px). Null when readonly. */
+  editTarget(item: DiagramItem, mode: EditMode): { rect: Rect; text: string; fontSize: number } | null {
+    const d = this.scene.drawables.get(item);
+    if (this.opts.readonly || d === undefined) return null;
+    const b = d.getSelectorBounds();
+    const [width, height] = [Math.max(b.width, 100), Math.max(b.height, 20)];
+    // Boxes keep their top-left corner, lines get the box at the middle of their bounds.
+    const rect = d instanceof DrawableLine ? { x: b.x + (b.width - width) / 2, y: b.y + (b.height - height) / 2, width, height } : { x: b.x, y: b.y + b.height - height, width, height };
+    const fontSize = ((d as { style?: DrawableStyle }).style?.fontSize ?? 18) - (mode === "body" ? 2 : 0);
+    return { rect, text: this.editText(item, mode), fontSize };
+  }
+
+  private editText(item: DiagramItem, mode: EditMode): string {
+    return mode === "name" ? item.name : prepareBodyText(bodyText(item));
+  }
+
+  /** Name or body of `item` as one undo step; nothing when the text is unchanged. */
+  commitEdit(item: DiagramItem, mode: EditMode, text: string): void {
+    if (this.opts.readonly || text === this.editText(item, mode)) return;
+    if (mode === "name") return this.store.updateName(item, text, this.undoManager, this.refresh);
+    const props = toTennAsProps(item, "BlockExpr");
+    const bodyNode = props.getNamedElement("body");
+    if (bodyNode === null) {
+      props.add(newCommand("body", text.includes("\n") ? newMarkdownNode(text) : newStrNode(text)));
+    } else {
+      const block = bodyNode.getChild(1);
+      // A block body without a "text" entry is left alone, as in Swift setBody.
+      const target = block?.kind === "BlockExpr" ? block.getNamedElement("text") : block === null ? null : bodyNode;
+      if (target === null) return;
+      target.children = null;
+      target.add(newIdent(target === bodyNode ? "body" : "text"), newMarkdownNode(text));
+    }
+    this.store.setItemProperties(this.element, item, props, this.undoManager, this.refresh);
+  }
+
+  /** What the properties panel edits: the first selected item, else the element (Swift activeItems.first). */
+  propsTarget(): DiagramItem | Element {
+    return this.selection[0] ?? this.element;
+  }
+
+  propsText(target: DiagramItem | Element): string {
+    return toStr(toTennAsProps(target), 0, false);
+  }
+
+  /** Port of mergeProperties: one undo step. False: readonly, parse errors or the target is gone. */
+  applyProps(target: DiagramItem | Element, text: string): boolean {
+    const parser = new TennParser();
+    const node = parser.parse(text);
+    if (this.opts.readonly || parser.errors.hasErrors()) return false;
+    if (target instanceof DiagramItem) {
+      if (!this.element.items.includes(target)) return false;
+      this.store.setItemProperties(this.element, target, node, this.undoManager, this.refresh);
+    } else {
+      this.store.setProperties(target, node, this.undoManager, this.refresh);
+    }
+    return true;
+  }
+
+  /** Named styles of the element (Swift StyleManager.update); the default `item` and `line` are not offered. */
+  styleNames(): string[] {
+    const block = this.element.properties.get("styles")?.getBlock(1) ?? [];
+    return block.filter((c) => c.isNamedElement() && c.getChild(1) !== null).map((c) => c.getIdent(0)!).filter((n) => n !== "item" && n !== "line");
+  }
+
+  /** `use-style` for every selected item, one undo step (Swift StyleManager.doApply). */
+  applyStyle(name: string): void {
+    if (this.opts.readonly) return;
+    const ops: ElementOperation[] = [];
+    for (const item of this.selection) {
+      const props = toTennAsProps(item, "BlockExpr");
+      const cur = props.getNamedElement("use-style");
+      if (cur === null) props.add(newCommand("use-style", newIdent(name)));
+      else if (cur.getIdent(1) === name) continue;
+      else {
+        cur.children = null;
+        cur.add(newIdent("use-style"), newIdent(name));
+      }
+      ops.push(this.store.createProperties(this.element, item, props));
+    }
+    if (ops.length > 0) this.store.compositeOperation(this.element, this.undoManager, this.refresh, ops);
+  }
+
+  /** Adds `new_style_N { color white }` to the element's `styles` (Swift StyleManager.addStyleConfig); returns its name. */
+  defineStyle(): string | null {
+    if (this.opts.readonly) return null;
+    const props = this.element.properties.clone();
+    let styles = props.get("styles");
+    if (styles === null) {
+      styles = newCommand("styles", newBlockExpr());
+      props.append(styles);
+    }
+    const block = styles.getChild(1)!;
+    const name = `new_style_${block.count + 1}`;
+    block.add(newCommand(name, newBlockExpr(newCommand("color", newStrNode("white")))));
+    this.store.setProperties(this.element, props.asNode(), this.undoManager, this.refresh);
+    return name;
+  }
+
+  /** Sets one property of the single selected item to a quick-style option (Swift changeItemProps). */
+  setQuickStyle(prop: string, option: string): void {
+    const item = this.selection[0];
+    if (this.opts.readonly || item === undefined || this.selection.length !== 1) return;
+    const props = toTennAsProps(item, "BlockExpr");
+    const cur = props.getNamedElement(prop);
+    if (cur === null) props.add(newCommand(prop, ...optionNodes(prop, option)));
+    else {
+      cur.children = null;
+      cur.add(newIdent(prop), ...optionNodes(prop, option));
+    }
+    this.store.setItemProperties(this.element, item, props, this.undoManager, this.refresh);
+  }
+
+  /** `item { shadow -5 -5 5 }` in the element's styles (Swift applyShadow without a selection). */
+  enableShadows(): void {
+    if (this.opts.readonly) return;
+    const props = this.element.properties.clone();
+    let styles = props.get("styles");
+    if (styles === null) {
+      styles = newCommand("styles", newBlockExpr());
+      props.append(styles);
+    }
+    const block = styles.getChild(1)!;
+    let item = block.getNamedElement("item");
+    if (item === null) {
+      item = newCommand("item", newBlockExpr());
+      block.add(item);
+    }
+    const itemBlock = item.getChild(1)!;
+    const shadow = newCommand("shadow", newIntNode(-5), newIntNode(-5), newIntNode(5));
+    const old = itemBlock.getNamedElement("shadow");
+    if (old === null) itemBlock.add(shadow);
+    else old.children = shadow.children;
+    this.store.setProperties(this.element, props.asNode(), this.undoManager, this.refresh);
+  }
+
+  /** Evaluated expressions of `text` by 0-based line (Swift updateAnnotations); empty when it does not parse. */
+  propsValues(target: DiagramItem | Element, text: string): Map<number, string> {
+    const parser = new TennParser();
+    const node = parser.parse(text);
+    const values = new Map<number, string>();
+    if (parser.errors.hasErrors()) return values;
+    const drawable = target instanceof DiagramItem ? (this.scene.drawables.get(target)?.getSelectorBounds() ?? null) : null;
+    for (const [tok, v] of this.exec.getEvaluated(target, node, drawable)) values.set(tok.line, String(v));
+    return values;
+  }
+
+  /** Selection as .tenn text (the Swift clipboard format); null when nothing is selected. */
+  copyText(): string | null {
+    return this.selection.length === 0 ? null : toStr(storeItems(this.selection), 0, false);
+  }
+
+  cut(): string | null {
+    const text = this.copyText();
+    this.deleteSelection();
+    return text;
+  }
+
+  deleteSelection(): void {
+    if (this.opts.readonly || this.selection.length === 0) return;
+    this.store.removeItems(this.element, this.selection, this.undoManager, this.refresh);
+    this.opts.onRedraw?.();
+  }
+
+  /** Adds the items of a .tenn text as they were written (Swift does not offset them) and selects them. False: not pasteable. */
+  paste(text: string): boolean {
+    if (this.opts.readonly) return false;
+    const parser = new TennParser();
+    const items = parseItems(parser.parse(text));
+    if (parser.errors.hasErrors() || items.length === 0) return false;
+    this.addSelected(items);
+    return true;
+  }
+
+  /** Port of SceneDrawView.duplicateItem: items shifted right, links that end at them are cloned too. */
+  duplicate(): void {
+    if (this.opts.readonly) return;
+    const copies = new Map<DiagramItem, DiagramItem>();
+    const links: LinkItem[] = [];
+    const items: DiagramItem[] = [];
+    const seen = new Set<DiagramItem>();
+    const addLink = (l: DiagramItem): void => {
+      if (l.kind !== "Link" || seen.has(l)) return;
+      seen.add(l);
+      const c = l.clone() as LinkItem;
+      links.push(c);
+      items.push(c);
+    };
+    for (const a of this.selection) {
+      if (a.kind === "Item") {
+        const c = a.clone();
+        c.x += 75;
+        copies.set(a, c);
+        items.push(c);
+      }
+      addLink(a);
+      this.element.getRelatedItems(a, false).forEach(addLink);
+    }
+    for (const l of links) {
+      l.source = (l.source && copies.get(l.source)) ?? l.source;
+      l.target = (l.target && copies.get(l.target)) ?? l.target;
+    }
+    this.addSelected(items);
+  }
+
+  private addSelected(items: DiagramItem[]): void {
+    if (items.length === 0) return;
+    this.store.addItems(this.element, items, this.undoManager, this.refresh);
+    this.selection = items;
+    this.opts.onRedraw?.();
   }
 
   /** Scene plus selection, in scene space. */

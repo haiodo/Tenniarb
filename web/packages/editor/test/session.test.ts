@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readTenn } from "@tenniarb/core";
-import type { DiagramItem } from "@tenniarb/core";
+import type { DiagramItem, LinkItem } from "@tenniarb/core";
 import { DrawableLine } from "@tenniarb/render";
 import type { Point } from "@tenniarb/render";
 import "../../render/test/helpers.ts"; // measure context + fonts
@@ -133,4 +133,155 @@ test("readonly: no selection, no drag, no undo", () => {
   assert.deepEqual(s.selection, []);
   assert.equal(a.x, 0);
   assert.equal(changes.length, 0);
+});
+
+test("rename: one undo step, onChange, unchanged text is a no-op", () => {
+  const { s, a, changes } = make();
+  assert.equal(s.editTarget(a, "name")!.text, "A");
+  s.commitEdit(a, "name", "A");
+  assert.equal(changes.length, 0);
+  s.commitEdit(a, "name", "Alpha\nline");
+  assert.equal(a.name, "Alpha\nline");
+  assert.equal(changes.length, 1);
+  assert.match(changes[0]!, /Alpha/);
+  s.undo();
+  assert.equal(a.name, "A");
+  assert.equal(s.undoManager.canUndo, false);
+});
+
+test("body: created, edited in place, undone", async () => {
+  const { s, a, changes } = make();
+  s.commitEdit(a, "body", "one");
+  assert.equal(s.editTarget(a, "body")!.text, "one");
+  await Promise.resolve(); // the undo manager groups by microtask
+  s.commitEdit(a, "body", "one\ntwo");
+  assert.equal(s.editTarget(a, "body")!.text, "one\ntwo");
+  assert.equal(changes.length, 2);
+  assert.ok(s.scene.drawables.get(a)!.getSelectorBounds().height > 0);
+  s.undo();
+  assert.equal(s.editTarget(a, "body")!.text, "one");
+  s.undo();
+  assert.equal(s.editTarget(a, "body")!.text, "");
+  assert.equal(a.properties.get("body"), null);
+});
+
+test("copy: selected items and the links between them, as .tenn text", () => {
+  const { s, a, b, c } = make();
+  assert.equal(s.copyText(), null);
+  s.selection = [a, b, s.element.items[3]!];
+  const text = s.copyText()!;
+  assert.match(text, /item "A"/);
+  assert.match(text, /link "A" "B"/);
+  assert.doesNotMatch(text, /item "C"/);
+  s.selection = [c];
+  assert.doesNotMatch(s.copyText()!, /link/);
+});
+
+test("paste: new items with remapped links, selected, one undo step; garbage ignored", () => {
+  const { s, a, b, changes } = make();
+  s.selection = [a, b, s.element.items[3]!];
+  const text = s.copyText()!;
+  assert.equal(s.paste("item \"broken {"), false);
+  assert.equal(s.paste("hello"), false);
+  assert.equal(changes.length, 0);
+
+  assert.equal(s.paste(text), true);
+  assert.equal(s.element.items.length, 8);
+  assert.equal(changes.length, 1);
+  const [na, nb, nl] = s.selection as [DiagramItem, DiagramItem, LinkItem];
+  assert.deepEqual(s.selection.map((i) => i.kind), ["Item", "Item", "Link"]);
+  assert.ok(![a, b].includes(na) && !s.element.items.slice(0, 5).includes(na));
+  assert.equal(nl.source, na);
+  assert.equal(nl.target, nb);
+  assert.ok(s.scene.drawables.has(nl));
+
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+  assert.deepEqual(s.selection, []);
+  assert.equal(s.undoManager.canUndo, false);
+});
+
+test("cut and delete remove the selection and its links in one step", () => {
+  const { s, b, changes } = make();
+  s.selection = [b];
+  const text = s.cut()!;
+  assert.match(text, /item "B"/);
+  assert.equal(s.element.items.length, 2); // A and C stay, both links went with B
+  assert.equal(changes.length, 1);
+  assert.deepEqual(s.selection, []);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+  s.selection = [s.element.items[3]!];
+  s.deleteSelection();
+  assert.equal(s.element.items.length, 4);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+});
+
+test("duplicate: shifted copies, links to them attach to the copy", () => {
+  const { s, b } = make();
+  s.selection = [b];
+  s.duplicate();
+  assert.equal(s.element.items.length, 7); // B copy plus the A->B link cloned onto it
+  const [nb, nl] = s.selection as [DiagramItem, LinkItem];
+  assert.deepEqual([nb.name, nb.x, nb.y], ["B", 275, 0]);
+  assert.equal(nl.target, nb);
+  assert.equal(nl.source, s.element.items[0]);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+});
+
+test("readonly: no edit, paste, delete or duplicate; copy stays", () => {
+  const { s, a, changes } = make({ readonly: true });
+  assert.equal(s.editTarget(a, "name"), null);
+  s.commitEdit(a, "name", "X");
+  assert.equal(s.paste("item \"X\" { pos 1 1 }"), false);
+  s.selection = [a];
+  s.deleteSelection();
+  s.duplicate();
+  assert.equal(s.element.items.length, 5);
+  assert.equal(a.name, "A");
+  assert.equal(changes.length, 0);
+  assert.match(s.copyText()!, /item "A"/);
+});
+
+test("props: text of the selected item or of the element when nothing is selected", () => {
+  const { s, a, centre } = make();
+  assert.equal(s.propsTarget(), s.element);
+  assert.match(s.propsText(s.element), /^name "D"/);
+  s.down(centre(a));
+  s.up(centre(a));
+  assert.equal(s.propsTarget(), a);
+  assert.match(s.propsText(a), /pos 0\.0 0\.0/);
+});
+
+test("props: apply goes through the store as one undo step and fires onChange", () => {
+  const { s, a, changes } = make();
+  assert.equal(s.applyProps(a, 'name "A"\npos 0 0\ncolor red\nfontSize 20'), true);
+  assert.match(s.propsText(a), /color red/);
+  assert.match(s.propsText(a), /fontSize 20/);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.doesNotMatch(s.propsText(a), /color red/);
+  assert.equal(changes.length, 2);
+  s.redo();
+  assert.match(s.propsText(a), /color red/);
+});
+
+test("props: parse errors, removed target and readonly apply nothing", () => {
+  const { s, a, changes } = make();
+  assert.equal(s.applyProps(a, "color {"), false);
+  s.store.removeItems(s.element, [a], s.undoManager, () => {});
+  const n = changes.length;
+  assert.equal(s.applyProps(a, 'name "A"'), false);
+  assert.equal(changes.length, n);
+  assert.equal(make({ readonly: true }).s.applyProps(make().a, 'name "X"'), false);
+});
+
+test("props: expression values by line", () => {
+  const s = new EditorSession(readTenn(SRC)!.elements[0]!);
+  const a = s.element.items[0]!;
+  const values = s.propsValues(a, 'name "A"\npos 0 0\nfontSize $(10 + 5)');
+  assert.equal(values.get(2), "15");
+  assert.equal(s.propsValues(a, "fontSize $(1 +").size, 0);
 });

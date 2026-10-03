@@ -3,6 +3,8 @@ import type { Element } from "@tenniarb/core";
 import { allElements, findElement } from "@tenniarb/render";
 
 export interface ElementNode {
+  /** Element.id: unlike the path, unique when names repeat. */
+  id: string;
   name: string;
   /** "A/B" path accepted by setElement. */
   path: string;
@@ -17,7 +19,7 @@ export function pathOf(e: Element): string {
 }
 
 export const elementTree = (e: Element): ElementNode[] =>
-  e.elements.map((c) => ({ name: c.name, path: pathOf(c), hasItems: c.items.length > 0, children: elementTree(c) }));
+  e.elements.map((c) => ({ id: c.id, name: c.name, path: pathOf(c), hasItems: c.items.length > 0, children: elementTree(c) }));
 
 /** Nested elements that have something to draw, depth-first. */
 export const drawable = (e: Element): Element[] => allElements(e).filter((c) => c.items.length > 0);

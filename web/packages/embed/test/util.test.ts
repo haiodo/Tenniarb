@@ -35,9 +35,10 @@ test("drawable: nested elements with items, depth-first", () => {
 });
 
 test("elementTree", () => {
+  const empty = root.elements[0]!;
   assert.deepEqual(elementTree(root)[0], {
-    name: "Empty", path: "Empty", hasItems: false,
-    children: [{ name: "Sub", path: "Empty/Sub", hasItems: true, children: [] }],
+    id: empty.id, name: "Empty", path: "Empty", hasItems: false,
+    children: [{ id: empty.elements[0]!.id, name: "Sub", path: "Empty/Sub", hasItems: true, children: [] }],
   });
 });
 

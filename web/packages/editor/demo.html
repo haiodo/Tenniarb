@@ -7,7 +7,21 @@
 <style>
   body { font: 14px system-ui, sans-serif; margin: 0; display: grid; grid-template-rows: auto 1fr; height: 100vh; }
   header { padding: 8px 12px; border-bottom: 1px solid #ccc; display: flex; gap: 12px; align-items: center; }
-  #editor { min-height: 0; }
+  main { display: grid; grid-template-columns: 260px 1fr 340px; min-height: 0; }
+  #editor, #props { min-height: 0; min-width: 0; }
+  #props { border-left: 1px solid #ccc; }
+  #outline { border-right: 1px solid #ccc; display: flex; flex-direction: column; overflow: hidden; }
+  .outline-header { padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .outline-header input { flex: 1 1 100%; min-width: 0; }
+  .outline-tree, .outline-results { overflow: auto; flex: 1; padding: 0 4px 8px; outline: none; }
+  .row { display: flex; align-items: center; padding: 2px 4px; border-radius: 4px; cursor: default; white-space: nowrap; }
+  .row:hover { background: #e4e4e8; }
+  .row.sel { background: #0a66d9; color: #fff; }
+  .row .arrow { width: 14px; flex: none; text-align: center; font-size: 9px; cursor: pointer; }
+  .row .name { overflow: hidden; text-overflow: ellipsis; }
+  .row .where { margin-left: auto; padding-left: 8px; font-size: 11px; opacity: .6; }
+  .children { margin-left: 14px; }
+  .hidden { display: none; }
 </style>
 <!-- Build first (npm run build -w @tenniarb/editor), serve dist/ over http (node scripts/smoke.ts does). -->
 </head>
@@ -17,7 +31,7 @@
   <label><input type="checkbox" id="ro"> readonly</label>
   <span id="status">loading</span>
 </header>
-<div id="editor"></div>
+<main><div id="outline"></div><div id="editor"></div><div id="props"></div></main>
 <script type="module">
   import { mount } from "./editor.js";
   const text = await (await fetch("Example.tenn")).text();
@@ -27,6 +41,8 @@
     window.editor = await mount(document.getElementById("editor"), {
       text,
       element: "Documentation/Basic steps",
+      properties: document.getElementById("props"),
+      outline: document.getElementById("outline"),
       readonly,
       fontBaseUrl: "fonts/",
       onChange: (t) => { window.changes++; window.lastText = t; status.textContent = `changes: ${window.changes}`; },
