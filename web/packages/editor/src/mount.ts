@@ -57,7 +57,7 @@ async function decoderFor(root: Element): Promise<ImageDecoder> {
 export async function mount(el: HTMLElement, opts: EditorOptions): Promise<EditorHandle> {
   const root = readTenn(opts.text);
   if (root === null) throw new Error("tenniarb: parse errors in the document");
-  const element: Element | null = opts.element !== undefined ? findElement(root, opts.element) : (allElements(root).find((e) => e.items.length > 0) ?? null);
+  const element: Element | null = opts.element !== undefined ? findElement(root, opts.element) : (allElements(root).find((e) => e.items.length > 0) ?? allElements(root)[0] ?? null);
   if (element === null) throw new Error("tenniarb: nothing to edit");
   await loadFonts(opts.fontBaseUrl ?? defaultFontBase).catch((err) => console.warn("tenniarb: font loading failed", err));
 

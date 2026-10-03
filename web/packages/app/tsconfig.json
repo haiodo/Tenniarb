@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "lib": ["es2022", "dom"], "module": "esnext", "moduleResolution": "bundler", "skipLibCheck": true },
+  "include": ["src", "test"],
+  "exclude": []
+}

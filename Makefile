@@ -20,7 +20,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 
 .DEFAULT_GOAL := help
 N ?= 2000
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test embed view render tenn-fuzz md-fuzz
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test app-dev app embed view render tenn-fuzz md-fuzz
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -66,6 +66,12 @@ web: web/node_modules ## Build web packages (web/)
 
 web-test: web/node_modules ## Typecheck and test web packages
 	cd web && npm run typecheck && npm test
+
+app-dev: web/node_modules ## Run the Tauri app in dev mode (web/packages/app)
+	cd web/packages/app && npx tauri dev
+
+app: web/node_modules ## Build the Tauri .app, unsigned (web/packages/app/src-tauri/target/release/bundle/macos)
+	cd web/packages/app && npx tauri build
 
 embed: $(EMBED) ## Build Tenniarb/web/tenniarb-embed.min.js (self-contained, not in git)
 
