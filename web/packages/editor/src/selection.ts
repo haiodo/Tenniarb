@@ -3,12 +3,12 @@ import type { DiagramItem } from "@tenniarb/core";
 import { DrawableLine, ItemDrawable, containsPoint, intersects } from "@tenniarb/render";
 import type { Canvas2D, DrawableScene, Point, Rect } from "@tenniarb/render";
 
-/** Items under `point` in build order (last is drawn on top); lines only count where no box is hit. */
-export function hitTest(scene: DrawableScene, point: Point): DiagramItem[] {
+/** Items under `point` in build order (last is drawn on top); lines only count where no box is hit. `all`: also boxes on non-default layers (Swift allowAll). */
+export function hitTest(scene: DrawableScene, point: Point, all = false): DiagramItem[] {
   const boxes: DiagramItem[] = [];
   const lines: DiagramItem[] = [];
   for (const [item, d] of scene.drawables) {
-    if (!(d instanceof ItemDrawable) || !d.isSelectable()) continue;
+    if (!(d instanceof ItemDrawable) || !(all || d.isSelectable())) continue;
     if (d instanceof DrawableLine) {
       if (d.find(point)) lines.push(item);
     } else if (containsPoint(d.getSelectorBounds(), point)) {

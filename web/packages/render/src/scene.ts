@@ -1,16 +1,18 @@
 // DrawableScene: builds drawables from an Element; evaluated values come from the ExecutionContext exactly as in Swift.
 // Editor-only members are left for stage 7: activeDrawables/activeElements/selectionBox/editingMode/editBoxBounds,
-// updateLineTo/removeLineTo, updateActiveElements, updateLayout (drag), find, and the selector drawing in draw/drawBox.
+// updateActiveElements, updateLayout (drag), find, and the selector drawing in draw/drawBox.
 import { LinkItem, persistenceStyleName } from "@tenniarb/core";
+import { toHTML } from "@tenniarb/markdown";
+import type { MarkdownToken } from "@tenniarb/markdown";
 import type { DiagramItem, Element, ExecutionContextEvaluator, LayoutScene } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { CircleBox, DrawableContainer, DrawableLine, EmptyBox, InvisibleBox, RoundBox } from "./drawable.ts";
 import type { Drawable, DrawableLayer } from "./drawable.ts";
-import { rectZero } from "./geometry.ts";
+import { crossBox, rectZero } from "./geometry.ts";
 import type { Point, Rect } from "./geometry.ts";
 import { ElementImageProvider } from "./images.ts";
 import type { ImageDecoder } from "./images.ts";
-import { DrawableItemStyle, DrawableStyle, SceneStyle, getString } from "./style.ts";
+import { DrawableItemStyle, DrawableLineStyle, DrawableStyle, SceneStyle, getString } from "./style.ts";
 import { TextBox, calculateSize, getTokens, prepareBodyText, toAttributedString } from "./text.ts";
 import type { TextPosition } from "./text.ts";
 
@@ -69,6 +71,8 @@ export class DrawableScene extends DrawableContainer implements LayoutScene {
 
   itemToLink = new Map<DiagramItem, DiagramItem[]>();
 
+  lineToDrawable: DrawableLine | null = null;
+
   sceneStyle: SceneStyle;
 
   darkMode: boolean;
@@ -103,10 +107,28 @@ export class DrawableScene extends DrawableContainer implements LayoutScene {
   /** Draw the scene at its `offset`. */
   override draw(context: Canvas2D, at: Point = this.offset): void {
     super.draw(context, at);
+    this.lineToDrawable?.draw(context, at);
   }
 
   override drawBox(context: Canvas2D, at: Point = this.offset): void {
     super.drawBox(context, at);
+    this.lineToDrawable?.draw(context, at);
+  }
+
+  /** Port of DrawableScene.updateLineTo: the preview line from `source` to `point`, or to the middle of `target` (the item under `point`, found by the caller) when given. */
+  updateLineTo(source: DiagramItem, point: Point, target: DiagramItem | null): void {
+    const sb = this.drawables.get(source)?.getBounds();
+    if (sb === undefined) return;
+    const tb = target === null ? undefined : this.drawables.get(target)?.getBounds();
+    const end = tb === undefined ? point : { x: tb.x + tb.width / 2, y: tb.y + tb.height / 2 };
+    const centre = { x: sb.x + sb.width / 2, y: sb.y + sb.height / 2 };
+    const mid = crossBox(centre, end, sb) ?? centre;
+    const to = tb === undefined ? end : (crossBox(mid, end, tb) ?? end);
+    this.lineToDrawable = new DrawableLine(mid, to, new DrawableLineStyle(this.darkMode));
+  }
+
+  removeLineTo(): void {
+    this.lineToDrawable = null;
   }
 
   private newImageProvider(item: DiagramItem): ElementImageProvider {
@@ -237,6 +259,8 @@ export class DrawableScene extends DrawableContainer implements LayoutScene {
     const shift: Point = { x: 0, y: 0 };
 
     let bodyAttrString = null;
+    let bodyTokens: MarkdownToken[] | null = null;
+    let bodyFontSize = 0;
     const bodyNode = properties.get("body");
     if (bodyNode !== null) {
       // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
@@ -263,8 +287,10 @@ export class DrawableScene extends DrawableContainer implements LayoutScene {
         }
       }
       const [horizontal, vertical] = parseLayout(bodyStyle, "Left", "Middle");
+      bodyTokens = getTokens((titleValue.length > 0 ? "\n" : "") + prepareBodyText(textValue));
+      bodyFontSize = bodyStyle.fontSize;
       bodyAttrString = toAttributedString(
-        getTokens((titleValue.length > 0 ? "\n" : "") + prepareBodyText(textValue)),
+        bodyTokens,
         { size: bodyStyle.fontSize, bold: false, italic: false },
         bodyStyle.textColor,
         shift,
@@ -393,6 +419,8 @@ export class DrawableScene extends DrawableContainer implements LayoutScene {
     }
 
     const textBox = new TextBox(attrString, finalTextBounds);
+    // Lazy: only "Export text as html" needs it.
+    textBox.html = () => toHTML(titleTokens, style.fontSize, "", imageProvider) + (bodyTokens === null ? "" : toHTML(bodyTokens, bodyFontSize, "", imageProvider));
 
     switch (style.display) {
       case "text":

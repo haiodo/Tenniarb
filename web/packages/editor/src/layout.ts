@@ -3,19 +3,21 @@
 import { COMPONENT_ICON, GROUP_ICON } from "./icons.ts";
 
 const CSS = `
-.tn-split, .tn-menu { --bg: #ececec; --fg: rgba(0,0,0,.85); --fg2: rgba(0,0,0,.5); --sep: #d1d1d1; --field: #fff; --field-line: rgba(0,0,0,.18); --capsule: rgba(0,0,0,.06); --capsule-line: rgba(0,0,0,.1);
+.tn-split, .tn-menu, .tn-search, .tn-pop { --bg: #ececec; --fg: rgba(0,0,0,.85); --fg2: rgba(0,0,0,.5); --sep: #d1d1d1; --field: #fff; --field-line: rgba(0,0,0,.18); --capsule: rgba(0,0,0,.06); --capsule-line: rgba(0,0,0,.1);
   --hover: rgba(0,0,0,.06); --sel-idle: #cbcccc; --accent: #0a64d6; --menu: #f6f6f6; --menu-line: rgba(0,0,0,.18); }
-@supports (color: -apple-system-control-accent) { .tn-split, .tn-menu { --accent: -apple-system-control-accent; } }
+@supports (color: -apple-system-control-accent) { .tn-split, .tn-menu, .tn-search, .tn-pop { --accent: -apple-system-control-accent; } }
 @media (prefers-color-scheme: dark) {
-  .tn-split, .tn-menu { --bg: #2a2a2a; --fg: rgba(255,255,255,.85); --fg2: rgba(255,255,255,.5); --sep: #1b1b1b; --field: rgba(255,255,255,.08); --field-line: rgba(255,255,255,.15);
+  .tn-split, .tn-menu, .tn-search, .tn-pop { --bg: #2a2a2a; --fg: rgba(255,255,255,.85); --fg2: rgba(255,255,255,.5); --sep: #1b1b1b; --field: rgba(255,255,255,.08); --field-line: rgba(255,255,255,.15);
     --capsule: rgba(255,255,255,.12); --capsule-line: rgba(255,255,255,.14); --hover: rgba(255,255,255,.08); --sel-idle: #464646; --menu: #3a3a3a; --menu-line: rgba(255,255,255,.18); }
 }
 .tn-split { display: flex; height: 100%; min-height: 0; min-width: 0; background: var(--bg); color: var(--fg); color-scheme: light dark;
   font: 13px -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
 .tn-split ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
 .tn-right { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
-/* Liquid glass window (macOS, transparent webview): the sidebar shows the glass, the right pane stays opaque. */
-html.tn-glass, html.tn-glass body, .tn-glass .tn-split { background: transparent; }
+/* Translucent window (macOS, under-window vibrancy as Swift's NSVisualEffectView): the title row shows it always, the canvas with
+   the transparent setting; the properties get white at 0.8 as PropertiesPanelController. */
+html.tn-glass, html.tn-glass body, .tn-glass .tn-split, .tn-glass .tn-right, .tn-glass .tn-titlebar { background: transparent; }
+.tn-glass #props { background: color-mix(in srgb, Canvas 80%, transparent); }
 #outline { width: 217px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
 #editor { flex: 1; min-height: 0; position: relative; }
 #props { height: 127px; flex: none; overflow: hidden; user-select: text; -webkit-user-select: text; }
@@ -40,11 +42,19 @@ html.tn-glass, html.tn-glass body, .tn-glass .tn-split { background: transparent
 .tn-seg { display: flex; flex: none; gap: 1px; }
 .tn-seg button { min-width: 30px; border-radius: 0; }
 .tn-seg button:first-child { border-radius: 14px 0 0 14px; } .tn-seg button:last-child { border-radius: 0 14px 14px 0; }
+/* Quick style panel over the selected item (Swift showPopup); the delay is Swift's 0.2 s, so a double-click does not flash it. */
+.tn-pop { position: absolute; z-index: 5; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); animation: tn-pop-in .1s .2s backwards; }
+@keyframes tn-pop-in { from { opacity: 0; } }
+.tn-pop button { width: 36px; min-width: 0; padding: 0; font-size: 14px; }
+.tn-pop button::after { content: "\\25BE"; margin-left: 2px; font-size: 8px; opacity: .6; }
 .outline-tree { overflow: auto; flex: 1; outline: none; padding-bottom: 8px; }
 .outline-rename { font: 14px -apple-system, system-ui, sans-serif; min-width: 0; flex: 1; user-select: text; -webkit-user-select: text; }
 .row { display: flex; align-items: center; height: 27px; box-sizing: border-box; padding: 0 4px 0 calc(4px + var(--depth, 0) * 10px); cursor: default; white-space: nowrap; font-size: 14px; }
 .row:hover { background: var(--hover); }
 .row.sel { background: var(--sel-idle); }
+.row.drop-in { outline: 1px solid var(--accent); outline-offset: -1px; }
+.row.drop-before { box-shadow: inset 0 2px 0 var(--accent); }
+.row.drop-after { box-shadow: inset 0 -2px 0 var(--accent); }
 .outline-tree:focus-within .row.sel { background: var(--accent); color: #fff; }
 .row .arrow { order: 0; width: 14px; flex: none; text-align: center; font-size: 8px; color: var(--fg2); cursor: pointer; }
 .outline-tree:focus-within .row.sel .arrow { color: #fff; }
@@ -61,6 +71,14 @@ html.tn-glass, html.tn-glass body, .tn-glass .tn-split { background: transparent
 .tn-mi:hover { background: var(--accent); color: #fff; }
 .tn-mi.has-sub::after { content: "\\25B8"; position: absolute; right: 7px; }
 .tn-ic { order: -1; display: flex; width: 16px; height: 16px; }
+.tn-search { position: fixed; width: 400px; height: 180px; box-sizing: border-box; padding: 8px 0; display: flex; flex-direction: column; gap: 8px; background: var(--menu); color: var(--fg); border: 1px solid var(--menu-line);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font: 13px -apple-system, system-ui, sans-serif; z-index: 1000; }
+.tn-search.tn-op { width: 300px; height: 50px; padding: 12px 0; }
+.tn-search input.bad { background: #f00; color: #fff; }
+.tn-search input { flex: none; height: 30px; margin: 0 8px; padding: 0 8px; box-sizing: border-box; font: inherit; color: inherit; background: var(--field); border: 1px solid var(--field-line); border-radius: 4px; outline: none; }
+.tn-search > div { flex: 1; min-height: 0; overflow: auto; }
+.tn-sr { height: 20px; line-height: 20px; padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; -webkit-user-select: none; }
+.tn-sr.sel { background: var(--accent); color: #fff; }
 .tn-sep { height: 1px; margin: 4px 6px; background: var(--menu-line); }
 `;
 

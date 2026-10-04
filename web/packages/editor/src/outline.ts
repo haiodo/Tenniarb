@@ -23,7 +23,7 @@ function button(icon: string, title: string, click: () => void): HTMLButtonEleme
   return b;
 }
 
-export function mountOutline(host: HTMLElement, session: EditorSession, opts: { readonly?: boolean; onFocusCanvas?: () => void } = {}): Outline {
+export function mountOutline(host: HTMLElement, session: EditorSession, opts: { readonly?: boolean; onFocusCanvas?: () => void; expandLevel?: number } = {}): Outline {
   const ro = opts.readonly === true;
   host.replaceChildren();
   const header = document.createElement("div");
@@ -84,8 +84,16 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
     { label: "Delete", run: () => void session.removeElement(session.element) },
   ];
 
-  // Drop on a row moves into that element, on empty space - to the top level (Swift also reorders by index and copies into descendants).
+  // Swift acceptDrop: the middle of a row moves into that element, near its top / bottom edge - before / after it; empty space - the top level.
   let dragged: Element | null = null;
+  const zone = (row: HTMLElement, ev: DragEvent): "before" | "in" | "after" => {
+    const r = row.getBoundingClientRect();
+    const y = (ev.clientY - r.top) / r.height;
+    return y < 0.25 ? "before" : y > 0.75 ? "after" : "in";
+  };
+  const mark = (row: HTMLElement, z: string | null): void => {
+    for (const c of ["before", "in", "after"]) row.classList.toggle(`drop-${c}`, c === z);
+  };
   function wire(list: readonly ElementNode[]): void {
     for (const n of list) {
       wire(n.children);
@@ -103,11 +111,21 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
         dragged = el;
         ev.dataTransfer?.setData("text/plain", el.name);
       };
-      row.ondragover = (ev) => ev.preventDefault();
+      row.ondragover = (ev) => {
+        ev.preventDefault();
+        mark(row, zone(row, ev));
+      };
+      row.ondragleave = () => mark(row, null);
+      row.ondragend = () => mark(row, null);
       row.ondrop = (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        if (dragged !== null) session.moveElement(dragged, el);
+        const z = zone(row, ev);
+        mark(row, null);
+        if (dragged !== null) {
+          const parent = z === "in" ? el : el.parent!;
+          session.moveElement(dragged, parent, z === "in" ? parent.elements.length : parent.elements.indexOf(el) + (z === "after" ? 1 : 0));
+        }
         dragged = null;
       };
     }
@@ -118,6 +136,19 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
     if (!ro && dragged !== null) session.moveElement(dragged, session.root);
     dragged = null;
   };
+  // Clipboard events, as on the canvas: the native Edit menu items trigger them too.
+  treeHost.addEventListener("copy", (ev) => {
+    ev.clipboardData?.setData("text/plain", session.copyElement(session.element));
+    ev.preventDefault();
+  });
+  treeHost.addEventListener("cut", (ev) => {
+    if (ro) return;
+    ev.clipboardData?.setData("text/plain", session.cutElement(session.element));
+    ev.preventDefault();
+  });
+  treeHost.addEventListener("paste", (ev) => {
+    if (!ro && session.pasteElements(session.element, ev.clipboardData?.getData("text/plain") ?? "")) ev.preventDefault();
+  });
   treeHost.onkeydown = (ev) => {
     const mod = ev.metaKey || ev.ctrlKey;
     if (mod) {
@@ -151,5 +182,9 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
     tree.select(session.element.id);
   }
   sync();
+  if (opts.expandLevel !== undefined) {
+    tree.expand(opts.expandLevel);
+    tree.select(session.element.id);
+  }
   return { sync, destroy: () => host.replaceChildren() };
 }

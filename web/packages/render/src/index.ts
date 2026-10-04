@@ -9,3 +9,4 @@ export * from "./scene.ts";
 export * from "./render.ts";
 export * from "./fonts.ts";
 export * from "./elements.ts";
+export { SvgContext } from "./svg-context.ts";

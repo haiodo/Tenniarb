@@ -1,7 +1,7 @@
 // Playwright smoke: node scripts/smoke.ts [outDir]. Not part of CI; Playwright comes from web/bench/node_modules.
 // Needs dist/ (npm run build -w @tenniarb/editor).
 import { createServer } from "node:http";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 
@@ -349,6 +349,41 @@ await focusCanvas();
 await p.keyboard.press("ControlOrMeta+z");
 await p.waitForTimeout(200);
 check((await parentOf("Simple")) === "Init screens", "undo moves it back");
+const indexOf = (name: string) => p.evaluate((n) => { const f = (e: any): any => e.elements.map((c: any, i: number) => (c.name === n ? [c.parent.name, i] : f(c))).find((x: any) => x); return f((window as any).editor.session.root); }, name);
+const ex = await indexOf("Executions");
+await rowOf("Simple").dragTo(rowOf("Executions"), { targetPosition: { x: 60, y: 2 } });
+await p.waitForTimeout(200);
+const sim = await indexOf("Simple");
+check(sim[0] === ex[0] && sim[1] === ex[1], `dropping on the top edge of a row puts the element before it (${JSON.stringify(ex)} -> ${JSON.stringify(sim)})`);
+await focusCanvas();
+await p.keyboard.press("ControlOrMeta+z");
+await p.waitForTimeout(200);
+check((await parentOf("Simple")) === "Init screens", "undo moves it back (index drop)");
+
+// outline clipboard: copy + paste into another element, cut, one undo step each
+const oc0 = await ol();
+await rowOf("Simple").click();
+await p.keyboard.press("ControlOrMeta+c");
+await rowOf("Executions").click();
+await p.keyboard.press("ControlOrMeta+v");
+await p.waitForTimeout(200);
+const oc1 = await ol();
+check(oc1.total === oc0.total + 1 && oc1.changes === oc0.changes + 1 && (await parentOf("Simple")) === "Init screens", "outline Cmd+C / Cmd+V adds a copy of the element into the selected one");
+await p.keyboard.press("ControlOrMeta+z");
+await p.waitForTimeout(200);
+check((await ol()).total === oc0.total, "undo removes the pasted element in one step");
+await rowOf("Simple").click();
+await p.keyboard.press("ControlOrMeta+x");
+await p.waitForTimeout(200);
+const oc2 = await ol();
+check(oc2.total === oc0.total - 1 && oc2.changes === oc0.changes + 3 && (await rowOf("Simple").count()) === 0, "outline Cmd+X removes the element");
+await p.keyboard.press("ControlOrMeta+v");
+await p.waitForTimeout(200);
+check((await ol()).total === oc0.total && (await rowOf("Simple").count()) === 1, "Cmd+V brings the cut element back");
+await focusCanvas();
+for (let i = 0; i < 2; i++) await p.keyboard.press("ControlOrMeta+z");
+await p.waitForTimeout(200);
+check((await ol()).total === oc0.total && (await parentOf("Simple")) === "Init screens", "undo twice restores the original tree");
 
 {
 // outline keyboard: arrows walk the visible rows, left / right fold, Tab adds an item and focuses the canvas
@@ -399,9 +434,56 @@ await p.click('.tn-bar .tn-seg button[title="Delete selection"]');
 check((await p.evaluate(() => (window as any).editor.session.element.items.length as number)) === n0, "toolbar - removes the selected item");
 await p.click('.tn-bar button[title="Share"]');
 const share = await p.evaluate(() => [...document.querySelectorAll(".tn-menu.root > .tn-mi")].map((e) => `${e.firstChild!.textContent}:${e.querySelector("svg") !== null}`));
-check(share.length === 3 && share.every((l) => l.endsWith(":true")), `share menu has icons: ${share.join(", ")}`);
+check(share.length === 9 && share.every((l) => l.endsWith(":true")), `share menu has icons: ${share.join(", ")}`);
 await p.screenshot({ path: `${out}/23-share-menu.png` });
 await p.keyboard.press("Escape");
+// Each export lands in a download with the expected name and content.
+await p.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+const exported = async (label: string) => {
+  await p.click('.tn-bar button[title="Share"]');
+  const [dl] = await Promise.all([p.waitForEvent("download"), p.click(`.tn-menu.root >> text="${label}"`)]);
+  const file = `${out}/export-${dl.suggestedFilename()}`;
+  await dl.saveAs(file);
+  return { name: dl.suggestedFilename() as string, text: readFileSync(file, "utf8"), file };
+};
+const ename = await p.evaluate(() => (window as any).editor.session.element.name as string);
+const html = await exported("Export as HTML");
+check(html.name === `${ename}.html` && /^<html>[\s\S]*src="data:image\/png;base64,[A-Za-z0-9+/=]{100,}"/.test(html.text), `Export as HTML: ${html.name}`);
+const json = await exported("Export as JSON");
+const parsed = JSON.parse(json.text);
+check(json.name === `${ename}.json` && parsed.name === ename && Array.isArray(parsed.items) && json.text.includes('"name" : '), `Export as JSON: ${json.name}, ${parsed.items.length} items`);
+// Print: window.print is stubbed; the page then holds the element as SVG in the print host, in the same family as the canvas.
+await p.evaluate(() => { (window as any).prints = 0; window.print = () => void ((window as any).prints += 1); });
+const printed = () => p.evaluate(() => { const h = document.getElementById("tn-print"); return { n: (window as any).prints as number, svg: h?.querySelector("svg")?.outerHTML ?? "", css: h?.querySelector("style")?.textContent ?? "" }; });
+await p.click('.tn-bar button[title="Share"]');
+await p.click('.tn-menu.root >> text="Export as PDF"');
+const pdf1 = await printed();
+check(pdf1.n === 1 && /^<svg[^>]*viewBox/.test(pdf1.svg) && pdf1.svg.includes("<text") && pdf1.css.includes("size:"), `Export as PDF prints the SVG: ${pdf1.svg.length} B`);
+check(!pdf1.svg.includes("fill=\"#e7e9eb\""), "print SVG has no background fill");
+await p.mouse.click(EMPTY.x, EMPTY.y);
+await p.keyboard.press("Control+p");
+const pdf2 = await printed();
+check(pdf2.n === 2 && !pdf2.css.includes("size:") && pdf2.svg.length > 0, "Cmd+P prints with paper margins");
+const pdfBytes: Buffer = await p.pdf({ preferCSSPageSize: false, printBackground: true });
+writeFileSync(`${out}/print.pdf`, pdfBytes);
+check(pdfBytes.toString("latin1").match(/\/Type \/Page\b/g)?.length === 1 && (await p.$eval("#tn-print", (e: HTMLElement) => getComputedStyle(e).display)) === "none", "print media: one page, host hidden on screen");
+const inter = await exported("Export as interactive HTML");
+check(inter.name === `${ename}.html` && inter.text.startsWith("<!doctype html>") && inter.text.includes('data-encoding="base64"') && inter.text.length > 800_000, `Export as interactive HTML: ${inter.text.length} B`);
+const page = await browser.newPage({ viewport: { width: 1000, height: 700 } });
+await page.goto(`file://${inter.file}`);
+await page.waitForSelector("canvas");
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/interactive-html.png` });
+check(await page.$eval("canvas", (c: HTMLCanvasElement) => c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 === 3 && v !== 0)), "interactive HTML renders a diagram");
+await page.close();
+await p.click('.tn-bar button[title="Share"]');
+await p.click('.tn-menu.root >> text="Copy as JSON"');
+await p.waitForTimeout(300);
+check((await p.evaluate(() => navigator.clipboard.readText())).includes('"items"'), "Copy as JSON puts JSON on the clipboard");
+await p.click('.tn-bar button[title="Share"]');
+await p.click('.tn-menu.root >> text="Copy as HTML"');
+await p.waitForTimeout(500); // PNG render before the clipboard write
+check((await p.evaluate(async () => (await (await navigator.clipboard.read())[0]!.getType("text/html")).text())).includes("data:image/png;base64,"), "Copy as HTML puts text/html on the clipboard");
 
 // off-screen indicators: pan everything out of view, dots appear at the edge
 const dots = () => p.$eval("canvas", (c: HTMLCanvasElement) => { const o = document.createElement("canvas"); o.width = c.width; o.height = c.height; const x = o.getContext("2d", { willReadFrequently: true })!; x.drawImage(c, 0, 0); const w = c.width; const h = c.height; let n = 0; for (const [x0, y0, ww, hh] of [[0, 0, 40, h], [w - 40, 0, 40, h], [0, 0, w, 40], [0, h - 40, w, 40]] as number[][]) { const d = x.getImageData(x0!, y0!, ww!, hh!).data; for (let i = 3; i < d.length; i += 4) if (d[i] !== 0) n++; } return n; });
@@ -426,6 +508,55 @@ await p.waitForTimeout(200);
 const sc0 = await p.evaluate(() => { const e = document.querySelector("#props .cm-scroller") as HTMLElement; const before = e.scrollLeft; e.scrollLeft = 100; return { sw: e.scrollWidth, cw: e.clientWidth, ox: getComputedStyle(e).overflowX, moved: e.scrollLeft - before }; });
 check(sc0.sw > sc0.cw && sc0.ox === "auto" && sc0.moved > 0, `panel scrolls horizontally (${sc0.sw} > ${sc0.cw}, moved ${sc0.moved})`);
 await p.screenshot({ path: `${out}/30-panel-scroll.png` });
+
+// images: paste of a PNG file, "Attach image" through the file chooser
+const imgItems = () => p.evaluate(() => { const s = (window as any).editor.session; return { n: s.element.items.length, sel: s.selection.length, withImage: s.element.items.filter((i: any) => i.properties.get("image") !== null).length, changes: (window as any).changes as number }; });
+const pasteBlob = (type: string) =>
+  p.evaluate(async (t) => {
+    const c = document.createElement("canvas");
+    [c.width, c.height] = [40, 30];
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#e0245e";
+    g.fillRect(0, 0, 40, 30);
+    const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), t));
+    const dt = new DataTransfer();
+    dt.items.add(new File([blob], t === "image/png" ? "shot.png" : "shot.jpg", { type: t }));
+    document.querySelector("canvas")!.parentElement!.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true }));
+  }, type);
+await p.evaluate(() => { const s = (window as any).editor.session; s.selection = []; });
+const i0 = await imgItems();
+await pasteBlob("image/png");
+await p.waitForFunction(() => (window as any).editor.session.text().includes("shot.png"), null, { timeout: 5000 }).catch(() => {});
+const i1 = await imgItems();
+check(i1.n === i0.n + 1 && i1.sel === 1 && i1.withImage === i0.withImage + 1 && i1.changes === i0.changes + 1, "pasted PNG: a new item with the image, selected, onChange +1");
+const stored = await p.evaluate(() => { const s = (window as any).editor.session; const t: string = s.text(); return { named: t.includes('image "shot.png"'), title: t.includes("@(shot.png|96)") }; });
+check(stored.named && stored.title, "pasted item stores image name and the title with the image");
+await p.screenshot({ path: `${out}/31-pasted-image.png` });
+await p.evaluate(() => (window as any).editor.undo());
+await p.waitForTimeout(100);
+check((await imgItems()).n === i0.n, "undo removes the pasted image item");
+await pasteBlob("image/jpeg");
+await p.waitForFunction(() => (window as any).editor.session.text().includes("shot.jpg"), null, { timeout: 5000 }).catch(() => {});
+const jpg = await p.evaluate(() => { const t: string = (window as any).editor.session.text(); return t.includes('image "shot.jpg"') && t.includes("iVBORw0KGgo"); });
+check(jpg, "pasted JPEG is stored as PNG");
+await p.evaluate(() => (window as any).editor.undo());
+await p.waitForTimeout(100);
+await p.evaluate(() => { const s = (window as any).editor.session; s.selection = [s.element.items.find((i: any) => i.name === "Diagram area")]; s.opts.onRedraw(); });
+const a0 = await imgItems();
+{
+  const pt = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.selection[0]); });
+  await p.mouse.click(pt.x, pt.y, { button: "right" });
+  await p.waitForTimeout(100);
+  const png = Buffer.from(await p.evaluate(() => { const c = document.createElement("canvas"); c.width = c.height = 8; return c.toDataURL("image/png").split(",")[1]!; }), "base64");
+  const [chooser] = await Promise.all([p.waitForEvent("filechooser"), p.click('.tn-menu.root >> text="Attach image"')]);
+  await chooser.setFiles({ name: "dot.png", mimeType: "image/png", buffer: png });
+  await p.waitForFunction(() => (window as any).editor.session.text().includes("dot.png"), null, { timeout: 5000 }).catch(() => {});
+}
+const a1 = await imgItems();
+check(a1.n === a0.n && a1.withImage === a0.withImage + 1 && a1.changes === a0.changes + 1, "Attach image: the selected item gets an image, onChange +1");
+await p.evaluate(() => (window as any).editor.undo());
+await p.waitForTimeout(100);
+check((await imgItems()).withImage === a0.withImage, "undo removes the attached image");
 
 // styles context menu
 const st = () => p.evaluate(() => { const s = (window as any).editor.session; const it = s.selection[0]; return { model: s.text() as string, changes: (window as any).changes as number, styles: s.styleNames() as string[], has: it ? s.propsText(it) as string : "" }; });
@@ -455,9 +586,14 @@ await p.evaluate(() => { const s = (window as any).editor.session; s.selection =
 await rightClick();
 const t0 = await st();
 check((await p.evaluate(() => (window as any).editor.session.selection.map((i: any) => i.name))).join() === "Diagram area", "right click selects the item under the cursor");
-check(JSON.stringify(await menuLabels()) === JSON.stringify(["Style", "Quick Style"]), `context menu on an item: ${JSON.stringify(await menuLabels())}`);
-await p.hover(".tn-menu.root > .tn-mi:last-child");
+check(JSON.stringify(await menuLabels()) === JSON.stringify(["New item", "New linked item", "Linked styled item", "Style", "Quick Style", "Duplicate", "Attach image", "Order", "Export text as html", "Delete"]), `context menu on an item: ${JSON.stringify(await menuLabels())}`);
+await p.hover(".tn-menu.root > .tn-mi:nth-child(7)");
 await p.screenshot({ path: `${out}/31-styles.png` });
+await pickMenu("Export text as html");
+await p.waitForTimeout(200);
+const itemHtml = await p.evaluate(async () => (await (await navigator.clipboard.read())[0]!.getType("text/html")).text());
+check(itemHtml.startsWith("<div>") && itemHtml.includes("Diagram area"), `Export text as html copies the item text: ${itemHtml.slice(0, 60)}`);
+await rightClick();
 await pickMenu("Quick Style", "Color", "🔴red");
 const t1 = await st();
 check(t1.has.includes("color red") && t1.changes === t0.changes + 1 && t1.model.includes("color red") && (await p.locator(".tn-menu").count()) === 0, "quick style: color red in the model, onChange +1, menu closed");
@@ -485,10 +621,255 @@ await rightClick();
 await p.keyboard.press("Escape");
 check((await p.locator(".tn-menu").count()) === 0, "Esc closes the menu");
 await rightClick(EMPTY);
-check(JSON.stringify(await menuLabels()) === JSON.stringify(["Style", "Global Styles"]) && (await p.evaluate(() => (window as any).editor.session.selection.length)) === 0, "right click on empty space: selection cleared, Style and Global Styles only");
+check(JSON.stringify(await menuLabels()) === JSON.stringify(["New item", "Test layout", "Style", "Global Styles"]) && (await p.evaluate(() => (window as any).editor.session.selection.length)) === 0, `right click on empty space: selection cleared, ${JSON.stringify(await menuLabels())}`);
 await pickMenu("Global Styles", "Enable shadows");
 check((await st()).changes === t4.changes + 2 && (await st()).model.includes("shadow -5 -5 5"), "Enable shadows applies in one step");
+
+// ctrl-drag: preview line, link on drop, no context menu, one undo step; empty drop adds nothing
+const linkCount = () => p.evaluate(() => (window as any).editor.session.element.items.filter((i: any) => i.kind === "Link").length);
+const screenOf = (name: string) => p.evaluate((n) => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === n)); }, name);
+const [from, to] = [await screenOf("Diagram area"), await screenOf("Outline")];
+const l0 = await linkCount();
+const cl0 = (await st()).changes;
+await p.keyboard.down("Control");
+await p.mouse.move(from.x, from.y);
+await p.mouse.down();
+await p.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 4 });
+check(await p.evaluate(() => (window as any).editor.session.scene.lineToDrawable !== null), "ctrl-drag: preview line is drawn");
+await p.mouse.move(to.x, to.y, { steps: 4 });
+await p.mouse.up();
+await p.keyboard.up("Control");
+await p.waitForTimeout(100);
+check((await linkCount()) === l0 + 1 && (await st()).changes === cl0 + 1, "ctrl-drag onto an item adds one link, one onChange");
+check((await p.locator(".tn-menu").count()) === 0, "ctrl-click does not open the context menu");
+await p.screenshot({ path: `${out}/32-ctrl-link.png` });
 await p.keyboard.press("ControlOrMeta+z");
+await p.waitForTimeout(100);
+check((await linkCount()) === l0, "undo removes the dragged link");
+await p.keyboard.down("Control");
+await p.mouse.move(from.x, from.y);
+await p.mouse.down();
+await p.mouse.move(EMPTY.x, EMPTY.y, { steps: 4 });
+await p.mouse.up();
+await p.keyboard.up("Control");
+await p.waitForTimeout(100);
+check((await linkCount()) === l0 && (await p.evaluate(() => (window as any).editor.session.scene.lineToDrawable)) === null, "ctrl-drag dropped on empty space adds nothing, preview gone");
+await p.keyboard.press("ControlOrMeta+z");
+
+// context menu actions and canvas keys
+{
+  const n = () => p.evaluate(() => (window as any).editor.session.element.items.length as number);
+  // "Diagram area" is a plain box that is hit at its centre.
+  const sess = <R>(f: string): Promise<R> => p.evaluate(`(() => { const s = window.editor.session; const T = () => s.element.items.find((i) => i.name === "Diagram area"); return ${f}; })()`) as Promise<R>;
+  const first = () => sess<{ x: number; y: number }>("({ x: T().x, y: T().y })");
+  const changes = () => p.evaluate(() => (window as any).changes as number);
+  const selectFirst = () => sess<void>("(s.selection = [T()], s.opts.onRedraw())");
+  const positions = () => sess<string>("JSON.stringify(s.element.items.map((i) => [i.x, i.y]))");
+  await p.keyboard.press("Escape");
+  await focusCanvas();
+  await selectFirst();
+  const n0 = await n();
+  await rightClick();
+  await pickMenu("New linked item");
+  check((await n()) === n0 + 2 && (await sess<string>("s.selection[0].kind")) === "Item" && (await sess<string>("s.selection[0].name")).startsWith("Untitled"), "menu: New linked item adds an item and its link, selects the item");
+  await p.keyboard.press("ControlOrMeta+z");
+  check((await n()) === n0, "undo removes both in one step");
+  await selectFirst();
+  await rightClick();
+  await pickMenu("Duplicate");
+  check((await n()) > n0, "menu: Duplicate");
+  await p.keyboard.press("ControlOrMeta+z");
+  await selectFirst();
+  await rightClick();
+  await pickMenu("Delete");
+  check((await n()) < n0, "menu: Delete");
+  await p.keyboard.press("ControlOrMeta+z");
+  await sess<void>("(s.selection = [T(), ...s.element.items.filter((i) => i.kind === 'Item' && i !== T()).slice(0, 2)], s.opts.onRedraw())");
+  await rightClick();
+  const labels3 = await menuLabels();
+  check((await sess<number>("s.selection.length")) === 3 && labels3.includes("Align") && !labels3.includes("Order"), `several selected: Align, no Order (${labels3.join(", ")})`);
+  await pickMenu("Align", "Leading Edges");
+  check((await sess<number[]>("s.selection.map((i) => i.x)")).every((x, _, all) => x === all[0]), "menu: Align > Leading Edges");
+  await p.keyboard.press("ControlOrMeta+z");
+  await selectFirst();
+  await rightClick();
+  await pickMenu("Order", "Move Forward");
+  check(await sess<boolean>("s.element.items.at(-1) === s.selection[0]"), "menu: Order > Move Forward");
+  await p.keyboard.press("ControlOrMeta+z");
+  await sess<void>("(s.selection = [], s.opts.onRedraw())");
+  const l0 = await positions();
+  await rightClick(EMPTY);
+  await pickMenu("Test layout");
+  check((await positions()) !== l0, "menu: Test layout moves the items");
+  await p.keyboard.press("ControlOrMeta+z");
+  check((await positions()) === l0, "undo restores the layout in one step");
+
+  await focusCanvas();
+  await selectFirst();
+  const c0 = await changes();
+  await p.keyboard.press("Tab");
+  check((await n()) === n0 + 2 && (await changes()) === c0 + 1, "Tab adds a linked item in one step");
+  await p.keyboard.press("ControlOrMeta+z");
+  await selectFirst();
+  await sess<void>('s.setQuickStyle("color", "red")');
+  await p.keyboard.press("Alt+Tab");
+  check((await sess<string>("s.propsText(s.selection[0])")).includes("color red"), "Option+Tab copies the style properties into the new item");
+  await p.keyboard.press("ControlOrMeta+z");
+  await p.keyboard.press("ControlOrMeta+z");
+  await selectFirst();
+  await p.keyboard.press("x");
+  check((await n()) < n0, "x removes the selection");
+  await p.keyboard.press("ControlOrMeta+z");
+  check((await n()) === n0, "undo brings it back");
+  await selectFirst();
+  const a0 = await first();
+  const c1 = await changes();
+  await p.keyboard.press("ArrowRight");
+  const a1 = await first();
+  check(a1.x > a0.x && a1.x - a0.x <= 10 && a1.x % 5 === 0, `ArrowRight moves to the next grid line (${a0.x} -> ${a1.x})`);
+  await p.keyboard.press("ArrowUp");
+  check((await first()).y > a1.y && (await changes()) === c1 + 2, "ArrowUp moves up, one undo step per press");
+  await p.keyboard.press("ControlOrMeta+z");
+  await p.keyboard.press("ControlOrMeta+z");
+  check(JSON.stringify(await first()) === JSON.stringify(a0), "two undos restore the position");
+  const text0 = await sess<string>("s.propsText(s.selection[0])");
+  await p.keyboard.press("Shift+ArrowRight");
+  const w1 = await sess<string>("s.propsText(s.selection[0])");
+  check(/width [\d.]+/.test(w1) && JSON.stringify(await first()) === JSON.stringify(a0), "Shift+ArrowRight resizes (width property), position stays");
+  await p.keyboard.press("Meta+ArrowRight");
+  check((await first()).x < a0.x && (await sess<string>("s.propsText(s.selection[0])")) !== w1, "Cmd+ArrowRight resizes from the centre (item shifts left)");
+  await p.keyboard.press("ControlOrMeta+z");
+  await p.keyboard.press("ControlOrMeta+z");
+  check((await sess<string>("s.propsText(s.selection[0])")) === text0, "undo of both resizes");
+  await p.keyboard.press("ControlOrMeta+a");
+  check((await sess<number>("s.selection.length")) === n0, "Cmd+A selects everything");
+  await p.keyboard.press("ControlOrMeta+Shift+a");
+  check(await sess<boolean>("s.selection.length > 0 && s.selection.every((i) => i.kind === 'Item')"), "Cmd+Shift+A selects the items");
+  await selectFirst();
+  await p.keyboard.press("Alt+Enter");
+  check(await p.evaluate(() => document.querySelector("textarea") !== null), "Option+Enter opens the value editor");
+  await p.keyboard.type("42");
+  await p.keyboard.press("Enter");
+  check((await sess<string>("s.propsText(s.selection[0])")).includes("value 42"), "value 42 stored as a number");
+  await p.keyboard.press("ControlOrMeta+z");
+  await sess<void>("(s.selection = [], s.opts.onRedraw())");
+}
+
+// Quick style panel: above the single selected item, follows pan, segment menu applies a style
+{
+  const sess = <R>(f: string): Promise<R> => p.evaluate(`(() => { const s = window.editor.session; const T = () => s.element.items.find((i) => i.name === "Diagram area"); return ${f}; })()`) as Promise<R>;
+  const pop = () => p.evaluate(() => { const r = document.querySelector(".tn-pop")?.getBoundingClientRect(); return r && { x: r.x, y: r.y, w: r.width, h: r.height, n: document.querySelectorAll(".tn-pop button").length }; });
+  await sess<void>("(s.selection = [T()], s.opts.onRedraw())");
+  await p.waitForTimeout(400);
+  const q0 = await pop();
+  const c = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); });
+  check(q0 !== undefined && q0!.n === 6 && q0!.y + q0!.h <= c.y, `quick panel: 6 segments above the selected item (${JSON.stringify(q0)})`);
+  await p.screenshot({ path: `${out}/quick-panel.png` });
+  await p.mouse.move(EMPTY.x, EMPTY.y);
+  await p.mouse.down();
+  await p.mouse.move(EMPTY.x - 40, EMPTY.y - 30, { steps: 4 });
+  await p.mouse.up();
+  const q1 = await pop();
+  check(q1 === undefined, "quick panel: the empty click that starts a pan clears the selection and hides it");
+  await sess<void>("(s.selection = [T()], s.opts.onRedraw())");
+  await p.waitForTimeout(100);
+  const q2 = await pop();
+  const c2 = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); });
+  await p.mouse.wheel(0, 40);
+  await p.waitForTimeout(300);
+  const q3 = await pop();
+  const c3 = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); });
+  check(q2 !== undefined && q3 !== undefined && c3.y < c2.y && Math.abs(q3.y - q2.y - (c3.y - c2.y)) < 1.5, `quick panel follows the wheel pan (item ${c2.y} -> ${c3.y}, panel ${q2?.y} -> ${q3?.y})`);
+  await p.click(".tn-pop button[title='Color']");
+  check((await p.locator(".tn-menu.root > .tn-mi").count()) === 8, "quick panel: the colour segment opens its 8 colours");
+  await p.screenshot({ path: `${out}/quick-panel-menu.png` });
+  const cp0 = await p.evaluate(() => (window as any).changes as number);
+  await p.locator(".tn-menu.root > .tn-mi", { hasText: "red" }).click();
+  check((await sess<string>("s.propsText(T())")).includes("color red") && (await p.evaluate(() => (window as any).changes as number)) === cp0 + 1, "quick panel: a pick sets the property, onChange +1");
+  await p.keyboard.press("ControlOrMeta+z");
+  check(!(await sess<string>("s.propsText(T())")).includes("color red"), "quick panel: undo restores the item");
+  await p.evaluate(() => (window as any).editor.setSettings({ quickPanel: false }));
+  await p.waitForTimeout(100);
+  check((await pop()) === undefined, "quick panel: the setting hides it live");
+  await p.evaluate(() => (window as any).editor.setSettings({ quickPanel: true }));
+  await p.waitForTimeout(100);
+  check((await pop()) !== undefined, "quick panel: and shows it again");
+  await p.evaluate(() => (window as any).editor.edit("name"));
+  await p.waitForTimeout(100);
+  check((await pop()) === undefined, "quick panel: hidden while the name is edited");
+  await p.keyboard.press("Escape");
+  await p.waitForTimeout(100);
+  check((await pop()) !== undefined, "quick panel: back after the edit");
+  await sess<void>("(s.selection = [], s.opts.onRedraw())");
+  await p.waitForTimeout(100);
+  check((await pop()) === undefined, "quick panel: hidden on an empty selection");
+  await sess<void>("(s.selection = s.element.items.slice(0, 2), s.opts.onRedraw())");
+  await p.waitForTimeout(100);
+  check((await pop()) === undefined, "quick panel: hidden for several selected items");
+  await sess<void>("(s.selection = [s.element.items.find((i) => i.kind === 'Link')], s.opts.onRedraw())");
+  await p.waitForTimeout(100);
+  check((await pop())?.n === 3, "quick panel: a link gets 3 segments (display, line style, line width)");
+  await sess<void>("(s.selection = [], s.opts.onRedraw())");
+}
+
+// Goto Item (Cmd+R): popup over the canvas, typing filters, arrows select and centre, Enter closes
+{
+  const names = () => p.evaluate(() => [...document.querySelectorAll(".tn-search .tn-sr")].map((e) => e.textContent!));
+  const cur = () =>
+    p.evaluate(() => {
+      const e = (window as any).editor;
+      const s = e.session;
+      const sel = s.selection[0];
+      const r = document.querySelector("canvas")!.getBoundingClientRect();
+      const c = sel === undefined ? { x: 0, y: 0 } : e.screenOf(sel);
+      return { name: sel?.name as string | undefined, dx: c.x - (r.left + r.width / 2), dy: c.y - (r.top + r.height / 2) };
+    });
+  await p.mouse.click(EMPTY.x, EMPTY.y);
+  await p.keyboard.press("ControlOrMeta+r");
+  check((await p.locator(".tn-search input").count()) === 1, "Cmd+R opens the search popup (no page reload)");
+  await p.keyboard.type("a");
+  const list = await names();
+  check(list.length > 1 && list.join() === [...list].sort().join(), `typing lists matches by name (${list.length})`);
+  const first = (await cur()).name;
+  await p.keyboard.press("ArrowDown");
+  const second = await cur();
+  check(second.name !== undefined && second.name !== first && list[1]!.startsWith(second.name), `ArrowDown selects the next result ("${first}" -> "${second.name}")`);
+  check(Math.abs(second.dx) < 2 && second.dy > 10, `the item is centred horizontally and below the centre, as Swift's offset 120 (${second.dx.toFixed(1)}, ${second.dy.toFixed(1)})`);
+  await p.screenshot({ path: `${out}/goto-item.png` });
+  await p.keyboard.press("Enter");
+  check((await p.locator(".tn-search").count()) === 0 && (await cur()).name === second.name, "Enter closes the popup, the item stays selected");
+  await p.keyboard.press("ControlOrMeta+r");
+  await p.keyboard.press("Escape");
+  check((await p.locator(".tn-search").count()) === 0, "Esc closes the popup");
+}
+
+// Operation box (Space): select, Space, type, Enter changes the item; invalid input turns the field red; undo restores
+{
+  const props = () => p.evaluate(() => { const e = (window as any).editor; return e.session.propsText(e.session.selection[0]); });
+  await p.mouse.click(EMPTY.x, EMPTY.y);
+  await p.keyboard.press("Space");
+  check((await p.locator(".tn-op").count()) === 0, "Space without a selection does nothing");
+  await p.evaluate(() => { const e = (window as any).editor; e.session.select([e.session.element.items.find((i: any) => i.kind === "Item")]); });
+  const before = await props();
+  const n0 = (await state()).changes;
+  await p.keyboard.press("Space");
+  check((await p.locator(".tn-op input").count()) === 1, "Space opens the operation box");
+  await p.keyboard.type("color {");
+  await p.keyboard.press("Enter");
+  check((await p.locator(".tn-op input.bad").count()) === 1 && (await props()) === before, "invalid input: red field, popup stays, item unchanged");
+  await p.screenshot({ path: `${out}/operation-error.png` });
+  await p.keyboard.press("ControlOrMeta+a");
+  await p.keyboard.type("color red");
+  await p.keyboard.press("Enter");
+  check((await p.locator(".tn-op").count()) === 0 && /color red/.test(await props()), "Enter applies and closes");
+  check((await state()).changes === n0 + 1, "onChange fired once");
+  await p.keyboard.press("ControlOrMeta+z");
+  check((await props()) === before, "undo restores the item");
+  await p.keyboard.press("Space");
+  await p.keyboard.press("Escape");
+  check((await p.locator(".tn-op").count()) === 0, "Esc closes the box");
+  await p.evaluate(() => (window as any).editor.session.select([]));
+}
 
 // readonly
 await p.click("#ro");
@@ -513,6 +894,7 @@ await p.mouse.click(pr.x, pr.y, { button: "right" });
 check((await p.locator(".tn-menu").count()) === 0, "readonly: no context menu");
 check(sr.sel === 0 && sr.x === s0.x && sr.y === s0.y && sr.changes === ro0, "readonly: no selection, no move, no onChange");
 await p.screenshot({ path: `${out}/5-readonly.png` });
+check((await p.locator(".tn-pop").count()) === 0, "readonly: no quick panel");
 check((await p.locator("#outline .outline-header button").count()) === 0, "readonly: no outline buttons");
 const roChanges = (await state()).changes;
 await rowOf("Basic steps").locator("> .name").dblclick();

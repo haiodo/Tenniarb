@@ -107,14 +107,42 @@ test("the last top-level element cannot be removed", () => {
   assert.equal(root.elements.length, 1);
 });
 
-test("moveElement reparents as one undo step; into itself or a descendant is refused", () => {
+test("moveElement reparents as one undo step", () => {
   const { s, a, a1, b } = make();
-  assert.equal(s.moveElement(a, a1), false);
-  assert.equal(s.moveElement(a, a), false);
   assert.equal(s.moveElement(a1, b), true);
   assert.deepEqual([a.elements.length, b.elements[0], a1.parent], [0, a1, b]);
   s.undo();
   assert.deepEqual([a.elements[0], b.elements.length], [a1, 0]);
+});
+
+test("moveElement by index: before / after a sibling, a move down inside one parent lands where it was dropped", () => {
+  const { s, root, a, b } = make();
+  assert.equal(s.moveElement(b, root, 0), true);
+  assert.deepEqual(root.elements, [b, a]);
+  assert.equal(s.moveElement(b, root, 2), true); // dropped after "A"
+  assert.deepEqual(root.elements, [a, b]);
+});
+
+test("moveElement into itself or a descendant copies the diagram without sub-elements, at the index", () => {
+  const { s, a, a1 } = make();
+  assert.equal(s.moveElement(a, a1, 0), true);
+  const copy = a1.elements[0]!;
+  assert.deepEqual([a.parent === s.root, copy.name, copy.items.length, copy.elements.length], [true, "A", 2, 0]);
+  s.undo();
+  assert.equal(a1.elements.length, 0);
+  assert.equal(s.moveElement(a, a), true);
+  assert.equal(a.elements.at(-1)!.items.length, 2);
+});
+
+test("inherit: a copy inside the element whose items only inherit the originals", () => {
+  const { s, a, changes } = make();
+  s.inherit();
+  const copy = a.elements.at(-1)!;
+  assert.deepEqual(copy.items.map((i) => /inherit .*/.exec(s.propsText(i))![0]), ['inherit "../Alpha" 0', 'inherit "../Beta" 0']);
+  assert.doesNotMatch(s.propsText(copy.items[1]!), /body/);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.equal(a.elements.length, 1);
 });
 
 test("readonly: no element edits, navigation works", () => {
@@ -123,6 +151,8 @@ test("readonly: no element edits, navigation works", () => {
   assert.equal(s.duplicateElement(a1), null);
   assert.equal(s.removeElement(a1), false);
   assert.equal(s.moveElement(a1, b), false);
+  s.inherit();
+  assert.equal(a.elements.length, 1);
   s.renameElement(a1, "X");
   assert.equal(a1.name, "A1");
   assert.equal(changes.length, 0);

@@ -10,6 +10,8 @@ export interface TreeView {
   select(id: string): void;
   /** Arrow keys of NSOutlineView: id of the row to select next, or null when the key only expands / collapses (or there is nowhere to go). */
   navigate(id: string, key: "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight"): string | null;
+  /** Swift expandItems: rows deeper than `level` are collapsed (-1: all). */
+  expand(level: number): void;
   row(id: string): HTMLElement | undefined;
   /** The text span of a row. */
   name(id: string): HTMLElement | undefined;
@@ -90,6 +92,15 @@ export function createTree(host: HTMLElement, onSelect: (node: ElementNode) => v
       filter(query);
     },
     filter,
+    expand(level) {
+      const visit = (list: readonly ElementNode[], depth: number): void => {
+        for (const c of list) {
+          if (c.children.length > 0) setCollapsed(c.id, depth > level);
+          visit(c.children, depth + 1);
+        }
+      };
+      visit(nodes, 0);
+    },
     select(id) {
       for (const { row } of rows.values()) row.classList.remove("sel");
       const r = rows.get(id);

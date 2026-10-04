@@ -19,6 +19,7 @@ const SRC = `element "D" {
 function make(opts: { readonly?: boolean } = {}) {
   const changes: string[] = [];
   const s = new EditorSession(readTenn(SRC)!.elements[0]!, { evaluate: false, onChange: (t) => changes.push(t), ...opts });
+  s.undoManager.groupsByEvent = false; // the tests undo step by step inside one tick
   const [a, b, c] = s.element.items;
   const centre = (i: typeof a): Point => {
     const r = s.scene.drawables.get(i!)!.getSelectorBounds();
@@ -284,4 +285,333 @@ test("props: expression values by line", () => {
   const values = s.propsValues(a, 'name "A"\npos 0 0\nfontSize $(10 + 5)');
   assert.equal(values.get(2), "15");
   assert.equal(s.propsValues(a, "fontSize $(1 +").size, 0);
+});
+
+const pos = (...items: DiagramItem[]): number[] => items.flatMap((i) => [i.x, i.y]);
+
+test("arrows: every selected item one grid step (5) snapped to the grid, one undo step", () => {
+  const { s, a, b, changes } = make();
+  a.x = 3;
+  s.selection = [a, b];
+  s.moveBy(1, 0);
+  assert.deepEqual(pos(a, b), [5, 0, 205, 0]);
+  s.moveBy(0, -1);
+  assert.deepEqual(pos(a, b), [5, -5, 205, -5]);
+  assert.equal(changes.length, 2);
+  s.undo();
+  assert.deepEqual(pos(a, b), [5, 0, 205, 0]);
+  s.moveBy(-1, 0);
+  s.moveBy(-1, 0);
+  assert.equal(a.x, -5); // Swift drops the remainder of the truncated value: toward zero
+});
+
+test("shift / cmd + arrows: resize one item by a grid step, cmd keeps the centre, one undo step", () => {
+  const { s, a, changes } = make();
+  s.selection = [a];
+  const props = () => s.propsText(a);
+  s.resizeBy("ArrowRight", false);
+  const w = Number(/width ([\d.]+)/.exec(props())![1]);
+  assert.equal(changes.length, 1);
+  s.resizeBy("ArrowRight", true);
+  assert.ok(Math.abs(Number(/width ([\d.]+)/.exec(props())![1]) - (w + 5)) < 1e-3);
+  assert.equal(a.x, -2.5);
+  s.resizeBy("ArrowDown", false);
+  assert.match(props(), /height /);
+  assert.equal(changes.length, 3);
+  s.undo();
+  assert.doesNotMatch(props(), /height /);
+  s.resizeBy("ArrowUp", true);
+  s.resizeBy("ArrowUp", true);
+  assert.equal(Number(/height ([\d.]+)/.exec(props())![1]) >= 10, true);
+  s.selection = [a, s.element.items[1]!];
+  const n = changes.length;
+  s.resizeBy("ArrowRight", false); // more than one selected: nothing
+  assert.equal(changes.length, n);
+});
+
+test("Tab: a linked item at the pivot; Option+Tab copies the style properties", () => {
+  const { s, a } = make();
+  s.applyProps(a, 'name "A"\npos 0 0\ncolor red');
+  s.selection = [a];
+  s.addNewItem(true);
+  const [item, link] = [s.element.items.at(-2)!, s.element.items.at(-1) as LinkItem];
+  assert.deepEqual([link.kind, link.source, link.target, s.selection], ["Link", a, item, [item]]);
+  assert.match(s.propsText(item), /color red/);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+  s.selection = [a];
+  s.addNewItem();
+  assert.doesNotMatch(s.propsText(s.element.items.at(-2)!), /color red/);
+  s.selection = [s.element.items[3]!]; // a link: nothing
+  const n = s.element.items.length;
+  s.addNewItem();
+  assert.equal(s.element.items.length, n);
+});
+
+test("selectAll: everything, items, links, none; readonly keeps the selection empty", () => {
+  const { s } = make();
+  s.selectAll();
+  assert.equal(s.selection.length, 5);
+  s.selectAll("Item");
+  assert.deepEqual(s.selection.map((i) => i.kind), ["Item", "Item", "Item"]);
+  s.selectAll("Link");
+  assert.equal(s.selection.length, 2);
+  s.select([]);
+  assert.equal(s.selection.length, 0);
+  const ro = make({ readonly: true }).s;
+  ro.selectAll();
+  assert.equal(ro.selection.length, 0);
+});
+
+test("paste as item: the text and a ${text} title, selected, one undo step", () => {
+  const { s, changes } = make();
+  s.pasteAsItem("hello\nworld");
+  const item = s.element.items.at(-1)!;
+  assert.deepEqual([item.name, s.selection, changes.length], ["pasted 1", [item], 1]);
+  assert.match(s.propsText(item), /text/);
+  assert.match(s.propsText(item), /title .*\$\{text\}/);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+});
+
+test("paste as item set: an item per non-empty line, arrow links from the first, one undo step", () => {
+  const { s, changes } = make();
+  s.pasteAsItemSet("one\n\ntwo\nthree");
+  const added = s.element.items.slice(5);
+  assert.deepEqual(added.map((i) => i.kind + i.name), ["Itemone", "Link", "Itemtwo", "Link", "Itemthree"]);
+  assert.deepEqual(added.filter((i) => i.kind === "Item").map((i) => i.y), [0, -35, -70]);
+  const [l1, l2] = added.filter((i) => i.kind === "Link") as LinkItem[];
+  assert.deepEqual([l1!.source, l2!.source, l1!.target!.name, l2!.target!.name], [added[0], added[0], "two", "three"]);
+  assert.match(s.propsText(l1!), /display arrow/);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+  s.pasteAsItemSet("\n");
+  assert.equal(changes.length, 2);
+});
+
+test("align: leading, trailing, top, bottom edges of the selected items, one undo step", () => {
+  const { s, a, b, c, changes } = make();
+  s.selection = [a, b, c];
+  s.align("trailing");
+  const right = (i: DiagramItem) => i.x + s.scene.drawables.get(i)!.getBounds().width;
+  assert.ok(Math.abs(right(a) - right(b)) < 1e-9 && Math.abs(right(b) - right(c)) < 1e-9);
+  s.undo();
+  s.align("leading");
+  assert.deepEqual([a.x, b.x, c.x], [0, 0, 0]);
+  s.undo();
+  s.align("top");
+  assert.deepEqual([a.y, b.y, c.y], [0, 0, 0]);
+  s.undo();
+  s.align("bottom");
+  const bottom = (i: DiagramItem) => i.y - s.scene.drawables.get(i)!.getBounds().height;
+  assert.ok(Math.abs(bottom(a) - bottom(c)) <= 1 && Math.abs(c.y + 150) <= 1); // the target edge is rounded, as in Swift
+  assert.equal(changes.length, 7);
+});
+
+test("order: forward puts the item last, backward first, one undo step", () => {
+  const { s, a, b } = make();
+  s.selection = [a];
+  s.order(true);
+  assert.equal(s.element.items.at(-1), a);
+  s.order(false);
+  assert.equal(s.element.items[0], a);
+  s.undo();
+  assert.equal(s.element.items.at(-1), a);
+  s.selection = [a, b];
+  const n = s.undoManager.canUndo;
+  s.order(true);
+  assert.equal(s.element.items.at(-1), a);
+  assert.equal(n, true);
+});
+
+test("edit value: the `value` property (or field-name) as a number, a symbol or a string; one undo step", () => {
+  const { s, a, changes } = make();
+  assert.equal(s.editTarget(a, "value")!.text, "");
+  s.commitEdit(a, "value", "42");
+  assert.match(s.propsText(a), /value 42\b/);
+  assert.equal(s.editTarget(a, "value")!.text, "42");
+  s.commitEdit(a, "value", "3.5x");
+  assert.match(s.propsText(a), /value 3\.5x/);
+  s.commitEdit(a, "value", "12 apples");
+  assert.match(s.propsText(a), /value "12 apples"/);
+  s.commitEdit(a, "value", "12 apples");
+  assert.equal(changes.length, 3);
+  s.undo();
+  assert.match(s.propsText(a), /value 3\.5x/);
+  s.applyProps(a, 'name "A"\npos 0 0\nfield-name total\ntotal 7');
+  assert.equal(s.editTarget(a, "value")!.text, "7");
+  s.commitEdit(a, "value", "8");
+  assert.match(s.propsText(a), /total 8/);
+});
+
+test("test layout: positions change in one undo step", () => {
+  const { s, a, b, c, changes } = make();
+  const before = pos(a, b, c);
+  s.testLayout({ x: -500, y: -400, width: 1000, height: 800 });
+  assert.notDeepEqual(pos(a, b, c), before);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.deepEqual(pos(a, b, c), before);
+});
+
+test("readonly: keys, align, order, paste as item and layout change nothing", () => {
+  const { s, a, changes } = make({ readonly: true });
+  s.selection = [a];
+  s.moveBy(1, 0);
+  s.resizeBy("ArrowRight", false);
+  s.addNewItem(true);
+  s.align("leading");
+  s.order(true);
+  s.pasteAsItem("x");
+  s.pasteAsItemSet("x");
+  s.testLayout({ x: 0, y: 0, width: 100, height: 100 });
+  assert.equal(changes.length, 0);
+});
+
+test("ctrl-drag from an item to another adds a link in one undo step, preview is removed", () => {
+  const { s, a, c, centre, changes } = make();
+  const links = (): number => s.element.items.filter((i) => i.kind === "Link").length;
+  assert.equal(s.down(centre(a), { line: true }), true);
+  s.move(centre(c));
+  assert.ok(s.scene.lineToDrawable !== null);
+  s.up(centre(c));
+  assert.equal(s.scene.lineToDrawable, null);
+  assert.equal(links(), 3);
+  const l = s.element.items.at(-1) as LinkItem;
+  assert.deepEqual([l.source, l.target], [a, c]);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.equal(links(), 2);
+  assert.equal(s.undoManager.canUndo, false);
+});
+
+test("ctrl-drag dropped on empty space, on the source, or cancelled adds nothing", () => {
+  const { s, a, c, centre, changes } = make();
+  s.down(centre(a), { line: true });
+  s.move({ x: 5000, y: 5000 });
+  s.up({ x: 5000, y: 5000 });
+  s.down(centre(a), { line: true });
+  s.move({ x: centre(a).x + 3, y: centre(a).y });
+  s.up(centre(a));
+  s.down(centre(a), { line: true });
+  s.move(centre(c));
+  s.up(centre(c), true);
+  assert.equal(s.element.items.length, 5);
+  assert.equal(changes.length, 0);
+  assert.equal(s.scene.lineToDrawable, null);
+});
+
+test("option-drag moves the item with everything reachable along outgoing links", () => {
+  const { s, a, b, c, centre } = make();
+  const p = centre(b);
+  s.down(p, { alt: true });
+  assert.deepEqual(s.selection, [b, c]);
+  s.move({ x: p.x + 10, y: p.y + 10 });
+  s.up({ x: p.x + 10, y: p.y + 10 });
+  assert.deepEqual([a.x, a.y, b.x, b.y, c.x, c.y], [0, 0, 210, 10, 10, -140]);
+  assert.equal(s.undoManager.canUndo, true);
+  s.undo();
+  assert.deepEqual([b.x, c.x], [200, 0]);
+});
+
+test("operate: replaces/adds/removes properties on every selected item, one undo step", () => {
+  const { s, a, b, changes } = make();
+  s.select([a, b]);
+  const n = changes.length;
+  assert.equal(s.operate("pos 10 20\ncolor red\n-display"), true);
+  assert.equal(changes.length, n + 1);
+  for (const i of [a, b]) {
+    assert.deepEqual([i.x, i.y], [10, 20]);
+    assert.match(s.propsText(i), /color red/);
+  }
+  s.undo();
+  assert.deepEqual([a.x, a.y, b.x, b.y], [0, 0, 200, 0]);
+  assert.doesNotMatch(s.propsText(a), /color/);
+});
+
+test("operate: -name removes, parse error / no selection / no change change nothing", () => {
+  const { s, a, changes } = make();
+  s.select([a]);
+  s.operate("color red");
+  assert.equal(s.operate("-color"), true);
+  assert.doesNotMatch(s.propsText(a), /color/);
+  const n = changes.length;
+  assert.equal(s.operate("color {"), false);
+  assert.equal(s.operate("-nothing"), true);
+  s.select([]);
+  assert.equal(s.operate("color red"), false);
+  assert.equal(changes.length, n);
+  assert.equal(make({ readonly: true }).s.operate("color red"), false);
+});
+
+test("click on overlapping items cycles through them, a selected one under the point keeps the selection", () => {
+  const s = new EditorSession(readTenn(`element "D" { item "A" { pos 0 0 }\n item "B" { pos 0 0 } }`)!.elements[0]!, { evaluate: false });
+  const r = s.scene.drawables.get(s.element.items[0]!)!.getSelectorBounds();
+  const p = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  const click = () => (s.down(p), s.up(p, false), s.selection[0]);
+  const first = click();
+  assert.equal(click(), first); // already selected: kept
+  s.selection = [];
+  assert.notEqual(click(), first);
+  s.selection = [];
+  assert.equal(click(), first);
+});
+
+test("paste image: no selection - a new item with image and title, selected, one undo step", () => {
+  const { s, changes } = make();
+  s.pasteImage("a.png", "QUJD");
+  const item = s.selection[0]!;
+  assert.equal(item.name, "Untitled 1");
+  assert.ok(s.text().includes("QUJD"));
+  assert.equal(item.properties.get("title")?.getChild(1)?.getIdentText(), "@(a.png|96)\n${name}");
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.equal(s.element.items.length, 5);
+});
+
+test("paste image / attach image: into the selected item, one undo step; readonly ignores", () => {
+  const { s, a, changes } = make();
+  s.selection = [a!];
+  s.pasteImage("a.png", "QUJD");
+  assert.equal(a!.properties.get("image")?.getIdent(1), "a.png");
+  assert.equal(a!.properties.get("title")?.getChild(1)?.getIdentText(), "@(a.png|96)\n${name}");
+  s.attachImage("b.jpg", "REVG");
+  assert.equal(changes.length, 2);
+  assert.equal(a!.properties.get("title")?.getChild(1)?.getIdentText(), "@(a.png|96)\n${name}");
+  assert.ok(s.text().includes("REVG"));
+  s.undo();
+  assert.ok(!s.text().includes("REVG") && s.text().includes("QUJD"));
+  const ro = make({ readonly: true });
+  ro.s.pasteImage("a.png", "QUJD");
+  ro.s.attachImage("a.png", "QUJD");
+  assert.equal(ro.changes.length, 0);
+});
+
+test("outline copy / paste / cut of elements: .tenn text, one undo step each", () => {
+  const { s, changes } = make();
+  const text = s.copyElement(s.element);
+  assert.match(text, /element "D"/);
+  assert.equal(s.pasteElements(s.element, "hello"), false);
+  assert.equal(s.pasteElements(s.element, 'element "broken {'), false);
+  assert.equal(changes.length, 0);
+
+  assert.equal(s.pasteElements(s.element, text), true);
+  assert.equal(s.element.elements.length, 1);
+  assert.equal(s.element.elements[0]!.items.length, 5);
+  assert.equal(changes.length, 1);
+  s.undo();
+  assert.equal(s.element.elements.length, 0);
+
+  const root = s.root;
+  assert.equal(s.pasteElements(root, text), true);
+  assert.equal(root.elements.length, 2);
+  const pasted = root.elements[1]!;
+  assert.equal(s.cutElement(pasted), s.copyElement(pasted));
+  assert.equal(root.elements.length, 1);
+  assert.equal(s.cutElement(root.elements[0]!).length > 0, true); // last top-level element stays
+  assert.equal(root.elements.length, 1);
+
+  const ro = make({ readonly: true });
+  assert.equal(ro.s.pasteElements(ro.s.element, text), false);
 });

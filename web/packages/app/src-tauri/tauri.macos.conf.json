@@ -10,7 +10,7 @@
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "trafficLightPosition": { "x": 18, "y": 19 },
-        "windowEffects": { "effects": ["liquidGlassRegular", "sidebar"] }
+        "windowEffects": { "effects": ["underWindowBackground"] }
       }
     ]
   }

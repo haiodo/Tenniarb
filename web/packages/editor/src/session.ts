@@ -4,22 +4,32 @@ import {
   Element as ModelElement,
   ElementModel,
   ElementModelStore,
+  LayoutContext,
   LinkItem,
+  ModelProperties,
+  SpringLayout,
+  TennNode,
   TennParser,
   UndoManager,
   newBlockExpr,
   newCommand,
+  newFloatNode,
   newIdent,
+  newImageNode,
   newIntNode,
   newMarkdownNode,
   newStrNode,
+  newToken,
   parseItems,
+  prepareItemRefs,
+  readTenn,
   storeItems,
   toStr,
   toTennAsProps,
   toTennStr,
+  traverseBlock,
 } from "@tenniarb/core";
-import type { Element, ElementOperation, ExecutionContext } from "@tenniarb/core";
+import type { Element, ElementOperation, ExecutionContext, ItemKind } from "@tenniarb/core";
 import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, getString, prepareBodyText, setMeasureContext } from "@tenniarb/render";
 import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect } from "@tenniarb/render";
 import { optionNodes } from "./styles.ts";
@@ -40,8 +50,8 @@ export interface SessionOptions {
   onElement?: () => void;
 }
 
-type Mode = "none" | "drag" | "band";
-export type EditMode = "name" | "body";
+type Mode = "none" | "drag" | "band" | "line";
+export type EditMode = "name" | "body" | "value";
 
 // Wide enough that DrawableContainer.layout never culls an item moved away from the original bounds.
 const EVERYWHERE: Rect = { x: -1e9, y: -1e9, width: 2e9, height: 2e9 };
@@ -49,11 +59,32 @@ const EVERYWHERE: Rect = { x: -1e9, y: -1e9, width: 2e9, height: 2e9 };
 const DRAG_SLOP = 2;
 
 /** Port of SceneDrawView.getBodyText: `body "text"` or `body { text "..." }`, unprocessed. */
-function bodyText(item: DiagramItem): string {
+export function bodyText(item: DiagramItem): string {
   const block = item.properties.get("body")?.getChild(1) ?? null;
   const node = block?.kind === "BlockExpr" ? (block.getNamedElement("text")?.getChild(1) ?? null) : block;
   return getString(node, new Map()) ?? "";
 }
+
+/** Port of SceneDrawView.detectSymbolType + setValue: numbers stay numbers, text with blanks is a string, the rest a symbol. */
+function valueNode(value: string): TennNode {
+  let dot = false;
+  let i = 0;
+  const chars = [...value];
+  for (const c of value.startsWith("-") ? chars.slice(1) : chars) {
+    if (c === ".") {
+      if (i === 0 || dot) return newIdent(value);
+      dot = true;
+    } else if (c === " " || c === "\n" || c === "\t") return newStrNode(value);
+    else if (/^\p{Nd}/u.test(c)) i++;
+    else return newIdent(value);
+  }
+  return new TennNode(dot ? "FloatLit" : "IntLit", newToken(dot ? "floatLit" : "intLit", value));
+}
+
+// Swift roundf: halves go away from zero.
+const roundf = (v: number): number => Math.sign(v) * Math.round(Math.abs(v));
+
+const fieldName = (item: DiagramItem): string => item.properties.get("field-name")?.getIdent(1) ?? "value";
 
 export class EditorSession {
   readonly store: ElementModelStore;
@@ -72,6 +103,8 @@ export class EditorSession {
   private origin: Point = { x: 0, y: 0 };
   private moved = false;
   private starts = new Map<DiagramItem, Point>();
+  private lineTarget: DiagramItem | null = null;
+  private clickCounter = 0;
 
   element: Element;
   private readonly opts: SessionOptions;
@@ -161,6 +194,26 @@ export class EditorSession {
     return copy;
   }
 
+  /** Port of the outline copy: the element with its items and sub-elements as .tenn text. */
+  copyElement(element: Element): string {
+    return toTennStr(element);
+  }
+
+  /** Outline cut: copy, then delete (refused for the last top-level element, the text is still returned). */
+  cutElement(element: Element): string {
+    const text = this.copyElement(element);
+    this.removeElement(element);
+    return text;
+  }
+
+  /** Outline paste: the elements of a .tenn text are added into `parent` as one undo step. False: readonly, parse errors or no elements. */
+  pasteElements(parent: Element, text: string): boolean {
+    const model = this.opts.readonly ? null : readTenn(text);
+    if (model === null || model.elements.length === 0) return false;
+    this.store.addElements(parent, model.elements, this.undoManager, this.refresh);
+    return true;
+  }
+
   renameElement(element: Element, name: string): void {
     if (this.opts.readonly || name === element.name) return;
     this.store.updateElementName(element, name, this.undoManager, this.refresh);
@@ -174,12 +227,33 @@ export class EditorSession {
     return true;
   }
 
-  /** Into `parent` as the last child. False: readonly, or a drop into itself or its own subtree. */
-  moveElement(element: Element, parent: Element): boolean {
+  /** Into `parent` at `index` (default: last). Into itself or its own subtree a copy of the diagram is added instead (Swift acceptDrop). False: readonly. */
+  moveElement(element: Element, parent: Element, index = parent.elements.length): boolean {
     if (this.opts.readonly || element.parent === null) return false;
-    for (let c: Element | null = parent; c !== null; c = c.parent) if (c === element) return false;
-    this.store.move(element, parent, this.undoManager, this.refresh, parent.elements.length);
+    for (let c: Element | null = parent; c !== null; c = c.parent) {
+      if (c !== element) continue;
+      this.store.add(parent, element.clone(true, false), this.undoManager, this.refresh, index);
+      return true;
+    }
+    // The element leaves its old slot first, so a move down inside one parent lands one place earlier.
+    const at = element.parent === parent && element.parent.elements.indexOf(element) < index ? index - 1 : index;
+    this.store.move(element, parent, this.undoManager, this.refresh, at);
     return true;
+  }
+
+  /** Port of ViewController.inheritItem: a copy of the current element inside it, whose items only `inherit` the originals. */
+  inherit(): void {
+    if (this.opts.readonly) return;
+    const copy = this.element.clone();
+    const refs = prepareItemRefs(copy.items);
+    for (const i of copy.items) {
+      const cmd = newCommand("inherit", newStrNode(`../${i.name}`));
+      const ref = refs.get(i);
+      if (ref !== undefined) cmd.add(newIntNode(ref));
+      i.properties = new ModelProperties();
+      i.properties.append(cmd);
+    }
+    this.store.add(this.element, copy, this.undoManager, this.refresh);
   }
 
   undo(): void {
@@ -207,7 +281,7 @@ export class EditorSession {
   }
 
   /** false: nothing was grabbed, the caller may pan. */
-  down(p: Point, o: { toggle?: boolean; band?: boolean } = {}): boolean {
+  down(p: Point, o: { toggle?: boolean; band?: boolean; line?: boolean; alt?: boolean } = {}): boolean {
     this.origin = p;
     this.moved = false;
     this.mode = "none";
@@ -223,14 +297,28 @@ export class EditorSession {
       this.opts.onRedraw?.();
       return false;
     }
-    const top = hits[hits.length - 1]!;
     if (o.toggle) {
-      this.toggle(top);
+      this.toggle(hits[hits.length - 1]!);
       return true;
     }
     // Pressing on an already selected item keeps the whole selection so it can be dragged together.
-    if (!hits.some((h) => this.selection.includes(h))) this.selection = [top];
+    // Otherwise overlapping items are picked in turn by a counter shared by all clicks, as Swift's clickCounter.
+    if (!hits.some((h) => this.selection.includes(h))) this.selection = [hits[++this.clickCounter % hits.length]!];
+    // Option: the item moves with everything reachable along outgoing links (Swift mouseDown).
+    if (o.alt && this.selection.length === 1) {
+      const all = [this.selection[0]!];
+      for (const from of all) {
+        for (const l of this.element.items) {
+          if (l instanceof LinkItem && l.source === from && l.target !== null && !all.includes(l.target)) all.push(l.target);
+        }
+      }
+      this.selection = all;
+    }
     this.pivotRightOf(this.selection[0]!);
+    if (o.line && this.selection.length === 1) {
+      this.mode = "line";
+      return true;
+    }
     this.mode = "drag";
     // Links move only alone, as in Swift.
     this.starts = new Map(this.selection.filter((i) => i.kind === "Item" || this.selection.length === 1).map((i) => [i, { x: i.x, y: i.y }]));
@@ -246,13 +334,19 @@ export class EditorSession {
     if (this.mode === "band") {
       this.band = { x: Math.min(this.origin.x, p.x), y: Math.min(this.origin.y, p.y), width: Math.abs(dx), height: Math.abs(dy) };
       this.selection = itemsInRect(this.scene, this.band);
+    } else if (this.mode === "line") {
+      const hit = hitTest(this.scene, p).at(-1);
+      // Not the source itself: Swift would add a self-link there.
+      this.lineTarget = hit !== undefined && hit.kind === "Item" && hit !== this.selection[0] ? hit : null;
+      this.scene.updateLineTo(this.selection[0]!, p, this.lineTarget);
     } else if (this.mode === "drag") {
       this.moveDrawables(new Map([...this.starts].map(([i, s]) => [i, { x: s.x + dx, y: s.y + dy }])));
     }
     this.opts.onRedraw?.();
   }
 
-  up(p: Point): void {
+  /** `cancel`: a line in progress is dropped instead of linked. */
+  up(p: Point, cancel = false): void {
     this.move(p);
     const mode = this.mode;
     this.mode = "none";
@@ -261,6 +355,14 @@ export class EditorSession {
       const hit = hitTest(this.scene, p).at(-1);
       if (hit === undefined) this.selection = [];
       else this.toggle(hit);
+    }
+    if (mode === "line") {
+      const source = this.selection[0];
+      if (!cancel && source !== undefined && this.lineTarget !== null) {
+        this.store.addLink(this.element, source, this.lineTarget, this.undoManager, this.refresh);
+      }
+      this.scene.removeLineTo();
+      this.lineTarget = null;
     }
     if (mode === "drag" && this.moved) this.commitDrag(p);
     this.opts.onRedraw?.();
@@ -311,12 +413,14 @@ export class EditorSession {
     const [width, height] = [Math.max(b.width, 100), Math.max(b.height, 20)];
     // Boxes keep their top-left corner, lines get the box at the middle of their bounds.
     const rect = d instanceof DrawableLine ? { x: b.x + (b.width - width) / 2, y: b.y + (b.height - height) / 2, width, height } : { x: b.x, y: b.y + b.height - height, width, height };
-    const fontSize = ((d as { style?: DrawableStyle }).style?.fontSize ?? 18) - (mode === "body" ? 2 : 0);
+    const fontSize = ((d as { style?: DrawableStyle }).style?.fontSize ?? 18) - (mode === "name" ? 0 : 2);
     return { rect, text: this.editText(item, mode), fontSize };
   }
 
   private editText(item: DiagramItem, mode: EditMode): string {
-    return mode === "name" ? item.name : prepareBodyText(bodyText(item));
+    if (mode === "name") return item.name;
+    if (mode === "body") return prepareBodyText(bodyText(item));
+    return prepareBodyText(getString(item.properties.get(fieldName(item))?.getChild(1) ?? null, new Map()) ?? "");
   }
 
   /** Name or body of `item` as one undo step; nothing when the text is unchanged. */
@@ -324,6 +428,16 @@ export class EditorSession {
     if (this.opts.readonly || text === this.editText(item, mode)) return;
     if (mode === "name") return this.store.updateName(item, text, this.undoManager, this.refresh);
     const props = toTennAsProps(item, "BlockExpr");
+    if (mode === "value") {
+      const field = fieldName(item);
+      const cur = props.getNamedElement(field);
+      if (cur === null) props.add(newCommand(field, valueNode(text)));
+      else {
+        cur.children = null;
+        cur.add(newIdent(field), valueNode(text));
+      }
+      return this.store.setItemProperties(this.element, item, props, this.undoManager, this.refresh);
+    }
     const bodyNode = props.getNamedElement("body");
     if (bodyNode === null) {
       props.add(newCommand("body", text.includes("\n") ? newMarkdownNode(text) : newStrNode(text)));
@@ -383,6 +497,35 @@ export class EditorSession {
       ops.push(this.store.createProperties(this.element, item, props));
     }
     if (ops.length > 0) this.store.compositeOperation(this.element, this.undoManager, this.refresh, ops);
+  }
+
+  /**
+   * Swift OperationController.commit: `text` is Tenn commands applied to every selected item, one undo step.
+   * `name args` replaces or adds a property, `-name` removes it. False: readonly, parse errors or nothing selected.
+   */
+  operate(text: string): boolean {
+    const parser = new TennParser();
+    const node = parser.parse(text);
+    if (this.opts.readonly || parser.errors.hasErrors() || this.selection.length === 0) return false;
+    const ops: ElementOperation[] = [];
+    for (const item of this.selection) {
+      const props = toTennAsProps(item, "BlockExpr");
+      let changed = false;
+      traverseBlock(node, (cmd, n) => {
+        if (cmd.startsWith("-")) changed = props.removeNamed(cmd.slice(1)) || changed;
+        else {
+          const cur = props.getNamedElement(cmd);
+          if (cur !== null && n.children !== null) {
+            cur.children = null;
+            cur.add(...n.children);
+          } else props.add(n);
+          changed = true;
+        }
+      });
+      if (changed) ops.push(this.store.createProperties(this.element, item, props));
+    }
+    this.commit(ops);
+    return true;
   }
 
   /** Adds `new_style_N { color white }` to the element's `styles` (Swift StyleManager.addStyleConfig); returns its name. */
@@ -476,6 +619,38 @@ export class EditorSession {
     return true;
   }
 
+  /** Swift paste of an image: `image name data` plus a title showing it, into the selected item or a new one at the pivot. `data` is PNG base64. */
+  pasteImage(name: string, data: string): void {
+    if (this.opts.readonly) return;
+    const image = newCommand("image", newStrNode(name), newImageNode(data));
+    // Swift looks up an old title in a Statements node, never finds it and appends a second one; kept for identical files.
+    const title = newCommand("title", newMarkdownNode(`@(${name}|96)\n\${name}`));
+    const active = this.selection[0];
+    if (active !== undefined) {
+      const props = toTennAsProps(active);
+      props.add(image, title);
+      this.store.setItemProperties(this.element, active, props, this.undoManager, this.refresh);
+      return;
+    }
+    const item = new DiagramItem("Item", `Untitled ${this.createIndex++}`);
+    item.x = this.pivot.x;
+    item.y = this.pivot.y;
+    item.properties.append(image);
+    item.properties.append(title);
+    this.store.addItem(this.element, item, this.undoManager, this.refresh);
+    this.selection = [item];
+    this.opts.onRedraw?.();
+  }
+
+  /** Swift attachImage: `image name data` (PNG base64) added to the first selected item. */
+  attachImage(name: string, data: string): void {
+    const active = this.selection[0];
+    if (this.opts.readonly || active === undefined) return;
+    const props = toTennAsProps(active, "BlockExpr");
+    props.add(newCommand("image", newStrNode(name), newImageNode(data)));
+    this.store.setItemProperties(this.element, active, props, this.undoManager, this.refresh);
+  }
+
   /** Port of SceneDrawView.duplicateItem: items shifted right, links that end at them are cloned too. */
   duplicate(): void {
     if (this.opts.readonly) return;
@@ -517,23 +692,159 @@ export class EditorSession {
     this.addItem(null);
   }
 
-  /** Swift addNewItem: nothing selected - as addTopItem; an item selected - a new item linked from it; a link - nothing. */
-  addNewItem(): void {
+  /** Swift addNewItem: nothing selected - as addTopItem; an item selected - a new item linked from it (`copyProps`: with its properties); a link - nothing. */
+  addNewItem(copyProps = false): void {
     const active = this.selection[0];
     if (active === undefined) this.addItem(null);
-    else if (active.kind === "Item") this.addItem(active);
+    else if (active.kind === "Item") this.addItem(active, copyProps);
   }
 
-  private addItem(from: DiagramItem | null): void {
+  private addItem(from: DiagramItem | null, copyProps = false): void {
     if (this.opts.readonly) return;
     const item = new DiagramItem("Item", `Untitled ${this.createIndex++}`);
     item.x = this.pivot.x;
     item.y = this.pivot.y;
+    if (copyProps && from !== null) item.properties.appendContentsOf([...from.properties].map((p) => p.clone()));
     if (from === null) this.store.addItem(this.element, item, this.undoManager, this.refresh);
     else this.store.addLink(this.element, from, item, this.undoManager, this.refresh);
     this.selection = [item];
     this.pivotRightOf(item);
     this.opts.onRedraw?.();
+  }
+
+  /** Swift selectAllItems / selectAllByKind (`kind`) / selectNoneItems (`[]`). */
+  select(items: DiagramItem[]): void {
+    if (this.opts.readonly) return;
+    this.selection = items;
+    this.opts.onRedraw?.();
+  }
+
+  selectAll(kind?: ItemKind): void {
+    this.select(this.element.items.filter((i) => kind === undefined || i.kind === kind));
+  }
+
+  private commit(ops: ElementOperation[]): void {
+    if (ops.length > 0) this.store.compositeOperation(this.element, this.undoManager, this.refresh, ops);
+  }
+
+  /** Arrow keys of SceneDrawView.keyDown: every selected item one grid step in the direction (dy up is positive), one undo step. */
+  moveBy(dx: number, dy: number): void {
+    if (this.opts.readonly) return;
+    const { x: gx, y: gy } = this.scene.sceneStyle.gridSpan;
+    // Swift drops the remainder of the truncated value, so negative coordinates snap toward zero.
+    const snap = (v: number, g: number): number => roundf(v) - (Math.trunc(roundf(v)) % (Math.trunc(g) || 1));
+    this.commit(this.selection.map((i) => this.store.createUpdatePosition(i, { x: dx === 0 ? i.x : snap(i.x + dx * gx, gx), y: dy === 0 ? i.y : snap(i.y + dy * gy, gy) })));
+  }
+
+  /** Port of handleResizeItem: one grid step of width (left / right) or height (up / down) of the single selected item; `fromCenter` also shifts it. */
+  resizeBy(key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown", fromCenter: boolean): void {
+    const item = this.selection[0];
+    if (this.opts.readonly || item === undefined || this.selection.length !== 1) return;
+    const d = this.scene.drawables.get(item);
+    let bounds = d?.getSelectorBounds() ?? null;
+    if (d instanceof RoundBox && bounds !== null) {
+      const lw = d.style.lineWidth;
+      bounds = { x: bounds.x + lw, y: bounds.y + lw, width: bounds.width - 2 * lw, height: bounds.height - 2 * lw };
+    }
+    const w = item.properties.get("width")?.getFloat(1) ?? bounds?.width ?? 100;
+    const h = item.properties.get("height")?.getFloat(1) ?? bounds?.height ?? 50;
+    const { x: gx, y: gy } = this.scene.sceneStyle.gridSpan;
+    let [nw, nh, nx, ny] = [w, h, item.x, item.y];
+    if (key === "ArrowLeft") {
+      nw = Math.max(10, w - gx);
+      if (fromCenter) nx = item.x + (w - nw) / 2;
+    } else if (key === "ArrowRight") {
+      nw = w + gx;
+      if (fromCenter) nx = item.x - (nw - w) / 2;
+    } else if (key === "ArrowUp") {
+      nh = Math.max(10, h - gy);
+      if (fromCenter) ny = item.y - (h - nh) / 2;
+    } else {
+      nh = h + gy;
+      if (fromCenter) ny = item.y + (nh - h) / 2;
+    }
+    const ops: ElementOperation[] = [];
+    if (nw !== w || nh !== h) {
+      const props = toTennAsProps(item, "BlockExpr");
+      for (const [name, v, old] of [["width", nw, w], ["height", nh, h]] as const) {
+        if (v === old) continue;
+        const cur = props.getNamedElement(name);
+        if (cur === null) props.add(newCommand(name, newFloatNode(v)));
+        else {
+          cur.children = null;
+          cur.add(newIdent(name), newFloatNode(v));
+        }
+      }
+      ops.push(this.store.createProperties(this.element, item, props));
+    }
+    if (fromCenter) ops.push(this.store.createUpdatePosition(item, { x: nx, y: ny }));
+    this.commit(ops);
+  }
+
+  /** Port of alignLeadingEdges / alignTrailingEdges / alignTopEdges / alignBottomEdges: items only, to the extreme edge of the selection. */
+  align(edge: "leading" | "trailing" | "top" | "bottom"): void {
+    const first = this.selection[0];
+    if (this.opts.readonly || first === undefined) return;
+    const items = this.selection.filter((i) => i.kind === "Item" && this.scene.drawables.has(i));
+    const list = items.map((i) => ({ i, b: this.scene.drawables.get(i)!.getBounds() }));
+    const horizontal = edge === "leading" || edge === "trailing";
+    const at = ({ i, b }: (typeof list)[number]): number => (edge === "leading" ? i.x : edge === "trailing" ? i.x + b.width : edge === "top" ? i.y : i.y - b.height);
+    const beyond = edge === "leading" || edge === "bottom" ? (v: number, e: number) => v < e : (v: number, e: number) => v > e;
+    let target = roundf(horizontal ? first.x : first.y);
+    for (const e of list) if (beyond(at(e), target)) target = roundf(at(e));
+    this.commit(
+      list.map(({ i, b }) => {
+        const pos = { leading: { x: target, y: i.y }, trailing: { x: target - b.width, y: i.y }, top: { x: i.x, y: target }, bottom: { x: i.x, y: target + b.height } }[edge];
+        return this.store.createUpdatePosition(i, pos);
+      }),
+    );
+  }
+
+  /** Move Forward (last in the item list, drawn on top) / Move Backward (first), for a single selected item. */
+  order(forward: boolean): void {
+    if (this.opts.readonly || this.selection.length !== 1) return;
+    this.commit(this.store.createUpdateOrder(this.selection[0]!, forward ? null : 0));
+  }
+
+  /** Swift performSpringLayout ("Test layout"); `bounds` is the view rectangle centred on the origin. */
+  testLayout(bounds: Rect): void {
+    if (this.opts.readonly) return;
+    this.commit(new SpringLayout().apply(new LayoutContext(this.element, this.scene, this.store, bounds), true));
+  }
+
+  /** Swift pasteAsItem: the text as the `text` of a new item at the pivot. */
+  pasteAsItem(text: string): void {
+    if (this.opts.readonly) return;
+    const item = new DiagramItem("Item", `pasted ${this.createIndex++}`);
+    item.x = this.pivot.x;
+    item.y = this.pivot.y;
+    item.properties.append(newCommand("text", newMarkdownNode(text)));
+    item.properties.append(newCommand("title", newMarkdownNode("${text}")));
+    this.store.addItem(this.element, item, this.undoManager, this.refresh);
+    this.selection = [item];
+    this.opts.onRedraw?.();
+  }
+
+  /** Swift pasteAsItemSet: an item per line, the lines below the first are arrow-linked from it. */
+  pasteAsItemSet(text: string): void {
+    const lines = text.split("\n").filter((l) => l !== "");
+    if (this.opts.readonly || lines.length === 0) return;
+    const items: DiagramItem[] = [];
+    let root: DiagramItem | null = null;
+    for (const [n, line] of lines.entries()) {
+      const item = new DiagramItem("Item", line);
+      this.createIndex++;
+      item.x = this.pivot.x;
+      item.y = this.pivot.y - 35 * n;
+      if (root === null) root = item;
+      else {
+        const link = new LinkItem("Link", "", root, item);
+        link.properties.append(newCommand("display", newIdent("arrow")));
+        items.push(link);
+      }
+      items.push(item);
+    }
+    this.store.addItems(this.element, items, this.undoManager, this.refresh);
   }
 
   private addSelected(items: DiagramItem[]): void {
@@ -546,6 +857,6 @@ export class EditorSession {
   /** Scene plus selection, in scene space. */
   draw(ctx: Canvas2D): void {
     this.scene.draw(ctx);
-    drawSelection(ctx, this.scene, this.selection, this.band);
+    drawSelection(ctx, this.scene, this.mode === "line" && this.lineTarget !== null ? [this.lineTarget] : this.selection, this.band);
   }
 }

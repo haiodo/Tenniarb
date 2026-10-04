@@ -4,3 +4,5 @@ export { mountLayout } from "./layout.ts";
 export type { Layout } from "./layout.ts";
 export { EditorSession } from "./session.ts";
 export type { SessionOptions } from "./session.ts";
+export { defaultSettings } from "./settings.ts";
+export type { EditorSettings } from "./settings.ts";

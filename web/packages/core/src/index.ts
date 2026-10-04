@@ -30,3 +30,4 @@ export * from "./grid-layout.ts";
 export * from "./tree-layout.ts";
 export * from "./spring-layout.ts";
 export * from "./execution.ts";
+export * from "./sync.ts";

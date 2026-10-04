@@ -11,6 +11,15 @@ import type { Point, Rect, Size } from "./geometry.ts";
 
 export const DEFAULT_FONT_FAMILY = "Inter";
 
+let fontFamily = DEFAULT_FONT_FAMILY;
+
+/** CSS family used by fontCss. Call before mount/render; text is measured per call, nothing is cached by family. */
+export function setFontFamily(name: string): void {
+  fontFamily = name;
+}
+
+export const getFontFamily = (): string => fontFamily;
+
 // Line metrics of SF (NSFont.systemFont, CTLineGetTypographicBounds: 10pt -> 9.668/2.109, linear in size), not Inter's,
 // so boxes get the Swift height. Inter 4 (unitsPerEm 2048) capHeight 1490 is only for strikethrough.
 // Constants instead of fontBoundingBox*, which not every Canvas2D backend implements.
@@ -31,7 +40,7 @@ export const systemFont = (size: number): FontSpec => ({ size, bold: false, ital
 
 export function fontCss(f: FontSpec): string {
   const size = Number.isFinite(f.size) && f.size > 0 ? f.size : 18;
-  return `${f.italic ? "italic " : ""}${f.bold ? "bold " : ""}${size}px ${DEFAULT_FONT_FAMILY}, "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif`;
+  return `${f.italic ? "italic " : ""}${f.bold ? "bold " : ""}${size}px ${fontFamily}, "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif`;
 }
 
 const fontAscent = (f: FontSpec): number => f.size * ASCENT;
@@ -582,6 +591,8 @@ export function prepareBodyText(textValue: string): string {
 export class TextBox {
   frame: Rect;
   attrStr: AttributedString;
+  /** Markdown source of the text as HTML (scene.ts sets it). */
+  html: () => string = () => "";
 
   constructor(text: AttributedString, bounds: Rect) {
     this.frame = bounds;

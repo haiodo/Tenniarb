@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings</title>
+<style>
+  :root { --bg: #ececec; --fg: rgba(0,0,0,.85); --fg2: rgba(0,0,0,.5); --field: #fff; --line: rgba(0,0,0,.18); --accent: #0a64d6; color-scheme: light dark; }
+  @supports (color: -apple-system-control-accent) { :root { --accent: -apple-system-control-accent; } }
+  @media (prefers-color-scheme: dark) { :root { --bg: #2a2a2a; --fg: rgba(255,255,255,.85); --fg2: rgba(255,255,255,.5); --field: rgba(255,255,255,.08); --line: rgba(255,255,255,.15); } }
+  body { margin: 0; padding: 20px 24px; background: var(--bg); color: var(--fg); font: 13px -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
+  body { margin: 0; padding: 18px 20px; box-sizing: border-box; background: var(--bg); color: var(--fg); font: 13px -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; white-space: nowrap; }
+  main { display: grid; grid-template-columns: 230px 1fr; }
+  section { display: flex; flex-direction: column; }
+  h2 { margin: 0 0 6px; font-size: 12px; font-weight: 600; height: 16px; }
+  section > h2:not(:first-child) { margin-top: 12px; }
+  .row { display: flex; align-items: center; gap: 6px; height: 22px; padding-left: 10px; }
+  .row > span { width: 40px; flex: none; }
+  .row > span.wide { width: auto; margin-right: 4px; }
+  input[type=text], input[type=number] { height: 20px; padding: 0 6px; box-sizing: border-box; color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 5px; font: inherit; user-select: text; -webkit-user-select: text; }
+  input[type=text] { width: 90px; }
+  input[type=number] { width: 44px; }
+  input:invalid { border-color: #d33; }
+  input[type=checkbox] { accent-color: var(--accent); margin: 0 6px 0 0; }
+  label { display: flex; align-items: center; }
+  button { height: 20px; padding: 0 10px; color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 5px; font: 11px -apple-system, system-ui, sans-serif; }
+  button:active { background: var(--line); }
+</style>
+</head>
+<body>
+<main>
+<section>
+  <h2>Outline</h2>
+  <div class="row"><label title="Applies to documents opened afterwards."><input type="checkbox" id="autoExpand">Structure Auto expand</label></div>
+  <div class="row"><span class="wide">Expand to level:</span><input type="number" id="expandLevel" min="0" step="1"></div>
+  <h2>Background</h2>
+  <div class="row"><span>White</span><input type="text" id="background" pattern="#?([0-9a-fA-F]{6}|[0-9a-fA-F]{8})" spellcheck="false"><button data-reset="background">Reset</button></div>
+  <div class="row"><span>Dark</span><input type="text" id="backgroundDark" pattern="#?([0-9a-fA-F]{6}|[0-9a-fA-F]{8})" spellcheck="false"><button data-reset="backgroundDark">Reset</button></div>
+</section>
+<section>
+  <h2>Export</h2>
+  <div class="row"><label><input type="checkbox" id="exportBackground">Render background</label></div>
+  <div class="row"><label><input type="checkbox" id="exportNativeScale">Use Native resolution</label></div>
+  <h2>UI</h2>
+  <div class="row"><label><input type="checkbox" id="transparent">Transparent background</label></div>
+  <div class="row"><label><input type="checkbox" id="quickPanel">Show popup quick panel</label></div>
+</section>
+</main>
+<script type="module" src="settings-page.js"></script>
+</body>
+</html>

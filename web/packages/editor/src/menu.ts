@@ -1,6 +1,11 @@
-// Context menu in DOM, and the Style / Quick Style entries of SceneDrawView (createStylesMenu, createQuickStyleMenu).
+// Context menu in DOM, and the entries of SceneDrawView.menu(for:) (createStylesMenu, createQuickStyleMenu, createAlighMenu, createOrderMenu, createSelection).
+import type { Point } from "@tenniarb/render";
+import { MINUS_SVG, PLUS_SVG } from "./icons.ts";
+import { copyItemHtml } from "./export.ts";
+import { hitTest } from "./selection.ts";
 import type { EditorSession } from "./session.ts";
 import { MARKERS, OPTION_LABELS, quickStylesFor } from "./styles.ts";
+import type { QuickStyle } from "./styles.ts";
 
 /** `icon`: inline SVG markup. */
 export type Entry = "-" | { label: string; icon?: string; run?: () => void; sub?: Entry[] };
@@ -68,6 +73,12 @@ export function showMenu(x: number, y: number, entries: Entry[], onClose: () => 
   addEventListener("blur", close, opt);
 }
 
+/** Options of one quick style; markers are grouped as in the Swift marker menu. */
+export function quickEntries(session: EditorSession, q: QuickStyle): Entry[] {
+  const pick = (o: string): Entry => ({ label: OPTION_LABELS[o] ?? o, run: () => session.setQuickStyle(q.prop, o) });
+  return q.prop === "marker" ? Object.entries(MARKERS).map(([label, list]): Entry => ({ label, sub: list.map(pick) })) : q.options.map(pick);
+}
+
 export function styleEntries(session: EditorSession): Entry[] {
   const names = session.styleNames();
   const style: Entry = {
@@ -78,10 +89,44 @@ export function styleEntries(session: EditorSession): Entry[] {
   if (session.selection.length === 0) return [style, { label: "Global Styles", sub: [{ label: "Enable shadows", run: () => session.enableShadows() }] }];
   if (one === null) return [style];
 
-  const pick = (prop: string) => (o: string): Entry => ({ label: OPTION_LABELS[o] ?? o, run: () => session.setQuickStyle(prop, o) });
   const quick = quickStylesFor(one.kind as "Item" | "Link").flatMap((q): Entry[] => {
-    const sub = q.prop === "marker" ? Object.entries(MARKERS).map(([label, list]): Entry => ({ label, sub: list.map(pick("marker")) })) : q.options.map(pick(q.prop));
+    const sub = quickEntries(session, q);
     return q.sep ? ["-", { label: q.label, sub }] : [{ label: q.label, sub }];
   });
   return [style, { label: "Quick Style", sub: quick }];
+}
+
+/** Swift menu(for:): `p` is the right-click point (scene space), `layout` runs "Test layout", `attach` "Attach image". Call after `session.pick(p)`. */
+export function canvasEntries(session: EditorSession, p: Point, layout: () => void, attach: () => void): Entry[] {
+  const sel = session.selection;
+  const under = hitTest(session.scene, p, true);
+  // Overlapping items to pick from; not offered when the plain hit test finds the same single one.
+  const select: Entry[] = under.length === hitTest(session.scene, p).length && under.length <= 1 ? [] : ["-", { label: "Select", sub: under.map((i): Entry => ({ label: i.name || "Link", run: () => session.select([i]) })) }];
+  const add: Entry = { label: "New item", icon: PLUS_SVG, run: () => session.addTopItem() };
+  if (sel.length === 0) return [add, { label: "Test layout", run: layout }, "-", ...styleEntries(session), ...select];
+
+  const align = (label: string, edge: Parameters<EditorSession["align"]>[0]): Entry => ({ label, run: () => session.align(edge) });
+  return [
+    add,
+    "-",
+    { label: "New linked item", run: () => session.addNewItem() },
+    { label: "Linked styled item", run: () => session.addNewItem(true) },
+    "-",
+    ...styleEntries(session),
+    ...(sel.length > 1 ? ["-" as const, { label: "Align", sub: [align("Leading Edges", "leading"), align("Trailing Edges", "trailing"), align("Top Edges", "top"), align("Bottom Edges", "bottom")] }] : []),
+    "-",
+    { label: "Duplicate", run: () => session.duplicate() },
+    ...(sel.length === 1
+      ? [
+          "-" as const,
+          { label: "Attach image", run: attach },
+          { label: "Order", sub: [{ label: "Move Forward", run: () => session.order(true) }, { label: "Move Backward", run: () => session.order(false) }] },
+          "-" as const,
+          { label: "Export text as html", run: () => void copyItemHtml(session.scene, sel[0]!).catch((e) => console.warn("tenniarb: export failed", e)) },
+        ]
+      : []),
+    ...select,
+    "-",
+    { label: "Delete", icon: MINUS_SVG, run: () => session.deleteSelection() },
+  ];
 }

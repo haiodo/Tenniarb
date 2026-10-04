@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readTenn } from "@tenniarb/core";
-import { closeAction, docTitle, newDocumentText, pushRecent, recentLimit, windowLabel } from "../src/doc.ts";
+import { closeAction, docTitle, newDocumentText, parseFrames, pushRecent, recentLimit, untitledFile, untitledLabels, windowLabel } from "../src/doc.ts";
 
 test("docTitle", () => {
   assert.equal(docTitle(null, false), "Untitled");
@@ -34,4 +34,17 @@ test("windowLabel is stable, distinct and label-safe", () => {
 
 test("newDocumentText parses", () => {
   assert.notEqual(readTenn(newDocumentText), null);
+});
+
+test("parseFrames keeps valid frames only", () => {
+  const ok = { x: -10, y: 20.5, width: 944, height: 764 };
+  assert.deepEqual(parseFrames(JSON.stringify({ "/a.tenn": ok, "/b.tenn": { x: 1 }, "/c.tenn": { ...ok, width: 0 }, "/d.tenn": null })), { "/a.tenn": ok });
+  assert.deepEqual(parseFrames("not json"), {});
+  assert.deepEqual(parseFrames("[1]"), {});
+  assert.deepEqual(parseFrames("null"), {});
+});
+
+test("untitled files map to window labels and back", () => {
+  assert.equal(untitledFile("untitled-5"), "untitled/untitled-5.tenn");
+  assert.deepEqual(untitledLabels(["main.tenn", "untitled-5.tenn", ".DS_Store"]), ["main", "untitled-5"]);
 });
