@@ -1,0 +1,149 @@
+name: Release (Tauri app)
+
+on:
+  push:
+    tags:
+      - '*'          # same tags as release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-web-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # universal: one dmg for Intel and Apple Silicon, at the cost of a double Rust build
+          - name: macOS
+            os: macos-latest
+            args: --target universal-apple-darwin --bundles app,dmg
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+            bundle_dir: web/packages/app/src-tauri/target/universal-apple-darwin/release/bundle
+            files: dmg/*.dmg
+            suffix: macos-universal.dmg
+          - name: Windows
+            os: windows-latest
+            args: --bundles nsis
+            bundle_dir: web/packages/app/src-tauri/target/release/bundle
+            files: nsis/*-setup.exe
+            suffix: windows-x64-setup.exe
+          # 22.04: AppImage links against the build glibc, older is more portable
+          - name: Linux AppImage
+            os: ubuntu-22.04
+            args: --bundles appimage
+            bundle_dir: web/packages/app/src-tauri/target/release/bundle
+            files: appimage/*.AppImage
+            suffix: linux-x86_64.AppImage
+          - name: Linux deb
+            os: ubuntu-22.04
+            args: --bundles deb
+            bundle_dir: web/packages/app/src-tauri/target/release/bundle
+            files: deb/*.deb
+            suffix: linux-amd64.deb
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: v
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if [[ ! "$VERSION" =~ ^([0-9]+(\.[0-9]+){0,2})(-[A-Za-z0-9]+)?$ ]]; then
+            echo "::error::Tag \"$TAG\" is not a version (1, 1.2, 1.2.3, optionally -suffix)"
+            exit 1
+          fi
+          # tauri wants full semver: pad the numeric part, keep the prerelease suffix
+          CORE="${BASH_REMATCH[1]}"
+          SUFFIX="${BASH_REMATCH[3]}"
+          while [ "$(echo "$CORE" | tr -cd . | wc -c)" -lt 2 ]; do CORE="$CORE.0"; done
+          echo "version=$CORE$SUFFIX" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: web/packages/app/src-tauri
+          key: ${{ matrix.name }}
+
+      - name: Install npm packages
+        run: npm ci
+        working-directory: web
+
+      # --config overrides the version for this build only, nothing is committed
+      - name: Build
+        shell: bash
+        run: npx tauri build ${{ matrix.args }} --config '{"version":"${{ steps.v.outputs.version }}"}'
+        working-directory: web/packages/app
+
+      - name: Rename
+        id: pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="Tenniarb-app-${{ steps.v.outputs.version }}-${{ matrix.suffix }}"
+          f=$(ls ${{ matrix.bundle_dir }}/${{ matrix.files }} | head -n1)
+          cp "$f" "$out"
+          ls -l "$out"
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.file }}
+          path: ${{ steps.pack.outputs.file }}
+
+  publish:
+    name: Attach to GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      # release.yml publishes to the same tag: create only if missing (the second create of a race fails, then view finds it).
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          gh release view "$tag" >/dev/null 2>&1 \
+            || gh release create "$tag" --title "$tag" --notes "Automated release created from tag $tag." \
+            || gh release view "$tag" >/dev/null
+          gh release upload "$tag" assets/* --clobber

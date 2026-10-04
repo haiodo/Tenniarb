@@ -100,6 +100,10 @@ Performance-тесты исключены из основного прогона
   - публикует GitHub Release
   - обновляет `MARKETING_VERSION` в `Tenniarb.xcodeproj/project.pbxproj` на default branch
 
+- CI (`ci.yml`, job `app`) собирает Tauri-приложение (`web/packages/app`) на macOS/Windows/Linux.
+- Release web workflow (`.github/workflows/release-web.yml`) по тем же тегам собирает unsigned dmg/NSIS/AppImage/deb и дописывает `Tenniarb-app-<версия>-*` в релиз тега (версия из тега через `tauri build --config`, не коммитится). Оба workflow создают релиз только если его нет (`gh release view || gh release create`), порядок не важен.
+- Не проверено в GitHub Actions до первого запуска.
+
 Перед изменениями release-логики проверять, что шаг обновления версии в `project.pbxproj` останется консистентным.
 
 ## Что не является целью в обычной задаче

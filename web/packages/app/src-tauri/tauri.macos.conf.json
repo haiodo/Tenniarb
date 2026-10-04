@@ -13,5 +13,6 @@
         "windowEffects": { "effects": ["underWindowBackground"] }
       }
     ]
-  }
+  },
+  "bundle": { "targets": ["app"] }
 }

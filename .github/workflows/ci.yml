@@ -96,3 +96,64 @@ jobs:
       - name: Build
         run: make web
 
+
+  app:
+    name: Tauri app (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS, os: macos-latest, bin: tenniarb }
+          - { name: Windows, os: windows-latest, bin: tenniarb.exe }
+          - { name: Linux, os: ubuntu-22.04, bin: tenniarb }
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev xvfb
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: web/packages/app/src-tauri
+
+      - name: Install npm packages
+        run: npm ci
+        working-directory: web
+
+      - name: Build (debug, no bundle)
+        run: npx tauri build --debug --no-bundle
+        working-directory: web/packages/app
+
+      - name: Binary exists
+        shell: bash
+        run: ls -l web/packages/app/src-tauri/target/debug/${{ matrix.bin }}
+
+      # timeout exit 124 = still running after 8 s. Not yet run on Actions: drop continue-on-error once green.
+      - name: Smoke launch (Linux, xvfb)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: "1"
+        run: |
+          code=0
+          timeout 8 xvfb-run -a web/packages/app/src-tauri/target/debug/tenniarb || code=$?
+          test "$code" = 124
