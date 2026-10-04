@@ -25,6 +25,8 @@ const server = createServer((req, res) => {
 await new Promise((r) => server.once("listening", r));
 const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 
+// Empty canvas points (the canvas is right of the outline and above the properties panel).
+const EMPTY = { x: 1450, y: 640 };
 const failures: string[] = [];
 const check = (ok: boolean, what: string): void => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
@@ -87,12 +89,12 @@ const s3 = await state();
 check(s3.x === s1.x && s3.y === s1.y, "ctrl+shift+z redoes");
 
 // empty click clears; drag on empty pans without touching the model
-await p.mouse.click(1050, 760);
+await p.mouse.click(EMPTY.x, EMPTY.y);
 check((await state()).sel === 0, "click on empty space clears selection");
 const before = await p.$eval("canvas", (c: HTMLCanvasElement) => c.toDataURL());
-await p.mouse.move(1050, 760);
+await p.mouse.move(EMPTY.x, EMPTY.y);
 await p.mouse.down();
-await p.mouse.move(1000, 700, { steps: 4 });
+await p.mouse.move(EMPTY.x - 50, EMPTY.y - 50, { steps: 4 });
 await p.mouse.up();
 check((await p.$eval("canvas", (c: HTMLCanvasElement) => c.toDataURL())) !== before && (await state()).changes === s3.changes, "empty drag pans, model untouched");
 
@@ -135,12 +137,12 @@ const e3 = await info();
 check(!e3.ta && e3.name === n0.name && e3.changes === n0.changes + 2, "Esc cancels, no onChange");
 
 // double-click on empty space still fits the view
-await p.mouse.move(1050, 760);
+await p.mouse.move(EMPTY.x, EMPTY.y);
 await p.mouse.down();
-await p.mouse.move(1000, 700, { steps: 4 });
+await p.mouse.move(EMPTY.x - 50, EMPTY.y - 50, { steps: 4 });
 await p.mouse.up();
 const panned = await p.$eval("canvas", (c: HTMLCanvasElement) => c.toDataURL());
-await p.mouse.dblclick(1060, 770);
+await p.mouse.dblclick(EMPTY.x + 10, EMPTY.y + 10);
 await p.waitForTimeout(100);
 check((await p.$eval("canvas", (c: HTMLCanvasElement) => c.toDataURL())) !== panned && !(await info()).ta, "double-click on empty space fits, no overlay");
 
@@ -270,7 +272,7 @@ await p.keyboard.press("ControlOrMeta+z");
 await p.waitForTimeout(100);
 check((await info()).n === c0.n, "(panel edits applied above are undone separately)") ;
 
-// outline: switch, rename, add, delete, drag, search
+// outline: switch, rename, add, delete, drag
 const ol = () =>
   p.evaluate(() => {
     const ed = (window as any).editor;
@@ -348,56 +350,145 @@ await p.keyboard.press("ControlOrMeta+z");
 await p.waitForTimeout(200);
 check((await parentOf("Simple")) === "Init screens", "undo moves it back");
 
+{
+// outline keyboard: arrows walk the visible rows, left / right fold, Tab adds an item and focuses the canvas
+const tree = () => p.locator("#outline .outline-tree");
+const nameOf = () => p.evaluate(() => (window as any).editor.session.element.name as string);
+await tree().focus();
+await rowOf("Documentation").click();
+const k0 = await nameOf();
+await p.keyboard.press("ArrowDown");
+const k1 = await nameOf();
+await p.keyboard.press("ArrowUp");
+check(k1 !== k0 && (await nameOf()) === k0, `ArrowDown moves to the next row ("${k0}" -> "${k1}"), ArrowUp back`);
+await p.keyboard.press("ArrowLeft");
+const folded = await p.evaluate(() => document.querySelector("#outline .outline-tree .row.sel + .children")?.classList.contains("hidden") ?? null);
+const rowsFolded = (await ol()).rows;
+check(folded === true, "ArrowLeft collapses the current element");
+await p.keyboard.press("ArrowRight");
+await p.keyboard.press("ArrowRight");
+check((await nameOf()) !== k0 && (await p.locator("#outline .outline-tree .row:visible").count()) > 0, `ArrowRight expands, then goes to the first child ("${await nameOf()}")`);
+await p.keyboard.press("ArrowLeft");
+check((await nameOf()) === k0, "ArrowLeft on a leaf goes to the parent");
+const items0 = await p.evaluate(() => (window as any).editor.session.element.items.length as number);
+await p.keyboard.press("Tab");
+const tab = await p.evaluate(() => ({ items: (window as any).editor.session.element.items.length as number, focus: document.activeElement === document.querySelector("#editor > div"), sel: (window as any).editor.session.selection.length as number }));
+check(tab.items === items0 + 1 && tab.focus && tab.sel === 1, "Tab adds an item to the diagram, selects it and focuses the canvas");
+await p.keyboard.press("ControlOrMeta+z");
+await p.screenshot({ path: `${out}/20-outline-keys.png` });
 await rowOf("Basic steps").click();
-await p.fill('#outline input[type="search"]', "Main Window");
-await p.waitForTimeout(200);
-const sq = await p.evaluate(() => ({ hits: document.querySelectorAll("#outline .outline-results .row").length, shown: !document.querySelector(".outline-results")!.classList.contains("hidden"), treeHidden: document.querySelector(".outline-tree")!.classList.contains("hidden"), first: document.querySelector("#outline .outline-results .row")?.textContent }));
-const o7 = await ol();
-check(sq.hits > 0 && sq.shown && sq.treeHidden, `search lists hits instead of the tree (${sq.hits}: "${sq.first}")`);
-check(o7.el !== "Basic steps" && o7.sels[0] === "Main Window", `the first hit switched to "${o7.el}" and selected "${o7.sels[0]}"`);
-await p.screenshot({ path: `${out}/20-search.png` });
+
+// title bar: zoom steps, reset, add / remove item
+const zoom = () => p.evaluate(() => ({ label: document.querySelector(".tn-zoom")!.textContent, k: (window as any).editor.session && document.querySelector(".tn-zoom")!.textContent }));
+const lab = async () => (await zoom()).label;
+await p.click('.tn-bar button[title="Reset zoom"]');
+await p.waitForTimeout(100);
+check((await lab()) === "100%", "100% button resets the zoom");
+await p.click('.tn-bar button[title="Zoom in"]');
+await p.waitForTimeout(100);
+check((await lab()) === "133%", `zoom in: 100% -> ${await lab()} (1 / 0.75)`);
+await p.click('.tn-bar button[title="Zoom out"]');
+await p.click('.tn-bar button[title="Zoom out"]');
+await p.waitForTimeout(100);
+check((await lab()) === "75%", `zoom out twice: ${await lab()} (0.75 per step)`);
+await p.screenshot({ path: `${out}/22-toolbar.png` });
+const n0 = await p.evaluate(() => (window as any).editor.session.element.items.length as number);
+await p.click('.tn-bar .tn-seg button[title="New item"]');
+check((await p.evaluate(() => (window as any).editor.session.element.items.length as number)) === n0 + 1, "toolbar + adds an item");
+await p.click('.tn-bar .tn-seg button[title="Delete selection"]');
+check((await p.evaluate(() => (window as any).editor.session.element.items.length as number)) === n0, "toolbar - removes the selected item");
+await p.click('.tn-bar button[title="Share"]');
+const share = await p.evaluate(() => [...document.querySelectorAll(".tn-menu.root > .tn-mi")].map((e) => `${e.firstChild!.textContent}:${e.querySelector("svg") !== null}`));
+check(share.length === 3 && share.every((l) => l.endsWith(":true")), `share menu has icons: ${share.join(", ")}`);
+await p.screenshot({ path: `${out}/23-share-menu.png` });
 await p.keyboard.press("Escape");
-const sc = await p.evaluate(() => ({ hidden: document.querySelector(".outline-results")!.classList.contains("hidden"), value: (document.querySelector('#outline input[type="search"]') as HTMLInputElement).value, focus: document.activeElement === document.querySelector("#editor > div") }));
-check(sc.hidden && sc.value === "" && sc.focus && (await ol()).sels[0] === "Main Window", "Esc closes the search, focus returns to the canvas, the selection stays");
+
+// off-screen indicators: pan everything out of view, dots appear at the edge
+const dots = () => p.$eval("canvas", (c: HTMLCanvasElement) => { const o = document.createElement("canvas"); o.width = c.width; o.height = c.height; const x = o.getContext("2d", { willReadFrequently: true })!; x.drawImage(c, 0, 0); const w = c.width; const h = c.height; let n = 0; for (const [x0, y0, ww, hh] of [[0, 0, 40, h], [w - 40, 0, 40, h], [0, 0, w, 40], [0, h - 40, w, 40]] as number[][]) { const d = x.getImageData(x0!, y0!, ww!, hh!).data; for (let i = 3; i < d.length; i += 4) if (d[i] !== 0) n++; } return n; });
+await p.click('.tn-bar button[title="Reset zoom"]');
+await p.mouse.move(EMPTY.x, EMPTY.y);
+const dots0 = await dots();
+for (let i = 0; i < 6; i++) await p.mouse.wheel(-1500, 0);
+await p.waitForTimeout(300);
+const dots1 = await dots();
+check(dots1 > 0 && dots1 < dots0, `panning items off-screen leaves only indicators at the edge (${dots0} -> ${dots1} edge pixels)`);
+await p.screenshot({ path: `${out}/24-indicators.png` });
+await p.click('.tn-bar button[title="Reset zoom"]');
+await p.evaluate(() => {
+  const s = (window as any).editor.session;
+  const find = (e: any): any => e.items.find((i: any) => i.name === "Main Window") ?? e.elements.map(find).find((x: any) => x);
+  s.reveal(find(s.root));
+});
+await p.waitForTimeout(200);
+}
 
 // properties panel: long lines scroll (no wrap)
 const sc0 = await p.evaluate(() => { const e = document.querySelector("#props .cm-scroller") as HTMLElement; const before = e.scrollLeft; e.scrollLeft = 100; return { sw: e.scrollWidth, cw: e.clientWidth, ox: getComputedStyle(e).overflowX, moved: e.scrollLeft - before }; });
 check(sc0.sw > sc0.cw && sc0.ox === "auto" && sc0.moved > 0, `panel scrolls horizontally (${sc0.sw} > ${sc0.cw}, moved ${sc0.moved})`);
 await p.screenshot({ path: `${out}/30-panel-scroll.png` });
 
-// styles toolbar
+// styles context menu
 const st = () => p.evaluate(() => { const s = (window as any).editor.session; const it = s.selection[0]; return { model: s.text() as string, changes: (window as any).changes as number, styles: s.styleNames() as string[], has: it ? s.propsText(it) as string : "" }; });
-const tn = (name: string) => p.locator(`.tn-toolbar [data-tn="${name}"]`);
+const rightClick = async (at?: { x: number; y: number }) => {
+  // "Diagram area" is a plain box; the screenshot item "Main Window" is not hit at its centre.
+  const pt = at ?? (await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); }));
+  await p.mouse.click(pt.x, pt.y, { button: "right" });
+  await p.waitForTimeout(100);
+};
+const menuLabels = () => p.evaluate(() => [...document.querySelectorAll(".tn-menu.root > .tn-mi")].map((e) => e.firstChild!.textContent));
+// Hover the parents, click the last label; only items of open menus count.
+const pickMenu = async (...path: string[]) => {
+  for (const [i, label] of path.entries()) {
+    const box = await p.evaluate((l) => {
+      const el = [...document.querySelectorAll<HTMLElement>(".tn-mi")].find((e) => e.firstChild?.textContent === l && e.offsetParent !== null);
+      const r = el?.getBoundingClientRect();
+      return r && { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, label);
+    if (box === undefined || box === null) throw new Error(`menu item "${label}" is not visible`);
+    await p.mouse.move(box.x, box.y);
+    if (i === path.length - 1) await p.mouse.down(), await p.mouse.up();
+    await p.waitForTimeout(50);
+  }
+  await p.waitForTimeout(100);
+};
+await p.evaluate(() => { const s = (window as any).editor.session; s.selection = []; s.opts.onRedraw(); });
+await rightClick();
 const t0 = await st();
-check((await tn("shadows").count()) === 0 && (await tn("color").count()) === 1, "toolbar: quick styles for the selected item");
-await tn("color").selectOption("red");
-await p.waitForTimeout(100);
-const t1 = await st();
-check(t1.has.includes("color red") && t1.changes === t0.changes + 1 && t1.model.includes("color red"), "quick style: color red in the model, onChange +1");
-await tn("display").selectOption("circle");
-await p.waitForTimeout(100);
-check((await st()).has.includes("display circle"), "quick style: display circle");
+check((await p.evaluate(() => (window as any).editor.session.selection.map((i: any) => i.name))).join() === "Diagram area", "right click selects the item under the cursor");
+check(JSON.stringify(await menuLabels()) === JSON.stringify(["Style", "Quick Style"]), `context menu on an item: ${JSON.stringify(await menuLabels())}`);
+await p.hover(".tn-menu.root > .tn-mi:last-child");
 await p.screenshot({ path: `${out}/31-styles.png` });
+await pickMenu("Quick Style", "Color", "🔴red");
+const t1 = await st();
+check(t1.has.includes("color red") && t1.changes === t0.changes + 1 && t1.model.includes("color red") && (await p.locator(".tn-menu").count()) === 0, "quick style: color red in the model, onChange +1, menu closed");
+await rightClick();
+await pickMenu("Quick Style", "Display", "● circle");
+check((await st()).has.includes("display circle"), "quick style: display circle");
 await p.keyboard.press("ControlOrMeta+z");
 await p.keyboard.press("ControlOrMeta+z");
 await p.waitForTimeout(100);
 const t2 = await st();
 check(!t2.has.includes("color red") && !t2.has.includes("display circle") && t2.changes === t0.changes + 4, "undo x2 restores the item");
-await tn("style").selectOption("+ New style");
-await p.waitForTimeout(100);
+await rightClick();
+await pickMenu("Style", "Define new style");
 const t3 = await st();
 check(t3.styles.length === t0.styles.length + 1 && t3.changes === t2.changes + 1, `new style defined (${t3.styles.join(",")})`);
 const newName = t3.styles[t3.styles.length - 1]!;
-await tn("style").selectOption(newName);
-await p.waitForTimeout(100);
+await rightClick();
+await pickMenu("Style", newName);
 const t4 = await st();
 check(t4.has.includes(`use-style ${newName}`) && t4.changes === t3.changes + 1, "style applied to the selection, one onChange");
 await p.keyboard.press("ControlOrMeta+z");
 await p.waitForTimeout(100);
 check(!(await st()).has.includes("use-style"), "undo removes use-style");
-await p.evaluate(() => { const s = (window as any).editor.session; s.selection = []; s.opts.onRedraw(); });
-await p.waitForTimeout(100);
-check((await tn("shadows").count()) === 1 && (await tn("color").count()) === 0, "no selection: only style and shadows");
+await rightClick();
+await p.keyboard.press("Escape");
+check((await p.locator(".tn-menu").count()) === 0, "Esc closes the menu");
+await rightClick(EMPTY);
+check(JSON.stringify(await menuLabels()) === JSON.stringify(["Style", "Global Styles"]) && (await p.evaluate(() => (window as any).editor.session.selection.length)) === 0, "right click on empty space: selection cleared, Style and Global Styles only");
+await pickMenu("Global Styles", "Enable shadows");
+check((await st()).changes === t4.changes + 2 && (await st()).model.includes("shadow -5 -5 5"), "Enable shadows applies in one step");
+await p.keyboard.press("ControlOrMeta+z");
 
 // readonly
 await p.click("#ro");
@@ -418,7 +509,8 @@ await p.mouse.down();
 await p.mouse.move(pr.x + 80, pr.y + 60, { steps: 4 });
 await p.mouse.up();
 const sr = await state();
-check((await p.locator(".tn-toolbar").count()) === 0, "readonly: no toolbar");
+await p.mouse.click(pr.x, pr.y, { button: "right" });
+check((await p.locator(".tn-menu").count()) === 0, "readonly: no context menu");
 check(sr.sel === 0 && sr.x === s0.x && sr.y === s0.y && sr.changes === ro0, "readonly: no selection, no move, no onChange");
 await p.screenshot({ path: `${out}/5-readonly.png` });
 check((await p.locator("#outline .outline-header button").count()) === 0, "readonly: no outline buttons");
@@ -426,11 +518,12 @@ const roChanges = (await state()).changes;
 await rowOf("Basic steps").locator("> .name").dblclick();
 check((await p.locator("#outline .outline-rename").count()) === 0, "readonly: no rename input");
 await rowOf("Basic steps").click();
-await p.fill('#outline input[type="search"]', "Main Window");
-await p.waitForTimeout(200);
+await p.locator("#outline .outline-tree").focus();
+await p.keyboard.press("ArrowDown");
 const roState = await ol();
-check(roState.el !== "Basic steps" && roState.sels[0] === "Main Window" && roState.changes === roChanges, "readonly: row click and search still navigate, no onChange");
-await p.screenshot({ path: `${out}/21-readonly-search.png` });
+check(roState.el !== "Basic steps" && roState.changes === roChanges, "readonly: row click and arrow keys still navigate, no onChange");
+check((await p.locator(".tn-bar .tn-seg").count()) === 0, "readonly: no add / remove item buttons");
+await p.screenshot({ path: `${out}/21-readonly-nav.png` });
 
 check(problems.length === 0, `no console errors at the end ${problems.slice(0, 3).join(" | ")}`);
 await browser.close();

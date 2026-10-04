@@ -1,8 +1,10 @@
-// Outline panel: element tree (port of OutlineViewControllerDelegate) and item search (port of SearchBoxViewController).
-import { createTree, elementTree, pathOf } from "@tenniarb/embed";
+// Outline panel: element tree (port of OutlineViewControllerDelegate).
+import { createTree, elementTree } from "@tenniarb/embed";
 import type { ElementNode, TreeView } from "@tenniarb/embed";
-import type { DiagramItem, Element } from "@tenniarb/core";
-import { bodyText, searchItems } from "./search.ts";
+import type { Element } from "@tenniarb/core";
+import { MINUS_SVG, PLUS_SVG } from "./icons.ts";
+import { showMenu } from "./menu.ts";
+import type { Entry } from "./menu.ts";
 import type { EditorSession } from "./session.ts";
 
 export interface Outline {
@@ -11,11 +13,11 @@ export interface Outline {
   destroy(): void;
 }
 
-const signature = (list: readonly ElementNode[]): string => list.map((n) => `${n.id}:${n.name}(${signature(n.children)})`).join(",");
+const signature = (list: readonly ElementNode[]): string => list.map((n) => `${n.id}:${n.name}:${n.hasItems ? 1 : 0}(${signature(n.children)})`).join(",");
 
-function button(label: string, title: string, click: () => void): HTMLButtonElement {
+function button(icon: string, title: string, click: () => void): HTMLButtonElement {
   const b = document.createElement("button");
-  b.textContent = label;
+  b.innerHTML = icon;
   b.title = title;
   b.onclick = click;
   return b;
@@ -26,16 +28,11 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
   host.replaceChildren();
   const header = document.createElement("div");
   header.className = "outline-header";
-  const input = document.createElement("input");
-  input.type = "search";
-  input.placeholder = "Search items";
-  input.autocomplete = "off";
-  const results = document.createElement("div");
-  results.className = "outline-results hidden";
+  header.setAttribute("data-tauri-drag-region", "");
   const treeHost = document.createElement("div");
   treeHost.className = "outline-tree";
   treeHost.tabIndex = 0;
-  host.append(header, results, treeHost);
+  host.append(header, treeHost);
 
   let sig = "";
   const byId = new Map<string, Element>();
@@ -46,14 +43,11 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
     const el = session.addElement(parent);
     if (el !== null) session.setElement(el);
   };
-  header.append(input);
   if (!ro) {
-    header.append(
-      button("+", "New element inside the current one", () => add(session.element)),
-      button("+ Top", "New top-level element", () => add()),
-      button("Copy", "Duplicate the current element", () => void session.duplicateElement(session.element)),
-      button("-", "Delete the current element", () => void session.removeElement(session.element)),
-    );
+    const seg = document.createElement("div");
+    seg.className = "tn-seg";
+    seg.append(button(PLUS_SVG, "New element inside the current one", () => add(session.element)), button(MINUS_SVG, "Delete the current element", () => void session.removeElement(session.element)));
+    header.append(seg);
   }
 
   function rename(id: string): void {
@@ -81,6 +75,15 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
     edit.select();
   }
 
+  // Swift's outline menu, plus a top-level add: the toolbar "+" only adds inside the current element.
+  const rowMenu = (): Entry[] => [
+    { label: "New element", run: () => add(session.element) },
+    { label: "New top-level element", run: () => add() },
+    { label: "Duplicate", run: () => void session.duplicateElement(session.element) },
+    "-",
+    { label: "Delete", run: () => void session.removeElement(session.element) },
+  ];
+
   // Drop on a row moves into that element, on empty space - to the top level (Swift also reorders by index and copies into descendants).
   let dragged: Element | null = null;
   function wire(list: readonly ElementNode[]): void {
@@ -91,6 +94,11 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
       row.draggable = !ro;
       row.ondblclick = () => rename(n.id);
       if (ro) continue;
+      row.oncontextmenu = (ev) => {
+        ev.preventDefault();
+        session.setElement(el);
+        showMenu(ev.clientX, ev.clientY, rowMenu(), () => treeHost.focus());
+      };
       row.ondragstart = (ev) => {
         dragged = el;
         ev.dataTransfer?.setData("text/plain", el.name);
@@ -112,60 +120,24 @@ export function mountOutline(host: HTMLElement, session: EditorSession, opts: { 
   };
   treeHost.onkeydown = (ev) => {
     const mod = ev.metaKey || ev.ctrlKey;
-    if (mod && ev.key.toLowerCase() === "z") ev.shiftKey ? session.redo() : session.undo();
-    else if (ev.key === "Enter") rename(session.element.id);
-    else return;
+    if (mod) {
+      if (ev.key.toLowerCase() !== "z") return;
+      if (ev.shiftKey) session.redo();
+      else session.undo();
+    } else if (ev.key === "Enter") rename(session.element.id);
+    else if (ev.key === "Tab") {
+      // Swift: a new item in the diagram, keyboard focus goes to the canvas
+      if (ro) return;
+      session.addTopItem();
+      opts.onFocusCanvas?.();
+    } else if (ev.key.startsWith("Arrow")) {
+      const next = tree.navigate(session.element.id, ev.key as Parameters<typeof tree.navigate>[1]);
+      if (next !== null) session.setElement(byId.get(next)!);
+    } else return;
     ev.preventDefault();
   };
 
-  // Search: the list replaces the tree while there is a query; arrows walk the hits and show each one, as the selection did in Swift.
-  let hits: DiagramItem[] = [];
-  let cur = -1;
-  function show(i: number): void {
-    cur = i;
-    [...results.children].forEach((c, k) => c.classList.toggle("sel", k === i));
-    results.children[i]?.scrollIntoView({ block: "nearest" });
-    if (hits[i] !== undefined) session.reveal(hits[i]!);
-  }
-  function close(): void {
-    input.value = "";
-    hits = [];
-    results.classList.add("hidden");
-    treeHost.classList.remove("hidden");
-    opts.onFocusCanvas?.();
-  }
-  input.oninput = () => {
-    hits = searchItems(session.root, input.value);
-    results.replaceChildren(
-      ...hits.map((item, i) => {
-        const row = document.createElement("div");
-        row.className = "row";
-        const body = bodyText(item);
-        const label = (body === "" ? item.name : `${item.name} - ${body}`).replaceAll("\n", "\\n");
-        const where = document.createElement("span");
-        where.className = "where";
-        where.textContent = pathOf(item.parent!);
-        const text = document.createElement("span");
-        text.className = "name";
-        text.textContent = label;
-        row.append(text, where);
-        row.onclick = () => show(i);
-        return row;
-      }),
-    );
-    const searching = input.value !== "";
-    results.classList.toggle("hidden", !searching);
-    treeHost.classList.toggle("hidden", searching);
-    if (hits.length > 0) show(0);
-  };
-  input.onkeydown = (ev) => {
-    if (ev.key === "Escape" || ev.key === "Enter") close();
-    else if ((ev.key === "ArrowDown" || ev.key === "ArrowUp") && hits.length > 0) show((cur + (ev.key === "ArrowDown" ? 1 : hits.length - 1)) % hits.length);
-    else return;
-    ev.preventDefault();
-  };
-
-  function sync(): void {
+    function sync(): void {
     const nodes = elementTree(session.root);
     const next = signature(nodes);
     if (next !== sig) {

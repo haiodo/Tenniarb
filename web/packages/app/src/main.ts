@@ -1,11 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
-import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
+import { LogicalPosition } from "@tauri-apps/api/dpi";
+import { Effect, getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { message, open, save } from "@tauri-apps/plugin-dialog";
-import { BaseDirectory, mkdir, readTextFile, rename, writeTextFile } from "@tauri-apps/plugin-fs";
-import { mount } from "@tenniarb/editor";
+import { BaseDirectory, mkdir, readTextFile, rename, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { mount, mountLayout } from "@tenniarb/editor";
 import type { EditorHandle } from "@tenniarb/editor";
 import { closeAction, docTitle, fileName, newDocumentText, pushRecent, windowLabel } from "./doc.ts";
 
@@ -15,6 +16,18 @@ const autosaveDelay = 2000;
 const recentFile = "recent.json";
 const appData = { baseDir: BaseDirectory.AppData };
 
+// Same as tauri.macos.conf.json, which only covers the first window.
+const isMac = navigator.userAgent.includes("Macintosh");
+const macWindow = {
+  transparent: true,
+  titleBarStyle: "overlay" as const,
+  hiddenTitle: true,
+  trafficLightPosition: new LogicalPosition(18, 19),
+  windowEffects: { effects: [Effect.LiquidGlassRegular, Effect.Sidebar] },
+};
+
+const layout = mountLayout(document.getElementById("app")!, { glass: isMac });
+
 let handle: EditorHandle | null = null;
 let path: string | null = null;
 let dirty = false;
@@ -22,7 +35,9 @@ let rev = 0; // bumped on each edit: a save that raced with an edit must not cle
 let timer: ReturnType<typeof setTimeout> | undefined;
 
 function updateTitle(): void {
-  void win.setTitle(docTitle(path, dirty));
+  const title = docTitle(path, dirty);
+  layout.setTitle(title);
+  void win.setTitle(title);
 }
 
 async function loadRecent(): Promise<string[]> {
@@ -82,7 +97,7 @@ function onChange(): void {
 
 async function openWindow(label: string, p: string | null): Promise<void> {
   const url = p === null ? "index.html" : `index.html?path=${encodeURIComponent(p)}`;
-  const w = new WebviewWindow(label, { url, title: docTitle(p, false), width: 944, height: 764 });
+  const w = new WebviewWindow(label, { url, title: docTitle(p, false), width: 944, height: 764, ...(isMac ? macWindow : {}) });
   await new Promise((resolve, reject) => {
     void w.once("tauri://created", resolve);
     void w.once("tauri://error", (e) => reject(new Error(String(e.payload))));
@@ -192,14 +207,13 @@ void win.onCloseRequested(async (ev) => {
   await win.destroy();
 });
 
+async function saveFile(name: string, data: Blob): Promise<void> {
+  const p = await save({ defaultPath: name });
+  if (p !== null) await writeFile(p, new Uint8Array(await data.arrayBuffer()));
+}
+
 const mountDoc = (text: string): Promise<EditorHandle> =>
-  mount(document.getElementById("editor")!, {
-    text,
-    onChange,
-    properties: document.getElementById("props")!,
-    outline: document.getElementById("outline")!,
-    fontBaseUrl: "fonts/",
-  });
+  mount(layout.editor, { text, onChange, properties: layout.props, outline: layout.outline, toolbar: layout.bar, saveFile, fontBaseUrl: "fonts/" });
 
 async function start(): Promise<void> {
   const p = new URLSearchParams(location.search).get("path");

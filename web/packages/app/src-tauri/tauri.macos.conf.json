@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "windows": [
+      {
+        "title": "Untitled",
+        "width": 944,
+        "height": 764,
+        "transparent": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": { "x": 18, "y": 19 },
+        "windowEffects": { "effects": ["liquidGlassRegular", "sidebar"] }
+      }
+    ]
+  }
+}

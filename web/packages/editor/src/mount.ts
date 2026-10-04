@@ -1,14 +1,18 @@
-import { readTenn } from "@tenniarb/core";
+import { readTenn, toTennStr } from "@tenniarb/core";
 import type { DiagramItem, Element } from "@tenniarb/core";
 import { decode, defaultFontBase, loadFonts } from "@tenniarb/embed";
-import { allElements, fontCss, findElement, preloadImages } from "@tenniarb/render";
-import type { ImageDecoder, Point, Rect } from "@tenniarb/render";
+import { allElements, fontCss, findElement, getSceneSize, preloadImages, renderElement, setMeasureContext } from "@tenniarb/render";
+import type { Canvas2D, ImageDecoder, Point, Rect } from "@tenniarb/render";
+import { drawIndicators } from "./indicators.ts";
+import { IMAGE_SVG, DOC_SVG } from "./icons.ts";
 import { hitTest } from "./selection.ts";
 import { mountOutline } from "./outline.ts";
 import type { Outline } from "./outline.ts";
 import { mountProperties } from "./properties-panel.ts";
 import type { PropertiesPanel } from "./properties-panel.ts";
 import { EditorSession } from "./session.ts";
+import { showMenu, styleEntries } from "./menu.ts";
+import type { Entry } from "./menu.ts";
 import { mountToolbar } from "./toolbar.ts";
 import type { Toolbar } from "./toolbar.ts";
 import type { EditMode } from "./session.ts";
@@ -23,8 +27,14 @@ export interface EditorOptions {
   element?: string;
   /** Container for the properties panel: Tenn text of the selected item (or the element), applied after a pause. */
   properties?: HTMLElement;
-  /** Container for the outline: element tree (switch, rename, add, delete, drag into another element) and item search. Readonly keeps navigation and search. */
+  /** Container for the outline: element tree (switch, rename, add, delete, drag into another element, arrow keys). Readonly keeps navigation. */
   outline?: HTMLElement;
+  /** Container for the title bar controls: zoom, help, share (exports), add / remove item (not in readonly). */
+  toolbar?: HTMLElement;
+  /** Help button handler; without it the button is disabled. */
+  onHelp?: () => void;
+  /** Receives an export (PNG, element .tenn). Default: a browser download. */
+  saveFile?: (name: string, data: Blob) => void | Promise<void>;
   /** Directory with Inter-*.woff2. */
   fontBaseUrl?: string;
 }
@@ -34,6 +44,10 @@ export interface EditorHandle {
   undo(): void;
   redo(): void;
   fit(): void;
+  /** Swift zoomIn / zoomOut / resetZoom: steps of 0.75 around the view centre, 100% centred on the scene. */
+  zoomIn(): void;
+  zoomOut(): void;
+  resetZoom(): void;
   selection(): DiagramItem[];
   /** Client (viewport) coordinates of the centre of an item. */
   screenOf(item: DiagramItem): Point;
@@ -73,11 +87,12 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
 
   let panel: PropertiesPanel | undefined;
   let outline: Outline | undefined;
-  let toolbar: Toolbar | undefined;
+  let bar: Toolbar | undefined;
   const darkMode = matchMedia("(prefers-color-scheme: dark)").matches;
+  const decodeImage = await decoderFor(root);
   const session = new EditorSession(element, {
     darkMode,
-    decodeImage: await decoderFor(root),
+    decodeImage,
     measureContext: ctx,
     readonly: opts.readonly,
     onChange: (text) => {
@@ -93,7 +108,6 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     onRedraw: () => {
       redraw();
       panel?.sync();
-      toolbar?.sync();
     },
   });
   if (opts.properties !== undefined) {
@@ -104,10 +118,12 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
 
   if (opts.outline !== undefined) outline = mountOutline(opts.outline, session, { readonly: opts.readonly, onFocusCanvas: () => box.focus() });
 
-  if (!opts.readonly) {
-    toolbar = mountToolbar(box, session, () => box.focus());
-    toolbar.sync();
-  }
+  const scheme = matchMedia("(prefers-color-scheme: dark)");
+  const follow = (): void => {
+    session.setDarkMode(scheme.matches);
+    panel?.setDark(scheme.matches);
+  };
+  scheme.addEventListener("change", follow);
 
   // Screen = view.x + k * x, view.y - k * y: the scene is y-up and does not depend on its own bounds, so edits never shift the picture.
   const view = { x: 0, y: 0, k: 1 };
@@ -125,6 +141,16 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     ctx.clearRect(0, 0, w, h);
     ctx.setTransform(dpr * view.k, 0, 0, -dpr * view.k, dpr * view.x, dpr * view.y);
     session.draw(ctx);
+    drawIndicators(ctx, session.scene.drawables.values(), {
+      ox: view.x / view.k,
+      oy: (box.clientHeight - view.y) / view.k,
+      k: view.k,
+      w: box.clientWidth,
+      h: box.clientHeight,
+      dpr,
+      dark: scheme.matches,
+    });
+    bar?.setZoom(Math.trunc(view.k * 100));
     if (editing !== null) place(editing);
   }
   const redraw = (): void => {
@@ -193,6 +219,63 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     view.k = k;
     redraw();
   }
+  const zoomCentre = (factor: number): void => zoomAt(factor, box.clientWidth / 2, box.clientHeight / 2);
+
+  function resetZoom(): void {
+    const b = session.scene.getBounds();
+    view.k = 1;
+    view.x = box.clientWidth / 2 - (b.x + b.width / 2);
+    view.y = box.clientHeight / 2 + (b.y + b.height / 2);
+    redraw();
+  }
+
+  // Swift ExportManager.renderImage: light scheme, margin 30, the selection only when there is one. Transparent background.
+  async function renderPng(): Promise<Blob> {
+    const dpr = window.devicePixelRatio || 1;
+    const o = { darkMode: false, padding: 30, items: session.selection.length > 0 ? [...session.selection] : undefined, decodeImage, measureContext: ctx };
+    const size = getSceneSize(session.element, o);
+    const c = document.createElement("canvas");
+    c.width = Math.ceil(size.width * dpr);
+    c.height = Math.ceil(size.height * dpr);
+    const g = c.getContext("2d")!;
+    g.scale(dpr, dpr);
+    renderElement(g as unknown as Canvas2D, session.element, { ...o, measureContext: undefined });
+    setMeasureContext(ctx); // renderElement switched the shared measuring context to `g`
+    return new Promise((resolve, reject) => c.toBlob((b) => (b === null ? reject(new Error("PNG encoding failed")) : resolve(b)), "image/png"));
+  }
+
+  const saveFile =
+    opts.saveFile ??
+    ((name: string, data: Blob): void => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(data);
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+  // Swift export menu entries that exist here; HTML, JSON and PDF exports are not ported.
+  const exportEntries = (): Entry[] => {
+    const name = session.element.name;
+    const fail = (e: unknown): void => console.warn("tenniarb: export failed", e);
+    return [
+      { label: "Export as PNG", icon: IMAGE_SVG, run: () => void renderPng().then((b) => saveFile(`${name}.png`, b)).catch(fail) },
+      { label: "Copy as PNG", icon: IMAGE_SVG, run: () => void renderPng().then((b) => navigator.clipboard.write([new ClipboardItem({ "image/png": b })])).catch(fail) },
+      "-",
+      { label: "Export current to file", icon: DOC_SVG, run: () => void Promise.resolve(saveFile(`${name}.tenn`, new Blob([toTennStr(session.element)], { type: "text/plain" }))).catch(fail) },
+    ];
+  };
+
+  if (opts.toolbar !== undefined) {
+    const edit = opts.readonly ? {} : { add: () => (session.addNewItem(), box.focus()), remove: () => (session.deleteSelection(), box.focus()) };
+    bar = mountToolbar(opts.toolbar, {
+      zoomOut: () => zoomCentre(0.75),
+      zoomIn: () => zoomCentre(1 / 0.75),
+      resetZoom,
+      help: opts.onHelp,
+      share: (x, y) => showMenu(x, y, exportEntries(), () => {}),
+      ...edit,
+    });
+  }
 
   const toScene = (ev: { clientX: number; clientY: number }): Point => {
     const r = canvas.getBoundingClientRect();
@@ -203,6 +286,7 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
   let active = false; // a press is owned by the session
   canvas.addEventListener("pointerdown", (ev) => {
     box.focus();
+    if (ev.button !== 0) return;
     canvas.setPointerCapture(ev.pointerId);
     active = session.down(toScene(ev), { toggle: ev.metaKey || ev.ctrlKey, band: ev.shiftKey });
     last = active ? null : { x: ev.clientX, y: ev.clientY };
@@ -222,6 +306,13 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
   };
   canvas.addEventListener("pointerup", release);
   canvas.addEventListener("pointercancel", release);
+  canvas.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    if (opts.readonly) return;
+    finishEdit(true);
+    session.pick(toScene(ev));
+    showMenu(ev.clientX, ev.clientY, styleEntries(session), () => box.focus());
+  });
   canvas.addEventListener("dblclick", (ev) => {
     const hit = opts.readonly ? undefined : hitTest(session.scene, toScene(ev)).at(-1);
     if (hit === undefined) fit();
@@ -280,6 +371,9 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     undo: () => session.undo(),
     redo: () => session.redo(),
     fit,
+    zoomIn: () => zoomCentre(1 / 0.75),
+    zoomOut: () => zoomCentre(0.75),
+    resetZoom,
     selection: () => session.selection,
     screenOf: (item) => {
       const b = session.scene.drawables.get(item)!.getSelectorBounds();
@@ -290,7 +384,7 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     destroy: () => {
       panel?.destroy();
       outline?.destroy();
-      toolbar?.destroy();
+      scheme.removeEventListener("change", follow);
       ro.disconnect();
       cancelAnimationFrame(frame);
       box.remove();

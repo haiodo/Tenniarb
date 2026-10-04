@@ -1,4 +1,4 @@
-// Element tree list (viewer navigator, editor outline). Classes .row .arrow .name .children .sel .hidden are styled by the page.
+// Element tree list (viewer navigator, editor outline). Classes .row (.group: has items) .arrow .name .children .sel .hidden are styled by the page; rows carry --depth.
 import type { ElementNode } from "./util.ts";
 
 export interface TreeView {
@@ -8,12 +8,15 @@ export interface TreeView {
   filter(query: string): void;
   /** Highlights the row and opens its ancestors. */
   select(id: string): void;
+  /** Arrow keys of NSOutlineView: id of the row to select next, or null when the key only expands / collapses (or there is nowhere to go). */
+  navigate(id: string, key: "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight"): string | null;
   row(id: string): HTMLElement | undefined;
   /** The text span of a row. */
   name(id: string): HTMLElement | undefined;
 }
 
 interface Entry {
+  node: ElementNode;
   row: HTMLElement;
   name: HTMLElement;
   box: HTMLElement | null;
@@ -35,10 +38,11 @@ export function createTree(host: HTMLElement, onSelect: (node: ElementNode) => v
     if (r.arrow) r.arrow.textContent = value ? "▶" : "▼";
   }
 
-  function add(parent: HTMLElement, list: readonly ElementNode[], parentId: string | null): void {
+  function add(parent: HTMLElement, list: readonly ElementNode[], parentId: string | null, depth: number): void {
     for (const child of list) {
       const row = document.createElement("div");
-      row.className = "row";
+      row.className = child.hasItems ? "row group" : "row";
+      row.style.setProperty("--depth", String(depth));
       const arrow = document.createElement("span");
       arrow.className = "arrow";
       const name = document.createElement("span");
@@ -51,14 +55,14 @@ export function createTree(host: HTMLElement, onSelect: (node: ElementNode) => v
         box = document.createElement("div");
         box.className = "children";
         parent.append(box);
-        add(box, child.children, child.id);
+        add(box, child.children, child.id, depth + 1);
         arrow.onclick = (ev) => {
           ev.stopPropagation();
           setCollapsed(child.id, !box!.classList.contains("hidden"));
         };
       }
       row.onclick = () => onSelect(child);
-      rows.set(child.id, { row, name, box, arrow: box ? arrow : null, parent: parentId });
+      rows.set(child.id, { node: child, row, name, box, arrow: box ? arrow : null, parent: parentId });
       if (box) setCollapsed(child.id, collapsed.has(child.id));
     }
   }
@@ -82,7 +86,7 @@ export function createTree(host: HTMLElement, onSelect: (node: ElementNode) => v
       nodes = next;
       rows.clear();
       host.replaceChildren();
-      add(host, nodes, null);
+      add(host, nodes, null, 0);
       filter(query);
     },
     filter,
@@ -93,6 +97,31 @@ export function createTree(host: HTMLElement, onSelect: (node: ElementNode) => v
       for (let p = r.parent; p !== null; p = rows.get(p)!.parent) setCollapsed(p, false);
       r.row.classList.add("sel");
       r.row.scrollIntoView({ block: "nearest" });
+    },
+    navigate(id, key) {
+      const r = rows.get(id);
+      if (r === undefined) return null;
+      if (key === "ArrowLeft") {
+        if (r.box === null || collapsed.has(id)) return r.parent;
+        setCollapsed(id, true);
+        return null;
+      }
+      if (key === "ArrowRight") {
+        if (r.box === null) return null;
+        if (!collapsed.has(id)) return r.node.children[0]!.id;
+        setCollapsed(id, false);
+        return null;
+      }
+      const order: string[] = [];
+      const walk = (list: readonly ElementNode[]): void => {
+        for (const c of list) {
+          if (rows.get(c.id)!.row.classList.contains("hidden")) continue;
+          order.push(c.id);
+          if (!collapsed.has(c.id)) walk(c.children);
+        }
+      };
+      walk(nodes);
+      return order[order.indexOf(id) + (key === "ArrowDown" ? 1 : -1)] ?? null;
     },
     row: (id) => rows.get(id)?.row,
     name: (id) => rows.get(id)?.name,

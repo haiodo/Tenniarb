@@ -3,7 +3,6 @@ import { test } from "node:test";
 import { readTenn } from "@tenniarb/core";
 import "../../render/test/helpers.ts"; // measure context + fonts
 import { EditorSession } from "../src/session.ts";
-import { searchItems } from "../src/search.ts";
 
 const SRC = `element "A" {
   item "Alpha" { pos 0 0 }
@@ -32,15 +31,6 @@ function make(readonly = false) {
   const [a, b] = root.elements;
   return { s, root, a: a!, a1: a!.elements[0]!, b: b!, changes, elements: () => elements };
 }
-
-test("searchItems: name or body, whole document, sorted by name, empty query finds nothing", () => {
-  const { root } = make();
-  assert.deepEqual(searchItems(root, "ALPHA").map((i) => i.name), ["Alpha", "Gamma"]); // Gamma matches by body text
-  assert.deepEqual(searchItems(root, "find").map((i) => i.name), ["Beta"]);
-  assert.deepEqual(searchItems(root, "delta").map((i) => i.parent!.name), ["B"]);
-  assert.deepEqual(searchItems(root, ""), []);
-  assert.deepEqual(searchItems(root, "zzz"), []);
-});
 
 test("setElement switches the scene and drops the selection; undo history stays", () => {
   const { s, b, elements } = make();

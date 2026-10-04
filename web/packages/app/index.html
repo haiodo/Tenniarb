@@ -4,27 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tenniarb</title>
-<style>
-  body { font: 14px system-ui, sans-serif; margin: 0; height: 100vh; }
-  main { display: grid; grid-template-columns: 260px 1fr 340px; height: 100%; min-height: 0; }
-  #editor, #props { min-height: 0; min-width: 0; }
-  #props { border-left: 1px solid #ccc; }
-  #outline { border-right: 1px solid #ccc; display: flex; flex-direction: column; overflow: hidden; }
-  .outline-header { padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
-  .outline-header input { flex: 1 1 100%; min-width: 0; }
-  .outline-tree, .outline-results { overflow: auto; flex: 1; padding: 0 4px 8px; outline: none; }
-  .row { display: flex; align-items: center; padding: 2px 4px; border-radius: 4px; cursor: default; white-space: nowrap; }
-  .row:hover { background: #e4e4e8; }
-  .row.sel { background: #0a66d9; color: #fff; }
-  .row .arrow { width: 14px; flex: none; text-align: center; font-size: 9px; cursor: pointer; }
-  .row .name { overflow: hidden; text-overflow: ellipsis; }
-  .row .where { margin-left: auto; padding-left: 8px; font-size: 11px; opacity: .6; }
-  .children { margin-left: 14px; }
-  .hidden { display: none; }
-</style>
+<style>body { margin: 0; height: 100vh; }</style>
 </head>
 <body>
-<main><div id="outline"></div><div id="editor"></div><div id="props"></div></main>
+<main id="app" style="height: 100%"></main>
 <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Properties panel on CodeMirror 6; port of TextPropertiesDelegate (text of the selected item, delayed apply, grey expression values).
-import { EditorState, StateEffect, StateField } from "@codemirror/state";
+import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/state";
 import type { Extension } from "@codemirror/state";
 import { Decoration, EditorView, WidgetType, keymap } from "@codemirror/view";
 import type { DecorationSet } from "@codemirror/view";
@@ -14,6 +14,7 @@ import type { EditorSession } from "./session.ts";
 export interface PropertiesPanel {
   /** Follow the session: selection, model changes. `force` re-evaluates the expressions even when the text is unchanged. */
   sync(force?: boolean): void;
+  setDark(dark: boolean): void;
   destroy(): void;
 }
 
@@ -77,9 +78,13 @@ function theme(dark: boolean): Extension {
   const c = COLORS[dark ? "dark" : "light"];
   return EditorView.theme(
     {
-      "&": { height: "100%", fontSize: "13px", backgroundColor: "transparent" },
+      "&": { height: "100%", fontSize: "15px", backgroundColor: "transparent", color: dark ? "#fff" : "#000" },
       "&.cm-focused": { outline: "none" },
-      ".cm-scroller": { fontFamily: "ui-monospace, Menlo, monospace", overflow: "auto" },
+      // Swift TextPropertiesDelegate uses the system font at 15pt.
+      ".cm-scroller": { fontFamily: "-apple-system, system-ui, sans-serif", lineHeight: "1.25", overflow: "auto" },
+      ".cm-content": { caretColor: dark ? "#fff" : "#000" },
+      ".cm-cursor": { borderLeftColor: dark ? "#fff" : "#000" },
+      "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground": { background: dark ? "#3a4a6b" : "#b3d7ff" },
       // No wrap, as in Swift; styled scrollbars stay visible where overlay ones hide, so long lines are visibly scrollable.
       ".cm-scroller::-webkit-scrollbar": { width: "10px", height: "10px" },
       ".cm-scroller::-webkit-scrollbar-thumb": { background: dark ? "#555" : "#c1c1c1", borderRadius: "5px" },
@@ -115,12 +120,13 @@ export function mountProperties(host: HTMLElement, session: EditorSession, opts:
     setting = false;
   }
 
+  const themeSlot = new Compartment();
   const view: EditorView = new EditorView({
     parent: host,
     state: EditorState.create({
       doc: "",
       extensions: [
-        theme(opts.darkMode ?? false),
+        themeSlot.of(theme(opts.darkMode ?? false)),
         highlight,
         values,
         indent,
@@ -165,6 +171,7 @@ export function mountProperties(host: HTMLElement, session: EditorSession, opts:
         annotate();
       } else if (force) annotate();
     },
+    setDark: (dark) => view.dispatch({ effects: themeSlot.reconfigure(theme(dark)) }),
     destroy() {
       clearTimeout(timer);
       view.destroy();

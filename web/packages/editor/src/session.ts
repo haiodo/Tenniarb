@@ -20,9 +20,8 @@ import {
   toTennStr,
 } from "@tenniarb/core";
 import type { Element, ElementOperation, ExecutionContext } from "@tenniarb/core";
-import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, prepareBodyText, setMeasureContext } from "@tenniarb/render";
+import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, getString, prepareBodyText, setMeasureContext } from "@tenniarb/render";
 import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect } from "@tenniarb/render";
-import { bodyText } from "./search.ts";
 import { optionNodes } from "./styles.ts";
 import { drawSelection, hitTest, itemsInRect } from "./selection.ts";
 
@@ -49,6 +48,13 @@ const EVERYWHERE: Rect = { x: -1e9, y: -1e9, width: 2e9, height: 2e9 };
 // Below this (scene units) a press is a click, not a drag.
 const DRAG_SLOP = 2;
 
+/** Port of SceneDrawView.getBodyText: `body "text"` or `body { text "..." }`, unprocessed. */
+function bodyText(item: DiagramItem): string {
+  const block = item.properties.get("body")?.getChild(1) ?? null;
+  const node = block?.kind === "BlockExpr" ? (block.getNamedElement("text")?.getChild(1) ?? null) : block;
+  return getString(node, new Map()) ?? "";
+}
+
 export class EditorSession {
   readonly store: ElementModelStore;
   readonly undoManager = new UndoManager();
@@ -58,6 +64,9 @@ export class EditorSession {
 
   readonly root: ElementModel;
   private elementCount = 0;
+  private createIndex = 1;
+  // Where the next new item goes: the last click on empty space, or right of the last selected item.
+  private pivot: Point = { x: 0, y: 0 };
   private readonly exec: ExecutionContext;
   private mode: Mode = "none";
   private origin: Point = { x: 0, y: 0 };
@@ -123,6 +132,7 @@ export class EditorSession {
     this.element = element;
     this.exec.setElement(element);
     this.selection = [];
+    this.pivot = { x: 0, y: 0 };
     this.rebuild();
     this.opts.onElement?.();
     this.opts.onRedraw?.();
@@ -180,6 +190,22 @@ export class EditorSession {
     if (!this.opts.readonly) this.undoManager.redo();
   }
 
+  /** Right click: select what is under the cursor unless it is selected already (Swift showPopup). */
+  pick(p: Point): void {
+    const hit = hitTest(this.scene, p).at(-1);
+    if (hit === undefined) {
+      this.selection = [];
+      this.pivot = p;
+    } else if (!this.selection.includes(hit)) this.selection = [hit];
+    this.opts.onRedraw?.();
+  }
+
+  setDarkMode(dark: boolean): void {
+    this.opts.darkMode = dark;
+    this.rebuild();
+    this.opts.onRedraw?.();
+  }
+
   /** false: nothing was grabbed, the caller may pan. */
   down(p: Point, o: { toggle?: boolean; band?: boolean } = {}): boolean {
     this.origin = p;
@@ -193,6 +219,7 @@ export class EditorSession {
     }
     if (hits.length === 0) {
       this.selection = [];
+      this.pivot = p;
       this.opts.onRedraw?.();
       return false;
     }
@@ -203,6 +230,7 @@ export class EditorSession {
     }
     // Pressing on an already selected item keeps the whole selection so it can be dragged together.
     if (!hits.some((h) => this.selection.includes(h))) this.selection = [top];
+    this.pivotRightOf(this.selection[0]!);
     this.mode = "drag";
     // Links move only alone, as in Swift.
     this.starts = new Map(this.selection.filter((i) => i.kind === "Item" || this.selection.length === 1).map((i) => [i, { x: i.x, y: i.y }]));
@@ -477,6 +505,35 @@ export class EditorSession {
       l.target = (l.target && copies.get(l.target)) ?? l.target;
     }
     this.addSelected(items);
+  }
+
+  private pivotRightOf(item: DiagramItem): void {
+    const width = this.scene.drawables.get(item)?.getBounds().width ?? 90;
+    this.pivot = { x: item.x + width + 10, y: item.y };
+  }
+
+  /** Swift addTopItem (Tab in the outline): a new item at the pivot, selected. */
+  addTopItem(): void {
+    this.addItem(null);
+  }
+
+  /** Swift addNewItem: nothing selected - as addTopItem; an item selected - a new item linked from it; a link - nothing. */
+  addNewItem(): void {
+    const active = this.selection[0];
+    if (active === undefined) this.addItem(null);
+    else if (active.kind === "Item") this.addItem(active);
+  }
+
+  private addItem(from: DiagramItem | null): void {
+    if (this.opts.readonly) return;
+    const item = new DiagramItem("Item", `Untitled ${this.createIndex++}`);
+    item.x = this.pivot.x;
+    item.y = this.pivot.y;
+    if (from === null) this.store.addItem(this.element, item, this.undoManager, this.refresh);
+    else this.store.addLink(this.element, from, item, this.undoManager, this.refresh);
+    this.selection = [item];
+    this.pivotRightOf(item);
+    this.opts.onRedraw?.();
   }
 
   private addSelected(items: DiagramItem[]): void {
