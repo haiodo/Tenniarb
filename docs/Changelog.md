@@ -1,5 +1,46 @@
 #  Changelog
 
+## Version 1.4
+
++ Resize the selected item with the keyboard: Shift+Arrows changes width/height by the grid step, Cmd+Arrows resizes around the center.
++ Export as interactive HTML.
++ Closed hand cursor while panning the diagram, open hand when Space is held over an empty place.
+* Smoother resize with the keyboard: only the changed dimension is written, size is taken from the visible bounds.
+* Code is moved to Swift 6 with strict concurrency checking, controllers are split into separate files.
+
+
+### Cross-platform app (experimental)
+
+Tauri 2 app built from the TypeScript port in `web/`, released with the same version number as the macOS app. Reads and writes the same `.tenn` files as the macOS app.
+
++ Builds for macOS (universal dmg), Windows (NSIS installer) and Linux (AppImage, deb). Builds are unsigned.
++ Editor with the calculation engine, outline, properties panel, quick styles, undo/redo, zoom.
++ Menus and shortcuts of the macOS app, Settings window, Open Recent, autosave, Print.
++ Export to HTML, interactive HTML, PNG, JSON, and PDF through the print dialog.
++ About dialog with name, version, copyright (Help menu on Windows/Linux).
+* Experimental: the macOS app stays the reference implementation. Pixel-exact rendering is not a goal, JavaScript in documents runs in the app page (no sandbox), no file versions browser (macOS only).
+
+
+## Version 1.3.4
+
+* New file icon.
+
+
+## Version 1.3.3
+
++ Pinch to zoom on the trackpad.
++ Zoom controls (-, 100%, +) in the title bar, View > Zoom In/Zoom Out/Reset Zoom.
+* New application icon.
+* Standard system selection in the element outline.
+* Quick edit field has a borderless look.
+* Window UI is created in code instead of a storyboard.
+
+
+## Version 1.3.2
+
+* Markdown rendering moved to the cmkdown package.
+* Fix a few listener leaks.
+
 ## Version 1.3
 
 + Support Quick Style context menu

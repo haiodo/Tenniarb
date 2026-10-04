@@ -1,3 +1,4 @@
+import { defaultWindowIcon, getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
@@ -216,6 +217,12 @@ const sep = (): Promise<PredefinedMenuItem> => PredefinedMenuItem.new({ item: "S
 const std = (item: NonNullable<Parameters<typeof PredefinedMenuItem.new>[0]>["item"]): Promise<PredefinedMenuItem> => PredefinedMenuItem.new({ item });
 const cmd = (text: string, action: () => void, accelerator?: string): Promise<MenuItem> => MenuItem.new({ text, action, accelerator });
 
+// muda does nothing for About with null metadata on Windows/Linux. Icon: macOS takes it from the bundle, the Windows message box has none.
+async function aboutItem(): Promise<PredefinedMenuItem> {
+  const icon = isMac ? undefined : ((await defaultWindowIcon()) ?? undefined);
+  return std({ About: { name: "Tenniarb", version: await getVersion(), copyright: "Copyright \u00a9 2026 Andrey Sobolev", comments: "Mind maps with calculations", icon } });
+}
+
 async function buildMenu(): Promise<void> {
   const recent = await loadRecent();
   const recentItems = await Promise.all(recent.map((p) => cmd(fileName(p), () => void openPath(p))));
@@ -226,8 +233,7 @@ async function buildMenu(): Promise<void> {
   const app = await Submenu.new({
     text: "Tenniarb",
     items: [
-      await std({ About: null }),
-      await sep(),
+      ...(isMac ? [await aboutItem(), await sep()] : []),
       await cmd("Settings...", () => void openSettings(), "CmdOrCtrl+,"),
       await sep(),
       await std("Services"),
@@ -306,7 +312,7 @@ async function buildMenu(): Promise<void> {
     text: "Window",
     items: [await std("Minimize"), await std("Maximize"), await sep(), await std("BringAllToFront")],
   });
-  const help = await Submenu.new({ text: "Help", items: [await cmd("Tenniarb Help", () => void openHelp(), "CmdOrCtrl+Shift+/")] });
+  const help = await Submenu.new({ text: "Help", items: [await cmd("Tenniarb Help", () => void openHelp(), "CmdOrCtrl+Shift+/"), ...(isMac ? [] : [await sep(), await aboutItem()])] });
   const menu = await Menu.new({ items: [app, file, edit, navigate, view, windowMenu, help] });
   await (await menu.setAsAppMenu())?.close();
   await windowMenu.setAsWindowsMenuForNSApp();

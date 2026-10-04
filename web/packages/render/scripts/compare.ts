@@ -9,11 +9,12 @@ import { TennParser, parseTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
 import { genericToSRGB } from "../src/color.ts";
 import { renderTenn } from "../src/render-tenn.ts";
+import { fileURLToPath } from "node:url";
 
 // The Swift export fills #e7e9eb as a Generic RGB CGColor, which lands lighter in the sRGB bitmap.
 const background = `rgb(${genericToSRGB({ r: 0xe7 / 255, g: 0xe9 / 255, b: 0xeb / 255, a: 1 }).map((v) => Math.round(v * 255)).join(",")})`;
 
-const root = new URL("../../../../", import.meta.url).pathname;
+const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixtures = `${root}web/fixtures`;
 const [inFile, outArg] = process.argv.slice(2);
 const out = outArg ? resolve(outArg) : `${root}.work/web-stage5`;

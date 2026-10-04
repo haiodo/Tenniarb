@@ -147,10 +147,9 @@ jobs:
         shell: bash
         run: ls -l web/packages/app/src-tauri/target/debug/${{ matrix.bin }}
 
-      # timeout exit 124 = still running after 8 s. Not yet run on Actions: drop continue-on-error once green.
+      # timeout exit 124 = still running after 8 s.
       - name: Smoke launch (Linux, xvfb)
         if: runner.os == 'Linux'
-        continue-on-error: true
         env:
           WEBKIT_DISABLE_DMABUF_RENDERER: "1"
         run: |

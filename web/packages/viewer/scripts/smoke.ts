@@ -4,13 +4,14 @@ import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [file, out = ".work/viewer"] = process.argv.slice(2);
 if (file === undefined) throw new Error("usage: smoke.ts file.tenn [outDir]");
 mkdirSync(out, { recursive: true });
 const { chromium } = createRequire(import.meta.url)("../../../bench/node_modules/playwright");
 
-const server = spawn("node", [new URL("./serve.ts", import.meta.url).pathname, resolve(file)], { env: { ...process.env, NO_OPEN: "1" } });
+const server = spawn("node", [fileURLToPath(new URL("./serve.ts", import.meta.url)), resolve(file)], { env: { ...process.env, NO_OPEN: "1" } });
 const url: string = await new Promise((res) => server.stdout.once("data", (d) => res(String(d).trim())));
 
 const browser = await chromium.launch();

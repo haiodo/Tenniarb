@@ -217,15 +217,6 @@ class ExportManagerRemainingTests: XCTestCase {
         XCTAssertTrue(html.contains("data-element=\"A/B\""))
     }
 
-    func testWriteExampleInteractiveHtml() throws {
-        let example = try String(contentsOfFile: "/Users/haiodo/Develop/private/tenniarb/docs/Example.tenn", encoding: .utf8)
-        let (controller, _, _) = makeController(example)
-        let html = try XCTUnwrap(exporter(controller).generateInteractiveHtml())
-        let out = URL(fileURLWithPath: "/Users/haiodo/Develop/private/tenniarb/.work/embed/swift-export-Example.html")
-        try FileManager.default.createDirectory(at: out.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try html.write(to: out, atomically: true, encoding: .utf8)
-    }
-
     func testExportKindsCoverEveryMenuEntry() {
         let (controller, _, _) = makeController()
         let manager = exporter(controller)

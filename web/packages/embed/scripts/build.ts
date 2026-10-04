@@ -2,9 +2,10 @@
 import { build } from "esbuild";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { gzipSync } from "node:zlib";
+import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
-const path = (p: string): string => new URL(p, root).pathname;
+const path = (p: string): string => fileURLToPath(new URL(p, root));
 const dist = path("dist/");
 mkdirSync(dist, { recursive: true });
 
@@ -28,7 +29,7 @@ for (const v of variants) {
 }
 
 if (process.argv.includes("--swift")) {
-  const out = new URL("../../../../Tenniarb/web/", import.meta.url).pathname;
+  const out = fileURLToPath(new URL("../../../../Tenniarb/web/", import.meta.url));
   mkdirSync(out, { recursive: true });
   copyFileSync(`${dist}tenniarb-embed.standalone.min.js`, `${out}tenniarb-embed.min.js`);
 }

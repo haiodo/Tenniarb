@@ -108,6 +108,8 @@ Tenniarb is not a replacement for Excel — it’s a new kind of tool for people
 
 Tenniarb is available for macOS. Download the app and create your first computable mind map in minutes.
 
+Experimental Windows and Linux builds (unsigned, Tauri-based, same `.tenn` format) are published with each release.
+
 [GitHub: haiodo/tenniarb](https://github.com/haiodo/tenniarb)
 
 ---

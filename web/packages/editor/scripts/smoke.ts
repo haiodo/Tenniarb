@@ -4,10 +4,11 @@ import { createServer } from "node:http";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const out = process.argv[2] ?? ".work/editor";
 mkdirSync(out, { recursive: true });
-const dist = new URL("../dist/", import.meta.url).pathname;
+const dist = fileURLToPath(new URL("../dist/", import.meta.url));
 const { chromium } = createRequire(import.meta.url)("../../../bench/node_modules/playwright");
 
 const types: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".woff2": "font/woff2" };
