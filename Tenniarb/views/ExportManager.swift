@@ -231,10 +231,11 @@ class ExportManager: NSObject, NSMenuDelegate {
             <head>
             <meta charset="utf-8">
             <title>\(attr(element.name))</title>
+            <style>html, body { margin: 0; height: 100%; }</style>
             </head>
             <body>
             <script>\(bundle)</script>
-            <script type="text/x-tenn" data-encoding="base64" data-element="\(attr(Self.elementPath(element)))">\(Data(store.model.toTennStr().utf8).base64EncodedString())</script>
+            <script type="text/x-tenn" data-encoding="base64" style="height: 100vh" data-element="\(attr(Self.elementPath(element)))">\(Data(store.model.toTennStr().utf8).base64EncodedString())</script>
             </body>
             </html>
             """

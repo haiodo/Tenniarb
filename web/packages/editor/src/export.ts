@@ -23,7 +23,7 @@ export const pngHtml = (pngBase64: string, width: number, height: number): strin
 
 /** `bundle` is the embed IIFE, `tenn` the whole document. */
 export const interactiveHtml = (bundle: string, el: Element, tenn: string): string =>
-  `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>${attr(el.name)}</title>\n</head>\n<body>\n<script>${bundle}</script>\n<script type="text/x-tenn" data-encoding="base64" data-element="${attr(elementPath(el))}">${base64(new TextEncoder().encode(tenn))}</script>\n</body>\n</html>`;
+  `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>${attr(el.name)}</title>\n<style>html, body { margin: 0; height: 100%; }</style>\n</head>\n<body>\n<script>${bundle}</script>\n<script type="text/x-tenn" data-encoding="base64" style="height: 100vh" data-element="${attr(elementPath(el))}">${base64(new TextEncoder().encode(tenn))}</script>\n</body>\n</html>`;
 
 /** SceneDrawView.copyItemAsHTML: the item's text boxes as HTML to the clipboard (text/html and text/plain). */
 export async function copyItemHtml(scene: DrawableScene, item: DiagramItem): Promise<void> {

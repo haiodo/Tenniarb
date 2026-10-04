@@ -192,7 +192,7 @@ class ExportManagerRemainingTests: XCTestCase {
 
         XCTAssertTrue(html.hasPrefix("<!doctype html>"))
         XCTAssertTrue(html.contains("<title>\(diagram.name)</title>"))
-        XCTAssertTrue(html.contains("<script type=\"text/x-tenn\" data-encoding=\"base64\" data-element=\"\(diagram.name)\">"))
+        XCTAssertTrue(html.contains("<script type=\"text/x-tenn\" data-encoding=\"base64\" style=\"height: 100vh\" data-element=\"\(diagram.name)\">"))
         let bundleURL = try XCTUnwrap(Bundle.main.url(forResource: "tenniarb-embed.min", withExtension: "js"))
         let bundle = try String(contentsOf: bundleURL, encoding: .utf8)
         XCTAssertTrue(html.contains(bundle))
