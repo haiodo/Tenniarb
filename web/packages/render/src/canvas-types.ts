@@ -23,6 +23,7 @@ export interface Canvas2D {
   strokeStyle: string | object;
   lineWidth: number;
   lineDashOffset: number;
+  lineCap?: string;
   setLineDash(segments: number[]): void;
 
   shadowColor: string;

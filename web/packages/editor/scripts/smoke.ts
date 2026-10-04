@@ -775,11 +775,12 @@ await p.keyboard.press("ControlOrMeta+z");
   await p.waitForTimeout(100);
   const q2 = await pop();
   const c2 = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); });
-  await p.mouse.wheel(0, 40);
+  // Down, away from the top edge where the panel is clamped.
+  await p.mouse.wheel(0, -40);
   await p.waitForTimeout(300);
   const q3 = await pop();
   const c3 = await p.evaluate(() => { const e = (window as any).editor; return e.screenOf(e.session.element.items.find((i: any) => i.name === "Diagram area")); });
-  check(q2 !== undefined && q3 !== undefined && c3.y < c2.y && Math.abs(q3.y - q2.y - (c3.y - c2.y)) < 1.5, `quick panel follows the wheel pan (item ${c2.y} -> ${c3.y}, panel ${q2?.y} -> ${q3?.y})`);
+  check(q2 !== undefined && q3 !== undefined && c3.y > c2.y && Math.abs(q3.y - q2.y - (c3.y - c2.y)) < 1.5, `quick panel follows the wheel pan (item ${c2.y} -> ${c3.y}, panel ${q2?.y} -> ${q3?.y})`);
   await p.click(".tn-pop button[title='Color']");
   check((await p.locator(".tn-menu.root > .tn-mi").count()) === 8, "quick panel: the colour segment opens its 8 colours");
   await p.screenshot({ path: `${out}/quick-panel-menu.png` });

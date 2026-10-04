@@ -14,10 +14,9 @@ const CSS = `
   font: 13px -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
 .tn-split ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
 .tn-right { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
-/* Translucent window (macOS, under-window vibrancy as Swift's NSVisualEffectView): the title row shows it always, the canvas with
-   the transparent setting; the properties get white at 0.8 as PropertiesPanelController. */
-html.tn-glass, html.tn-glass body, .tn-glass .tn-split, .tn-glass .tn-right, .tn-glass .tn-titlebar { background: transparent; }
-.tn-glass #props { background: color-mix(in srgb, Canvas 80%, transparent); }
+/* Translucent window (macOS, under-window vibrancy as Swift's NSVisualEffectView): the title row and the properties show it always,
+   the canvas with the transparent setting. PropertiesPanelController sets white 0.8, but the running Swift app shows the vibrancy. */
+html.tn-glass, html.tn-glass body, .tn-glass .tn-split, .tn-glass .tn-right, .tn-glass .tn-titlebar, .tn-glass #props { background: transparent; }
 #outline { width: 217px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
 #editor { flex: 1; min-height: 0; position: relative; }
 #props { height: 127px; flex: none; overflow: hidden; user-select: text; -webkit-user-select: text; }

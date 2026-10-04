@@ -1,12 +1,12 @@
 import { readTenn, toSyncJson, toTennStr } from "@tenniarb/core";
 import type { DiagramItem, Element } from "@tenniarb/core";
 import { decode, defaultFontBase, loadFonts } from "@tenniarb/embed";
-import { allElements, colorWhite, cssColor, fontCss, findElement, getFontFamily, DEFAULT_FONT_FAMILY, getSceneSize, getTextColorBasedOn, parseColor, preloadImages, renderElement, setMeasureContext, SvgContext, withAlpha } from "@tenniarb/render";
+import { allElements, colorWhite, cssColor, fontCss, findElement, getFontFamily, DEFAULT_FONT_FAMILY, getSceneSize, getTextColorBasedOn, parseColor, preloadImages, renderElement, setMeasureContext, shadowScale, SvgContext, withAlpha } from "@tenniarb/render";
 import type { Canvas2D, Color, DecodedImage, ImageDecoder, Point, Rect } from "@tenniarb/render";
 import { drawIndicators } from "./indicators.ts";
 import { base64, interactiveHtml, pngHtml, printCss } from "./export.ts";
 import { DOC_SVG, HTML_SVG, IMAGE_SVG, JSON_SVG, PDF_SVG } from "./icons.ts";
-import { hitTest } from "./selection.ts";
+import { hitTest, selectionZoom } from "./selection.ts";
 import { mountOutline } from "./outline.ts";
 import type { Outline } from "./outline.ts";
 import { mountProperties } from "./properties-panel.ts";
@@ -179,7 +179,10 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.setTransform(dpr * view.k, 0, 0, -dpr * view.k, dpr * view.x, dpr * view.y);
+    shadowScale.value = dpr;
+    selectionZoom.value = view.k;
     session.draw(ctx);
+    shadowScale.value = 1;
     drawIndicators(ctx, session.scene.drawables.values(), {
       ox: view.x / view.k,
       oy: (box.clientHeight - view.y) / view.k,
@@ -212,7 +215,8 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
   function finishEdit(commit: boolean): void {
     if (editing === null) return;
     const { item, mode, ta } = editing;
-    editing = null; // before remove(): removing a focused textarea fires blur
+    editing = null;
+    session.editing = null; // before remove(): removing a focused textarea fires blur
     const text = ta.value;
     ta.remove();
     if (commit) session.commitEdit(item, mode, text);
@@ -239,6 +243,7 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     });
     ta.addEventListener("blur", () => finishEdit(true));
     editing = { item, mode, ta, rect: target.rect, fontSize: target.fontSize };
+    session.editing = { item, rect: target.rect };
     place(editing);
     box.append(ta);
     redraw();

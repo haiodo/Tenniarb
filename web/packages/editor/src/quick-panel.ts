@@ -45,10 +45,10 @@ export function mountQuickPanel(box: HTMLElement, session: EditorSession): (item
       box.append(el);
       shown = { item, el };
     }
-    // Swift: 15 right of the item's left edge, 10 above its top.
+    // Swift: 15 right of the item's left edge, 10 above its top; here above the selector box (5 scene units out) and its glow.
     const b = d.getSelectorBounds();
     const { el } = shown;
     el.style.left = `${Math.max(0, Math.min(view.x + b.x * view.k + 15, box.clientWidth - el.offsetWidth))}px`;
-    el.style.top = `${Math.max(0, view.y - (b.y + b.height) * view.k - 10 - el.offsetHeight)}px`;
+    el.style.top = `${Math.max(0, view.y - (b.y + b.height + 5) * view.k - 10 - el.offsetHeight)}px`;
   };
 }

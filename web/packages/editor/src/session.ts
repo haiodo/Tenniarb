@@ -854,9 +854,12 @@ export class EditorSession {
     this.opts.onRedraw?.();
   }
 
+  /** Item being edited inline and its edit box in scene space; set by the view. */
+  editing: { item: DiagramItem; rect: Rect } | null = null;
+
   /** Scene plus selection, in scene space. */
   draw(ctx: Canvas2D): void {
     this.scene.draw(ctx);
-    drawSelection(ctx, this.scene, this.mode === "line" && this.lineTarget !== null ? [this.lineTarget] : this.selection, this.band);
+    drawSelection(ctx, this.scene, this.mode === "line" && this.lineTarget !== null ? [this.lineTarget] : this.selection, this.band, this.editing);
   }
 }

@@ -20,11 +20,14 @@ const defaultShadowColor: Color = { r: 0, g: 0, b: 0, a: 1 / 3 };
 /** @napi-rs/canvas squares shadowColor alpha when shadowBlur > 0 (PNG and PDF); the Node renderer sets 0.5 to undo it. */
 export const canvasQuirks = { shadowAlphaPower: 1 };
 
+/** CGContext shadow offset and blur are in base space (points); canvas ones are in device pixels. The editor sets this to devicePixelRatio while drawing on screen. */
+export const shadowScale = { value: 1 };
+
 // CGContext.setShadow(offset:blur:color:). The offset is y-up in Swift; the canvas shadow offset is in device space, which is y-down.
 function setShadow(context: Canvas2D, offset: Size, blur: number, color: Color | null): void {
-  context.shadowOffsetX = offset.width;
-  context.shadowOffsetY = -offset.height;
-  context.shadowBlur = blur;
+  context.shadowOffsetX = offset.width * shadowScale.value;
+  context.shadowOffsetY = -offset.height * shadowScale.value;
+  context.shadowBlur = blur * shadowScale.value;
   const c = color ?? defaultShadowColor;
   context.shadowColor = cssColor({ ...c, a: blur > 0 ? c.a ** canvasQuirks.shadowAlphaPower : c.a });
 }

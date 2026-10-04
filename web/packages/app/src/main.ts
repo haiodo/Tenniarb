@@ -312,15 +312,24 @@ async function buildMenu(): Promise<void> {
   await windowMenu.setAsWindowsMenuForNSApp();
 }
 
+// Settings and Help without a document would outlive it (Swift terminates after the last window), so they go with the last one.
+async function closeAux(): Promise<void> {
+  const all = await getAllWindows();
+  const aux = ["settings", "help"];
+  if (all.some((w) => w.label !== win.label && !aux.includes(w.label))) return;
+  for (const w of all) if (aux.includes(w.label)) await w.destroy();
+}
+
 // One document per window, so the close policy lives here; Cmd+W, the red button and Quit all end up in this handler.
 void win.onCloseRequested(async (ev) => {
   clearTimeout(frameTimer);
   await saveFrame().catch((e) => console.warn("window position not saved", e));
   const action = closeAction(path, dirty);
-  if (action === "close") return;
+  if (action === "close") return closeAux();
   ev.preventDefault();
   if (action === "ask" && quitting) {
     await stashUntitled();
+    await closeAux();
     return win.destroy();
   }
   if (action === "save" && !(await saveDoc())) return;
@@ -334,6 +343,7 @@ void win.onCloseRequested(async (ev) => {
     clearTimeout(timer);
     await dropUntitled();
   }
+  await closeAux();
   await win.destroy();
 });
 
