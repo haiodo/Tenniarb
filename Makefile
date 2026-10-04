@@ -20,7 +20,8 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 
 .DEFAULT_GOAL := help
 N ?= 2000
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test app-dev app embed view render tenn-fuzz md-fuzz
+BLOG ?= ../haiodo.blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test app-dev app embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -90,6 +91,12 @@ tenn-fuzz: web/node_modules ## Differential fuzz: Swift vs TS .tenn parser
 
 md-fuzz: web/node_modules ## Differential fuzz: Swift vs TS markdown
 	node web/packages/markdown/fuzz/fuzz.ts $(N)
+
+blog: web/node_modules ## Build embed + editor and copy the live demo into a blog: make blog BLOG=../haiodo.blog
+	cd web && npm run build -w @tenniarb/embed -w @tenniarb/editor
+	mkdir -p $(BLOG)/public/tenniarb/fonts
+	cp web/packages/editor/dist/editor.js web/packages/embed/dist/tenniarb-embed.min.js tenniarb.tenn $(BLOG)/public/tenniarb/
+	cp web/packages/embed/dist/Inter-*.woff2 $(BLOG)/public/tenniarb/fonts/
 
 clean: ## Remove derived data and lint cache
 	rm -rf $(DERIVED) .swiftlint-cache

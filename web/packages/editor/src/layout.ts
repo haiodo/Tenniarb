@@ -42,7 +42,8 @@ html.tn-glass, html.tn-glass body, .tn-glass .tn-split, .tn-glass .tn-right, .tn
 .tn-seg button { min-width: 30px; border-radius: 0; }
 .tn-seg button:first-child { border-radius: 14px 0 0 14px; } .tn-seg button:last-child { border-radius: 0 14px 14px 0; }
 /* Quick style panel over the selected item (Swift showPopup); the delay is Swift's 0.2 s, so a double-click does not flash it. */
-.tn-pop { position: absolute; z-index: 5; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); animation: tn-pop-in .1s .2s backwards; }
+/* Opaque capsules: the panel sits over the diagram, the toolbar ones are tinted for the title row. */
+.tn-pop { --capsule: var(--menu); position: absolute; z-index: 5; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); animation: tn-pop-in .1s .2s backwards; }
 @keyframes tn-pop-in { from { opacity: 0; } }
 .tn-pop button { width: 36px; min-width: 0; padding: 0; font-size: 14px; }
 .tn-pop button::after { content: "\\25BE"; margin-left: 2px; font-size: 8px; opacity: .6; }
@@ -65,6 +66,8 @@ html.tn-glass, html.tn-glass body, .tn-glass .tn-split, .tn-glass .tn-right, .tn
 .tn-menu { position: absolute; display: none; min-width: 160px; padding: 4px; background: var(--menu); color: var(--fg); border: 1px solid var(--menu-line);
   border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font: 13px -apple-system, system-ui, sans-serif; user-select: none; -webkit-user-select: none; z-index: 1000; }
 .tn-menu.root, .tn-menu.open { display: block; }
+/* showMenu places the root in viewport coordinates; absolute would be off by the scroll on a page that scrolls. */
+.tn-menu.root { position: fixed; }
 .tn-menu .tn-menu { left: 100%; top: -5px; }
 .tn-mi { position: relative; display: flex; align-items: center; gap: 8px; padding: 3px 22px 3px 10px; border-radius: 4px; white-space: nowrap; cursor: default; }
 .tn-mi:hover { background: var(--accent); color: #fff; }
