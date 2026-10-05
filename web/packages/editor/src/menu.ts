@@ -10,8 +10,8 @@ import type { QuickStyle } from "./styles.ts";
 /** `icon`: inline SVG markup. */
 export type Entry = "-" | { label: string; icon?: string; run?: () => void; sub?: Entry[] };
 
-/** Popup at client (x, y). Closes on a pick, a press outside, Esc, resize and blur. */
-export function showMenu(x: number, y: number, entries: Entry[], onClose: () => void): void {
+/** Popup at client (x, y), appended to `host`. Closes on a pick, a press outside, Esc, resize and blur. */
+export function showMenu(x: number, y: number, entries: Entry[], onClose: () => void, host: HTMLElement = document.body): void {
   const ac = new AbortController();
   const close = (): void => {
     ac.abort();
@@ -63,7 +63,7 @@ export function showMenu(x: number, y: number, entries: Entry[], onClose: () => 
 
   const root = build(entries);
   root.classList.add("root");
-  document.body.append(root);
+  host.append(root);
   root.style.left = `${Math.max(Math.min(x, innerWidth - root.offsetWidth - 4), 4)}px`;
   root.style.top = `${Math.max(Math.min(y, innerHeight - root.offsetHeight - 4), 4)}px`;
   const opt = { signal: ac.signal };

@@ -17,7 +17,7 @@ const SRC = `element "D" {
 
 function make(readonly = false) {
   const changes: string[] = [];
-  const s = new EditorSession(readTenn(SRC)!.elements[0]!, { evaluate: false, readonly, onChange: (t) => changes.push(t) });
+  const s = new EditorSession(readTenn(SRC)!.elements[0]!, { readonly, onChange: (t) => changes.push(t) });
   const [a, b, link] = s.element.items;
   return { s, changes, a: a!, b: b!, link: link! };
 }

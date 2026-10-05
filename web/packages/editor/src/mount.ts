@@ -1,19 +1,18 @@
 import { readTenn, toSyncJson, toTennStr } from "@tenniarb/core";
 import type { DiagramItem, Element } from "@tenniarb/core";
 import { decode, defaultFontBase, loadFonts } from "@tenniarb/embed";
-import { allElements, colorWhite, cssColor, fontCss, findElement, getFontFamily, DEFAULT_FONT_FAMILY, getSceneSize, getTextColorBasedOn, parseColor, preloadImages, renderElement, setMeasureContext, shadowScale, SvgContext, withAlpha } from "@tenniarb/render";
-import type { Canvas2D, Color, DecodedImage, ImageDecoder, Point, Rect } from "@tenniarb/render";
-import { drawIndicators } from "./indicators.ts";
+import { allElements, colorWhite, createExecutionContext, cssColor, findElement, getFontFamily, DEFAULT_FONT_FAMILY, getSceneSize, getTextColorBasedOn, parseColor, preloadImages, renderElement, setMeasureContext, SvgContext, withAlpha } from "@tenniarb/render";
+import type { Canvas2D, Color, DecodedImage, ImageDecoder, Point } from "@tenniarb/render";
+import { attachCanvas } from "./canvas.ts";
+import type { CanvasView } from "./canvas.ts";
 import { base64, interactiveHtml, pngHtml, printCss } from "./export.ts";
 import { DOC_SVG, HTML_SVG, IMAGE_SVG, JSON_SVG, PDF_SVG } from "./icons.ts";
-import { hitTest, selectionZoom } from "./selection.ts";
 import { mountOutline } from "./outline.ts";
 import type { Outline } from "./outline.ts";
 import { mountProperties } from "./properties-panel.ts";
 import type { PropertiesPanel } from "./properties-panel.ts";
 import { EditorSession } from "./session.ts";
 import { canvasEntries, showMenu } from "./menu.ts";
-import { mountQuickPanel } from "./quick-panel.ts";
 import { showOperation } from "./operation.ts";
 import { showSearch } from "./search.ts";
 import type { Entry } from "./menu.ts";
@@ -124,8 +123,10 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
   // Images added after mount: decoded asynchronously first, because the scene decodes synchronously.
   const added = new Map<string, DecodedImage>();
   const decodeImage: ImageDecoder = (b64) => added.get(b64) ?? preloaded(b64);
+  let cv: CanvasView | undefined;
   const session = new EditorSession(element, {
     darkMode: diagramDark(),
+    exec: createExecutionContext({ decodeImage }),
     decodeImage,
     measureContext: ctx,
     readonly: opts.readonly,
@@ -135,12 +136,12 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
       outline?.sync();
     },
     onElement: () => {
-      finishEdit(false);
-      fit();
+      cv?.finishEdit(false);
+      cv?.fit();
       outline?.sync();
     },
     onRedraw: () => {
-      redraw();
+      cv?.redraw();
       panel?.sync();
     },
   });
@@ -164,125 +165,14 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
   };
   scheme.addEventListener("change", follow);
 
-  // Screen = view.x + k * x, view.y - k * y: the scene is y-up and does not depend on its own bounds, so edits never shift the picture.
-  const view = { x: 0, y: 0, k: 1 };
-  let frame = 0;
-  function draw(): void {
-    frame = 0;
-    const dpr = window.devicePixelRatio || 1;
-    const w = Math.round(box.clientWidth * dpr);
-    const h = Math.round(box.clientHeight * dpr);
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
-    }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.setTransform(dpr * view.k, 0, 0, -dpr * view.k, dpr * view.x, dpr * view.y);
-    shadowScale.value = dpr;
-    selectionZoom.value = view.k;
-    session.draw(ctx);
-    shadowScale.value = 1;
-    drawIndicators(ctx, session.scene.drawables.values(), {
-      ox: view.x / view.k,
-      oy: (box.clientHeight - view.y) / view.k,
-      k: view.k,
-      w: box.clientWidth,
-      h: box.clientHeight,
-      dpr,
-      dark: scheme.matches,
-    });
-    bar?.setZoom(Math.trunc(view.k * 100));
-    if (editing !== null) place(editing);
-    quickPanel(settings.quickPanel && !opts.readonly && editing === null && !active && session.selection.length === 1 ? session.selection[0]! : null, view);
-  }
-  const quickPanel = mountQuickPanel(box, session);
-  const redraw = (): void => {
-    if (frame === 0) frame = requestAnimationFrame(draw);
-  };
-
-  // Text overlay, scene-space rect mapped through the current view.
-  let editing: { item: DiagramItem; mode: EditMode; ta: HTMLTextAreaElement; rect: Rect; fontSize: number } | null = null;
-  function place(e: NonNullable<typeof editing>): void {
-    const st = e.ta.style;
-    st.left = `${view.x + e.rect.x * view.k}px`;
-    st.top = `${view.y - (e.rect.y + e.rect.height) * view.k}px`;
-    st.width = `${e.rect.width * view.k}px`;
-    st.height = `${e.rect.height * view.k}px`;
-    st.font = fontCss({ size: e.fontSize * view.k, bold: false, italic: false });
-  }
-
-  function finishEdit(commit: boolean): void {
-    if (editing === null) return;
-    const { item, mode, ta } = editing;
-    editing = null;
-    session.editing = null; // before remove(): removing a focused textarea fires blur
-    const text = ta.value;
-    ta.remove();
-    if (commit) session.commitEdit(item, mode, text);
-    box.focus();
-    redraw();
-  }
-
-  function startEdit(item: DiagramItem, mode: EditMode): void {
-    finishEdit(true);
-    const target = session.editTarget(item, mode);
-    if (target === null) return;
-    const ta = document.createElement("textarea");
-    ta.value = target.text;
-    ta.style.cssText =
-      "position:absolute;box-sizing:border-box;resize:none;margin:0;padding:2px 6px;border:1px solid gray;border-radius:8px;outline:none;color-scheme:light dark;background:Canvas;color:CanvasText";
-    // Enter commits, Shift+Enter is a newline, Esc cancels.
-    ta.addEventListener("keydown", (ev) => {
-      ev.stopPropagation();
-      if (ev.key === "Escape") finishEdit(false);
-      else if (ev.key === "Enter" && !ev.shiftKey) {
-        ev.preventDefault();
-        finishEdit(true);
-      }
-    });
-    ta.addEventListener("blur", () => finishEdit(true));
-    editing = { item, mode, ta, rect: target.rect, fontSize: target.fontSize };
-    session.editing = { item, rect: target.rect };
-    place(editing);
-    box.append(ta);
-    redraw();
-    ta.focus();
-    ta.select();
-  }
-
-  function fit(): void {
-    const b = session.scene.getBounds();
-    const [w, h] = [box.clientWidth, box.clientHeight];
-    view.k = Math.min((w - 30) / b.width, (h - 30) / b.height, 1);
-    view.x = (w - b.width * view.k) / 2 - b.x * view.k;
-    view.y = (h - b.height * view.k) / 2 + (b.y + b.height) * view.k;
-    redraw();
-  }
-
-  function zoomAt(factor: number, cx: number, cy: number): void {
-    const k = Math.min(Math.max(view.k * factor, 0.02), 16);
-    view.x = cx - ((cx - view.x) / view.k) * k;
-    view.y = cy - ((cy - view.y) / view.k) * k;
-    view.k = k;
-    redraw();
-  }
+  cv = attachCanvas(box, canvas, session, {
+    dark: () => scheme.matches,
+    quickPanel: () => settings.quickPanel,
+    onDraw: () => bar?.setZoom(Math.trunc(view.k * 100)),
+  });
+  const { view, redraw, fit, zoomAt, centre, centerItem, toScene, startEdit, finishEdit, isEditing } = cv;
+  const destroyCanvas = cv.destroy;
   const zoomCentre = (factor: number): void => zoomAt(factor, box.clientWidth / 2, box.clientHeight / 2);
-
-  function centre(): void {
-    const b = session.scene.getBounds();
-    view.x = box.clientWidth / 2 - (b.x + b.width / 2);
-    view.y = box.clientHeight / 2 + (b.y + b.height / 2);
-    redraw();
-  }
-
-  function centerItem(item: DiagramItem, offset = 0): void {
-    const b = session.scene.drawables.get(item)?.getBounds();
-    if (b === undefined) return;
-    view.x = box.clientWidth / 2 - (b.x + b.width / 2) * view.k;
-    view.y = box.clientHeight / 2 + (offset + b.y + b.height / 2) * view.k;
-    redraw();
-  }
 
   let closeSearch: (() => void) | undefined;
   function gotoItem(): void {
@@ -402,39 +292,6 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     });
   }
 
-  const toScene = (ev: { clientX: number; clientY: number }): Point => {
-    const r = canvas.getBoundingClientRect();
-    return { x: (ev.clientX - r.left - view.x) / view.k, y: (view.y - (ev.clientY - r.top)) / view.k };
-  };
-
-  let last: { x: number; y: number } | null = null; // set while panning
-  let active = false; // a press is owned by the session
-  canvas.addEventListener("pointerdown", (ev) => {
-    box.focus();
-    if (ev.button !== 0) return;
-    canvas.setPointerCapture(ev.pointerId);
-    // Mac as Swift: Cmd toggles, Ctrl draws a link, Option drags with children. Elsewhere Ctrl toggles, Ctrl+Alt draws, Alt drags.
-    const [toggle, line, alt] = isMac ? [ev.metaKey, ev.ctrlKey, ev.altKey] : [ev.ctrlKey && !ev.altKey, ev.ctrlKey && ev.altKey, ev.altKey && !ev.ctrlKey];
-    active = session.down(toScene(ev), { toggle, band: ev.shiftKey, line, alt });
-    last = active ? null : { x: ev.clientX, y: ev.clientY };
-    redraw();
-  });
-  canvas.addEventListener("pointermove", (ev) => {
-    if (active) return session.move(toScene(ev));
-    if (last === null) return;
-    view.x += ev.clientX - last.x;
-    view.y += ev.clientY - last.y;
-    last = { x: ev.clientX, y: ev.clientY };
-    redraw();
-  });
-  const release = (ev: PointerEvent): void => {
-    if (active) session.up(toScene(ev), ev.type === "pointercancel");
-    active = false;
-    last = null;
-    redraw();
-  };
-  canvas.addEventListener("pointerup", release);
-  canvas.addEventListener("pointercancel", release);
   canvas.addEventListener("contextmenu", (ev) => {
     ev.preventDefault();
     // WebKit sends it for ctrl+click too; Swift's menu(for:) ignores the left button.
@@ -448,59 +305,10 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     const layout = (): void => (session.testLayout({ x: -w / 2, y: -h / 2, width: w, height: h }), centre());
     showMenu(ev.clientX, ev.clientY, canvasEntries(session, p, layout, () => void addImage(pickImage, true)), () => box.focus());
   });
-  canvas.addEventListener("dblclick", (ev) => {
-    const hit = opts.readonly ? undefined : hitTest(session.scene, toScene(ev)).at(-1);
-    if (hit === undefined) fit();
-    else startEdit(hit, "name");
-  });
-  canvas.addEventListener(
-    "wheel",
-    (ev) => {
-      ev.preventDefault();
-      if (ev.ctrlKey || ev.metaKey) {
-        const r = canvas.getBoundingClientRect();
-        zoomAt(Math.exp(-ev.deltaY * 0.01), ev.clientX - r.left, ev.clientY - r.top);
-      } else {
-        view.x -= ev.deltaX;
-        view.y -= ev.deltaY;
-        redraw();
-      }
-    },
-    { passive: false },
-  );
-  const arrows: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
   box.addEventListener("keydown", (ev) => {
-    const mod = ev.metaKey || ev.ctrlKey;
-    const key = ev.key.toLowerCase();
-    if (mod && key === "z") {
-      ev.preventDefault();
-      if (ev.shiftKey) session.redo();
-      else session.undo();
-    } else if (mod && key === "d") {
-      ev.preventDefault();
-      session.duplicate();
-    } else if (mod && key === "a") {
-      ev.preventDefault();
-      session.selectAll(ev.shiftKey ? "Item" : undefined);
-    } else if (!mod && ev.key === " " && session.selection.length > 0) {
-      ev.preventDefault();
-      operation();
-    } else if (!mod && ev.key === "Enter" && session.selection.length > 0) {
-      ev.preventDefault();
-      startEdit(session.selection[0]!, ev.altKey ? "value" : ev.shiftKey ? "body" : "name");
-    } else if (!mod && (ev.key === "Backspace" || ev.key === "Delete" || ev.key === "x")) {
-      ev.preventDefault();
-      session.deleteSelection();
-    } else if (!mod && ev.key === "Tab") {
-      ev.preventDefault();
-      session.addNewItem(ev.altKey);
-    } else if (arrows[ev.key] !== undefined && session.selection.length > 0) {
-      ev.preventDefault();
-      // Swift: Shift (from the edge) or Cmd (from the centre) + arrow resizes a single item, anything else moves the selection.
-      const fromCentre = isMac ? ev.metaKey : ev.ctrlKey;
-      if ((ev.shiftKey || fromCentre) && session.selection.length === 1) session.resizeBy(ev.key as Parameters<typeof session.resizeBy>[0], fromCentre);
-      else session.moveBy(...arrows[ev.key]!);
-    }
+    if (ev.metaKey || ev.ctrlKey || ev.key !== " " || session.selection.length === 0) return;
+    ev.preventDefault();
+    operation();
   });
   // Clipboard events instead of the async API: no permission prompt. The text overlay keeps its native copy/paste.
   const clip = (ev: ClipboardEvent, text: string | null): void => {
@@ -508,14 +316,14 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
     ev.clipboardData?.setData("text/plain", text);
     ev.preventDefault();
   };
-  box.addEventListener("copy", (ev) => editing === null && clip(ev, session.copyText()));
-  box.addEventListener("cut", (ev) => editing === null && clip(ev, session.cut()));
+  box.addEventListener("copy", (ev) => !isEditing() && clip(ev, session.copyText()));
+  box.addEventListener("cut", (ev) => !isEditing() && clip(ev, session.cut()));
   box.addEventListener("paste", (ev) => {
     const file = [...(ev.clipboardData?.files ?? [])].find((f) => f.type.startsWith("image/"));
-    if (editing === null && file !== undefined && !opts.readonly) {
+    if (!isEditing() && file !== undefined && !opts.readonly) {
       ev.preventDefault();
       void addImage(async () => file, false);
-    } else if (editing === null && session.paste(ev.clipboardData?.getData("text/plain") ?? "")) ev.preventDefault();
+    } else if (!isEditing() && session.paste(ev.clipboardData?.getData("text/plain") ?? "")) ev.preventDefault();
   });
   const pickImage =
     opts.pickImage ??
@@ -549,9 +357,6 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
       console.warn("tenniarb: image failed", e);
     }
   }
-  const ro = new ResizeObserver(redraw);
-  ro.observe(box);
-
   fit();
   return {
     session,
@@ -587,8 +392,7 @@ export async function mount(el: HTMLElement, opts: EditorOptions): Promise<Edito
       document.removeEventListener("keydown", onPrint);
       closeSearch?.();
       closeOperation?.();
-      ro.disconnect();
-      cancelAnimationFrame(frame);
+      destroyCanvas();
       box.remove();
     },
   };

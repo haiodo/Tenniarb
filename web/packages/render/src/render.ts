@@ -1,6 +1,6 @@
 // Public entry points: build a scene, measure it, draw it. No DOM: the Canvas2D context is passed in.
 import { ExecutionContext } from "@tenniarb/core";
-import type { DiagramItem, Element } from "@tenniarb/core";
+import type { DiagramItem, Element, ExecutionContextEvaluator } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { DrawableContainer } from "./drawable.ts";
 import type { Rect, Size } from "./geometry.ts";
@@ -66,6 +66,14 @@ export function buildScene(element: Element, options: RenderOptions = {}): Drawa
     executionContext = createExecutionContext({ evaluate: options.evaluate, decodeImage: options.decodeImage });
     executionContext.setElement(element);
   }
+  return layoutScene(element, executionContext, options);
+}
+
+/** buildScene with a given context; null renders tokens as written. Bundles that call only this never pull in the evaluator. */
+export function layoutScene(element: Element, executionContext: ExecutionContextEvaluator | null, options: Omit<RenderOptions, "evaluate" | "executionContext"> = {}): DrawableScene {
+  if (options.measureContext !== undefined) {
+    setMeasureContext(options.measureContext);
+  }
   const scene = new DrawableScene(element, options.darkMode ?? false, executionContext, { items: options.items, decodeImage: options.decodeImage });
   const bounds = scene.getBounds();
   scene.layout(bounds, bounds);
@@ -85,7 +93,11 @@ export function getSceneSize(element: Element, options: RenderOptions = {}): Siz
  */
 export function renderElement(ctx: Canvas2D, element: Element, options: RenderOptions = {}): Rect {
   setMeasureContext(ctx);
-  const scene = buildScene(element, options);
+  return drawScene(ctx, buildScene(element, options), options);
+}
+
+/** renderElement for a scene built by the caller. */
+export function drawScene(ctx: Canvas2D, scene: DrawableScene, options: Pick<RenderOptions, "padding" | "background"> = {}): Rect {
   const bounds = scene.getBounds();
   const padding = options.padding ?? 15;
   const result: Rect = { x: 0, y: 0, width: bounds.width + padding * 2, height: bounds.height + padding * 2 };

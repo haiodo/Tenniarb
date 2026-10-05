@@ -4,7 +4,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./settings": "./src/settings.ts"
+    "./settings": "./src/settings.ts",
+    "./session": "./src/session.ts",
+    "./canvas": "./src/canvas.ts"
   },
   "scripts": {
     "build": "node scripts/build.ts",

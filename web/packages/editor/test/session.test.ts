@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readTenn } from "@tenniarb/core";
 import type { DiagramItem, LinkItem } from "@tenniarb/core";
-import { DrawableLine } from "@tenniarb/render";
+import { DrawableLine, createExecutionContext } from "@tenniarb/render";
 import type { Point } from "@tenniarb/render";
 import "../../render/test/helpers.ts"; // measure context + fonts
 import { EditorSession } from "../src/session.ts";
@@ -18,7 +18,7 @@ const SRC = `element "D" {
 
 function make(opts: { readonly?: boolean } = {}) {
   const changes: string[] = [];
-  const s = new EditorSession(readTenn(SRC)!.elements[0]!, { evaluate: false, onChange: (t) => changes.push(t), ...opts });
+  const s = new EditorSession(readTenn(SRC)!.elements[0]!, { onChange: (t) => changes.push(t), ...opts });
   s.undoManager.groupsByEvent = false; // the tests undo step by step inside one tick
   const [a, b, c] = s.element.items;
   const centre = (i: typeof a): Point => {
@@ -280,7 +280,7 @@ test("props: parse errors, removed target and readonly apply nothing", () => {
 });
 
 test("props: expression values by line", () => {
-  const s = new EditorSession(readTenn(SRC)!.elements[0]!);
+  const s = new EditorSession(readTenn(SRC)!.elements[0]!, { exec: createExecutionContext() });
   const a = s.element.items[0]!;
   const values = s.propsValues(a, 'name "A"\npos 0 0\nfontSize $(10 + 5)');
   assert.equal(values.get(2), "15");
@@ -546,7 +546,7 @@ test("operate: -name removes, parse error / no selection / no change change noth
 });
 
 test("click on overlapping items cycles through them, a selected one under the point keeps the selection", () => {
-  const s = new EditorSession(readTenn(`element "D" { item "A" { pos 0 0 }\n item "B" { pos 0 0 } }`)!.elements[0]!, { evaluate: false });
+  const s = new EditorSession(readTenn(`element "D" { item "A" { pos 0 0 }\n item "B" { pos 0 0 } }`)!.elements[0]!);
   const r = s.scene.drawables.get(s.element.items[0]!)!.getSelectorBounds();
   const p = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   const click = () => (s.down(p), s.up(p, false), s.selection[0]);

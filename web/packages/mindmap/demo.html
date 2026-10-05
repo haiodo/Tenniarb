@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenniarb mind map demo</title>
+<!-- Two maps, each with its own Yjs document, synced through the text protocol. Uncheck "connected", edit both, check it again.
+     Each map shows the other's selection as a peer (what awareness would carry).
+     Build first (npm run build -w @tenniarb/mindmap) and serve dist/ over http. -->
+<style>
+  body { margin: 0; font: 13px -apple-system, system-ui, sans-serif; display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
+  body.dark { background: #1e1e1e; color: #ddd; }
+  header { padding: 6px 12px; display: flex; gap: 16px; align-items: center; border-bottom: 1px solid #8884; }
+  main, footer { display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
+  .map { border-right: 1px solid #8884; min-height: 0; }
+  pre { margin: 0; padding: 6px 12px; height: 180px; overflow: auto; font: 11px ui-monospace, Menlo, monospace; border-top: 1px solid #8884; border-right: 1px solid #8884; }
+</style>
+</head>
+<body>
+<header>
+  <label><input type="checkbox" id="online" checked> connected</label>
+  <label><input type="checkbox" id="dark"> dark</label>
+  <label><input type="checkbox" id="ro"> readonly</label>
+  <span id="status"></span>
+</header>
+<main><div class="map" id="m1"></div><div class="map" id="m2"></div></main>
+<footer><pre id="t1"></pre><pre id="t2"></pre></footer>
+<script type="module">
+  import * as Y from "./yjs.js";
+  import { create, render } from "./mindmap.js";
+
+  const text = `item "Tenniarb" {
+    pos 0 0
+    color orange
+    font-size 22
+}
+item "Text protocol" {
+    pos 220 60
+}
+item "Yjs" {
+    pos 220 -40
+    display circle
+}
+link "Tenniarb" "Text protocol" {
+    display arrow
+}
+link "Tenniarb" "Yjs"
+`;
+  const online = document.getElementById("online");
+  const colors = ["#e8590c", "#7048e8"];
+  const selections = (window.selections = {});
+  const clients = [1, 2].map((id) => {
+    const ydoc = new Y.Doc();
+    const ytext = ydoc.getText("block");
+    const pre = document.getElementById(`t${id}`);
+    const map = create(document.getElementById(`m${id}`), {
+      text,
+      theme: "light",
+      onSelection: (keys) => {
+        selections[id] = keys;
+        clients[2 - id]?.map.setPeers(keys.length === 0 ? [] : [{ id: `u${id}`, name: `User ${id}`, color: colors[id - 1], keys }]);
+      },
+      onErrors: (errors) => console.info(`map ${id}: ${errors.length} skipped`, errors),
+      onChange: (changes) => ydoc.transact(() => {
+        for (const c of [...changes].reverse()) {
+          ytext.delete(c.from, c.to - c.from);
+          ytext.insert(c.from, c.insert);
+        }
+      }),
+    });
+    ytext.observe(() => {
+      map.update(ytext.toString());
+      pre.textContent = ytext.toString();
+    });
+    return { ydoc, ytext, map };
+  });
+  clients[0].ytext.insert(0, text);
+  const sync = () => {
+    const [a, b] = clients.map((c) => c.ydoc);
+    Y.applyUpdate(b, Y.encodeStateAsUpdate(a, Y.encodeStateVector(b)));
+    Y.applyUpdate(a, Y.encodeStateAsUpdate(b, Y.encodeStateVector(a)));
+  };
+  for (const c of clients) c.ydoc.on("update", () => online.checked && sync());
+  sync();
+  online.onchange = () => online.checked && sync();
+  document.getElementById("dark").onchange = (e) => {
+    document.body.classList.toggle("dark", e.target.checked);
+    for (const c of clients) c.map.setTheme(e.target.checked ? "dark" : "light");
+  };
+  document.getElementById("ro").onchange = (e) => clients.forEach((c) => c.map.setReadonly(e.target.checked));
+  const preview = render(text);
+  document.getElementById("status").textContent = `render(): ${Math.round(preview.width)}x${Math.round(preview.height)}, ${preview.svg.length} chars of SVG`;
+  window.clients = clients;
+</script>
+</body>
+</html>

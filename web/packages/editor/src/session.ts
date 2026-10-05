@@ -29,15 +29,16 @@ import {
   toTennStr,
   traverseBlock,
 } from "@tenniarb/core";
-import type { Element, ElementOperation, ExecutionContext, ItemKind } from "@tenniarb/core";
-import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildScene, createExecutionContext, getString, prepareBodyText, setMeasureContext } from "@tenniarb/render";
+import type { Element, ElementOperation, IExecutionContext, ItemKind } from "@tenniarb/core";
+import { CircleBox, DrawableLine, EmptyBox, RoundBox, getString, layoutScene, prepareBodyText, setMeasureContext } from "@tenniarb/render";
 import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect } from "@tenniarb/render";
 import { optionNodes } from "./styles.ts";
 import { drawSelection, hitTest, itemsInRect } from "./selection.ts";
 
 export interface SessionOptions {
   darkMode?: boolean;
-  evaluate?: boolean;
+  /** Expression evaluator (createExecutionContext); without it expressions render as written. */
+  exec?: IExecutionContext;
   decodeImage?: ImageDecoder;
   measureContext?: Pick<Canvas2D, "font" | "measureText">;
   /** No selection and no edits. */
@@ -98,9 +99,10 @@ export class EditorSession {
   private createIndex = 1;
   // Where the next new item goes: the last click on empty space, or right of the last selected item.
   private pivot: Point = { x: 0, y: 0 };
-  private readonly exec: ExecutionContext;
+  private readonly exec: IExecutionContext | null;
   private mode: Mode = "none";
   private origin: Point = { x: 0, y: 0 };
+  private last: Point = { x: 0, y: 0 };
   private moved = false;
   private starts = new Map<DiagramItem, Point>();
   private lineTarget: DiagramItem | null = null;
@@ -120,8 +122,8 @@ export class EditorSession {
     this.undoManager.groupsByEvent = true;
     // The execution context measures text while it evaluates, before the first buildScene.
     if (opts.measureContext !== undefined) setMeasureContext(opts.measureContext);
-    this.exec = createExecutionContext({ evaluate: opts.evaluate, decodeImage: opts.decodeImage });
-    this.exec.setElement(element);
+    this.exec = opts.exec ?? null;
+    this.exec?.setElement(element);
     this.store.executionContext = this.exec;
     this.rebuild();
   }
@@ -131,13 +133,24 @@ export class EditorSession {
   }
 
   rebuild(): void {
-    this.scene = buildScene(this.element, {
+    this.scene = layoutScene(this.element, this.exec, {
       darkMode: this.opts.darkMode,
-      executionContext: this.exec,
       decodeImage: this.opts.decodeImage,
       measureContext: this.opts.measureContext,
     });
     this.selection = this.selection.filter((i) => this.scene.drawables.has(i));
+    // Rebuilt under a drag (an update from outside): the dragged items stay under the pointer.
+    if (this.mode === "drag" && this.moved) this.move(this.last);
+  }
+
+  get readonly(): boolean {
+    return this.opts.readonly === true;
+  }
+
+  setReadonly(readonly: boolean): void {
+    this.opts.readonly = readonly;
+    if (readonly) this.selection = [];
+    this.opts.onRedraw?.();
   }
 
   private refresh = (): void => {
@@ -163,7 +176,7 @@ export class EditorSession {
   setElement(element: Element): void {
     if (element === this.element) return;
     this.element = element;
-    this.exec.setElement(element);
+    this.exec?.setElement(element);
     this.selection = [];
     this.pivot = { x: 0, y: 0 };
     this.rebuild();
@@ -331,6 +344,7 @@ export class EditorSession {
     const dy = p.y - this.origin.y;
     if (!this.moved && Math.hypot(dx, dy) < DRAG_SLOP) return;
     this.moved = true;
+    this.last = p;
     if (this.mode === "band") {
       this.band = { x: Math.min(this.origin.x, p.x), y: Math.min(this.origin.y, p.y), width: Math.abs(dx), height: Math.abs(dy) };
       this.selection = itemsInRect(this.scene, this.band);
@@ -358,7 +372,7 @@ export class EditorSession {
     }
     if (mode === "line") {
       const source = this.selection[0];
-      if (!cancel && source !== undefined && this.lineTarget !== null) {
+      if (!cancel && source !== undefined && this.lineTarget !== null && this.element.items.includes(this.lineTarget)) {
         this.store.addLink(this.element, source, this.lineTarget, this.undoManager, this.refresh);
       }
       this.scene.removeLineTo();
@@ -370,6 +384,7 @@ export class EditorSession {
 
   private toggle(item: DiagramItem): void {
     this.selection = this.selection.includes(item) ? this.selection.filter((i) => i !== item) : [...this.selection, item];
+    if (this.selection.length > 0) this.pivotRightOf(this.selection[0]!);
   }
 
   private commitDrag(p: Point): void {
@@ -377,7 +392,7 @@ export class EditorSession {
     const dy = p.y - this.origin.y;
     const ops: ElementOperation[] = [...this.starts]
       .map(([i, s]) => ({ i, pos: { x: s.x + dx, y: s.y + dy } }))
-      .filter(({ i, pos }) => pos.x !== i.x || pos.y !== i.y)
+      .filter(({ i, pos }) => (pos.x !== i.x || pos.y !== i.y) && this.element.items.includes(i))
       .map(({ i, pos }) => this.store.createUpdatePosition(i, pos));
     // One composite = one undo step.
     if (ops.length > 0) this.store.compositeOperation(this.element, this.undoManager, this.refresh, ops);
@@ -588,7 +603,7 @@ export class EditorSession {
     const values = new Map<number, string>();
     if (parser.errors.hasErrors()) return values;
     const drawable = target instanceof DiagramItem ? (this.scene.drawables.get(target)?.getSelectorBounds() ?? null) : null;
-    for (const [tok, v] of this.exec.getEvaluated(target, node, drawable)) values.set(tok.line, String(v));
+    for (const [tok, v] of this.exec?.getEvaluated(target, node, drawable) ?? []) values.set(tok.line, String(v));
     return values;
   }
 
@@ -701,7 +716,10 @@ export class EditorSession {
 
   private addItem(from: DiagramItem | null, copyProps = false): void {
     if (this.opts.readonly) return;
-    const item = new DiagramItem("Item", `Untitled ${this.createIndex++}`);
+    let name = `Untitled ${this.createIndex++}`;
+    // Links refer to items by name, so a name already in the element (pasted, or from another editor) is skipped.
+    while (this.element.items.some((i) => i.kind === "Item" && i.name === name)) name = `Untitled ${this.createIndex++}`;
+    const item = new DiagramItem("Item", name);
     item.x = this.pivot.x;
     item.y = this.pivot.y;
     if (copyProps && from !== null) item.properties.appendContentsOf([...from.properties].map((p) => p.clone()));
@@ -716,6 +734,8 @@ export class EditorSession {
   select(items: DiagramItem[]): void {
     if (this.opts.readonly) return;
     this.selection = items;
+    // Swift setActiveItems: any selection moves the pivot, so Tab places the next item next to it.
+    if (items.length > 0) this.pivotRightOf(items[0]!);
     this.opts.onRedraw?.();
   }
 
@@ -851,6 +871,7 @@ export class EditorSession {
     if (items.length === 0) return;
     this.store.addItems(this.element, items, this.undoManager, this.refresh);
     this.selection = items;
+    this.pivotRightOf(items[0]!);
     this.opts.onRedraw?.();
   }
 

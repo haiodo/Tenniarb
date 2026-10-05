@@ -80,14 +80,15 @@ function convertNameJS(name: string): string | null {
 }
 
 const identifier = /^[\p{ID_Start}$_][\p{ID_Continue}$‌‍]*$/u;
-const reserved = new Set(
-  (
+// Pure annotations let bundles that never evaluate (the mind map) drop these and with them the Function constructor.
+const reserved = /* @__PURE__ */ new Set(
+  /* @__PURE__ */ (
     "break case catch class const continue debugger default delete do else enum export extends false finally for function " +
     "if import in instanceof new null return super switch this throw true try typeof var void while with"
   ).split(" "),
 );
 
-const GeneratorFunction = Object.getPrototypeOf(function* () {}).constructor as new (...args: string[]) => (scope: object) => Generator<
+const GeneratorFunction = /* @__PURE__ */ (() => Object.getPrototypeOf(function* () {}).constructor)() as new (...args: string[]) => (scope: object) => Generator<
   unknown,
   void,
   string

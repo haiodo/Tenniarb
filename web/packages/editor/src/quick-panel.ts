@@ -38,7 +38,8 @@ export function mountQuickPanel(box: HTMLElement, session: EditorSession): (item
         b.title = q.label;
         b.onclick = () => {
           const r = b.getBoundingClientRect();
-          showMenu(r.left, r.bottom + 2, quickEntries(session, q), () => box.focus());
+          // Inside the box: it carries the theme of an embedded map.
+          showMenu(r.left, r.bottom + 2, quickEntries(session, q), () => box.focus(), box);
         };
         el.append(b);
       }

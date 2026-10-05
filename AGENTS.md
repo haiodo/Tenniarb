@@ -20,6 +20,7 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
 - `web/` - TypeScript-версия (план в `plans/plan.md`, раздел 3). npm workspaces `packages/*`,
   тесты `node:test` на `.ts` без компиляции. `web/bench/` - бенчмарки рендера, вне workspaces.
+  `web/packages/mindmap` - встраиваемый mind map без вычислений (план, раздел 6): текстовый протокол блока, бандл `dist/mindmap.js`.
 - `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
   в схему `Tenniarb-Performance`. Схема скипает все остальные suite поимённо - при
   добавлении нового тестового класса список надо дополнить, иначе он попадёт в perf-прогон.

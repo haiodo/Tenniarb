@@ -27,7 +27,7 @@ function make(readonly = false) {
   const changes: string[] = [];
   let elements = 0;
   const root = readTenn(SRC)!;
-  const s = new EditorSession(root.elements[0]!, { evaluate: false, readonly, onChange: (t) => changes.push(t), onElement: () => elements++ });
+  const s = new EditorSession(root.elements[0]!, { readonly, onChange: (t) => changes.push(t), onElement: () => elements++ });
   const [a, b] = root.elements;
   return { s, root, a: a!, a1: a!.elements[0]!, b: b!, changes, elements: () => elements };
 }
