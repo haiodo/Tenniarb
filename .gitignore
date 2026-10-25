@@ -25,5 +25,3 @@ plan.md
 plans
 .work
 Tenniarb/web/
-web/packages/app/src-tauri/target
-web/packages/app/src-tauri/gen

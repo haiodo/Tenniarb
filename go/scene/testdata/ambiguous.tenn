@@ -1,0 +1,12 @@
+element "A" {
+    item "Item" { width 1 }
+    item "Item" { width 2 }
+    item "Wrap" {
+        item "Inner" { width 3 }
+    }
+    item "a b" { width 4 }
+    item "a_b" { width 5 }
+    use Item as x
+    use Wrap.Inner as ok
+    use a_b as y
+}

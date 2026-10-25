@@ -1,0 +1,14 @@
+element "Parts" {
+    item "Row" { slot cells { item "Cell" { width 10 } } }
+    item "List" { use Row as r1 }
+    item "Dup" { item "cells" {} ; slot cells { item "Cell" {} } }
+}
+
+element "Screen" {
+    use Parts.List as a { at r1.cells { width 3 } }
+    use Parts.List as b { at r1.nosuch { width 3 } }
+    use Parts.List as c { at cells.Cell { width 3 } }
+    use Parts.List as d { item "X" {} }
+    use Parts.Dup as e { at cells { width 3 } }
+    use Parts.Dup as f { at cells.Cell { width 3 } }
+}

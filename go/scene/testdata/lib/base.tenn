@@ -1,0 +1,5 @@
+item "Dot" {
+    width 6
+    height 6
+    color red
+}

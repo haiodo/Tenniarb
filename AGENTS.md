@@ -18,7 +18,9 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
-- `web/` - TypeScript-версия (план в `plans/plan.md`, раздел 3). npm workspaces `packages/*`,
+- `go/` - Go-версия (план в `../my-tasks/tenniarb/roadmap.md`), модуль `github.com/haiodo/tenniarb/go`. `go/tenn` - lexer,
+  parser, printer; golden-тест на общих `web/fixtures`. Спецификация расширенного формата - `docs/spec/tenn-scene.md`.
+- `web/` - TypeScript-версия (план в `../my-tasks/tenniarb/plan.md`, раздел 3). npm workspaces `packages/*`,
   тесты `node:test` на `.ts` без компиляции. `web/bench/` - бенчмарки рендера, вне workspaces.
   `web/packages/mindmap` - встраиваемый mind map без вычислений (план, раздел 6): текстовый протокол блока, бандл `dist/mindmap.js`.
 - `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
@@ -44,6 +46,7 @@ make ci             # lint + build + test, то же что в CI
 make clean
 make web            # сборка web/packages
 make web-test       # typecheck + тесты web/
+make go-test        # go vet + go test для go/
 ```
 
 Инструменты:
@@ -100,10 +103,6 @@ Performance-тесты исключены из основного прогона
   - архивирует `Tenniarb.app` в zip
   - публикует GitHub Release
   - обновляет `MARKETING_VERSION` в `Tenniarb.xcodeproj/project.pbxproj` на default branch
-
-- CI (`ci.yml`, job `app`) собирает Tauri-приложение (`web/packages/app`) на macOS/Windows/Linux.
-- Release web workflow (`.github/workflows/release-web.yml`) по тем же тегам собирает unsigned dmg/NSIS/AppImage/deb и дописывает `Tenniarb-app-<версия>-*` в релиз тега (версия из тега через `tauri build --config`, не коммитится). Оба workflow создают релиз только если его нет (`gh release view || gh release create`), порядок не важен.
-- Не проверено в GitHub Actions до первого запуска.
 
 Перед изменениями release-логики проверять, что шаг обновления версии в `project.pbxproj` останется консистентным.
 

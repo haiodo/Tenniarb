@@ -1,0 +1,5 @@
+element "C" {
+    item "A" { use B as b }
+    item "B" { use A as a }
+    item "Self" { use Self as s }
+}

@@ -1,0 +1,29 @@
+element "Font" {
+    item "Plain" { pos 0 0; title "Hello world" }
+    item "Spaced" { pos 0 40; title "Hello world"; letter-spacing 2 }
+    item "Bold" { pos 0 80; title "Hello world"; font-weight bold }
+    item "W600" { pos 0 120; title "Hello world"; font-weight 600; font-family "IBM Plex Sans" }
+    item "Italic" { pos 0 160; title "Hello world"; font-style italic }
+    item "BadWeight" { pos 0 200; title "x"; font-weight 1000 }
+    item "BadStyle" { pos 0 240; title "x"; font-style wavy }
+    item "BadSpacing" { pos 0 280; title "x"; letter-spacing wide }
+}
+
+element "Radius" {
+    item "Four" { pos 0 0; width 100; height 50; color #ff0000; border-color #0000ff; corner-radius 10 0 0 20 }
+    item "One" { pos 0 60; width 100; height 50; corner-radius 8 }
+    item "Two" { pos 0 120; width 100; height 50; corner-radius 8 4 }
+    item "Clip" {
+        pos 0 180
+        auto-layout column
+        clip yes
+        width 100
+        height 50
+        corner-radius 10 0 0 20
+        item "In" { width 100; height 50; color #00ff00 }
+    }
+}
+
+element "Kern" {
+    item "Row" { auto-layout row; item "T" { title "ab cd-ef" } }
+}

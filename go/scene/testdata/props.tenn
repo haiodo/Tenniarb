@@ -1,0 +1,69 @@
+element "NameText" {
+    item "Brain" { pos 0 0 }
+    item "Ctx" {
+        auto-layout column
+        item "NoTitle" { width 50; height 10 }
+        item "Titled" { title "ab" }
+        item "Empty" { width 5; height 5 }
+    }
+}
+
+element "Font" {
+    item "Big" { pos 0 0; font-size 56 }
+    item "Bad" { pos 0 100; font-size 0 }
+}
+
+element "Hyphen" {
+    item "Box" {
+        auto-layout column
+        item "H" { title "aaaa-bbbb"; width 30 }
+        item "Dash" { title "a - b -5"; width 200 }
+    }
+}
+
+element "Opacity" {
+    item "Half" { pos 0 0; width 10; height 10; opacity 0.5 }
+    item "Bad" { pos 20 0; opacity 2 }
+}
+
+element "Hidden" {
+    item "Row" {
+        auto-layout row
+        gap 10
+        item "A" { width 20; height 10 }
+        item "B" { width 20; height 10; hidden yes }
+        item "C" { width 20; height 10 }
+    }
+    link "Row" "Row"
+    item "Gone" { pos 0 50; hidden yes; item "Inner" { } }
+    item "Kept" { pos 0 80; hidden no }
+    link "Kept" "Gone"
+}
+
+element "Icon" {
+    item "Sized" {
+        auto-layout row
+        item "I" { path "M0 0L10 0L10 10Z"; view-box 0 0 10 10; width 20; height 20; color FF0000 }
+        item "Hug" { path "M0 0L10 0L10 10Z"; view-box 0 0 10 10 }
+        item "Stroke" { path "M0 0L10 10"; border-color 0000FF; line-width 2; width 20; height 20 }
+        item "Bad" { path "M1 x"; width 5; height 5 }
+    }
+}
+
+element "FillRule" {
+    item "Hole" { path "M0 0H10V10H0Z M2 2H8V8H2Z"; view-box 0 0 10 10; color #000000; fill-rule evenodd }
+    item "Solid" { pos 20 0; path "M0 0H10V10H0Z M2 2H8V8H2Z"; view-box 0 0 10 10; color #000000; fill-rule nonzero }
+}
+
+element "Defaults" {
+    item "Brain" { pos 0 0; width 10; height 10 }
+    item "Ctx" {
+        auto-layout row
+        item "Plain" { width 10; height 10 }
+        item "Fill" { width 10; height 10; color #112233 }
+        item "Line" { width 10; height 10; border-color #445566 }
+        item "Width" { width 10; height 10; line-width 4 }
+        item "T" { title "x"; color #000000 }
+        item "U" { title "y" }
+    }
+}

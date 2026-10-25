@@ -1,0 +1,13 @@
+element "E" {
+    item "Plain" {
+        width fill
+        item "Kid" { height hug }
+    }
+    item "Box" {
+        auto-layout column
+        justify space-around
+        align sideways
+        padding 1 2 3
+        width 50%
+    }
+}

@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test app-dev app embed view render tenn-fuzz md-fuzz blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test go-fuzz tenn-bench embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -68,11 +68,14 @@ web: web/node_modules ## Build web packages (web/)
 web-test: web/node_modules ## Typecheck and test web packages
 	cd web && npm run typecheck && npm test
 
-app-dev: web/node_modules ## Run the Tauri app in dev mode (web/packages/app)
-	cd web/packages/app && npx tauri dev
+go-test: ## Go port (go/): vet + tests
+	cd go && go vet ./... && go test ./...
 
-app: web/node_modules ## Build the Tauri .app, unsigned (web/packages/app/src-tauri/target/release/bundle/macos)
-	cd web/packages/app && npx tauri build
+go-fuzz: ## Differential fuzz: Swift vs Go .tenn parser: make go-fuzz N=20000 SEED=1
+	cd go && go run ./cmd/tennfuzz -n $(or $(N),2000) -seed $(or $(SEED),1)
+
+tenn-bench: ## Compare Tenn lexer/parser speed: Go vs Swift vs TS: make tenn-bench RUNS=15
+	cd go && go run ./cmd/tennbench -runs $(or $(RUNS),15)
 
 embed: $(EMBED) ## Build Tenniarb/web/tenniarb-embed.min.js (self-contained, not in git)
 

@@ -1,0 +1,97 @@
+element "Row" {
+    item "Bar" {
+        auto-layout row
+        gap 10
+        padding 5
+        item "A" { width 20; height 10; color #cccccc }
+        item "B" { width 20; height 10; color #cccccc }
+        item "C" { width 20; height 10; border-color #000000 }
+    }
+}
+
+element "Column" {
+    item "Col" {
+        auto-layout column
+        gap 4
+        width 100
+        align center
+        padding 2 6
+        item "A" { width 40; height 10 }
+        item "B" { width 60; height 20 }
+    }
+}
+
+element "Fill" {
+    item "Bar" {
+        auto-layout row
+        gap 10
+        width 100
+        height 30
+        item "A" { width 20; height fill }
+        item "F1" { width fill; height 10 }
+        item "F2" { width fill; height 10 }
+    }
+}
+
+element "Wrap" {
+    item "Bar" {
+        auto-layout row
+        wrap yes
+        gap 6
+        line-gap 4
+        padding 4
+        width 100
+        item "A" { width 40; height 20 }
+        item "B" { width 40; height 20 }
+        item "C" { width 30; height 20 }
+        item "Badge" {
+            absolute yes
+            pos 90 4
+            width 8
+            height 8
+        }
+    }
+}
+
+element "Justify" {
+    item "Between" {
+        auto-layout row
+        justify space-between
+        width 100
+        item "A" { width 20; height 10 }
+        item "B" { width 20; height 10 }
+    }
+    item "End" {
+        auto-layout row
+        justify end
+        align end
+        width 100
+        height 30
+        item "A" { width 20; height 10 }
+    }
+}
+
+element "Abs" {
+    item "Free" {
+        auto-layout abs
+        item "A" { pos 10 -20; width 5; height 5 }
+        item "B" { pos 30 -40; width 5; height 5 }
+    }
+    item "Plain" {
+        pos 7 -8
+        width 50
+        height 60
+    }
+}
+
+element "Text" {
+    item "T" {
+        auto-layout column
+        width 100
+        item "L" { title "ab" }
+        item "W" {
+            title "aaaa bbbb cccc"
+            width fill
+        }
+    }
+}

@@ -1,0 +1,16 @@
+import "lib/kit.tenn" as kit
+
+element "Slots" {
+    use kit.Window as w1 {
+        item "Email" { height 10 }
+        item "Pass" { height 12 }
+    }
+    use kit.Window as w2
+    use kit.Window as w3 {
+        slot toolbar { use kit.Button as help }
+        item "X" { height 5 }
+    }
+    use kit.Window as w4 {
+        slot toolbar {}
+    }
+}

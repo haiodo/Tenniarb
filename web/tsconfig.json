@@ -11,5 +11,5 @@
     "types": ["node"]
   },
   "include": ["packages/*/src", "packages/*/test"],
-  "exclude": ["packages/viewer", "packages/embed", "packages/editor", "packages/app", "packages/mindmap"]
+  "exclude": ["packages/viewer", "packages/embed", "packages/editor", "packages/mindmap"]
 }

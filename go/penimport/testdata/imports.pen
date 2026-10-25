@@ -1,0 +1,11 @@
+{"version":"2.21","imports":{"K":"lib.pen"},"children":[
+ {"type":"frame","id":"page","name":"Page","x":20,"y":30,"layout":"vertical","gap":12,"padding":16,"width":400,"children":[
+  {"type":"ref","id":"p1","name":"Save","ref":"K:btn","descendants":{"K:blabel":{"content":"Save"},"K:bicon":{"enabled":true}}},
+  {"type":"ref","id":"p2","name":"Cancel","ref":"K:btn","descendants":{"K:blabel":{"content":"Cancel","fill":"#222222"}}},
+  {"type":"ref","id":"p3","name":"Pair","ref":"K:row","descendants":{"rb2":{"width":120},"K:rb1":{"height":40}}},
+  {"type":"ref","id":"p4","name":"Gone","ref":"K:nope","width":50,"height":20},
+  {"type":"ref","id":"p5","name":"Local","ref":"loc","width":100}
+ ]},
+ {"type":"frame","id":"loc","name":"Local","reusable":true,"enabled":true,"x":600,"y":0,"padding":4,"children":[
+  {"type":"text","id":"lt","name":"Name","content":"2024","fontSize":12}]}
+]}

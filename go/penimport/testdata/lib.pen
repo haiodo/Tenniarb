@@ -1,0 +1,9 @@
+{"version":"2.21","themes":{"mode":["light","dark"]},"variables":{"bg":{"type":"color","value":[{"value":"#ffffff","theme":{"mode":"light"}},{"value":"#111111","theme":{"mode":"dark"}}]},"accent":{"type":"color","value":"#3366ff"}},"children":[
+ {"type":"frame","id":"sec","name":"Kit/Buttons","layout":"vertical","gap":10,"x":0,"y":0,"children":[
+  {"type":"frame","id":"btn","name":"Button","reusable":true,"padding":[6,12],"gap":6,"alignItems":"center","fill":"$accent","cornerRadius":4,"children":[
+   {"type":"frame","id":"bicon","name":"Icon","width":12,"height":12,"enabled":false,"fill":"#ffffff"},
+   {"type":"text","id":"blabel","name":"Label","content":"Button","fontSize":14,"fill":"$bg"}]},
+  {"type":"frame","id":"row","name":"Row","reusable":true,"gap":8,"children":[
+   {"type":"ref","id":"rb1","name":"Button","ref":"btn"},
+   {"type":"ref","id":"rb2","name":"Button","ref":"btn","descendants":{"blabel":{"content":"Second"}}}]}]}
+]}

@@ -1,0 +1,9 @@
+import "lib/kit.tenn" as kit
+
+element "Order" {
+    item "C" { pos 0 0; width 10; height 10; color 00ff00 }
+    item "A" { pos 20 0; width 10; height 10; color ff0000 }
+    link "C" "A" { display arrow }
+    item "B" { pos 40 0; width 10; height 10; color 0000ff }
+    use kit.Button as Z { pos 60 0 }
+}

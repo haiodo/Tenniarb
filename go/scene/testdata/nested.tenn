@@ -1,0 +1,34 @@
+element "Parts" {
+    item "Row" {
+        auto-layout row
+        gap 1
+        slot cells { item "Cell" { width 10; height 10 } }
+    }
+    item "List" {
+        auto-layout column
+        use Row as r1
+        use Row as r2 { slot cells { item "Own" { width 7; height 7 } } }
+    }
+    item "Page" {
+        auto-layout column
+        use List as list
+        slot { item "Hint" { width 3; height 3 } }
+    }
+}
+
+element "Screen" {
+    use Parts.Page as plain
+    use Parts.Page as deep {
+        at list.r1.cells.Cell { width 20 }
+        at default.Hint { width 4 }
+    }
+    use Parts.Page as swap {
+        replace list.r1.cells.Cell { item "New" { width 6; height 6 } }
+    }
+    use Parts.Page as fill {
+        at list.r1 { slot cells { item "Mine" { width 5; height 5 } } }
+        item "Extra" { width 2; height 2 }
+    }
+    use Parts.Page as chain
+    use chain as chain2 { at list.r2.Own { width 9 } }
+}

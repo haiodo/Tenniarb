@@ -1,0 +1,29 @@
+import "base.tenn" as base
+
+item "Button" {
+    auto-layout row
+    padding 4 8
+    width 60
+    height 24
+    color blue
+    corner-radius 4
+}
+
+item "Badge" {
+    auto-layout row
+    use base.Dot as dot
+}
+
+item "Window" {
+    auto-layout column
+    gap 4
+    width 200
+    item "Title" {
+        height 20
+        color yellow
+    }
+    slot "toolbar"
+    slot {
+        item "Empty" { height 20 }
+    }
+}

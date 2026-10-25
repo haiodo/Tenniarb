@@ -1,0 +1,11 @@
+element "Parts" {
+    item "Row" { slot cells { item "Cell" { width 10 } } }
+    item "List" { use Row as r1 }
+}
+
+element "Screen" {
+    use Parts.List as a {
+        at r1.cells.Cell { width 3 }
+        at r1 { slot cells { item "Mine" {} } }
+    }
+}

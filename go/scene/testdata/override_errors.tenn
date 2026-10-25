@@ -1,0 +1,8 @@
+element "E" {
+    item "Dup" {
+        item "Same" { height 1 }
+        item "Same" { height 2 }
+    }
+    use Dup as d1 { at Same { height 9 } }
+    use Dup as d2 { at Nope { height 9 } }
+}

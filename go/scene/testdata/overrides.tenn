@@ -1,0 +1,36 @@
+element "Main" {
+    item "Card" {
+        auto-layout column
+        gap 2
+        width 100
+        item "Head" {
+            width fill
+            height 10
+            color red
+        }
+        item "Body" { width fill; height 20 }
+        item "Foot" {
+            item "Ok" {
+                width 5
+                height 5
+            }
+        }
+    }
+    item "Primary button" { width 77 }
+    use Card as c1 {
+        width 150
+        at Head { height 30 }
+        at Foot.Ok {
+            width 9
+            height 9
+        }
+    }
+    use c1 as c2 { width 170 }
+    use Card as c3 {
+        replace Body {
+            item "New1" { height 7 }
+            item "New2" { height 8 }
+        }
+    }
+    use Primary_button as pb
+}

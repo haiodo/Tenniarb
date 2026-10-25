@@ -1,0 +1,7 @@
+import "lib/kit.tenn" as kit
+
+element "E" {
+    use kit.Window as a { slot nosuch { item "Z" {} } }
+    use kit.Button as b { item "Child" {} }
+    use kit.Window as c { at Missing { height 3 } }
+}

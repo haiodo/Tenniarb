@@ -1,0 +1,18 @@
+import "lib/kit.tenn" as kit
+
+element "Screens" {
+    item "Button" {
+        width 33
+        height 22
+    }
+    element "Login" {
+        use kit.Button as ok { color green }
+        use Button as cancel
+        use kit.Badge as badge
+        use kit.Button as hole { pos 1 -2 }
+    }
+    element "Alt" {
+        import "lib/other.tenn" as kit
+        use kit.Button as ok
+    }
+}
