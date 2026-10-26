@@ -80,7 +80,7 @@ func TestRestart1Quit(t *testing.T) {
 	skip(t)
 	app := qatest.App(t)
 	s := get(t, app)
-	if s.Windows != 1 || !s.Untitled || s.Dirty || s.Title != "Untitled - Tenniarb" || len(s.Outline) != 1 {
+	if s.Windows != 1 || !s.Untitled || s.Dirty || s.Title != "Untitled" || len(s.Outline) != 1 {
 		t.Fatalf("first launch: %+v", s)
 	}
 	saved = filepath.Join(t.TempDir(), "First.tenn")
@@ -90,7 +90,7 @@ func TestRestart1Quit(t *testing.T) {
 		t.Fatalf("Save As: %+v", s)
 	}
 	app.Find(qa.Text("New")).Click()
-	app.Find(inWindow(qa.Text("New Top-Level Element"), "Untitled - Tenniarb")).Click()
+	app.Find(inWindow(qa.Text("New Top-Level Element"), "Untitled")).Click()
 	s = get(t, app)
 	if s.Windows != 2 || !s.Dirty || len(s.Outline) != 2 || s.Stash == "" {
 		t.Fatalf("edit: %+v", s)
@@ -126,7 +126,7 @@ func TestRestart2Restore(t *testing.T) {
 	}
 	app.Find(qa.Text("New")).Click()
 	app.Answer(qa.Dialog{Kind: "message", Reply: "No"})
-	app.Find(inWindow(qa.Text("Close Window"), "Untitled - Edited - Tenniarb")).Click()
+	app.Find(inWindow(qa.Text("Close Window"), "Untitled - Edited")).Click()
 	if asked := app.Dialogs(); len(asked) == 0 || asked[len(asked)-1].Kind != "message" {
 		t.Fatalf("no question on close: %+v", asked)
 	}

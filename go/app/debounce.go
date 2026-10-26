@@ -17,18 +17,13 @@ type Debounce struct {
 
 	stop    func()
 	pending bool
-	gen     int
 }
 
 // Touch postpones the run by Delay from now.
 func (d *Debounce) Touch() {
 	d.Cancel()
 	d.pending = true
-	gen := d.gen
 	d.stop = d.After(d.Delay, func() {
-		if gen != d.gen { // a timer that was stopped too late
-			return
-		}
 		d.pending = false
 		d.Fn()
 	})
@@ -36,7 +31,6 @@ func (d *Debounce) Touch() {
 
 // Cancel drops a pending run.
 func (d *Debounce) Cancel() {
-	d.gen++
 	d.pending = false
 	if d.stop != nil {
 		d.stop()

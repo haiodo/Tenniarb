@@ -23,8 +23,12 @@ func TestOutlineSignature(t *testing.T) {
 		t.Fatal("move not seen")
 	}
 	c = ParseText(sample).Model
-	c.Elements[0].Elements[0].Items = nil
+	c.Elements[0].Elements[0].Items = append(c.Elements[0].Elements[0].Items, c.Elements[0].Elements[0].Items[0])
 	if OutlineSignature(&c.Element) != base {
-		t.Fatal("items must not change the outline")
+		t.Fatal("one more item must not change the outline")
+	}
+	c.Elements[0].Elements[0].Items = nil
+	if OutlineSignature(&c.Element) == base {
+		t.Fatal("an element without items has another icon")
 	}
 }

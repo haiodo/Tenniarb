@@ -64,9 +64,10 @@ func (v *Viewer) menus() {
 	el.Item("Move &Up", func() { v.moveElement(-1) }, g.Shortcut("Cmd+Alt+Up"))
 	el.Item("Move D&own", func() { v.moveElement(1) }, g.Shortcut("Cmd+Alt+Down"))
 
-	// Swift has it in the application menu; Display.GetSystemMenu crashes on macOS (gowt gap), so it is here.
-	edit.Separator()
-	edit.Item("Pre&ferences...", v.sh.showPrefs, g.Shortcut("Cmd+,"))
+	if !v.sh.sysMenu {
+		edit.Separator()
+		edit.Item("Pre&ferences...", v.sh.showPrefs, g.Shortcut("Cmd+,"))
+	}
 
 	nav := bar.Submenu("&Navigate")
 	nav.Item("&Goto Item...", v.showSearch, g.Shortcut("Cmd+F"))
@@ -75,11 +76,18 @@ func (v *Viewer) menus() {
 	viewMenu.Item("Zoom In", func() { v.zoomBy(ZoomStep) }, g.Shortcut("Cmd+="))
 	viewMenu.Item("Zoom Out", func() { v.zoomBy(1 / ZoomStep) }, g.Shortcut("Cmd+-"))
 	viewMenu.Item("Reset Zoom", v.resetZoom, g.Shortcut("Cmd+0"))
+	viewMenu.Item("Zoom to &Fit", v.fitCommand, g.Shortcut("Cmd+9"))
 	viewMenu.Separator()
 	viewMenu.Item("&Quick Style Panel", v.showQuickPanel, g.Shortcut("Cmd+E"))
+	viewMenu.Separator()
+	viewMenu.Item("Toggle &Sidebar", v.toggleSidebar, g.Shortcut("Cmd+Alt+S"))
+	viewMenu.Item("Toggle &Inspector", v.toggleInspector, g.Shortcut("Cmd+Alt+I"))
 
 	help := bar.Submenu("&Help")
 	help.Item("Tenniarb &Help", v.sh.showHelp, g.Shortcut("Cmd+Shift+/"))
+	if !v.sh.sysMenu {
+		help.Item("&About Tenniarb", v.sh.showAbout)
+	}
 }
 
 // fillRecent rebuilds Open Recent from the list of the shell.

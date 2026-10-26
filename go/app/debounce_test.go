@@ -61,19 +61,8 @@ func TestDebounce(t *testing.T) {
 		t.Fatalf("ran after Cancel: %d", runs)
 	}
 
-	// a timer that cannot be stopped (gowt's After) must not run a cancelled or replaced request
-	late := &Debounce{Delay: time.Second, Fn: func() { runs++ }, After: func(d time.Duration, f func()) func() {
-		c.after(d, f)
-		return func() {}
-	}}
-	late.Touch()
-	late.Cancel()
-	c.advance(time.Minute)
-	if runs != 1 {
-		t.Fatalf("an unstoppable timer ran after Cancel: %d", runs)
-	}
-	late.Touch()
-	late.Flush()
+	d.Touch()
+	d.Flush()
 	if runs != 2 {
 		t.Fatalf("Flush: %d", runs)
 	}

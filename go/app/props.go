@@ -74,6 +74,9 @@ func (v *Viewer) applyProps(target editor.Target, text string) {
 // refreshProps shows the current target in the panel. The text is replaced only when it means
 // something else than what the panel holds, so typing is not interrupted by its own echo.
 func (v *Viewer) refreshProps() {
+	if v.insp != nil {
+		v.insp.schedule()
+	}
 	if v.props.text == nil {
 		return
 	}

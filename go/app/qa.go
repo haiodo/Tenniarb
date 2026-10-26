@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	g "github.com/haiodo/gowt"
+	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/swt"
 
@@ -42,12 +43,16 @@ func (sh *Shell) registerQA() {
 		v.view.Pan(dx, dy)
 		return nil
 	})
-	// command: what the QA driver cannot reach: the application menu (quit), the outline drag, and
+	// command: what the QA driver cannot reach: the application menu (quit, preferences, about), and
 	// closing the windows a test is done with (the question of a dirty document is skipped).
 	qa.Handle("command", func(a qa.Args) error {
 		switch a.String("name") {
-		case "drop":
-			return sh.active.qaDrop(a)
+		case "preferences":
+			sh.showPrefs()
+			return nil
+		case "about":
+			sh.showAbout()
+			return nil
 		case "quit":
 			sh.app.Unwrap().Close()
 			return nil
@@ -56,6 +61,26 @@ func (sh *Shell) registerQA() {
 			e := swt.NewEvent()
 			e.Text = a.String("path")
 			sh.app.Unwrap().SendEvent(swt.OpenDocument, e)
+			return nil
+		case "toolbar-search": // the native toolbar field cannot be typed into by the QA driver
+			sh.active.searchTo(a.String("text"))
+			return nil
+		case "toolbar":
+			switch a.String("item") {
+			case "sidebar":
+				sh.active.toggleSidebar()
+			case "inspector":
+				sh.active.toggleInspector()
+			case "fit":
+				sh.active.fitCommand()
+			}
+			return nil
+		case "appearance":
+			if a.String("mode") == "dark" {
+				sh.app.SetAppearance(g.AppearanceDark)
+			} else {
+				sh.app.SetAppearance(g.AppearanceLight)
+			}
 			return nil
 		case "close-others":
 			for _, v := range slices.Clone(sh.viewers) {
@@ -96,6 +121,7 @@ func (v *Viewer) qaState() map[string]any {
 		"path": v.state.Doc.Path, "error": v.state.Error, "canvas": []int{w, h},
 		"zoom": cam.Zoom, "originX": cam.Origin.X, "originY": cam.Origin.Y,
 		"dirty": v.isDirty(), "title": Title(v.state.Doc.Path, v.isDirty()),
+		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win),
 		"inline": v.inline != nil, "popover": v.popover != nil, "search": v.search.box.Unwrap().GetVisible(),
 	}
 	if v.props.text != nil {
@@ -157,23 +183,4 @@ func (v *Viewer) qaState() map[string]any {
 		out["pivot"] = []float64{v.session.Pivot().X, v.session.Pivot().Y}
 	}
 	return out
-}
-
-// qaDrop ends a drag of the outline row "from" at (x, y): the QA pointer events cannot start the
-// native drag session, so the drop handler is called as the Tree's DropTarget calls it.
-func (v *Viewer) qaDrop(a qa.Args) error {
-	var x, y int
-	if err := a.Decode("x", &x); err != nil {
-		return err
-	}
-	if err := a.Decode("y", &y); err != nil {
-		return err
-	}
-	n := v.findNode(a.String("from"))
-	if n == nil {
-		return fmt.Errorf("no outline row %q", a.String("from"))
-	}
-	v.dragging, v.dropAt = elementOf(n), [2]int{x, y}
-	v.dropElement()
-	return nil
 }

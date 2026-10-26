@@ -101,7 +101,7 @@ func TestViewer(t *testing.T) {
 	}
 
 	app.Find(qa.Class("TreeItem").In(qa.Class("Tree"))).Nodes() // outline is populated
-	app.Find(qa.Text("Basic steps")).Click()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
 	s = state(t, app)
 	if len(s.Element) != 2 || s.Element[1] != "Basic steps" {
 		t.Fatalf("after select %+v", s)
@@ -258,13 +258,13 @@ func TestEditor(t *testing.T) {
 		app.Shot(name)
 	}
 	element := []string{"Documentation", "Basic steps"}
-	canvas := app.Find(qa.Class("Canvas"))
-	inline := qa.Class("Text").In(qa.Class("Canvas"))
+	canvas := app.Find(qa.ID("canvas"))
+	inline := qa.Class("Text").In(qa.ID("canvas"))
 
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
 	app.State("command", "name", "close-others")
-	app.Find(qa.Text("Basic steps")).Click()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
 	app.Settle()
 	s := editor(t, app)
 	if s.Path != file || s.Dirty || s.CanUndo || len(s.Items) == 0 {
@@ -424,7 +424,7 @@ func TestEditor(t *testing.T) {
 	x, y = center(s.Screen["Renamed item"])
 	count = s.ItemCount
 	canvas.RightClickAt(x, y)
-	app.Find(qa.Text("Duplicate").In(qa.Class("Canvas"))).Click()
+	app.Find(qa.Text("Duplicate").In(qa.ID("canvas"))).Click()
 	if s = editor(t, app); s.ItemCount <= count || !s.Dirty {
 		t.Fatalf("canvas menu Duplicate: %d items, was %d", s.ItemCount, count)
 	}
@@ -445,7 +445,7 @@ func TestEditor(t *testing.T) {
 	if got := len(app.Find(qa.Class("TreeItem")).Nodes()); got != rows {
 		t.Fatalf("undo of New element: %d rows, was %d", got, rows)
 	}
-	app.Find(qa.Text("Basic steps")).Click()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
 	s = editor(t, app)
 
 	// a change on disk while the document has edits: keep the edits, the file stays, Save asks
@@ -479,14 +479,14 @@ func TestEditor(t *testing.T) {
 		t.Fatalf("quick panel not shown: %+v", s)
 	}
 	app.Shot("12-quick-panel")
-	// a button of the panel closes the panel
-	app.Find(qa.Text("\U0001F534").In(qa.Class("Popover"))).Click()
+	// Esc closes the panel
+	app.Key("Esc")
 	if s = editor(t, app); s.Popover {
-		t.Fatalf("the panel stayed open after a button: %+v", s)
+		t.Fatalf("the panel stayed open after Esc: %+v", s)
 	}
 
 	// rename a row of the outline: activating it opens a name box over the row
-	app.Find(qa.Text("Basic steps")).Activate()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Activate()
 	if s = editor(t, app); !s.Popover {
 		t.Fatalf("rename box not shown: %+v", s)
 	}
@@ -518,7 +518,7 @@ func TestEditor(t *testing.T) {
 	if s = editor(t, app); s.Path != "" {
 		t.Fatalf("New did not make an untitled window: %+v", s)
 	}
-	app.Find(qa.Text("Close Window").In(qa.Text("Example.tenn - Edited - Tenniarb"))).Click()
+	app.Find(qa.Text("Close Window").In(qa.Text("Example.tenn - Edited"))).Click()
 	if read() == onDisk {
 		t.Fatal("closing did not save the edit")
 	}
@@ -600,14 +600,15 @@ func TestPanels(t *testing.T) {
 		t.Fatal(err)
 	}
 	read := func() string { b, _ := os.ReadFile(file); return string(b) }
-	canvas := app.Find(qa.Class("Canvas"))
+	canvas := app.Find(qa.ID("canvas"))
+	app.Find(qa.ID("insp-code")).Click() // the code section is closed at start
 	props := app.Find(qa.Class("StyledText"))
 	wait := func() { time.Sleep(700 * time.Millisecond); app.Settle() }
 
 	app.Answer(qa.Dialog{Kind: "message", Reply: "No"}) // TestEditor left edits in the shared window
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
-	app.Find(qa.Text("Basic steps")).Click()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
 	app.Settle()
 
 	// the panel shows the element until an item is selected, then the item
@@ -674,7 +675,7 @@ func TestPanels(t *testing.T) {
 	if s = panels(t, app); !s.Search {
 		t.Fatalf("Cmd+F did not open the search: %+v", s)
 	}
-	app.Find(qa.Class("Text")).Type("'Ctrl'")
+	app.Find(qa.ID("goto-field")).Type("'Ctrl'")
 	s = panels(t, app)
 	if len(s.Selection) != 1 || s.Selection[0] != "hold 'Ctrl'" {
 		t.Fatalf("search did not select: %v", s.Selection)
@@ -692,9 +693,8 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("outline %v", s.Outline)
 	}
 	to := s.Rows["Basic steps"]
-	// The QA pointer events do not start a native drag session (gowt gap), so the drop is delivered to
-	// the handler the Tree's DropTarget calls, at the point a real drag would end.
-	app.State("command", "name", "drop", "from", "General info", "x", float64(to[0]+20), "y", float64(to[1]+1))
+	tree := app.Find(qa.Class("Tree"))
+	app.Find(qa.Text("General info").In(qa.Class("Tree"))).DragDropToAt(tree, to[0]+20, to[1]+1)
 	wait()
 	s = panels(t, app)
 	if !slices.Equal(s.Outline, []string{"Documentation", "Documentation/General info", "Documentation/Basic steps"}) {

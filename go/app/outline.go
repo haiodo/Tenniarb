@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	g "github.com/haiodo/gowt"
+	"github.com/haiodo/gowt/icons"
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
@@ -21,6 +22,7 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 		for _, e := range els {
 			n := parent(e.Name)
 			n.SetData(e)
+			n.SetImage(v.rowIcon(e))
 			add(n.Node, e.Elements, depth+1)
 			if len(e.Elements) == 0 {
 				continue
@@ -43,6 +45,15 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 		v.outlineSig = OutlineSignature(&m.Element)
 	}
 	v.syncOutline()
+}
+
+// rowIcon is a document for an element that holds items, a folder for one that only groups elements.
+func (v *Viewer) rowIcon(e *model.Element) *g.Image {
+	name := "folder"
+	if len(e.Items) > 0 {
+		name = "file"
+	}
+	return icons.Get(v.app, name, icons.Size(16))
 }
 
 // refreshOutline follows the model: the rows are rebuilt when an element was added, removed, renamed or moved.

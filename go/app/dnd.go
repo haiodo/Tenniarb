@@ -19,14 +19,13 @@ func elementOf(n *g.Node) *model.Element {
 // dragAndDrop lets the outline rows be dragged: onto a row to move the element inside it, to the top
 // or bottom edge of a row to put it next to it (Swift outlineView acceptDrop).
 func (v *Viewer) dragAndDrop() {
-	v.tree.OnCellClick(func(c g.TreeClick) {
-		if c.Button == 1 {
-			v.dragging = elementOf(c.Node)
-		}
-	})
 	g.DragFrom(v.tree, g.Drag{
 		Ops: g.OpMove | g.OpCopy,
 		OnStart: func() bool {
+			// the press that starts a drag has selected the row
+			if sel := v.tree.Selected(); len(sel) == 1 {
+				v.dragging = elementOf(sel[0])
+			}
 			return v.session != nil && v.dragging != nil && v.dragging.Parent != nil
 		},
 		Text: func() string { return v.session.CopyElement(v.dragging) },

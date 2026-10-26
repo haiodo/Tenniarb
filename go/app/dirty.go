@@ -48,7 +48,7 @@ func Title(path string, dirty bool) string {
 	if dirty {
 		name += " - Edited"
 	}
-	return name + " - Tenniarb"
+	return name
 }
 
 // WithExt adds the .tenn extension to a path chosen in a save dialog that has none.

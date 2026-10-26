@@ -3,8 +3,10 @@
 package app
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"time"
 
@@ -32,6 +34,8 @@ type Shell struct {
 
 	prefsWin *prefsWindow
 	helpWin  *helpWindow
+	// sysMenu is set when About and Preferences are in the macOS application menu.
+	sysMenu bool
 }
 
 // listenerFunc is a swt.Listener.
@@ -46,6 +50,7 @@ func Run(args []string) error { return RunIn(ConfigDir(), args) }
 func RunIn(dir string, args []string) error {
 	g.SetAppName("Tenniarb")
 	return g.Run(func(app *g.App) {
+		app.SetDensity(g.DensityNative)
 		exe, _ := os.Executable()
 		sh := &Shell{app: app, dir: dir, exe: exe, prefs: LoadPrefs(dir), recent: LoadRecent(dir)}
 		sh.start(args)
@@ -54,6 +59,9 @@ func RunIn(dir string, args []string) error {
 
 func (sh *Shell) start(args []string) {
 	sh.registerQA()
+	prefs := sh.app.OnPreferences(sh.showPrefs)
+	about := sh.app.OnAbout(sh.showAbout)
+	sh.sysMenu = prefs && about
 	disp := sh.app.Unwrap()
 	// A filter runs before the listener that asks the windows, so OnClose already knows it is a quit.
 	// Filters see the Close of every widget; the one of the application has no widget.
@@ -179,4 +187,35 @@ func (h *helpWindow) window() *g.Window {
 		return nil
 	}
 	return h.win
+}
+
+// buildVersion is the module version, or the commit of a build from a checkout.
+func buildVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
+	}
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+	for _, s := range info.Settings {
+		if s.Key == "vcs.revision" && len(s.Value) >= 7 {
+			return s.Value[:7]
+		}
+	}
+	return "dev"
+}
+
+// showAbout is the About panel; the text is what Swift's standard panel shows from Info.plist.
+func (sh *Shell) showAbout() {
+	v := sh.active
+	if v == nil {
+		return
+	}
+	v.win.MessageBox(g.Message{
+		Title:   "About Tenniarb",
+		Text:    fmt.Sprintf("Tenniarb\nVersion %s\nCopyright \u00a9 2026 Andrey Sobolev", buildVersion()),
+		Icon:    g.IconInfo,
+		Buttons: g.ButtonsOK,
+	})
 }

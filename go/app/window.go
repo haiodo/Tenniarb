@@ -5,11 +5,11 @@ package app
 import (
 	"path/filepath"
 	"runtime"
-	"time"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
+	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -17,8 +17,8 @@ import (
 	"github.com/haiodo/tenniarb/go/render"
 )
 
-// Viewer is the window: outline on the left, the diagram of the selected element on the right,
-// editable through an editor.Session.
+// Viewer is the window: the outline as the sidebar, the diagram of the selected element, and the
+// inspector on the right, editable through an editor.Session.
 type Viewer struct {
 	app    *g.App
 	sh     *Shell
@@ -52,6 +52,7 @@ type Viewer struct {
 	popover    *g.Popover
 	outlineSig string
 	props      props
+	insp       *inspector
 	search     search
 	dragging   *model.Element // the outline row a drag started on
 	dropAt     [2]int         // where the drag was last over the outline
@@ -77,18 +78,11 @@ type viewerInit struct {
 	stashed bool // the text is a stash of the last launch: it has unsaved edits
 }
 
-func afterFunc(app *g.App) func(time.Duration, func()) func() {
-	return func(d time.Duration, f func()) func() {
-		app.After(d, f)
-		return func() {}
-	}
-}
-
 // newViewer opens a window for a file or an untitled document.
 func (sh *Shell) newViewer(in viewerInit) *Viewer {
 	v := &Viewer{app: sh.app, sh: sh, scene: gfx.NewScene(), nextID: 1, state: NewState(&Document{}), id: in.id}
-	v.autosave = &Debounce{Delay: AutosaveDelay, After: afterFunc(sh.app), Fn: v.autosaveNow}
-	v.frameSave = &Debounce{Delay: FrameDelay, After: afterFunc(sh.app), Fn: v.saveFrame}
+	v.autosave = &Debounce{Delay: AutosaveDelay, After: sh.app.After, Fn: v.autosaveNow}
+	v.frameSave = &Debounce{Delay: FrameDelay, After: sh.app.After, Fn: v.saveFrame}
 	prev := sh.active
 	sh.viewers = append(sh.viewers, v)
 	sh.active = v
@@ -181,35 +175,69 @@ func (v *Viewer) prefsChanged() {
 func (v *Viewer) build() {
 	light, dark := canvasColors(v.sh.prefs)
 	v.autoQuick = v.sh.prefs.QuickPanel
-	v.win = v.app.Window("Tenniarb", g.Padding(0), g.Gap(0),
-		g.Split(g.Grow(),
-			g.Init(func(s *g.SplitView) { s.SetWeights(1, 4) }),
-			g.VBox(g.Padding(0), g.Gap(0),
-				g.Tree(g.NoBorder(), g.Grow(), g.Init(func(t *g.TreeView) {
-					v.tree = t
-					t.Column("", g.Scaled(220))
-					t.ShowHeader(false)
-					t.OnSelect(v.onOutlineSelect)
-					t.OnActivate(v.renameNode)
-				}))),
-			// Swift: the diagram above, the properties text below, a divider between.
-			g.Split(g.Vertical(),
-				g.Init(func(s *g.SplitView) { s.SetWeights(5, 1) }),
-				g.VBox(g.Padding(0), g.Gap(0),
-					g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
-					v.searchBar(),
-					view.New(v.scene, v.initView, g.Grow(),
-						g.Background(g.Adaptive{Light: light, Dark: dark}))),
-				g.StyledText(g.Scrollbars(), g.Border(), g.Init(v.initProps)))))
-	v.win.SetSize(1100, 760)
-	v.win.SetMinSize(500, 300)
+	v.win = v.app.Window("Tenniarb", g.Padding(0), g.Gap(0))
+	var sidebar, content *g.Panel
+	v.win.Add(
+		g.VBox(g.Ref(&sidebar), g.Padding(0), g.Gap(0),
+			g.Tree(g.NoBorder(), g.Grow(), g.Init(func(t *g.TreeView) {
+				v.tree = t
+				t.Column("", g.Scaled(220))
+				t.ShowHeader(false)
+				t.OnSelect(v.onOutlineSelect)
+				t.OnActivate(v.renameNode)
+			}))),
+		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
+			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
+			v.searchBar(),
+			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
+				g.Background(g.Adaptive{Light: light, Dark: dark}))),
+		v.inspectorPane())
+	v.toolbar()
+	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
+	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.InspectorWidth)
+	v.win.SetSize(1180, 760)
+	v.win.SetMinSize(820, 440)
 	v.banner.SetVisible(false)
 	v.search.box.SetVisible(false)
+	v.insp.setCode(false)
 	v.win.OnClose(v.onClose)
 	v.menus()
 	v.contextMenus()
 	v.dragAndDrop()
 	v.updateTitle()
+}
+
+// toolbar is the unified window toolbar: sidebar, zoom, new item and quick style, inspector, and the
+// Goto Item search.
+func (v *Viewer) toolbar() {
+	look.SetToolbar(v.win,
+		look.ToolbarItem{Title: "Hide Sidebar", Symbol: "sidebar.left", Sidebar: true, OnClick: v.toggleSidebar},
+		look.ToolbarItem{Title: "Zoom", Group: []look.ToolbarItem{
+			{Title: "Zoom Out", Symbol: "minus.magnifyingglass", OnClick: func() { v.zoomBy(1 / ZoomStep) }},
+			{Title: "Zoom In", Symbol: "plus.magnifyingglass", OnClick: func() { v.zoomBy(ZoomStep) }},
+			{Title: "Fit to Window", Symbol: "arrow.up.left.and.arrow.down.right", OnClick: v.fitCommand},
+		}},
+		look.ToolbarItem{Space: true},
+		look.ToolbarItem{Title: "New Item", Symbol: "plus.rectangle", OnClick: v.newItem},
+		look.ToolbarItem{Title: "Quick Style", Symbol: "paintpalette", OnClick: v.showQuickPanel},
+		look.ToolbarItem{Title: "Goto Item", OnSearch: v.searchTo},
+		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", OnClick: v.toggleInspector})
+}
+
+func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVisible(v.win)) }
+
+func (v *Viewer) toggleInspector() { look.SetInspectorVisible(v.win, !look.InspectorVisible(v.win)) }
+
+func (v *Viewer) fitCommand() {
+	if v.rendered != nil {
+		v.fitView()
+	}
+}
+
+func (v *Viewer) newItem() {
+	if v.session != nil {
+		v.session.AddNewItem(false)
+	}
 }
 
 // initView sets up navigation (scroll pans, pinch and Cmd+scroll zoom are the view's own) and routes

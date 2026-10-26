@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -63,16 +64,16 @@ func TestShell(t *testing.T) {
 	// File > New: a window of its own with an untitled document
 	menu(app, "New")
 	s := shell(t, app)
-	if s.Windows != 2 || !s.Untitled || s.Dirty || s.Stash == "" || s.Title != "Untitled - Tenniarb" {
+	if s.Windows != 2 || !s.Untitled || s.Dirty || s.Stash == "" || s.Title != "Untitled" {
 		t.Fatalf("New: %+v", s)
 	}
 	t.Logf("export scale %v", s.Scale)
-	app.Shot("30-new")
+	app.ShotTitle("30-new", s.Title)
 	stash := filepath.Join(cfgDir, "untitled", s.Stash+".tenn")
 
 	// an edit is kept in the stash 2 s later; the title says it is edited meanwhile
 	app.Find(inWindow(qa.Text("New Top-Level Element"), s.Title)).Click()
-	if s = shell(t, app); !s.Dirty || s.Title != "Untitled - Edited - Tenniarb" {
+	if s = shell(t, app); !s.Dirty || s.Title != "Untitled - Edited" {
 		t.Fatalf("edit: %+v", s)
 	}
 	if _, err := os.Stat(stash); err == nil {
@@ -128,7 +129,7 @@ func TestShell(t *testing.T) {
 	if s.Path == "" {
 		t.Fatalf("no document window: %+v", s)
 	}
-	app.Find(qa.Text("Basic steps")).Click()
+	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
 	for _, c := range []struct{ item, name, want string }{
 		{"Export as PNG...", "out.png", "\x89PNG"},
 		{"Export as SVG...", "out.svg", "<svg"},
@@ -197,17 +198,44 @@ func readFile(t *testing.T, path string) string {
 	return string(b)
 }
 
+func TestAbout(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	app := qatest.App(t)
+	app.State("command", "name", "close-others")
+	app.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
+	app.State("command", "name", "about")
+	d := app.Dialogs()
+	if len(d) != 1 || !strings.Contains(d[0].Message, "Version ") || !strings.Contains(d[0].Message, "Andrey Sobolev") {
+		t.Fatalf("about: %+v", d)
+	}
+}
+
 func TestPrefsAndHelp(t *testing.T) {
 	if os.Getenv("GOWT_GUI_TEST") == "" {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")
 	}
 	app := qatest.App(t)
 	app.State("command", "name", "close-others")
-	menu(app, "Preferences...")
+	app.State("command", "name", "preferences")
 	if s := shell(t, app); !s.PrefsOpen || s.Prefs.QuickPanel {
 		t.Fatalf("prefs window: %+v", s)
 	}
-	app.Shot("33-prefs")
+	app.ShotOf("33-prefs", qa.ID("quick-panel"))
+	level := shell(t, app).Prefs.ExpandLevel
+	app.Find(qa.ID("expand-level")).Type("3")
+	if s := shell(t, app); s.Prefs.ExpandLevel != 3 {
+		t.Fatalf("expand level typed: %+v", s.Prefs)
+	}
+	app.Find(qa.ID("expand-level")).Key("Up")
+	if s := shell(t, app); s.Prefs.ExpandLevel != 4 {
+		t.Fatalf("expand level stepped: %+v", s.Prefs)
+	}
+	if got := readFile(t, filepath.Join(cfgDir, "settings.json")); !strings.Contains(got, `"expandLevel": 4`) {
+		t.Fatalf("settings.json: %s", got)
+	}
+	app.Find(qa.ID("expand-level")).Type(strconv.Itoa(level))
 	app.Find(qa.ID("quick-panel")).Check(true)
 	app.Find(qa.ID("background")).Type("#102030")
 	if s := shell(t, app); !s.Prefs.QuickPanel {
@@ -236,7 +264,7 @@ func TestPrefsAndHelp(t *testing.T) {
 		t.Fatalf("help: %+v", s)
 	}
 	time.Sleep(1500 * time.Millisecond) // the page loads
-	app.Shot("34-help")
+	app.ShotTitle("34-help", "Tenniarb Help")
 	app.Find(qa.Selector{Class: "Shell", Text: "Tenniarb Help"}).Close()
 	if s := shell(t, app); s.HelpOpen {
 		t.Fatal("help window stays registered after close")

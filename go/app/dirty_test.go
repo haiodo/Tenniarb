@@ -43,9 +43,9 @@ func TestTitle(t *testing.T) {
 		dirty bool
 		want  string
 	}{
-		{"/x/Example.tenn", false, "Example.tenn - Tenniarb"},
-		{"/x/Example.tenn", true, "Example.tenn - Edited - Tenniarb"},
-		{"", false, "Untitled - Tenniarb"},
+		{"/x/Example.tenn", false, "Example.tenn"},
+		{"/x/Example.tenn", true, "Example.tenn - Edited"},
+		{"", false, "Untitled"},
 	}
 	for _, c := range cases {
 		if got := Title(c.path, c.dirty); got != c.want {
