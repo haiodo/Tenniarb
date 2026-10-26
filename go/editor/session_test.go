@@ -670,6 +670,15 @@ func TestOptionDragMovesLinkedItems(t *testing.T) {
 	eq(t, "undone", []float64{f.b.X, f.c.X}, []float64{200, 0})
 }
 
+func TestOptionDragMovesWholeSubtree(t *testing.T) {
+	f := newFixture(t)
+	p := f.centre(f.a)
+	f.s.MouseDown(MouseEvent{P: p, Mods: ModAlt})
+	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{f.a, f.b, f.c})
+	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X + 10, Y: p.Y + 10}})
+	eq(t, "positions", pos(f.a, f.b, f.c), []float64{10, 10, 210, 10, 10, -140})
+}
+
 func TestPCKeys(t *testing.T) {
 	f := newFixture(t, fixtureOpts{pc: true})
 	f.click(f.centre(f.a), 0)

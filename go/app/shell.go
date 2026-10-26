@@ -189,8 +189,14 @@ func (h *helpWindow) window() *g.Window {
 	return h.win
 }
 
+// Version is set by the packaging targets: -ldflags "-X github.com/haiodo/tenniarb/go/app.Version=...".
+var Version string
+
 // buildVersion is the module version, or the commit of a build from a checkout.
 func buildVersion() string {
+	if Version != "" {
+		return Version
+	}
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		return "unknown"

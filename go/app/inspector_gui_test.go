@@ -170,7 +170,7 @@ func TestInspector(t *testing.T) {
 	}
 
 	// Goto Item through the toolbar search, sidebar and inspector toggles
-	app.State("command", "name", "toolbar-search", "text", "'Ctrl'")
+	field("goto-field").Type("'Ctrl'")
 	app.Settle()
 	if sel := insp(t, app).Selection; len(sel) != 1 || sel[0] != "hold 'Ctrl'" {
 		t.Fatalf("toolbar search selected %v", sel)
@@ -192,7 +192,7 @@ func TestInspector(t *testing.T) {
 
 	// a link
 	canvas.ClickAt(5, 5)
-	app.State("command", "name", "toolbar-search", "text", "Ctrl")
+	field("goto-field").Type("Ctrl")
 	app.Settle()
 
 	app.State("command", "name", "appearance", "mode", "dark")

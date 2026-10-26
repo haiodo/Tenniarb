@@ -62,9 +62,6 @@ func (sh *Shell) registerQA() {
 			e.Text = a.String("path")
 			sh.app.Unwrap().SendEvent(swt.OpenDocument, e)
 			return nil
-		case "toolbar-search": // the native toolbar field cannot be typed into by the QA driver
-			sh.active.searchTo(a.String("text"))
-			return nil
 		case "toolbar":
 			switch a.String("item") {
 			case "sidebar":
@@ -122,7 +119,7 @@ func (v *Viewer) qaState() map[string]any {
 		"zoom": cam.Zoom, "originX": cam.Origin.X, "originY": cam.Origin.Y,
 		"dirty": v.isDirty(), "title": Title(v.state.Doc.Path, v.isDirty()),
 		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win),
-		"inline": v.inline != nil, "popover": v.popover != nil, "search": v.search.box.Unwrap().GetVisible(),
+		"inline": v.inline != nil, "popover": v.popover != nil, "gotoAsked": v.search.asked,
 	}
 	if v.props.text != nil {
 		st := v.props.text

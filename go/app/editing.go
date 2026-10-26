@@ -89,7 +89,6 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 
 // onElement runs when the session puts another element on the canvas; the camera of the old one is kept.
 func (v *Viewer) onElement() {
-	v.hideSearch()
 	v.saveCamera()
 	v.state.Current = v.session.Element()
 }

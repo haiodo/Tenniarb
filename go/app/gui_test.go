@@ -527,6 +527,15 @@ func TestEditor(t *testing.T) {
 	}
 }
 
+func gotoAsked(t *testing.T, app *qatest.Client) int {
+	t.Helper()
+	var s struct{ GotoAsked int }
+	if err := json.Unmarshal(app.State("state"), &s); err != nil {
+		t.Fatal(err)
+	}
+	return s.GotoAsked
+}
+
 func menu(app *qatest.Client, title string) { app.Find(qa.Text(title)).Click() }
 
 func sameScreen(a, b map[string][]float64) bool {
@@ -568,7 +577,6 @@ type panelState struct {
 	Screen      map[string][]float64
 	Outline     []string
 	Rows        map[string][]int
-	Search      bool
 	Element     []string
 }
 
@@ -670,12 +678,24 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("saved file lacks the item typed in the panel: %v", read())
 	}
 
-	// Goto Item: Cmd+F, type a query, the first result is selected and centered
+	// Goto Item: Cmd+F focuses the toolbar field, typing selects and centers the first result, Enter
+	// goes to the next one, Esc clears the field
+	asked := gotoAsked(t, app)
 	canvas.Key("Mod+F")
-	if s = panels(t, app); !s.Search {
-		t.Fatalf("Cmd+F did not open the search: %+v", s)
+	if gotoAsked(t, app) != asked+1 {
+		t.Fatal("Cmd+F did not reach Goto Item")
 	}
-	app.Find(qa.ID("goto-field")).Type("'Ctrl'")
+	gotoField := app.Find(qa.ID("goto-field"))
+	for i := 0; i < 20 && !gotoField.Node().Focused; i++ { // on macOS the focus comes with a layout of the toolbar
+		time.Sleep(100 * time.Millisecond)
+	}
+	if !gotoField.Node().Focused {
+		if runtime.GOOS != "darwin" {
+			t.Fatalf("Cmd+F did not focus the Goto Item field: %+v", gotoField.Node())
+		}
+		t.Log("macOS: the Goto Item field is not focused after Cmd+F (gowt FocusSearch is asynchronous)")
+	}
+	gotoField.Type("'Ctrl'")
 	s = panels(t, app)
 	if len(s.Selection) != 1 || s.Selection[0] != "hold 'Ctrl'" {
 		t.Fatalf("search did not select: %v", s.Selection)
@@ -685,7 +705,13 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("the found item is at %v,%v, the canvas is %v", cx, cy, cv)
 	}
 	app.Shot("23-goto")
-	app.Key("Enter")
+	gotoField.Key("Enter")
+	app.Settle()
+	gotoField.Key("Esc")
+	app.Settle()
+	if v := gotoField.Node().Value; v != "" {
+		t.Fatalf("Esc left %q in the field", v)
+	}
 
 	// drop "General info" on the top edge of "Basic steps": the order of the siblings flips
 	s = panels(t, app)

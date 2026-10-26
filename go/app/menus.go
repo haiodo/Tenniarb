@@ -13,6 +13,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/render"
 )
 
 // cmdIsCtrl: the menu shortcut key is Ctrl where there is no Command key.
@@ -47,11 +48,42 @@ func (v *Viewer) menus() {
 	edit.Item("D&uplicate", v.cmdDuplicate, g.Shortcut("Cmd+D"))
 	edit.Separator()
 	edit.Item("Select &All", v.cmdSelectAll, g.Shortcut("Cmd+A"))
-	edit.Item("Select All &Items", func() {
+	edit.Item("Select All &Items", func() { v.selectKind(model.ItemKindItem) }, g.Shortcut("Cmd+Shift+A"))
+	edit.Item("Select All &Links", func() { v.selectKind(model.ItemKindLink) })
+	edit.Item("Select &None", func() { v.selectKind("-") })
+	edit.Separator()
+	edit.Item("Paste as I&tem", func() { v.pasteAs(false) })
+	edit.Item("Paste as Item &Set", func() { v.pasteAs(true) })
+	edit.Item("I&nherit", func() {
 		if v.session != nil {
-			v.session.SelectAll(model.ItemKindItem)
+			v.session.Inherit()
 		}
-	}, g.Shortcut("Cmd+Shift+A"))
+	})
+	edit.Separator()
+	edit.Item("Show Edit &Box", func() {
+		if v.session != nil && len(v.session.Selection()) > 0 {
+			v.showOperation()
+		}
+	})
+	edit.Item("Edit Tit&le", func() { v.editKey(0) })
+	edit.Item("Edit Bod&y", func() { v.editKey(editor.ModShift) })
+	edit.Item("Edit &Value", func() { v.editKey(editor.ModAlt) })
+	add := edit.Submenu("A&dd")
+	add.Item("&New Item", func() {
+		if v.session != nil {
+			v.session.AddTopItem()
+		}
+	})
+	add.Item("New &Linked Item", func() {
+		if v.session != nil {
+			v.session.AddNewItem(false)
+		}
+	})
+	add.Item("Linked &Styled Item", func() {
+		if v.session != nil {
+			v.session.AddNewItem(true)
+		}
+	})
 	edit.OnShow(v.updateMenus)
 
 	el := bar.Submenu("E&lement")
@@ -117,6 +149,40 @@ func (v *Viewer) updateMenus() {
 }
 
 func (v *Viewer) treeFocused() bool { return v.tree.Unwrap().IsFocusControl() }
+
+// selectKind selects the items of the element of one kind; "-" selects none.
+func (v *Viewer) selectKind(kind model.ItemKind) {
+	if v.session == nil || v.activeText != nil {
+		return
+	}
+	if kind == "-" {
+		v.session.Select(nil)
+		return
+	}
+	v.session.SelectAll(kind)
+}
+
+// pasteAs is Paste as Item (set: an item per line) from the clipboard text.
+func (v *Viewer) pasteAs(set bool) {
+	if v.session == nil || v.activeText != nil {
+		return
+	}
+	text, ok := v.app.Clipboard().Text()
+	switch {
+	case !ok:
+	case set:
+		v.session.PasteAsItemSet(text)
+	default:
+		v.session.PasteAsItem(text)
+	}
+}
+
+// editKey is Edit title (no modifier), Edit body (Shift) or Edit value (Alt): the Enter of the canvas.
+func (v *Viewer) editKey(m editor.Modifiers) {
+	if v.session != nil && v.activeText == nil {
+		v.session.Key(editor.KeyEvent{Key: "Enter", Mods: m})
+	}
+}
 
 func (v *Viewer) cmdUndo() {
 	if v.session != nil && v.activeText == nil {
@@ -267,7 +333,27 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 		return nil
 	}
 	v.session.Pick(v.rightClick)
-	return v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage})
+	return v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML})
+}
+
+// copyItemHTML is "Export text as html": the text of the selected item on the clipboard as HTML.
+func (v *Viewer) copyItemHTML() {
+	sel := v.session.Selection()
+	if len(sel) != 1 {
+		return
+	}
+	var html string
+	if d := v.session.Scene().Drawables[sel[0]]; d != nil {
+		d.Traverse(func(c render.Drawable) bool {
+			if tb, ok := c.(*render.TextBox); ok && html == "" {
+				html = tb.HTML()
+			}
+			return true
+		})
+	}
+	if html != "" {
+		_ = v.app.Clipboard().SetHTML(html, html)
+	}
 }
 
 func (v *Viewer) testLayout() { v.session.TestLayout(v.visibleScene()) }

@@ -185,20 +185,19 @@ func (v *Viewer) build() {
 				t.ShowHeader(false)
 				t.OnSelect(v.onOutlineSelect)
 				t.OnActivate(v.renameNode)
+				v.outlineKeys(t)
 			}))),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
 			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
-			v.searchBar(),
 			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
 				g.Background(g.Adaptive{Light: light, Dark: dark}))),
 		v.inspectorPane())
-	v.toolbar()
 	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
 	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.InspectorWidth)
+	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)
 	v.banner.SetVisible(false)
-	v.search.box.SetVisible(false)
 	v.insp.setCode(false)
 	v.win.OnClose(v.onClose)
 	v.menus()
@@ -220,7 +219,7 @@ func (v *Viewer) toolbar() {
 		look.ToolbarItem{Space: true},
 		look.ToolbarItem{Title: "New Item", Symbol: "plus.rectangle", OnClick: v.newItem},
 		look.ToolbarItem{Title: "Quick Style", Symbol: "paintpalette", OnClick: v.showQuickPanel},
-		look.ToolbarItem{Title: "Goto Item", OnSearch: v.searchTo},
+		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", OnSearch: v.searchTo},
 		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", OnClick: v.toggleInspector})
 }
 
@@ -499,4 +498,23 @@ func (v *Viewer) visibleScene() render.Rect {
 	a := v.smap.ToScene(ViewToScene(cam, gfx.Point{}))
 	b := v.smap.ToScene(ViewToScene(cam, gfx.Point{X: float64(w), Y: float64(h)}))
 	return render.Rect{X: a.X, Y: b.Y, Width: b.X - a.X, Height: a.Y - b.Y}
+}
+
+// outlineKeys is Swift's keyDown of the outline: Tab adds an item to the canvas and moves the focus there.
+func (v *Viewer) outlineKeys(t *g.TreeView) {
+	tree := t.Unwrap()
+	// The traversal would move the focus before the key reaches the key listener.
+	tree.AddListener(swt.Traverse, listenerFunc(func(e *swt.Event) {
+		if e.Detail == swt.TRAVERSE_TAB_NEXT {
+			e.Doit = false
+		}
+	}))
+	tree.AddKeyListener(swt.KeyListenerKeyPressedAdapter(func(e *swt.KeyEvent) {
+		if e.KeyCode != int32(swt.TAB) || v.session == nil || v.session.Readonly() {
+			return
+		}
+		e.Doit = false
+		v.session.AddTopItem()
+		v.view.Canvas().Unwrap().SetFocus()
+	}))
 }

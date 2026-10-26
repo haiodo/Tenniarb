@@ -154,9 +154,10 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 	}
 	drag := slices.Clone(s.selection)
 	if alt && len(drag) == 1 {
-		for _, from := range drag {
+		// Every item reachable by outgoing links, as Swift's worklist; drag grows while it is walked.
+		for n := 0; n < len(drag); n++ {
 			for _, l := range s.element.Items {
-				if l.Kind == model.ItemKindLink && l.IsLink() && l.Source == from && l.Target != nil && !slices.Contains(drag, l.Target) {
+				if l.Kind == model.ItemKindLink && l.IsLink() && l.Source == drag[n] && l.Target != nil && !slices.Contains(drag, l.Target) {
 					drag = append(drag, l.Target)
 				}
 			}
