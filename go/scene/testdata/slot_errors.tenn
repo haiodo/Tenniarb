@@ -1,4 +1,4 @@
-import "lib/kit.tenn" as kit
+element kit --from-file "lib/kit.tenn"
 
 element "E" {
     use kit.Window as a { slot nosuch { item "Z" {} } }

@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	root := flag.String("root", ".", "workspace root: imports may not leave it")
+	root := flag.String("root", ".", "workspace root: mounted files may not leave it")
 	scale := flag.Float64("scale", 1, "SVG scale")
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "usage: tenn-render [-root DIR] [-scale N] FILE ELEMENT > out.svg")

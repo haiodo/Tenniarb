@@ -26,7 +26,7 @@ type press struct {
 
 // realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
 func (v *Viewer) realize() {
-	if v.lib != nil || v.isScene(v.state.Current) {
+	if v.isScene(v.state.Current) {
 		v.realizeScene()
 		return
 	}
@@ -101,11 +101,26 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 func (v *Viewer) onElement() {
 	v.saveCamera()
 	v.state.Current = v.session.Element()
+	v.trackDocElem()
+}
+
+// trackDocElem remembers the element on the canvas when it is written in the document, for the
+// components inserted from a mounted file.
+func (v *Viewer) trackDocElem() {
+	if v.state.Current != nil && model.MountOf(v.state.Current, false) == nil {
+		if v.docElem != v.state.Current {
+			v.docSel = nil
+		}
+		v.docElem = v.state.Current
+	}
 }
 
 // onChange runs after every change of the model, undo and redo included.
 func (v *Viewer) onChange() {
 	v.sessionChanged()
+	if v.libErr != nil {
+		v.setBanner(v.libErr.Error())
+	}
 	v.updateTitle()
 	v.scheduleAutosave()
 	// The undo stacks change after the store's callback returns, so Undo and Redo are set again then.

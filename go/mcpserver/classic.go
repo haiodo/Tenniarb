@@ -49,8 +49,7 @@ func (r *renderers) of(n *scene.Node) string {
 
 func hasContent(n *scene.Node) bool { return len(n.Content) > 0 }
 
-// elementAt resolves the element a render names: "" is the file itself, an import alias is the
-// imported file.
+// elementAt resolves the element a render names: "" is the file itself.
 func elementAt(tree *scene.Tree, rel, path string) (*scene.Node, error) {
 	root := tree.File(rel)
 	if root == nil {
@@ -62,9 +61,6 @@ func elementAt(tree *scene.Tree, rel, path string) (*scene.Node, error) {
 	n, err := tree.Resolve(root, path)
 	if err != nil {
 		return nil, err
-	}
-	if n.Kind == scene.KMount {
-		n = n.Target
 	}
 	if n.Kind != scene.KElement && n.Kind != scene.KFile {
 		return nil, fmt.Errorf("path %q names a %s, not an element: render its element", path, n.Kind)

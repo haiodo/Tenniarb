@@ -85,8 +85,7 @@ Inside the block of a `use`:
   slot. Filling a slot drops its fallback.
 - `element "<name>" --from-file "<file>"` takes the whole content of the element from another file. The
   path is relative to the file with the line and must stay in the workspace. The path of a use through
-  it starts with the element name: `kit.Kit.Card`. The old `import "<file>" as <alias>` still reads the
-  same way, but do not write it in new files.
+  it starts with the element name: `kit.Kit.Card`.
 - To change a component, `edit` the library file itself, not the line that mounts it: the mounting file
   never holds the library text.
 

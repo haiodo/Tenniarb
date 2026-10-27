@@ -1,4 +1,4 @@
-import "lib/kit.tenn" as kit
+element kit --from-file "lib/kit.tenn"
 
 element "Screens" {
     item "Button" {
@@ -12,7 +12,7 @@ element "Screens" {
         use kit.Button as hole { pos 1 -2 }
     }
     element "Alt" {
-        import "lib/other.tenn" as kit
+        element kit --from-file "lib/other.tenn"
         use kit.Button as ok
     }
 }

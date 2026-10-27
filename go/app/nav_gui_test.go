@@ -5,6 +5,7 @@ package app_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -62,15 +63,26 @@ func TestNavigation(t *testing.T) {
 	// the only window: its title changes with the edits and the autosave, so selectors do not name it
 	win := func(sel qa.Selector) qa.Selector { return sel }
 
-	// the outline: the file's own canvas, the mounted library as an element and under Libraries, no screens
+	// the outline: the file's own canvas and the mounted library as an element, no screens, no separate
+	// Libraries section
 	st := h.state()
 	root := strings.TrimSuffix(filepath.Base(screen), ".tenn")
-	if len(st.Outline) != 4 || st.Outline[0] != root || st.Outline[2] != "Libraries" ||
-		!strings.HasSuffix(st.Outline[3], " - "+filepath.Base(lib)) || st.Error != "" {
-		t.Fatalf("outline %q (error %q)", st.Outline, st.Error)
+	tree, _ := scene.Load(dir, filepath.Base(screen))
+	alias := ""
+	for _, e := range tree.File(filepath.Base(screen)).Elems {
+		if e.Mount != nil && e.Mount.Pos.File == filepath.Base(lib) {
+			alias = e.Name
+		}
 	}
-	libLabel := strings.TrimPrefix(st.Outline[3], "Libraries/")
-	alias := strings.TrimSuffix(libLabel, " - "+filepath.Base(lib))
+	if len(st.Outline) < 2 || st.Outline[0] != root || alias == "" || !slices.Contains(st.Outline, alias) || st.Error != "" {
+		t.Fatalf("outline %q (error %q), mounted as %q", st.Outline, st.Error, alias)
+	}
+	for _, row := range st.Outline {
+		if strings.HasPrefix(row, "Libraries") {
+			t.Fatalf("a separate Libraries section: %q", st.Outline)
+		}
+	}
+	libLabel := alias
 
 	// a double click on the element switches the left panel to its items, with the way back
 	a.Find(qa.Text(root).In(win(qa.ID("outline")))).Activate()
@@ -81,7 +93,6 @@ func TestNavigation(t *testing.T) {
 	}
 
 	// the Items list: the top level nodes of the canvas
-	tree, _ := scene.Load(dir, filepath.Base(screen))
 	tops := app.SceneRows(tree.File(filepath.Base(screen)), "")
 	var shown []string
 	for _, it := range st.Items {
@@ -156,12 +167,12 @@ func TestNavigation(t *testing.T) {
 	}
 	a.ShotWindow("04-undone", 0)
 
-	// Back returns to the outline, the library is opened from there
-	a.Find(qa.ID("nav-back")).Click()
+	// Back returns to the outline, the mounted library is opened from there
+	a.State("command", "name", "toolbar", "item", "items")
 	a.Settle()
 	a.ShotWindow("03b-back-to-outline", 0)
 
-	// a component from the library canvas into a new frame
+	// a component from the mounted element into a new frame
 	a.Find(win(h.menuItem("Phone 390 x 844"))).Click()
 	a.Settle()
 	st = h.state()
@@ -175,10 +186,10 @@ func TestNavigation(t *testing.T) {
 	a.Find(qa.Text(libLabel).In(win(qa.ID("outline")))).Activate()
 	a.Settle()
 	st = h.state()
-	if st.Lib == "" || len(st.Items) == 0 {
-		t.Fatalf("library canvas: %+v", st)
+	if len(st.Items) == 0 {
+		t.Fatalf("canvas of the mounted element: %+v", st)
 	}
-	a.ShotWindow("05-library-canvas", 0)
+	a.ShotWindow("05-mounted-canvas", 0)
 	cat := ""
 	for _, it := range st.Items {
 		if r, ok := st.ItemRows[it]; ok && r.Kids {
@@ -211,7 +222,7 @@ func TestNavigation(t *testing.T) {
 	a.Settle()
 	time.Sleep(200 * time.Millisecond)
 	st = h.state()
-	if st.Lib != "" || len(st.Nodes) != 1 || !strings.HasPrefix(st.Nodes[0], frame+".") || st.Error != "" ||
+	if len(st.Nodes) != 1 || !strings.HasPrefix(st.Nodes[0], frame+".") || st.Error != "" ||
 		!strings.Contains(h.text(), "use "+alias+"."+scene.NormalizeName(cat)+".") {
 		t.Fatalf("insert %s from the library into %s: %+v", comp, frame, st)
 	}
@@ -223,4 +234,105 @@ func abs(f float64) float64 {
 		return -f
 	}
 	return f
+}
+
+// TestMountWriteBack edits the mounted library from the screen document: the row of the mounting
+// element is marked * until the autosave writes the library file; the file of the screen is not touched.
+func TestMountWriteBack(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	dir, err := os.MkdirTemp(os.Getenv("TENNIARB_GUI_DIR"), "mount")
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen, lib := navFiles(t, dir)
+	t.Cleanup(func() {
+		orig := filepath.Join(dir, "Restore.tenn")
+		if err := os.WriteFile(orig, mustRead(t, "../../web/fixtures/Example.tenn"), 0o644); err != nil {
+			t.Error(err)
+			return
+		}
+		h.open(orig)
+		a.State("command", "name", "close-others")
+	})
+	libBefore, screenBefore := string(mustRead(t, lib)), string(mustRead(t, screen))
+	h.open(screen)
+	a.State("command", "name", "close-others")
+
+	tree, _ := scene.Load(dir, filepath.Base(screen))
+	alias := ""
+	for _, e := range tree.File(filepath.Base(screen)).Elems {
+		if e.Mount != nil && e.Mount.Pos.File == filepath.Base(lib) {
+			alias = e.Name
+		}
+	}
+	if alias == "" {
+		t.Fatal("the screen mounts no library")
+	}
+	marked := func(rows []string) (plain, star bool) {
+		return slices.Contains(rows, alias), slices.Contains(rows, alias+" *")
+	}
+	if plain, star := marked(h.state().Outline); !plain || star {
+		t.Fatalf("outline %q", h.state().Outline)
+	}
+
+	a.Find(qa.Text(alias).In(qa.ID("outline"))).Click()
+	a.Settle()
+	a.ShotWindow("01-mounted-row", 0)
+	a.Find(qa.Text(alias).In(qa.ID("outline"))).Activate()
+	a.Settle()
+	st := h.state()
+	label := ""
+	for _, r := range app.SceneRows(tree.File(filepath.Base(lib)), "") {
+		if strings.Count("\n"+strings.Join(st.Items, "\n")+"\n", "\n"+r.Label+"\n") == 1 {
+			label = r.Label
+			break
+		}
+	}
+	if label == "" {
+		t.Fatalf("no unique top row in %q", st.Items)
+	}
+	a.Find(qa.Text(label).In(qa.ID("items"))).Click()
+	a.Settle()
+	a.Find(qa.ID("canvas")).Focus()
+	a.Key("Mod+D")
+	a.Settle()
+	time.Sleep(200 * time.Millisecond)
+	st = h.state()
+	if plain, star := marked(st.Outline); plain || !star || st.Error != "" {
+		t.Fatalf("after the edit the row is marked: %q (error %q)", st.Outline, st.Error)
+	}
+	if string(mustRead(t, lib)) != libBefore || h.text() != screenBefore {
+		t.Fatal("the files are written at once, not by the autosave")
+	}
+	a.State("command", "name", "toolbar", "item", "items") // the outline shows the mark
+	a.Settle()
+	a.ShotWindow("02-unsaved", 0)
+
+	time.Sleep(app.AutosaveDelay + 1500*time.Millisecond)
+	a.Settle()
+	st = h.state()
+	saved := string(mustRead(t, lib))
+	if plain, star := marked(st.Outline); !plain || star || saved == libBefore || len(saved) <= len(libBefore) {
+		t.Fatalf("after the autosave: %q, library %d bytes, was %d", st.Outline, len(saved), len(libBefore))
+	}
+	if string(mustRead(t, screen)) != screenBefore || h.text() != screenBefore {
+		t.Fatal("the screen file must not change")
+	}
+	a.ShotWindow("03-saved", 0)
+
+	a.Find(qa.ID("canvas")).Focus()
+	a.Key("Mod+Z")
+	a.Settle()
+	if _, star := marked(h.state().Outline); !star {
+		t.Fatalf("undo marks the row again: %q", h.state().Outline)
+	}
+	time.Sleep(app.AutosaveDelay + 1500*time.Millisecond)
+	a.Settle()
+	if plain, star := marked(h.state().Outline); !plain || star || string(mustRead(t, lib)) != libBefore {
+		t.Fatalf("undo and the autosave give the library back: %q", h.state().Outline)
+	}
 }

@@ -187,7 +187,7 @@ func TestGetState(t *testing.T) {
 	if !strings.Contains(deep, "      Screens.Login.ok use 9\n") || strings.Contains(deep, "lib/kit.tenn") {
 		t.Errorf("depth 3 of one file:\n%s", deep)
 	}
-	// A subtree through an import alias: paths relative to it, slots listed by name.
+	// A subtree through a mounting element: paths relative to it, slots listed by name.
 	sub := mustOK(t, cs, "get_state", map[string]any{"file": "slots.tenn", "path": "kit.Window"})
 	for _, want := range []string{"paths below kit.Window", "\n  Title item ", "\n  toolbar slot ", "\n  default slot ", "\n    default.Empty item "} {
 		if !strings.Contains(sub, want) {
@@ -205,12 +205,12 @@ func TestGetState(t *testing.T) {
 	mustFail(t, cs, "get_state", map[string]any{"path": "kit"}, "path needs file")
 }
 
-// TestImportedWarnings: warnings of an imported library are counted, not listed, by edit and validate
-// of the file that imports it; validate of the library lists them.
+// TestImportedWarnings: warnings of a mounted library are counted, not listed, by edit and validate
+// of the file that mounts it; validate of the library lists them.
 func TestImportedWarnings(t *testing.T) {
 	root := tempRoot(t, map[string]string{
 		"lib.tenn":    "item A { auto-layout row; width 10; height 10; color #fff; border-color #000000 }\n",
-		"screen.tenn": "import \"lib.tenn\" as lib\nelement S {\n  use lib.A as a\n}\n",
+		"screen.tenn": "element lib --from-file \"lib.tenn\"\nelement S {\n  use lib.A as a\n}\n",
 	})
 	cs := memSession(t, root)
 	got := mustOK(t, cs, "edit", withFile(edits("as a", "as b"), "screen.tenn"))
@@ -231,7 +231,7 @@ func TestImportedWarnings(t *testing.T) {
 func TestReadFileAndNode(t *testing.T) {
 	cs, root := workspace(t)
 	whole := mustOK(t, cs, "read", map[string]any{"file": "import.tenn"})
-	if !strings.HasPrefix(whole, "import.tenn (") || !strings.Contains(whole, "    1| import \"lib/kit.tenn\" as kit") {
+	if !strings.HasPrefix(whole, "import.tenn (") || !strings.Contains(whole, "    1| element kit --from-file \"lib/kit.tenn\"") {
 		t.Errorf("whole file: %q", whole[:min(len(whole), 120)])
 	}
 	node := mustOK(t, cs, "read", map[string]any{"file": "import.tenn", "path": "Screens.Login"})
@@ -419,11 +419,10 @@ func TestRenderPNG(t *testing.T) {
 	mustFail(t, cs, "render", map[string]any{"file": "layout.tenn", "element": "Row", "scale": 100}, "scale")
 }
 
-func TestReadNodeThroughImport(t *testing.T) {
+func TestReadNodeThroughMount(t *testing.T) {
 	cs, _ := workspace(t)
 	out := mustOK(t, cs, "read", map[string]any{"file": "import.tenn", "path": "kit.Button"})
 	if !strings.HasPrefix(out, "lib/kit.tenn item ") {
-		t.Errorf("node of an imported file: %q", strings.SplitN(out, "\n", 2)[0])
+		t.Errorf("node of a mounted file: %q", strings.SplitN(out, "\n", 2)[0])
 	}
-	mustFail(t, cs, "read", map[string]any{"file": "import.tenn", "path": "kit"}, "names an import")
 }

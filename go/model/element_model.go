@@ -115,7 +115,8 @@ type Element struct {
 	Properties  *ModelProperties // Extra nodes not supported directly by model.
 
 	// FromFile is the path of "element ... --from-file": the content below is read from that file by
-	// MountFiles, is never printed and cannot be edited here. mountSig is the state it was read in.
+	// MountFiles, is never printed, and an edit of it is written back through ElementModelStore.OnMountEdit.
+	// mountSig is the state it was read in.
 	FromFile string
 	mountSig uint64
 

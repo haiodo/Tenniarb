@@ -25,6 +25,7 @@ func (v *Viewer) save() bool {
 		return false
 	}
 	v.endInline(true)
+	v.saveMounted()
 	path := v.state.Doc.Path
 	if path == "" {
 		return v.saveAs()
@@ -88,7 +89,7 @@ func (v *Viewer) writeFile(path string) error {
 
 // scheduleAutosave runs after a change: the edits are written 2 s after the last one.
 func (v *Viewer) scheduleAutosave() {
-	if v.isDirty() {
+	if v.isDirty() || v.libsDirty() {
 		v.autosave.Touch()
 		return
 	}
@@ -101,7 +102,11 @@ func (v *Viewer) scheduleAutosave() {
 // autosaveNow writes the edits without asking, as NSDocument autosavesInPlace does: a file in place, an
 // untitled document to its stash. A file another program changed is left alone: the user decides on Save.
 func (v *Viewer) autosaveNow() {
-	if v.session == nil || !v.isDirty() {
+	if v.session == nil {
+		return
+	}
+	v.saveMounted()
+	if !v.isDirty() {
 		return
 	}
 	if v.state.Doc.Path == "" {
@@ -116,6 +121,18 @@ func (v *Viewer) autosaveNow() {
 	if err := v.writeFile(v.state.Doc.Path); err != nil {
 		v.setBanner("Autosave failed: " + err.Error())
 	}
+}
+
+// saveMounted writes the mounted files with unsaved edits, as autosave does for the document, and
+// takes the * off the rows that show them.
+func (v *Viewer) saveMounted() {
+	if !v.libsDirty() {
+		return
+	}
+	if err := v.saveLibs(); err != nil {
+		v.setBanner("Could not save the mounted file: " + err.Error())
+	}
+	v.refreshOutline()
 }
 
 // onClose is the answer of the window to a close request: the document is kept or discarded, and the
@@ -135,6 +152,7 @@ func (v *Viewer) confirmDiscard() bool {
 		return true
 	}
 	v.endInline(true)
+	v.saveMounted()
 	v.asking = true
 	defer func() { v.asking = false }()
 	switch DecideClose(v.state.Doc.Path, v.isDirty(), v.sh.quitting) {

@@ -1,4 +1,4 @@
-import "base.tenn" as base
+element base --from-file "base.tenn"
 
 item "Button" {
     auto-layout row

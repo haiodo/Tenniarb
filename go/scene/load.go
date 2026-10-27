@@ -265,8 +265,6 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		switch {
 		case name == "element" && owner.isContainer():
 			l.addElement(owner, c)
-		case name == "import" && owner.isContainer():
-			l.addImport(owner, c)
 		case l.addContent(owner, c, name) != nil:
 		default:
 			owner.Props = append(owner.Props, l.prop(c))
@@ -319,7 +317,7 @@ func (l *loader) mountFile(n *Node, rel string) {
 		return
 	}
 	n.Mount = file
-	n.Props, n.Content, n.Elems, n.Mounts = file.Props, file.Content, file.Elems, file.Mounts
+	n.Props, n.Content, n.Elems = file.Props, file.Content, file.Elems
 }
 
 // resolveFile finds rel relative to the file being read; it fails when the path leaves the workspace root.
@@ -412,64 +410,4 @@ func (l *loader) overrides(use *Node, cmds []*tenn.Node) []*Override {
 		out = append(out, ov)
 	}
 	return out
-}
-
-// addImport mounts the tree of another file under the alias.
-func (l *loader) addImport(owner *Node, c *tenn.Node) {
-	args, _ := split(c)
-	pos := l.pos(c)
-	rel := argText(args, 0)
-	if rel == "" {
-		l.t.fail(pos, "import needs a file path")
-		return
-	}
-	alias := argText(args, 2)
-	if len(args) < 3 || argText(args, 1) != "as" {
-		alias = NormalizeName(strings.TrimSuffix(filepath.Base(rel), filepath.Ext(rel)))
-	}
-	segs, ok := splitPath(alias)
-	if !ok {
-		l.t.fail(pos, "bad import alias %q", alias)
-		return
-	}
-	abs, in := l.resolveFile(rel, pos, "import")
-	if !in {
-		return
-	}
-	file := l.t.loadFile(abs, &pos)
-	if file == nil {
-		return
-	}
-	l.mount(owner, segs, file, pos)
-}
-
-// mount puts file under owner as the path segs; the prefix segments are virtual nodes shared by
-// the imports that start the same way.
-func (l *loader) mount(owner *Node, segs []string, file *Node, pos Pos) {
-	scope := owner
-	for i, seg := range segs {
-		last := i == len(segs)-1
-		var found *Node
-		for _, m := range scope.Mounts {
-			if m.Key == seg {
-				found = m
-			}
-		}
-		switch {
-		case last && found != nil:
-			l.t.fail(pos, "import alias %s is already taken by %s", strings.Join(segs, "."), found.Pos)
-			return
-		case last:
-			scope.Mounts = append(scope.Mounts, &Node{Kind: KMount, Name: seg, Key: seg, Pos: pos, Parent: owner, Target: file})
-		case found == nil:
-			found = &Node{Kind: KVirtual, Name: seg, Key: seg, Pos: pos, Parent: owner}
-			scope.Mounts = append(scope.Mounts, found)
-			scope = found
-		case found.Kind == KVirtual:
-			scope = found
-		default:
-			l.t.fail(pos, "import alias %s runs into the import at %s", strings.Join(segs, "."), found.Pos)
-			return
-		}
-	}
 }

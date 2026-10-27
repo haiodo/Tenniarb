@@ -84,10 +84,10 @@ func wantIn(t *testing.T, got string, parts ...string) {
 
 func TestImportShortAndFullPath(t *testing.T) {
 	m := boxes(t, "import.tenn", "Screens.Login")
-	wantBox(t, m, "ok", 0, 0, 60, 24)      // kit.Button, full path through the import alias
+	wantBox(t, m, "ok", 0, 0, 60, 24)      // kit.Button, full path through the mounting element
 	wantBox(t, m, "cancel", 0, 0, 33, 22)  // short path: nearest Button up the tree is Screens.Button
 	wantBox(t, m, "hole", 1, 2, 60, 24)    // pos override of the root; screen y is -pos.y
-	wantBox(t, m, "badge.dot", 0, 0, 6, 6) // the library resolves base.Dot with its own import
+	wantBox(t, m, "badge.dot", 0, 0, 6, 6) // the library resolves base.Dot with its own mount
 	if m["badge"].W != 6 {
 		t.Errorf("badge hugs its dot: %v", m["badge"])
 	}
@@ -195,7 +195,7 @@ func TestImportCycle(t *testing.T) {
 }
 
 func TestImportOutsideRoot(t *testing.T) {
-	wantIn(t, loadErrors(t, "outside.tenn"), `outside.tenn:1:1: import "../outside-the-root.tenn" leaves the workspace root`)
+	wantIn(t, loadErrors(t, "outside.tenn"), `outside.tenn:1:1: element --from-file "../outside-the-root.tenn" leaves the workspace root`)
 }
 
 func TestRowGapPaddingHug(t *testing.T) {
@@ -303,14 +303,6 @@ func TestSVGDeterministic(t *testing.T) {
 	a := render()
 	if a != render() || !strings.Contains(a, "<text") {
 		t.Errorf("not deterministic or no text:\n%s", a)
-	}
-}
-
-func TestImportAliasTaken(t *testing.T) {
-	got := loadErrors(t, "dup_alias.tenn")
-	wantIn(t, got, "dup_alias.tenn:2:1: import alias kit is already taken by dup_alias.tenn:1:1")
-	if strings.Contains(got, "base") {
-		t.Errorf("the default alias (file name) should work:\n%s", got)
 	}
 }
 

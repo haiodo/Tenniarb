@@ -14,21 +14,20 @@ import (
 
 // A hub file: classic diagrams and UI screens together, the screens in compact form with an element
 // level use before an item, which the Swift printer would move.
-const hubDoc = "import kit.tenn as kit\n" +
-	"item Top { auto-layout row; item A { title a }; use kit.Button as ok }\n" +
+const hubDoc = "item Top { auto-layout row; item A { title a }; use kit.Button as ok }\n" +
 	"element \"Map\" {\n    item \"Idea\" {\n        pos 0 0\n    }\n    item \"Plan\" {\n        pos 120 0\n    }\n" +
 	"    link \"Idea\" \"Plan\"\n    element \"Notes\" {\n        item \"N\"\n    }\n}\n" +
 	"element \"Screens\" {\n  item Bg { pos 0 0; width 300; height 200; color #eeeeee }\n  use kit.Button as ok\n" +
 	"  item Login { pos 0 0; auto-layout column; item Title { title Hi } }\n" +
 	"  element Inner { item Card { auto-layout row; item T { title x } } }\n}\n" +
-	"element Empty\n"
+	"element kit --from-file kit.tenn\nelement Empty\n"
 
 // cmdText is the source of the command that starts with header, "" for the file's own lines.
 func cmdText(text, header string) string {
 	if header == "" {
 		var out string
 		for _, l := range strings.SplitAfter(text, "\n") {
-			if strings.HasPrefix(l, "import ") || strings.HasPrefix(l, "item ") {
+			if strings.HasPrefix(l, "element kit ") || strings.HasPrefix(l, "item ") {
 				out += l
 			}
 		}

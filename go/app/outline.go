@@ -15,7 +15,7 @@ import (
 )
 
 // rebuildOutline fills the outline from the model: a row per element, every one a canvas, the root
-// first when it holds content itself, then the imported libraries. expanded is the set of rows to open
+// first when it holds content itself. A mounted file is the row of its element. expanded is the set of rows to open
 // by path key; nil opens the first ExpandLevel+1 levels when the settings have auto expand, as Swift does.
 func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 	v.syncing = true
@@ -23,7 +23,7 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 	var add func(parent func(string) *g.Node, els []*model.Element, depth int)
 	add = func(parent func(string) *g.Node, els []*model.Element, depth int) {
 		for _, e := range els {
-			n := parent(e.Name)
+			n := parent(v.rowLabel(e))
 			n.SetData(e)
 			n.SetImage(v.rowIcon(e))
 			add(n.Node, e.Elements, depth+1)
@@ -46,7 +46,6 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 				n.SetImage(v.rowIcon(&m.Element))
 			}
 			add(v.tree.Node, m.Elements, 0)
-			v.libRows()
 		}
 	})
 	v.outlineSig = v.outlineKey()
@@ -73,8 +72,27 @@ func (v *Viewer) hasContent(e *model.Element) bool {
 	return n != nil && len(sceneKids(n)) > 0
 }
 
-// rowIcon is a document for a canvas that holds content, a folder for one that only groups elements.
+// rowLabel is the name of e, marked with * while the file it shows has unsaved edits.
+func (v *Viewer) rowLabel(e *model.Element) string {
+	if e.FromFile != "" && v.mountDirty(e) {
+		return e.Name + " *"
+	}
+	return e.Name
+}
+
+// linkSVG is the icon of an element that shows a file (Lucide link, ISC).
+const linkSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+
+// rowIcon is a link for an element that shows a file, a document for a canvas that holds content, a
+// folder for one that only groups elements.
 func (v *Viewer) rowIcon(e *model.Element) *g.Image {
+	if e.FromFile != "" {
+		c := g.RGB{R: 30, G: 30, B: 30}
+		if v.app.Dark() {
+			c = g.RGB{R: 235, G: 235, B: 235}
+		}
+		return icons.FromSVG(v.app, []byte(linkSVG), 16, c)
+	}
 	name := "folder"
 	if v.hasContent(e) {
 		name = "file"
@@ -83,7 +101,7 @@ func (v *Viewer) rowIcon(e *model.Element) *g.Image {
 }
 
 // outlineKey changes when the outline would look different: OutlineSignature, the icons of scene
-// elements, the root row and the libraries.
+// elements, the root row and the unsaved mounted files.
 func (v *Viewer) outlineKey() string {
 	m := v.state.Doc.Model
 	if m == nil {
@@ -99,14 +117,14 @@ func (v *Viewer) outlineKey() string {
 			} else {
 				b.WriteByte('-')
 			}
+			if e.FromFile != "" && v.mountDirty(e) {
+				b.WriteByte('*')
+			}
 			for _, c := range e.Elements {
 				walk(c)
 			}
 		}
 		walk(&m.Element)
-		for _, r := range v.libraries() {
-			b.WriteString("|" + r.lib + "=" + r.file)
-		}
 	} else if v.hasContent(&m.Element) {
 		b.WriteByte('+')
 	}
@@ -141,19 +159,12 @@ func (v *Viewer) expandedRows() map[string]bool {
 	return out
 }
 
-// syncOutline selects the row of the canvas: the library on it, else the current element, opening its
-// ancestors. The root has a row only when it holds content.
+// syncOutline selects the row of the canvas: the current element, opening its ancestors. The root has a row only when it holds content.
 func (v *Viewer) syncOutline() {
 	v.syncing = true
 	defer func() { v.syncing = false }()
 	cur := v.state.Current
-	is := func(n *g.Node) bool {
-		if v.lib != nil {
-			r, ok := n.Data().(*libRow)
-			return ok && r.file == v.lib.file
-		}
-		return cur != nil && n.Data() == cur
-	}
+	is := func(n *g.Node) bool { return cur != nil && n.Data() == cur }
 	if sel := v.tree.Selected(); len(sel) == 1 && is(sel[0]) {
 		return
 	}
@@ -250,9 +261,6 @@ func (v *Viewer) activateNode(n *g.Node) {
 	case *model.Element:
 		v.selectElement(d)
 		v.showItems(true)
-	case *libRow:
-		v.showLib(d)
-		v.showItems(true)
 	}
 }
 
@@ -279,16 +287,10 @@ func (v *Viewer) renameElement(e *model.Element) {
 	p.ShowAtPoint(v.tree, int(b.X), int(b.Y+b.Height), g.PopoverBelow)
 }
 
-// outlineEntries is the context menu of the outline (Swift's, plus rename and moves); a library row
-// opens its file.
+// outlineEntries is the context menu of the outline (Swift's, plus rename and moves).
 func (v *Viewer) outlineEntries() []editor.Entry {
 	if v.session == nil {
 		return nil
-	}
-	if sel := v.tree.Selected(); len(sel) == 1 {
-		if r, ok := sel[0].Data().(*libRow); ok {
-			return []editor.Entry{{Label: "Open Library", Run: func() { v.openLib(r) }}}
-		}
 	}
 	cur := v.state.Current
 	return []editor.Entry{

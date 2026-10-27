@@ -168,10 +168,8 @@ func (x *expander) instance(target, use *Node) *RNode {
 		return x.use(target, true)
 	case KElement, KFile:
 		return x.container(target)
-	case KMount:
-		return x.container(target.Target)
 	}
-	x.t.fail(use.Pos, "path %s names a namespace, not a node", use.Path)
+	x.t.fail(use.Pos, "path %s names a %s, not a node", use.Path, target.Kind)
 	return nil
 }
 

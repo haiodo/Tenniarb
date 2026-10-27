@@ -1,1 +1,1 @@
-import "cycle_a.tenn" as a
+element a --from-file "cycle_a.tenn"

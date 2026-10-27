@@ -117,11 +117,8 @@ func (t *Tree) element(path string) *RNode {
 			return nil
 		}
 	}
-	if target.Kind == KMount {
-		target = target.Target
-	}
 	if !target.isContainer() {
-		t.fail(t.main.Pos, "path %s names a %s, not an element", path, "namespace")
+		t.fail(t.main.Pos, "path %s names a %s, not an element", path, target.Kind)
 		return nil
 	}
 	return t.expandElement(target)

@@ -65,14 +65,15 @@ type DocKind string
 
 const (
 	DocDiagram DocKind = "diagram" // only classic elements: go/render
-	DocScene   DocKind = "scene"   // scene elements and imports, no classic items
+	DocScene   DocKind = "scene"   // scene elements and mounted files, no classic items
 	DocMixed   DocKind = "mixed"
 )
 
 // KindOfModel classifies a document by SceneElement over its elements; an element with items that
-// is not a scene element is classic. Imports make a document scene when nothing else decides.
+// is not a scene element is classic. A mounted file (--from-file) makes a document scene when nothing
+// else decides.
 func KindOfModel(m *ElementModel) DocKind {
-	scene, classic, imports := false, false, false
+	scene, classic, mounts := false, false, false
 	var walk func(e *Element)
 	walk = func(e *Element) {
 		switch {
@@ -82,12 +83,7 @@ func KindOfModel(m *ElementModel) DocKind {
 			classic = true
 		}
 		if e.FromFile != "" {
-			imports = true
-		}
-		for _, p := range e.Properties.Nodes() {
-			if commandOf(p) == "import" {
-				imports = true
-			}
+			mounts = true
 		}
 		for _, c := range e.Elements {
 			walk(c)
@@ -95,9 +91,9 @@ func KindOfModel(m *ElementModel) DocKind {
 	}
 	walk(&m.Element)
 	switch {
-	case (scene || imports) && classic:
+	case (scene || mounts) && classic:
 		return DocMixed
-	case scene || imports:
+	case scene || mounts:
 		return DocScene
 	}
 	return DocDiagram

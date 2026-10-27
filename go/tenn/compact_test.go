@@ -71,3 +71,21 @@ func TestCompactRoundTripFixtures(t *testing.T) {
 	}
 	t.Logf("%d of %d fixtures checked", checked, len(files))
 }
+
+func TestCompactStylePack(t *testing.T) {
+	tree, _ := Parse("item A {\n  a 1\n  b 2\n  item In { c 3 }\n  d 4\n  e 5\n  item Out { item Deep { f 6 }; g 7 }\n}")
+	st := CompactStyle{Indent: "\t", Pack: true, Limit: 20}
+	want := "item A {\n\ta 1; b 2\n\titem In { c 3 }\n\td 4; e 5\n\titem Out {\n\t\titem Deep { f 6 }\n\t\tg 7\n\t}\n}"
+	if got := CompactAs(tree, st); got != want {
+		t.Errorf("got:\n%q\nwant:\n%q", got, want)
+	}
+	// the limit counts the indent: only the first command stays on a line that is full already
+	st.Limit = 8
+	if got := CompactAs(tree, st); !strings.Contains(got, "\n\ta 1\n\tb 2\n") {
+		t.Errorf("narrow limit packs:\n%s", got)
+	}
+	again, p := Parse(CompactAs(tree, CompactStyle{Indent: "\t", Pack: true}))
+	if p.Errors.HasErrors() || !sameTree(tree, again) {
+		t.Error("packed text does not parse back to the same tree")
+	}
+}

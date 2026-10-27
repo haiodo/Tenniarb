@@ -65,7 +65,6 @@ type sceneState struct {
 	SceneMode    bool
 	Kind         string
 	Nodes        []string
-	Lib          string
 	Items        []string `json:"itemList"`
 	ItemRows     map[string]itemRow
 	ItemSelected string

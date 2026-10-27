@@ -17,8 +17,8 @@ func parseError(text string) (tenn.Error, bool) {
 	return p.Errors.Errors[0], true
 }
 
-// nodeAt resolves a dotted path (spec 4.2) from the root of file rel. The node can sit in an
-// imported file: its Pos.File says which.
+// nodeAt resolves a dotted path (spec 4.2) from the root of file rel. The node can sit in a
+// mounted file: its Pos.File says which.
 func nodeAt(tree *scene.Tree, rel, path string) (*scene.Node, error) {
 	root := tree.File(rel)
 	if root == nil {
@@ -27,9 +27,6 @@ func nodeAt(tree *scene.Tree, rel, path string) (*scene.Node, error) {
 	n, err := tree.Resolve(root, path)
 	if err != nil {
 		return nil, err
-	}
-	if n.Kind != scene.KElement && n.Kind != scene.KItem && n.Kind != scene.KUse {
-		return nil, fmt.Errorf("path %q names an import, not a node: read the imported file", path)
 	}
 	return n, nil
 }

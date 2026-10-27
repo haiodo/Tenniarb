@@ -38,8 +38,8 @@ func (v *Viewer) sceneSrc() propSrc {
 		if n == nil {
 			return false
 		}
-		e, ok := SetPropEdit(v.text, n, name, args...)
-		return ok && v.sceneEdit(e)
+		e, ok := SetPropEdit(v.fileText(v.fileOf(n)), n, name, args...)
+		return ok && v.sceneEdit(n, e)
 	}
 	return propSrc{
 		get: func(name string) editor.Prop {
@@ -178,14 +178,14 @@ func (v *Viewer) sceneCodeKey() string {
 	return pathKey(v.state.Current) + "\x01" + v.selNodes[0]
 }
 
-// refreshSceneCode shows the source of the selected node in the Code section; nothing selected, nothing
-// shown: the text of a whole element can be the whole file.
+// refreshSceneCode shows the source of the selected node in the Code section, its kids as one line each;
+// nothing selected, nothing shown: the text of a whole element can be the whole file.
 func (v *Viewer) refreshSceneCode() {
 	n, _ := v.selectedScene()
 	key := v.sceneCodeKey()
 	want := ""
 	if n != nil {
-		want = NodeText(v.text, n)
+		want = OwnText(v.fileText(v.fileOf(n)), n)
 	}
 	if key == v.props.sceneKey && v.props.text.Text() == want {
 		return
@@ -200,7 +200,8 @@ func (v *Viewer) refreshSceneCode() {
 	v.props.values = nil
 }
 
-// applySceneCode puts the text of the Code section in place of the node it was opened for.
+// applySceneCode puts the text of the Code section in place of the node it was opened for; the kids stay
+// as they are written.
 func (v *Viewer) applySceneCode(key, text string) {
 	if v.props.text.Text() == text {
 		v.styleProps(text)
@@ -209,11 +210,23 @@ func (v *Viewer) applySceneCode(key, text string) {
 		return
 	}
 	n, _ := v.selectedScene()
-	if n == nil || NodeText(v.text, n) == text {
+	src := v.fileText(v.fileOf(n))
+	if n == nil || OwnText(src, n) == text {
+		return
+	}
+	// The kids are hidden behind stubs: an emptied pane would delete a subtree the user never saw.
+	// No refresh here, the user may be retyping the node.
+	if strings.TrimSpace(text) == "" {
+		v.setBanner("Not applied: delete the item from the Items tree")
+		return
+	}
+	e := ReplaceOwnEdit(src, n, text)
+	if e.New == src[e.Start:e.End] { // only stubs changed: show the kids again
+		v.refreshSceneCode()
 		return
 	}
 	start := n.Range.Start
-	if !v.sceneEdit(ReplaceNodeEdit(v.text, n, text)) {
+	if !v.sceneEdit(n, e) {
 		return
 	}
 	// A renamed node keeps the selection: it starts where the old one did.

@@ -3,32 +3,47 @@ package model
 import (
 	"errors"
 	"hash/fnv"
+	"slices"
 
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// ErrMounted is returned for an edit inside content that comes from a --from-file. Ceiling: no
-// write-back to the source file from the model; edit that file as its own document.
+// ErrMounted is returned for an edit inside content that comes from a --from-file when the store has
+// no way to write it back: set ElementModelStore.MountWritable and OnMountEdit.
 var ErrMounted = errors.New("the content comes from --from-file: edit the source file")
 
-// InMount reports whether an ancestor of e takes its content from a file, so e is part of it.
-func (e *Element) InMount() bool {
-	for p := e.Parent; p != nil; p = p.Parent {
-		if p.FromFile != "" {
-			return true
+// MountOf is the element whose file holds the content n edits: n or its nearest ancestor with
+// FromFile, nil when n is in the document itself. Renaming an element with FromFile edits its line, so
+// rename looks from its parent.
+func MountOf(n *Element, rename bool) *Element {
+	if rename && n.FromFile != "" {
+		n = n.Parent
+	}
+	for ; n != nil; n = n.Parent {
+		if n.FromFile != "" {
+			return n
 		}
 	}
-	return false
+	return nil
+}
+
+// Mounted is an element with FromFile after MountFiles: the file it shows, relative to the workspace
+// root, and whether its content was read just now.
+type Mounted struct {
+	El    *Element
+	File  string
+	Fresh bool
 }
 
 // MountFiles fills the elements of m that have FromFile with the content of their files, taken from
 // tree (the scene tree of the document rel), which resolves the paths and rejects cycles. A mounted
 // element keeps its content between calls until some file of the tree changes. Elements the tree
-// could not mount stay empty.
-func MountFiles(m *ElementModel, tree *scene.Tree, rel string) {
+// could not mount stay empty. An element of keep already shows the new text of its file (it was
+// edited here), so it is not read again.
+func MountFiles(m *ElementModel, tree *scene.Tree, rel string, keep ...*Element) []Mounted {
 	root := tree.File(rel)
 	if root == nil {
-		return
+		return nil
 	}
 	h := fnv.New64a()
 	for _, f := range tree.Files()[1:] { // the document itself changes with every edit
@@ -38,11 +53,13 @@ func MountFiles(m *ElementModel, tree *scene.Tree, rel string) {
 		h.Write([]byte(src))
 		h.Write([]byte{0})
 	}
-	mountElements(&m.Element, root, tree, h.Sum64())
+	var out []Mounted
+	mountElements(&m.Element, root, tree, h.Sum64(), keep, &out)
+	return out
 }
 
 // mountElements pairs the elements below el with the scene nodes of the same file by order.
-func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64) {
+func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64, keep []*Element, out *[]Mounted) {
 	if len(el.Elements) != len(file.Elems) {
 		return
 	}
@@ -52,7 +69,7 @@ func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64) 
 			continue
 		}
 		if c.FromFile == "" {
-			mountElements(c, sn, tree, sig)
+			mountElements(c, sn, tree, sig, keep, out)
 			continue
 		}
 		if sn.Mount == nil {
@@ -60,20 +77,44 @@ func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64) 
 		}
 		// The file name goes in too: pointing the element at another loaded file changes nothing else.
 		esig := sig*31 + uint64(len(sn.Mount.Pos.File)) + fnvString(sn.Mount.Pos.File)
+		fresh := false
 		if c.mountSig != esig {
-			src, _ := tree.Source(sn.Mount.Pos.File)
-			lib := ReadTenn(src)
-			if lib == nil {
-				continue
-			}
-			c.Elements, c.Items = nil, nil
-			c.Properties = lib.Properties
-			for _, k := range lib.Elements {
-				c.AddElement(k)
+			if !slices.Contains(keep, c) {
+				src, _ := tree.Source(sn.Mount.Pos.File)
+				lib := ReadTenn(src)
+				if lib == nil {
+					continue
+				}
+				refill(c, &lib.Element)
+				fresh = true
 			}
 			c.mountSig = esig
 		}
-		mountElements(c, sn.Mount, tree, sig)
+		*out = append(*out, Mounted{El: c, File: sn.Mount.Pos.File, Fresh: fresh})
+		mountElements(c, sn.Mount, tree, sig, keep, out)
+	}
+}
+
+// refill puts the content of src into e. The elements keep their identity while the names pair up, so
+// the canvas element and the undo steps of the editor stay attached after a text edit of the file.
+func refill(e, src *Element) {
+	e.Items, e.Description, e.Properties = src.Items, src.Description, src.Properties
+	for _, it := range e.Items {
+		it.Parent = e
+	}
+	if len(e.Elements) == len(src.Elements) && slices.EqualFunc(e.Elements, src.Elements, func(a, b *Element) bool {
+		return a.Name == b.Name && a.FromFile == b.FromFile
+	}) {
+		for i, c := range e.Elements {
+			if c.FromFile == "" { // a nested mount keeps the content it has
+				refill(c, src.Elements[i])
+			}
+		}
+		return
+	}
+	e.Elements = nil
+	for _, k := range src.Elements {
+		e.AddElement(k)
 	}
 }
 

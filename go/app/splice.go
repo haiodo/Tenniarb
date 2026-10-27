@@ -18,6 +18,15 @@ type shape struct {
 	kids []shape
 }
 
+// mountShape is the shape of the content of a mounted element, which is the file's.
+func mountShape(m *model.Element) shape {
+	s := shape{e: m}
+	for _, c := range m.Elements {
+		s.kids = append(s.kids, shapeOf(c))
+	}
+	return s
+}
+
 func shapeOf(e *model.Element) shape {
 	s := shape{e: e}
 	if e.FromFile != "" { // the text holds only the --from-file line; the children are the file's
@@ -102,16 +111,21 @@ func pad(ind int) string { return strings.Repeat("    ", ind) }
 // spliceClassic is the text after a classic edit; ok is false when the text and the model before the
 // edit do not pair up, or the result does not read back as the model's element tree.
 func (d *docCore) spliceClassic() (string, bool) {
-	ast, p := tenn.Parse(d.text)
+	return spliceText(d.text, d.shape, &d.session.Root().Element, &d.restore)
+}
+
+// spliceText is text brought up to root, an element tree that was in step with text as sh says: the
+// root of the document, or an element that shows a mounted file as its own text.
+func spliceText(text string, sh shape, root *model.Element, r *restore) (string, bool) {
+	ast, p := tenn.Parse(text)
 	if p.Errors.HasErrors() {
 		return "", false
 	}
 	src := &srcElem{kids: srcElems(ast.Children, true)}
-	sp := &splicer{text: d.text, old: map[*model.Element]*srcElem{}, r: &d.restore}
-	if !match(d.shape, src, sp.old) {
+	sp := &splicer{text: text, old: map[*model.Element]*srcElem{}, r: r}
+	if !match(sh, src, sp.old) {
 		return "", false
 	}
-	root := &d.session.Root().Element
 	out := sp.root(root, src, ast.Children)
 	ast, p = tenn.Parse(out)
 	if p.Errors.HasErrors() || !sameTree(root.Elements, srcElems(ast.Children, true)) {
@@ -125,7 +139,7 @@ func sameTree(es []*model.Element, src []*srcElem) bool {
 		return false
 	}
 	for i, e := range es {
-		if name, _ := src[i].node.GetIdent(1); name != e.Name || !sameTree(e.Elements, src[i].kids) {
+		if name, _ := src[i].node.GetIdent(1); name != e.Name || e.FromFile == "" && !sameTree(e.Elements, src[i].kids) {
 			return false
 		}
 	}
@@ -219,9 +233,12 @@ func (sp *splicer) remember(src *srcElem) {
 // print writes e with the Swift printer and its child elements by emit; text a classic edit replaced
 // before comes back when e is again as it was then.
 func (sp *splicer) print(e *model.Element, ind int) string {
-	kids := make([]string, len(e.Elements))
-	for i, k := range e.Elements {
-		kids[i] = sp.emit(k, ind+1)
+	var kids []string
+	if e.FromFile == "" { // the children of a mounted element are its file's
+		kids = make([]string, len(e.Elements))
+		for i, k := range e.Elements {
+			kids[i] = sp.emit(k, ind+1)
+		}
 	}
 	if kept := sp.r.elems[e]; len(kept) > 0 {
 		own := ownBlock(e)
@@ -258,7 +275,10 @@ func (sp *splicer) splice(e *model.Element, src *srcElem, start, end, ind int) s
 	} else if name, _ := src.node.GetIdent(1); name != e.Name {
 		edits = append(edits, sp.rename(e, src.node.Children[1], name))
 	}
-	edits = append(edits, sp.kidEdits(e, src, kidInd)...)
+	// The children of a mounted element are its file's, not written here.
+	if src.node == nil || e.FromFile == "" {
+		edits = append(edits, sp.kidEdits(e, src, kidInd)...)
+	}
 	// an insert goes before a replacement that starts at the same place
 	sort.SliceStable(edits, func(i, j int) bool {
 		a, b := edits[i], edits[j]

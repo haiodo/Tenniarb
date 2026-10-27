@@ -63,12 +63,12 @@ find components, write in compact form, render, fix) and `format.md`, `component
 
 **get_state output** is text, one line a node: `path kind line [renderer] [+N]`, where `+N` counts the nodes
 cut off by `depth`. With `path` the lines are relative to that node, as `at`/`replace` address them in its
-instance; slots are listed as `slot` lines (`default` for the unnamed one). `path` through an import alias
-lists the imported file. `find` matches the last path segment, case-insensitive, at most 100 matches; with
+instance; slots are listed as `slot` lines (`default` for the unnamed one). `path` through a mounting element
+lists the mounted file. `find` matches the last path segment, case-insensitive, at most 100 matches; with
 `depth` each match is followed by its parts. A converted library of 3000 nodes lists in 7 KB by default.
 
-**Warnings of imported files.** `edit`, `validate {file}` and `render` list the warnings of the file itself and
-only count those of the files it imports (a library warning repeats once per instance); `validate` of the
+**Warnings of mounted files.** `edit`, `validate {file}` and `render` list the warnings of the file itself and
+only count those of the files it mounts (a library warning repeats once per instance); `validate` of the
 library lists them.
 
 **Renderer rule** (`model.SceneElement`, the app's rule, spec 5a.17). An element with a `use`, or an item with

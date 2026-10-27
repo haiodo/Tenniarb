@@ -66,18 +66,11 @@ func stamp(root, rel string, overlay map[string]liveDoc) string {
 	return strconv.FormatInt(st.Size(), 10) + "/" + strconv.FormatInt(st.ModTime().UnixNano(), 10)
 }
 
-// loadedFiles lists the files a tree read, by walking the imports from the main file.
+// loadedFiles lists the files a tree read, by walking the --from-file mounts from the main file.
 func loadedFiles(tree *scene.Tree, rel string) []string {
 	seen := map[string]bool{}
 	var walk func(n *scene.Node)
 	walk = func(n *scene.Node) {
-		for _, m := range n.Mounts {
-			if m.Target != nil && !seen[m.Target.Pos.File] {
-				seen[m.Target.Pos.File] = true
-				walk(m.Target)
-			}
-			walk(m)
-		}
 		if m := n.Mount; m != nil && !seen[m.Pos.File] {
 			seen[m.Pos.File] = true
 			walk(m)
@@ -117,7 +110,7 @@ func (c *treeCache) get(root, rel string, overlay map[string]liveDoc) (*cacheEnt
 	return e, true
 }
 
-// put caches a tree without errors. A tree with errors is never cached: a missing import that
+// put caches a tree without errors. A tree with errors is never cached: a missing mounted file that
 // appears later would not change any stamp.
 func (c *treeCache) put(root, rel string, tree *scene.Tree, deps map[string]string) *cacheEntry {
 	e := &cacheEntry{tree: tree, diags: append(scene.Errors(nil), tree.Diagnostics()...), deps: deps}

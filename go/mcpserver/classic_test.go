@@ -106,7 +106,7 @@ func TestClassicDiagram(t *testing.T) {
 // TestCacheSeesExternalWrites: a tree is reused only while no file it read has changed.
 func TestCacheSeesExternalWrites(t *testing.T) {
 	root := tempRoot(t, map[string]string{
-		"main.tenn": "import \"lib.tenn\" as lib\nelement \"S\" {\n    use lib.K.B as b\n}\n",
+		"main.tenn": "element lib --from-file \"lib.tenn\"\nelement \"S\" {\n    use lib.K.B as b\n}\n",
 		"lib.tenn":  "element \"K\" {\n    item \"B\" { title \"b\" }\n}\n",
 	})
 	cs := memSession(t, root)

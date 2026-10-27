@@ -1,0 +1,19 @@
+element "Onboarding" {
+  styles {
+    item { font-size 14 }
+    step { color blue-200 }
+    end { color green-200 }
+  }
+  item "Sign up" { pos 0 0; use-style step }
+  item "Verify email" { pos 200 0; use-style step }
+  item "Create workspace" { pos 420 0; use-style step }
+  item "Invite team" { pos 420 -120; use-style step; body "optional" }
+  item "First project" { pos 640 0; use-style end }
+  item "Email not received" { pos 200 -120; color red-200 }
+  link "Sign up" "Verify email" { display arrow }
+  link "Verify email" "Create workspace" { display arrow }
+  link "Create workspace" "First project" { display arrow }
+  link "Create workspace" "Invite team" { display arrow; line-style dashed }
+  link "Invite team" "First project" { display arrow; line-style dashed }
+  link "Verify email" "Email not received" { display arrow; line-style dotted }
+}

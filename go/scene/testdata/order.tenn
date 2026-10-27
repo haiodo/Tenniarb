@@ -1,4 +1,4 @@
-import "lib/kit.tenn" as kit
+element kit --from-file "lib/kit.tenn"
 
 element "Order" {
     item "C" { pos 0 0; width 10; height 10; color 00ff00 }

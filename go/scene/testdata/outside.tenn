@@ -1,1 +1,1 @@
-import "../outside-the-root.tenn" as x
+element x --from-file "../outside-the-root.tenn"

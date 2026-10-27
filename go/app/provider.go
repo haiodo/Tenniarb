@@ -157,17 +157,6 @@ func (p provider) Apply(path string, base int64, text string) (ver int64, err er
 	return
 }
 
-// diffRange is the length of the common prefix and of the common suffix after it.
-func diffRange(x, y string) (prefix, suffix int) {
-	for prefix < len(x) && prefix < len(y) && x[prefix] == y[prefix] {
-		prefix++
-	}
-	for suffix < len(x)-prefix && suffix < len(y)-prefix && x[len(x)-1-suffix] == y[len(y)-1-suffix] {
-		suffix++
-	}
-	return
-}
-
 func (p provider) Selection() (sel servicewire.Selection, err error) {
 	err = errQuit
 	p.sh.ui(func() {

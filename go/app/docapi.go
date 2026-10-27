@@ -125,9 +125,6 @@ func (sh *Shell) Selection(path string) (sel Selection, err error) {
 		}
 		sel.Element = PathOf(v.state.Current)
 		sel.Nodes = slices.Clone(v.selNodes)
-		if v.lib != nil {
-			sel.Nodes = slices.Clone(v.libSaved) // a library on the canvas is not the document's selection
-		}
 		if v.session != nil {
 			for _, it := range v.session.Selection() {
 				sel.Items = append(sel.Items, it.Name)
@@ -179,12 +176,8 @@ func (v *Viewer) selectAPI(sel Selection) error {
 
 // showSelection puts e on the canvas with nodes (scene, by NodePath) or items (classic) selected.
 func (v *Viewer) showSelection(e *model.Element, nodes []string, items []*model.DiagramItem, reveal bool) {
-	left := v.win != nil && v.leaveLib()
 	if e != v.state.Current {
 		v.session.SetElement(e)
-	} else if left {
-		v.realize()
-		v.syncOutline()
 	}
 	if len(items) > 0 || len(v.session.Selection()) > 0 {
 		v.session.Select(items)
@@ -308,16 +301,35 @@ func (sh *Shell) othersText(root string) map[string]string {
 	out := map[string]string{}
 	base := realPath(root)
 	for _, v := range sh.viewers {
-		if v.session == nil || v.state.Doc.Path == "" {
-			continue
+		if rel, ok := v.relIn(base); ok {
+			out[rel] = v.text
 		}
-		rel, err := filepath.Rel(base, realPath(v.state.Doc.Path))
-		if err != nil || rel == ".." || len(rel) > 2 && rel[:3] == ".."+string(filepath.Separator) {
-			continue
-		}
-		out[filepath.ToSlash(rel)] = v.text
 	}
 	return out
+}
+
+// relIn is the slash path of the document relative to base (a real path); false for a document without
+// a file or outside base.
+func (v *Viewer) relIn(base string) (string, bool) {
+	if v.session == nil || v.state.Doc.Path == "" {
+		return "", false
+	}
+	rel, err := filepath.Rel(base, realPath(v.state.Doc.Path))
+	if err != nil || rel == ".." || len(rel) > 2 && rel[:3] == ".."+string(filepath.Separator) {
+		return "", false
+	}
+	return filepath.ToSlash(rel), true
+}
+
+// peerDoc is the document of another window that has the file rel under the root of self.
+func (sh *Shell) peerDoc(self *docCore, rel string) *docCore {
+	base := realPath(self.root)
+	for _, v := range sh.viewers {
+		if r, ok := v.relIn(base); ok && r == rel && v.docCore != self {
+			return v.docCore
+		}
+	}
+	return nil
 }
 
 // docChanged reads the scene tree again in the documents that import the one that changed.
@@ -327,7 +339,7 @@ func (sh *Shell) docChanged(src *Viewer) {
 	}
 	abs := realPath(src.state.Doc.Path)
 	for _, v := range slices.Clone(sh.viewers) {
-		if v != src && v.stree != nil && v.imports(abs) {
+		if v != src && v.stree != nil && !v.libBusy && v.imports(abs) {
 			v.sceneReload()
 		}
 	}

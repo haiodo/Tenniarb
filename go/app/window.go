@@ -3,6 +3,8 @@
 package app
 
 import (
+	"fmt"
+	"math"
 	"path/filepath"
 	"runtime"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
 	"github.com/haiodo/gowt/look"
+	"github.com/haiodo/gowt/rx"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -36,8 +39,6 @@ type Viewer struct {
 	rendered    *render.Rendered
 	overlay     *gfx.Node
 	sv          *sceneView // the element on the canvas is drawn by go/scene
-	lib         *libRow    // the library on the canvas, read only; nil for the document's element
-	libSaved    []string   // the selection of the document while a library is on the canvas
 	itemsUI     itemsList
 	sceneBuilds int // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
@@ -46,6 +47,7 @@ type Viewer struct {
 	pendingFit  bool // the canvas had no size yet when the element was shown
 	syncing     bool // the outline selection is being set by code
 	zoomSeen    float64
+	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
 
 	press      press
 	inline     *view.Editor
@@ -56,6 +58,8 @@ type Viewer struct {
 	props      props
 	insp       *inspector
 	search     search
+	docElem    *model.Element // the last element on the canvas that is not in a mounted file
+	docSel     []string       // its selected scene nodes, for the return from a mounted file
 	dragging   *model.Element // the outline row a drag started on
 	dropAt     [2]int         // where the drag was last over the outline
 
@@ -82,7 +86,7 @@ type viewerInit struct {
 
 // newViewer opens a window for a file or an untitled document.
 func (sh *Shell) newViewer(in viewerInit) *Viewer {
-	v := &Viewer{app: sh.app, sh: sh, scene: gfx.NewScene(), nextID: 1, docCore: &docCore{state: NewState(&Document{}), others: sh.othersText}, id: in.id}
+	v := &Viewer{app: sh.app, sh: sh, scene: gfx.NewScene(), zoomText: rx.New("100%"), nextID: 1, docCore: &docCore{state: NewState(&Document{}), others: sh.othersText, peer: sh.peerDoc}, id: in.id}
 	v.autosave = &Debounce{Delay: AutosaveDelay, After: sh.app.After, Fn: v.autosaveNow}
 	v.frameSave = &Debounce{Delay: FrameDelay, After: sh.app.After, Fn: v.saveFrame}
 	prev := sh.active
@@ -211,21 +215,30 @@ func (v *Viewer) build() {
 	v.updateTitle()
 }
 
-// toolbar is the unified window toolbar: sidebar, zoom, new item and quick style, inspector, and the
+// toolbar is the unified window toolbar: element, item navigator and sidebar buttons, zoom, new item and quick style, inspector, and the
 // Goto Item search.
 func (v *Viewer) toolbar() {
 	look.SetToolbar(v.win,
-		look.ToolbarItem{Title: "Hide Sidebar", Symbol: "sidebar.left", Sidebar: true, OnClick: v.toggleSidebar},
-		look.ToolbarItem{Title: "Zoom", Group: []look.ToolbarItem{
+		look.ToolbarItem{Title: "Element", Sidebar: true, Small: true, Group: []look.ToolbarItem{
+			{Title: "New Element", Symbol: "plus", OnClick: func() { v.addElement(v.state.Current) }},
+			{Title: "Delete Element", Symbol: "minus", OnClick: v.removeElement},
+		}},
+		look.ToolbarItem{Title: "Items", Symbol: "list.bullet", Sidebar: true, Small: true, OnClick: v.toggleItems},
+		look.ToolbarItem{Title: "Hide Sidebar", Symbol: "sidebar.left", Sidebar: true, Small: true, OnClick: v.toggleSidebar},
+		look.ToolbarItem{Title: "Zoom", Small: true, Group: []look.ToolbarItem{
 			{Title: "Zoom Out", Symbol: "minus.magnifyingglass", OnClick: func() { v.zoomBy(1 / ZoomStep) }},
 			{Title: "Zoom In", Symbol: "plus.magnifyingglass", OnClick: func() { v.zoomBy(ZoomStep) }},
 			{Title: "Fit to Window", Symbol: "arrow.up.left.and.arrow.down.right", OnClick: v.fitCommand},
 		}},
+		look.ToolbarItem{Title: "Reset Zoom", Text: v.zoomText, Small: true, OnClick: v.resetZoom},
 		look.ToolbarItem{Space: true},
-		look.ToolbarItem{Title: "New Item", Symbol: "plus.rectangle", OnClick: v.newItem},
-		look.ToolbarItem{Title: "Quick Style", Symbol: "paintpalette", OnClick: v.showQuickPanel},
-		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", OnSearch: v.searchTo},
-		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", OnClick: v.toggleInspector})
+		look.ToolbarItem{Title: "Item", Inspector: true, Small: true, Group: []look.ToolbarItem{
+			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
+			{Title: "Delete Item", Symbol: "minus", OnClick: v.deleteItems},
+		}},
+		look.ToolbarItem{Title: "Quick Style", Symbol: "paintpalette", Inspector: true, Small: true, OnClick: v.showQuickPanel},
+		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", Inspector: true, Small: true, OnSearch: v.searchTo},
+		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector})
 }
 
 func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVisible(v.win)) }
@@ -247,6 +260,12 @@ func (v *Viewer) contentSize() (w, h float64, ok bool) {
 		return v.sv.w, v.sv.h, true
 	}
 	return 0, 0, false
+}
+
+func (v *Viewer) deleteItems() {
+	if v.session != nil {
+		v.session.DeleteSelection()
+	}
 }
 
 func (v *Viewer) newItem() {
@@ -276,6 +295,7 @@ func (v *Viewer) initView(vw *view.View) {
 	vw.OnFrameReport(func(r view.FrameReport) {
 		if r.Zoom != v.zoomSeen {
 			v.zoomSeen = r.Zoom
+			v.zoomText.Set(fmt.Sprintf("%d%%", int(math.Round(r.Zoom*100))))
 			if v.session != nil {
 				v.session.SetZoom(r.Zoom)
 				v.drawOverlay()
@@ -421,8 +441,7 @@ func (v *Viewer) setBanner(text string) {
 // startSession makes a new editing session on the current element of the document, with its own undo history.
 func (v *Viewer) startSession() {
 	v.endInline(false)
-	v.session, v.tracker, v.shownElem = nil, nil, nil
-	v.lib, v.libSaved = nil, nil
+	v.session, v.tracker, v.shownElem, v.docElem = nil, nil, nil, nil
 	if v.state.Doc.Model == nil || v.state.Current == nil {
 		v.clearCanvas()
 		v.updateTitle()
@@ -444,6 +463,7 @@ func (v *Viewer) startSession() {
 		return
 	}
 	v.session = s
+	v.trackDocElem()
 	v.adopt(v.state.Doc.Text)
 	v.zoomSeen = 0
 	v.realize()
@@ -475,16 +495,7 @@ func (v *Viewer) onOutlineSelect(n *g.Node) {
 	}
 	switch d := n.Data().(type) {
 	case *model.Element:
-		left := v.leaveLib()
-		if d != v.state.Current {
-			v.selectElement(d)
-		} else if left {
-			v.realize()
-		}
-	case *libRow:
-		v.showLib(d)
-	default:
-		v.syncOutline() // the Libraries row is not a canvas
+		v.selectElement(d)
 	}
 }
 
@@ -495,7 +506,7 @@ func (v *Viewer) applyInitialCamera() {
 		v.pendingFit = false
 		return
 	}
-	if cam, ok := v.state.Camera(v.state.Current); ok && v.lib == nil {
+	if cam, ok := v.state.Camera(v.state.Current); ok {
 		v.view.Compositor().SetCamera(cam)
 		v.pendingFit = false
 		return
@@ -513,10 +524,9 @@ func (v *Viewer) fitView() {
 	v.view.Compositor().SetCamera(FitCamera(cw, ch, float64(w), float64(h)))
 }
 
-// saveCamera remembers the viewport of the element on the canvas, unless it was never placed; a
-// library on the canvas has none.
+// saveCamera remembers the viewport of the element on the canvas, unless it was never placed.
 func (v *Viewer) saveCamera() {
-	if _, _, ok := v.contentSize(); v.state.Current != nil && ok && !v.pendingFit && v.lib == nil {
+	if _, _, ok := v.contentSize(); v.state.Current != nil && ok && !v.pendingFit {
 		v.state.Remember(v.state.Current, v.view.Compositor().Camera())
 	}
 }

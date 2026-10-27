@@ -52,7 +52,7 @@ type (
 	}
 	getStateIn struct {
 		File  string `json:"file,omitempty" jsonschema:"only this .tenn file, relative to the workspace root"`
-		Path  string `json:"path,omitempty" jsonschema:"with file: dotted path of the node to list from; an import alias lists the imported file with paths ready for use"`
+		Path  string `json:"path,omitempty" jsonschema:"with file: dotted path of the node to list from; a mounting element lists the mounted file with paths ready for use"`
 		Depth int    `json:"depth,omitempty" jsonschema:"levels of the tree to list, default 2; a node cut off says how many nodes are below it. With find: levels of parts listed under each match, default none"`
 		Find  string `json:"find,omitempty" jsonschema:"instead of the tree, every node at any depth whose name contains this text (case-insensitive), at most 100"`
 	}
@@ -95,7 +95,7 @@ func (s *Server) MCP() *mcp.Server {
 		func(in readIn) (string, error) { return s.read(in.File, in.Path) })
 	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
-	add(srv, "validate", "Parse and validate one .tenn file (with its imports) or the whole workspace. Returns file:line:col errors and warnings. use paths follow spec section 4.2.",
+	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths follow spec section 4.2.",
 		func(in validateIn) (string, error) { return s.validate(in.File) })
 	mcp.AddTool(srv, &mcp.Tool{
 		Name:        "render",
@@ -245,14 +245,11 @@ func (f *finder) walk(parent *scene.Node, prefix string) {
 	}
 }
 
-// listRoot resolves the path a get_state lists from; through an import alias it is the imported file.
+// listRoot resolves the path a get_state lists from; a mounting element lists the mounted file.
 func listRoot(tree *scene.Tree, root *scene.Node, path string) (*scene.Node, error) {
 	n, err := tree.Resolve(root, path)
 	if err != nil {
 		return nil, err
-	}
-	if n.Kind == scene.KMount {
-		n = n.Target
 	}
 	switch n.Kind {
 	case scene.KFile, scene.KElement, scene.KItem, scene.KUse:

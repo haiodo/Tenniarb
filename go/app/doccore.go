@@ -36,17 +36,28 @@ type docCore struct {
 	shape   shape // the element tree the text holds
 	restore restore
 
-	root     string      // workspace root: imports may not leave it
+	root     string      // workspace root: mounted files may not leave it
 	stree    *scene.Tree // nil for a diagram document
 	sceneErr string      // the errors go/scene finds in this file, for the banner
 	libs     map[string]Stamp
 	selNodes []string // selected scene nodes of the current element, by node path
 
+	// Mounted files (mountdoc.go): the text held for each by relative path, the mounting elements, the
+	// ones edited since the tree was read, and the error of the last write to a window that has the file.
+	libDocs map[string]*libDoc
+	mounts  map[*model.Element]*mountDoc
+	keep    []*model.Element
+	libErr  error
+	libBusy bool // a window that has a mounted file is being edited by this document
+
+	// peer gives the document another window holds for the mounted file rel; nil when none.
+	peer func(self *docCore, rel string) *docCore
+
 	// others gives the text of the other open documents under root, by slash path relative to it.
 	others func(root string) map[string]string
 }
 
-// WorkspaceRoot is the root imports resolve in: the nearest folder up from the file that holds .git or
+// WorkspaceRoot is the root mounted files resolve in: the nearest folder up from the file that holds .git or
 // a tenniarb.tenn, else the folder of the file.
 func WorkspaceRoot(path string) string {
 	if path == "" {
@@ -99,6 +110,7 @@ func (d *docCore) adopt(raw string) {
 	d.selNodes = nil
 	d.tracker = NewTracker(d.text)
 	d.version++
+	d.session.Store().MountWritable, d.session.Store().OnMountEdit = d.mountWritable, d.mountEdited
 	d.loadScene()
 }
 
@@ -132,22 +144,23 @@ func (d *docCore) sessionChanged() {
 // loadScene reads the scene tree anew, with the unsaved text of the other open documents.
 func (d *docCore) loadScene() {
 	d.stree, d.sceneErr, d.libs = nil, "", nil
+	keep := d.keep
+	d.keep = nil
 	if d.kind == model.DocDiagram || d.session == nil {
+		d.mounts = nil
 		return
 	}
-	overlay := map[string]string{}
-	if d.others != nil {
-		overlay = d.others(d.root)
-	}
 	rel := d.rel()
+	overlay := d.overlay()
 	overlay[rel] = d.text
 	tree, err := scene.LoadOverlay(d.root, rel, overlay)
 	if tree == nil {
 		d.sceneErr = errString(err)
+		d.mounts = nil
 		return
 	}
 	d.stree = tree
-	model.MountFiles(d.session.Root(), tree, rel)
+	d.adoptMounts(model.MountFiles(d.session.Root(), tree, rel, keep...))
 	d.sceneErr = sceneErrors(tree.Diagnostics())
 	d.libs = map[string]Stamp{}
 	for _, f := range tree.Files()[1:] {
@@ -157,15 +170,13 @@ func (d *docCore) loadScene() {
 	}
 }
 
-// sceneErrorCount is how many scene errors (not warnings) the file would have with text instead of
-// d.text; -1 when the tree does not load at all.
-func (d *docCore) sceneErrorCount(text string) int {
-	overlay := map[string]string{}
-	if d.others != nil {
-		overlay = d.others(d.root)
-	}
+// sceneErrorCount is how many scene errors (not warnings) the tree would have with text as the text
+// of file; -1 when the tree does not load at all.
+func (d *docCore) sceneErrorCount(file, text string) int {
+	overlay := d.overlay()
 	rel := d.rel()
-	overlay[rel] = text
+	overlay[rel] = d.text
+	overlay[file] = text
 	tree, _ := scene.LoadOverlay(d.root, rel, overlay)
 	if tree == nil {
 		return -1
@@ -371,6 +382,17 @@ func (d *docCore) applyText(start, end int, repl string) error {
 	op := &textEditOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, before: d.text, after: after}
 	op.plan(&d.session.Root().Element, model.ParseTenn(ast), elementIndexAt(before, start, end))
 	return d.session.Execute(op)
+}
+
+// diffRange is the length of the common prefix and of the common suffix after it.
+func diffRange(x, y string) (prefix, suffix int) {
+	for prefix < len(x) && prefix < len(y) && x[prefix] == y[prefix] {
+		prefix++
+	}
+	for suffix < len(x)-prefix && suffix < len(y)-prefix && x[len(x)-1-suffix] == y[len(y)-1-suffix] {
+		suffix++
+	}
+	return
 }
 
 // elementIndexAt is the path, by index among the element commands of each level, of the innermost element

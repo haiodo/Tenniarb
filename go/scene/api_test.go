@@ -25,7 +25,7 @@ func TestResolveFromScope(t *testing.T) {
 	if err != nil || n.Kind != scene.KElement {
 		t.Fatalf("Screens.Login = %v, %v", n, err)
 	}
-	// short path from the scope of Login goes up to Screens.Button; a path through the import alias leaves the file
+	// short path from the scope of Login goes up to Screens.Button; a path through the mounting element leaves the file
 	b, err := tree.Resolve(n, "Button")
 	if err != nil || b.Pos.File != "import.tenn" {
 		t.Errorf("Button from Login = %v, %v", b, err)
@@ -64,7 +64,7 @@ func TestNodeRange(t *testing.T) {
 	for _, c := range tree.File("import.tenn").Nodes() {
 		names = append(names, c.Kind.String()+":"+c.Name)
 	}
-	if strings.Join(names, " ") != "element:Screens" {
+	if strings.Join(names, " ") != "element:kit element:Screens" {
 		t.Errorf("file nodes = %v", names)
 	}
 }
@@ -74,7 +74,7 @@ func TestLoadSource(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "lib.tenn"), []byte("item \"Dot\" { width 4; height 4 }\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	text := "import \"lib.tenn\" as lib\nelement \"E\" { use lib.Dot as d }\n"
+	text := "element lib --from-file \"lib.tenn\"\nelement \"E\" { use lib.Dot as d }\n"
 	// the file is not on disk: only the in-memory text exists
 	tree, err := scene.LoadSource(root, "main.tenn", text)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestLoadSource(t *testing.T) {
 	if _, err := scene.LoadSource(root, "main.tenn", text); err != nil {
 		t.Errorf("disk copy leaked: %v", err)
 	}
-	_, err = scene.LoadSource(root, "main.tenn", "element \"E\" { use lib.Nope as d }\nimport \"lib.tenn\" as lib\n")
+	_, err = scene.LoadSource(root, "main.tenn", "element \"E\" { use lib.Nope as d }\nelement lib --from-file \"lib.tenn\"\n")
 	if err == nil || !strings.Contains(err.Error(), "main.tenn:1:") {
 		t.Errorf("want an error with a position, got %v", err)
 	}

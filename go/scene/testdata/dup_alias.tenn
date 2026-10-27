@@ -1,7 +1,0 @@
-import "lib/kit.tenn" as kit
-import "lib/other.tenn" as kit
-import "lib/base.tenn"
-
-element "E" {
-    use base.Dot as d
-}

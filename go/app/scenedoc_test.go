@@ -75,21 +75,20 @@ func TestSceneElementRulePicksPenimportOutput(t *testing.T) {
 
 func TestSceneElementRuleCases(t *testing.T) {
 	for text, want := range map[string]bool{
-		`element "A" { item "X" { item "Y" } }`:                          true,
-		`element "A" { item "X" { auto-layout column } }`:                true,
-		`element "A" { use kit.Button as ok }`:                           true,
-		`element "A" { item "X" { slot } }`:                              true,
-		`element "A" { item "X"; item "Y"; link "X" "Y" { use } }`:       false,
-		`element "A" { import "lib.tenn" as lib; item "X" { pos 1 2 } }`: false,
-		`element "A" { item "X" { min-width 100 } }`:                     false,
+		`element "A" { item "X" { item "Y" } }`:                    true,
+		`element "A" { item "X" { auto-layout column } }`:          true,
+		`element "A" { use kit.Button as ok }`:                     true,
+		`element "A" { item "X" { slot } }`:                        true,
+		`element "A" { item "X"; item "Y"; link "X" "Y" { use } }`: false,
+		`element "A" { item "X" { min-width 100 } }`:               false,
 	} {
 		doc := ParseText(text)
 		if got := model.SceneElement(doc.Model.Elements[0]); got != want {
 			t.Errorf("%s: %v, want %v", text, got, want)
 		}
 	}
-	if k := model.KindOfModel(ParseText("import \"a.tenn\" as a\nelement \"A\" { item \"X\" }").Model); k != model.DocMixed {
-		t.Errorf("import with classic items: %s", k)
+	if k := model.KindOfModel(ParseText("element a --from-file \"a.tenn\"\nelement \"A\" { item \"X\" }").Model); k != model.DocMixed {
+		t.Errorf("mounted file with classic items: %s", k)
 	}
 }
 
@@ -119,7 +118,9 @@ func TestNodePathRoundTrip(t *testing.T) {
 		elems = func(el *scene.Node) {
 			each(el, el)
 			for _, e := range el.Elems {
-				elems(e)
+				if e.Mount == nil { // its nodes are written in another file
+					elems(e)
+				}
 			}
 		}
 		elems(tree.File(f))
@@ -206,7 +207,7 @@ func newDoc(t *testing.T, sh *Shell, path, text string) *Viewer {
 	}
 	doc := ParseText(text)
 	doc.Path = path
-	v := &Viewer{sh: sh, docCore: &docCore{state: NewState(doc), others: sh.othersText}}
+	v := &Viewer{sh: sh, docCore: &docCore{state: NewState(doc), others: sh.othersText, peer: sh.peerDoc}}
 	if path != "" {
 		v.watch = Watcher{Path: path}
 		v.watch.Poll()
@@ -230,9 +231,9 @@ func newDoc(t *testing.T, sh *Shell, path, text string) *Viewer {
 	return v
 }
 
-const mixedDoc = "import kit.tenn as kit\n" +
-	"element \"Map\" {\n    item \"Idea\" {\n        pos 0 0\n    }\n}\n" +
-	"element \"Screens\" {\n  item Login { pos 0 0; width 200; auto-layout column; item Title { title Hi } }\n}\n"
+const mixedDoc = "element \"Map\" {\n    item \"Idea\" {\n        pos 0 0\n    }\n}\n" +
+	"element \"Screens\" {\n  item Login { pos 0 0; width 200; auto-layout column; item Title { title Hi } }\n}\n" +
+	"element kit --from-file kit.tenn\n"
 
 func TestTextEditUndoKeepsText(t *testing.T) {
 	dir := t.TempDir()
@@ -302,7 +303,7 @@ func TestEditAddingElementSwapsChildren(t *testing.T) {
 }
 
 const libText = "item Button { auto-layout row; width 40; height 20; color #3366ff }\n"
-const screenText = "import lib.tenn as lib\nitem Screen { pos 0 0; auto-layout column; use lib.Button as ok }\n"
+const screenText = "element lib --from-file lib.tenn\nitem Screen { pos 0 0; auto-layout column; use lib.Button as ok }\n"
 
 func widthOf(t *testing.T, v *Viewer, path string) float64 {
 	t.Helper()
@@ -414,13 +415,13 @@ func TestDocAPI(t *testing.T) {
 func TestSceneErrorCountSeesInsertIntoInstance(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "kit.tenn"), []byte("item Card { width 40; height 20; auto-layout column }\n"), 0o644)
-	text := "import kit.tenn as kit\nuse kit.Card as C {\n  pos 0 0\n}\n"
+	text := "element kit --from-file kit.tenn\nuse kit.Card as C {\n  pos 0 0\n}\n"
 	v := newDoc(t, &Shell{}, filepath.Join(dir, "main.tenn"), text)
-	if n := v.sceneErrorCount(text); n != 0 {
+	if n := v.sceneErrorCount(v.rel(), text); n != 0 {
 		t.Fatalf("errors before: %d (%s)", n, v.sceneErr)
 	}
 	bad := strings.Replace(text, "  pos 0 0\n", "  pos 0 0\n  use kit.Card as D\n", 1)
-	if n := v.sceneErrorCount(bad); n < 1 {
+	if n := v.sceneErrorCount(v.rel(), bad); n < 1 {
 		t.Fatalf("errors after insert into the instance: %d, want at least 1", n)
 	}
 }

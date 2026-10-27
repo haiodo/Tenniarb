@@ -57,39 +57,8 @@ func sceneRows(n *scene.Node, prefix string) ([]ItemRow, []*scene.Node) {
 	return out, kids
 }
 
-// FindSceneRows are the nodes under n at any depth whose name holds q (case folded), in file order:
-// at most limit of them, more counts the rest. A nested row names the top level node it is in.
-func FindSceneRows(n *scene.Node, q string, limit int) (rows []ItemRow, more int) {
-	q = strings.ToLower(q)
-	var walk func(n *scene.Node, prefix, top string)
-	walk = func(n *scene.Node, prefix, top string) {
-		level, kids := sceneRows(n, prefix)
-		for i, r := range level {
-			t := top
-			if t == "" {
-				t = r.Label
-			}
-			if strings.Contains(strings.ToLower(r.Label), q) {
-				if len(rows) < limit {
-					if top != "" {
-						r.Label += " - " + top
-					}
-					r.Kids = false
-					rows = append(rows, r)
-				} else {
-					more++
-				}
-			}
-			walk(kids[i], r.Path, t)
-		}
-	}
-	walk(n, "", "")
-	return rows, more
-}
-
-// DiagramRows are the items of a diagram element and then its links, those whose label holds q.
-func DiagramRows(e *model.Element, q string) []ItemRow {
-	q = strings.ToLower(q)
+// DiagramRows are the items of a diagram element and then its links.
+func DiagramRows(e *model.Element) []ItemRow {
 	var items, links []ItemRow
 	for _, it := range e.Items {
 		r := ItemRow{Label: it.Name, Kind: "item", Item: it}
@@ -98,9 +67,6 @@ func DiagramRows(e *model.Element, q string) []ItemRow {
 			r.Label = linkEnd(it.Source) + " -> " + linkEnd(it.Target)
 		} else if r.Label == "" {
 			r.Label = "(no name)"
-		}
-		if !strings.Contains(strings.ToLower(r.Label), q) {
-			continue
 		}
 		if r.Kind == "link" {
 			links = append(links, r)
@@ -361,7 +327,7 @@ func SlotCommand(slot, cmd string) string {
 	return CommandText("slot", slot) + " { " + cmd + " }"
 }
 
-// UsePath is the path a use of n writes from the file that imports n's file as alias. False when n
+// UsePath is the path a use of n writes from the file that mounts n's file as the element alias. False when n
 // cannot be used: it is not an item or a use, or it lies inside an instance or a slot.
 func UsePath(alias string, n *scene.Node) (string, bool) {
 	if n == nil || n.Kind != scene.KItem && n.Kind != scene.KUse {

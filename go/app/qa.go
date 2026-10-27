@@ -107,6 +107,8 @@ func (sh *Shell) registerQA() {
 				sh.active.toggleSidebar()
 			case "inspector":
 				sh.active.toggleInspector()
+			case "items":
+				sh.active.toggleItems()
 			case "fit":
 				sh.active.fitCommand()
 			}
@@ -208,9 +210,6 @@ func (v *Viewer) qaState() map[string]any {
 	out["itemList"], out["itemRows"] = items, itemRows
 	if sel := v.itemsUI.tree.Selected(); len(sel) == 1 {
 		out["itemSelected"] = sel[0].Text()
-	}
-	if v.lib != nil {
-		out["lib"] = v.lib.file
 	}
 	if v.session != nil {
 		out["canUndo"], out["canRedo"] = v.session.UndoManager().CanUndo(), v.session.UndoManager().CanRedo()

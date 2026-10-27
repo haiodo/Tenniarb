@@ -64,3 +64,87 @@ func TestMountedIsReadOnly(t *testing.T) {
 		t.Errorf("an ordinary element must stay editable: %v", err)
 	}
 }
+
+func TestMountEditNeedsWriteBack(t *testing.T) {
+	m := mountedModel(t)
+	kit := m.Elements[0]
+	store := NewElementModelStore(m)
+	store.MountWritable = func(*Element) bool { return false }
+	store.OnMountEdit = func(*Element) { t.Error("a refused edit must not write") }
+	if err := store.Add(kit, NewElement("X"), nil, nil, nil); err != ErrMounted {
+		t.Errorf("a mount that cannot be written back refuses: %v", err)
+	}
+}
+
+// Edit, undo and redo inside a mount tell the store's owner which mount to write; the document's own
+// elements and the rename of the mounting element do not.
+func TestMountEditWritesBack(t *testing.T) {
+	m := mountedModel(t)
+	kit := m.Elements[0]
+	var got []*Element
+	store := NewElementModelStore(m)
+	store.MountWritable = func(*Element) bool { return true }
+	store.OnMountEdit = func(e *Element) { got = append(got, e) }
+	um := &UndoManager{GroupsByEvent: true}
+	if err := store.Add(kit.Elements[0], NewElement("X"), um, nil, nil); err != nil {
+		t.Fatal(err)
+	}
+	um.CloseAutoGroup()
+	if len(got) != 1 || got[0] != kit || len(kit.Elements[0].Elements) != 1 {
+		t.Fatalf("edit: %v", got)
+	}
+	um.Undo()
+	um.Redo()
+	if len(got) != 3 || got[1] != kit || got[2] != kit {
+		t.Errorf("undo and redo write too: %d", len(got))
+	}
+	if err := store.UpdateElementName(kit, "kit2", nil, nil); err != nil || len(got) != 3 {
+		t.Errorf("renaming the mounting element edits its line: %v", err)
+	}
+	if err := store.Add(m.Elements[1], NewElement("Y"), nil, nil, nil); err != nil || len(got) != 3 {
+		t.Errorf("an element of the document: %v", err)
+	}
+	if err := store.Move(m.Elements[1], kit, nil, nil, 0); err != ErrMounted {
+		t.Errorf("moving between files: %v", err)
+	}
+}
+
+// A mount read again after its file changed keeps its elements while the names pair up, and one that
+// was edited here is not read at all.
+func TestMountRefillKeepsElements(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, text string) {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("main.tenn", mountMain)
+	write("lib.tenn", "element \"Parts\" {\n    item \"B\" { pos 1 1 }\n}\n")
+	load := func(m *ElementModel, keep ...*Element) []Mounted {
+		tree, err := scene.Load(root, "main.tenn")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return MountFiles(m, tree, "main.tenn", keep...)
+	}
+	m := ReadTenn(mountMain)
+	if got := load(m); len(got) != 1 || !got[0].Fresh || got[0].File != "lib.tenn" {
+		t.Fatalf("first read: %+v", got)
+	}
+	kit := m.Elements[0]
+	parts, item := kit.Elements[0], kit.Elements[0].Items[0]
+	write("lib.tenn", "element \"Parts\" {\n    item \"B\" { pos 2 2 }\n}\n")
+	if got := load(m); !got[0].Fresh || kit.Elements[0] != parts || parts.Items[0] == item || parts.Items[0].X != 2 {
+		t.Fatalf("a changed file refills the elements it has: %+v", got)
+	}
+	item = parts.Items[0]
+	write("lib.tenn", "element \"Parts\" {\n    item \"B\" { pos 3 3 }\n}\n")
+	if got := load(m, kit); got[0].Fresh || parts.Items[0] != item || item.X != 2 {
+		t.Fatalf("an edited mount is not read again: %+v", got)
+	}
+	write("lib.tenn", "element \"Other\" {\n}\n")
+	load(m)
+	if kit.Elements[0] == parts || kit.Elements[0].Name != "Other" {
+		t.Errorf("other names replace the elements")
+	}
+}

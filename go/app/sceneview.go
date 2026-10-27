@@ -46,13 +46,6 @@ var accent = gfx.RGBA(0, 122, 255, 1)
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
-	if v.lib != nil {
-		if n := v.libNode(); n != nil {
-			node = n
-		} else {
-			v.leaveLib()
-		}
-	}
 	oldSV, oldRendered := v.sv, v.rendered
 	sv := &sceneView{el: el, node: node, byNode: map[*scene.Node]*scene.Placed{}}
 	var err error
@@ -236,12 +229,13 @@ func (v *Viewer) drawSceneOverlay() {
 // selectScene makes paths the selection of the scene element on the canvas.
 func (v *Viewer) selectScene(paths []string) {
 	v.selNodes = paths
+	if v.state.Current == v.docElem {
+		v.docSel = paths
+	}
 	v.drawSceneOverlay()
 	v.refreshProps()
 	v.syncItems()
-	if v.lib == nil {
-		v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventSelect, Version: v.version})
-	}
+	v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventSelect, Version: v.version})
 }
 
 // revealScene centers the canvas on the first selected node when it is out of view.
@@ -347,27 +341,25 @@ func (v *Viewer) moveSceneNode(pl *scene.Placed, dx, dy float64) {
 		}
 	}
 	nx, ny := math.Round(x+dx), math.Round(y-dy)
-	if e, ok := SetPropEdit(v.text, pl.Src, "pos", numText(nx), numText(ny)); ok {
-		v.sceneEdit(e)
+	if e, ok := SetPropEdit(v.fileText(v.fileOf(pl.Src)), pl.Src, "pos", numText(nx), numText(ny)); ok {
+		v.sceneEdit(pl.Src, e)
 	}
 }
 
-// sceneEdit applies a text edit made by the window; a refused one shows in the banner.
-func (v *Viewer) sceneEdit(e TextEdit) bool {
-	if v.lib != nil {
-		v.setBanner("The library is read only here: open it in its own window to edit it.")
-		return false
-	}
+// sceneEdit applies a text edit of the file of n, made by the window; a refused one shows in the banner.
+func (v *Viewer) sceneEdit(n *scene.Node, e TextEdit) bool {
+	file := v.fileOf(n)
+	text := v.fileText(file)
 	// An edit from the window must not add scene errors: autosave would write a broken file. Errors are
 	// counted, not compared, because their positions move with the edit.
-	if e.Start >= 0 && e.Start <= e.End && e.End <= len(v.text) {
-		after := v.text[:e.Start] + e.New + v.text[e.End:]
-		if was, now := v.sceneErrorCount(v.text), v.sceneErrorCount(after); now > was || (now < 0 && was >= 0) {
+	if e.Start >= 0 && e.Start <= e.End && e.End <= len(text) {
+		after := text[:e.Start] + e.New + text[e.End:]
+		if was, now := v.sceneErrorCount(file, text), v.sceneErrorCount(file, after); now > was || (now < 0 && was >= 0) {
 			v.setBanner("Not applied: the change adds scene errors")
 			return false
 		}
 	}
-	if err := v.applyText(e.Start, e.End, e.New); err != nil {
+	if err := v.applyFileText(file, e.Start, e.End, e.New); err != nil {
 		v.setBanner(err.Error())
 		return false
 	}
@@ -390,7 +382,7 @@ func (v *Viewer) deleteSceneNode() {
 		return
 	}
 	v.selNodes = nil
-	v.sceneEdit(DeleteEdit(v.text, n))
+	v.sceneEdit(n, DeleteEdit(v.fileText(v.fileOf(n)), n))
 }
 
 // freeSpot is a place right of the content of the element for a new top level node, as pos x y.
@@ -477,9 +469,9 @@ func (v *Viewer) newScreen(w, h int) {
 
 // insertAndSelect writes cmd at the end of target and selects the node that starts with head in it.
 func (v *Viewer) insertAndSelect(target *scene.Node, cmd, head string) {
-	e := InsertEdit(v.text, target, cmd)
+	e := InsertEdit(v.fileText(v.fileOf(target)), target, cmd)
 	at := strings.Index(e.New, head)
-	if at < 0 || !v.sceneEdit(e) {
+	if at < 0 || !v.sceneEdit(target, e) {
 		return
 	}
 	if n := nodeStartingAt(v.sv.node, e.Start+at); n != nil {
@@ -516,8 +508,8 @@ func (v *Viewer) duplicateScene() {
 		}
 		srcs = append(srcs, s)
 	}
-	e, starts, ok := DuplicateEdit(v.text, srcs)
-	if !ok || !v.sceneEdit(e) {
+	e, starts, ok := DuplicateEdit(v.fileText(v.fileOf(v.sv.node)), srcs)
+	if !ok || !v.sceneEdit(v.sv.node, e) {
 		return
 	}
 	var paths []string

@@ -53,13 +53,6 @@ func TestSceneRows(t *testing.T) {
 			t.Errorf("%s does not name a node", k.Path)
 		}
 	}
-	found, more := FindSceneRows(root, "ro", 1)
-	if got := labels(found); !slices.Equal(got, []string{"Row - Home=Home.Row"}) || more != 1 {
-		t.Errorf("filter: %q, %d more", got, more)
-	}
-	if found, _ := FindSceneRows(root, "HOME", 10); len(found) != 2 {
-		t.Errorf("the filter folds case: %q", labels(found))
-	}
 }
 
 func TestDiagramRows(t *testing.T) {
@@ -67,15 +60,12 @@ func TestDiagramRows(t *testing.T) {
 	a := e.AddGet(model.NewDiagramItem(model.ItemKindItem, "Idea"))
 	b := e.AddGet(model.NewDiagramItem(model.ItemKindItem, ""))
 	e.AddGet(model.NewLinkItem(model.ItemKindLink, "", a, b))
-	rows := DiagramRows(e, "")
+	rows := DiagramRows(e)
 	if got := []string{rows[0].Label, rows[1].Label, rows[2].Label}; len(rows) != 3 || !slices.Equal(got, []string{"Idea", "(no name)", "Idea -> "}) {
 		t.Fatalf("rows %+v", rows)
 	}
 	if rows[0].Item != a || rows[2].Kind != "link" {
 		t.Errorf("rows %+v", rows)
-	}
-	if rows := DiagramRows(e, "ide"); len(rows) != 2 {
-		t.Errorf("filter: %+v", rows)
 	}
 }
 
@@ -159,7 +149,7 @@ const kitText = "item Card { width 40; height 20; auto-layout column; slot }\n" 
 func TestDuplicateUseAndUndo(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "kit.tenn"), []byte(kitText), 0o644)
-	text := "import kit.tenn as kit\nuse kit.Card as \"Доска - вид\" {\n  pos 10 -20\n  item a\n}\n"
+	text := "element kit --from-file kit.tenn\nuse kit.Card as \"Доска - вид\" {\n  pos 10 -20\n  item a\n}\n"
 	v := newDoc(t, &Shell{}, filepath.Join(dir, "main.tenn"), text)
 	use := NodeAt(v.file(), "Доска___вид")
 	if use == nil {
@@ -184,7 +174,7 @@ func TestDuplicateUseAndUndo(t *testing.T) {
 func TestInsertTarget(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "kit.tenn"), []byte(kitText), 0o644)
-	text := "import kit.tenn as kit\nitem Frame { auto-layout column }\nuse kit.Card as c\nuse kit.Panel as p\nuse kit.Both as b\nuse kit.Plain as q\n"
+	text := "element kit --from-file kit.tenn\nitem Frame { auto-layout column }\nuse kit.Card as c\nuse kit.Panel as p\nuse kit.Both as b\nuse kit.Plain as q\n"
 	os.WriteFile(filepath.Join(dir, "main.tenn"), []byte(text), 0o644)
 	tree, err := scene.Load(dir, "main.tenn")
 	if tree == nil {

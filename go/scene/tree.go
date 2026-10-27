@@ -18,16 +18,14 @@ const (
 	KItem
 	KLink
 	KUse
-	KSlot    // slot definition in a component; Content is the fallback
-	KMount   // import ... as alias: Target is the root of the imported file
-	KVirtual // a dotted alias prefix: "my" of "my.lib"
+	KSlot // slot definition in a component; Content is the fallback
 )
 
 // Range is the byte range [Start, End) of a command in the text of its file.
 type Range struct{ Start, End int }
 
 func (k Kind) String() string {
-	return [...]string{"file", "element", "item", "link", "use", "slot", "import", "namespace"}[k]
+	return [...]string{"file", "element", "item", "link", "use", "slot"}[k]
 }
 
 // Prop is a command that is not structure: a property of its node, in file order.
@@ -93,9 +91,7 @@ type Node struct {
 	Props   []*Prop
 	Content []*Node // item, link, use, slot in file order
 	Elems   []*Node // nested elements
-	Mounts  []*Node // imports and their alias prefixes
 
-	Target   *Node       // KMount: the root of the imported file
 	Mount    *Node       // KElement with --from-file: the root of the file that holds its content
 	From, To string      // KLink
 	Path     string      // KUse
@@ -103,7 +99,7 @@ type Node struct {
 }
 
 // Nodes lists the elements, items and uses written directly in n, in file order: the nodes a path
-// can name, without imports and without what a use passes in its block.
+// can name, without what a use passes in its block.
 func (n *Node) Nodes() []*Node {
 	if n.Kind == KUse {
 		return nil
@@ -125,17 +121,14 @@ func (n *Node) holdsContent() bool {
 
 func (n *Node) isContainer() bool { return n.Kind == KFile || n.Kind == KElement }
 
-// named lists what a path segment can pick under n: elements, items, uses and import aliases.
+// named lists what a path segment can pick under n: elements, items and uses.
 func (n *Node) named() []*Node {
-	if n.Kind == KMount {
-		n = n.Target
-	}
-	out := make([]*Node, 0, len(n.Elems)+len(n.Content)+len(n.Mounts))
+	out := make([]*Node, 0, len(n.Elems)+len(n.Content))
 	out = append(out, n.Elems...)
 	for _, c := range n.Content {
 		if c.Kind == KItem || c.Kind == KUse {
 			out = append(out, c)
 		}
 	}
-	return append(out, n.Mounts...)
+	return out
 }

@@ -212,6 +212,12 @@ type ElementModelStore struct {
 	Modified         bool
 	ExecutionContext IExecutionContext
 
+	// An edit inside the content of a --from-file is refused unless both are set: MountWritable says
+	// whether the source file of the mounting element can take the edit, OnMountEdit runs after the
+	// edit, undo and redo included, to write the content back.
+	MountWritable func(mount *Element) bool
+	OnMountEdit   func(mount *Element)
+
 	pending   []*ModelEvent
 	notifying bool
 }
@@ -226,10 +232,11 @@ func IntPtr(i int) *int { return &i }
 // Execute applies the action, or undoes it when it was applied before, so the same action toggles between
 // undo and redo. A nil undoManager or refresh is skipped.
 func (s *ElementModelStore) Execute(action ElementOperation, undoManager *UndoManager, refresh func()) error {
+	var mount *Element
 	if n := action.GetNotifier(); n != nil {
 		// Renaming the element that has --from-file only edits its line; anything else edits the file's content.
 		_, rename := action.(*UpdateElementName)
-		if n.InMount() || n.FromFile != "" && !rename {
+		if mount = MountOf(n, rename); mount != nil && (s.MountWritable == nil || s.OnMountEdit == nil || !s.MountWritable(mount)) {
 			return ErrMounted
 		}
 	}
@@ -244,6 +251,9 @@ func (s *ElementModelStore) Execute(action ElementOperation, undoManager *UndoMa
 			return err
 		}
 		base.UndoCalled = false
+	}
+	if mount != nil {
+		s.OnMountEdit(mount)
 	}
 	// Registered after apply so a failing op leaves no undo entry. The same action is re-registered, so undo/redo toggle.
 	if undoManager != nil {
@@ -306,6 +316,10 @@ func (s *ElementModelStore) AddElements(parent *Element, childs []*Element, undo
 }
 
 func (s *ElementModelStore) Move(element, newParent *Element, undoManager *UndoManager, refresh func(), index int) error {
+	// The element would leave one file for another, and only one of them is written back.
+	if MountOf(element.Parent, false) != MountOf(newParent, false) {
+		return ErrMounted
+	}
 	op := NewCompositeOperation(s, element)
 
 	op.Add(NewRemoveElement(s, element.Parent, element))

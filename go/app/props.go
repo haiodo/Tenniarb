@@ -7,8 +7,10 @@ import (
 	"strings"
 	"time"
 	"unicode/utf16"
+	"unicode/utf8"
 
 	g "github.com/haiodo/gowt"
+	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -37,14 +39,17 @@ type props struct {
 
 // codePane is the text of the properties under the canvas, as Swift shows it.
 func (v *Viewer) codePane() g.Option {
-	return g.StyledText(g.Scrollbars(), g.Border(), g.Grow(), g.ID("props"), g.Init(v.initProps))
+	return g.VBox(g.Grow(), g.Padding(0), g.Gap(0), g.Init(func(p *g.Panel) { look.SetMaterial(p, true) }),
+		g.StyledText(g.NoBackground(), g.NoBorder(), g.Scrollbars(), g.Grow(), g.ID("props"), g.Init(v.initProps)))
 }
 
 func (v *Viewer) initProps(t *g.StyledTextView) {
 	v.props.text = t
 	t.SetTabs(4)
+	t.Unwrap().SetMargins(8, 4, 8, 4)
 	t.OnChange(v.onPropsChange)
 	t.Unwrap().AddPaintListener(&valuePainter{v})
+	t.Unwrap().AddMouseListener(swt.MouseListenerMouseUpAdapter(v.onPropsClick))
 }
 
 func (v *Viewer) propsFocused() bool { return v.props.text.Unwrap().IsFocusControl() }
@@ -155,6 +160,87 @@ func (v *Viewer) styleProps(text string) {
 			style = g.TextStyle{Foreground: &c}
 		}
 		t.SetStyle(s.Start, s.Length, style)
+	}
+	if v.sceneMode() {
+		v.styleStubs(text)
+	}
+}
+
+// Link colour of the kid lines of the scene Code section, for a light and a dark background.
+var (
+	stubLight = g.RGB{R: 0, G: 102, B: 204}
+	stubDark  = g.RGB{R: 94, G: 168, B: 255}
+)
+
+// styleStubs draws each kid line of the scene Code section as a link; the underline of the link kind
+// is also what gives the hand cursor.
+func (v *Viewer) styleStubs(text string) {
+	n, _ := v.selectedScene()
+	if n == nil {
+		return
+	}
+	stubs, _ := findStubs(n, text)
+	c := stubLight
+	if v.app.Dark() {
+		c = stubDark
+	}
+	t := v.props.text
+	for _, s := range stubs {
+		from, to := utf8.RuneCountInString(text[:s.Start]), utf8.RuneCountInString(text[:s.End])
+		t.SetStyle(from, to-from, g.TextStyle{Foreground: &c, Underline: true})
+		start := len(utf16.Encode([]rune(text[:s.Start])))
+		if r := t.Unwrap().GetStyleRangeAtOffset(int32(start)); r != nil {
+			r.Start, r.Length = int32(start), int32(len(utf16.Encode([]rune(text[s.Start:s.End]))))
+			r.UnderlineStyle = swt.UNDERLINE_LINK
+			t.Unwrap().SetStyleRange(r)
+		}
+	}
+}
+
+// onPropsClick selects the kid whose line was clicked in the scene Code section.
+func (v *Viewer) onPropsClick(e *swt.MouseEvent) {
+	t := v.props.text
+	if _, sel := t.Selection(); e.Button != 1 || !v.sceneMode() || sel > 0 {
+		return
+	}
+	unit := int(t.Unwrap().GetOffsetAtPoint(swt.NewPoint(e.X, e.Y)))
+	if unit < 0 {
+		return
+	}
+	text := t.Text()
+	off := len(text)
+	for i, r := range text { // the widget counts UTF-16 units
+		if unit <= 0 {
+			off = i
+			break
+		}
+		unit -= utf16.RuneLen(r)
+	}
+	v.app.Async(func() { v.selectStubAt(text, off) })
+}
+
+// selectStubAt selects the kid whose stub holds the byte off of text, as a click in the item tree does.
+func (v *Viewer) selectStubAt(text string, off int) {
+	n, _ := v.selectedScene()
+	if n == nil || v.props.text.Text() != text {
+		return
+	}
+	stubs, _ := findStubs(n, text)
+	for _, s := range stubs {
+		if off < s.Start || off >= s.End {
+			continue
+		}
+		p := NodePath(v.sv.node, s.Kid)
+		if p == "" {
+			return
+		}
+		if v.props.changes != v.props.applied { // an edit still waits for its timer: the selection would drop it
+			v.props.changes++
+			v.props.applied = v.props.changes
+			v.applySceneCode(v.props.sceneKey, text)
+		}
+		v.selectItemPath(p)
+		return
 	}
 }
 

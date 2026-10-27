@@ -5,22 +5,17 @@ package app
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/icons"
-	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
-
-// itemsLimit caps the rows a filter shows; the rest is counted in the last row.
-const itemsLimit = 500
 
 // itemsList is the second level of navigation: the items of the canvas, in the sidebar in place of
 // the outline while the user works in an element.
@@ -29,33 +24,16 @@ type itemsList struct {
 	title   *g.LabelView
 	shown   bool
 	tree    *g.TreeView
-	filter  *g.TextView
-	query   string
 	open    map[string]bool // expanded scene rows by path, for the canvas of canvasOf
 	canvas  any
 	sig     string // what the rows show, so a redraw that changes none of them keeps them
 	syncing bool
 }
 
-// itemsPane is the item navigator: the way back to the outline, the filter field and the list.
+// itemsPane is the item navigator: the canvas name and the list.
 func (v *Viewer) itemsPane() g.Option {
 	return g.VBox(g.Ref(&v.itemsUI.box), g.Grow(), g.Padding(0), g.Gap(0),
-		g.HBox(g.GrowX(), g.Padding(g.Scaled(4)), g.Gap(g.Scaled(4)),
-			g.Button("‹ Back", g.Borderless(), g.ID("nav-back"), g.Init(func(b *g.ButtonView) { b.OnClick(func() { v.showItems(false) }) })),
-			g.Label("", g.Ref(&v.itemsUI.title), g.GrowX(), g.Typeface(sectionFont()))),
-		g.Text(g.Search(), g.Hint("Filter items"), g.GrowX(), g.ID("items-filter"), g.Init(func(t *g.TextView) {
-			v.itemsUI.filter = t
-			t.OnChange(func(q string) {
-				v.itemsUI.query = strings.TrimSpace(q)
-				v.rebuildItems()
-			})
-			t.Unwrap().AddFocusListener(swt.FocusListenerFocusGainedAdapter(func(*swt.FocusEvent) { v.activeText = t.Unwrap() }))
-			t.Unwrap().AddFocusListener(swt.FocusListenerFocusLostAdapter(func(*swt.FocusEvent) {
-				if v.activeText == t.Unwrap() {
-					v.activeText = nil
-				}
-			}))
-		})),
+		g.Label("", g.Ref(&v.itemsUI.title), g.GrowX(), g.Padding(g.Scaled(8)), g.Typeface(sectionFont())),
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			v.itemsUI.tree = t
 			t.Column("", g.Scaled(220))
@@ -79,6 +57,9 @@ func (v *Viewer) itemsPane() g.Option {
 		})))
 }
 
+// toggleItems is the Items toolbar button: the navigator of the current canvas, or the outline again.
+func (v *Viewer) toggleItems() { v.showItems(!v.itemsUI.shown) }
+
 // showItems switches the sidebar between the outline and the item navigator of the canvas.
 func (v *Viewer) showItems(on bool) {
 	l := &v.itemsUI
@@ -96,10 +77,7 @@ func (v *Viewer) showItems(on bool) {
 
 // itemsTitle names the canvas the navigator shows.
 func (v *Viewer) itemsTitle() string {
-	switch {
-	case v.lib != nil:
-		return v.lib.lib
-	case v.state.Current != nil:
+	if v.state.Current != nil {
 		return v.state.Current.Name
 	}
 	return ""
@@ -107,9 +85,6 @@ func (v *Viewer) itemsTitle() string {
 
 // canvasOf names what is on the canvas, so the open rows are forgotten when it changes.
 func (v *Viewer) canvasOf() any {
-	if v.lib != nil {
-		return v.lib.file
-	}
 	return v.state.Current
 }
 
@@ -123,11 +98,11 @@ func (v *Viewer) rebuildItems() {
 	if c := v.canvasOf(); c != l.canvas || l.open == nil {
 		l.canvas, l.open = c, map[string]bool{}
 	}
-	rows, more := v.itemRows()
-	sig := l.query + "\x00" + rowsSig(rows, more)
+	rows := v.itemRows()
+	sig := rowsSig(rows)
 	for p := range l.open {
 		if n := v.canvasNodeAt(p); n != nil {
-			sig += "\x01" + p + rowsSig(SceneRows(n, p), 0)
+			sig += "\x01" + p + rowsSig(SceneRows(n, p))
 		}
 	}
 	if sig == l.sig {
@@ -139,15 +114,12 @@ func (v *Viewer) rebuildItems() {
 	l.tree.Batch(func() {
 		l.tree.Clear()
 		v.addItemRows(l.tree.Node, rows)
-		if more > 0 {
-			l.tree.Node("... " + strconv.Itoa(more) + " more")
-		}
 	})
 	l.syncing = false
 	v.syncItems()
 }
 
-func rowsSig(rows []ItemRow, more int) string {
+func rowsSig(rows []ItemRow) string {
 	var b strings.Builder
 	for _, r := range rows {
 		b.WriteString(r.Label + "\x02" + r.Kind + "\x02" + r.Path)
@@ -159,26 +131,21 @@ func rowsSig(rows []ItemRow, more int) string {
 		}
 		b.WriteByte('\x03')
 	}
-	b.WriteString(strconv.Itoa(more))
 	return b.String()
 }
 
-// itemRows are the top rows for the canvas and the filter.
-func (v *Viewer) itemRows() ([]ItemRow, int) {
-	q := v.itemsUI.query
+// itemRows are the top rows for the canvas.
+func (v *Viewer) itemRows() []ItemRow {
 	switch {
 	case v.sceneMode():
 		if v.sv.node == nil {
-			return nil, 0
+			return nil
 		}
-		if q != "" {
-			return FindSceneRows(v.sv.node, q, itemsLimit)
-		}
-		return SceneRows(v.sv.node, ""), 0
+		return SceneRows(v.sv.node, "")
 	case v.session != nil && v.rendered != nil:
-		return DiagramRows(v.session.Element(), q), 0
+		return DiagramRows(v.session.Element())
 	}
-	return nil, 0
+	return nil
 }
 
 func (v *Viewer) canvasNodeAt(p string) *scene.Node {
@@ -253,12 +220,17 @@ func (v *Viewer) onItemSelect(n *g.Node) {
 	}
 	switch {
 	case r.Path != "" && v.sceneMode():
-		v.selectScene([]string{r.Path})
-		v.revealNode()
+		v.selectItemPath(r.Path)
 	case r.Item != nil && v.session != nil:
 		v.session.Select([]*model.DiagramItem{r.Item})
 		v.revealItem(r.Item)
 	}
+}
+
+// selectItemPath selects the scene node of a path and brings it into view.
+func (v *Viewer) selectItemPath(p string) {
+	v.selectScene([]string{p})
+	v.revealNode()
 }
 
 // syncItems selects the row of what is selected on the canvas, opening the rows above it.
@@ -295,14 +267,6 @@ func (v *Viewer) syncItems() {
 // itemRowOf is the row of a node path; the rows above it are opened, and made when they were not.
 func (v *Viewer) itemRowOf(p string) *g.Node {
 	rows := v.itemsUI.tree.Roots()
-	if v.itemsUI.query != "" {
-		for _, n := range rows {
-			if r, ok := n.Data().(*ItemRow); ok && r.Path == p {
-				return n
-			}
-		}
-		return nil
-	}
 	segs := strings.Split(p, ".")
 	for i := range segs {
 		want := strings.Join(segs[:i+1], ".")
@@ -366,8 +330,8 @@ func (v *Viewer) revealItem(it *model.DiagramItem) {
 	comp.SetCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
 }
 
-// itemsEntries is the context menu of the list: on a library, Insert Component; on a screen, the
-// commands of the selected node.
+// itemsEntries is the context menu of the list: the commands of the selected node, and in a mounted
+// element Insert Component.
 func (v *Viewer) itemsEntries() []editor.Entry {
 	sel := v.itemsUI.tree.Selected()
 	if len(sel) != 1 || v.session == nil {
@@ -377,16 +341,17 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 	if !ok {
 		return nil
 	}
-	if v.lib != nil {
-		return []editor.Entry{{Label: "Insert Component", Run: func() { v.insertFromLib(r) }}}
-	}
 	if r.Item != nil {
 		return []editor.Entry{{Label: "Duplicate", Run: v.session.Duplicate}, {Label: "Delete", Run: v.session.DeleteSelection}}
 	}
-	return []editor.Entry{
+	entries := []editor.Entry{
 		{Label: "Duplicate", Run: v.duplicateScene},
 		{Label: "Zoom to Item", Run: v.zoomToSelection},
 		{Sep: true},
 		{Label: "Delete", Run: v.deleteSceneNode},
 	}
+	if m := model.MountOf(v.state.Current, false); m != nil {
+		entries = append([]editor.Entry{{Label: "Insert Component", Run: func() { v.insertFromMount(m, r) }}, {Sep: true}}, entries...)
+	}
+	return entries
 }

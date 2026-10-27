@@ -8,7 +8,9 @@ root=$(cd "$(dirname "$0")/../.." && pwd)
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 icon=$tmp/TennIco.icns
 cat "$root/Tenniarb/TennIco.icns" >"$icon"
-DOC_EXTS=tenn DOC_NAME="Tenniarb file" DOC_ICON=$icon DOC_UTI=tenniarb.tenn \
+# The app icon is the Swift app's asset-catalog icon; TennIco.icns stays the document icon.
+ICON="$root/Tenniarb/Assets.xcassets/AppIcon.appiconset/Icon-v3.png" \
+	DOC_EXTS=tenn DOC_NAME="Tenniarb file" DOC_ICON=$icon DOC_UTI=tenniarb.tenn \
 	bash "$gowt/tooling/darwin/mkapp.sh" "$bin" "$out" Tenniarb >/dev/null # the module cache drops the exec bit
 app=$out/Tenniarb.app
 plist=$app/Contents/Info.plist
@@ -17,7 +19,6 @@ pb "Set :CFBundleIdentifier andrey.sobolev.Tenniarb"
 pb "Set :CFBundleShortVersionString $ver"
 pb "Set :CFBundleVersion $build"
 pb "Add :CFBundleDisplayName string Tenniarb"
-pb "Add :CFBundleIconFile string TennIco.icns"
 pb "Add :LSApplicationCategoryType string public.app-category.productivity"
 pb "Add :NSHumanReadableCopyright string 'Copyright © 2026 Andrey Sobolev'"
 # Swift declares the type as public.text, mime text/plain, icon on the UTI.
