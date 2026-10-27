@@ -35,6 +35,11 @@ type props struct {
 	sceneKey string
 }
 
+// codePane is the text of the properties under the canvas, as Swift shows it.
+func (v *Viewer) codePane() g.Option {
+	return g.StyledText(g.Scrollbars(), g.Border(), g.Grow(), g.ID("props"), g.Init(v.initProps))
+}
+
 func (v *Viewer) initProps(t *g.StyledTextView) {
 	v.props.text = t
 	t.SetTabs(4)

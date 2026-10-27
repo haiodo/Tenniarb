@@ -133,7 +133,7 @@ func TestImportsFidelity(t *testing.T) {
 		t.Errorf("the library must come first")
 	}
 	out := res.Tenn(f)
-	for _, want := range []string{`import lib.tenn as lib`, "use lib.Kit_Buttons.Button as Save", "at Icon { hidden no }", "missing: Gone"} {
+	for _, want := range []string{`element lib --from-file lib.tenn`, "use lib.Kit_Buttons.Button as Save", "at Icon { hidden no }", "missing: Gone"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("no %q in\n%s", want, out)
 		}

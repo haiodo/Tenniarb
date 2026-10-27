@@ -18,7 +18,7 @@ type libRow struct {
 	file string // relative to the workspace root
 }
 
-// libraries are the files the document imports, each once, in the order of the imports.
+// libraries are the files the document imports or mounts with --from-file, each once.
 func (v *Viewer) libraries() []*libRow {
 	f := v.file()
 	if f == nil {
@@ -48,6 +48,10 @@ func (v *Viewer) libraries() []*libRow {
 	walk = func(n *scene.Node) {
 		mounts(n, "")
 		for _, c := range n.Elems {
+			if c.Mount != nil && !seen[c.Mount] {
+				seen[c.Mount] = true
+				out = append(out, &libRow{lib: c.Name, file: c.Mount.Pos.File})
+			}
 			walk(c)
 		}
 	}

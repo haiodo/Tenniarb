@@ -147,6 +147,7 @@ func (d *docCore) loadScene() {
 		return
 	}
 	d.stree = tree
+	model.MountFiles(d.session.Root(), tree, rel)
 	d.sceneErr = sceneErrors(tree.Diagnostics())
 	d.libs = map[string]Stamp{}
 	for _, f := range tree.Files()[1:] {
@@ -492,6 +493,9 @@ func (o *textEditOp) plan(old *model.Element, next *model.ElementModel, idx []in
 	o.notify = a
 	var pair func(a, b *model.Element)
 	pair = func(a, b *model.Element) {
+		if a.FromFile != "" && sameShape(a, b) {
+			return // its content is the file's, not the text's
+		}
 		s := elemSwap{e: a, old: dataOf(a), new: dataOf(b)}
 		if !sameShape(a, b) {
 			s.old.elems, s.new.elems = a.Elements, b.Elements
@@ -508,7 +512,13 @@ func (o *textEditOp) plan(old *model.Element, next *model.ElementModel, idx []in
 }
 
 func sameShape(a, b *model.Element) bool {
-	if a.Name != b.Name || len(a.Elements) != len(b.Elements) {
+	if a.Name != b.Name || a.FromFile != b.FromFile {
+		return false
+	}
+	if a.FromFile != "" {
+		return true
+	}
+	if len(a.Elements) != len(b.Elements) {
 		return false
 	}
 	for i := range a.Elements {

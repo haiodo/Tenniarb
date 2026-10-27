@@ -226,6 +226,13 @@ func IntPtr(i int) *int { return &i }
 // Execute applies the action, or undoes it when it was applied before, so the same action toggles between
 // undo and redo. A nil undoManager or refresh is skipped.
 func (s *ElementModelStore) Execute(action ElementOperation, undoManager *UndoManager, refresh func()) error {
+	if n := action.GetNotifier(); n != nil {
+		// Renaming the element that has --from-file only edits its line; anything else edits the file's content.
+		_, rename := action.(*UpdateElementName)
+		if n.InMount() || n.FromFile != "" && !rename {
+			return ErrMounted
+		}
+	}
 	base := action.Base()
 	if !base.UndoCalled {
 		if err := action.Undo(); err != nil {

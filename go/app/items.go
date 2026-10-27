@@ -22,8 +22,12 @@ import (
 // itemsLimit caps the rows a filter shows; the rest is counted in the last row.
 const itemsLimit = 500
 
-// itemsList is the second level of navigation: the items of the canvas, under the outline.
+// itemsList is the second level of navigation: the items of the canvas, in the sidebar in place of
+// the outline while the user works in an element.
 type itemsList struct {
+	box     *g.Panel
+	title   *g.LabelView
+	shown   bool
 	tree    *g.TreeView
 	filter  *g.TextView
 	query   string
@@ -33,9 +37,12 @@ type itemsList struct {
 	syncing bool
 }
 
-// itemsPane is the filter field and the list.
+// itemsPane is the item navigator: the way back to the outline, the filter field and the list.
 func (v *Viewer) itemsPane() g.Option {
-	return g.VBox(g.Padding(0), g.Gap(0),
+	return g.VBox(g.Ref(&v.itemsUI.box), g.Grow(), g.Padding(0), g.Gap(0),
+		g.HBox(g.GrowX(), g.Padding(g.Scaled(4)), g.Gap(g.Scaled(4)),
+			g.Button("‹ Back", g.Borderless(), g.ID("nav-back"), g.Init(func(b *g.ButtonView) { b.OnClick(func() { v.showItems(false) }) })),
+			g.Label("", g.Ref(&v.itemsUI.title), g.GrowX(), g.Typeface(sectionFont()))),
 		g.Text(g.Search(), g.Hint("Filter items"), g.GrowX(), g.ID("items-filter"), g.Init(func(t *g.TextView) {
 			v.itemsUI.filter = t
 			t.OnChange(func(q string) {
@@ -72,6 +79,32 @@ func (v *Viewer) itemsPane() g.Option {
 		})))
 }
 
+// showItems switches the sidebar between the outline and the item navigator of the canvas.
+func (v *Viewer) showItems(on bool) {
+	l := &v.itemsUI
+	l.shown = on
+	l.box.SetVisible(on)
+	v.tree.SetVisible(!on)
+	v.rebuildItems()
+	v.win.Unwrap().Layout()
+	if on {
+		l.tree.Unwrap().SetFocus()
+	} else {
+		v.tree.Unwrap().SetFocus()
+	}
+}
+
+// itemsTitle names the canvas the navigator shows.
+func (v *Viewer) itemsTitle() string {
+	switch {
+	case v.lib != nil:
+		return v.lib.lib
+	case v.state.Current != nil:
+		return v.state.Current.Name
+	}
+	return ""
+}
+
 // canvasOf names what is on the canvas, so the open rows are forgotten when it changes.
 func (v *Viewer) canvasOf() any {
 	if v.lib != nil {
@@ -86,6 +119,7 @@ func (v *Viewer) rebuildItems() {
 	if l.tree == nil {
 		return
 	}
+	l.title.SetText(v.itemsTitle())
 	if c := v.canvasOf(); c != l.canvas || l.open == nil {
 		l.canvas, l.open = c, map[string]bool{}
 	}

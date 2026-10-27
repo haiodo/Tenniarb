@@ -28,6 +28,9 @@ func newRenderers(tree *scene.Tree) *renderers {
 }
 
 func (r *renderers) of(n *scene.Node) string {
+	if n.Mount != nil {
+		n = n.Mount // an element with --from-file is the root of its file
+	}
 	m, ok := r.models[n.Pos.File]
 	if !ok {
 		src, _ := r.tree.Source(n.Pos.File)
@@ -94,6 +97,9 @@ func diagramElement(root *model.Element, n *scene.Node) (*model.Element, error) 
 
 // renderDiagram draws a classic element with go/render, the renderer of the app's canvas.
 func renderDiagram(r *renderers, n *scene.Node, rel, element string, scale float64) (*rendered, error) {
+	if n.Mount != nil {
+		n = n.Mount
+	}
 	m := r.models[n.Pos.File]
 	if m == nil {
 		return nil, fmt.Errorf("%s does not parse as a diagram", n.Pos.File)

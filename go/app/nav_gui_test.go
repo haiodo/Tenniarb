@@ -62,15 +62,23 @@ func TestNavigation(t *testing.T) {
 	// the only window: its title changes with the edits and the autosave, so selectors do not name it
 	win := func(sel qa.Selector) qa.Selector { return sel }
 
-	// the outline: the file's own canvas and the library, no screens
+	// the outline: the file's own canvas, the mounted library as an element and under Libraries, no screens
 	st := h.state()
 	root := strings.TrimSuffix(filepath.Base(screen), ".tenn")
-	if len(st.Outline) != 3 || st.Outline[0] != root || st.Outline[1] != "Libraries" ||
-		!strings.HasSuffix(st.Outline[2], " - "+filepath.Base(lib)) || st.Error != "" {
+	if len(st.Outline) != 4 || st.Outline[0] != root || st.Outline[2] != "Libraries" ||
+		!strings.HasSuffix(st.Outline[3], " - "+filepath.Base(lib)) || st.Error != "" {
 		t.Fatalf("outline %q (error %q)", st.Outline, st.Error)
 	}
-	libLabel := strings.TrimPrefix(st.Outline[2], "Libraries/")
+	libLabel := strings.TrimPrefix(st.Outline[3], "Libraries/")
 	alias := strings.TrimSuffix(libLabel, " - "+filepath.Base(lib))
+
+	// a double click on the element switches the left panel to its items, with the way back
+	a.Find(qa.Text(root).In(win(qa.ID("outline")))).Activate()
+	a.Settle()
+	st = h.state()
+	if len(st.Items) == 0 {
+		t.Fatalf("no items after the double click: %+v", st)
+	}
 
 	// the Items list: the top level nodes of the canvas
 	tree, _ := scene.Load(dir, filepath.Base(screen))
@@ -148,6 +156,11 @@ func TestNavigation(t *testing.T) {
 	}
 	a.ShotWindow("04-undone", 0)
 
+	// Back returns to the outline, the library is opened from there
+	a.Find(qa.ID("nav-back")).Click()
+	a.Settle()
+	a.ShotWindow("03b-back-to-outline", 0)
+
 	// a component from the library canvas into a new frame
 	a.Find(win(h.menuItem("Phone 390 x 844"))).Click()
 	a.Settle()
@@ -159,13 +172,16 @@ func TestNavigation(t *testing.T) {
 	a.Find(qa.Text(libLabel).In(win(qa.ID("outline")))).Click()
 	a.Settle()
 	st = h.state()
+	a.Find(qa.Text(libLabel).In(win(qa.ID("outline")))).Activate()
+	a.Settle()
+	st = h.state()
 	if st.Lib == "" || len(st.Items) == 0 {
 		t.Fatalf("library canvas: %+v", st)
 	}
 	a.ShotWindow("05-library-canvas", 0)
 	cat := ""
 	for _, it := range st.Items {
-		if r := st.ItemRows[it]; !strings.Contains(it, "/") && r.Kids {
+		if r, ok := st.ItemRows[it]; ok && r.Kids {
 			cat = it
 			break
 		}

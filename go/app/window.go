@@ -181,20 +181,21 @@ func (v *Viewer) build() {
 	var sidebar, content *g.Panel
 	v.win.Add(
 		g.VBox(g.Ref(&sidebar), g.Padding(0), g.Gap(0),
-			g.Split(g.Vertical(), g.Grow(), g.Init(func(s *g.SplitView) { s.SetWeights(40, 60) }),
-				g.Tree(g.NoBorder(), g.ID("outline"), g.Init(func(t *g.TreeView) {
-					v.tree = t
-					t.Column("", g.Scaled(220))
-					t.ShowHeader(false)
-					t.OnSelect(v.onOutlineSelect)
-					t.OnActivate(v.renameNode)
-					v.outlineKeys(t)
-				})),
-				v.itemsPane())),
+			g.Tree(g.NoBorder(), g.Grow(), g.ID("outline"), g.Init(func(t *g.TreeView) {
+				v.tree = t
+				t.Column("", g.Scaled(220))
+				t.ShowHeader(false)
+				t.OnSelect(v.onOutlineSelect)
+				t.OnActivate(v.activateNode)
+				v.outlineKeys(t)
+			})),
+			v.itemsPane()),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
 			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
-			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
-				g.Background(g.Adaptive{Light: light, Dark: dark}))),
+			g.Split(g.Vertical(), g.Grow(), g.Init(func(s *g.SplitView) { s.SetWeights(78, 22) }),
+				view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
+					g.Background(g.Adaptive{Light: light, Dark: dark})),
+				v.codePane())),
 		v.inspectorPane())
 	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
 	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.InspectorWidth)
@@ -202,7 +203,7 @@ func (v *Viewer) build() {
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)
 	v.banner.SetVisible(false)
-	v.insp.setCode(false)
+	v.itemsUI.box.SetVisible(false)
 	v.win.OnClose(v.onClose)
 	v.menus()
 	v.contextMenus()

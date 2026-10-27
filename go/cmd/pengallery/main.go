@@ -54,7 +54,7 @@ func main() {
 			pb, err := offscreen.PNG(sc, ps.Root, 1, white)
 			must(err)
 			// A screen is an item of the file root, so a wrapper file uses it as its only content.
-			wrap := fmt.Sprintf("import %s.tenn as f\nuse f.%s as \"W\"\n", f.Name, ids[in.ID])
+			wrap := fmt.Sprintf("element f --from-file %s.tenn\nuse f.%s as \"W\"\n", f.Name, ids[in.ID])
 			tree, err := scene.LoadSource(tdir, "wrap.tenn", wrap)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, f.Name, in.Name, err)

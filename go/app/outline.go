@@ -244,13 +244,15 @@ func (v *Viewer) moveElement(delta int) {
 	v.session.MoveElement(e, e.Parent, at)
 }
 
-// renameNode is the activation of a row: an element is renamed, a library opens in its own window.
-func (v *Viewer) renameNode(n *g.Node) {
+// activateNode is a double click or Enter on a row: the sidebar shows the items of its canvas.
+func (v *Viewer) activateNode(n *g.Node) {
 	switch d := n.Data().(type) {
 	case *model.Element:
-		v.renameElement(d)
+		v.selectElement(d)
+		v.showItems(true)
 	case *libRow:
-		v.openLib(d)
+		v.showLib(d)
+		v.showItems(true)
 	}
 }
 

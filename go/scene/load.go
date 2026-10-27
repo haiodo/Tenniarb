@@ -11,6 +11,9 @@ import (
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
+// FromFileFlag is the argument of an element command that takes the content of the element from a file.
+const FromFileFlag = "--from-file"
+
 // Tree is a loaded workspace file with everything it imports.
 type Tree struct {
 	root  string // absolute, symlinks resolved
@@ -283,8 +286,50 @@ func (l *loader) newNode(kind Kind, owner *Node, c *tenn.Node) *Node {
 func (l *loader) addElement(owner *Node, c *tenn.Node) {
 	n := l.newNode(KElement, owner, c)
 	owner.Elems = append(owner.Elems, n)
-	_, block := split(c)
+	args, block := split(c)
+	if rel, ok := fromFile(args); ok {
+		if len(block) > 0 {
+			l.t.fail(n.Pos, "element %q takes its content from %s: remove the block", n.Name, rel)
+		}
+		l.mountFile(n, rel)
+		return
+	}
 	l.fill(n, block)
+}
+
+// fromFile reads "--from-file <path>" among the arguments of an element command.
+func fromFile(args []*tenn.Node) (string, bool) {
+	for i, a := range args {
+		if s, _ := a.GetIdentText(); s == FromFileFlag && i+1 < len(args) {
+			return argText(args, i+1), true
+		}
+	}
+	return "", false
+}
+
+// mountFile makes the content of the file the content of n: the lists are shared, so one file
+// mounted twice is one subtree, and scopes inside it stay in that file.
+func (l *loader) mountFile(n *Node, rel string) {
+	abs, ok := l.resolveFile(rel, n.Pos, "element --from-file")
+	if !ok {
+		return
+	}
+	file := l.t.loadFile(abs, &n.Pos)
+	if file == nil {
+		return
+	}
+	n.Mount = file
+	n.Props, n.Content, n.Elems, n.Mounts = file.Props, file.Content, file.Elems, file.Mounts
+}
+
+// resolveFile finds rel relative to the file being read; it fails when the path leaves the workspace root.
+func (l *loader) resolveFile(rel string, pos Pos, what string) (string, bool) {
+	target := filepath.Join(l.t.root, filepath.FromSlash(filepath.Dir(l.file)), filepath.FromSlash(rel))
+	abs, in := l.t.inside(target)
+	if !in {
+		l.t.fail(pos, "%s %q leaves the workspace root", what, rel)
+	}
+	return abs, in
 }
 
 // addContent adds an item, link, use or slot command to owner; it returns nil when c is not one, so
@@ -387,10 +432,8 @@ func (l *loader) addImport(owner *Node, c *tenn.Node) {
 		l.t.fail(pos, "bad import alias %q", alias)
 		return
 	}
-	target := filepath.Join(l.t.root, filepath.FromSlash(filepath.Dir(l.file)), filepath.FromSlash(rel))
-	abs, in := l.t.inside(target)
+	abs, in := l.resolveFile(rel, pos, "import")
 	if !in {
-		l.t.fail(pos, "import %q leaves the workspace root", rel)
 		return
 	}
 	file := l.t.loadFile(abs, &pos)

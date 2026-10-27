@@ -78,6 +78,10 @@ func loadedFiles(tree *scene.Tree, rel string) []string {
 			}
 			walk(m)
 		}
+		if m := n.Mount; m != nil && !seen[m.Pos.File] {
+			seen[m.Pos.File] = true
+			walk(m)
+		}
 		for _, e := range n.Elems {
 			walk(e)
 		}

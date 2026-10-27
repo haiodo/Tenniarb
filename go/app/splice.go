@@ -20,6 +20,9 @@ type shape struct {
 
 func shapeOf(e *model.Element) shape {
 	s := shape{e: e}
+	if e.FromFile != "" { // the text holds only the --from-file line; the children are the file's
+		return s
+	}
 	for _, c := range e.Elements {
 		s.kids = append(s.kids, shapeOf(c))
 	}

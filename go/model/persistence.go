@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
 	"golang.org/x/text/unicode/norm"
 )
@@ -267,6 +268,12 @@ func buildElement(e *Element, topParent *tenn.Node, includeSubElements, includeI
 
 	topParent.Add(enode)
 
+	if e.FromFile != "" {
+		// The content lives in the file; printing it here would inline the library.
+		enode.Add(tenn.NewIdent(scene.FromFileFlag), tenn.NewStrNode(e.FromFile))
+		return
+	}
+
 	enodeBlock := tenn.NewBlockExpr()
 
 	enode.Add(enodeBlock)
@@ -390,6 +397,7 @@ func parseElement(node *tenn.Node) *Element {
 	if name, ok := node.GetIdent(1); ok {
 		el.Name = name
 	}
+	el.FromFile = fromFileArg(node)
 
 	parseChildCommands(node, 2, func(cmdName string, blChild *tenn.Node) {
 		ParseElementData(el, cmdName, blChild, &linkElements)
@@ -548,4 +556,15 @@ func ReadTenn(text string) *ElementModel {
 		return nil
 	}
 	return ParseTenn(tree)
+}
+
+// fromFileArg reads the path of "--from-file <path>" among the arguments of an element command.
+func fromFileArg(node *tenn.Node) string {
+	for i := 2; i+1 < len(node.Children); i++ {
+		if s, _ := node.Children[i].GetIdentText(); s == scene.FromFileFlag {
+			s, _ = node.Children[i+1].GetIdentText()
+			return s
+		}
+	}
+	return ""
 }

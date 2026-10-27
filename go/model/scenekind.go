@@ -81,6 +81,9 @@ func KindOfModel(m *ElementModel) DocKind {
 		case len(e.Items) > 0:
 			classic = true
 		}
+		if e.FromFile != "" {
+			imports = true
+		}
 		for _, p := range e.Properties.Nodes() {
 			if commandOf(p) == "import" {
 				imports = true

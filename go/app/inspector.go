@@ -117,8 +117,7 @@ type inspSection struct {
 	fields []*inspField
 }
 
-// inspector is the right column: the properties of the selection as compact sections, and the text
-// of the same properties as the last, collapsible section.
+// inspector is the right column: the properties of the selection as compact sections.
 type inspector struct {
 	v        *Viewer
 	panel    *g.Panel
@@ -129,10 +128,6 @@ type inspector struct {
 	kind     selKind
 	loading  bool
 	pending  bool
-
-	codeBody *g.Panel
-	codeHead *g.ButtonView
-	codeOpen bool
 }
 
 func (in *inspector) src() propSrc { return in.v.selSrc() }
@@ -585,6 +580,12 @@ func (in *inspector) build() g.Option {
 				entryCfg{id: "insp-grid-x", name: "grid", numeric: true, keep: true},
 				entryCfg{id: "insp-grid-y", name: "grid", idx: 1, numeric: true, keep: true}),
 			in.combo("Layer", selected, "insp-layer", "layer", []string{"default", "background", "hover"}, "default", nil)),
+		in.section(func(k selKind) string {
+			if k == kindNone {
+				return "Description"
+			}
+			return "Body"
+		}, func(k selKind) bool { return k == kindItem || k == kindNone }, in.bodyRow()),
 		in.section(sectionTitle("Layout"), items,
 			in.pair("Position", "X", "Y", items,
 				entryCfg{id: "insp-pos-x", name: "pos", numeric: true, keep: true},
@@ -636,37 +637,8 @@ func (in *inspector) build() g.Option {
 				}
 				return "None"
 			})),
-		in.section(func(k selKind) string {
-			if k == kindNone {
-				return "Description"
-			}
-			return "Body"
-		}, func(k selKind) bool { return k == kindItem || k == kindNone }, in.bodyRow()),
-		in.sceneSections(),
-		in.codeSection())
+		in.sceneSections())
 	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.Ref(&in.scroll), body)
-}
-
-// codeSection is the text of the properties, closed by default: the raw .tenn the sections above edit.
-func (in *inspector) codeSection() g.Option {
-	return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
-		g.Separator(g.GrowX()),
-		g.Button("Code", g.Borderless(), g.ID("insp-code"), g.Ref(&in.codeHead), g.Place(g.AlignStart, g.AlignCenter), g.Init(func(b *g.ButtonView) {
-			b.OnClick(func() { in.setCode(!in.codeOpen) })
-		})),
-		g.VBox(g.Ref(&in.codeBody), g.GrowX(), g.Padding(0),
-			g.StyledText(g.Scrollbars(), g.Border(), g.GrowX(), g.Size(0, g.Scaled(220)), g.ID("props"), g.Init(in.v.initProps))))
-}
-
-func (in *inspector) setCode(open bool) {
-	in.codeOpen = open
-	in.codeBody.SetVisible(open)
-	chevron := "▸ Code"
-	if open {
-		chevron = "▾ Code"
-	}
-	in.codeHead.SetText(chevron)
-	in.relayout()
 }
 
 func (in *inspector) relayout() {

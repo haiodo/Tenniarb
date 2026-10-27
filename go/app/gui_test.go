@@ -491,8 +491,9 @@ func TestEditor(t *testing.T) {
 		t.Fatalf("the panel stayed open after Esc: %+v", s)
 	}
 
-	// rename a row of the outline: activating it opens a name box over the row
-	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Activate()
+	// rename a row of the outline: Rename opens a name box over the row (a double click opens the items)
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
+	app.Key("Mod+Shift+R")
 	if s = editor(t, app); !s.Popover {
 		t.Fatalf("rename box not shown: %+v", s)
 	}
@@ -618,7 +619,6 @@ func TestPanels(t *testing.T) {
 	}
 	read := func() string { b, _ := os.ReadFile(file); return string(b) }
 	canvas := app.Find(qa.ID("canvas"))
-	app.Find(qa.ID("insp-code")).Click() // the code section is closed at start
 	props := app.Find(qa.Class("StyledText"))
 	wait := func() { time.Sleep(700 * time.Millisecond); app.Settle() }
 

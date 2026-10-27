@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -151,7 +152,7 @@ func (r *Result) Tenn(f *File) string {
 	}
 	sort.Slice(imports, func(i, j int) bool { return imports[i].Name < imports[j].Name })
 	for _, lib := range imports {
-		stmts.Add(tenn.NewCommand("import", tenn.NewStrNode(lib.Name+".tenn"), tenn.NewIdent("as"), tenn.NewIdent(f.mountAlias(lib))))
+		stmts.Add(tenn.NewCommand("element", tenn.NewStrNode(f.mountAlias(lib)), tenn.NewIdent(scene.FromFileFlag), tenn.NewStrNode(lib.Name+".tenn")))
 	}
 	for _, n := range f.Root.Kids {
 		stmts.Add(r.emitNode(n))

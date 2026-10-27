@@ -38,6 +38,10 @@ element "Screens" {
   letter or a digit becomes `_`). Paths are case-sensitive: `Screens.Login.Card.Heading`.
   Names may repeat, but a path that matches two nodes is an error.
 
+An element can take its content from another file: `element "kit" --from-file "lib/kit.tenn"`. The line
+has no block; the elements and items of that file become the content of `kit`, and `use kit.Card as c`
+reaches them (`components.md`).
+
 ## Inside auto-layout
 
 An item whose parent or itself has `auto-layout` is in a layout context. There:

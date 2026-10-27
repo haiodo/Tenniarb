@@ -114,6 +114,11 @@ type Element struct {
 	Description *string
 	Properties  *ModelProperties // Extra nodes not supported directly by model.
 
+	// FromFile is the path of "element ... --from-file": the content below is read from that file by
+	// MountFiles, is never printed and cannot be edited here. mountSig is the state it was read in.
+	FromFile string
+	mountSig uint64
+
 	// Transient data values
 	Ox float64
 	Oy float64
@@ -138,6 +143,7 @@ func (e *Element) Clone(cloneItems, cloneElement bool) *Element {
 	cloneEl.Ox = e.Ox
 	cloneEl.Oy = e.Oy
 	cloneEl.Description = e.Description
+	cloneEl.FromFile = e.FromFile
 
 	cloneEl.Properties.AppendContentsOf(cloneNodes(e.Properties.Nodes()))
 

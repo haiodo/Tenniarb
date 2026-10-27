@@ -96,6 +96,7 @@ type Node struct {
 	Mounts  []*Node // imports and their alias prefixes
 
 	Target   *Node       // KMount: the root of the imported file
+	Mount    *Node       // KElement with --from-file: the root of the file that holds its content
 	From, To string      // KLink
 	Path     string      // KUse
 	Block    []*Override // KUse

@@ -11,7 +11,7 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 | File | Read it when |
 |---|---|
 | `format.md` | before the first screen: commands, properties, text, colors, the Y axis |
-| `components.md` | the workspace has a library, or you repeat a part: import, use, slots, at/replace |
+| `components.md` | the workspace has a library, or you repeat a part: --from-file, use, slots, at/replace |
 | `layout.md` | building a screen: auto-layout and recipes (app window, settings, list, dialog, mobile) |
 | `diagrams.md` | drawing a brain map, flow or other diagram with links |
 | `review.md` | after every render: what to check, typical mistakes and their fixes |

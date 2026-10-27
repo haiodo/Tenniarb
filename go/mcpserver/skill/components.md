@@ -53,7 +53,7 @@ element "Kit" {
 
 ```tenn
 // file: invite.tenn
-import "lib/kit.tenn" as kit
+element "kit" --from-file "lib/kit.tenn"
 element "Invite" {
   use kit.Kit.Card as invite {
     width 400
@@ -83,8 +83,12 @@ Inside the block of a `use`:
 - `replace <path> { nodes }` puts other nodes in place of a part;
 - `slot <name> { nodes }` fills a named slot; nodes written directly (`item`, `use`) go to the default
   slot. Filling a slot drops its fallback.
-- `import "<file>" as <alias>` is relative to the importing file and must stay in the workspace.
-  The path of a use through it starts with the alias: `kit.Kit.Card`.
+- `element "<name>" --from-file "<file>"` takes the whole content of the element from another file. The
+  path is relative to the file with the line and must stay in the workspace. The path of a use through
+  it starts with the element name: `kit.Kit.Card`. The old `import "<file>" as <alias>` still reads the
+  same way, but do not write it in new files.
+- To change a component, `edit` the library file itself, not the line that mounts it: the mounting file
+  never holds the library text.
 
 Paths to remember:
 
@@ -103,7 +107,7 @@ you need by its path, then override the rest. Do not rebuild a variant by hand f
 
 - `get_state {file: "lib/kit.tenn", find: "Button"}` lists every node whose name has the text, with its
   full path inside that file; prefix the alias to use it.
-- `get_state {file: "screen.tenn", path: "kit", find: "Button"}` searches through the import and prints
+- `get_state {file: "screen.tenn", path: "kit", find: "Button"}` searches through the mounted file and prints
   paths ready for `use`.
 - `get_state {file, find: "Button", depth: 3}` adds the parts of each match, as `at` and `replace`
   address them, and its slots (`slot` lines). That is usually enough to write the overrides without
