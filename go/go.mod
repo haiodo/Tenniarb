@@ -4,7 +4,7 @@ go 1.27
 
 require (
 	github.com/dop251/goja v0.0.0-20261024144015-2a9269b6b6de
-	github.com/haiodo/gowt v0.0.0
+	github.com/haiodo/gowt v0.13.0
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	golang.org/x/text v0.43.0
 )
@@ -27,5 +27,3 @@ require (
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )
-
-replace github.com/haiodo/gowt => /Users/haiodo/Develop/private/gowt

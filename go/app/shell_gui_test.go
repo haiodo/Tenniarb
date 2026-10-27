@@ -129,7 +129,7 @@ func TestShell(t *testing.T) {
 	if s.Path == "" {
 		t.Fatalf("no document window: %+v", s)
 	}
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	for _, c := range []struct{ item, name, want string }{
 		{"Export as PNG...", "out.png", "\x89PNG"},
 		{"Export as SVG...", "out.svg", "<svg"},

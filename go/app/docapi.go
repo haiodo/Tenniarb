@@ -125,6 +125,9 @@ func (sh *Shell) Selection(path string) (sel Selection, err error) {
 		}
 		sel.Element = PathOf(v.state.Current)
 		sel.Nodes = slices.Clone(v.selNodes)
+		if v.lib != nil {
+			sel.Nodes = slices.Clone(v.libSaved) // a library on the canvas is not the document's selection
+		}
 		if v.session != nil {
 			for _, it := range v.session.Selection() {
 				sel.Items = append(sel.Items, it.Name)
@@ -176,8 +179,12 @@ func (v *Viewer) selectAPI(sel Selection) error {
 
 // showSelection puts e on the canvas with nodes (scene, by NodePath) or items (classic) selected.
 func (v *Viewer) showSelection(e *model.Element, nodes []string, items []*model.DiagramItem, reveal bool) {
+	left := v.win != nil && v.leaveLib()
 	if e != v.state.Current {
 		v.session.SetElement(e)
+	} else if left {
+		v.realize()
+		v.syncOutline()
 	}
 	if len(items) > 0 || len(v.session.Selection()) > 0 {
 		v.session.Select(items)

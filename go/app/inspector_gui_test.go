@@ -68,7 +68,7 @@ func TestInspector(t *testing.T) {
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
 	app.State("command", "name", "close-others")
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	app.Settle()
 	time.Sleep(300 * time.Millisecond)
 	app.Settle()

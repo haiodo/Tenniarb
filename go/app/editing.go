@@ -26,10 +26,11 @@ type press struct {
 
 // realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
 func (v *Viewer) realize() {
-	if v.isScene(v.state.Current) {
+	if v.lib != nil || v.isScene(v.state.Current) {
 		v.realizeScene()
 		return
 	}
+	defer v.rebuildItems()
 	if old := v.sv; old != nil {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
 		v.sv, v.selNodes = nil, nil
@@ -83,6 +84,7 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 		v.realize()
 		return
 	}
+	defer v.syncItems()
 	ds := v.session.Scene()
 	rendered, ov, pic := v.rendered, v.overlay, v.session.Overlay()
 	v.scene.Update(func(tx *gfx.Tx) {
@@ -123,6 +125,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 	if p.Button == 3 {
 		if p.Kind == view.PointerDown {
 			v.rightClick = v.smap.ToScene(p.Scene)
+			v.sceneRightClick(p.Scene)
 		}
 		return
 	}

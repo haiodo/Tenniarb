@@ -9,7 +9,7 @@ tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 icon=$tmp/TennIco.icns
 cat "$root/Tenniarb/TennIco.icns" >"$icon"
 DOC_EXTS=tenn DOC_NAME="Tenniarb file" DOC_ICON=$icon DOC_UTI=tenniarb.tenn \
-	"$gowt/tooling/darwin/mkapp.sh" "$bin" "$out" Tenniarb >/dev/null
+	bash "$gowt/tooling/darwin/mkapp.sh" "$bin" "$out" Tenniarb >/dev/null # the module cache drops the exec bit
 app=$out/Tenniarb.app
 plist=$app/Contents/Info.plist
 pb() { /usr/libexec/PlistBuddy -c "$1" "$plist"; }

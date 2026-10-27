@@ -62,12 +62,18 @@ type docState struct {
 }
 
 type sceneState struct {
-	SceneMode bool
-	Kind      string
-	Nodes     []string
-	Picked    string
-	Error     string
-	CanUndo   bool
+	SceneMode    bool
+	Kind         string
+	Nodes        []string
+	Lib          string
+	Items        []string `json:"itemList"`
+	ItemRows     map[string]itemRow
+	ItemSelected string
+	Outline      []string
+	Canvas       []int
+	Zoom         float64
+	Error        string
+	CanUndo      bool
 }
 
 // TestScene opens a screen made by penimport and works on it with real input: select on the canvas,
@@ -93,7 +99,7 @@ func TestScene(t *testing.T) {
 		qa.open(orig)
 		a.State("command", "name", "close-others")
 	})
-	screenTitle, libTitle := filepath.Base(screen), filepath.Base(lib)
+	screenTitle := filepath.Base(screen)
 
 	qa.open(screen)
 	a.State("command", "name", "close-others")
@@ -193,41 +199,14 @@ func TestScene(t *testing.T) {
 	frame := st.Nodes[0]
 	a.ShotTitle("07-new-screen", qa.title(screen))
 
-	outline := inWindow(qa.class("Tree"), qa.title(screen))
-	libLabel := ""
-	for _, r := range a.Find(outline).Node().Children {
-		if strings.HasSuffix(r.Text, " - "+libTitle) {
-			libLabel = r.Text
-		}
-	}
-	libRow := a.Find(qa.textIn(libLabel, outline))
-	libRow.Expand()
+	// Insert Component... asks for the component: the frame stays the target
+	a.Find(inWindow(qa.menuItem("Insert Component..."), qa.title(screen))).Click()
 	a.Settle()
-	cat := qa.childRows(libRow)
-	if len(cat) == 0 {
-		t.Fatal("the library row has no rows")
-	}
-	catRow := a.Find(qa.textIn(cat[0], outline))
-	catRow.Expand()
-	a.Settle()
-	comps := qa.childRows(catRow)
-	if len(comps) == 0 {
-		t.Fatalf("%s has no rows", cat[0])
-	}
-	comp := comps[len(comps)-1]
-	a.Find(qa.textIn(comp, outline)).Click()
-	a.Settle()
-	if st = qa.state(); st.Picked == "" {
-		t.Fatalf("pick %s: %+v", comp, st)
-	}
-	// the outline took the selection: put the frame back on the canvas
-	a.State("select", "path", screen, "nodes", []string{frame})
-	a.Settle()
-	a.Find(inWindow(qa.menuItem("Insert Component"), qa.title(screen))).Click()
-	a.Settle()
+	name := use.Path[strings.LastIndex(use.Path, ".")+1:]
+	qa.enterIn("component-filter", name)
 	st = qa.state()
-	if len(st.Nodes) != 1 || !strings.HasPrefix(st.Nodes[0], frame+".") || !strings.Contains(qa.text(), "use "+st.Picked+" as ") || st.Error != "" {
-		t.Fatalf("insert %s: %+v", st.Picked, st)
+	if len(st.Nodes) != 1 || !strings.HasPrefix(st.Nodes[0], frame+".") || strings.Count(qa.text(), "use ui_kit.")+strings.Count(qa.text(), "use lib.") <= strings.Count(before, "use ui_kit.")+strings.Count(before, "use lib.") || st.Error != "" {
+		t.Fatalf("insert %s into %s: %+v", name, frame, st)
 	}
 	a.ShotTitle("08-inserted", qa.title(screen))
 }
@@ -293,6 +272,22 @@ func (h qaHelpers) scene() (m map[string]sceneNode) {
 	return m
 }
 
+type itemRow struct {
+	Box  []int
+	Path string
+	Kind string
+	Kids bool
+}
+
+// enterIn types into a field of the active window or of a popover over it, and commits it with Enter.
+func (h qaHelpers) enterIn(id, v string) {
+	f := h.app.Find(qa.ID(id))
+	f.Type(v)
+	f.Key("Enter")
+	time.Sleep(400 * time.Millisecond)
+	h.app.Settle()
+}
+
 // enter types into an inspector field of the active window and commits it with Enter.
 func (h qaHelpers) enter(id, v string) {
 	f := h.app.Find(qa.ID(id).In(qa.Selector{Class: "Shell", Text: h.activeTitle()}))
@@ -316,15 +311,4 @@ func (h qaHelpers) class(c string) qa.Selector { return qa.Class(c) }
 
 func (h qaHelpers) textIn(text string, in qa.Selector) qa.Selector {
 	return qa.Text(text).In(in)
-}
-
-// childRows are the texts of the rows under a row.
-func (h qaHelpers) childRows(row *qatest.Element) []string {
-	var out []string
-	for _, c := range row.Node().Children {
-		if c.Class == "TreeItem" && c.Text != "" {
-			out = append(out, c.Text)
-		}
-	}
-	return out
 }

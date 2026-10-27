@@ -409,3 +409,18 @@ func TestDocAPI(t *testing.T) {
 		t.Errorf("unknown document: %v", err)
 	}
 }
+
+// An insert into an instance without a default slot is a scene error, so the window refuses it.
+func TestSceneErrorCountSeesInsertIntoInstance(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "kit.tenn"), []byte("item Card { width 40; height 20; auto-layout column }\n"), 0o644)
+	text := "import kit.tenn as kit\nuse kit.Card as C {\n  pos 0 0\n}\n"
+	v := newDoc(t, &Shell{}, filepath.Join(dir, "main.tenn"), text)
+	if n := v.sceneErrorCount(text); n != 0 {
+		t.Fatalf("errors before: %d (%s)", n, v.sceneErr)
+	}
+	bad := strings.Replace(text, "  pos 0 0\n", "  pos 0 0\n  use kit.Card as D\n", 1)
+	if n := v.sceneErrorCount(bad); n < 1 {
+		t.Fatalf("errors after insert into the instance: %d, want at least 1", n)
+	}
+}

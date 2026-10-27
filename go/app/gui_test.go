@@ -106,8 +106,8 @@ func TestViewer(t *testing.T) {
 		t.Fatalf("open state %+v", s)
 	}
 
-	app.Find(qa.Class("TreeItem").In(qa.Class("Tree"))).Nodes() // outline is populated
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Class("TreeItem").In(qa.ID("outline"))).Nodes() // outline is populated
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	s = state(t, app)
 	if len(s.Element) != 2 || s.Element[1] != "Basic steps" {
 		t.Fatalf("after select %+v", s)
@@ -270,7 +270,7 @@ func TestEditor(t *testing.T) {
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
 	app.State("command", "name", "close-others")
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	app.Settle()
 	s := editor(t, app)
 	if s.Path != file || s.Dirty || s.CanUndo || len(s.Items) == 0 {
@@ -440,18 +440,18 @@ func TestEditor(t *testing.T) {
 	}
 
 	// the context menu of the outline
-	rows := len(app.Find(qa.Class("TreeItem")).Nodes())
-	tree := app.Find(qa.Class("Tree"))
+	rows := len(app.Find(qa.Class("TreeItem").In(qa.ID("outline"))).Nodes())
+	tree := app.Find(qa.ID("outline"))
 	tree.RightClickAt(40, 12)
-	app.Find(qa.Text("New element").In(qa.Class("Tree"))).Click()
-	if got := len(app.Find(qa.Class("TreeItem")).Nodes()); got != rows+1 {
+	app.Find(qa.Text("New element").In(qa.ID("outline"))).Click()
+	if got := len(app.Find(qa.Class("TreeItem").In(qa.ID("outline"))).Nodes()); got != rows+1 {
 		t.Fatalf("outline menu New element: %d rows, was %d", got, rows)
 	}
 	app.Key("Mod+Z")
-	if got := len(app.Find(qa.Class("TreeItem")).Nodes()); got != rows {
+	if got := len(app.Find(qa.Class("TreeItem").In(qa.ID("outline"))).Nodes()); got != rows {
 		t.Fatalf("undo of New element: %d rows, was %d", got, rows)
 	}
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	s = editor(t, app)
 
 	// a change on disk while the document has edits: keep the edits, the file stays, Save asks
@@ -492,7 +492,7 @@ func TestEditor(t *testing.T) {
 	}
 
 	// rename a row of the outline: activating it opens a name box over the row
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Activate()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Activate()
 	if s = editor(t, app); !s.Popover {
 		t.Fatalf("rename box not shown: %+v", s)
 	}
@@ -625,7 +625,7 @@ func TestPanels(t *testing.T) {
 	app.Answer(qa.Dialog{Kind: "message", Reply: "No"}) // TestEditor left edits in the shared window
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
-	app.Find(qa.Text("Basic steps").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	app.Settle()
 
 	// the panel shows the element until an item is selected, then the item
@@ -728,8 +728,8 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("outline %v", s.Outline)
 	}
 	to := s.Rows["Basic steps"]
-	tree := app.Find(qa.Class("Tree"))
-	app.Find(qa.Text("General info").In(qa.Class("Tree"))).DragDropToAt(tree, to[0]+20, to[1]+1)
+	tree := app.Find(qa.ID("outline"))
+	app.Find(qa.Text("General info").In(qa.ID("outline"))).DragDropToAt(tree, to[0]+20, to[1]+1)
 	wait()
 	s = panels(t, app)
 	if !slices.Equal(s.Outline, []string{"Documentation", "Documentation/General info", "Documentation/Basic steps"}) {

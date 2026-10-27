@@ -35,9 +35,11 @@ type Viewer struct {
 
 	rendered    *render.Rendered
 	overlay     *gfx.Node
-	sv          *sceneView  // the element on the canvas is drawn by go/scene
-	picked      *outlineRow // the component Insert Component adds
-	sceneBuilds int         // how many times go/scene drew the canvas, for the tests
+	sv          *sceneView // the element on the canvas is drawn by go/scene
+	lib         *libRow    // the library on the canvas, read only; nil for the document's element
+	libSaved    []string   // the selection of the document while a library is on the canvas
+	itemsUI     itemsList
+	sceneBuilds int // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
 	shownElem   *model.Element // the element the camera was placed for
 	nextID      int
@@ -179,15 +181,16 @@ func (v *Viewer) build() {
 	var sidebar, content *g.Panel
 	v.win.Add(
 		g.VBox(g.Ref(&sidebar), g.Padding(0), g.Gap(0),
-			g.Tree(g.NoBorder(), g.Grow(), g.Init(func(t *g.TreeView) {
-				v.tree = t
-				t.Column("", g.Scaled(220))
-				t.ShowHeader(false)
-				t.OnSelect(v.onOutlineSelect)
-				t.OnActivate(v.renameNode)
-				t.OnExpand(v.onOutlineExpand)
-				v.outlineKeys(t)
-			}))),
+			g.Split(g.Vertical(), g.Grow(), g.Init(func(s *g.SplitView) { s.SetWeights(40, 60) }),
+				g.Tree(g.NoBorder(), g.ID("outline"), g.Init(func(t *g.TreeView) {
+					v.tree = t
+					t.Column("", g.Scaled(220))
+					t.ShowHeader(false)
+					t.OnSelect(v.onOutlineSelect)
+					t.OnActivate(v.renameNode)
+					v.outlineKeys(t)
+				})),
+				v.itemsPane())),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
 			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
 			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
@@ -418,6 +421,7 @@ func (v *Viewer) setBanner(text string) {
 func (v *Viewer) startSession() {
 	v.endInline(false)
 	v.session, v.tracker, v.shownElem = nil, nil, nil
+	v.lib, v.libSaved = nil, nil
 	if v.state.Doc.Model == nil || v.state.Current == nil {
 		v.clearCanvas()
 		v.updateTitle()
@@ -470,9 +474,16 @@ func (v *Viewer) onOutlineSelect(n *g.Node) {
 	}
 	switch d := n.Data().(type) {
 	case *model.Element:
-		v.selectElement(d)
-	case *outlineRow:
-		v.selectRow(d)
+		left := v.leaveLib()
+		if d != v.state.Current {
+			v.selectElement(d)
+		} else if left {
+			v.realize()
+		}
+	case *libRow:
+		v.showLib(d)
+	default:
+		v.syncOutline() // the Libraries row is not a canvas
 	}
 }
 
@@ -483,7 +494,7 @@ func (v *Viewer) applyInitialCamera() {
 		v.pendingFit = false
 		return
 	}
-	if cam, ok := v.state.Camera(v.state.Current); ok {
+	if cam, ok := v.state.Camera(v.state.Current); ok && v.lib == nil {
 		v.view.Compositor().SetCamera(cam)
 		v.pendingFit = false
 		return
@@ -501,9 +512,10 @@ func (v *Viewer) fitView() {
 	v.view.Compositor().SetCamera(FitCamera(cw, ch, float64(w), float64(h)))
 }
 
-// saveCamera remembers the viewport of the element on the canvas, unless it was never placed.
+// saveCamera remembers the viewport of the element on the canvas, unless it was never placed; a
+// library on the canvas has none.
 func (v *Viewer) saveCamera() {
-	if _, _, ok := v.contentSize(); v.state.Current != nil && ok && !v.pendingFit {
+	if _, _, ok := v.contentSize(); v.state.Current != nil && ok && !v.pendingFit && v.lib == nil {
 		v.state.Remember(v.state.Current, v.view.Compositor().Camera())
 	}
 }

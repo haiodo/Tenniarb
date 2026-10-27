@@ -12,8 +12,6 @@ on:
 permissions:
   contents: read
 
-# Builds only once go/go.mod requires a released gowt version instead of the local replace.
-
 jobs:
   test:
     name: Vet and test (${{ matrix.os }})

@@ -156,6 +156,28 @@ func (d *docCore) loadScene() {
 	}
 }
 
+// sceneErrorCount is how many scene errors (not warnings) the file would have with text instead of
+// d.text; -1 when the tree does not load at all.
+func (d *docCore) sceneErrorCount(text string) int {
+	overlay := map[string]string{}
+	if d.others != nil {
+		overlay = d.others(d.root)
+	}
+	rel := d.rel()
+	overlay[rel] = text
+	tree, _ := scene.LoadOverlay(d.root, rel, overlay)
+	if tree == nil {
+		return -1
+	}
+	n := 0
+	for _, e := range tree.Diagnostics() {
+		if !e.Warn {
+			n++
+		}
+	}
+	return n
+}
+
 func errString(err error) string {
 	if err == nil {
 		return ""

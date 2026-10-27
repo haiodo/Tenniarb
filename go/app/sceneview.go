@@ -4,12 +4,14 @@ package app
 
 import (
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -44,6 +46,13 @@ var accent = gfx.RGBA(0, 122, 255, 1)
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
+	if v.lib != nil {
+		if n := v.libNode(); n != nil {
+			node = n
+		} else {
+			v.leaveLib()
+		}
+	}
 	oldSV, oldRendered := v.sv, v.rendered
 	sv := &sceneView{el: el, node: node, byNode: map[*scene.Node]*scene.Placed{}}
 	var err error
@@ -94,6 +103,7 @@ func (v *Viewer) realizeScene() {
 		comp.SetCamera(Follow(comp.Camera(), gfx.Point{X: sv.off.X - oldSV.off.X, Y: sv.off.Y - oldSV.off.Y}))
 	}
 	v.drawSceneOverlay()
+	v.rebuildItems()
 }
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.
@@ -228,8 +238,10 @@ func (v *Viewer) selectScene(paths []string) {
 	v.selNodes = paths
 	v.drawSceneOverlay()
 	v.refreshProps()
-	v.syncSceneOutline()
-	v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventSelect, Version: v.version})
+	v.syncItems()
+	if v.lib == nil {
+		v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventSelect, Version: v.version})
+	}
 }
 
 // revealScene centers the canvas on the first selected node when it is out of view.
@@ -310,6 +322,21 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 	}
 }
 
+// sceneRightClick selects the node under a right click when it is not selected, so the menu acts on it.
+func (v *Viewer) sceneRightClick(at gfx.Point) {
+	if !v.sceneMode() {
+		return
+	}
+	hit := v.sv.hitScene(gfx.Point{X: at.X - v.sv.off.X, Y: at.Y - v.sv.off.Y})
+	if hit == nil {
+		return
+	}
+	p := NodePath(v.sv.node, hit.Src)
+	if !slices.Contains(v.selNodes, p) {
+		v.selectScene([]string{p})
+	}
+}
+
 // moveSceneNode writes the new pos of an item dragged by dx, dy (pos is y up, the canvas y down).
 func (v *Viewer) moveSceneNode(pl *scene.Placed, dx, dy float64) {
 	x, y := 0.0, 0.0
@@ -327,6 +354,19 @@ func (v *Viewer) moveSceneNode(pl *scene.Placed, dx, dy float64) {
 
 // sceneEdit applies a text edit made by the window; a refused one shows in the banner.
 func (v *Viewer) sceneEdit(e TextEdit) bool {
+	if v.lib != nil {
+		v.setBanner("The library is read only here: open it in its own window to edit it.")
+		return false
+	}
+	// An edit from the window must not add scene errors: autosave would write a broken file. Errors are
+	// counted, not compared, because their positions move with the edit.
+	if e.Start >= 0 && e.Start <= e.End && e.End <= len(v.text) {
+		after := v.text[:e.Start] + e.New + v.text[e.End:]
+		if was, now := v.sceneErrorCount(v.text), v.sceneErrorCount(after); now > was || (now < 0 && was >= 0) {
+			v.setBanner("Not applied: the change adds scene errors")
+			return false
+		}
+	}
 	if err := v.applyText(e.Start, e.End, e.New); err != nil {
 		v.setBanner(err.Error())
 		return false
@@ -353,17 +393,6 @@ func (v *Viewer) deleteSceneNode() {
 	v.sceneEdit(DeleteEdit(v.text, n))
 }
 
-// insertTarget is where new content goes: the selected item or use, else the element itself.
-func (v *Viewer) insertTarget() *scene.Node {
-	if n, _ := v.selectedScene(); n != nil && (n.Kind == scene.KItem || n.Kind == scene.KUse) {
-		return n
-	}
-	if v.sv != nil {
-		return v.sv.node
-	}
-	return nil
-}
-
 // freeSpot is a place right of the content of the element for a new top level node, as pos x y.
 func (v *Viewer) freeSpot() (float64, float64) {
 	if v.sv == nil || v.sv.placed == nil || len(v.sv.placed.Kids) == 0 {
@@ -373,25 +402,52 @@ func (v *Viewer) freeSpot() (float64, float64) {
 	for _, k := range v.sv.placed.Kids {
 		maxX, minY = math.Max(maxX, k.X+k.W), math.Min(minY, k.Y)
 	}
-	return math.Round(maxX + 100), math.Round(-minY)
+	return math.Round(maxX + topGap), math.Round(-minY)
 }
 
-// insertComponent adds `use <path> as <name>` into the insert target and selects it.
+// insertComponent adds `use <path> as <name>` where InsertTarget says and selects it; for an instance
+// with named slots the slot is asked for in a menu.
 func (v *Viewer) insertComponent(path, name string) {
-	if !v.ensureSceneElement() {
+	if !v.ensureSceneElement() || v.sv.node == nil {
 		return
 	}
-	target := v.insertTarget()
-	if target == nil {
+	sel, _ := v.selectedScene()
+	into, slots := InsertTarget(v.stree, sel)
+	if into == nil || len(slots) == 0 {
+		v.insertUse(into, "", path, name)
 		return
+	}
+	var entries []editor.Entry
+	for _, s := range slots {
+		label := "Into slot " + s
+		if s == "" {
+			label = "Into the default slot"
+		}
+		entries = append(entries, editor.Entry{Label: label, Run: func() { v.insertUse(into, s, path, name) }})
+	}
+	entries = append(entries, editor.Entry{Sep: true}, editor.Entry{Label: "On the canvas", Run: func() { v.insertUse(nil, "", path, name) }})
+	v.app.Async(func() {
+		v.menuOverride = entries
+		v.canvasMenu.Show()
+	})
+}
+
+// insertUse writes the use into the item or instance into, in its slot; into nil puts it on the
+// canvas at a free spot.
+func (v *Viewer) insertUse(into *scene.Node, slot, path, name string) {
+	target := into
+	if target == nil {
+		target = v.sv.node
 	}
 	name = FreeName(target, name)
-	cmd := CommandText("use", path, "as", name)
-	if target.Kind == scene.KFile || target.Kind == scene.KElement {
+	use := CommandText("use", path, "as", name)
+	cmd := SlotCommand(slot, use)
+	if into == nil {
 		x, y := v.freeSpot()
-		cmd += " { " + CommandText("pos", numText(x), numText(y)) + " }"
+		use += " { " + CommandText("pos", numText(x), numText(y)) + " }"
+		cmd = use
 	}
-	v.insertAndSelect(target, cmd, name)
+	v.insertAndSelect(target, cmd, use)
 }
 
 // ScreenSizes are the frames New Screen offers.
@@ -411,29 +467,67 @@ func (v *Viewer) newScreen(w, h int) {
 	}
 	name := FreeName(target, "Screen")
 	x, y := v.freeSpot()
-	cmd := CommandText("item", name) + " { " + strings.Join([]string{
+	head := CommandText("item", name)
+	cmd := head + " { " + strings.Join([]string{
 		CommandText("pos", numText(x), numText(y)), CommandText("width", numText(float64(w))),
 		CommandText("height", numText(float64(h))), "auto-layout column", "color #ffffff"}, "; ") + " }"
 	v.selNodes = nil
-	v.insertAndSelect(target, cmd, name)
+	v.insertAndSelect(target, cmd, head)
 }
 
-func (v *Viewer) insertAndSelect(target *scene.Node, cmd, name string) {
-	tpath := ""
-	if target != v.sv.node {
-		tpath = NodePath(v.sv.node, target)
-	}
-	if !v.sceneEdit(InsertEdit(v.text, target, cmd)) {
+// insertAndSelect writes cmd at the end of target and selects the node that starts with head in it.
+func (v *Viewer) insertAndSelect(target *scene.Node, cmd, head string) {
+	e := InsertEdit(v.text, target, cmd)
+	at := strings.Index(e.New, head)
+	if at < 0 || !v.sceneEdit(e) {
 		return
 	}
-	key := scene.NormalizeName(name)
-	if tpath != "" {
-		key = tpath + "." + key
+	if n := nodeStartingAt(v.sv.node, e.Start+at); n != nil {
+		v.selectScene([]string{NodePath(v.sv.node, n)})
+		v.revealNode()
 	}
-	if NodeAt(v.sv.node, key) != nil {
-		v.selectScene([]string{key})
-		v.revealScene()
+}
+
+// duplicateScene is Cmd+D on the selected scene nodes: a copy of each beside it in its parent, as one
+// undo step, the copies selected.
+func (v *Viewer) duplicateScene() {
+	if !v.sceneMode() || v.sv.node == nil {
+		return
 	}
+	var srcs []DupSource
+	for _, p := range v.selNodes {
+		n := NodeAt(v.sv.node, p)
+		if n == nil {
+			continue
+		}
+		s := DupSource{Node: n}
+		if pl := v.sv.byNode[n]; pl != nil {
+			s.At, s.Free = &Box{pl.X, pl.Y, pl.W, pl.H}, pl.Free
+			if pr := pl.Prop("pos"); pr != nil {
+				if vals := pr.Values(); len(vals) == 2 {
+					s.Pos = [2]float64{parseNum(vals[0]), parseNum(vals[1])}
+				}
+			}
+			if pl.Parent != nil {
+				for _, k := range pl.Parent.Kids {
+					s.Others = append(s.Others, Box{k.X, k.Y, k.W, k.H})
+				}
+			}
+		}
+		srcs = append(srcs, s)
+	}
+	e, starts, ok := DuplicateEdit(v.text, srcs)
+	if !ok || !v.sceneEdit(e) {
+		return
+	}
+	var paths []string
+	for _, off := range starts {
+		if n := nodeStartingAt(v.sv.node, off); n != nil {
+			paths = append(paths, NodePath(v.sv.node, n))
+		}
+	}
+	v.selectScene(paths)
+	v.revealNode()
 }
 
 // ensureSceneElement puts a classic element that is empty on the scene renderer; content of a classic

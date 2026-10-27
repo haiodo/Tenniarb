@@ -60,7 +60,7 @@ func openText(t *testing.T, app *qatest.Client, text, row string) string {
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
 	app.State("command", "name", "close-others")
-	app.Find(qa.Text(row).In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text(row).In(qa.ID("outline"))).Click()
 	app.Settle()
 	// the later tests start from the window that shows the fixture
 	t.Cleanup(func() {
@@ -470,7 +470,7 @@ func TestParityDocument(t *testing.T) {
 	app := qatest.App(t)
 	file := openText(t, app, parityDoc, "Parity")
 	canvas := app.Find(qa.ID("canvas"))
-	tree := app.Find(qa.Class("Tree"))
+	tree := app.Find(qa.ID("outline"))
 	pick := func(name string) {
 		x, y := center(par(t, app).Screen[name])
 		canvas.ClickAt(x, y)
@@ -486,7 +486,7 @@ func TestParityDocument(t *testing.T) {
 	app.Key("Mod+Z")
 
 	// the outline: Tab adds an item to the canvas and gives the focus back to it
-	app.Find(qa.Text("Parity").In(qa.Class("Tree"))).Click()
+	app.Find(qa.Text("Parity").In(qa.ID("outline"))).Click()
 	n := par(t, app).ItemCount
 	tree.Focus()
 	app.Key("Tab")
@@ -559,7 +559,7 @@ func TestParityDocument(t *testing.T) {
 		if s = par(t, app); s.ItemCount != n+1+3+2 {
 			t.Fatalf("Paste as Item Set: %d items, were %d", s.ItemCount, n+1)
 		}
-		app.Find(qa.Text("Parity").In(qa.Class("Tree"))).Click()
+		app.Find(qa.Text("Parity").In(qa.ID("outline"))).Click()
 		tree.Focus()
 		app.Key("Mod+C")
 		if got := get(); !strings.Contains(got, `element "Parity"`) {
@@ -630,7 +630,7 @@ func TestParityPrefs(t *testing.T) {
 	app.Find(inWindow(qa.Text("Open..."), "Example.tenn")).Click()
 	app.State("command", "name", "close-others")
 	app.Settle()
-	if app.Find(qa.Text("Inner").In(qa.Class("Tree"))).Node().Visible {
+	if app.Find(qa.Text("Inner").In(qa.ID("outline"))).Node().Visible {
 		t.Error("auto expand off: the nested row is open")
 	}
 	app.Find(qa.ID("auto-expand")).Check(true)

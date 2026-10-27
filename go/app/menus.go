@@ -101,7 +101,7 @@ func (v *Viewer) menus() {
 	for _, sz := range ScreenSizes {
 		screens.Item(fmt.Sprintf("%s %d x %d", sz.Name, sz.W, sz.H), func() { v.newScreen(sz.W, sz.H) })
 	}
-	el.Item("&Insert Component", v.insertPicked, g.Shortcut("Cmd+Shift+I"))
+	el.Item("&Insert Component...", v.showComponentPicker, g.Shortcut("Cmd+Shift+I"))
 
 	if !v.sh.sysMenu {
 		edit.Separator()
@@ -282,6 +282,8 @@ func (v *Viewer) cmdDuplicate() {
 	case v.activeText != nil, v.propsFocused(), v.session == nil:
 	case v.treeFocused():
 		v.duplicateElement()
+	case v.sceneMode():
+		v.duplicateScene()
 	default:
 		v.session.Duplicate()
 	}
@@ -332,6 +334,9 @@ func (v *Viewer) contextMenus() {
 
 	outline := g.PopupMenu(v.tree)
 	outline.OnShow(func() { fillMenu(outline, v.outlineEntries()) })
+
+	items := g.PopupMenu(v.itemsUI.tree)
+	items.OnShow(func() { fillMenu(items, v.itemsEntries()) })
 }
 
 // canvasEntries are the entries of the menu about to open on the canvas.
@@ -342,8 +347,24 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 	if v.session == nil {
 		return nil
 	}
+	if v.sceneMode() {
+		return v.sceneEntries()
+	}
 	v.session.Pick(v.rightClick)
 	return v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML})
+}
+
+// sceneEntries are the canvas menu of a scene: the commands of the selected node, the screens.
+func (v *Viewer) sceneEntries() []editor.Entry {
+	var out []editor.Entry
+	if len(v.selNodes) > 0 {
+		out = append(out,
+			editor.Entry{Label: "Duplicate", Run: v.duplicateScene},
+			editor.Entry{Label: "Zoom to Item", Run: v.zoomToSelection},
+			editor.Entry{Label: "Delete", Run: v.deleteSceneNode},
+			editor.Entry{Sep: true})
+	}
+	return append(out, editor.Entry{Label: "Insert Component from Library...", Run: v.showComponentPicker})
 }
 
 // copyItemHTML is "Export text as html": the text of the selected item on the clipboard as HTML.

@@ -186,8 +186,31 @@ func (v *Viewer) qaState() map[string]any {
 		out["size"] = []float64{v.rendered.Width, v.rendered.Height}
 	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
-	if v.picked != nil {
-		out["picked"] = v.picked.lib + "." + v.picked.path
+	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
+	items, itemRows := []string{}, map[string]map[string]any{}
+	var walkItems func(ns []*g.Node, prefix string)
+	walkItems = func(ns []*g.Node, prefix string) {
+		for _, n := range ns {
+			if n.Text() == "" {
+				continue
+			}
+			items = append(items, prefix+n.Text())
+			b := n.Unwrap().GetBounds()
+			row := map[string]any{"box": []int{int(b.X), int(b.Y), int(b.Width), int(b.Height)}}
+			if r, ok := n.Data().(*ItemRow); ok {
+				row["path"], row["kind"], row["kids"] = r.Path, r.Kind, r.Kids
+			}
+			itemRows[n.Text()] = row
+			walkItems(n.Children(), prefix+n.Text()+"/")
+		}
+	}
+	walkItems(v.itemsUI.tree.Roots(), "")
+	out["itemList"], out["itemRows"] = items, itemRows
+	if sel := v.itemsUI.tree.Selected(); len(sel) == 1 {
+		out["itemSelected"] = sel[0].Text()
+	}
+	if v.lib != nil {
+		out["lib"] = v.lib.file
 	}
 	if v.session != nil {
 		out["canUndo"], out["canRedo"] = v.session.UndoManager().CanUndo(), v.session.UndoManager().CanRedo()
