@@ -24,7 +24,8 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 			n.SetData(e)
 			n.SetImage(v.rowIcon(e))
 			add(n.Node, e.Elements, depth+1)
-			if len(e.Elements) == 0 {
+			v.sceneRows(n.Node, e, expanded)
+			if len(e.Elements) == 0 && !v.isScene(e) {
 				continue
 			}
 			if expanded == nil {
@@ -38,6 +39,8 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 		v.tree.Clear()
 		if m := v.state.Doc.Model; m != nil {
 			add(v.tree.Node, m.Elements, 0)
+			v.sceneRows(v.tree.Node, &m.Element, expanded)
+			v.libRows(expanded)
 		}
 	})
 	v.outlineSig = ""
@@ -45,6 +48,7 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 		v.outlineSig = OutlineSignature(&m.Element)
 	}
 	v.syncOutline()
+	v.syncSceneOutline()
 }
 
 // rowIcon is a document for an element that holds items, a folder for one that only groups elements.
@@ -62,7 +66,8 @@ func (v *Viewer) refreshOutline() {
 	if m == nil {
 		return
 	}
-	if sig := OutlineSignature(&m.Element); sig != v.outlineSig {
+	// Scene rows follow the text, which a signature of the elements does not see.
+	if sig := OutlineSignature(&m.Element); sig != v.outlineSig || v.stree != nil {
 		v.rebuildOutline(v.expandedRows())
 		return
 	}
@@ -75,8 +80,15 @@ func (v *Viewer) expandedRows() map[string]bool {
 	var walk func(ns []*g.Node)
 	walk = func(ns []*g.Node) {
 		for _, n := range ns {
-			if e, ok := n.Data().(*model.Element); ok && n.Expanded() {
-				out[pathKey(e)] = true
+			switch d := n.Data().(type) {
+			case *model.Element:
+				if n.Expanded() {
+					out[pathKey(d)] = true
+				}
+			case *outlineRow:
+				if n.Expanded() {
+					out[d.key()] = true
+				}
 			}
 			walk(n.Children())
 		}
@@ -181,9 +193,16 @@ func (v *Viewer) moveElement(delta int) {
 	v.session.MoveElement(e, e.Parent, at)
 }
 
+// renameNode is the activation of a row: rename an element, insert a component.
 func (v *Viewer) renameNode(n *g.Node) {
-	if e, ok := n.Data().(*model.Element); ok {
-		v.renameElement(e)
+	switch d := n.Data().(type) {
+	case *model.Element:
+		v.renameElement(d)
+	case *outlineRow:
+		if d.kind == rowComp {
+			v.picked = d
+			v.insertPicked()
+		}
 	}
 }
 

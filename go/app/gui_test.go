@@ -20,7 +20,7 @@ import (
 	"github.com/haiodo/tenniarb/go/model"
 )
 
-var fixture, cfgDir string
+var fixture, cfgDir, serviceDir string
 
 // TestMain builds the app with the QA server and starts it on a copy of Example.tenn. Windows open
 // only with GOWT_GUI_TEST=1.
@@ -52,6 +52,12 @@ func TestMain(m *testing.M) {
 	}
 	os.Setenv("TENNIARB_CONFIG_DIR", cfg)
 	cfgDir = cfg
+	// The app connects to tenniarb-service here, never to the user's; the socket path must stay short.
+	serviceDir = filepath.Join(dir, "svc")
+	if err := os.Mkdir(serviceDir, 0o700); err != nil {
+		panic(err)
+	}
+	os.Setenv("TENNIARB_SERVICE_DIR", serviceDir)
 	stub := filepath.Join(dir, "embed-stub.js")
 	if err := os.WriteFile(stub, []byte("/*embed stub*/"), 0o644); err != nil {
 		panic(err)
@@ -536,7 +542,10 @@ func gotoAsked(t *testing.T, app *qatest.Client) int {
 	return s.GotoAsked
 }
 
-func menu(app *qatest.Client, title string) { app.Find(qa.Text(title)).Click() }
+// menu clicks a menu item; a toolbar button with the same title is a ToolItem, not picked.
+func menu(app *qatest.Client, title string) {
+	app.Find(qa.Selector{Class: "MenuItem", Text: title}).Click()
+}
 
 func sameScreen(a, b map[string][]float64) bool {
 	if len(a) != len(b) {

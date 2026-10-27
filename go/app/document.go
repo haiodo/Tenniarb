@@ -24,7 +24,9 @@ func (e ParseError) String() string { return fmt.Sprintf("%d:%d: %s", e.Line, e.
 
 // Document is a .tenn file as read from disk. Model is nil when the file has parse errors.
 type Document struct {
-	Path   string
+	Path string
+	// Text is what was read, a leading BOM dropped.
+	Text   string
 	Model  *model.ElementModel
 	Errors []ParseError
 	Stamp  Stamp
@@ -47,15 +49,16 @@ func Load(path string) (*Document, error) {
 
 // ParseText parses file contents; a leading BOM is dropped as Document.read does.
 func ParseText(text string) *Document {
-	tree, parser := tenn.Parse(strings.TrimPrefix(text, "\xef\xbb\xbf"))
+	text = strings.TrimPrefix(text, "\xef\xbb\xbf")
+	tree, parser := tenn.Parse(text)
 	if parser.Errors.HasErrors() {
-		doc := &Document{}
+		doc := &Document{Text: text}
 		for _, e := range parser.Errors.Errors {
 			doc.Errors = append(doc.Errors, ParseError{e.Line, e.Col, e.Message})
 		}
 		return doc
 	}
-	return &Document{Model: model.ParseTenn(tree)}
+	return &Document{Text: text, Model: model.ParseTenn(tree)}
 }
 
 // Stamp identifies a version of a file on disk.

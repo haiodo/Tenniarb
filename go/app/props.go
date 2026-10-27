@@ -27,9 +27,12 @@ type props struct {
 	text    *g.StyledTextView
 	target  editor.Target // what the text on screen belongs to
 	changes int           // counts edits; a timer applies only the last one
+	applied int           // the edit the last timer applied: the user is typing while changes differs
 	loading bool          // the text is being set by code
 	// values are the evaluated expressions by 0-based line, drawn at the line ends.
 	values map[int]string
+	// sceneKey is the scene node the text belongs to (sceneCodeKey), when a scene element is shown.
+	sceneKey string
 }
 
 func (v *Viewer) initProps(t *g.StyledTextView) {
@@ -48,9 +51,15 @@ func (v *Viewer) onPropsChange(text string) {
 		return
 	}
 	v.props.changes++
-	n, target := v.props.changes, v.props.target
+	n, target, key, scene := v.props.changes, v.props.target, v.props.sceneKey, v.sceneMode()
 	v.app.After(propsDelay, func() {
-		if n == v.props.changes {
+		if n != v.props.changes {
+			return
+		}
+		v.props.applied = n
+		if scene {
+			v.applySceneCode(key, text)
+		} else {
 			v.applyProps(target, text)
 		}
 	})
@@ -84,6 +93,11 @@ func (v *Viewer) refreshProps() {
 		v.setPropsText("", editor.Target{})
 		return
 	}
+	if v.sceneMode() {
+		v.refreshSceneCode()
+		return
+	}
+	v.props.sceneKey = ""
 	target := v.session.PropsTarget()
 	want := v.session.PropsText(target)
 	cur := v.props.text.Text()
@@ -111,7 +125,7 @@ func (v *Viewer) setPropsText(text string, target editor.Target) {
 	t.SetCaret(0)
 	v.styleProps(text)
 	v.props.values = nil
-	if v.session != nil {
+	if v.session != nil && !v.sceneMode() {
 		v.props.values = v.session.PropsValues(target, text)
 	}
 	t.Unwrap().Redraw()

@@ -80,7 +80,7 @@ func (v *Viewer) exportTo(k exportKind, path string) error {
 	case exportLive:
 		var bundle string
 		if bundle, err = v.embedBundle(); err == nil {
-			data = InteractiveHTML(bundle, v.session.Text(), e)
+			data = InteractiveHTML(bundle, v.text, e)
 		}
 	}
 	if err != nil {

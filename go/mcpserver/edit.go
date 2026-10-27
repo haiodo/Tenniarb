@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/servicewire"
 )
 
 // EditOp is one find/replace of the edit tool.
@@ -66,9 +67,12 @@ func (s *Server) edit(file string, edits []EditOp) (string, error) {
 	if len(edits) == 0 {
 		return "", errors.New("edits is empty")
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.host.editMu.Lock()
+	defer s.host.editMu.Unlock()
 
+	if d := s.host.live.lookup(abs); d != nil {
+		return s.editLive(abs, rel, d, edits)
+	}
 	old, err := os.ReadFile(abs)
 	creating := errors.Is(err, fs.ErrNotExist)
 	if err != nil && !creating {
@@ -96,20 +100,62 @@ func (s *Server) edit(file string, edits []EditOp) (string, error) {
 	return s.commit(abs, rel, text, before)
 }
 
-// commit validates text as the content of rel and, when it adds no error, stages it next to the
-// target and renames it over the target.
-func (s *Server) commit(abs, rel, text string, before scene.Errors) (string, error) {
-	after, _, err := s.diagnoseText(rel, text)
+// editLive changes a document open in the app: the app applies the new text as one undo step, if
+// it is still at the version the edits were made against. The file on disk is not touched, so
+// unsaved changes in the app are never overwritten.
+func (s *Server) editLive(abs, rel string, d *liveDoc, edits []EditOp) (string, error) {
+	if d.moved {
+		return "", errMoved
+	}
+	cur, err := s.host.live.text(abs, true)
 	if err != nil {
 		return "", err
 	}
+	text, err := applyEdits(cur.Text, edits)
+	if err != nil {
+		return "", err
+	}
+	if e, bad := parseError(text); bad {
+		return "", fmt.Errorf("nothing changed: parse error at %s:%d:%d: %s", rel, e.Line+1, e.Col, e.Message)
+	}
+	before, _, err := s.diagnose(rel)
+	if err != nil {
+		return "", err
+	}
+	after, err := s.check(rel, text, before)
+	if err != nil {
+		return "", err
+	}
+	var res servicewire.ApplyResult
+	if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: cur.Version, Text: text}, &res); err != nil {
+		return "", fmt.Errorf("nothing changed: Tenniarb did not apply the edit: %v", err)
+	}
+	return fmt.Sprintf("ok: %s changed in Tenniarb as one undo step, not saved (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true, rel)), nil
+}
+
+// check validates text as the content of rel and fails when it adds an error to before.
+func (s *Server) check(rel, text string, before scene.Errors) (scene.Errors, error) {
+	after, _, err := s.diagnoseText(rel, text)
+	if err != nil {
+		return nil, err
+	}
 	if bad := newErrors(before, after); len(bad) > 0 {
-		return "", fmt.Errorf("nothing written: the edit adds errors:\n%s", bad)
+		return nil, fmt.Errorf("nothing written: the edit adds errors:\n%s", bad)
+	}
+	return after, nil
+}
+
+// commit validates text as the content of rel and, when it adds no error, stages it next to the
+// target and renames it over the target.
+func (s *Server) commit(abs, rel, text string, before scene.Errors) (string, error) {
+	after, err := s.check(rel, text, before)
+	if err != nil {
+		return "", err
 	}
 	if err := writeAtomic(abs, text); err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("ok: %s written (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true)), nil
+	return fmt.Sprintf("ok: %s written (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true, rel)), nil
 }
 
 func writeAtomic(abs, text string) error {
@@ -161,20 +207,28 @@ func newErrors(before, after scene.Errors) scene.Errors {
 	return out
 }
 
-// summary lists errors and warnings, or only warnings when warnOnly.
-func summary(es scene.Errors, warnOnly bool) string {
+// summary lists errors and warnings, or only warnings when warnOnly. With own set, warnings of
+// other files (imported libraries) are only counted: they repeat on every call that loads them.
+func summary(es scene.Errors, warnOnly bool, own string) string {
 	var b strings.Builder
-	var nerr, nwarn int
+	var nerr, nwarn, other int
 	for _, e := range es {
 		if e.Warn {
 			nwarn++
 		} else {
 			nerr++
 		}
-		if !e.Warn && warnOnly {
+		switch {
+		case !e.Warn && warnOnly:
+			continue
+		case e.Warn && own != "" && e.Pos.File != own:
+			other++
 			continue
 		}
 		b.WriteString(e.Error() + "\n")
+	}
+	if other > 0 {
+		fmt.Fprintf(&b, "%d warnings of imported files not listed: validate that file to see them\n", other)
 	}
 	fmt.Fprintf(&b, "%d errors, %d warnings", nerr, nwarn)
 	return b.String()

@@ -175,13 +175,56 @@ func TestSpecCopyInSync(t *testing.T) {
 func TestGetState(t *testing.T) {
 	cs, _ := workspace(t)
 	text := mustOK(t, cs, "get_state", nil)
-	for _, want := range []string{`"file": "import.tenn"`, `"path": "Screens.Login"`, `"path": "Screens.Login.ok"`, `"file": "lib/kit.tenn"`, `"severity": "error"`} {
+	for _, want := range []string{"\nimport.tenn: 0 errors", "\n  Screens element 3 diagram\n", "\n    Screens.Login element 8 scene +4\n", "\nlib/kit.tenn scene: ", "ambiguous.tenn:9:5: ambiguous path"} {
 		if !strings.Contains(text, want) {
-			t.Errorf("state lacks %s", want)
+			t.Errorf("state lacks %q:\n%s", want, text)
 		}
 	}
-	if strings.Contains(text, ".tenn-edit") {
-		t.Error("staging files listed")
+	if strings.Contains(text, ".tenn-edit") || strings.Contains(text, "Screens.Login.ok") {
+		t.Errorf("staging files or nodes below depth 2 listed:\n%s", text)
+	}
+	deep := mustOK(t, cs, "get_state", map[string]any{"file": "import.tenn", "depth": 3})
+	if !strings.Contains(deep, "      Screens.Login.ok use 9\n") || strings.Contains(deep, "lib/kit.tenn") {
+		t.Errorf("depth 3 of one file:\n%s", deep)
+	}
+	// A subtree through an import alias: paths relative to it, slots listed by name.
+	sub := mustOK(t, cs, "get_state", map[string]any{"file": "slots.tenn", "path": "kit.Window"})
+	for _, want := range []string{"paths below kit.Window", "\n  Title item ", "\n  toolbar slot ", "\n  default slot ", "\n    default.Empty item "} {
+		if !strings.Contains(sub, want) {
+			t.Errorf("subtree lacks %q:\n%s", want, sub)
+		}
+	}
+	found := mustOK(t, cs, "get_state", map[string]any{"file": "slots.tenn", "path": "kit", "find": "butt"})
+	if !strings.Contains(found, "\n  kit.Button item ") || strings.Contains(found, "Window") {
+		t.Errorf("find through the alias:\n%s", found)
+	}
+	parts := mustOK(t, cs, "get_state", map[string]any{"file": "slots.tenn", "path": "kit", "find": "window", "depth": 2})
+	if !strings.Contains(parts, "\n  kit.Window item ") || !strings.Contains(parts, "\n      default.Empty item ") {
+		t.Errorf("find with depth lists the parts of each match:\n%s", parts)
+	}
+	mustFail(t, cs, "get_state", map[string]any{"path": "kit"}, "path needs file")
+}
+
+// TestImportedWarnings: warnings of an imported library are counted, not listed, by edit and validate
+// of the file that imports it; validate of the library lists them.
+func TestImportedWarnings(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"lib.tenn":    "item A { auto-layout row; width 10; height 10; color #fff; border-color #000000 }\n",
+		"screen.tenn": "import \"lib.tenn\" as lib\nelement S {\n  use lib.A as a\n}\n",
+	})
+	cs := memSession(t, root)
+	got := mustOK(t, cs, "edit", withFile(edits("as a", "as b"), "screen.tenn"))
+	if strings.Contains(got, "#fff") || !strings.Contains(got, "1 warnings of imported files not listed") {
+		t.Errorf("edit: %s", got)
+	}
+	if got := mustOK(t, cs, "validate", map[string]any{"file": "lib.tenn"}); !strings.Contains(got, "#fff") {
+		t.Errorf("validate of the library: %s", got)
+	}
+	if runtime.GOOS != "darwin" {
+		return
+	}
+	if _, got := call(t, cs, "render", map[string]any{"file": "screen.tenn", "element": "S"}); strings.Contains(got, "#fff") || !strings.Contains(got, "1 warnings come from imported files") {
+		t.Errorf("render: %s", got)
 	}
 }
 

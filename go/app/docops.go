@@ -62,13 +62,17 @@ func (v *Viewer) writeTo(path string) bool {
 }
 
 func (v *Viewer) writeFile(path string) error {
-	text := v.session.Text()
+	text := v.text
 	if err := WriteFileAtomic(path, []byte(text)); err != nil {
 		return err
 	}
 	stamp, _ := StampOf(path)
 	v.watch = Watcher{Path: path, Last: stamp}
 	v.state.Doc.Path, v.state.Doc.Stamp = path, stamp
+	if r := WorkspaceRoot(path); r != v.root {
+		v.root = r
+		v.loadScene()
+	}
 	v.tracker.Saved(text)
 	v.conflict = false
 	v.autosave.Cancel()
@@ -78,6 +82,7 @@ func (v *Viewer) writeFile(path string) error {
 	}
 	v.sh.addRecent(path)
 	v.updateTitle()
+	v.sh.publish(DocEvent{Path: path, Kind: EventSave, Version: v.version})
 	return nil
 }
 
@@ -100,7 +105,7 @@ func (v *Viewer) autosaveNow() {
 		return
 	}
 	if v.state.Doc.Path == "" {
-		if err := StashUntitled(v.sh.dir, v.id, v.session.Text()); err != nil {
+		if err := StashUntitled(v.sh.dir, v.id, v.text); err != nil {
 			v.setBanner("Could not keep the untitled document: " + err.Error())
 		}
 		return
@@ -143,7 +148,7 @@ func (v *Viewer) confirmDiscard() bool {
 		return v.save()
 	case CloseStash:
 		v.autosave.Cancel()
-		return StashUntitled(v.sh.dir, v.id, v.session.Text()) == nil
+		return StashUntitled(v.sh.dir, v.id, v.text) == nil
 	}
 	switch v.win.MessageBox(g.Message{
 		Title:   "Save changes?",

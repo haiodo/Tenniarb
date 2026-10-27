@@ -1,6 +1,7 @@
 package editor
 
 import (
+	"errors"
 	"math"
 	"slices"
 	"strings"
@@ -279,6 +280,17 @@ func (s *Session) commit(ops []model.ElementOperation) {
 	if len(ops) > 0 {
 		s.fail(s.store.CompositeOperation(s.element, s.um, s.refresh, ops))
 	}
+}
+
+// Execute runs an operation made outside the editor through the store, as one undo step.
+func (s *Session) Execute(op model.ElementOperation) error {
+	defer s.EndEvent()
+	if s.opts.Readonly {
+		return errors.New("editor: the document is read-only")
+	}
+	err := s.store.Execute(op, s.um, s.refresh)
+	s.fail(err)
+	return err
 }
 
 // Pick is the right click: it selects what is under p unless something there is selected already

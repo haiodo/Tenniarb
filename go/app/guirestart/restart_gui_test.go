@@ -31,6 +31,8 @@ func TestMain(m *testing.M) {
 	defer os.RemoveAll(dir)
 	cfgDir = filepath.Join(dir, "config")
 	os.Setenv("TENNIARB_CONFIG_DIR", cfgDir)
+	// never the user's tenniarb-service
+	os.Setenv("TENNIARB_SERVICE_DIR", filepath.Join(dir, "svc"))
 	bin := filepath.Join(dir, "tenniarb")
 	if runtime.GOOS == "windows" {
 		bin += ".exe"

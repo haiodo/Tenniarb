@@ -11,7 +11,9 @@ import (
 //go:embed spec/tenn-scene.md
 var specText string
 
-const examples = `# Examples
+const examples = `To draw a screen or a diagram, read the design skill first: read_skill (no arguments).
+
+# Examples
 
 Y axis points up: pos 10 20 puts the top left corner of an item 20 units above the origin.
 Paths of use follow spec section 4.2: element names, then node names, joined by dots; a name
@@ -52,6 +54,36 @@ element "Screens" {
     use Kit.Window as w2
 }
 ` + "```" + `
+
+A classic diagram (brain map): items placed by pos, links between items of one element.
+
+` + "```tenn" + `
+element "Plan" {
+    item "Idea" { pos 0 0 }
+    item "Screen" {
+        pos 160 40
+        color blue
+    }
+    link "Idea" "Screen" { display arrow }
+}
+` + "```" + `
+
+# Scenes and diagrams
+
+One rule decides how an element draws, by what is written directly in it: a use, or an item with
+children, a slot or auto-layout, makes it a UI scene (components, auto-layout; spec below, 5a.17);
+content at the file root, outside any element, follows the same rule. A slot written directly in an
+element is a plain property. Otherwise it is a classic diagram, drawn as the Tenniarb
+canvas draws it: items at pos, links, styles, element layouts, ${...} expressions evaluated.
+get_state shows the renderer of each element. read, edit and validate work the same on both.
+
+# The Tenniarb app
+
+When the Tenniarb app has a file open, read, get_state and validate see its unsaved text, and edit
+changes the document in the app as one undo step (the file on disk is untouched until the user
+saves). If the user typed since you read, edit fails: read again. selection shows the open
+documents and what the user selected; select points at nodes; render with view shows the window.
+Without the app every tool works on the files on disk.
 
 Typical loop: get_state, read the file or one node, edit with find/replace, validate, render.
 edit is atomic: on any mismatch, parse error or new validation error nothing is written.

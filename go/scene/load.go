@@ -205,6 +205,14 @@ func rangeOf(c *tenn.Node) Range {
 	return Range{c.Token.Pos, c.End}
 }
 
+// bodyOf is the range of the last block of a command, which the parser ends the command with.
+func bodyOf(c *tenn.Node) Range {
+	if n := len(c.Children); n > 1 && c.Children[n-1].Kind == tenn.KindBlockExpr && c.Children[n-1].Token != nil {
+		return Range{c.Children[n-1].Token.Pos, c.End}
+	}
+	return Range{}
+}
+
 func cmdName(c *tenn.Node) string {
 	if c.Kind != tenn.KindCommand {
 		return ""
@@ -264,7 +272,7 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 }
 
 func (l *loader) newNode(kind Kind, owner *Node, c *tenn.Node) *Node {
-	n := &Node{Kind: kind, Parent: owner, Pos: l.pos(c), Range: rangeOf(c)}
+	n := &Node{Kind: kind, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c)}
 	if len(c.Children) > 1 && c.Children[1].Kind != tenn.KindBlockExpr {
 		n.Name, _ = c.Children[1].GetIdentText()
 	}
@@ -298,7 +306,7 @@ func (l *loader) addContent(owner *Node, c *tenn.Node, name string) *Node {
 		n = l.newNode(KSlot, owner, c)
 		l.fill(n, block)
 	case "link":
-		n = &Node{Kind: KLink, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), From: argText(args, 0), To: argText(args, 1)}
+		n = &Node{Kind: KLink, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c), From: argText(args, 0), To: argText(args, 1)}
 		for _, b := range block {
 			if cmdName(b) != "" {
 				n.Props = append(n.Props, l.prop(b))
@@ -323,7 +331,7 @@ func (l *loader) newUse(owner *Node, c *tenn.Node, args, block []*tenn.Node) *No
 		l.t.fail(pos, "use needs the form: use <path> as <name>")
 		return nil
 	}
-	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Path: argText(args, 0), Name: argText(args, 2)}
+	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Body: bodyOf(c), Path: argText(args, 0), Name: argText(args, 2)}
 	n.Key = NormalizeName(n.Name)
 	n.Block = l.overrides(n, block)
 	return n

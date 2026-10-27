@@ -26,6 +26,14 @@ type press struct {
 
 // realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
 func (v *Viewer) realize() {
+	if v.isScene(v.state.Current) {
+		v.realizeScene()
+		return
+	}
+	if old := v.sv; old != nil {
+		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
+		v.sv, v.selNodes = nil, nil
+	}
 	ds := v.session.Scene()
 	old, oldMap := v.rendered, v.smap
 	var next *render.Rendered
@@ -94,15 +102,15 @@ func (v *Viewer) onElement() {
 }
 
 // onChange runs after every change of the model, undo and redo included.
-func (v *Viewer) onChange(text string) {
-	if v.tracker != nil {
-		v.tracker.Changed(text)
-	}
+func (v *Viewer) onChange() {
+	v.sessionChanged()
 	v.updateTitle()
 	v.scheduleAutosave()
 	// The undo stacks change after the store's callback returns, so Undo and Redo are set again then.
 	v.app.Async(v.updateMenus)
 	v.refreshOutline()
+	v.sh.docChanged(v)
+	v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventChange, Version: v.version})
 }
 
 func (v *Viewer) sceneEvent(p *view.Pointer, at gfx.Point) editor.MouseEvent {
@@ -120,6 +128,10 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 	}
 	if p.Button == 2 {
 		v.middlePan(p)
+		return
+	}
+	if v.sceneMode() {
+		v.scenePointer(p)
 		return
 	}
 	switch p.Kind {
@@ -191,6 +203,10 @@ func (v *Viewer) onKey(k *view.Key) {
 	}
 	name := KeyName(k.Code, k.Char)
 	if name == "" || menuOwned(name, k.Mods, cmdIsCtrl) {
+		return
+	}
+	if v.sceneMode() {
+		v.sceneKey(name)
 		return
 	}
 	v.session.Key(editor.KeyEvent{Key: name, Mods: ModsOf(k.Mods)})

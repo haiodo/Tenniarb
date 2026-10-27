@@ -14,11 +14,14 @@ type Screen struct {
 	// the scene bounds (Root.SubtreeBounds) also hold anything at a negative position.
 	W, H float64
 	Root *gfx.Node
+	// NextID is the id after the last scene node made.
+	NextID int
 	// Warnings are the warnings of this element and of what it pulls in through use and import.
 	Warnings Errors
 
 	tree *RNode
 	p    *prep
+	gfx  map[*RNode]*gfx.Node
 }
 
 // Box is the laid out rectangle of one item, relative to its parent.
@@ -61,10 +64,26 @@ func (s *Screen) Boxes() []Box {
 //
 // A Tree is not safe for concurrent use.
 func (t *Tree) Build(tx *gfx.Tx, parent *gfx.Node, path string, o Options) (*Screen, error) {
+	return t.build(tx, parent, o, func() *RNode { return t.element(path) })
+}
+
+// BuildElement is Build of an element or file root of the tree, for a caller that holds the node:
+// a path of names cannot tell elements with one name apart.
+func (t *Tree) BuildElement(tx *gfx.Tx, parent *gfx.Node, el *Node, o Options) (*Screen, error) {
+	return t.build(tx, parent, o, func() *RNode {
+		if !el.isContainer() {
+			t.fail(el.Pos, "a %s is not an element", el.Kind)
+			return nil
+		}
+		return t.expandElement(el)
+	})
+}
+
+func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNode) (*Screen, error) {
 	var local Errors
 	t.sink = &local
 	defer func() { t.sink = nil }()
-	rn := t.element(path)
+	rn := expand()
 	if rn == nil {
 		return nil, local.asError()
 	}
@@ -75,8 +94,9 @@ func (t *Tree) Build(tx *gfx.Tx, parent *gfx.Node, path string, o Options) (*Scr
 	}
 	lay.Layout()
 	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p}
-	b := &builder{p: p, tx: tx, next: p.opts.FirstID}
+	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
+	sc.gfx, sc.NextID = b.made, b.next
 	if local.Fatal() {
 		return nil, local
 	}
@@ -104,6 +124,10 @@ func (t *Tree) element(path string) *RNode {
 		t.fail(t.main.Pos, "path %s names a %s, not an element", path, "namespace")
 		return nil
 	}
+	return t.expandElement(target)
+}
+
+func (t *Tree) expandElement(target *Node) *RNode {
 	x := &expander{t: t}
 	rn := x.container(target)
 	if rn != nil {
@@ -134,6 +158,7 @@ type builder struct {
 	p    *prep
 	tx   *gfx.Tx
 	next int
+	made map[*RNode]*gfx.Node
 }
 
 func (b *builder) node() *gfx.Node {
@@ -146,6 +171,7 @@ func (b *builder) node() *gfx.Node {
 func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 	ln := b.p.frames[rn]
 	node := b.node()
+	b.made[rn] = node
 	b.tx.Add(parent, node)
 	b.tx.Move(node, ln.RX, ln.RY)
 	if !isRoot {

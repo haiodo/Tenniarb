@@ -26,6 +26,9 @@ type RNode struct {
 	Inst     bool     // the root of an instance: slots below it belong to it, not to the use around
 	touched  bool     // RSlot: at or replace went through it into the fallback
 	From, To string   // RLink
+	// Src is the command written for the node: the item, link or slot, the use for the root of an
+	// instance, the element or file for the root of a screen.
+	Src *Node
 }
 
 func (r *RNode) prop(name string) *Prop {
@@ -80,7 +83,7 @@ func (x *expander) enter(n *Node, pos Pos) bool {
 func (x *expander) leave() { x.stack = x.stack[:len(x.stack)-1] }
 
 func newR(kind RKind, n *Node) *RNode {
-	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...)}
+	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...), Src: n}
 }
 
 // container expands an element or a file: its content is the scene.
@@ -149,7 +152,7 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	if inst == nil {
 		return nil
 	}
-	inst.Name, inst.Key, inst.Pos, inst.Inst = n.Name, n.Key, n.Pos, true
+	inst.Name, inst.Key, inst.Pos, inst.Inst, inst.Src = n.Name, n.Key, n.Pos, true, n
 	x.apply(inst, n.Block)
 	if !asTarget && x.depth == 1 {
 		finalize(inst)

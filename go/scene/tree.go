@@ -87,6 +87,7 @@ type Node struct {
 	Key    string // Name normalized, the segment of a path
 	Pos    Pos
 	Range  Range // the whole command with its block; zero for a file root
+	Body   Range // the block of the command from { to after }; zero when it has none
 	Parent *Node // scope: lookups go up this chain; stays inside one file
 
 	Props   []*Prop

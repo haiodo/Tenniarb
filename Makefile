@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -71,6 +71,12 @@ web-test: web/node_modules ## Typecheck and test web packages
 go-test: ## Go port (go/): vet + tests
 	cd go && go vet ./... && go test ./...
 
+go-mcp: ## MCP for agents: build/go/bin/tenniarb-mcp (proxy) and tenniarb-service, side by side
+	cd go && go build -trimpath -ldflags '-s -w' -o ../build/go/bin/ ./cmd/tenniarb-mcp ./cmd/tenniarb-service
+
+go-mcp-install: ## MCP for agents: go install tenniarb-mcp and tenniarb-service into the same GOBIN
+	cd go && go install -trimpath -ldflags '-s -w' ./cmd/tenniarb-mcp ./cmd/tenniarb-service
+
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
 GOPKG := build/go
 GO_VERSION = $(shell git describe --tags --always --dirty)
@@ -79,6 +85,16 @@ GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
 GOWT_DIR = $(shell cd go && go list -m -f '{{.Dir}}' github.com/haiodo/gowt)
 GOARCH_HOST = $(shell go env GOARCH)
+
+app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned)
+	rm -rf $(GOPKG)/app && mkdir -p $(GOPKG)/app
+	cd go && CGO_ENABLED=0 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/app/tenniarb ./cmd/tenniarb
+ifeq ($(shell uname),Darwin)
+	go/packaging/macos.sh $(GOPKG)/app/tenniarb $(GOPKG)/app $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED)
+	rm $(GOPKG)/app/tenniarb
+else
+	cp $(EMBED) $(GOPKG)/app/
+endif
 
 go-pkg-mac: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-<arch>.{app.zip,dmg} (unsigned)
 	rm -rf $(GOPKG)/mac && mkdir -p $(GOPKG)/mac/dmg

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -92,5 +93,40 @@ func TestLoadSource(t *testing.T) {
 	_, err = scene.LoadSource(root, "main.tenn", "element \"E\" { use lib.Nope as d }\nimport \"lib.tenn\" as lib\n")
 	if err == nil || !strings.Contains(err.Error(), "main.tenn:1:") {
 		t.Errorf("want an error with a position, got %v", err)
+	}
+}
+
+func TestPlacedAndBody(t *testing.T) {
+	text := "item Kit { item Button { width 40; height 20 } }\nelement \"E\" {\n  item Card { auto-layout column; use Kit.Button as ok }\n}\nelement \"E\" { item Other }\n"
+	tree, err := scene.LoadSource(t.TempDir(), "a.tenn", text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	card := tree.File("a.tenn").Elems[0].Content[0]
+	if b := text[card.Body.Start:card.Body.End]; b != "{ auto-layout column; use Kit.Button as ok }" {
+		t.Errorf("body %q", b)
+	}
+	// the second element named E is reachable by its node, not by a path
+	sc := gfx.NewScene()
+	var screen *scene.Screen
+	sc.Update(func(tx *gfx.Tx) {
+		screen, err = tree.BuildElement(tx, nil, tree.File("a.tenn").Elems[0], scene.Options{})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := screen.Placed()
+	if len(p.Kids) != 1 || p.Kids[0].Src != card || !p.Kids[0].Free || p.Kids[0].Gfx == nil {
+		t.Fatalf("placed %+v", p.Kids)
+	}
+	ok := p.Kids[0].Kids[0]
+	if !ok.Inst || ok.Src.Kind != scene.KUse || ok.Free || ok.W != 40 || ok.Prop("width").Values()[0] != "40" {
+		t.Errorf("instance %+v", ok)
+	}
+	if screen.NextID <= ok.Gfx.ID() {
+		t.Errorf("next id %d", screen.NextID)
+	}
+	if f := tree.Files(); len(f) != 1 || f[0] != "a.tenn" {
+		t.Errorf("files %v", f)
 	}
 }

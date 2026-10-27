@@ -28,22 +28,22 @@ type Viewer struct {
 	view   *view.View
 	scene  *gfx.Scene
 
-	state   *State
-	watch   Watcher
-	session *editor.Session
-	tracker *Tracker
+	*docCore
 	// conflict: the file changed on disk while the document had unsaved edits and the edits were kept.
 	conflict bool
 	asking   bool // a modal question is open; the poll waits
 
-	rendered   *render.Rendered
-	overlay    *gfx.Node
-	smap       SceneMap
-	shownElem  *model.Element // the element the camera was placed for
-	nextID     int
-	pendingFit bool // the canvas had no size yet when the element was shown
-	syncing    bool // the outline selection is being set by code
-	zoomSeen   float64
+	rendered    *render.Rendered
+	overlay     *gfx.Node
+	sv          *sceneView  // the element on the canvas is drawn by go/scene
+	picked      *outlineRow // the component Insert Component adds
+	sceneBuilds int         // how many times go/scene drew the canvas, for the tests
+	smap        SceneMap
+	shownElem   *model.Element // the element the camera was placed for
+	nextID      int
+	pendingFit  bool // the canvas had no size yet when the element was shown
+	syncing     bool // the outline selection is being set by code
+	zoomSeen    float64
 
 	press      press
 	inline     *view.Editor
@@ -80,7 +80,7 @@ type viewerInit struct {
 
 // newViewer opens a window for a file or an untitled document.
 func (sh *Shell) newViewer(in viewerInit) *Viewer {
-	v := &Viewer{app: sh.app, sh: sh, scene: gfx.NewScene(), nextID: 1, state: NewState(&Document{}), id: in.id}
+	v := &Viewer{app: sh.app, sh: sh, scene: gfx.NewScene(), nextID: 1, docCore: &docCore{state: NewState(&Document{}), others: sh.othersText}, id: in.id}
 	v.autosave = &Debounce{Delay: AutosaveDelay, After: sh.app.After, Fn: v.autosaveNow}
 	v.frameSave = &Debounce{Delay: FrameDelay, After: sh.app.After, Fn: v.saveFrame}
 	prev := sh.active
@@ -185,6 +185,7 @@ func (v *Viewer) build() {
 				t.ShowHeader(false)
 				t.OnSelect(v.onOutlineSelect)
 				t.OnActivate(v.renameNode)
+				t.OnExpand(v.onOutlineExpand)
 				v.outlineKeys(t)
 			}))),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
@@ -228,9 +229,20 @@ func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVi
 func (v *Viewer) toggleInspector() { look.SetInspectorVisible(v.win, !look.InspectorVisible(v.win)) }
 
 func (v *Viewer) fitCommand() {
-	if v.rendered != nil {
+	if _, _, ok := v.contentSize(); ok {
 		v.fitView()
 	}
+}
+
+// contentSize is the size of what the canvas shows, padding included: a diagram or a scene element.
+func (v *Viewer) contentSize() (w, h float64, ok bool) {
+	switch {
+	case v.rendered != nil:
+		return v.rendered.Width, v.rendered.Height, true
+	case v.sv != nil:
+		return v.sv.w, v.sv.h, true
+	}
+	return 0, 0, false
 }
 
 func (v *Viewer) newItem() {
@@ -244,6 +256,12 @@ func (v *Viewer) newItem() {
 func (v *Viewer) initView(vw *view.View) {
 	v.view = vw
 	vw.SetZoomLimits(MinZoom, MaxZoom)
+	// Tab adds an item (Swift keyDown); a traversal would take the focus away first.
+	vw.Canvas().Unwrap().AddListener(swt.Traverse, listenerFunc(func(e *swt.Event) {
+		if e.Detail == swt.TRAVERSE_TAB_NEXT || e.Detail == swt.TRAVERSE_TAB_PREVIOUS {
+			e.Doit = false
+		}
+	}))
 	vw.OnPointer(v.onPointer)
 	vw.OnKey(v.onKey)
 	vw.OnResize(func(int, int) {
@@ -257,6 +275,7 @@ func (v *Viewer) initView(vw *view.View) {
 			if v.session != nil {
 				v.session.SetZoom(r.Zoom)
 				v.drawOverlay()
+				v.drawSceneOverlay()
 			}
 		}
 	})
@@ -290,8 +309,9 @@ func (v *Viewer) openPath(path string) {
 	v.autosave.Cancel()
 	v.startSession()
 	v.rebuildOutline(nil)
-	v.setBanner(v.state.Error)
+	v.setBanner(v.bannerText())
 	v.sh.addRecent(path)
+	v.sh.publish(DocEvent{Path: path, Kind: EventOpen, Version: v.version})
 }
 
 // openText makes an untitled document of text. stashed: the text is what the last launch left, so it
@@ -327,6 +347,9 @@ func (v *Viewer) openDialog() {
 }
 
 func (v *Viewer) poll() {
+	if !v.asking && v.libsChanged() {
+		v.sceneReload()
+	}
 	if v.asking || v.watch.Path == "" || !v.watch.Poll() {
 		return
 	}
@@ -360,13 +383,15 @@ func (v *Viewer) reload() {
 	prev := v.state.Doc
 	expanded := v.expandedRows()
 	v.state.Reload(doc)
-	v.setBanner(v.state.Error)
+	v.setBanner(v.bannerText())
 	if v.state.Doc == prev {
 		return
 	}
 	v.conflict = false
 	v.startSession()
 	v.rebuildOutline(expanded)
+	v.sh.docChanged(v)
+	v.sh.publish(DocEvent{Path: path, Kind: EventReload, Version: v.version})
 }
 
 // reloadCommand is File > Reload: it asks before it drops edits.
@@ -400,21 +425,21 @@ func (v *Viewer) startSession() {
 	}
 	s, err := editor.New(v.state.Current, editor.Options{
 		// Shadows stay constant in screen points while zooming, as Swift setShadow ignores the zoom CTM.
-		Render:      render.Options{DarkMode: v.app.Dark(), ScreenShadows: true},
-		PCKeys:      runtime.GOOS != "darwin",
-		OnChange:    v.onChange,
-		OnRedraw:    v.onRedraw,
-		OnElement:   v.onElement,
-		OnEdit:      v.onEdit,
-		OnOperation: v.showOperation,
-		OnError:     func(err error) { v.setBanner(err.Error()) },
+		Render:        render.Options{DarkMode: v.app.Dark(), ScreenShadows: true},
+		PCKeys:        runtime.GOOS != "darwin",
+		OnModelChange: v.onChange,
+		OnRedraw:      v.onRedraw,
+		OnElement:     v.onElement,
+		OnEdit:        v.onEdit,
+		OnOperation:   v.showOperation,
+		OnError:       func(err error) { v.setBanner(err.Error()) },
 	})
 	if err != nil {
 		v.setBanner(err.Error())
 		return
 	}
 	v.session = s
-	v.tracker = NewTracker(s.Text())
+	v.adopt(v.state.Doc.Text)
 	v.zoomSeen = 0
 	v.realize()
 	v.refreshProps()
@@ -425,7 +450,10 @@ func (v *Viewer) clearCanvas() {
 	if old := v.rendered; old != nil {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.Root) })
 	}
-	v.rendered, v.overlay = nil, nil
+	if old := v.sv; old != nil {
+		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
+	}
+	v.rendered, v.overlay, v.sv = nil, nil, nil
 	v.refreshProps()
 }
 
@@ -440,15 +468,18 @@ func (v *Viewer) onOutlineSelect(n *g.Node) {
 	if v.syncing || n == nil {
 		return
 	}
-	if e, ok := n.Data().(*model.Element); ok {
-		v.selectElement(e)
+	switch d := n.Data().(type) {
+	case *model.Element:
+		v.selectElement(d)
+	case *outlineRow:
+		v.selectRow(d)
 	}
 }
 
 // applyInitialCamera places the view for the element on the canvas once the canvas has a size.
 func (v *Viewer) applyInitialCamera() {
 	w, h := v.view.Canvas().Size()
-	if v.rendered == nil {
+	if _, _, ok := v.contentSize(); !ok {
 		v.pendingFit = false
 		return
 	}
@@ -466,12 +497,13 @@ func (v *Viewer) applyInitialCamera() {
 
 func (v *Viewer) fitView() {
 	w, h := v.view.Canvas().Size()
-	v.view.Compositor().SetCamera(FitCamera(v.rendered.Width, v.rendered.Height, float64(w), float64(h)))
+	cw, ch, _ := v.contentSize()
+	v.view.Compositor().SetCamera(FitCamera(cw, ch, float64(w), float64(h)))
 }
 
 // saveCamera remembers the viewport of the element on the canvas, unless it was never placed.
 func (v *Viewer) saveCamera() {
-	if v.state.Current != nil && v.rendered != nil && !v.pendingFit {
+	if _, _, ok := v.contentSize(); v.state.Current != nil && ok && !v.pendingFit {
 		v.state.Remember(v.state.Current, v.view.Compositor().Camera())
 	}
 }
@@ -484,11 +516,12 @@ func (v *Viewer) zoomBy(f float64) {
 
 // resetZoom is Swift's Reset Zoom: zoom 1, the diagram centered.
 func (v *Viewer) resetZoom() {
-	if v.rendered == nil {
+	cw, ch, ok := v.contentSize()
+	if !ok {
 		return
 	}
 	w, h := v.view.Canvas().Size()
-	v.view.Compositor().SetCamera(CenterCamera(1, v.rendered.Width, v.rendered.Height, float64(w), float64(h)))
+	v.view.Compositor().SetCamera(CenterCamera(1, cw, ch, float64(w), float64(h)))
 }
 
 // visibleScene is the part of the editor scene the canvas shows now.

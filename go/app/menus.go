@@ -3,6 +3,7 @@
 package app
 
 import (
+	"fmt"
 	"math"
 	"path/filepath"
 	"runtime"
@@ -95,6 +96,12 @@ func (v *Viewer) menus() {
 	el.Separator()
 	el.Item("Move &Up", func() { v.moveElement(-1) }, g.Shortcut("Cmd+Alt+Up"))
 	el.Item("Move D&own", func() { v.moveElement(1) }, g.Shortcut("Cmd+Alt+Down"))
+	el.Separator()
+	screens := el.Submenu("New &Screen")
+	for _, sz := range ScreenSizes {
+		screens.Item(fmt.Sprintf("%s %d x %d", sz.Name, sz.W, sz.H), func() { v.newScreen(sz.W, sz.H) })
+	}
+	el.Item("&Insert Component", v.insertPicked, g.Shortcut("Cmd+Shift+I"))
 
 	if !v.sh.sysMenu {
 		edit.Separator()
@@ -109,6 +116,7 @@ func (v *Viewer) menus() {
 	viewMenu.Item("Zoom Out", func() { v.zoomBy(1 / ZoomStep) }, g.Shortcut("Cmd+-"))
 	viewMenu.Item("Reset Zoom", v.resetZoom, g.Shortcut("Cmd+0"))
 	viewMenu.Item("Zoom to &Fit", v.fitCommand, g.Shortcut("Cmd+9"))
+	viewMenu.Item("Zoom to Se&lection", v.zoomToSelection)
 	viewMenu.Separator()
 	viewMenu.Item("&Quick Style Panel", v.showQuickPanel, g.Shortcut("Cmd+E"))
 	viewMenu.Separator()
@@ -260,6 +268,8 @@ func (v *Viewer) cmdPaste() {
 func (v *Viewer) cmdDelete() {
 	switch {
 	case v.activeText != nil, v.propsFocused(), v.session == nil:
+	case v.sceneMode() && len(v.selNodes) > 0:
+		v.deleteSceneNode()
 	case v.treeFocused():
 		v.removeElement()
 	default:

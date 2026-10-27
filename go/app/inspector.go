@@ -25,12 +25,13 @@ const (
 	kindItems                // several items
 	kindLinks                // several links
 	kindMixed                // items and links
+	kindScene                // a scene element is on the canvas: the scene sections
 )
 
 func (k selKind) item() bool  { return k == kindItem || k == kindItems }
 func (k selKind) link() bool  { return k == kindLink || k == kindLinks }
 func (k selKind) multi() bool { return k == kindItems || k == kindLinks || k == kindMixed }
-func (k selKind) sel() bool   { return k != kindNone }
+func (k selKind) sel() bool   { return k != kindNone && k != kindScene }
 
 func kindOf(sel []*model.DiagramItem) selKind {
 	items, links := 0, 0
@@ -108,6 +109,7 @@ type inspField struct {
 }
 
 type inspSection struct {
+	scene  bool // shown for a scene element instead of the classic sections
 	box    *g.Panel
 	title  *g.LabelView
 	label  func(k selKind) string
@@ -123,6 +125,7 @@ type inspector struct {
 	scroll   *g.ScrollView
 	sections []*inspSection
 	cur      *inspSection
+	building bool // the sections being built are scene sections
 	kind     selKind
 	loading  bool
 	pending  bool
@@ -141,7 +144,7 @@ func labelWidth() int { return g.Scaled(68) }
 
 // section starts a section; the fields built until the next call belong to it.
 func (in *inspector) section(label func(selKind) string, when func(selKind) bool, rows ...func() g.Option) g.Option {
-	s := &inspSection{label: label, when: when}
+	s := &inspSection{label: label, when: when, scene: in.building}
 	in.sections = append(in.sections, s)
 	in.cur = s
 	opts := []g.Option{g.Ref(&s.box), g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
@@ -639,6 +642,7 @@ func (in *inspector) build() g.Option {
 			}
 			return "Body"
 		}, func(k selKind) bool { return k == kindItem || k == kindNone }, in.bodyRow()),
+		in.sceneSections(),
 		in.codeSection())
 	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.Ref(&in.scroll), body)
 }
@@ -695,10 +699,13 @@ func (in *inspector) refresh() {
 	if v.session != nil {
 		k = kindOf(v.session.Selection())
 	}
+	if v.sceneMode() {
+		k = kindScene
+	}
 	changed := k != in.kind
 	in.kind = k
 	for _, s := range in.sections {
-		show := v.session != nil && s.when(k)
+		show := v.session != nil && s.scene == (k == kindScene) && s.when(k)
 		if s.box.Visible() != show {
 			s.box.SetVisible(show)
 			changed = true

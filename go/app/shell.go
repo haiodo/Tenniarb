@@ -3,6 +3,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,6 +37,11 @@ type Shell struct {
 	helpWin  *helpWindow
 	// sysMenu is set when About and Preferences are in the macOS application menu.
 	sysMenu bool
+
+	subs    map[int]func(DocEvent) // the API's subscribers
+	nextSub int
+
+	ctx context.Context // ends when the application quits
 }
 
 // listenerFunc is a swt.Listener.
@@ -49,10 +55,12 @@ func Run(args []string) error { return RunIn(ConfigDir(), args) }
 // RunIn is Run with the files of the application in dir.
 func RunIn(dir string, args []string) error {
 	g.SetAppName("Tenniarb")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	return g.Run(func(app *g.App) {
 		app.SetDensity(g.DensityNative)
 		exe, _ := os.Executable()
-		sh := &Shell{app: app, dir: dir, exe: exe, prefs: LoadPrefs(dir), recent: LoadRecent(dir)}
+		sh := &Shell{app: app, dir: dir, exe: exe, prefs: LoadPrefs(dir), recent: LoadRecent(dir), ctx: ctx}
 		sh.start(args)
 	})
 }
@@ -88,6 +96,7 @@ func (sh *Shell) start(args []string) {
 		}
 	})
 
+	sh.startProvider(sh.ctx)
 	for _, a := range args {
 		sh.openPath(a)
 	}
@@ -160,6 +169,7 @@ func (sh *Shell) setPrefs(p Prefs) {
 
 func (sh *Shell) remove(v *Viewer) {
 	sh.viewers = slices.DeleteFunc(sh.viewers, func(o *Viewer) bool { return o == v })
+	sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventClose, Version: v.version})
 	if len(sh.viewers) == 0 { // as Swift: the application ends with the last document
 		for _, w := range []*g.Window{sh.prefsWin.window(), sh.helpWin.window()} {
 			if w != nil {

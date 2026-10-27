@@ -3,17 +3,14 @@
 package app_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"image"
 	"image/color"
 	"image/png"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -368,27 +365,11 @@ func pngFile(t *testing.T) string {
 	return path
 }
 
-// withClipboard runs f with the system clipboard text saved and restored (macOS only; the QA driver has
-// no clipboard of its own, so the text of the user's clipboard is put back, other formats are lost).
-func withClipboard(t *testing.T, f func(set func(string), get func() string)) {
+// withClipboard runs f on the clipboard of the QA run, which the app uses instead of the system one.
+func withClipboard(t *testing.T, app *qatest.Client, f func(set func(string), get func() string)) {
 	t.Helper()
-	if runtime.GOOS != "darwin" {
-		t.Skip("the clipboard is read with pbcopy and pbpaste")
-	}
-	old, _ := exec.Command("pbpaste").Output()
-	defer func() {
-		c := exec.Command("pbcopy")
-		c.Stdin = bytes.NewReader(old)
-		_ = c.Run()
-	}()
-	set := func(s string) {
-		c := exec.Command("pbcopy")
-		c.Stdin = strings.NewReader(s)
-		if err := c.Run(); err != nil {
-			t.Fatal(err)
-		}
-	}
-	get := func() string { b, _ := exec.Command("pbpaste").Output(); return string(b) }
+	set := func(s string) { app.SetClipboard(qa.Clipboard{Text: s}) }
+	get := func() string { cb := app.Clipboard(); return cb.Text + cb.HTML }
 	f(set, get)
 }
 
@@ -440,7 +421,7 @@ func TestParityContext(t *testing.T) {
 		t.Fatalf("Attach image: props %q", s.Props)
 	}
 	app.Key("Mod+Z")
-	withClipboard(t, func(set func(string), get func() string) {
+	withClipboard(t, app, func(set func(string), get func() string) {
 		rightClick("D")
 		entry("Export text as html")
 		if got := get(); !strings.Contains(got, "<div") {
@@ -552,7 +533,7 @@ func TestParityDocument(t *testing.T) {
 	}
 
 	// clipboard: Cmd+C and Cmd+V on items, Cmd+X, Paste as Item, Paste as Item Set, element copy and paste
-	withClipboard(t, func(set func(string), get func() string) {
+	withClipboard(t, app, func(set func(string), get func() string) {
 		canvas.Focus()
 		pick("B")
 		n := par(t, app).ItemCount

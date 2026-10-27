@@ -41,6 +41,8 @@ type Options struct {
 	PCKeys bool
 	// OnChange gets the serialized document after each committed change, undo and redo included.
 	OnChange func(text string)
+	// OnModelChange is OnChange without the text, for a caller that writes the document itself.
+	OnModelChange func()
 	// OnRedraw is called when the scene, the selection or a preview changed.
 	OnRedraw func(Redraw)
 	// OnElement is called when the edited element changes (SetElement, or the old one was removed).
@@ -233,6 +235,9 @@ func (s *Session) refresh() {
 	}
 	if s.opts.OnChange != nil {
 		s.opts.OnChange(s.Text())
+	}
+	if s.opts.OnModelChange != nil {
+		s.opts.OnModelChange()
 	}
 	s.emit()
 }

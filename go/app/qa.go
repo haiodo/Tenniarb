@@ -18,6 +18,45 @@ import (
 // does nothing. The handlers act on the active window.
 func (sh *Shell) registerQA() {
 	qa.HandleValue("state", func(qa.Args) (any, error) { return sh.qaState(), nil })
+	qa.HandleValue("text", func(qa.Args) (any, error) { return sh.active.text, nil })
+	// scene: the selectable nodes of the scene element on the canvas, path -> [x, y, w, h] in view points
+	qa.HandleValue("scene", func(qa.Args) (any, error) { return sh.active.qaScene(), nil })
+	// doc: a window by the path of its document, active or not
+	qa.HandleValue("doc", func(a qa.Args) (any, error) {
+		v, err := sh.viewer(a.String("path"))
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"version": v.version, "builds": v.sceneBuilds, "sceneMode": v.sceneMode(),
+			"nodes": v.selNodes, "dirty": v.isDirty(), "error": v.bannerText(), "kind": v.kind,
+			"title": Title(v.state.Doc.Path, v.isDirty())}, nil
+	})
+	// select: what the MCP service will do, for the window of path
+	qa.Handle("select", func(a qa.Args) error {
+		v, err := sh.viewer(a.String("path"))
+		if err != nil {
+			return err
+		}
+		var sel Selection
+		if a.Has("element") {
+			if err := a.Decode("element", &sel.Element); err != nil {
+				return err
+			}
+		}
+		if err := a.Decode("nodes", &sel.Nodes); err != nil {
+			return err
+		}
+		return v.selectAPI(sel)
+	})
+	qa.Handle("activate", func(a qa.Args) error {
+		v, err := sh.viewer(a.String("path"))
+		if err != nil {
+			return err
+		}
+		v.win.Unwrap().ForceActive()
+		sh.active = v
+		return nil
+	})
 	qa.Handle("zoom", func(a qa.Args) error {
 		v := sh.active
 		f := 1.0
@@ -146,6 +185,10 @@ func (v *Viewer) qaState() map[string]any {
 	if v.rendered != nil {
 		out["size"] = []float64{v.rendered.Width, v.rendered.Height}
 	}
+	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
+	if v.picked != nil {
+		out["picked"] = v.picked.lib + "." + v.picked.path
+	}
 	if v.session != nil {
 		out["canUndo"], out["canRedo"] = v.session.UndoManager().CanUndo(), v.session.UndoManager().CanRedo()
 		var sel []string
@@ -178,6 +221,26 @@ func (v *Viewer) qaState() map[string]any {
 		}
 		out["screen"] = screen
 		out["pivot"] = []float64{v.session.Pivot().X, v.session.Pivot().Y}
+	}
+	return out
+}
+
+// qaNode is a selectable scene node: its box in view points, its kind and how many nodes it has.
+type qaNode struct {
+	Box  []float64
+	Kind string
+	Kids int
+}
+
+func (v *Viewer) qaScene() map[string]qaNode {
+	out := map[string]qaNode{}
+	if !v.sceneMode() {
+		return out
+	}
+	cam := v.view.Compositor().Camera()
+	for n, pl := range v.sv.byNode {
+		x, y := (pl.X+v.sv.off.X-cam.Origin.X)*cam.Zoom, (pl.Y+v.sv.off.Y-cam.Origin.Y)*cam.Zoom
+		out[NodePath(v.sv.node, n)] = qaNode{[]float64{x, y, pl.W * cam.Zoom, pl.H * cam.Zoom}, n.Kind.String(), len(sceneKids(n))}
 	}
 	return out
 }
