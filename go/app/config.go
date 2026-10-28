@@ -63,6 +63,8 @@ type Prefs struct {
 	// ExportBackground fills the PNG export with Background; ExportNativeScale renders it at the screen scale.
 	ExportBackground  bool `json:"exportBackground"`
 	ExportNativeScale bool `json:"exportNativeScale"`
+	// Appearance forces the colour scheme: "system" (follow the OS), "light" or "dark".
+	Appearance string `json:"appearance"`
 }
 
 // DefaultPrefs are the defaults of Swift's checkDefaults.
@@ -71,8 +73,16 @@ func DefaultPrefs() Prefs {
 		AutoExpand: true, ExpandLevel: 2,
 		Background: "#e7e9ebff", BackgroundDark: "#2e2e2eff",
 		QuickPanel: true, ExportBackground: true, ExportNativeScale: true,
+		Appearance: AppearanceSystem,
 	}
 }
+
+// Values of Prefs.Appearance.
+const (
+	AppearanceSystem = "system"
+	AppearanceLight  = "light"
+	AppearanceDark   = "dark"
+)
 
 const prefsFile = "settings.json"
 
@@ -96,6 +106,9 @@ func (p Prefs) sane() Prefs {
 	}
 	if _, ok := render.ParseColor(p.BackgroundDark); !ok {
 		p.BackgroundDark = d.BackgroundDark
+	}
+	if p.Appearance != AppearanceLight && p.Appearance != AppearanceDark {
+		p.Appearance = AppearanceSystem
 	}
 	return p
 }

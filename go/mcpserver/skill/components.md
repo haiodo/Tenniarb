@@ -116,7 +116,7 @@ A library converted from pen.dev (`pen2tenn`) keeps the pen.dev catalog: each co
 `<Page>.<Page_Component>.components.<row>.<cell>.<Component_variant>`, next to an item `label` with
 its pen.dev name. `header`, `components`, `row`, `cell` and `label` are the catalog, not components:
 use the deepest node, such as `ui.Forms.Forms_Input.components.cell.Forms_Input`. Its text leaves carry
-`display`, `layout left` and `auto-layout row` from the converter; leave them. Other habits of such
+`layout left` from the converter; leave it. Other habits of such
 libraries:
 
 - Large components (a window, a settings layout) use `auto-layout abs`: their parts sit at `pos`, and

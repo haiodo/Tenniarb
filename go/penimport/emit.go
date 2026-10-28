@@ -157,8 +157,12 @@ func (r *Result) Tenn(f *File) string {
 	for _, n := range f.Root.Kids {
 		stmts.Add(r.emitNode(n))
 	}
-	return tenn.Compact(stmts) + "\n"
+	dropDefaults(stmts.Children, false)
+	return tenn.CompactAs(stmts, outStyle) + "\n"
 }
+
+// outStyle is how Tenn prints: tabs and packed lines, the smallest form that still reads well.
+var outStyle = tenn.CompactStyle{Indent: "\t", Pack: true}
 
 // Map is the side table: the pen id of every node of the file tree and the path that names it in
 // the .tenn file, one pair per line.

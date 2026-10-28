@@ -17,6 +17,12 @@ import (
 // text edit; eff is the value in effect, the component's or the default, shown as the hint.
 func (v *Viewer) sceneSrc() propSrc {
 	own := func(name string) *scene.Prop {
+		if ref, ok := v.selectedInst(); ok {
+			if at := atOf(ref.use, ref.at); at != nil {
+				return atProp(at, name)
+			}
+			return nil
+		}
 		if n, _ := v.selectedScene(); n != nil {
 			return ownProp(n, name)
 		}
@@ -34,6 +40,9 @@ func (v *Viewer) sceneSrc() propSrc {
 		return nil
 	}
 	set := func(name string, args ...string) bool {
+		if ref, ok := v.selectedInst(); ok {
+			return v.setInstProp(ref, name, args...)
+		}
 		n, _ := v.selectedScene()
 		if n == nil {
 			return false
@@ -84,10 +93,7 @@ func (in *inspector) sceneSections() g.Option {
 	in.building = true
 	defer func() { in.building = false }()
 	src := v.sceneSrc
-	node := func(k selKind) bool {
-		n, _ := v.selectedScene()
-		return k == kindScene && n != nil
-	}
+	node := func(k selKind) bool { return k == kindScene && v.shownNode() != nil }
 	scr := func(k selKind) bool { return k == kindScene }
 	t := func(id, name string) entryCfg { return entryCfg{id: id, name: name, src: src} }
 	num := func(id, name string, idx int) entryCfg {
@@ -107,13 +113,13 @@ func (in *inspector) sceneSections() g.Option {
 		return "Item"
 	}
 	title := func(selKind) string {
-		if n, _ := v.selectedScene(); n != nil {
+		if n := v.shownNode(); n != nil {
 			return kindText(n)
 		}
 		return "Screen"
 	}
 	nameOf := func(selKind) string {
-		if n, _ := v.selectedScene(); n != nil {
+		if n := v.shownNode(); n != nil {
 			return n.Name
 		}
 		if v.sv != nil && v.sv.el != nil {
@@ -133,15 +139,14 @@ func (in *inspector) sceneSections() g.Option {
 		return f(pl.W) + " x " + f(pl.H)
 	}
 	isUse := func(k selKind) bool {
-		n, _ := v.selectedScene()
+		n := v.shownNode()
 		return k == kindScene && n != nil && n.Kind == scene.KUse
 	}
 	return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(10)),
 		in.section(title, scr,
 			in.info("Name", scr, nameOf),
 			in.info("Component", isUse, func(selKind) string {
-				n, _ := v.selectedScene()
-				return n.Path
+				return v.shownNode().Path
 			}),
 			in.info("Size", scr, size)),
 		in.section(sectionTitle("Layout"), node,
@@ -181,11 +186,14 @@ func (v *Viewer) sceneCodeKey() string {
 // refreshSceneCode shows the source of the selected node in the Code section, its kids as one line each;
 // nothing selected, nothing shown: the text of a whole element can be the whole file.
 func (v *Viewer) refreshSceneCode() {
-	n, _ := v.selectedScene()
+	n, pl := v.selectedScene()
 	key := v.sceneCodeKey()
 	want := ""
-	if n != nil {
+	switch {
+	case n != nil:
 		want = OwnText(v.fileText(v.fileOf(n)), n)
+	case pl != nil:
+		want = EffectiveText(pl)
 	}
 	if key == v.props.sceneKey && v.props.text.Text() == want {
 		return
@@ -209,7 +217,14 @@ func (v *Viewer) applySceneCode(key, text string) {
 	if key == "" || key != v.sceneCodeKey() || len(editor.ParseDiagnostics(text)) > 0 {
 		return
 	}
-	n, _ := v.selectedScene()
+	n, pl := v.selectedScene()
+	if n == nil && pl != nil { // a part of a component has no code of its own
+		if text != EffectiveText(pl) {
+			v.setBanner("The code of a part of an instance is read only: change it in the inspector")
+			v.refreshSceneCode()
+		}
+		return
+	}
 	src := v.fileText(v.fileOf(n))
 	if n == nil || OwnText(src, n) == text {
 		return

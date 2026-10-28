@@ -10,7 +10,6 @@ import (
 	"unicode/utf8"
 
 	g "github.com/haiodo/gowt"
-	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -38,8 +37,8 @@ type props struct {
 }
 
 // codePane is the text of the properties under the canvas, as Swift shows it.
-func (v *Viewer) codePane() g.Option {
-	return g.VBox(g.Grow(), g.Padding(0), g.Gap(0), g.Init(func(p *g.Panel) { look.SetMaterial(p, true) }),
+func (v *Viewer) codePane(ref **g.Panel) g.Option {
+	return g.VBox(g.Ref(ref), g.Grow(), g.Padding(0), g.Gap(0),
 		g.StyledText(g.NoBackground(), g.NoBorder(), g.Scrollbars(), g.Grow(), g.ID("props"), g.Init(v.initProps)))
 }
 
@@ -139,6 +138,16 @@ func (v *Viewer) setPropsText(text string, target editor.Target) {
 		v.props.values = v.session.PropsValues(target, text)
 	}
 	t.Unwrap().Redraw()
+}
+
+// restyleProps paints the code and the expression fields again after a light/dark switch.
+func (v *Viewer) restyleProps() {
+	if v.props.text == nil {
+		return
+	}
+	v.styleProps(v.props.text.Text())
+	v.props.text.Unwrap().Redraw()
+	v.insp.refresh()
 }
 
 // styleProps colors the text as Swift highlight() does: tokens by class, parse errors in red.

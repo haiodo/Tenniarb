@@ -88,6 +88,17 @@ evaluated).
 Otherwise the tools work on disk. Known gap: the app polls for the service every 2 s, so for up to 2 s after
 a service starts an edit of a file the app has open goes to disk.
 
+## Check without MCP
+
+`tenniarb check [-json] [-root DIR] FILE...` validates files headless with the same `scene.Diagnose` as `validate`
+(parse errors, scene diagnostics, `--from-file` mounts, cycles), for agents that edit files directly. It opens no
+window. One line per problem, `path:line:col: error|warning: message`, paths relative to the working directory,
+then `N files checked, E errors, W warnings`; `-json` prints an array of `{file, line, col, severity, message}`.
+Exit code: 0 no errors (warnings allowed), 1 errors, 2 usage or an unreadable file. The root for `--from-file` is
+`-root`, else the working directory (as `tenniarb-mcp`), else the directory of a file outside it. Unlike `validate {file}`
+it lists the warnings of mounted files too. The command is in the app binary (`Tenniarb.app/Contents/MacOS/tenniarb check`),
+not in `tenniarb-mcp`, which links the standard library only.
+
 ## Provider protocol (for the app)
 
 Package `go/servicewire`. The app is a "provider": it connects with role `provider`, registers its open

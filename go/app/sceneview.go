@@ -23,12 +23,22 @@ type sceneView struct {
 	node    *scene.Node
 	screen  *scene.Screen // nil when the element has errors
 	placed  *scene.Placed
-	byNode  map[*scene.Node]*scene.Placed // the items one can select, by what is written for them
-	root    *gfx.Node                     // moved so that the content starts at the padding
+	byNode  map[*scene.Node]*scene.Placed // the items written in the element that one can select, by what is written for them
+	byPath  map[string]*scene.Placed      // every item one can select, by selection path
+	pathOf  map[*scene.Placed]string
+	inst    map[*scene.Placed]instRef // the items drawn from a component, which the use around overrides
+	root    *gfx.Node                 // moved so that the content starts at the padding
 	overlay *gfx.Node
 	off     gfx.Point // gfx scene = content + off
 	w, h    float64
 	drag    sceneDrag
+}
+
+// instRef says where a part of an instance is overridden: the use that holds the instance and the at path
+// from its root. At is empty when the part has no unique name.
+type instRef struct {
+	use *scene.Node
+	at  string
 }
 
 // sceneDrag is a press on a selected item that moves it.
@@ -47,7 +57,7 @@ func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
 	oldSV, oldRendered := v.sv, v.rendered
-	sv := &sceneView{el: el, node: node, byNode: map[*scene.Node]*scene.Placed{}}
+	sv := newSceneView(el, node)
 	var err error
 	v.scene.Update(func(tx *gfx.Tx) {
 		if oldRendered != nil {
@@ -77,7 +87,7 @@ func (v *Viewer) realizeScene() {
 	v.rendered, v.overlay, v.sv = nil, nil, sv
 	v.sceneBuilds++
 	if sv.placed != nil {
-		sv.index(sv.placed, nil)
+		sv.index(sv.placed)
 	}
 	switch {
 	case err != nil:
@@ -123,21 +133,134 @@ func (sv *sceneView) bounds() {
 	sv.w, sv.h = maxX-minX+2*pad, maxY-minY+2*pad
 }
 
+func newSceneView(el *model.Element, node *scene.Node) *sceneView {
+	return &sceneView{el: el, node: node, byNode: map[*scene.Node]*scene.Placed{},
+		byPath: map[string]*scene.Placed{}, pathOf: map[*scene.Placed]string{}, inst: map[*scene.Placed]instRef{}}
+}
+
 // index finds the items one can select: those written in the element, and inside an instance only what
-// its use passes in. owner is the use of the instance around, nil outside one.
-func (sv *sceneView) index(p *scene.Placed, owner *scene.Node) {
+// its use passes in, and the parts of the component, named from the use around (see add).
+func (sv *sceneView) index(p *scene.Placed) {
 	for _, k := range p.Kids {
-		if NodePath(sv.node, k.Src) != "" && (owner == nil || under(k.Src, owner)) {
-			if _, dup := sv.byNode[k.Src]; !dup {
-				sv.byNode[k.Src] = k
+		sv.add(k)
+		sv.index(k)
+	}
+}
+
+// add makes k selectable. A written item has the path NodePath gives. A part of a component has the
+// path of the nearest written use around it, "/", and the names down to it (a repeat of a name among
+// siblings gets #n); the parts are overridden by at in that use.
+func (sv *sceneView) add(k *scene.Placed) {
+	owner := nearestInst(k.Parent)
+	if p := NodePath(sv.node, k.Src); p != "" && (owner == nil || sv.written(owner) && under(k.Src, owner.Src)) {
+		if _, dup := sv.byNode[k.Src]; !dup {
+			sv.byNode[k.Src] = k
+			sv.byPath[p], sv.pathOf[k] = k, p
+		}
+		return
+	}
+	anchor := k.Parent
+	for anchor != nil && !(anchor.Inst && sv.written(anchor)) {
+		anchor = anchor.Parent
+	}
+	if anchor == nil {
+		return
+	}
+	var segs, plain []string
+	for c := k; c != anchor; c = c.Parent {
+		plain = append(plain, c.Src.Key)
+		if sl := c.Src.Parent; sl != nil && sl.Kind == scene.KSlot { // the fallback of a slot is reached through the slot
+			plain = append(plain, slotSeg(sl))
+		}
+		segs = append(segs, nodeSegOf(c))
+	}
+	slices.Reverse(segs)
+	slices.Reverse(plain)
+	path := sv.pathOf[anchor] + "/" + strings.Join(segs, ".")
+	ref := instRef{use: anchor.Src, at: strings.Join(plain, ".")}
+	if strings.Contains(path, "#") || slices.Contains(plain, "") {
+		ref.at = ""
+	}
+	sv.byPath[path], sv.pathOf[k], sv.inst[k] = k, path, ref
+}
+
+// instRows are the rows under an item drawn from an instance: what is drawn in it, written in the
+// element or a part of the component.
+func (sv *sceneView) instRows(pl *scene.Placed) []ItemRow {
+	var out []ItemRow
+	for _, k := range pl.Kids {
+		p, ok := sv.pathOf[k]
+		if !ok {
+			continue
+		}
+		kids := len(k.Kids) > 0 || sv.written(k) && len(sceneKids(k.Src)) > 0
+		out = append(out, ItemRow{Label: nodeLabel(k.Src), Kind: k.Src.Kind.String(), Path: p, Kids: kids})
+	}
+	return out
+}
+
+// rowChain are the paths of the rows from the top down to the one of path p: the written items on the
+// way, then the parts of a component under the use that names them.
+func (sv *sceneView) rowChain(p string) []string {
+	anchor, _, part := strings.Cut(p, "/")
+	var chain []string
+	segs := strings.Split(anchor, ".")
+	for i := range segs {
+		chain = append(chain, strings.Join(segs[:i+1], "."))
+	}
+	if !part {
+		return chain
+	}
+	if sv.byPath[p] == nil {
+		return nil
+	}
+	var down []string
+	for c := sv.byPath[p]; c != nil && sv.pathOf[c] != anchor; c = c.Parent {
+		down = append(down, sv.pathOf[c])
+	}
+	slices.Reverse(down)
+	return append(chain, down...)
+}
+
+func slotSeg(sl *scene.Node) string {
+	if sl.Key == "" {
+		return "default"
+	}
+	return sl.Key
+}
+
+// nodeSegOf is the key of an item among the drawn siblings, with #n for the n-th repeat.
+func nodeSegOf(p *scene.Placed) string {
+	k := 0
+	if p.Parent != nil {
+		for _, c := range p.Parent.Kids {
+			if c == p {
+				break
+			}
+			if c.Src.Key == p.Src.Key {
+				k++
 			}
 		}
-		o := owner
-		if k.Inst {
-			o = k.Src
-		}
-		sv.index(k, o)
 	}
+	if k > 0 {
+		return p.Src.Key + "#" + strconv.Itoa(k)
+	}
+	return p.Src.Key
+}
+
+func nearestInst(p *scene.Placed) *scene.Placed {
+	for ; p != nil; p = p.Parent {
+		if p.Inst {
+			return p
+		}
+	}
+	return nil
+}
+
+// written reports whether p is an item written in the element (a path without "/").
+func (sv *sceneView) written(p *scene.Placed) bool {
+	path, ok := sv.pathOf[p]
+	return ok && !strings.Contains(path, "/")
 }
 
 func under(n, owner *scene.Node) bool {
@@ -159,7 +282,7 @@ func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
 			if p.X < k.X || p.Y < k.Y || p.X > k.X+k.W || p.Y > k.Y+k.H {
 				continue
 			}
-			if _, ok := sv.byNode[k.Src]; ok && sv.byNode[k.Src] == k {
+			if _, ok := sv.pathOf[k]; ok {
 				found = k
 			}
 			walk(k)
@@ -176,10 +299,14 @@ func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
 // sceneMode reports whether the canvas shows a scene element.
 func (v *Viewer) sceneMode() bool { return v.sv != nil && v.rendered == nil }
 
-// selectedScene is the first selected scene node and where it is drawn (nil when not drawn).
+// selectedScene is the first selected scene node and where it is drawn (nil when not drawn). A part of
+// a component has no node of its own: nil and where it is drawn, see selectedInst.
 func (v *Viewer) selectedScene() (*scene.Node, *scene.Placed) {
 	if !v.sceneMode() || len(v.selNodes) == 0 {
 		return nil, nil
+	}
+	if _, ok := v.selectedInst(); ok {
+		return nil, v.sv.byPath[v.selNodes[0]]
 	}
 	n := NodeAt(v.sv.node, v.selNodes[0])
 	if n == nil {
@@ -188,11 +315,31 @@ func (v *Viewer) selectedScene() (*scene.Node, *scene.Placed) {
 	return n, v.sv.byNode[n]
 }
 
+// selectedInst is the first selected node when it is a part of a component.
+func (v *Viewer) selectedInst() (instRef, bool) {
+	if !v.sceneMode() || len(v.selNodes) == 0 {
+		return instRef{}, false
+	}
+	pl := v.sv.byPath[v.selNodes[0]]
+	ref, ok := v.sv.inst[pl]
+	return ref, pl != nil && ok
+}
+
+// shownNode is the node the inspector describes: the selected one, for a part of a component the node it
+// is drawn from.
+func (v *Viewer) shownNode() *scene.Node {
+	n, pl := v.selectedScene()
+	if n == nil && pl != nil {
+		return pl.Src
+	}
+	return n
+}
+
 // dropStaleSelection forgets the selected paths that name nothing after a change.
 func (v *Viewer) dropStaleSelection() {
 	kept := v.selNodes[:0:0]
 	for _, p := range v.selNodes {
-		if NodeAt(v.sv.node, p) != nil {
+		if NodeAt(v.sv.node, p) != nil || v.sv.byPath[p] != nil {
 			kept = append(kept, p)
 		}
 	}
@@ -210,7 +357,7 @@ func (v *Viewer) drawSceneOverlay() {
 	}
 	r := gfx.NewRecorder()
 	for _, p := range v.selNodes {
-		pl := sv.byNode[NodeAt(sv.node, p)]
+		pl := sv.byPath[p]
 		if pl == nil {
 			continue
 		}
@@ -270,7 +417,7 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			t := hit.Gfx.Transform()
 			sv.drag = sceneDrag{pl: hit, from: at, ox: t[4], oy: t[5]}
 		case hit != nil:
-			v.selectScene([]string{NodePath(sv.node, hit.Src)})
+			v.selectScene([]string{sv.pathOf[hit]})
 			v.press.pan = true
 		default:
 			if len(v.selNodes) > 0 {
@@ -325,7 +472,7 @@ func (v *Viewer) sceneRightClick(at gfx.Point) {
 	if hit == nil {
 		return
 	}
-	p := NodePath(v.sv.node, hit.Src)
+	p := v.sv.pathOf[hit]
 	if !slices.Contains(v.selNodes, p) {
 		v.selectScene([]string{p})
 	}
@@ -341,9 +488,24 @@ func (v *Viewer) moveSceneNode(pl *scene.Placed, dx, dy float64) {
 		}
 	}
 	nx, ny := math.Round(x+dx), math.Round(y-dy)
+	if ref, ok := v.sv.inst[pl]; ok {
+		v.setInstProp(ref, "pos", numText(nx), numText(ny))
+		return
+	}
 	if e, ok := SetPropEdit(v.fileText(v.fileOf(pl.Src)), pl.Src, "pos", numText(nx), numText(ny)); ok {
 		v.sceneEdit(pl.Src, e)
 	}
+}
+
+// setInstProp writes a property of a part of a component as an at override in the use around it; the
+// component and the other instances stay as they are.
+func (v *Viewer) setInstProp(ref instRef, name string, args ...string) bool {
+	if ref.at == "" {
+		v.setBanner("Not applied: the item has no unique name inside the instance, edit it in the use")
+		return false
+	}
+	e, ok := AtPropEdit(v.fileText(v.fileOf(ref.use)), ref.use, ref.at, name, args...)
+	return ok && v.sceneEdit(ref.use, e)
 }
 
 // sceneEdit applies a text edit of the file of n, made by the window; a refused one shows in the banner.

@@ -122,6 +122,7 @@ func (v *Viewer) menus() {
 	viewMenu.Separator()
 	viewMenu.Item("Toggle &Sidebar", v.toggleSidebar, g.Shortcut("Cmd+Alt+S"))
 	viewMenu.Item("Toggle &Inspector", v.toggleInspector, g.Shortcut("Cmd+Alt+I"))
+	viewMenu.Item("Toggle &Code", v.toggleCode, g.Shortcut("Cmd+Shift+Y"))
 
 	help := bar.Submenu("&Help")
 	help.Item("Tenniarb &Help", v.sh.showHelp, g.Shortcut("Cmd+Shift+/"))

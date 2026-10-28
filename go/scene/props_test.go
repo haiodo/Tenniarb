@@ -143,3 +143,28 @@ func TestLayoutContextDefaults(t *testing.T) {
 		t.Errorf("text colors:\n%s", s)
 	}
 }
+
+// An expression is normal in a classic diagram (go/render evaluates it); only a scene element warns.
+func TestExpressionWarningOnlyInScenes(t *testing.T) {
+	warns := func(src string) int {
+		tr, err := scene.LoadSource(t.TempDir(), "a.tenn", src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for _, d := range tr.Diagnostics() {
+			if strings.Contains(d.Msg, "expressions are not evaluated") {
+				n++
+			}
+		}
+		return n
+	}
+	classic := "element Map {\n\titem A { pos 0 0; width ${10 * 2} }\n}\n"
+	if n := warns(classic); n != 0 {
+		t.Errorf("classic diagram: %d warnings", n)
+	}
+	screen := "element Screen {\n\titem Page { auto-layout column; width ${10 * 2} }\n}\n"
+	if n := warns(screen); n != 1 {
+		t.Errorf("scene element: %d warnings, want 1", n)
+	}
+}

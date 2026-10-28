@@ -167,9 +167,7 @@ func TestNavigation(t *testing.T) {
 	}
 	a.ShotWindow("04-undone", 0)
 
-	// Back returns to the outline, the mounted library is opened from there
-	a.State("command", "name", "toolbar", "item", "items")
-	a.Settle()
+	// the mounted library is opened from the outline, which is always on screen
 	a.ShotWindow("03b-back-to-outline", 0)
 
 	// a component from the mounted element into a new frame
@@ -308,8 +306,6 @@ func TestMountWriteBack(t *testing.T) {
 	if string(mustRead(t, lib)) != libBefore || h.text() != screenBefore {
 		t.Fatal("the files are written at once, not by the autosave")
 	}
-	a.State("command", "name", "toolbar", "item", "items") // the outline shows the mark
-	a.Settle()
 	a.ShotWindow("02-unsaved", 0)
 
 	time.Sleep(app.AutosaveDelay + 1500*time.Millisecond)

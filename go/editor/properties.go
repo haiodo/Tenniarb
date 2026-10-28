@@ -28,7 +28,7 @@ type HighlightRange struct {
 // Colors are the Swift TennColors as #rrggbb, for a light and a dark background.
 var Colors = map[string]map[HighlightClass]string{
 	"light": {HighlightSymbol: "#815f03", HighlightString: "#1c00cf", HighlightNumber: "#1c00cf", HighlightExpression: "#646485"},
-	"dark":  {HighlightSymbol: "#75b492", HighlightString: "#fc6a5d", HighlightNumber: "#9686f5", HighlightExpression: "#c67c48"},
+	"dark":  {HighlightSymbol: "#75b492", HighlightString: "#fc6a5d", HighlightNumber: "#9686f5", HighlightExpression: "#d4854f"},
 }
 
 // HighlightRanges: the lexer positions cover the content between the delimiters; the ranges widen

@@ -31,6 +31,8 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
    you know.
 4. Read the result of `edit`: it refuses any change that adds an error and lists the warnings left.
    No separate `validate` is needed after an edit.
+   Without MCP (you edit the file directly) run `tenniarb check FILE` after every edit instead: it
+   prints `path:line:col: error|warning: message` and exits 1 on errors; fix them before you render.
 5. `render {file, element}` and look at the image with `review.md` in mind.
 6. Fix with small edits: `find` is one unique line or a few words, `replace` the new text. Render again.
    Stop when the render matches the request; two or three rounds are normal.

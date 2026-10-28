@@ -39,7 +39,9 @@ type prep struct {
 	texts  map[*RNode]*textInfo
 	styles map[*RNode]style
 	ends   map[*RNode][2]*RNode // link -> its two items
-	icons  map[*RNode]*icon
+	// classic: the element being laid out is a classic diagram (sceneRoot is false).
+	classic bool
+	icons   map[*RNode]*icon
 }
 
 type textInfo struct {
@@ -68,6 +70,7 @@ func newPrep(t *Tree, o Options) *prep {
 
 // root is the layout of an element: its content at their own positions.
 func (p *prep) root(rn *RNode) *layout.Node {
+	p.classic = !sceneRoot(rn)
 	n := &layout.Node{Dir: layout.Abs, Tag: rn}
 	p.frames[rn] = n
 	for _, k := range rn.Kids {
@@ -79,8 +82,20 @@ func (p *prep) root(rn *RNode) *layout.Node {
 	return n
 }
 
-// prop is rn.prop, except that a property with an expression ($(...), ${...}) is reported once and
-// treated as absent: expressions are not evaluated here.
+// sceneRoot is model.SceneElement on the expanded tree: an instance, an item with child nodes or
+// auto-layout. Other elements are classic diagrams, which go/render draws with their expressions.
+func sceneRoot(rn *RNode) bool {
+	for _, k := range rn.Kids {
+		if k.Kind == RItem && (k.Inst || len(k.Kids) > 0 || k.prop("auto-layout") != nil) {
+			return true
+		}
+	}
+	return false
+}
+
+// prop is rn.prop, except that a property with an expression ($(...), ${...}) is treated as absent:
+// expressions are not evaluated here. A scene element reports it once; in a classic diagram an
+// expression is normal and go/render evaluates it.
 func (p *prep) prop(rn *RNode, name string) *Prop {
 	pr := rn.prop(name)
 	if pr == nil {
@@ -88,7 +103,9 @@ func (p *prep) prop(rn *RNode, name string) *Prop {
 	}
 	for _, a := range pr.Args {
 		if a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock {
-			p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
+			if !p.classic {
+				p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
+			}
 			return nil
 		}
 	}

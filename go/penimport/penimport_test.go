@@ -161,7 +161,7 @@ func TestOutputParses(t *testing.T) {
 			if p.Errors.HasErrors() {
 				t.Fatalf("%s: %v", f.Name, p.Errors.Errors)
 			}
-			if again := tenn.Compact(n) + "\n"; again != out {
+			if again := tenn.CompactAs(n, outStyle) + "\n"; again != out {
 				t.Errorf("%s: printing the parsed file gives other text", f.Name)
 			}
 		}

@@ -3,6 +3,9 @@
 package app
 
 import (
+	"runtime"
+	"slices"
+
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/swt"
 
@@ -48,7 +51,15 @@ func (sh *Shell) showPrefs() {
 			})))
 	}
 	d := DefaultPrefs()
+	modes := []string{AppearanceSystem, AppearanceLight, AppearanceDark}
+	appearance := g.HBox(g.Padding(0), g.Gap(6),
+		g.Label("Appearance"),
+		g.Combo([]string{"System", "Light", "Dark"}, g.ReadOnly(), g.ID("appearance"), g.Selected(max(0, slices.Index(modes, p.Appearance))),
+			g.Init(func(c *g.ComboView) {
+				c.OnSelect(func(i int) { change(func(p *Prefs) { p.Appearance = modes[i] }) })
+			})))
 	pw.win = sh.app.Window("Preferences", g.Padding(16), g.Gap(12),
+		g.Group("Theme", append([]g.Option{g.Gap(6)}, themeOpts(appearance)...)...),
 		g.Group("Outline", g.Gap(6),
 			check("auto-expand", "Expand the outline when a document opens", p.AutoExpand, func(p *Prefs, v bool) { p.AutoExpand = v }),
 			g.HBox(g.Padding(0), g.Gap(6),
@@ -67,4 +78,12 @@ func (sh *Shell) showPrefs() {
 			check("quick-panel", "Show popup quick panel", p.QuickPanel, func(p *Prefs, v bool) { p.QuickPanel = v })))
 	pw.win.Unwrap().AddListener(swt.Dispose, listenerFunc(func(*swt.Event) { sh.prefsWin = nil }))
 	pw.win.Show()
+}
+
+// themeOpts adds a note where the controls theme does not switch live (gowt SetAppearance, Windows).
+func themeOpts(appearance g.Option) []g.Option {
+	if runtime.GOOS != "windows" {
+		return []g.Option{appearance}
+	}
+	return []g.Option{appearance, g.Label("Some controls change after restart")}
 }

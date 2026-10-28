@@ -169,6 +169,8 @@ func (v *Viewer) themeChanged() {
 		v.session.SetDarkMode(v.app.Dark())
 	}
 	v.applyBackground()
+	v.refreshOutline()
+	v.rebuildItems()
 }
 
 // prefsChanged applies new settings: the canvas colour and the quick panel at once, the outline
@@ -182,32 +184,32 @@ func (v *Viewer) build() {
 	light, dark := canvasColors(v.sh.prefs)
 	v.autoQuick = v.sh.prefs.QuickPanel
 	v.win = v.app.Window("Tenniarb", g.Padding(0), g.Gap(0))
-	var sidebar, content *g.Panel
+	var sidebar, content, codePane *g.Panel
 	v.win.Add(
 		g.VBox(g.Ref(&sidebar), g.Padding(0), g.Gap(0),
-			g.Tree(g.NoBorder(), g.Grow(), g.ID("outline"), g.Init(func(t *g.TreeView) {
-				v.tree = t
-				t.Column("", g.Scaled(220))
-				t.ShowHeader(false)
-				t.OnSelect(v.onOutlineSelect)
-				t.OnActivate(v.activateNode)
-				v.outlineKeys(t)
-			})),
-			v.itemsPane()),
+			g.Split(g.Vertical(), g.Divider(), g.Grow(), g.Init(func(s *g.SplitView) { s.SetWeights(40, 60) }),
+				g.Tree(g.NoBorder(), g.Grow(), g.ID("outline"), g.Init(func(t *g.TreeView) {
+					v.tree = t
+					t.Column("", g.Scaled(220))
+					t.ShowHeader(false)
+					t.OnSelect(v.onOutlineSelect)
+					t.OnActivate(v.activateNode)
+					v.outlineKeys(t)
+				})),
+				v.itemsPane())),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
 			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
-			g.Split(g.Vertical(), g.Grow(), g.Init(func(s *g.SplitView) { s.SetWeights(78, 22) }),
-				view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
-					g.Background(g.Adaptive{Light: light, Dark: dark})),
-				v.codePane())),
+			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
+				g.Background(g.Adaptive{Light: light, Dark: dark}))),
+		v.codePane(&codePane),
 		v.inspectorPane())
 	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
+	look.SetBottomPanel(v.win, content, codePane, g.Scaled(200))
 	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.InspectorWidth)
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)
 	v.banner.SetVisible(false)
-	v.itemsUI.box.SetVisible(false)
 	v.win.OnClose(v.onClose)
 	v.menus()
 	v.contextMenus()
@@ -215,7 +217,7 @@ func (v *Viewer) build() {
 	v.updateTitle()
 }
 
-// toolbar is the unified window toolbar: element, item navigator and sidebar buttons, zoom, new item and quick style, inspector, and the
+// toolbar is the unified window toolbar: element, item pane and sidebar buttons, zoom, new item, inspector, and the
 // Goto Item search.
 func (v *Viewer) toolbar() {
 	look.SetToolbar(v.win,
@@ -236,14 +238,16 @@ func (v *Viewer) toolbar() {
 			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
 			{Title: "Delete Item", Symbol: "minus", OnClick: v.deleteItems},
 		}},
-		look.ToolbarItem{Title: "Quick Style", Symbol: "paintpalette", Inspector: true, Small: true, OnClick: v.showQuickPanel},
 		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", Inspector: true, Small: true, OnSearch: v.searchTo},
+		look.ToolbarItem{Title: "Hide Code", Symbol: "rectangle.bottomthird.inset.filled", Inspector: true, Small: true, OnClick: v.toggleCode},
 		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector})
 }
 
 func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVisible(v.win)) }
 
 func (v *Viewer) toggleInspector() { look.SetInspectorVisible(v.win, !look.InspectorVisible(v.win)) }
+
+func (v *Viewer) toggleCode() { look.SetBottomPanelVisible(v.win, !look.BottomPanelVisible(v.win)) }
 
 func (v *Viewer) fitCommand() {
 	if _, _, ok := v.contentSize(); ok {

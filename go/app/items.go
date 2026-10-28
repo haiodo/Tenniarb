@@ -17,12 +17,12 @@ import (
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// itemsList is the second level of navigation: the items of the canvas, in the sidebar in place of
-// the outline while the user works in an element.
+// itemsList is the second level of navigation: the items of the element on the canvas, in the sidebar
+// under the outline.
 type itemsList struct {
 	box     *g.Panel
 	title   *g.LabelView
-	shown   bool
+	hidden  bool // collapsed by the Items button
 	tree    *g.TreeView
 	open    map[string]bool // expanded scene rows by path, for the canvas of canvasOf
 	canvas  any
@@ -30,14 +30,12 @@ type itemsList struct {
 	syncing bool
 }
 
-// itemsPane is the item navigator: the canvas name and the list.
+// itemsPane is the item navigator: the element name and the list.
 func (v *Viewer) itemsPane() g.Option {
 	return g.VBox(g.Ref(&v.itemsUI.box), g.Grow(), g.Padding(0), g.Gap(0),
 		g.Label("", g.Ref(&v.itemsUI.title), g.GrowX(), g.Padding(g.Scaled(8)), g.Typeface(sectionFont())),
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			v.itemsUI.tree = t
-			t.Column("", g.Scaled(220))
-			t.ShowHeader(false)
 			t.OnSelect(v.onItemSelect)
 			t.OnExpand(v.onItemExpand)
 			t.OnCollapse(func(n *g.Node) {
@@ -57,22 +55,12 @@ func (v *Viewer) itemsPane() g.Option {
 		})))
 }
 
-// toggleItems is the Items toolbar button: the navigator of the current canvas, or the outline again.
-func (v *Viewer) toggleItems() { v.showItems(!v.itemsUI.shown) }
-
-// showItems switches the sidebar between the outline and the item navigator of the canvas.
-func (v *Viewer) showItems(on bool) {
+// toggleItems is the Items toolbar button: it collapses or expands the item pane under the outline.
+func (v *Viewer) toggleItems() {
 	l := &v.itemsUI
-	l.shown = on
-	l.box.SetVisible(on)
-	v.tree.SetVisible(!on)
-	v.rebuildItems()
+	l.hidden = !l.hidden
+	l.box.SetVisible(!l.hidden)
 	v.win.Unwrap().Layout()
-	if on {
-		l.tree.Unwrap().SetFocus()
-	} else {
-		v.tree.Unwrap().SetFocus()
-	}
 }
 
 // itemsTitle names the canvas the navigator shows.
@@ -101,9 +89,7 @@ func (v *Viewer) rebuildItems() {
 	rows := v.itemRows()
 	sig := rowsSig(rows)
 	for p := range l.open {
-		if n := v.canvasNodeAt(p); n != nil {
-			sig += "\x01" + p + rowsSig(SceneRows(n, p))
-		}
+		sig += "\x01" + p + rowsSig(v.rowsAt(p))
 	}
 	if sig == l.sig {
 		v.syncItems()
@@ -148,11 +134,30 @@ func (v *Viewer) itemRows() []ItemRow {
 	return nil
 }
 
-func (v *Viewer) canvasNodeAt(p string) *scene.Node {
+// rowsAt are the rows under the node of path p: the drawn kids of an instance, which hold the parts of
+// its component, else the nodes written under it.
+func (v *Viewer) rowsAt(p string) []ItemRow {
 	if !v.sceneMode() {
 		return nil
 	}
-	return NodeAt(v.sv.node, p)
+	if pl := v.sv.byPath[p]; pl != nil && (pl.Inst || strings.Contains(p, "/")) {
+		return v.sv.instRows(pl)
+	}
+	if n := NodeAt(v.sv.node, p); n != nil {
+		return v.writtenRows(n, p)
+	}
+	return nil
+}
+
+// writtenRows are SceneRows, an instance opens when it draws anything.
+func (v *Viewer) writtenRows(n *scene.Node, p string) []ItemRow {
+	rows := SceneRows(n, p)
+	for i, r := range rows {
+		if pl := v.sv.byPath[r.Path]; r.Kind == "use" && pl != nil && len(pl.Kids) > 0 {
+			rows[i].Kids = true
+		}
+	}
+	return rows
 }
 
 func (v *Viewer) addItemRows(parent func(string) *g.Node, rows []ItemRow) {
@@ -191,9 +196,7 @@ func (v *Viewer) fillItemRow(row *g.Node, r *ItemRow) {
 	for _, c := range row.Children() {
 		c.Remove()
 	}
-	if n := v.canvasNodeAt(r.Path); n != nil {
-		v.addItemRows(row.Node, SceneRows(n, r.Path))
-	}
+	v.addItemRows(row.Node, v.rowsAt(r.Path))
 }
 
 func (v *Viewer) onItemExpand(row *g.Node) {
@@ -267,9 +270,8 @@ func (v *Viewer) syncItems() {
 // itemRowOf is the row of a node path; the rows above it are opened, and made when they were not.
 func (v *Viewer) itemRowOf(p string) *g.Node {
 	rows := v.itemsUI.tree.Roots()
-	segs := strings.Split(p, ".")
-	for i := range segs {
-		want := strings.Join(segs[:i+1], ".")
+	chain := v.sv.rowChain(p)
+	for i, want := range chain {
 		var found *g.Node
 		for _, n := range rows {
 			if r, ok := n.Data().(*ItemRow); ok && r.Path == want {
@@ -280,7 +282,7 @@ func (v *Viewer) itemRowOf(p string) *g.Node {
 		if found == nil {
 			return nil
 		}
-		if i == len(segs)-1 {
+		if i == len(chain)-1 {
 			return found
 		}
 		r := found.Data().(*ItemRow)

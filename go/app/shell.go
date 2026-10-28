@@ -59,8 +59,10 @@ func RunIn(dir string, args []string) error {
 	defer cancel()
 	return g.Run(func(app *g.App) {
 		app.SetDensity(g.DensityNative)
+		prefs := LoadPrefs(dir)
+		app.SetAppearance(appearanceOf(prefs.Appearance)) // before any window: Windows controls do not switch live
 		exe, _ := os.Executable()
-		sh := &Shell{app: app, dir: dir, exe: exe, prefs: LoadPrefs(dir), recent: LoadRecent(dir), ctx: ctx}
+		sh := &Shell{app: app, dir: dir, exe: exe, prefs: prefs, recent: LoadRecent(dir), ctx: ctx}
 		sh.start(args)
 	})
 }
@@ -93,6 +95,7 @@ func (sh *Shell) start(args []string) {
 	sh.app.OnThemeChange(func(bool) {
 		for _, v := range sh.viewers {
 			v.themeChanged()
+			v.restyleProps()
 		}
 	})
 
@@ -108,6 +111,16 @@ func (sh *Shell) start(args []string) {
 	if len(sh.viewers) == 0 {
 		sh.newDocument()
 	}
+}
+
+func appearanceOf(s string) g.Appearance {
+	switch s {
+	case AppearanceLight:
+		return g.AppearanceLight
+	case AppearanceDark:
+		return g.AppearanceDark
+	}
+	return g.AppearanceSystem
 }
 
 // newDocument is File > New.
@@ -160,7 +173,11 @@ func (sh *Shell) setRecent(list []string) {
 
 // setPrefs stores new settings and applies them to every window.
 func (sh *Shell) setPrefs(p Prefs) {
-	sh.prefs = p.sane()
+	p = p.sane()
+	if p.Appearance != sh.prefs.Appearance {
+		sh.app.SetAppearance(appearanceOf(p.Appearance))
+	}
+	sh.prefs = p
 	_ = sh.prefs.Save(sh.dir)
 	for _, v := range sh.viewers {
 		v.prefsChanged()

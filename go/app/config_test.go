@@ -43,6 +43,15 @@ func TestPrefs(t *testing.T) {
 	if got.AutoExpand || got.ExpandLevel != d.ExpandLevel || got.Background != d.Background || !got.ExportBackground {
 		t.Fatalf("partial file: %+v", got)
 	}
+	os.WriteFile(filepath.Join(dir, prefsFile), []byte(`{"appearance":"purple"}`), 0o644)
+	if LoadPrefs(dir).Appearance != AppearanceSystem {
+		t.Fatal("unknown appearance")
+	}
+	p.Appearance = AppearanceDark
+	p.Save(dir)
+	if LoadPrefs(dir).Appearance != AppearanceDark {
+		t.Fatal("appearance round trip")
+	}
 	os.WriteFile(filepath.Join(dir, prefsFile), []byte(`{broken`), 0o644)
 	if LoadPrefs(dir) != d {
 		t.Fatal("malformed file")

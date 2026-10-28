@@ -71,6 +71,8 @@ const (
 type Override struct {
 	Kind  OvKind
 	Pos   Pos
+	Range Range // the whole command with its block
+	Body  Range // the block of the command, zero when it has none
 	Prop  *Prop
 	Node  *Node
 	Path  string // OvAt, OvReplace

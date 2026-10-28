@@ -1,6 +1,8 @@
 package scene
 
 import (
+	"slices"
+
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -26,6 +28,9 @@ type Placed struct {
 
 // Prop returns the property in effect, the overrides of the uses around applied; nil when unset.
 func (p *Placed) Prop(name string) *Prop { return p.r.prop(name) }
+
+// Props are the properties in effect, the overrides of the uses around applied, in file order.
+func (p *Placed) Props() []*Prop { return slices.Clone(p.r.Props) }
 
 // Placed is the tree of the drawn items, the screen itself at the root. Hidden items are not in it.
 func (s *Screen) Placed() *Placed {

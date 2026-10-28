@@ -128,6 +128,10 @@ func (v *Viewer) outlineKey() string {
 	} else if v.hasContent(&m.Element) {
 		b.WriteByte('+')
 	}
+	// Row icons are drawn for one appearance: a theme switch rebuilds them.
+	if v.app.Dark() {
+		b.WriteByte('d')
+	}
 	return b.String()
 }
 
@@ -255,12 +259,11 @@ func (v *Viewer) moveElement(delta int) {
 	v.session.MoveElement(e, e.Parent, at)
 }
 
-// activateNode is a double click or Enter on a row: the sidebar shows the items of its canvas.
+// activateNode is a double click or Enter on a row: the element opens on the canvas.
 func (v *Viewer) activateNode(n *g.Node) {
 	switch d := n.Data().(type) {
 	case *model.Element:
 		v.selectElement(d)
-		v.showItems(true)
 	}
 }
 

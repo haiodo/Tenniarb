@@ -329,21 +329,24 @@ func colorOf(text string) (g.RGB, bool) {
 func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg) func() g.Option {
 	e := in.newEntry(cfg)
 	var sw *g.CanvasView
-	cur := g.RGB{R: 255, G: 255, B: 255}
-	mixed := false
+	var cur g.RGB
+	has, mixed := false, false
 	paint := func(gc *g.GC) {
 		w, h := gc.Size()
 		raw := gc.Unwrap()
 		raw.SetAntialias(swt.ON)
-		if mixed {
+		switch {
+		case mixed:
 			raw.SetBackground(raw.GetDevice().GetSystemColor(swt.COLOR_WIDGET_BACKGROUND))
-		} else {
+		case has:
 			raw.SetBackground(swt.NewColorRedGreenBlue(int32(cur.R), int32(cur.G), int32(cur.B)))
 		}
-		raw.FillRoundRectangle(1, 1, int32(w-2), int32(h-2), 8, 8)
+		if mixed || has { // no colour: the glass shows through, with the slash only
+			raw.FillRoundRectangle(1, 1, int32(w-2), int32(h-2), 8, 8)
+		}
 		raw.SetForeground(swt.NewColorRedGreenBlueAlpha(128, 128, 128, 160))
 		raw.DrawRoundRectangle(1, 1, int32(w-3), int32(h-3), 8, 8)
-		if mixed {
+		if mixed || !has {
 			raw.DrawLine(5, int32(h-5), int32(w-5), 5)
 		}
 	}
@@ -355,7 +358,11 @@ func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg
 				if m.Button != 1 || in.v.session == nil {
 					return
 				}
-				if rgb, ok := in.v.win.ColorDialog(cur); ok {
+				start := cur
+				if !has {
+					start = g.RGB{R: 255, G: 255, B: 255}
+				}
+				if rgb, ok := in.v.win.ColorDialog(start); ok {
 					e.cfg.src().arg(cfg.name, cfg.idx, fmt.Sprintf("#%02x%02x%02x", rgb.R, rgb.G, rgb.B))
 				}
 			})
@@ -374,9 +381,7 @@ func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg
 		case p.Set:
 			text = a.Text
 		}
-		if c, ok := colorOf(text); ok {
-			cur = c
-		}
+		cur, has = colorOf(text)
 		e.refresh()
 		sw.Redraw()
 	}

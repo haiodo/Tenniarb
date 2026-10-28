@@ -1,6 +1,10 @@
 package penimport
 
-import "sort"
+import (
+	"reflect"
+	"sort"
+	"strings"
+)
 
 var rootSkip = map[string]bool{"id": true, "type": true, "ref": true, "name": true, "descendants": true, "children": true,
 	"x": true, "y": true, "reusable": true, "theme": true, "enabled": true, "layoutPosition": true}
@@ -21,6 +25,52 @@ func without(m map[string]any, skip map[string]bool) map[string]any {
 	for k, v := range m {
 		if !skip[k] {
 			out[k] = v
+		}
+	}
+	return out
+}
+
+// sameKeys are the pen keys that become properties on their own, whatever the other keys are. A
+// property an override would only repeat from the component can be left out.
+var sameKeys = map[string]bool{"width": true, "height": true, "gap": true, "padding": true, "cornerRadius": true,
+	"clip": true, "opacity": true, "content": true, "fontSize": true, "lineHeight": true, "fontFamily": true,
+	"fontWeight": true, "fontStyle": true, "letterSpacing": true, "textAlign": true, "alignItems": true,
+	"justifyContent": true, "layout": true, "fill": true, "stroke": true, "strokeWidth": true}
+
+// hasVariable: the value names a variable, which may mean another color in the theme of the instance.
+func hasVariable(v any) bool {
+	switch x := v.(type) {
+	case string:
+		return strings.HasPrefix(x, "$")
+	case []any:
+		for _, e := range x {
+			if hasVariable(e) {
+				return true
+			}
+		}
+	case map[string]any:
+		for _, e := range x {
+			if hasVariable(e) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// withoutSame is over without the keys that hold the same value in base. A stroke width alone would
+// turn into a stroke of width 1 where the stroke itself stays, so it goes only with the stroke.
+func withoutSame(over, base map[string]any) map[string]any {
+	out := make(map[string]any, len(over))
+	for k, v := range over {
+		bv, has := base[k]
+		if !(sameKeys[k] && has && !hasVariable(v) && reflect.DeepEqual(v, bv)) {
+			out[k] = v
+		}
+	}
+	if _, kept := out["stroke"]; kept {
+		if sw, ok := over["strokeWidth"]; ok {
+			out["strokeWidth"] = sw
 		}
 	}
 	return out
@@ -90,7 +140,11 @@ func (c *conv) finish(u *Node) {
 		}
 		return
 	}
-	u.Props = append(hiddenProp(u.Pen, false), c.props(u.res, without(u.Pen, rootSkip), u.Typ, pctx{mode: u.b.mode, explicit: true, eff: effPen(u)})...)
+	rest := without(u.Pen, rootSkip)
+	if t.Kind == KItem {
+		rest = withoutSame(rest, t.Pen)
+	}
+	u.Props = append(hiddenProp(u.Pen, false), c.props(u.res, rest, u.Typ, pctx{mode: u.b.mode, explicit: true, eff: effPen(u)})...)
 	u.Props = append(u.Props, posProps(u.Pen, u.b, false)...)
 	if th := u.Pen["theme"]; th != nil {
 		u.File.unsup("theme on an instance (colors stay light)")
@@ -282,6 +336,10 @@ func (c *conv) propOps(u *Node, base, e *enode, p map[string]any) []*Ovr {
 	typ := e.o.Typ
 	if typ == "" {
 		typ = "frame"
+	}
+	// a node inside a nested instance may have been changed by that instance: its base is not known here
+	if e != base && e.o.Kind == KItem && !insideUse(e, base) {
+		rest = withoutSame(rest, e.o.Pen)
 	}
 	props := append(hiddenProp(p, true), c.props(u.res, rest, typ, pctx{mode: c.mode, explicit: true, eff: eff})...)
 	_, hx := p["x"]

@@ -314,7 +314,7 @@ func (c *conv) shadowProp(f *File, v any, mode string) []Prop {
 	return []Prop{prop("shadow", numArg(dx), numArg(dy), numArg(blur), wordArg(col))}
 }
 
-// lookProps are the fill, border and display of an item.
+// lookProps are the fill and the border of an item. go/scene reads display only on a link, so none is written.
 func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	fill, hasFill := c.paint(f, m["fill"], x.mode)
 	stroke, hasStroke := c.paint(f, m["stroke"], x.mode)
@@ -333,16 +333,12 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	}
 	switch typ {
 	case "text":
-		ps := []Prop{prop("display", wordArg("text"))}
 		if hasFill {
-			ps = append(ps, prop("text-color", wordArg(fill)))
+			return []Prop{prop("text-color", wordArg(fill))}
 		}
-		return ps
+		return nil
 	case "path":
-		if ps := pathLook(f, m, fill, stroke, sw, hasFill, hasStroke); ps != nil {
-			return ps
-		}
-		return []Prop{prop("display", wordArg("none"))}
+		return pathLook(f, m, fill, stroke, sw, hasFill, hasStroke)
 	}
 	var ps []Prop
 	if typ == "ellipse" {
@@ -358,10 +354,6 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 		ps = append(ps, prop("color", wordArg(fill)))
 	case typ == "ellipse":
 		ps = append(ps, prop("color", wordArg("#00000000")))
-	case hasStroke:
-		ps = append(ps, prop("display", wordArg("no-fill")))
-	default:
-		ps = append(ps, prop("display", wordArg("none")))
 	}
 	if hasStroke {
 		ps = append(ps, prop("border-color", wordArg(stroke)), prop("line-width", numArg(sw)))

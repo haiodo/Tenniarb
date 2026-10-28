@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -76,6 +77,20 @@ func LoadOverlay(root, file string, overlay map[string]string) (*Tree, error) {
 		return a.Line < b.Line || a.Line == b.Line && a.Col < b.Col
 	})
 	return t, t.diags.asError()
+}
+
+// Diagnose is LoadOverlay for validation: every problem comes back as Errors, with warnings. The
+// error is set only when the file could not be loaded at all. MCP validate and tenniarb check share it.
+func Diagnose(root, file string, overlay map[string]string) (Errors, *Tree, error) {
+	tree, err := LoadOverlay(root, file, overlay)
+	if tree != nil {
+		return tree.Diagnostics(), tree, nil
+	}
+	var es Errors
+	if errors.As(err, &es) {
+		return es, nil, nil
+	}
+	return nil, nil, err
 }
 
 func (t *Tree) read(abs, rel string) (string, error) {
@@ -389,7 +404,7 @@ func (l *loader) overrides(use *Node, cmds []*tenn.Node) []*Override {
 			continue
 		}
 		args, block := split(c)
-		ov := &Override{Pos: l.pos(c)}
+		ov := &Override{Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c)}
 		switch name {
 		case "at", "replace":
 			ov.Kind, ov.Path = OvAt, argText(args, 0)

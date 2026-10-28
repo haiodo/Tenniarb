@@ -107,6 +107,8 @@ func (sh *Shell) registerQA() {
 				sh.active.toggleSidebar()
 			case "inspector":
 				sh.active.toggleInspector()
+			case "code":
+				sh.active.toggleCode()
 			case "items":
 				sh.active.toggleItems()
 			case "fit":
@@ -159,7 +161,7 @@ func (v *Viewer) qaState() map[string]any {
 		"path": v.state.Doc.Path, "error": v.state.Error, "canvas": []int{w, h},
 		"zoom": cam.Zoom, "originX": cam.Origin.X, "originY": cam.Origin.Y,
 		"dirty": v.isDirty(), "title": Title(v.state.Doc.Path, v.isDirty()),
-		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win),
+		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win), "code": look.BottomPanelVisible(v.win),
 		"inline": v.inline != nil, "popover": v.popover != nil, "gotoAsked": v.search.asked,
 	}
 	if v.props.text != nil {
@@ -260,9 +262,9 @@ func (v *Viewer) qaScene() map[string]qaNode {
 		return out
 	}
 	cam := v.view.Compositor().Camera()
-	for n, pl := range v.sv.byNode {
+	for p, pl := range v.sv.byPath {
 		x, y := (pl.X+v.sv.off.X-cam.Origin.X)*cam.Zoom, (pl.Y+v.sv.off.Y-cam.Origin.Y)*cam.Zoom
-		out[NodePath(v.sv.node, n)] = qaNode{[]float64{x, y, pl.W * cam.Zoom, pl.H * cam.Zoom}, n.Kind.String(), len(sceneKids(n))}
+		out[p] = qaNode{[]float64{x, y, pl.W * cam.Zoom, pl.H * cam.Zoom}, pl.Src.Kind.String(), len(sceneKids(pl.Src))}
 	}
 	return out
 }

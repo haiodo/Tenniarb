@@ -78,6 +78,70 @@ func SetPropEdit(text string, n *scene.Node, name string, args ...string) (TextE
 	return InsertEdit(text, n, line), true
 }
 
+// EffectiveText is the item drawn as pl with the properties in effect, the overrides applied; its kids are
+// not listed.
+func EffectiveText(pl *scene.Placed) string {
+	head := CommandText("item", pl.Src.Name)
+	if pl.Src.Kind == scene.KUse {
+		head = CommandText("use", pl.Src.Path, "as", pl.Src.Name)
+	}
+	lines := []string{head + " {"}
+	for _, p := range pl.Props() {
+		lines = append(lines, "  "+CommandText(p.Name, p.Values()...))
+	}
+	return strings.Join(append(lines, "}"), "\n")
+}
+
+// atOf finds the at override of path directly in the block of use; paths are compared by their normalized
+// segments, the last one written wins.
+func atOf(use *scene.Node, path string) *scene.Override {
+	var found *scene.Override
+	for _, ov := range use.Block {
+		if ov.Kind == scene.OvAt && samePath(ov.Path, path) {
+			found = ov
+		}
+	}
+	return found
+}
+
+func samePath(a, b string) bool {
+	sa, sb := strings.Split(a, "."), strings.Split(b, ".")
+	return slices.EqualFunc(sa, sb, func(x, y string) bool { return scene.NormalizeName(x) == scene.NormalizeName(y) })
+}
+
+// atProp is the command of name in an at override; the last one wins.
+func atProp(at *scene.Override, name string) *scene.Prop {
+	var found *scene.Prop
+	for _, ov := range at.Block {
+		if ov.Kind == scene.OvProp && ov.Prop.Name == name {
+			found = ov.Prop
+		}
+	}
+	return found
+}
+
+// AtPropEdit writes `name args` for the part of the instance use that path names (names from the root of
+// the instance, spec 4.7): in place of its command in the at override of that path, else as a new command
+// in that at, else as a new at in the block of use. No args removes the command.
+func AtPropEdit(text string, use *scene.Node, path, name string, args ...string) (TextEdit, bool) {
+	at := atOf(use, path)
+	var own *scene.Prop
+	if at != nil {
+		own = atProp(at, name)
+	}
+	switch {
+	case len(args) == 0 && own == nil:
+		return TextEdit{}, false
+	case len(args) == 0:
+		return removeEdit(text, own.Range), true
+	case own != nil:
+		return TextEdit{own.Range.Start, own.Range.End, CommandText(name, args...)}, true
+	case at != nil:
+		return InsertEdit(text, &scene.Node{Kind: scene.KItem, Range: at.Range, Body: at.Body}, CommandText(name, args...)), true
+	}
+	return InsertEdit(text, use, CommandText("at", path)+" { "+CommandText(name, args...)+" }"), true
+}
+
 // lineStart is the offset of the start of the line that holds off.
 func lineStart(text string, off int) int { return strings.LastIndexByte(text[:off], '\n') + 1 }
 

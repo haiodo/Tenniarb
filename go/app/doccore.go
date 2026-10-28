@@ -324,7 +324,12 @@ func nodeSeg(kids []*scene.Node, n *scene.Node) string {
 // inside el.
 func NodePath(el, n *scene.Node) string {
 	var segs []string
-	for c := n; c != el; c = c.Parent {
+	// The content of an element with --from-file is the file's: its top nodes have the file root as the parent.
+	var mount *scene.Node
+	if el != nil {
+		mount = el.Mount
+	}
+	for c := n; c != el && c != mount; c = c.Parent {
 		if c == nil || c.Parent == nil {
 			return ""
 		}

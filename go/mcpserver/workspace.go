@@ -139,9 +139,9 @@ func (s *Server) diagnose(rel string) (scene.Errors, *scene.Tree, error) {
 	if e, ok := s.host.cache.get(s.root, rel, docs); ok {
 		return e.diags, e.tree, nil
 	}
-	tree, err := scene.LoadOverlay(s.root, rel, texts)
+	diags, tree, err := scene.Diagnose(s.root, rel, texts)
 	if tree == nil {
-		return loaded(tree, err)
+		return diags, nil, err
 	}
 	deps := map[string]string{}
 	for _, f := range loadedFiles(tree, rel) {
@@ -171,8 +171,7 @@ func (s *Server) diagnoseText(rel, text string) (scene.Errors, *scene.Tree, erro
 		texts = map[string]string{}
 	}
 	texts[rel] = text
-	tree, err := scene.LoadOverlay(s.root, rel, texts)
-	return loaded(tree, err)
+	return scene.Diagnose(s.root, rel, texts)
 }
 
 // text returns the current text of a resolved file: the app's when it has the file open.
@@ -190,17 +189,6 @@ func (s *Server) text(abs string) (text string, live *liveDoc, err error) {
 	}
 	b, err := os.ReadFile(abs)
 	return string(b), nil, err
-}
-
-func loaded(tree *scene.Tree, err error) (scene.Errors, *scene.Tree, error) {
-	if tree != nil {
-		return tree.Diagnostics(), tree, nil
-	}
-	var es scene.Errors
-	if errors.As(err, &es) {
-		return es, nil, nil
-	}
-	return nil, nil, err
 }
 
 func fileRoot(tree *scene.Tree, rel string) *scene.Node {
