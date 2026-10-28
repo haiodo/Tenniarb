@@ -69,15 +69,16 @@ const (
 )
 
 type Override struct {
-	Kind  OvKind
-	Pos   Pos
-	Range Range // the whole command with its block
-	Body  Range // the block of the command, zero when it has none
-	Prop  *Prop
-	Node  *Node
-	Path  string // OvAt, OvReplace
-	Slot  string // OvSlot
-	Block []*Override
+	Kind    OvKind
+	Pos     Pos
+	Range   Range // the whole command with its block
+	Body    Range // the block of the command, zero when it has none
+	Prop    *Prop
+	Node    *Node
+	Path    string // OvAt, OvReplace
+	PathArg Range  // the path in the text of its file
+	Slot    string // OvSlot
+	Block   []*Override
 }
 
 // Node is a node of the file tree: what was written, before use is expanded.
@@ -98,6 +99,11 @@ type Node struct {
 	From, To string      // KLink
 	Path     string      // KUse
 	Block    []*Override // KUse
+
+	// The arguments of the command in the text of its file, delimiters included; zero when it has none.
+	NameArg        Range // the name, for a use the one after as
+	PathArg        Range // KUse
+	FromArg, ToArg Range // KLink
 }
 
 // Nodes lists the elements, items and uses written directly in n, in file order: the nodes a path

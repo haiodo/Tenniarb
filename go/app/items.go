@@ -38,6 +38,7 @@ func (v *Viewer) itemsPane() g.Option {
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			v.itemsUI.tree = t
 			t.OnSelect(v.onItemSelect)
+			t.OnActivate(v.activateItem)
 			t.OnExpand(v.onItemExpand)
 			t.OnCollapse(func(n *g.Node) {
 				if r, ok := n.Data().(*ItemRow); ok {

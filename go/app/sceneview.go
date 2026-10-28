@@ -19,19 +19,58 @@ import (
 
 // sceneView is a scene element on the canvas, drawn by go/scene.
 type sceneView struct {
-	el      *model.Element
-	node    *scene.Node
-	screen  *scene.Screen // nil when the element has errors
-	placed  *scene.Placed
-	byNode  map[*scene.Node]*scene.Placed // the items written in the element that one can select, by what is written for them
-	byPath  map[string]*scene.Placed      // every item one can select, by selection path
-	pathOf  map[*scene.Placed]string
-	inst    map[*scene.Placed]instRef // the items drawn from a component, which the use around overrides
-	root    *gfx.Node                 // moved so that the content starts at the padding
-	overlay *gfx.Node
-	off     gfx.Point // gfx scene = content + off
-	w, h    float64
-	drag    sceneDrag
+	el     *model.Element
+	node   *scene.Node
+	screen *scene.Screen // nil when the element has errors
+	placed *scene.Placed
+	byNode map[*scene.Node]*scene.Placed // the items written in the element that one can select, by what is written for them
+	byPath map[string]*scene.Placed      // every item one can select, by selection path
+	pathOf map[*scene.Placed]string
+	inst   map[*scene.Placed]instRef // the items drawn from a component, which the use around overrides
+	root   *gfx.Node                 // moved so that the content starts at the padding
+	off    gfx.Point                 // gfx scene = content + off
+	w, h   float64
+	drag   sceneDrag
+
+	// what the gfx tree was built from; a cached view is reused only while all of it holds
+	tree *scene.Tree
+	ver  int
+	next int // the first free node ID
+	err  error
+}
+
+// sceneCacheSize is how many built element trees stay detached for a quick switch back.
+const sceneCacheSize = 4
+
+// cacheScene keeps sv, which was just taken off the canvas, if nothing changed since it was built.
+func (v *Viewer) cacheScene(sv *sceneView) {
+	v.dropStaleScenes()
+	if sv == nil || sv.screen == nil || sv.err != nil {
+		return
+	}
+	v.svCache = append([]*sceneView{sv}, v.svCache...)
+	if len(v.svCache) > sceneCacheSize {
+		v.svCache = v.svCache[:sceneCacheSize]
+	}
+}
+
+// dropStaleScenes forgets the cached views of an older version of the document or of its imports.
+func (v *Viewer) dropStaleScenes() {
+	v.svCache = slices.DeleteFunc(v.svCache, func(sv *sceneView) bool {
+		return sv.tree != v.stree || sv.ver != v.version
+	})
+}
+
+// cachedScene takes the cached view of the node out of the cache.
+func (v *Viewer) cachedScene(el *model.Element, node *scene.Node) *sceneView {
+	v.dropStaleScenes()
+	for i, sv := range v.svCache {
+		if sv.el == el && sv.node == node {
+			v.svCache = slices.Delete(v.svCache, i, i+1)
+			return sv
+		}
+	}
+	return nil
 }
 
 // instRef says where a part of an instance is overridden: the use that holds the instance and the at path
@@ -57,14 +96,26 @@ func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
 	oldSV, oldRendered := v.sv, v.rendered
-	sv := newSceneView(el, node)
-	var err error
+	// Looked up before the old view is put away, so a redraw of the same element builds anew.
+	sv := v.cachedScene(el, node)
+	cached := sv != nil
+	if !cached {
+		sv = newSceneView(el, node)
+	}
+	v.cacheScene(oldSV)
+	err := sv.err
 	v.scene.Update(func(tx *gfx.Tx) {
 		if oldRendered != nil {
 			tx.Remove(oldRendered.Root)
 		}
 		if oldSV != nil {
 			tx.Remove(oldSV.root)
+		}
+		if cached {
+			sv.drag = sceneDrag{}
+			tx.Add(nil, sv.root)
+			v.nextID = sv.next
+			return
 		}
 		sv.root = gfx.NewNode(1)
 		tx.Add(nil, sv.root)
@@ -79,15 +130,15 @@ func (v *Viewer) realizeScene() {
 		}
 		sv.bounds()
 		tx.Move(sv.root, sv.off.X, sv.off.Y)
-		sv.overlay = gfx.NewNode(next)
-		tx.Add(sv.root, sv.overlay)
-		tx.SetZ(sv.overlay, overlayZ)
 		v.nextID = next + 1
+		sv.tree, sv.ver, sv.next, sv.err = v.stree, v.version, v.nextID, err
 	})
 	v.rendered, v.overlay, v.sv = nil, nil, sv
-	v.sceneBuilds++
-	if sv.placed != nil {
-		sv.index(sv.placed)
+	if !cached {
+		v.sceneBuilds++
+		if sv.placed != nil {
+			sv.index(sv.placed)
+		}
 	}
 	switch {
 	case err != nil:
@@ -391,17 +442,14 @@ func (v *Viewer) dropStaleSelection() {
 	v.selNodes = kept
 }
 
-func (v *Viewer) drawSceneOverlay() {
-	sv := v.sv
-	if !v.sceneMode() || sv.overlay == nil {
-		return
-	}
-	zoom := v.view.Compositor().Camera().Zoom
-	if zoom <= 0 {
-		zoom = 1
+// selectionPicture records the frames of the selected paths in view points for the camera; they keep
+// 2 points on the screen at any zoom.
+func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture {
+	if cam.Zoom <= 0 {
+		cam.Zoom = 1
 	}
 	r := gfx.NewRecorder()
-	for _, p := range v.selNodes {
+	for _, p := range sel {
 		pl := sv.byPath[p]
 		if pl == nil {
 			continue
@@ -411,11 +459,34 @@ func (v *Viewer) drawSceneOverlay() {
 			t := pl.Gfx.Transform()
 			x, y = x+t[4]-d.ox, y+t[5]-d.oy
 		}
-		r.StrokeRect(gfx.R(x, y, pl.W, pl.H), gfx.StrokeStyle{Width: 2 / zoom}, accent)
+		x, y = (x+sv.off.X-cam.Origin.X)*cam.Zoom, (y+sv.off.Y-cam.Origin.Y)*cam.Zoom
+		r.StrokeRect(gfx.R(x, y, pl.W*cam.Zoom, pl.H*cam.Zoom), gfx.StrokeStyle{Width: 2}, accent)
 	}
-	pic := r.Finish()
-	ov := sv.overlay
-	v.scene.Update(func(tx *gfx.Tx) { tx.SetPicture(ov, pic) })
+	return r.Finish()
+}
+
+// drawSceneOverlay draws the selection frames on the HUD, so a zoom or a pan does not damage the
+// tiles of the scene.
+func (v *Viewer) drawSceneOverlay() {
+	if v.view == nil {
+		return
+	}
+	comp := v.view.Compositor()
+	pic := gfx.NewRecorder().Finish()
+	if v.sceneMode() {
+		pic = v.sv.selectionPicture(v.selNodes, comp.Camera())
+	}
+	if v.selHUD == nil && pic.Len() == 0 {
+		return
+	}
+	comp.HUD().Update(func(tx *gfx.Tx) {
+		if v.selHUD == nil {
+			v.selHUD = gfx.NewNode(3)
+			tx.Add(nil, v.selHUD)
+			tx.SetShape(v.selHUD, nil, gfx.HitNone) // hit-testing of the selection is done on the scene
+		}
+		tx.SetPicture(v.selHUD, pic)
+	})
 }
 
 // selectScene makes paths the selection of the scene element on the canvas.

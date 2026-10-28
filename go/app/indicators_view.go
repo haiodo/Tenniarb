@@ -60,6 +60,10 @@ func (v *Viewer) syncIndicators() {
 	dots := EdgeDots(v.itemBounds(), cam, w, h)
 	key := indicatorKey{h, cam.Zoom, v.app.Dark()}
 	ind := &v.ind
+	if len(dots) == 0 && len(ind.dots) == 0 {
+		ind.key = key // nothing was shown and nothing is: the picture stays as it is
+		return
+	}
 	if ind.node != nil && key == ind.key && slices.Equal(dots, ind.dots) {
 		return
 	}

@@ -205,7 +205,8 @@ func (sp *splicer) emit(e *model.Element, ind int) string {
 	if src == nil {
 		return sp.print(e, ind)
 	}
-	if ownBlock(oldElement(src.node)) == ownBlock(e) && (src.block != nil || len(e.Elements) == 0) {
+	// A mounted element has no block: its children are the file's.
+	if ownBlock(oldElement(src.node)) == ownBlock(e) && (src.block != nil || len(e.Elements) == 0 || e.FromFile != "") {
 		return sp.splice(e, src, src.node.Token.Pos, src.node.End, ind)
 	}
 	out := sp.print(e, ind)

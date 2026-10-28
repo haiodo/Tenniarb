@@ -48,8 +48,9 @@ type frame struct {
 type expander struct {
 	t     *Tree
 	stack []frame
-	depth int       // uses being expanded; slots stay open until the outermost one is done
-	ctx   *mountCtx // mount context of the file the node being expanded lives in
+	depth int        // uses being expanded; slots stay open until the outermost one is done
+	ctx   *mountCtx  // mount context of the file the node being expanded lives in
+	rec   *refFinder // set by References: sees the paths that resolve
 }
 
 func label(n *Node) string {
@@ -155,6 +156,9 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	if target == nil {
 		return nil
 	}
+	if x.rec != nil {
+		x.rec.use(n, ctx)
+	}
 	x.ctx = tctx // the component's names resolve in its own file, the block's in this one
 	inst := x.instance(target, n)
 	x.ctx = ctx
@@ -228,10 +232,16 @@ func (x *expander) apply(root *RNode, block []*Override) {
 			add(NormalizeName(ov.Slot), ov.Pos, x.nodes(ov.Block), true)
 		case OvAt:
 			if at, ok := x.find(root, ov.Path, ov.Pos); ok {
+				if x.rec != nil {
+					x.rec.at(ov, root, at.node())
+				}
 				x.apply(at.node(), ov.Block)
 			}
 		case OvReplace:
 			if at, ok := x.find(root, ov.Path, ov.Pos); ok {
+				if x.rec != nil {
+					x.rec.at(ov, root, at.node())
+				}
 				at.parent.Kids = splice(at.parent.Kids, at.i, x.nodes(ov.Block))
 			}
 		}

@@ -1133,8 +1133,8 @@ diagram"
                         width fill
                         padding 4 8
                         gap 4
-                        item Back { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #ffffffd9; border-color #0000001c; opacity 0.55; use Components.Icons.Chevron_left as i { width 12; height 12; border-color #3a3a3c } }
-                        item Forward { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #ffffffd9; border-color #0000001c; opacity 0.55; use Components.Icons.Chevron_right as i { width 12; height 12; border-color #3a3a3c } }
+                        item Back { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #f0f0f2; border-color #0000002e; use Components.Icons.Chevron_left as i { width 12; height 12; border-color #3a3a3c } }
+                        item Forward { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #f0f0f2; border-color #0000001c; use Components.Icons.Chevron_right as i { width 12; height 12; border-color #b4b4b9 } }
                     }
                     item "Code line" { auto-layout row; width fill; gap 6; align center; slot }
                     item "Code key" { title key; font-size 12; font-family Menlo; text-color #815f03 }
@@ -1149,8 +1149,8 @@ diagram"
                         width fill
                         padding 4 8
                         gap 4
-                        item Back { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #444446e6; border-color #ffffff29; opacity 0.55; use Components.Icons.Chevron_left as i { width 12; height 12; border-color #e5e5ea } }
-                        item Forward { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #444446e6; border-color #ffffff29; opacity 0.55; use Components.Icons.Chevron_right as i { width 12; height 12; border-color #e5e5ea } }
+                        item Back { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #4a4a4d; border-color #ffffff33; use Components.Icons.Chevron_left as i { width 12; height 12; border-color #e5e5ea } }
+                        item Forward { auto-layout row; width 28; height 22; align center; justify center; corner-radius 8; color #4a4a4d; border-color #ffffff1f; use Components.Icons.Chevron_right as i { width 12; height 12; border-color #7c7c82 } }
                     }
                     item "Code line dark" { auto-layout row; width fill; gap 6; align center; slot }
                     item "Code key dark" { title key; font-size 12; font-family Menlo; text-color #75b492 }
@@ -1418,22 +1418,33 @@ diagram"
                         item Pane { auto-layout column; width fill; padding 0 14 14 14; gap 10; slot inspector }
                     }
                     item Rule { pos 920 0; width 1; height 760; color #0000001a }
+                    item Left {
+                        pos 0 0
+                        auto-layout column
+                        width 277
+                        height 590
+                        item Titlebar { width fill; height 52; color #ffffff }
+                        item Canvas { width fill; height 538; color #e7e9eb }
+                    }
                     item Middle {
                         pos 277 0
                         auto-layout column
                         width 643
-                        height 760
+                        height 590
                         item Titlebar { width fill; height 52; color #ffffff }
                         item Canvas { auto-layout abs; width fill; height 538; color #e7e9eb; clip yes; slot canvas }
-                        item Code {
-                            auto-layout column
-                            width fill
-                            height 170
-                            color #ffffff
-                            use Components.Code.Light.Code_nav as nav
-                            item Text { auto-layout column; width fill; padding 0 12; gap 1; slot code }
-                        }
                     }
+                    item Code {
+                        pos 0 -590
+                        auto-layout column
+                        width 920
+                        height 170
+                        padding 0 0 0 277
+                        color #ffffff
+                        use Components.Code.Light.Code_nav as nav
+                        item Text { auto-layout column; width fill; padding 0 12; gap 1; slot code }
+                    }
+                    item Hairline { pos 0 -590; width 920; height 1; color #0000001a }
                     item Sidebar {
                         pos 7 -7
                         auto-layout column
@@ -1441,8 +1452,6 @@ diagram"
                         height 746
                         color #fbfbfbf2
                         corner-radius 22
-                        border-color #0000001c
-                        line-width 1
                         shadow 0 -2 16 #00000026
                         item Head { width fill; height 44 }
                         item Tree { auto-layout column; width fill; height 300; padding 0 6; clip yes; slot tree }
@@ -1492,22 +1501,33 @@ diagram"
                         item Pane { auto-layout column; width fill; padding 0 14 14 14; gap 10; slot inspector }
                     }
                     item Rule { pos 920 0; width 1; height 760; color #ffffff1f }
+                    item Left {
+                        pos 0 0
+                        auto-layout column
+                        width 277
+                        height 590
+                        item Titlebar { width fill; height 52; color #202020 }
+                        item Canvas { width fill; height 538; color #2e2e2e }
+                    }
                     item Middle {
                         pos 277 0
                         auto-layout column
                         width 643
-                        height 760
+                        height 590
                         item Titlebar { width fill; height 52; color #202020 }
                         item Canvas { auto-layout abs; width fill; height 538; color #2e2e2e; clip yes; slot canvas }
-                        item Code {
-                            auto-layout column
-                            width fill
-                            height 170
-                            color #363636
-                            use Components.Code.Dark.Code_nav_dark as nav
-                            item Text { auto-layout column; width fill; padding 0 12; gap 1; slot code }
-                        }
                     }
+                    item Code {
+                        pos 0 -590
+                        auto-layout column
+                        width 920
+                        height 170
+                        padding 0 0 0 277
+                        color #363636
+                        use Components.Code.Dark.Code_nav_dark as nav
+                        item Text { auto-layout column; width fill; padding 0 12; gap 1; slot code }
+                    }
+                    item Hairline { pos 0 -590; width 920; height 1; color #ffffff1f }
                     item Sidebar {
                         pos 7 -7
                         auto-layout column
@@ -1515,8 +1535,6 @@ diagram"
                         height 746
                         color #333335f2
                         corner-radius 22
-                        border-color #ffffff29
-                        line-width 1
                         shadow 0 -2 16 #00000026
                         item Head { width fill; height 44 }
                         item Tree { auto-layout column; width fill; height 300; padding 0 6; clip yes; slot tree }

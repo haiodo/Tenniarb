@@ -181,6 +181,11 @@ func (d *docCore) applyFileText(file string, start, end int, repl string) error 
 	if d.session == nil || d.stree == nil || d.stree.File(file) == nil {
 		return fmt.Errorf("%s is not a file of this document", file)
 	}
+	return d.applyLibText(file, start, end, repl)
+}
+
+// applyLibText is applyFileText of a mounted file the caller knows to be part of the document.
+func (d *docCore) applyLibText(file string, start, end int, repl string) error {
 	cur := d.libText(file)
 	if start < 0 || end < start || end > len(cur) {
 		return fmt.Errorf("range %d..%d is outside the text of %d bytes", start, end, len(cur))

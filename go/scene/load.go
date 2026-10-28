@@ -27,6 +27,7 @@ type Tree struct {
 	diags Errors
 	seen  map[Error]bool
 	sink  *Errors // collects every report of one Build, duplicates included
+	quiet bool    // reports are dropped: References expands files again
 
 	overlay map[string]string // text of files given in memory, by relative slash path
 	src     map[string]string // text of every loaded file, by relative slash path
@@ -191,6 +192,9 @@ func (t *Tree) Source(rel string) (string, bool) {
 func (t *Tree) Diagnostics() Errors { return t.diags }
 
 func (t *Tree) report(pos Pos, warn bool, format string, args ...any) {
+	if t.quiet {
+		return
+	}
 	e := Error{Pos: pos, Msg: fmt.Sprintf(format, args...), Warn: warn}
 	if t.sink != nil {
 		*t.sink = append(*t.sink, e)
@@ -292,6 +296,25 @@ func rangeOf(c *tenn.Node) Range {
 	return Range{c.Token.Pos, c.End}
 }
 
+// argRange is the span of an argument in the text, with the quotes of a string.
+func argRange(a *tenn.Node) Range {
+	if a == nil || a.Token == nil {
+		return Range{}
+	}
+	t := a.Token
+	if t.Type == tenn.TokStringLit {
+		return Range{t.Pos - 1, t.EndPos()}
+	}
+	return Range{t.Pos, t.EndPos()}
+}
+
+func argAt(args []*tenn.Node, i int) Range {
+	if i >= len(args) {
+		return Range{}
+	}
+	return argRange(args[i])
+}
+
 // bodyOf is the range of the last block of a command, which the parser ends the command with.
 func bodyOf(c *tenn.Node) Range {
 	if n := len(c.Children); n > 1 && c.Children[n-1].Kind == tenn.KindBlockExpr && c.Children[n-1].Token != nil {
@@ -360,6 +383,7 @@ func (l *loader) newNode(kind Kind, owner *Node, c *tenn.Node) *Node {
 	n := &Node{Kind: kind, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c)}
 	if len(c.Children) > 1 && c.Children[1].Kind != tenn.KindBlockExpr {
 		n.Name, _ = c.Children[1].GetIdentText()
+		n.NameArg = argRange(c.Children[1])
 	}
 	n.Key = NormalizeName(n.Name)
 	return n
@@ -433,7 +457,8 @@ func (l *loader) addContent(owner *Node, c *tenn.Node, name string) *Node {
 		n = l.newNode(KSlot, owner, c)
 		l.fill(n, block)
 	case "link":
-		n = &Node{Kind: KLink, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c), From: argText(args, 0), To: argText(args, 1)}
+		n = &Node{Kind: KLink, Parent: owner, Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c), From: argText(args, 0), To: argText(args, 1),
+			FromArg: argAt(args, 0), ToArg: argAt(args, 1)}
 		for _, b := range block {
 			if cmdName(b) != "" {
 				n.Props = append(n.Props, l.prop(b))
@@ -458,7 +483,8 @@ func (l *loader) newUse(owner *Node, c *tenn.Node, args, block []*tenn.Node) *No
 		l.t.fail(pos, "use needs the form: use <path> as <name>")
 		return nil
 	}
-	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Body: bodyOf(c), Path: argText(args, 0), Name: argText(args, 2)}
+	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Body: bodyOf(c), Path: argText(args, 0), Name: argText(args, 2),
+		PathArg: argAt(args, 0), NameArg: argAt(args, 2)}
 	n.Key = NormalizeName(n.Name)
 	n.Block = l.overrides(n, block)
 	return n
@@ -476,7 +502,7 @@ func (l *loader) overrides(use *Node, cmds []*tenn.Node) []*Override {
 		ov := &Override{Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c)}
 		switch name {
 		case "at", "replace":
-			ov.Kind, ov.Path = OvAt, argText(args, 0)
+			ov.Kind, ov.Path, ov.PathArg = OvAt, argText(args, 0), argAt(args, 0)
 			if name == "replace" {
 				ov.Kind = OvReplace
 			}

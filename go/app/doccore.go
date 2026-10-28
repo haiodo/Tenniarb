@@ -201,10 +201,15 @@ func (d *docCore) sceneErrorCount(file, text string) int {
 }
 
 func (d *docCore) loadWith(file, text string) (*pendingScene, int) {
+	return d.loadFiles(map[string]string{file: text})
+}
+
+// loadFiles is loadWith for several files at once.
+func (d *docCore) loadFiles(texts map[string]string) (*pendingScene, int) {
 	overlay := d.overlay()
 	rel := d.rel()
 	overlay[rel] = d.text
-	overlay[file] = text
+	maps.Copy(overlay, texts)
 	tree, _ := loadAuto(d.root, rel, overlay)
 	return &pendingScene{overlay: overlay, tree: tree}, errorCount(tree)
 }

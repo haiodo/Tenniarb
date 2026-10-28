@@ -3,6 +3,7 @@ package scene
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -48,14 +49,15 @@ func outward(a *Node, c *mountCtx) (*Node, *mountCtx) {
 
 // hit is a node a path names so far, with the context of the file it lives in.
 type hit struct {
-	n *Node
-	c *mountCtx
+	n   *Node
+	c   *mountCtx
+	via []*Node // the nodes of the segments before it; kept only when the lookup tracks them
 }
 
 func pickHits(n *Node, c *mountCtx, key string) []hit {
 	var out []hit
 	for _, m := range pick(n.named(), key) {
-		out = append(out, hit{m, c})
+		out = append(out, hit{n: m, c: c})
 	}
 	return out
 }
@@ -100,9 +102,16 @@ func (t *Tree) resolve(scope *Node, ctx *mountCtx, path string, pos Pos) (*Node,
 // lookup returns the node and the context of its file, or nil and the message of the problem. From
 // the root of a mounted file the search goes on at the mount point, up to the entry document.
 func lookup(scope *Node, ctx *mountCtx, path string) (*Node, *mountCtx, string) {
+	h, msg := lookupHit(scope, ctx, path, false)
+	return h.n, h.c, msg
+}
+
+// lookupHit is lookup that gives the node as a hit; with track its via holds the nodes of the earlier
+// segments, which the rename of a node needs to see where a path goes through it.
+func lookupHit(scope *Node, ctx *mountCtx, path string, track bool) (hit, string) {
 	segs, ok := splitPath(path)
 	if !ok {
-		return nil, nil, fmt.Sprintf("bad path %q", path)
+		return hit{}, fmt.Sprintf("bad path %q", path)
 	}
 	for a, c := scope, ctx; a != nil; a, c = outward(a, c) {
 		cur := pickHits(a, c, segs[0])
@@ -116,17 +125,23 @@ func lookup(scope *Node, ctx *mountCtx, path string) (*Node, *mountCtx, string) 
 				if h.n.Mount != nil {
 					cc = cc.push(h.n)
 				}
-				next = append(next, pickHits(h.n, cc, seg)...)
+				found := pickHits(h.n, cc, seg)
+				for i := range found {
+					if track {
+						found[i].via = append(slices.Clone(h.via), h.n)
+					}
+				}
+				next = append(next, found...)
 			}
 			if len(next) == 0 {
-				return nil, nil, fmt.Sprintf("path %s: nothing named %q under %s", path, seg, where(hitNodes(cur)))
+				return hit{}, fmt.Sprintf("path %s: nothing named %q under %s", path, seg, where(hitNodes(cur)))
 			}
 			cur = next
 		}
 		if len(cur) > 1 {
-			return nil, nil, fmt.Sprintf("ambiguous path %s: candidates %s", path, where(hitNodes(cur)))
+			return hit{}, fmt.Sprintf("ambiguous path %s: candidates %s", path, where(hitNodes(cur)))
 		}
-		return cur[0].n, cur[0].c, ""
+		return cur[0], ""
 	}
-	return nil, nil, fmt.Sprintf("path %s: %q is not defined here or above", path, segs[0])
+	return hit{}, fmt.Sprintf("path %s: %q is not defined here or above", path, segs[0])
 }

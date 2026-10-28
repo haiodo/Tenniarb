@@ -324,35 +324,11 @@ func (v *Viewer) moveElement(delta int) {
 	v.session.MoveElement(e, e.Parent, at)
 }
 
-// activateNode is a double click or Enter on a row: the element opens on the canvas.
+// activateNode is a double click or Enter on a row: the name of the element is edited.
 func (v *Viewer) activateNode(n *g.Node) {
-	switch d := n.Data().(type) {
-	case *model.Element:
-		v.selectElement(d)
+	if e, ok := n.Data().(*model.Element); ok {
+		v.renameElement(e)
 	}
-}
-
-// renameElement asks for the new name in a small box over the row.
-func (v *Viewer) renameElement(e *model.Element) {
-	n := v.nodeOf(e)
-	if v.session == nil || e == nil || e.Parent == nil || n == nil {
-		return
-	}
-	v.closePopover()
-	p := v.win.Popover(g.Gap(4))
-	var field *g.TextView
-	p.Add(g.Text(g.Focused(), g.Ref(&field), g.Init(func(t *g.TextView) {
-		t.SetText(e.Name)
-		t.OnActivate(func() {
-			name := t.Text()
-			p.Close()
-			v.session.RenameElement(e, name)
-		})
-	})))
-	v.openPopover(p)
-	v.activeText = field.Unwrap()
-	b := n.Unwrap().GetBounds()
-	p.ShowAtPoint(v.tree, int(b.X), int(b.Y+b.Height), g.PopoverBelow)
 }
 
 // outlineEntries is the context menu of the outline (Swift's, plus rename and moves).

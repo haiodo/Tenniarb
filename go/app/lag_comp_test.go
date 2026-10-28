@@ -284,10 +284,15 @@ func TestLagComp(t *testing.T) {
 		zoomTo(fmt.Sprintf("sweep out x%.1f (6f)+40f", f), 1, 1/f, 6, 40)
 	}
 	// selection overlay redrawn on every zoom frame, as the FrameReport handler does (drawSceneOverlay)
-	for _, sel := range []float64{0, 1} {
+	for _, sel := range []float64{0, 1, 2} {
 		bb := r.show(A)
 		r.ov = nil
-		if sel > 0 {
+		var hud *gfx.Node // sel 2: the frame lives on the HUD, in view points
+		if sel == 2 {
+			hud = gfx.NewNode(3)
+			r.comp.HUD().Update(func(tx *gfx.Tx) { tx.Add(nil, hud) })
+		}
+		if sel == 1 {
 			r.sc.Update(func(tx *gfx.Tx) {
 				r.ov = gfx.NewNode(1 << 20)
 				tx.Add(r.root, r.ov)
@@ -295,6 +300,14 @@ func TestLagComp(t *testing.T) {
 			})
 		}
 		redraw := func(z float64) {
+			if hud != nil {
+				cam := r.comp.Camera()
+				rc := gfx.NewRecorder()
+				rc.StrokeRect(gfx.R((bb.Min.X+200-cam.Origin.X)*cam.Zoom, (bb.Min.Y+200-cam.Origin.Y)*cam.Zoom, (bb.W()-400)*cam.Zoom, (bb.H()-400)*cam.Zoom), gfx.StrokeStyle{Width: 2}, accent)
+				pic := rc.Finish()
+				r.comp.HUD().Update(func(tx *gfx.Tx) { tx.SetPicture(hud, pic) })
+				return
+			}
 			if r.ov == nil {
 				return
 			}
@@ -318,8 +331,11 @@ func TestLagComp(t *testing.T) {
 		for k := 0; k < 30; k++ {
 			recs = append(recs, r.tick())
 		}
-		summarize(t, fmt.Sprintf("zoom out x5 12f, overlay=%v", sel > 0), recs, start)
+		summarize(t, fmt.Sprintf("zoom out x5 12f, overlay=%v", []string{"none", "scene", "HUD"}[int(sel)]), recs, start)
 		t.Logf("  tiles rastered during it: %d", r.comp.Stats().Rastered-before)
+		if hud != nil {
+			r.comp.HUD().Update(func(tx *gfx.Tx) { tx.Remove(hud) })
+		}
 		r.ov = nil
 	}
 	// pan speeds (pt/s), 30 frames
@@ -335,5 +351,69 @@ func TestLagComp(t *testing.T) {
 			recs = append(recs, r.tick())
 		}
 		summarize(t, fmt.Sprintf("pan %.0fpt/s 30f", sp), recs, start)
+	}
+}
+
+// TestLagCache compares building the gfx tree of an element with reattaching a detached one.
+func TestLagCache(t *testing.T) {
+	path := os.Getenv("LAGDOC")
+	if path == "" {
+		t.Skip("LAGDOC not set")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := ParseText(string(data))
+	doc.Path = path
+	d := &docCore{state: NewState(doc)}
+	sess, err := editor.New(d.state.Current, editor.Options{Render: render.Options{ScreenShadows: true}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.session = sess
+	d.adopt(doc.Text)
+	var nodes []*scene.Node
+	for _, key := range []string{os.Getenv("LAGA"), os.Getenv("LAGB")} {
+		var find func(n *scene.Node, p string)
+		find = func(n *scene.Node, p string) {
+			for _, c := range n.Elems {
+				if p+c.Name == key {
+					nodes = append(nodes, c)
+				}
+				find(c, p+c.Name+" > ")
+			}
+		}
+		find(d.file(), "")
+	}
+	if len(nodes) != 2 {
+		t.Fatalf("elements not found: %d", len(nodes))
+	}
+	sc := gfx.NewScene()
+	roots := make([]*gfx.Node, 2)
+	for i, n := range nodes {
+		t0 := time.Now()
+		sc.Update(func(tx *gfx.Tx) {
+			roots[i] = gfx.NewNode(1)
+			tx.Add(nil, roots[i])
+			d.stree.BuildElement(tx, roots[i], n, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2})
+		})
+		tb := time.Since(t0)
+		t1 := time.Now()
+		sc.Commit()
+		t.Logf("build #%d: %.1fms + commit %.1fms", i, ms(tb), ms(time.Since(t1)))
+		sc.Update(func(tx *gfx.Tx) { tx.Remove(roots[i]) })
+		sc.Commit()
+	}
+	for k := 0; k < 4; k++ {
+		i := k % 2
+		t0 := time.Now()
+		sc.Update(func(tx *gfx.Tx) { tx.Add(nil, roots[i]) })
+		ta := time.Since(t0)
+		t1 := time.Now()
+		sc.Commit()
+		t.Logf("reattach #%d: %.2fms + commit %.1fms", i, ms(ta), ms(time.Since(t1)))
+		sc.Update(func(tx *gfx.Tx) { tx.Remove(roots[i]) })
+		sc.Commit()
 	}
 }

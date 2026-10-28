@@ -40,7 +40,9 @@ type Viewer struct {
 
 	rendered    *render.Rendered
 	overlay     *gfx.Node
-	sv          *sceneView // the element on the canvas is drawn by go/scene
+	selHUD      *gfx.Node    // the selection frames of a scene element, on the HUD
+	sv          *sceneView   // the element on the canvas is drawn by go/scene
+	svCache     []*sceneView // views taken off the canvas, the last one first
 	itemsUI     itemsList
 	sceneBuilds int // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
@@ -315,14 +317,14 @@ func (v *Viewer) initView(vw *view.View) {
 		if cam := (gfx.Camera{Origin: r.Origin, Zoom: r.Zoom}); cam != v.ind.seen {
 			v.ind.seen = cam
 			v.syncIndicators()
+			v.drawSceneOverlay()
 		}
 		if r.Zoom != v.zoomSeen {
 			v.zoomSeen = r.Zoom
 			v.zoomText.Set(fmt.Sprintf("%d%%", int(math.Round(r.Zoom*100))))
 			if v.session != nil {
+				// The window draws the glow in screen points, so the picture does not depend on the zoom.
 				v.session.SetZoom(r.Zoom)
-				v.drawOverlay()
-				v.drawSceneOverlay()
 			}
 		}
 	})
@@ -513,6 +515,7 @@ func (v *Viewer) clearCanvas() {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
 	}
 	v.rendered, v.overlay, v.sv = nil, nil, nil
+	v.drawSceneOverlay()
 	v.refreshProps()
 }
 

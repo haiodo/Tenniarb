@@ -84,8 +84,8 @@ func TestNavigation(t *testing.T) {
 	}
 	libLabel := alias
 
-	// a double click on the element switches the left panel to its items, with the way back
-	a.Find(qa.Text(root).In(win(qa.ID("outline")))).Activate()
+	// a click on the element switches the left panel to its items, with the way back
+	a.Find(qa.Text(root).In(win(qa.ID("outline")))).Click()
 	a.Settle()
 	st = h.state()
 	if len(st.Items) == 0 {
@@ -179,9 +179,6 @@ func TestNavigation(t *testing.T) {
 	}
 	frame := st.Nodes[0]
 	a.Find(qa.Text(libLabel).In(win(qa.ID("outline")))).Click()
-	a.Settle()
-	st = h.state()
-	a.Find(qa.Text(libLabel).In(win(qa.ID("outline")))).Activate()
 	a.Settle()
 	st = h.state()
 	if len(st.Items) == 0 {
@@ -280,8 +277,6 @@ func TestMountWriteBack(t *testing.T) {
 	a.Find(qa.Text(alias).In(qa.ID("outline"))).Click()
 	a.Settle()
 	a.ShotWindow("01-mounted-row", 0)
-	a.Find(qa.Text(alias).In(qa.ID("outline"))).Activate()
-	a.Settle()
 	st := h.state()
 	label := ""
 	for _, r := range app.SceneRows(tree.File(filepath.Base(lib)), "") {

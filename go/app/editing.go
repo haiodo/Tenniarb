@@ -35,6 +35,7 @@ func (v *Viewer) realize() {
 	if old := v.sv; old != nil {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
 		v.sv, v.selNodes = nil, nil
+		v.drawSceneOverlay()
 	}
 	ds := v.session.Scene()
 	old, oldMap := v.rendered, v.smap
