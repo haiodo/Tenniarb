@@ -148,3 +148,43 @@ func TestMountRefillKeepsElements(t *testing.T) {
 		t.Errorf("other names replace the elements")
 	}
 }
+
+// A file shown by two elements is parsed once, and a change of one file leaves the other mounts alone.
+func TestMountParsesEachFileOnce(t *testing.T) {
+	root := t.TempDir()
+	main := "element \"a\" --from-file \"x.tenn\"\nelement \"b\" --from-file \"x.tenn\"\nelement \"c\" --from-file \"y.tenn\"\n"
+	write := func(name, text string) {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("main.tenn", main)
+	write("x.tenn", "element \"P\" {\n    item \"X\" { pos 1 1 }\n}\n")
+	write("y.tenn", "element \"P\" {\n    item \"Y\" { pos 2 2 }\n}\n")
+	reads := 0
+	readTenn = func(src string) *ElementModel { reads++; return ReadTenn(src) }
+	defer func() { readTenn = ReadTenn }()
+	load := func(m *ElementModel) []Mounted {
+		tree, err := scene.Load(root, "main.tenn")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return MountFiles(m, tree, "main.tenn")
+	}
+	m := ReadTenn(main)
+	got := load(m)
+	a, b, c := m.Elements[0], m.Elements[1], m.Elements[2]
+	pa, pb := a.Elements[0], b.Elements[0]
+	if reads != 2 || len(got) != 3 || len(pa.Items) != 1 || len(pb.Items) != 1 || pa.Items[0] == pb.Items[0] || pb.Items[0].Parent != pb {
+		t.Fatalf("reads=%d mounted=%d: each element has its own copy of the items", reads, len(got))
+	}
+	reads = 0
+	if got = load(m); reads != 0 || got[0].Fresh {
+		t.Errorf("unchanged files are not read again: reads=%d", reads)
+	}
+	write("y.tenn", "element \"P\" {\n    item \"Y\" { pos 3 3 }\n}\n")
+	got = load(m)
+	if reads != 1 || got[0].Fresh || got[1].Fresh || !got[2].Fresh || c.Elements[0].Items[0].X != 3 {
+		t.Errorf("only the changed file is read: reads=%d %+v", reads, got)
+	}
+}

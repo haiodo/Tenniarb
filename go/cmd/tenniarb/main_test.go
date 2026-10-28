@@ -18,6 +18,7 @@ func TestDispatch(t *testing.T) {
 	}{
 		{args: nil, launch: true},
 		{args: []string{"a.tenn", "b.tenn"}, launch: true, files: []string{"a.tenn", "b.tenn"}},
+		{args: []string{"tenniarb://open?path=a.tenn&el=A"}, launch: true, files: []string{"tenniarb://open?path=a.tenn&el=A"}},
 		{args: []string{"--help"}, out: "usage:"},
 		{args: []string{"-h"}, out: "usage:"},
 		{args: []string{"help"}, out: "tenniarb check"},

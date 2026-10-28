@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -147,24 +148,28 @@ func (d *docCore) setLibText(file, text string) error {
 }
 
 // libTextOp is a text edit of a mounted file as a store operation, so the undo of the document steps
-// over it.
+// over it. It keeps the splice: libText[start:start+len(oldText)] became newText.
 type libTextOp struct {
 	model.OpBase
-	d             *docCore
-	file          string
-	before, after string
+	d                *docCore
+	file             string
+	start            int
+	oldText, newText string
 }
 
 func (o *libTextOp) Name() string { return "Edit library" }
 
-func (o *libTextOp) Apply() error {
-	o.d.textSet = true
-	return o.d.setLibText(o.file, o.after)
-}
+func (o *libTextOp) Apply() error { return o.shift(o.oldText, o.newText) }
 
-func (o *libTextOp) Undo() error {
+func (o *libTextOp) Undo() error { return o.shift(o.newText, o.oldText) }
+
+func (o *libTextOp) shift(from, to string) error {
+	cur, end := o.d.libText(o.file), o.start+len(from)
+	if end > len(cur) || cur[o.start:end] != from {
+		return fmt.Errorf("%s changed since this edit", o.file)
+	}
 	o.d.textSet = true
-	return o.d.setLibText(o.file, o.before)
+	return o.d.setLibText(o.file, cur[:o.start]+to+cur[end:])
 }
 
 // applyFileText replaces text[start:end) of the file (the document's own or a mounted one) as one undo
@@ -185,7 +190,8 @@ func (d *docCore) applyFileText(file string, start, end int, repl string) error 
 		e := p.Errors.Errors[0]
 		return fmt.Errorf("%s %d:%d: %s", file, e.Line+1, e.Col, e.Message)
 	}
-	op := &libTextOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, file: file, before: cur, after: after}
+	op := &libTextOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, file: file, start: start,
+		oldText: strings.Clone(cur[start:end]), newText: strings.Clone(repl)}
 	return d.session.Execute(op)
 }
 

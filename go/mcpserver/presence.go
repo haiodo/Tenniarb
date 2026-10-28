@@ -91,6 +91,13 @@ func (h *presenceHub) setName(s *agentSession, name string) {
 	h.poke()
 }
 
+// nameOf is the client name of s, empty when it did not give one.
+func (h *presenceHub) nameOf(s *agentSession) string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return s.name
+}
+
 func (h *presenceHub) note(s *agentSession, abs, action string, loc location) {
 	h.mu.Lock()
 	if !h.sessions[s] {

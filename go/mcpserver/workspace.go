@@ -139,12 +139,12 @@ func (s *Server) diagnose(rel string) (scene.Errors, *scene.Tree, error) {
 	if e, ok := s.host.cache.get(s.root, rel, docs); ok {
 		return e.diags, e.tree, nil
 	}
-	diags, tree, err := scene.Diagnose(s.root, rel, texts)
+	diags, tree, err := scene.DiagnoseAuto(s.root, rel, texts)
 	if tree == nil {
 		return diags, nil, err
 	}
 	deps := map[string]string{}
-	for _, f := range loadedFiles(tree, rel) {
+	for _, f := range tree.Files() {
 		st := stamp(s.root, f, docs)
 		// A file that changed while it was read would get the new stamp with the old text.
 		if src, _ := tree.Source(f); st[0] != 'v' && !sameSize(s.root, f, src) {
@@ -171,7 +171,7 @@ func (s *Server) diagnoseText(rel, text string) (scene.Errors, *scene.Tree, erro
 		texts = map[string]string{}
 	}
 	texts[rel] = text
-	return scene.Diagnose(s.root, rel, texts)
+	return scene.DiagnoseAuto(s.root, rel, texts)
 }
 
 // text returns the current text of a resolved file: the app's when it has the file open.

@@ -75,7 +75,7 @@ func (t *Tree) BuildElement(tx *gfx.Tx, parent *gfx.Node, el *Node, o Options) (
 			t.fail(el.Pos, "a %s is not an element", el.Kind)
 			return nil
 		}
-		return t.expandElement(el)
+		return t.expandElement(el, t.ctxOf(el))
 	})
 }
 
@@ -111,9 +111,9 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 
 // element expands the element at path into resolved nodes, slots filled.
 func (t *Tree) element(path string) *RNode {
-	target := t.main
+	target, ctx := t.main, t.ctxOf(t.main)
 	if path != "" {
-		target = t.resolve(t.main, path, t.main.Pos)
+		target, ctx = t.resolve(t.main, ctx, path, t.main.Pos)
 		if target == nil {
 			return nil
 		}
@@ -122,11 +122,11 @@ func (t *Tree) element(path string) *RNode {
 		t.fail(t.main.Pos, "path %s names a %s, not an element", path, target.Kind)
 		return nil
 	}
-	return t.expandElement(target)
+	return t.expandElement(target, ctx)
 }
 
-func (t *Tree) expandElement(target *Node) *RNode {
-	x := &expander{t: t}
+func (t *Tree) expandElement(target *Node, ctx *mountCtx) *RNode {
+	x := &expander{t: t, ctx: ctx}
 	rn := x.container(target)
 	if rn != nil {
 		finalize(rn)
@@ -134,24 +134,26 @@ func (t *Tree) expandElement(target *Node) *RNode {
 	return rn
 }
 
-// validate expands and lays out every element of every loaded file, so problems show at Load.
+// validate expands and lays out every element of the main file and of the files mounted below it,
+// each in the context of its mount, so problems show at Load.
 func (t *Tree) validate() {
-	var each func(n *Node)
-	each = func(n *Node) {
-		x := &expander{t: t}
+	var each func(n *Node, c *mountCtx)
+	each = func(n *Node, c *mountCtx) {
+		x := &expander{t: t, ctx: c}
 		if rn := x.container(n); rn != nil {
 			finalize(rn)
 			p := newPrep(t, Options{})
 			p.root(rn).Layout()
 			p.warnOutside(rn)
 		}
+		if n.Mount != nil {
+			c = c.push(n)
+		}
 		for _, e := range n.Elems {
-			each(e)
+			each(e, c)
 		}
 	}
-	for _, f := range t.order {
-		each(f)
-	}
+	each(t.main, t.ctxOf(t.main))
 }
 
 type builder struct {

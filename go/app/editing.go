@@ -139,6 +139,9 @@ func (v *Viewer) sceneEvent(p *view.Pointer, at gfx.Point) editor.MouseEvent {
 // onPointer sends the left button to the session and pans when the session does not take the press.
 // The middle button always pans; the right one opens the context menu.
 func (v *Viewer) onPointer(p *view.Pointer) {
+	if v.commentPointer(p) {
+		return
+	}
 	if p.Button == 3 {
 		if p.Kind == view.PointerDown {
 			v.rightClick = v.smap.ToScene(p.Scene)
@@ -218,7 +221,7 @@ func (v *Viewer) middlePan(p *view.Pointer) {
 
 // onKey sends the keys of the canvas to the session; Cmd shortcuts belong to the menu.
 func (v *Viewer) onKey(k *view.Key) {
-	if !k.Down || v.session == nil {
+	if !k.Down || v.session == nil || v.commentKey(k) {
 		return
 	}
 	name := KeyName(k.Code, k.Char)

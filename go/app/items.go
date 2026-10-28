@@ -10,6 +10,7 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/icons"
+	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
@@ -20,13 +21,15 @@ import (
 // itemsList is the second level of navigation: the items of the element on the canvas, in the sidebar
 // under the outline.
 type itemsList struct {
-	box     *g.Panel
-	hidden  bool // collapsed by the Items button
-	tree    *g.TreeView
-	open    map[string]bool // expanded scene rows by path, for the canvas of canvasOf
-	canvas  any
-	sig     string // what the rows show, so a redraw that changes none of them keeps them
-	syncing bool
+	box      *g.Panel
+	hidden   bool // collapsed by the Items button
+	tree     *g.TreeView
+	open     map[string]bool // expanded scene rows by path, for the canvas of canvasOf
+	canvas   any
+	sig      string // what the rows show, so a redraw that changes none of them keeps them
+	syncing  bool
+	grey     *swt.Color // the colour of instance rows in the theme greyDark
+	greyDark bool
 }
 
 // itemsPane is the item navigator: the list alone, the element above it names the canvas.
@@ -129,8 +132,8 @@ func (v *Viewer) rowsAt(p string) []ItemRow {
 	if !v.sceneMode() {
 		return nil
 	}
-	if pl := v.sv.byPath[p]; pl != nil && (pl.Inst || strings.Contains(p, "/")) {
-		return v.sv.instRows(pl)
+	if v.sv.opensParts(p) {
+		return v.sv.instRows(v.sv.byPath[p])
 	}
 	if n := NodeAt(v.sv.node, p); n != nil {
 		return v.writtenRows(n, p)
@@ -155,6 +158,9 @@ func (v *Viewer) addItemRows(parent func(string) *g.Node, rows []ItemRow) {
 		n := parent(r.Label)
 		n.SetData(r)
 		n.SetImage(icons.Get(v.app, itemIcon(r), icons.Size(16)))
+		if instanceRow(r) {
+			n.Unwrap().SetForeground(v.greyColor())
+		}
 		if !r.Kids {
 			continue
 		}
@@ -165,6 +171,26 @@ func (v *Viewer) addItemRows(parent func(string) *g.Node, rows []ItemRow) {
 		}
 		n.Node("") // the rows are made when it opens
 	}
+}
+
+// instanceRow reports whether the row is a reuse of a component: a use, or a part of an instance, which
+// only an override in the use changes.
+func instanceRow(r *ItemRow) bool {
+	return r.Kind == "use" || strings.Contains(r.Path, "/")
+}
+
+// greyColor is the text of instance rows. gowt has no foreground for a tree node, so it is the system
+// secondary colour by hand; themeChanged rebuilds the rows to take the other one.
+func (v *Viewer) greyColor() *swt.Color {
+	l := &v.itemsUI
+	if dark := v.app.Dark(); l.grey == nil || l.greyDark != dark {
+		c := swt.NewColorRedGreenBlue(128, 128, 134)
+		if dark {
+			c = swt.NewColorRedGreenBlue(152, 152, 158)
+		}
+		l.grey, l.greyDark = c, dark
+	}
+	return l.grey
 }
 
 func itemIcon(r *ItemRow) string {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/haiodo/tenniarb/go/servicewire"
 )
@@ -75,6 +76,8 @@ type selectionJSON struct {
 	File      string     `json:"file,omitempty"`
 	Element   string     `json:"element,omitempty"`
 	Nodes     []string   `json:"nodes,omitempty"`
+	Link      string     `json:"link,omitempty"`
+	LinkText  string     `json:"link_text,omitempty"`
 	Elsewhere bool       `json:"outside_workspace,omitempty"`
 }
 
@@ -102,8 +105,14 @@ func (s *Server) selection() (string, error) {
 		}
 		r, _ := filepath.Rel(s.root, abs)
 		out.File, out.Element, out.Nodes, out.Elsewhere = filepath.ToSlash(r), sel.Element, sel.Nodes, false
+		out.Link, out.LinkText = linkOf(abs, sel)
 		break
 	}
-	b, err := json.MarshalIndent(out, "", " ")
-	return string(b), err
+	// The link has "&": without this the JSON would write it as \u0026.
+	var b strings.Builder
+	enc := json.NewEncoder(&b)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", " ")
+	err := enc.Encode(out)
+	return strings.TrimSuffix(b.String(), "\n"), err
 }

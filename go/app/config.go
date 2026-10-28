@@ -5,28 +5,20 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/haiodo/tenniarb/go/comments"
 	"github.com/haiodo/tenniarb/go/render"
 )
 
 // Environment variables that point the application at another config directory. The QA driver
 // sets GOWT_QA_DATA, so a test run never touches the user's files.
 const (
-	EnvConfigDir = "TENNIARB_CONFIG_DIR"
-	envQAData    = "GOWT_QA_DATA"
+	EnvConfigDir = comments.EnvConfigDir
+	envQAData    = comments.EnvQAData
 )
 
 // ConfigDir is where settings, the recent list, window frames and unsaved untitled documents live.
-func ConfigDir() string {
-	for _, env := range []string{EnvConfigDir, envQAData} {
-		if d := os.Getenv(env); d != "" {
-			return d
-		}
-	}
-	if d, err := os.UserConfigDir(); err == nil {
-		return filepath.Join(d, "Tenniarb")
-	}
-	return filepath.Join(os.TempDir(), "Tenniarb")
-}
+// The service finds the comment files by the same rule, so both sit in one folder.
+func ConfigDir() string { return comments.ConfigDir() }
 
 // readJSON reads name from dir into v; a missing or malformed file leaves v as it was.
 func readJSON(dir, name string, v any) {
@@ -63,6 +55,8 @@ type Prefs struct {
 	// ExportBackground fills the PNG export with Background; ExportNativeScale renders it at the screen scale.
 	ExportBackground  bool `json:"exportBackground"`
 	ExportNativeScale bool `json:"exportNativeScale"`
+	// ExportSelScale is the scale (1..3) of "Selection as PNG"; 0 is the default, 2.
+	ExportSelScale int `json:"exportSelectionScale"`
 	// Appearance forces the colour scheme: "system" (follow the OS), "light" or "dark".
 	Appearance string `json:"appearance"`
 }
@@ -72,7 +66,7 @@ func DefaultPrefs() Prefs {
 	return Prefs{
 		AutoExpand: true, ExpandLevel: 2,
 		Background: "#e7e9ebff", BackgroundDark: "#2e2e2eff",
-		QuickPanel: true, ExportBackground: true, ExportNativeScale: true,
+		QuickPanel: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
 		Appearance: AppearanceSystem,
 	}
 }
@@ -107,8 +101,29 @@ func (p Prefs) sane() Prefs {
 	if _, ok := render.ParseColor(p.BackgroundDark); !ok {
 		p.BackgroundDark = d.BackgroundDark
 	}
+	p.ExportSelScale = clampExportScale(p.ExportSelScale)
 	if p.Appearance != AppearanceLight && p.Appearance != AppearanceDark {
 		p.Appearance = AppearanceSystem
 	}
 	return p
+}
+
+// Scales of the selection export; the default is the one of Prefs.ExportSelScale.
+const (
+	minExportScale     = 1
+	maxExportScale     = 3
+	defaultExportScale = 2
+)
+
+// clampExportScale keeps a stored scale in 1..3; 0 (a settings file without the field) is the default.
+func clampExportScale(s int) int {
+	switch {
+	case s == 0:
+		return defaultExportScale
+	case s < minExportScale:
+		return minExportScale
+	case s > maxExportScale:
+		return maxExportScale
+	}
+	return s
 }

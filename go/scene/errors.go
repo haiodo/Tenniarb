@@ -48,6 +48,16 @@ func (es Errors) Fatal() bool {
 	return false
 }
 
+func (es Errors) fatalCount() int {
+	n := 0
+	for _, e := range es {
+		if !e.Warn {
+			n++
+		}
+	}
+	return n
+}
+
 // asError returns es as an error, or nil when it holds only warnings.
 func (es Errors) asError() error {
 	if es.Fatal() {

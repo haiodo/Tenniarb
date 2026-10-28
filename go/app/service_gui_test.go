@@ -168,6 +168,28 @@ func TestServiceProvider(t *testing.T) {
 		t.Errorf("selection:\n%s", out)
 	}
 
+	// the toolbar shows the agent; with Follow on the window goes where the agent reads, without it not
+	app.Eventually(5*time.Second, func() (any, bool) {
+		d := docOf(t, app, screen)
+		return d.Agent, strings.Contains(d.Agent, "e2e")
+	})
+	app.State("command", "name", "toolbar", "item", "follow")
+	if out, failed := call("read", map[string]any{"file": "slots.tenn", "path": "Slots.w1"}); failed {
+		t.Fatalf("read: %s", out)
+	}
+	app.Eventually(5*time.Second, func() (any, bool) {
+		d := docOf(t, app, screen)
+		return d.Nodes, d.Follow && slices.Equal(d.Nodes, []string{"w1"})
+	})
+	app.State("command", "name", "toolbar", "item", "follow")
+	if out, failed := call("read", map[string]any{"file": "slots.tenn", "path": "Slots.w2"}); failed {
+		t.Fatalf("read: %s", out)
+	}
+	time.Sleep(500 * time.Millisecond) // a presence that must not move the window needs time to not arrive
+	if d := docOf(t, app, screen); d.Follow || !slices.Equal(d.Nodes, []string{"w1"}) {
+		t.Fatalf("follow off moved the selection: %+v", d)
+	}
+
 	// while the user types in the window an agent edit is refused; after the commit it goes through
 	app.State("command", "name", "open-document", "path", diagram)
 	app.State("command", "name", "close-others")

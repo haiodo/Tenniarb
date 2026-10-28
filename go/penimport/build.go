@@ -63,7 +63,7 @@ func mapMode(m map[string]any, mode string) string {
 	return mode
 }
 
-func posProps(m map[string]any, b bctx, explicit bool) []Prop {
+func posProps(m map[string]any, b bctx) []Prop {
 	x, _ := m["x"].(float64)
 	y, _ := m["y"].(float64)
 	abs := !b.top && !b.parentAbs && m["layoutPosition"] == "absolute"
@@ -72,8 +72,7 @@ func posProps(m map[string]any, b bctx, explicit bool) []Prop {
 		ps = append(ps, prop("absolute", wordArg("yes")))
 	}
 	if b.top || b.parentAbs || abs {
-		// explicit: 0 0 is written too, to override a pos the component has
-		if x != 0 || y != 0 || explicit {
+		if x != 0 || y != 0 {
 			ps = append(ps, prop("pos", numArg(x), numArg(-y)))
 		}
 	}
@@ -131,7 +130,7 @@ func (c *conv) buildItem(f *File, m map[string]any, typ string, parent *Node, b 
 		f.index[id] = n
 	}
 	n.Props = append(hiddenProp(m, false), c.props(f, m, typ, pctx{mode: b.mode})...)
-	n.Props = append(n.Props, posProps(m, b, false)...)
+	n.Props = append(n.Props, posProps(m, b)...)
 	if th := m["theme"]; th != nil && typ != "frame" {
 		f.unsup("theme on a leaf")
 	}

@@ -17,8 +17,10 @@ const FromFileFlag = "--from-file"
 
 // Tree is a loaded workspace file with everything it imports.
 type Tree struct {
-	root  string // absolute, symlinks resolved
-	main  *Node
+	root  string              // absolute, symlinks resolved
+	main  *Node               // the file loaded for; with an entry, a file mounted below the entry
+	top   *Node               // the entry document: where lookups end; main when loaded alone
+	ctxs  map[*Node]*mountCtx // file root -> the first chain of mounts that reaches it from top
 	files map[string]*Node
 	order []*Node // file roots in load order, for validation
 	stack []loadFrame
@@ -49,6 +51,14 @@ func LoadSource(root, file, text string) (*Tree, error) {
 // LoadOverlay is Load where overlay replaces the text of files; keys are slash paths relative to
 // root. An overlaid file need not exist on disk.
 func LoadOverlay(root, file string, overlay map[string]string) (*Tree, error) {
+	return LoadIn(root, file, "", overlay)
+}
+
+// LoadIn is LoadOverlay of a part file in the context of an entry document (spec 5a.1): the entry
+// is loaded, and a name that file does not define itself is looked up where the file is mounted,
+// up to the entry. entry is absolute or relative to root; "" loads file alone. The entry must mount
+// file, directly or through other files; only file and what it mounts are validated.
+func LoadIn(root, file, entry string, overlay map[string]string) (*Tree, error) {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return nil, err
@@ -57,18 +67,38 @@ func LoadOverlay(root, file string, overlay map[string]string) (*Tree, error) {
 		absRoot = r
 	}
 	t := &Tree{root: absRoot, files: map[string]*Node{}, seen: map[Error]bool{}, overlay: overlay, src: map[string]string{}}
-	if !filepath.IsAbs(file) {
-		file = filepath.Join(absRoot, file)
-	}
-	abs, ok := t.inside(file)
+	abs, ok := t.inside(t.abs(file))
 	if !ok {
 		return nil, fmt.Errorf("%s is outside the workspace root %s", file, absRoot)
 	}
-	t.main = t.loadFile(abs, nil)
-	if t.main == nil {
+	if entry == "" {
+		entry = abs
+	}
+	eabs, ok := t.inside(t.abs(entry))
+	if !ok {
+		return nil, fmt.Errorf("%s is outside the workspace root %s", entry, absRoot)
+	}
+	t.top = t.loadFile(eabs, nil)
+	if t.top == nil {
 		return nil, t.diags
 	}
+	t.mapMounts()
+	if t.main = t.files[abs]; t.main == nil {
+		return nil, fmt.Errorf("%s does not mount %s", t.rel(eabs), t.rel(abs))
+	}
 	t.validate()
+	t.sortDiags()
+	return t, t.diags.asError()
+}
+
+func (t *Tree) abs(file string) string {
+	if filepath.IsAbs(file) {
+		return file
+	}
+	return filepath.Join(t.root, file)
+}
+
+func (t *Tree) sortDiags() {
 	sort.SliceStable(t.diags, func(i, j int) bool {
 		a, b := t.diags[i].Pos, t.diags[j].Pos
 		if a.File != b.File {
@@ -76,13 +106,52 @@ func LoadOverlay(root, file string, overlay map[string]string) (*Tree, error) {
 		}
 		return a.Line < b.Line || a.Line == b.Line && a.Col < b.Col
 	})
-	return t, t.diags.asError()
+}
+
+// mapMounts records, for each file below the entry, the chain of mounts that reaches it first.
+func (t *Tree) mapMounts() {
+	t.ctxs = map[*Node]*mountCtx{t.top: nil}
+	var walk func(n *Node, c *mountCtx)
+	walk = func(n *Node, c *mountCtx) {
+		for _, e := range n.Elems {
+			m := e.Mount
+			if m == nil {
+				walk(e, c)
+			} else if _, seen := t.ctxs[m]; !seen {
+				t.ctxs[m] = c.push(e)
+				walk(m, t.ctxs[m])
+			}
+		}
+	}
+	walk(t.top, nil)
+}
+
+// Entry is the entry document the tree was loaded in the context of, a slash path relative to the
+// root; "" when the file was loaded alone.
+func (t *Tree) Entry() string {
+	if t.top == t.main {
+		return ""
+	}
+	return t.top.Pos.File
 }
 
 // Diagnose is LoadOverlay for validation: every problem comes back as Errors, with warnings. The
 // error is set only when the file could not be loaded at all. MCP validate and tenniarb check share it.
 func Diagnose(root, file string, overlay map[string]string) (Errors, *Tree, error) {
-	tree, err := LoadOverlay(root, file, overlay)
+	return diagnosed(LoadOverlay(root, file, overlay))
+}
+
+// DiagnoseIn is Diagnose of file in the context of entry, see LoadIn.
+func DiagnoseIn(root, file, entry string, overlay map[string]string) (Errors, *Tree, error) {
+	return diagnosed(LoadIn(root, file, entry, overlay))
+}
+
+// DiagnoseAuto is Diagnose where the entry of file is found as LoadAuto does.
+func DiagnoseAuto(root, file string, overlay map[string]string) (Errors, *Tree, error) {
+	return diagnosed(LoadAuto(root, file, overlay))
+}
+
+func diagnosed(tree *Tree, err error) (Errors, *Tree, error) {
 	if tree != nil {
 		return tree.Diagnostics(), tree, nil
 	}

@@ -35,6 +35,11 @@ func (a *agentUI) ensure() {
 	}
 }
 
+func (a *agentUI) statusText() string {
+	a.ensure()
+	return a.status.Peek()
+}
+
 // agentLabel is the text of the indicator: a filled dot while the agent acted in the last seconds, an
 // empty one after, and the count when several agents work here. "" when there is no agent.
 func agentLabel(p servicewire.Presence, now time.Time) string {

@@ -5,7 +5,7 @@ warnings of that element. Check the text first: a size you did not expect (a scr
 renders 1200x31) already tells what is wrong.
 
 Without MCP, run `tenniarb check FILE` after each edit (`-json` for a list, `-root DIR` for the
-`--from-file` root): exit 0 means no errors, 1 means errors, listed as `path:line:col`. With MCP, `edit`
+`--from-file` root, `-entry FILE` for the entry document of a part file): exit 0 means no errors, 1 means errors, listed as `path:line:col`. With MCP, `edit`
 and `validate` do the same.
 
 ## What to look at

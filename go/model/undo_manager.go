@@ -20,8 +20,10 @@ type UndoManager struct {
 	autoGroup bool
 
 	GroupsByEvent bool
-	IsUndoing     bool
-	IsRedoing     bool
+	// MaxGroups bounds the undo stack, the oldest group goes first; 0 is no bound.
+	MaxGroups int
+	IsUndoing bool
+	IsRedoing bool
 }
 
 func (u *UndoManager) CanUndo() bool { return len(u.undoStack) > 0 }
@@ -47,6 +49,9 @@ func (u *UndoManager) EndUndoGrouping() error {
 			u.redoStack = append(u.redoStack, u.group)
 		} else {
 			u.undoStack = append(u.undoStack, u.group)
+			if u.MaxGroups > 0 && len(u.undoStack) > u.MaxGroups {
+				u.undoStack = slices.Delete(u.undoStack, 0, len(u.undoStack)-u.MaxGroups)
+			}
 		}
 	}
 	return nil

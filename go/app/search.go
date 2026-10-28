@@ -7,6 +7,7 @@ import (
 	"github.com/haiodo/gowt/look"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/link"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 )
@@ -44,8 +45,13 @@ func (v *Viewer) gotoItem(item *model.DiagramItem) {
 
 // searchTo is the Goto Item field of the toolbar: it shows the first item whose name or text has the
 // query, and the next one each time the same query comes again (Return). An empty query clears it.
+// A link in the field is opened instead.
 func (v *Viewer) searchTo(q string) {
 	if v.session == nil {
+		return
+	}
+	if link.IsLink(q) { // a pasted link goes to its place, in this or another file
+		v.sh.openLink(q, v)
 		return
 	}
 	s := &v.search

@@ -10,8 +10,8 @@ import (
 )
 
 // Methods of a provider connection. The service calls the provider with MethodText..MethodRender;
-// the provider calls MethodDocuments; the service sends MethodReconnect and MethodPresence as
-// notifications.
+// the provider calls MethodDocuments and MethodCommentsOp; the service sends MethodReconnect,
+// MethodPresence and MethodComments as notifications.
 const (
 	MethodDocuments = "documents"
 	MethodText      = "text"
@@ -290,6 +290,15 @@ func (c *ProviderClient) handle(_ context.Context, method string, params json.Ra
 		}
 		if r, ok := c.p.(PresenceReceiver); ok && pr.V <= PresenceVersion {
 			r.Presence(pr)
+		}
+		return nil, nil
+	case MethodComments:
+		var up CommentsUpdate
+		if err := json.Unmarshal(params, &up); err != nil {
+			return nil, err
+		}
+		if r, ok := c.p.(CommentsReceiver); ok && up.V <= CommentsVersion {
+			r.Comments(up)
 		}
 		return nil, nil
 	case MethodReconnect:

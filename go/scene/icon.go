@@ -2,10 +2,41 @@ package scene
 
 import (
 	"math"
+	"sync"
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
 )
+
+// pathCache keeps the parsed icon paths by their text: every load validates every element again.
+// Cleared when full, which only costs a parse.
+var pathCache = struct {
+	sync.Mutex
+	m map[string]*gfx.Path
+}{m: map[string]*gfx.Path{}}
+
+const pathCacheMax = 4096
+
+// parsePath is gfx.ParseSVGPath of d; the result is a copy of the cached one, so a caller may set EvenOdd.
+func parsePath(d string) (*gfx.Path, error) {
+	pathCache.Lock()
+	g, ok := pathCache.m[d]
+	pathCache.Unlock()
+	if !ok {
+		var err error
+		if g, err = gfx.ParseSVGPath(d); err != nil {
+			return nil, err
+		}
+		pathCache.Lock()
+		if len(pathCache.m) >= pathCacheMax {
+			clear(pathCache.m)
+		}
+		pathCache.m[d] = g
+		pathCache.Unlock()
+	}
+	cp := *g // Verbs and Pts are shared and never written
+	return &cp, nil
+}
 
 // icon is a vector shape that a leaf item draws in place of its box.
 type icon struct {
@@ -24,7 +55,7 @@ func (p *prep) icon(rn *RNode, n *layout.Node) {
 		return
 	}
 	d, _ := pr.text(0)
-	g, err := gfx.ParseSVGPath(d)
+	g, err := parsePath(d)
 	if err != nil || g.Empty() {
 		p.t.warn(pr.Pos, "path: not an SVG path, the item is drawn as a box")
 		return

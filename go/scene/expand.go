@@ -48,7 +48,8 @@ type frame struct {
 type expander struct {
 	t     *Tree
 	stack []frame
-	depth int // uses being expanded; slots stay open until the outermost one is done
+	depth int       // uses being expanded; slots stay open until the outermost one is done
+	ctx   *mountCtx // mount context of the file the node being expanded lives in
 }
 
 func label(n *Node) string {
@@ -92,6 +93,11 @@ func (x *expander) container(n *Node) *RNode {
 		return nil
 	}
 	defer x.leave()
+	if n.Mount != nil { // its content is the mounted file, which looks outward from this element
+		saved := x.ctx
+		x.ctx = saved.push(n)
+		defer func() { x.ctx = saved }()
+	}
 	r := newR(RItem, n)
 	r.Kids = x.contents(n.Content)
 	return r
@@ -144,15 +150,19 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	defer x.leave()
 	x.depth++
 	defer func() { x.depth-- }()
-	target := x.t.resolve(n.Parent, n.Path, n.Pos)
+	ctx := x.ctx
+	target, tctx := x.t.resolve(n.Parent, ctx, n.Path, n.Pos)
 	if target == nil {
 		return nil
 	}
+	x.ctx = tctx // the component's names resolve in its own file, the block's in this one
 	inst := x.instance(target, n)
+	x.ctx = ctx
 	if inst == nil {
 		return nil
 	}
 	inst.Name, inst.Key, inst.Pos, inst.Inst, inst.Src = n.Name, n.Key, n.Pos, true, n
+	inst.Props = withoutProp(inst.Props, "pos") // the component's pos is its place on the library canvas
 	x.apply(inst, n.Block)
 	if !asTarget && x.depth == 1 {
 		finalize(inst)
@@ -251,6 +261,16 @@ func splice(kids []*RNode, i int, with []*RNode) []*RNode {
 	out = append(out, kids[:i]...)
 	out = append(out, with...)
 	return append(out, kids[i+1:]...)
+}
+
+func withoutProp(props []*Prop, name string) []*Prop {
+	out := make([]*Prop, 0, len(props))
+	for _, p := range props {
+		if p.Name != name {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // setProp replaces the properties of that name, in the place of the first one, or appends.

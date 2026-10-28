@@ -256,14 +256,24 @@ func (sv *Service) serveProvider(ctx context.Context, conn *servicewire.Conn) {
 	reply(conn, "ok")
 	p := &provider{}
 	p.peer = servicewire.NewPeer(conn, func(_ context.Context, method string, params json.RawMessage) (any, error) {
-		if method != servicewire.MethodDocuments {
+		switch method {
+		case servicewire.MethodDocuments:
+		case servicewire.MethodCommentsOp:
+			var op servicewire.CommentsOp
+			if err := json.Unmarshal(params, &op); err != nil {
+				return nil, err
+			}
+			return sv.Host.comments.fromApp(op)
+		default:
 			return nil, fmt.Errorf("unknown method %q", method)
 		}
 		var docs servicewire.Documents
 		if err := json.Unmarshal(params, &docs); err != nil {
 			return nil, err
 		}
-		sv.Host.live.set(p, docs.Docs)
+		for _, abs := range sv.Host.live.set(p, docs.Docs) {
+			sv.Host.comments.pushDoc(abs)
+		}
 		paths := make([]string, len(docs.Docs))
 		for i, d := range docs.Docs {
 			paths[i] = realPath(d.Path)

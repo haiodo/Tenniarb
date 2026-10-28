@@ -88,7 +88,7 @@ type Node struct {
 	Pos    Pos
 	Range  Range // the whole command with its block; zero for a file root
 	Body   Range // the block of the command from { to after }; zero when it has none
-	Parent *Node // scope: lookups go up this chain; stays inside one file
+	Parent *Node // scope: lookups go up this chain, and on from a file root to its mount point (resolve.go)
 
 	Props   []*Prop
 	Content []*Node // item, link, use, slot in file order

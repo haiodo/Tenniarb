@@ -28,6 +28,12 @@ pb "Add :UTExportedTypeDeclarations:0:UTTypeTagSpecification:public.mime-type ar
 pb "Add :UTExportedTypeDeclarations:0:UTTypeTagSpecification:public.mime-type: string text/plain"
 pb "Add :CFBundleDocumentTypes:0:CFBundleTypeMIMETypes array"
 pb "Add :CFBundleDocumentTypes:0:CFBundleTypeMIMETypes: string text/plain"
+# The tenniarb:// scheme of the links (docs/links.md); Launch Services learns it from the plist.
+pb "Add :CFBundleURLTypes array"
+pb "Add :CFBundleURLTypes:0 dict"
+pb "Add :CFBundleURLTypes:0:CFBundleURLName string andrey.sobolev.Tenniarb"
+pb "Add :CFBundleURLTypes:0:CFBundleURLSchemes array"
+pb "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string tenniarb"
 plutil -lint "$plist" >/dev/null
 mkdir -p "$app/Contents/Resources"
 cp "$embed" "$app/Contents/Resources/"

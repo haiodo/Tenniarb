@@ -3,6 +3,7 @@ package check
 import (
 	"bytes"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -60,5 +61,43 @@ func TestJSONShape(t *testing.T) {
 	}
 	if _, out, _ = run("-json", "../scene/testdata/slots.tenn"); strings.TrimSpace(out) != "[]" {
 		t.Errorf("clean file prints %q, want []", out)
+	}
+}
+
+func TestEntryContext(t *testing.T) {
+	dir := t.TempDir()
+	for name, text := range map[string]string{
+		"design.tenn":      "element \"ui\" --from-file \"ui.tenn\"\nelement \"p\" --from-file \"apps/part.tenn\"\n",
+		"ui.tenn":          "item Button { width 40; height 20 }\n",
+		"apps/part.tenn":   "element \"Screen\" { use ui.Button as b }\n",
+		"apps/orphan.tenn": "element \"Screen\" { use ui.Button as b }\n",
+	} {
+		p := filepath.Join(dir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	part := filepath.Join(dir, "apps/part.tenn")
+	for name, args := range map[string][]string{
+		"found":    {"-root", dir, part},
+		"explicit": {"-root", dir, "-entry", filepath.Join(dir, "design.tenn"), part},
+		"entry":    {"-root", dir, filepath.Join(dir, "design.tenn")},
+	} {
+		if code, out, _ := run(args...); code != ExitOK {
+			t.Errorf("%s: exit %d\n%s", name, code, out)
+		}
+	}
+	_, _, errOut := run("-root", dir, part)
+	if !strings.Contains(errOut, "in the context of design.tenn") {
+		t.Errorf("stderr %q", errOut)
+	}
+	if code, out, _ := run("-root", dir, filepath.Join(dir, "apps/orphan.tenn")); code != ExitErrors || !strings.Contains(out, "is not defined here or above") {
+		t.Errorf("orphan: exit %d\n%s", code, out)
+	}
+	if code, _, errOut := run("-root", dir, "-entry", filepath.Join(dir, "ui.tenn"), part); code != ExitUsage || !strings.Contains(errOut, "does not mount") {
+		t.Errorf("wrong entry: exit %d %q", code, errOut)
 	}
 }

@@ -55,7 +55,11 @@ tool stays inside the root. A root with more than 50 000 entries (a home directo
 | `validate` | Errors and warnings of one file or the workspace |
 | `render` | PNG of an element; `view` renders the app window of the file |
 | `selection` | Documents open in the app and the user's selection |
-| `select` | Select (and reveal) nodes in the app |
+| `select` | Select (and reveal) nodes in the app; `file` may be a link, see [links.md](links.md) |
+| `comments` | The comments the user left on a file: id, author, text, anchor (`element`, `node`, `point`, `link_text` that `select` takes), replies; `state` `open` (default) or `all` |
+| `reply` | Answer a comment (`file`, `id`, `text`); it shows in the thread in the app at once |
+| `resolve` | Mark a comment done (`file`, `id`, optional closing `text`) |
+| `wait_comment` | Block until the user leaves a new comment, reply or reopens one (`file` or any document, `timeout_s` default 60, at most 600); returns a list of events, `[]` on timeout |
 
 **Design skill.** `read_skill` serves `go/mcpserver/skill/` (embedded): `SKILL.md` with the loop (get_state,
 find components, write in compact form, render, fix) and `format.md`, `components.md`, `layout.md`,
@@ -110,6 +114,71 @@ not in `tenniarb-mcp`, which links the standard library only.
 Any other argument that starts with `-` prints the usage to stderr and exits 2 before the GUI starts. The
 arguments AppKit adds itself (`-psn_*`, `-NS*`, `-Apple*`) are ignored.
 
+## Agent presence and Follow
+
+The app shows which agents work on an open document, and can follow them.
+
+- **Tracking.** Every tool call that names a file open in the app (`get_state` with `file`, `read`, `edit`,
+  `validate` with `file`, `render`, `select`) records for its session: tool, time and place. The place is
+  the dotted path (spec 4.2) of the node and of its element, with lines: the `path`/`element`/first node
+  argument, or for `edit` the first changed place of the new text. A file the app does not have open is not
+  tracked. The agent name is `clientInfo.name` of the MCP initialize, read at the first tool call.
+- **Drop-out.** A session counts for a document for 10 minutes after its last action there
+  (`servicewire.PresenceTTL`, `Service.PresenceTTL`); a closed session drops out at once. The service checks
+  every `TTL/10` (1 s to 30 s).
+- **Wire.** The service sends the app the notification `presence` (`servicewire.Presence`) for each changed
+  document: agent count, name, tool, element, node, lines, time `at` (Unix ms) and `seq`. Messages are
+  handled concurrently, so the app drops one whose `seq` is below the last it saw. `v` is 1
+  (`PresenceVersion`): new optional fields keep it, a reader drops a higher one. The hello protocol is
+  unchanged: an app without the method ignores the notification, a service without it never sends one. The
+  proxy stays standard-library only. Documents are marked again when an app registers them, so a window
+  opened later gets the current state. Provider side: the optional `servicewire.PresenceReceiver`.
+- **Indicator.** While an agent works on the file, the toolbar next to the title shows `● claude-code`
+  (`● Agent` when the client sent no name, `(2)` for two agents). The dot is filled for 10 s after the last
+  action and empty after; gowt text items have no colour, so green and grey are filled and empty. Clicking it
+  toggles Follow.
+- **Follow.** The `Follow` button (`Following` when on; kept while the window lives, not saved) shows every
+  action of the agent: the element goes on the canvas, the node is selected and scrolled into view. It is
+  an ordinary selection change, so Back returns to where the user was. The window does not come to front
+  and the keyboard stays put; while the user types (inline editor, a text field with the keyboard, the code
+  panel) the last place waits and is shown after the typing stops. Off, only the indicator updates.
+- **Not covered.** Actions without a place (`validate`, whole-file `read`) update the indicator only.
+  Presence comes from the service's sessions only: an agent that edits files directly is not seen.
+
+## Comments
+
+The user places comments on a design in the app (comment mode, key `C` on the canvas); an agent answers them
+over MCP. After you finish a task call `comments` for the file and answer each open comment with `reply` or
+`resolve`. To stay on duty loop `wait_comment`: it returns when the user writes something new and `[]` after
+`timeout_s`, so call it again. A session is told only of what happened after it started, and each event once.
+Your own replies do not wake it. `reply` and `resolve` show the agent at the anchor in the app (presence).
+
+- **Storage.** Only in the config folder of the user (`$TENNIARB_CONFIG_DIR`, else the app config folder),
+  `comments/<hash>.json`, one file per document, written atomically. Never in the repository. The document is
+  named by its link identity (`go/link` `DocKey`: normalised remote plus repository path, else the absolute
+  path), so another clone of the repository finds the same comments.
+- **Format.** `{v, key, rev, comments: [{id, created, author, text, anchor, state, replies}]}`. `author` is
+  `user` or the MCP client name. `anchor` is `{element: [names], node, point}`: `node` is the selection path
+  (`a/b` reaches into an instance) or the diagram item name; `point` is measured from the top left of the
+  node box, or from the element content origin without a node. `state` is `open` or `resolved`; threads are
+  one level deep.
+- **Owner.** `tenniarb-service` is the only writer. The app changes comments with the provider call
+  `comments.op` (`servicewire.CommentsOp`: `add`, `reply`, `resolve`, `reopen`, `delete`, `list`; the author is
+  always `user`) and receives every change as the `comments` notification (`CommentsUpdate`, versioned by
+  `CommentsVersion`, ordered by `rev`). The service also sends the stored comments when the app registers a
+  document. The app reads the files itself when it opens a document, and writes them itself only while no
+  service runs.
+
+## Links
+
+`selection` returns `link` (a `tenniarb://open?...` URL) and `link_text` (`dir/File.tenn#Element/node`) for the
+selection of the front window, to share with a person or another agent. `select` takes either form in `file`
+(and the nodes from the link when `nodes` is empty), so an agent can show the place a person pasted into the
+chat. The path of a link is relative to the git repository root; when the workspace is a folder of it, the
+file must be inside the workspace, and a link for another repository is refused. A scene path cannot carry
+`#n` or an instance part: a repeated name gives the usual `ambiguous path` error, and a link into an instance
+selects the `use` that holds it. Format: [links.md](links.md).
+
 ## Provider protocol (for the app)
 
 Package `go/servicewire`. The app is a "provider": it connects with role `provider`, registers its open
@@ -130,4 +199,6 @@ client.SetDocuments([]servicewire.Doc{{Path: abs, Version: v, Dirty: dirty}})
   - `Selection()`: document of the key window, element on screen, selected nodes as dotted paths.
   - `Select(path, nodes, reveal)`: select nodes; `reveal` brings the window to front and scrolls to the first.
   - `Render(path, scale)`: PNG of what the window shows.
+  - `Presence(p)` (optional, `PresenceReceiver`): agents working on a document, see above.
+  - `Comments(u)` (optional, `CommentsReceiver`): the comments of a document changed, see Comments.
 - `go/servicewire/wiretest.Fake` is an in-memory provider for tests.

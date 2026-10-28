@@ -42,6 +42,12 @@ An element can take its content from another file: `element "kit" --from-file "l
 has no block; the elements and items of that file become the content of `kit`, and `use kit.Card as c`
 reaches them (`components.md`).
 
+Libraries are mounted once, in the entry document of the workspace (for example `PlatformDesign.tenn`).
+A name inside a mounted file is looked up in that file first, then at the place where it is mounted, up
+to the entry, as with `#include`: app and category files (`apps/tracker.tenn`) hold no library mounts
+and just write `use ui.Button as b`. A file opened alone finds its entry by itself, or by a first line
+`entry "../PlatformDesign.tenn"`.
+
 ## Inside auto-layout
 
 An item whose parent or itself has `auto-layout` is in a layout context. There:

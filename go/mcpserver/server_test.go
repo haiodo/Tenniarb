@@ -120,7 +120,7 @@ func TestToolList(t *testing.T) {
 	for _, tl := range res.Tools {
 		got[tl.Name] = true
 	}
-	for _, n := range []string{"guide", "get_state", "read", "edit", "render", "validate"} {
+	for _, n := range []string{"guide", "get_state", "read", "edit", "render", "validate", "comments", "reply", "resolve", "wait_comment"} {
 		if !got[n] {
 			t.Errorf("tool %s is not registered", n)
 		}

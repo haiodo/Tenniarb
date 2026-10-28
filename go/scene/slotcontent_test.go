@@ -62,24 +62,23 @@ func TestSlotHoldsUseOfComponentWithOwnSlots(t *testing.T) {
 	}
 }
 
-// A component carries the pos of its place in a library; an instance in an abs parent inherits it
-// and may land outside the clip of the parent. That is a warning, not a silent loss.
-func TestSlotContentOutsideClipIsReported(t *testing.T) {
+// The pos of a component is its place on the library canvas: an instance takes its own pos, else 0 0.
+func TestInstanceDoesNotInheritComponentPos(t *testing.T) {
 	s, _ := slotScreen(t, "-1480", "use Kit.Parts.Panel as P { width 300; height 200 }")
+	wantBox(t, boxMap(s), "H.P", 0, 0, 300, 200)
+	if len(s.Warnings) > 0 {
+		t.Errorf("warnings %v", s.Warnings)
+	}
+	// the use sets pos: its own wins, and one outside the clip is still reported
+	s, _ = slotScreen(t, "-1480", "use Kit.Parts.Panel as P { pos 20 -30; width 300; height 200 }")
+	wantBox(t, boxMap(s), "H.P", 20, 30, 300, 200)
+	s, _ = slotScreen(t, "0", "use Kit.Parts.Panel as P { pos 0 -1480; width 300; height 200 }")
 	var found bool
 	for _, w := range s.Warnings {
 		found = found || (w.Warn && w.Pos.File == "main.tenn" && w.Pos.Line == 2 && strings.Contains(w.Msg, "outside its clipping parent"))
 	}
 	if !found {
 		t.Errorf("no warning for P, got %v", s.Warnings)
-	}
-	if _, ok := boxMap(s)["H.P"]; !ok {
-		t.Error("P must stay in the tree")
-	}
-	// the use overrides pos: inside the clip, no warning
-	s, _ = slotScreen(t, "-1480", "use Kit.Parts.Panel as P { pos 0 0; width 300; height 200 }")
-	if len(s.Warnings) > 0 {
-		t.Errorf("warnings %v", s.Warnings)
 	}
 }
 

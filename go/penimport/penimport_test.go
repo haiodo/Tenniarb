@@ -399,16 +399,15 @@ func TestFidelityWithFractionalMetrics(t *testing.T) {
 	}
 }
 
-func TestInstanceAtOriginOverridesPosOfComponent(t *testing.T) {
-	// the component sits at y 300 of the pen canvas; an instance written at 0 0 in an absolute parent
-	// must not inherit that
+func TestInstanceIgnoresPosOfComponent(t *testing.T) {
+	// the component sits at y 300 of the pen canvas; an instance at 0 0 in an absolute parent says no pos
 	res, dir, f := convertJSON(t, `{"version":"2.21","children":[
 	 {"type":"frame","id":"c","name":"Comp","reusable":true,"x":0,"y":300,"width":50,"height":40,"layout":"none"},
 	 {"type":"frame","id":"scr","name":"Screen","x":500,"layout":"none","width":200,"height":100,"clip":true,"children":[
 	  {"type":"ref","id":"a","name":"Inst","ref":"c","x":0,"y":0}]}]}`)
 	wantFidelity(t, f, dir)
 	out := res.Tenn(f)
-	if !strings.Contains(out, "use Comp as Inst { pos 0") {
-		t.Errorf("the instance does not say pos 0 0:\n%s", out)
+	if strings.Contains(out, "use Comp as Inst { pos") || strings.Contains(out, "pos 0 0") {
+		t.Errorf("the instance must not say pos 0 0:\n%s", out)
 	}
 }

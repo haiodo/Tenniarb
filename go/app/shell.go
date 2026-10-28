@@ -9,10 +9,15 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"slices"
+	"sync"
 	"time"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/swt"
+
+	"github.com/haiodo/tenniarb/go/comments"
+	"github.com/haiodo/tenniarb/go/link"
+	"github.com/haiodo/tenniarb/go/servicewire"
 )
 
 // PollInterval is how often the open files are checked for changes.
@@ -26,6 +31,7 @@ type Shell struct {
 	exe    string
 	prefs  Prefs
 	recent []string
+	repos  link.Repos // the git remotes of the clones a link may name
 
 	viewers []*Viewer
 	active  *Viewer
@@ -40,6 +46,10 @@ type Shell struct {
 
 	subs    map[int]func(DocEvent) // the API's subscribers
 	nextSub int
+
+	svc        *servicewire.ProviderClient // the connection to tenniarb-service; nil before it starts
+	cstore     *comments.Store             // the comment files, written here only while no service runs
+	cstoreOnce sync.Once
 
 	ctx context.Context // ends when the application quits
 }
@@ -87,6 +97,12 @@ func (sh *Shell) start(args []string) {
 			sh.openPath(e.Text)
 		}
 	}))
+	// gowt raises OpenUrl only where the system hands it a URL; see docs/links.md for what is missing.
+	disp.AddListener(swt.OpenUrl, listenerFunc(func(e *swt.Event) {
+		if link.IsURL(e.Text) {
+			sh.openLink(e.Text, nil)
+		}
+	}))
 	sh.app.Every(PollInterval, func() {
 		for _, v := range slices.Clone(sh.viewers) {
 			v.poll()
@@ -100,7 +116,12 @@ func (sh *Shell) start(args []string) {
 	})
 
 	sh.startProvider(sh.ctx)
+	var links []string
 	for _, a := range args {
+		if link.IsURL(a) {
+			links = append(links, a)
+			continue
+		}
 		sh.openPath(a)
 	}
 	for _, id := range StashedUntitled(sh.dir) {
@@ -110,6 +131,9 @@ func (sh *Shell) start(args []string) {
 	}
 	if len(sh.viewers) == 0 {
 		sh.newDocument()
+	}
+	for _, a := range links { // a window is needed to ask where the clone is
+		sh.openLink(a, nil)
 	}
 }
 

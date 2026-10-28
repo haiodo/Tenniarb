@@ -3,8 +3,10 @@ package app
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
@@ -39,6 +41,7 @@ type docCore struct {
 	root     string      // workspace root: mounted files may not leave it
 	stree    *scene.Tree // nil for a diagram document
 	sceneErr string      // the errors go/scene finds in this file, for the banner
+	entry    string      // the entry document the file is loaded in the context of, "" when alone
 	libs     map[string]Stamp
 	selNodes []string // selected scene nodes of the current element, by node path
 
@@ -49,6 +52,9 @@ type docCore struct {
 	keep    []*model.Element
 	libErr  error
 	libBusy bool // a window that has a mounted file is being edited by this document
+
+	// pending is the tree loaded to check an edit, which loadScene takes when it would load the same.
+	pending *pendingScene
 
 	// peer gives the document another window holds for the mounted file rel; nil when none.
 	peer func(self *docCore, rel string) *docCore
@@ -112,6 +118,7 @@ func (d *docCore) adopt(raw string) {
 	d.version++
 	d.session.Store().MountWritable, d.session.Store().OnMountEdit = d.mountWritable, d.mountEdited
 	d.loadScene()
+	debug.FreeOSMemory() // the parse of a big document leaves garbage the runtime would hold for a while
 }
 
 // sessionChanged follows a change of the model: a classic edit, a text edit, undo or redo.
@@ -143,7 +150,7 @@ func (d *docCore) sessionChanged() {
 
 // loadScene reads the scene tree anew, with the unsaved text of the other open documents.
 func (d *docCore) loadScene() {
-	d.stree, d.sceneErr, d.libs = nil, "", nil
+	d.stree, d.sceneErr, d.libs, d.entry = nil, "", nil, ""
 	keep := d.keep
 	d.keep = nil
 	if d.kind == model.DocDiagram || d.session == nil {
@@ -153,13 +160,20 @@ func (d *docCore) loadScene() {
 	rel := d.rel()
 	overlay := d.overlay()
 	overlay[rel] = d.text
-	tree, err := scene.LoadOverlay(d.root, rel, overlay)
+	var tree *scene.Tree
+	var err error
+	if p := d.pending; p != nil && maps.Equal(p.overlay, overlay) {
+		tree = p.tree
+	} else {
+		tree, err = loadAuto(d.root, rel, overlay)
+	}
+	d.pending = nil
 	if tree == nil {
 		d.sceneErr = errString(err)
 		d.mounts = nil
 		return
 	}
-	d.stree = tree
+	d.stree, d.entry = tree, tree.Entry()
 	d.adoptMounts(model.MountFiles(d.session.Root(), tree, rel, keep...))
 	d.sceneErr = sceneErrors(tree.Diagnostics())
 	d.libs = map[string]Stamp{}
@@ -170,14 +184,51 @@ func (d *docCore) loadScene() {
 	}
 }
 
+// loadAuto is scene.LoadAuto; tests count the loads.
+var loadAuto = scene.LoadAuto
+
+// pendingScene is a tree loaded with overlay as the text of the files.
+type pendingScene struct {
+	overlay map[string]string
+	tree    *scene.Tree
+}
+
 // sceneErrorCount is how many scene errors (not warnings) the tree would have with text as the text
 // of file; -1 when the tree does not load at all.
 func (d *docCore) sceneErrorCount(file, text string) int {
+	_, n := d.loadWith(file, text)
+	return n
+}
+
+func (d *docCore) loadWith(file, text string) (*pendingScene, int) {
 	overlay := d.overlay()
 	rel := d.rel()
 	overlay[rel] = d.text
 	overlay[file] = text
-	tree, _ := scene.LoadOverlay(d.root, rel, overlay)
+	tree, _ := loadAuto(d.root, rel, overlay)
+	return &pendingScene{overlay: overlay, tree: tree}, errorCount(tree)
+}
+
+// treeShows reports whether d.stree was loaded from text as the text of file and from the current text of
+// every other file the document overlays, so its errors are the ones of a load now.
+func (d *docCore) treeShows(file, text string) bool {
+	if d.stree == nil {
+		return false
+	}
+	if src, ok := d.stree.Source(file); !ok || src != text {
+		return false
+	}
+	overlay := d.overlay()
+	overlay[d.rel()] = d.text
+	for f, t := range overlay {
+		if src, ok := d.stree.Source(f); ok && src != t {
+			return false
+		}
+	}
+	return true
+}
+
+func errorCount(tree *scene.Tree) int {
 	if tree == nil {
 		return -1
 	}
@@ -188,6 +239,30 @@ func (d *docCore) sceneErrorCount(file, text string) int {
 		}
 	}
 	return n
+}
+
+// editAddsErrors reports whether replacing text[e.Start:e.End] of file by e.New adds scene errors: an
+// edit from the window must not, autosave would write a broken file. Errors are counted, not compared,
+// because their positions move with the edit. The tree of the new text is kept for the loadScene that
+// follows the edit, so an edit loads the scene once.
+func (d *docCore) editAddsErrors(file, text string, e TextEdit) bool {
+	if e.Start < 0 || e.Start > e.End || e.End > len(text) {
+		return false
+	}
+	var was int
+	if d.treeShows(file, text) {
+		was = errorCount(d.stree)
+	} else {
+		was = d.sceneErrorCount(file, text)
+	}
+	p, now := d.loadWith(file, text[:e.Start]+e.New+text[e.End:])
+	if now > was || (now < 0 && was >= 0) {
+		return true
+	}
+	if p.tree != nil {
+		d.pending = p
+	}
+	return false
 }
 
 func errString(err error) string {
@@ -384,7 +459,15 @@ func (d *docCore) applyText(start, end int, repl string) error {
 		return fmt.Errorf("%d:%d: %s", e.Line+1, e.Col, e.Message)
 	}
 	before, _ := tenn.Parse(d.text)
-	op := &textEditOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, before: d.text, after: after}
+	op := &textEditOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, after: after}
+	if d.kind == model.DocScene {
+		// No classic step holds the objects a swap would keep alive: remember the splice, not the trees.
+		op.lean, op.fresh, op.start = true, true, start
+		op.oldText, op.newText = strings.Clone(d.text[start:end]), strings.Clone(repl)
+		op.idxOld, op.idxNew = elementIndexAt(before, start, end), elementIndexAt(ast, start, start+len(repl))
+	} else {
+		op.before = d.text
+	}
 	op.plan(&d.session.Root().Element, model.ParseTenn(ast), elementIndexAt(before, start, end))
 	return d.session.Execute(op)
 }
@@ -460,27 +543,85 @@ type elemSwap struct {
 type textEditOp struct {
 	model.OpBase
 	d             *docCore
-	before, after string
+	before, after string // the whole texts; a lean op keeps neither
 	swaps         []elemSwap
 	notify        *model.Element
+
+	// A lean op (scene document) keeps the splice instead of the swapped trees, and undo and redo parse
+	// the text again: text[start:start+len(oldText)] became newText, idxOld and idxNew are the element
+	// paths of the range in the old and in the new text.
+	lean             bool
+	fresh            bool // not applied yet: the swaps were planned by applyText
+	start            int
+	oldText, newText string
+	idxOld, idxNew   []int
 }
 
-func (o *textEditOp) Name() string                { return "Edit text" }
-func (o *textEditOp) GetNotifier() *model.Element { return o.notify }
+func (o *textEditOp) Name() string { return "Edit text" }
+
+func (o *textEditOp) GetNotifier() *model.Element {
+	if !o.lean {
+		return o.notify
+	}
+	idx := o.idxNew
+	if o.UndoCalled { // the model shows the old text
+		idx = o.idxOld
+	}
+	a := &o.d.session.Root().Element
+	for _, i := range idx {
+		if i >= len(a.Elements) {
+			break
+		}
+		a = a.Elements[i]
+	}
+	return a
+}
 
 func (o *textEditOp) Apply() error {
+	if o.lean && !o.fresh {
+		return o.shift(o.oldText, o.newText, o.idxOld)
+	}
 	for _, s := range o.swaps {
 		put(s.e, s.new)
 	}
 	o.d.text, o.d.textSet = o.after, true
+	if o.lean {
+		o.fresh, o.swaps, o.after = false, nil, ""
+	}
 	return nil
 }
 
 func (o *textEditOp) Undo() error {
+	if o.lean {
+		return o.shift(o.newText, o.oldText, o.idxNew)
+	}
 	for i := len(o.swaps) - 1; i >= 0; i-- {
 		put(o.swaps[i].e, o.swaps[i].old)
 	}
 	o.d.text, o.d.textSet = o.before, true
+	return nil
+}
+
+// shift replaces from by to at the start of the splice in the text of the document and brings the
+// elements of idx up to the new text.
+func (o *textEditOp) shift(from, to string, idx []int) error {
+	cur, end := o.d.text, o.start+len(from)
+	if end > len(cur) || cur[o.start:end] != from {
+		return errors.New("the text changed since this edit")
+	}
+	next := cur[:o.start] + to + cur[end:]
+	ast, p := tenn.Parse(next)
+	if p.Errors.HasErrors() {
+		e := p.Errors.Errors[0]
+		return fmt.Errorf("%d:%d: %s", e.Line+1, e.Col, e.Message)
+	}
+	o.swaps = nil
+	o.plan(&o.d.session.Root().Element, model.ParseTenn(ast), idx)
+	for _, s := range o.swaps {
+		put(s.e, s.new)
+	}
+	o.swaps = nil
+	o.d.text, o.d.textSet = next, true
 	return nil
 }
 

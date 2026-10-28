@@ -59,6 +59,8 @@ type docState struct {
 	Dirty     bool
 	Error     string
 	Kind      string
+	Agent     string // the indicator text of the toolbar
+	Follow    bool
 }
 
 type sceneState struct {

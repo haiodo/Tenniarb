@@ -64,4 +64,14 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 If the user has the file open in Tenniarb, `edit` changes the document in the app as one undo step
 and the file on disk stays untouched until the user saves. If the user typed since you read, the edit
 fails: read the lines again and repeat. `selection` shows what the user selected (dotted paths);
-`select {file, nodes, reveal: true}` points at nodes you are talking about.
+`select {file, nodes, reveal: true}` points at nodes you are talking about. The user sees that an agent
+works on the file and can follow your reads, edits and selects in the window, so `select` also shows what you
+work on.
+
+## Comments from the user
+
+The user leaves comments on nodes of a design in the app. After you finish a task call `comments {file}`: each
+open comment has an `id`, the `text`, the anchor (`link_text` goes to `select`) and the replies. Fix what it asks,
+then `reply {file, id, text}` or `resolve {file, id, text}`; the user sees it in the thread at once. To stay on
+duty loop `wait_comment {timeout_s}`: it returns the new comments and replies, or `[]` after the timeout, and you
+call it again.

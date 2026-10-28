@@ -53,6 +53,7 @@ func (v *Viewer) syncIndicators() {
 	if v.view == nil {
 		return
 	}
+	defer v.syncPins()
 	comp := v.view.Compositor()
 	w, h, _ := comp.Viewport()
 	cam := comp.Camera()

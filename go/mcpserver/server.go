@@ -21,6 +21,8 @@ type Server struct {
 	root  string // absolute, symlinks resolved
 	host  *Host
 	agent *agentSession // this client, as the presence of the open documents knows it
+	// cursor is how far wait_comment has told this session of the comments of the user.
+	cursor commentCursor
 }
 
 // Close ends the session: the documents it worked on lose its presence.
@@ -80,8 +82,8 @@ type (
 		View    bool    `json:"view,omitempty" jsonschema:"render what the Tenniarb window of this file shows instead; needs the file open in the app"`
 	}
 	selectIn struct {
-		File   string   `json:"file" jsonschema:"path of a .tenn file open in Tenniarb, relative to the workspace root"`
-		Nodes  []string `json:"nodes" jsonschema:"dotted node paths (spec 4.2) to select; empty clears the selection"`
+		File   string   `json:"file" jsonschema:"path of a .tenn file open in Tenniarb, relative to the workspace root; or a link from the selection tool, File.tenn#Element/node (docs/links.md), which also gives nodes"`
+		Nodes  []string `json:"nodes,omitempty" jsonschema:"dotted node paths (spec 4.2) to select; empty clears the selection, or takes the place of a link"`
 		Reveal bool     `json:"reveal,omitempty" jsonschema:"bring the window to front and scroll the first node into view"`
 	}
 	validateIn struct {
@@ -92,7 +94,7 @@ type (
 // MCP returns the MCP server with all tools registered.
 func (s *Server) MCP() *mcp.Server {
 	srv := mcp.NewServer(&mcp.Implementation{Name: "tenniarb-mcp", Version: "0.1.0"}, &mcp.ServerOptions{
-		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Files open in the Tenniarb app are read and edited live, through its undo.",
+		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Files open in the Tenniarb app are read and edited live, through its undo. The user may leave comments on a design: after a task call comments, answer with reply or resolve, and loop wait_comment to stay on duty.",
 	})
 	srv.AddReceivingMiddleware(s.learnClient)
 	add(srv, "guide", "Return the .tenn scene-graph spec (docs/spec/tenn-scene.md) with short examples. topic narrows it to one section. Y axis points up; use paths follow spec section 4.2.",
@@ -134,10 +136,14 @@ func (s *Server) MCP() *mcp.Server {
 			&mcp.TextContent{Text: r.text},
 		}}, nil, nil
 	})
-	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths. Fails when the app is not connected.",
+	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths, with a link to it (link, link_text) to share. Fails when the app is not connected.",
 		func(noIn) (string, error) { return s.selection() })
 	add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths, spec 4.2), optionally revealing the first one, so the user sees what you mean.",
 		func(in selectIn) (string, error) {
+			in, err := s.expandLink(in)
+			if err != nil {
+				return "", err
+			}
 			first := ""
 			if len(in.Nodes) > 0 {
 				first = in.Nodes[0]
@@ -145,6 +151,7 @@ func (s *Server) MCP() *mcp.Server {
 			s.noteNode("select", in.File, first)
 			return s.selectNodes(in.File, in.Nodes, in.Reveal)
 		})
+	s.addCommentTools(srv)
 	return srv
 }
 
@@ -342,6 +349,9 @@ func (s *Server) state(in getStateIn) (string, error) {
 			rend = newRenderers(tree)
 		}
 		b.WriteString(rel)
+		if tree != nil && tree.Entry() != "" {
+			b.WriteString(" (in " + tree.Entry() + ")")
+		}
 		if f != nil && in.Path == "" && hasContent(f) {
 			b.WriteString(" " + rend.of(f))
 		}
@@ -449,11 +459,15 @@ func (s *Server) validate(file string) (string, error) {
 		own = files[0]
 	}
 	var all scene.Errors
+	var notes string
 	seen := map[scene.Error]bool{}
 	for _, rel := range files {
-		es, _, err := s.diagnose(rel)
+		es, tree, err := s.diagnose(rel)
 		if err != nil {
 			return "", err
+		}
+		if tree != nil && tree.Entry() != "" {
+			notes += fmt.Sprintf("%s checked in the context of %s\n", rel, tree.Entry())
 		}
 		for _, e := range es {
 			if !seen[e] {
@@ -465,5 +479,5 @@ func (s *Server) validate(file string) (string, error) {
 	if len(files) == 0 {
 		return "", errors.New("no .tenn files in the workspace")
 	}
-	return fmt.Sprintf("%d files checked\n%s", len(files), summary(all, false, own)), nil
+	return fmt.Sprintf("%d files checked\n%s%s", len(files), notes, summary(all, false, own)), nil
 }

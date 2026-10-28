@@ -27,11 +27,14 @@ func (v *Viewer) menus() {
 	file.Item("&Open...", v.openDialog, g.Shortcut("Cmd+O"))
 	v.recentMenu = file.Submenu("Open &Recent")
 	v.fillRecent()
+	file.Item("Open Lin&k...", v.showOpenLink, g.Shortcut("Cmd+Shift+O"))
 	file.Item("&Reload", v.reloadCommand, g.Shortcut("Cmd+R"))
 	file.Separator()
 	file.Item("&Save", func() { v.save() }, g.Shortcut("Cmd+S"))
 	file.Item("Save &As...", func() { v.saveAs() }, g.Shortcut("Cmd+Shift+S"))
-	v.exportMenu(file.Submenu("&Export"))
+	exp := file.Submenu("&Export")
+	v.exportMenu(exp)
+	v.selectionExportMenu(exp)
 	file.Separator()
 	file.Item("&Close Window", v.win.Close, g.Shortcut("Cmd+W"))
 	if runtime.GOOS != "darwin" {
@@ -44,9 +47,11 @@ func (v *Viewer) menus() {
 	edit.Separator()
 	edit.Item("Cu&t", v.cmdCut, g.Shortcut("Cmd+X"))
 	edit.Item("&Copy", v.cmdCopy, g.Shortcut("Cmd+C"))
+	edit.Item("Copy as P&NG", v.copySelectionPNG, g.Shortcut("Cmd+Shift+C"))
 	edit.Item("&Paste", v.cmdPaste, g.Shortcut("Cmd+V"))
 	edit.Item("&Delete", v.cmdDelete, g.Shortcut("Cmd+Backspace"))
 	edit.Item("D&uplicate", v.cmdDuplicate, g.Shortcut("Cmd+D"))
+	edit.Item("Copy Lin&k", v.copyLink, g.Shortcut("Cmd+Alt+C"))
 	edit.Separator()
 	edit.Item("Select &All", v.cmdSelectAll, g.Shortcut("Cmd+A"))
 	edit.Item("Select All &Items", func() { v.selectKind(model.ItemKindItem) }, g.Shortcut("Cmd+Shift+A"))
@@ -123,6 +128,9 @@ func (v *Viewer) menus() {
 	viewMenu.Item("Zoom to Se&lection", v.zoomToSelection)
 	viewMenu.Separator()
 	viewMenu.Item("&Quick Style Panel", v.showQuickPanel, g.Shortcut("Cmd+E"))
+	viewMenu.Separator()
+	viewMenu.Item("Comment &Mode", v.toggleCommentMode)
+	viewMenu.Item("Comments...", v.showCommentList)
 	viewMenu.Separator()
 	viewMenu.Item("Toggle &Sidebar", v.toggleSidebar, g.Shortcut("Cmd+Alt+S"))
 	viewMenu.Item("Toggle &Inspector", v.toggleInspector, g.Shortcut("Cmd+Alt+I"))
@@ -332,16 +340,20 @@ func addEntries(m *g.Menu, entries []editor.Entry) {
 func (v *Viewer) contextMenus() {
 	canvas := g.PopupMenu(v.view.Canvas())
 	canvas.OnShow(func() {
-		fillMenu(canvas, v.canvasEntries())
+		entries := v.canvasEntries()
+		if v.menuOverride == nil { // the quick style menu is not about the item
+			entries = v.withLink(entries)
+		}
+		fillMenu(canvas, entries)
 		v.menuOverride = nil
 	})
 	v.canvasMenu = canvas
 
 	outline := g.PopupMenu(v.tree)
-	outline.OnShow(func() { fillMenu(outline, v.outlineEntries()) })
+	outline.OnShow(func() { fillMenu(outline, v.withLink(v.outlineEntries())) })
 
 	items := g.PopupMenu(v.itemsUI.tree)
-	items.OnShow(func() { fillMenu(items, v.itemsEntries()) })
+	items.OnShow(func() { fillMenu(items, v.withLink(v.itemsEntries())) })
 }
 
 // canvasEntries are the entries of the menu about to open on the canvas.
@@ -353,10 +365,10 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 		return nil
 	}
 	if v.sceneMode() {
-		return v.sceneEntries()
+		return append(v.sceneEntries(), v.exportEntries()...)
 	}
 	v.session.Pick(v.rightClick)
-	return v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML})
+	return append(v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML}), v.exportEntries()...)
 }
 
 // sceneEntries are the canvas menu of a scene: the commands of the selected node, the screens.

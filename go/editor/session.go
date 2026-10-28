@@ -79,6 +79,9 @@ const (
 // instead.
 const dragSlop = 2
 
+// undoDepth is how many undo steps a session keeps; every step holds the state it replaced.
+const undoDepth = 200
+
 type itemPos struct {
 	item *model.DiagramItem
 	pos  render.Point
@@ -138,7 +141,7 @@ func New(element *model.Element, opts Options) (*Session, error) {
 		element:     element,
 		opts:        opts,
 		root:        root.Model,
-		um:          &model.UndoManager{GroupsByEvent: true},
+		um:          &model.UndoManager{GroupsByEvent: true, MaxGroups: undoDepth},
 		createIndex: 1,
 		zoom:        1,
 	}

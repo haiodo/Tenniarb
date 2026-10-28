@@ -21,7 +21,7 @@ const (
 	ExitUsage  = 2
 )
 
-const usage = "usage: tenniarb check [-json] [-root DIR] FILE..."
+const usage = "usage: tenniarb check [-json] [-root DIR] [-entry FILE] FILE..."
 
 // Diag is one diagnostic in the -json output; File is relative to the working directory.
 type Diag struct {
@@ -39,6 +39,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	asJSON := fs.Bool("json", false, "print the diagnostics as a JSON array")
 	root := fs.String("root", "", "workspace root for --from-file (default: the working directory, or the directory of a file outside it)")
+	entry := fs.String("entry", "", "entry document the files are checked in the context of (default: the entry property, else found by searching up for a file that mounts it)")
 	if err := fs.Parse(args); err != nil {
 		return ExitUsage
 	}
@@ -68,7 +69,10 @@ func Run(args []string, stdout, stderr io.Writer) int {
 			continue
 		}
 		r := rootOf(*root, cwd, abs)
-		es, _, err := scene.Diagnose(r, abs, nil)
+		es, tree, err := diagnose(r, abs, *entry)
+		if err == nil && tree != nil && tree.Entry() != "" {
+			fmt.Fprintf(stderr, "tenniarb check: %s in the context of %s\n", f, tree.Entry())
+		}
 		if err != nil {
 			fmt.Fprintln(stderr, "tenniarb check:", err)
 			failed = true
@@ -105,6 +109,18 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return ExitErrors
 	}
 	return ExitOK
+}
+
+// diagnose checks abs alone, in the context of entry when it is given, else in the one scene finds.
+func diagnose(root, abs, entry string) (scene.Errors, *scene.Tree, error) {
+	if entry == "" {
+		return scene.DiagnoseAuto(root, abs, nil)
+	}
+	e, err := filepath.Abs(entry)
+	if err != nil {
+		return nil, nil, err
+	}
+	return scene.DiagnoseIn(root, abs, e, nil)
 }
 
 // rootOf is the workspace root of file abs: -root, else the working directory as tenniarb-mcp

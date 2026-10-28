@@ -2,7 +2,7 @@ package model
 
 import (
 	"errors"
-	"hash/fnv"
+	"hash/maphash"
 	"slices"
 
 	"github.com/haiodo/tenniarb/go/scene"
@@ -35,31 +35,47 @@ type Mounted struct {
 	Fresh bool
 }
 
+// readTenn is ReadTenn; tests count the calls.
+var readTenn = ReadTenn
+
 // MountFiles fills the elements of m that have FromFile with the content of their files, taken from
 // tree (the scene tree of the document rel), which resolves the paths and rejects cycles. A mounted
-// element keeps its content between calls until some file of the tree changes. Elements the tree
-// could not mount stay empty. An element of keep already shows the new text of its file (it was
-// edited here), so it is not read again.
+// element keeps its content between calls until its file changes. Elements the tree could not mount
+// stay empty. An element of keep already shows the new text of its file (it was edited here), so it is
+// not read again. A file shown by several elements is parsed once.
 func MountFiles(m *ElementModel, tree *scene.Tree, rel string, keep ...*Element) []Mounted {
 	root := tree.File(rel)
 	if root == nil {
 		return nil
 	}
-	h := fnv.New64a()
-	for _, f := range tree.Files()[1:] { // the document itself changes with every edit
-		src, _ := tree.Source(f)
-		h.Write([]byte(f))
-		h.Write([]byte{0})
-		h.Write([]byte(src))
-		h.Write([]byte{0})
+	mp := &mountPass{tree: tree, keep: keep, libs: map[string]*ElementModel{}}
+	mountElements(&m.Element, root, mp)
+	return mp.out
+}
+
+type mountPass struct {
+	tree *scene.Tree
+	keep []*Element
+	libs map[string]*ElementModel // files parsed in this pass
+	out  []Mounted
+}
+
+// read is the content of file, a new copy for each element: the first caller takes the parsed tree.
+func (mp *mountPass) read(file string) *Element {
+	if lib := mp.libs[file]; lib != nil {
+		return lib.Element.Clone(true, true)
 	}
-	var out []Mounted
-	mountElements(&m.Element, root, tree, h.Sum64(), keep, &out)
-	return out
+	src, _ := mp.tree.Source(file)
+	lib := readTenn(src)
+	if lib == nil {
+		return nil
+	}
+	mp.libs[file] = lib
+	return &lib.Element
 }
 
 // mountElements pairs the elements below el with the scene nodes of the same file by order.
-func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64, keep []*Element, out *[]Mounted) {
+func mountElements(el *Element, file *scene.Node, mp *mountPass) {
 	if len(el.Elements) != len(file.Elems) {
 		return
 	}
@@ -69,29 +85,30 @@ func mountElements(el *Element, file *scene.Node, tree *scene.Tree, sig uint64, 
 			continue
 		}
 		if c.FromFile == "" {
-			mountElements(c, sn, tree, sig, keep, out)
+			mountElements(c, sn, mp)
 			continue
 		}
 		if sn.Mount == nil {
 			continue
 		}
-		// The file name goes in too: pointing the element at another loaded file changes nothing else.
-		esig := sig*31 + uint64(len(sn.Mount.Pos.File)) + fnvString(sn.Mount.Pos.File)
+		// The content is the file's alone, so the file name and its text are the signature: pointing the
+		// element at another file changes nothing else, and a nested mount has a signature of its own.
+		src, _ := mp.tree.Source(sn.Mount.Pos.File)
+		esig := hashString(sn.Mount.Pos.File)*31 + hashString(src)
 		fresh := false
 		if c.mountSig != esig {
-			if !slices.Contains(keep, c) {
-				src, _ := tree.Source(sn.Mount.Pos.File)
-				lib := ReadTenn(src)
+			if !slices.Contains(mp.keep, c) {
+				lib := mp.read(sn.Mount.Pos.File)
 				if lib == nil {
 					continue
 				}
-				refill(c, &lib.Element)
+				refill(c, lib)
 				fresh = true
 			}
 			c.mountSig = esig
 		}
-		*out = append(*out, Mounted{El: c, File: sn.Mount.Pos.File, Fresh: fresh})
-		mountElements(c, sn.Mount, tree, sig, keep, out)
+		mp.out = append(mp.out, Mounted{El: c, File: sn.Mount.Pos.File, Fresh: fresh})
+		mountElements(c, sn.Mount, mp)
 	}
 }
 
@@ -118,8 +135,6 @@ func refill(e, src *Element) {
 	}
 }
 
-func fnvString(s string) uint64 {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return h.Sum64()
-}
+var sigSeed = maphash.MakeSeed()
+
+func hashString(s string) uint64 { return maphash.String(sigSeed, s) }

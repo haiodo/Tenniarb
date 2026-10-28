@@ -57,8 +57,19 @@ func realPath(p string) string {
 	return filepath.Clean(p)
 }
 
-// set replaces the documents of p.
-func (r *registry) set(p *provider, docs []servicewire.Doc) {
+// entries lists the open documents by real path.
+func (r *registry) entries() map[string]liveDoc {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := make(map[string]liveDoc, len(r.docs))
+	for k, d := range r.docs {
+		out[k] = *d
+	}
+	return out
+}
+
+// set replaces the documents of p and returns the real paths it did not have before.
+func (r *registry) set(p *provider, docs []servicewire.Doc) (added []string) {
 	keys := make([]string, len(docs))
 	for i, d := range docs {
 		keys[i] = realPath(d.Path)
@@ -66,8 +77,10 @@ func (r *registry) set(p *provider, docs []servicewire.Doc) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.providers[p] = true
+	had := map[string]bool{}
 	for k, d := range r.docs {
 		if d.prov == p {
+			had[k] = true
 			delete(r.docs, k)
 		}
 	}
@@ -75,12 +88,16 @@ func (r *registry) set(p *provider, docs []servicewire.Doc) {
 		if !filepath.IsAbs(d.Path) {
 			continue
 		}
+		if !had[keys[i]] {
+			added = append(added, keys[i])
+		}
 		ld := &liveDoc{prov: p, path: d.Path, doc: d}
 		if old := r.docs[keys[i]]; old != nil && old.prov == p && old.textOf == d.Version {
 			ld.text, ld.textOf = old.text, old.textOf
 		}
 		r.docs[keys[i]] = ld
 	}
+	return added
 }
 
 // drop forgets p; when moved, its documents stay as tombstones that refuse every tool.

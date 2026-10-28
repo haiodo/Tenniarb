@@ -1,6 +1,6 @@
 // tenniarb is the Tenniarb editor.
 //
-//	tenniarb [file.tenn ...]
+//	tenniarb [file.tenn | tenniarb://open?... ...]
 //	tenniarb check [-json] [-root DIR] FILE...
 //	tenniarb help | -h | --help
 //
@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/app"
@@ -21,7 +22,7 @@ import (
 )
 
 const usage = `usage:
-  tenniarb [FILE.tenn ...]                      open the files in the app; without files the last documents come back
+  tenniarb [FILE.tenn | LINK ...]               open the files or tenniarb:// links in the app; without files the last documents come back
   tenniarb check [-json] [-root DIR] FILE...    validate files without a window: exit 0 clean, 1 errors, 2 usage
   tenniarb help | -h | --help                   print this text
 `
@@ -57,6 +58,13 @@ func main() {
 	launch, files, code := dispatch(os.Args[1:], os.Stdout, os.Stderr)
 	if !launch {
 		os.Exit(code)
+	}
+	// Documents are big trees that die on every edit: collect earlier, and hard above 1 GiB.
+	if os.Getenv("GOGC") == "" {
+		debug.SetGCPercent(50)
+	}
+	if os.Getenv("GOMEMLIMIT") == "" {
+		debug.SetMemoryLimit(1 << 30)
 	}
 	if err := app.Run(files); err != nil {
 		fmt.Fprintln(os.Stderr, "tenniarb:", err)

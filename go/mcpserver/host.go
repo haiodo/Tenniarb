@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/haiodo/tenniarb/go/comments"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/servicewire"
 )
@@ -17,15 +18,22 @@ type Host struct {
 	live  *registry
 	// presence tells the apps which agents work on their documents.
 	presence *presenceHub
+	// comments stores the comments of the user and wakes the agents that wait for them.
+	comments *commentHub
 	editMu   sync.Mutex // one edit at a time: a read-modify-write of one session must not lose another's
 	// renderMu serializes Build on cached trees (scene.Tree is not safe for concurrent use) and the
 	// shared CoreGraphics renderer.
 	renderMu sync.Mutex
 }
 
-func NewHost() *Host {
+// NewHost makes a host that keeps the comments in the config folder of the user.
+func NewHost() *Host { return NewHostIn(comments.ConfigDir()) }
+
+// NewHostIn is NewHost with the comments in the folder config/comments.
+func NewHostIn(config string) *Host {
 	h := &Host{cache: treeCache{entries: map[cacheKey]*cacheEntry{}}, live: newRegistry()}
 	h.presence = newPresenceHub(h.sendPresence)
+	h.comments = newCommentHub(comments.NewStore(comments.DirIn(config)), h.live)
 	return h
 }
 
@@ -47,6 +55,7 @@ func (h *Host) Session(root string) (*Server, error) {
 	}
 	s.host = h
 	s.agent = h.presence.open()
+	s.cursor.seq = h.comments.head()
 	return s, nil
 }
 
@@ -80,30 +89,6 @@ func stamp(root, rel string, overlay map[string]liveDoc) string {
 		return "-"
 	}
 	return strconv.FormatInt(st.Size(), 10) + "/" + strconv.FormatInt(st.ModTime().UnixNano(), 10)
-}
-
-// loadedFiles lists the files a tree read, by walking the --from-file mounts from the main file.
-func loadedFiles(tree *scene.Tree, rel string) []string {
-	seen := map[string]bool{}
-	var walk func(n *scene.Node)
-	walk = func(n *scene.Node) {
-		if m := n.Mount; m != nil && !seen[m.Pos.File] {
-			seen[m.Pos.File] = true
-			walk(m)
-		}
-		for _, e := range n.Elems {
-			walk(e)
-		}
-	}
-	seen[rel] = true
-	if f := tree.File(rel); f != nil {
-		walk(f)
-	}
-	out := make([]string, 0, len(seen))
-	for f := range seen {
-		out = append(out, f)
-	}
-	return out
 }
 
 // get returns the cached tree of rel when no file it read has changed since.

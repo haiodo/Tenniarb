@@ -95,6 +95,7 @@ func (v *Viewer) realizeScene() {
 	default:
 		v.setBanner(v.bannerText())
 	}
+	v.setTitle()
 	v.dropStaleSelection()
 	if v.shownElem != el || oldSV == nil && oldRendered == nil {
 		v.shownElem = el
@@ -200,27 +201,43 @@ func (sv *sceneView) instRows(pl *scene.Placed) []ItemRow {
 	return out
 }
 
-// rowChain are the paths of the rows from the top down to the one of path p: the written items on the
-// way, then the parts of a component under the use that names them.
+// rowChain are the paths of the rows from the top down to the one of path p, as the tree nests them.
 func (sv *sceneView) rowChain(p string) []string {
-	anchor, _, part := strings.Cut(p, "/")
 	var chain []string
-	segs := strings.Split(anchor, ".")
-	for i := range segs {
-		chain = append(chain, strings.Join(segs[:i+1], "."))
+	for ; p != ""; p = sv.rowParent(p) {
+		chain = append(chain, p)
 	}
-	if !part {
-		return chain
+	slices.Reverse(chain)
+	return chain
+}
+
+// opensParts reports whether the row of p lists the drawn kids of an instance or of one of its parts; the
+// other rows list what is written under them (see rowsAt).
+func (sv *sceneView) opensParts(p string) bool {
+	pl := sv.byPath[p]
+	return pl != nil && (pl.Inst || strings.Contains(p, "/"))
+}
+
+// rowParent is the path of the row that holds the row of p, "" for a top row. Under an instance a row
+// sits under the nearest drawn item above it, so what a use passes in sits under the part of the
+// component it is drawn in, not under the use; elsewhere it nests as it is written.
+func (sv *sceneView) rowParent(p string) string {
+	if pl := sv.byPath[p]; pl != nil {
+		for a := pl.Parent; a != nil; a = a.Parent {
+			ap, ok := sv.pathOf[a]
+			if !ok {
+				continue
+			}
+			if strings.Contains(p, "/") || sv.opensParts(ap) {
+				return ap
+			}
+			break
+		}
 	}
-	if sv.byPath[p] == nil {
-		return nil
+	if i := strings.LastIndex(p, "."); i >= 0 && !strings.Contains(p, "/") {
+		return p[:i]
 	}
-	var down []string
-	for c := sv.byPath[p]; c != nil && sv.pathOf[c] != anchor; c = c.Parent {
-		down = append(down, sv.pathOf[c])
-	}
-	slices.Reverse(down)
-	return append(chain, down...)
+	return ""
 }
 
 func slotSeg(sl *scene.Node) string {
@@ -295,6 +312,33 @@ func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
 		walk(sv.placed)
 	}
 	return found
+}
+
+// pick is what a click on hit selects. An instance is selected whole first: the outermost one above hit.
+// A double click goes one level deeper toward hit; with something inside the instance selected already,
+// a click selects what is under the pointer there.
+func (sv *sceneView) pick(hit, cur *scene.Placed, clicks int) *scene.Placed {
+	var chain []*scene.Placed // from the top down to hit
+	for c := hit; c != nil; c = c.Parent {
+		if _, ok := sv.pathOf[c]; ok {
+			chain = append(chain, c)
+		}
+	}
+	slices.Reverse(chain)
+	top := slices.IndexFunc(chain, func(c *scene.Placed) bool { return c.Inst })
+	if top < 0 {
+		return hit
+	}
+	at := slices.Index(chain, cur)
+	if clicks >= 2 && at >= 0 && at+1 < len(chain) {
+		return chain[at+1]
+	}
+	for c := cur; c != nil; c = c.Parent {
+		if c.Parent == chain[top] {
+			return hit
+		}
+	}
+	return chain[top]
 }
 
 // sceneMode reports whether the canvas shows a scene element.
@@ -411,8 +455,11 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			return
 		}
 		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
-		hit := sv.hitScene(at)
 		_, cur := v.selectedScene()
+		hit := sv.hitScene(at)
+		if hit != nil {
+			hit = sv.pick(hit, cur, p.Count)
+		}
 		switch {
 		case hit != nil && hit == cur && hit.Free && hit.Gfx != nil:
 			t := hit.Gfx.Transform()
@@ -473,7 +520,8 @@ func (v *Viewer) sceneRightClick(at gfx.Point) {
 	if hit == nil {
 		return
 	}
-	p := v.sv.pathOf[hit]
+	_, cur := v.selectedScene()
+	p := v.sv.pathOf[v.sv.pick(hit, cur, 1)]
 	if !slices.Contains(v.selNodes, p) {
 		v.selectScene([]string{p})
 	}
@@ -513,16 +561,12 @@ func (v *Viewer) setInstProp(ref instRef, name string, args ...string) bool {
 func (v *Viewer) sceneEdit(n *scene.Node, e TextEdit) bool {
 	file := v.fileOf(n)
 	text := v.fileText(file)
-	// An edit from the window must not add scene errors: autosave would write a broken file. Errors are
-	// counted, not compared, because their positions move with the edit.
-	if e.Start >= 0 && e.Start <= e.End && e.End <= len(text) {
-		after := text[:e.Start] + e.New + text[e.End:]
-		if was, now := v.sceneErrorCount(file, text), v.sceneErrorCount(file, after); now > was || (now < 0 && was >= 0) {
-			v.setBanner("Not applied: the change adds scene errors")
-			return false
-		}
+	if v.editAddsErrors(file, text, e) {
+		v.setBanner("Not applied: the change adds scene errors")
+		return false
 	}
 	if err := v.applyFileText(file, e.Start, e.End, e.New); err != nil {
+		v.pending = nil
 		v.setBanner(err.Error())
 		return false
 	}

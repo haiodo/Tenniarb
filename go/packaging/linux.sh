@@ -10,8 +10,8 @@ cp "$bin" "$stage/tenniarb"
 cp "$embed" "$stage/"
 cp "$root/Tenniarb/Assets.xcassets/AppIcon.appiconset/Icon-v3.png" "$stage/tenniarb.png"
 cp "$here/install.sh" "$stage/"
-# Exec is rewritten by install.sh to the install location.
+# Exec is rewritten by install.sh to the install location. The second MimeType is the tenniarb:// scheme.
 # Run from our module: gowt in the read-only module cache is not a module go run can build in.
 (cd "$root/go" && go run github.com/haiodo/gowt/tooling/assoc -kind desktop -id $id -name Tenniarb -exe /opt/tenniarb/tenniarb \
-	-mime application/x-tenniarb -icon tenniarb -wmclass Tenniarb -categories 'Office;Graphics;') >"$stage/$id.desktop"
+	-mime 'application/x-tenniarb;x-scheme-handler/tenniarb' -icon tenniarb -wmclass Tenniarb -categories 'Office;Graphics;') >"$stage/$id.desktop"
 (cd "$root/go" && go run github.com/haiodo/gowt/tooling/assoc -kind mime -mime application/x-tenniarb -name 'Tenniarb file' -ext tenn) >"$stage/tenniarb-mime.xml"

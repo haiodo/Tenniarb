@@ -29,7 +29,7 @@ func (sh *Shell) registerQA() {
 		}
 		return map[string]any{"version": v.version, "builds": v.sceneBuilds, "sceneMode": v.sceneMode(),
 			"nodes": v.selNodes, "dirty": v.isDirty(), "error": v.bannerText(), "kind": v.kind,
-			"title": Title(v.state.Doc.Path, v.isDirty())}, nil
+			"title": Title(v.state.Doc.Path, v.isDirty()), "agent": v.agent.statusText(), "follow": v.agent.follow}, nil
 	})
 	// select: what the MCP service will do, for the window of path
 	qa.Handle("select", func(a qa.Args) error {
@@ -113,6 +113,8 @@ func (sh *Shell) registerQA() {
 				sh.active.toggleItems()
 			case "fit":
 				sh.active.fitCommand()
+			case "follow":
+				sh.active.toggleFollow()
 			}
 			return nil
 		case "appearance":

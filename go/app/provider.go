@@ -35,6 +35,7 @@ func (sh *Shell) startProvider(ctx context.Context) {
 	if err != nil {
 		return
 	}
+	sh.svc = client
 	// One producer, the UI thread: the channel holds the latest set, the goroutine sends it once the
 	// changes rest for docsDelay.
 	latest := make(chan []servicewire.Doc, 1)

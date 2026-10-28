@@ -39,7 +39,8 @@ func startService(t *testing.T, dir, version string, clock Clock, idle time.Dura
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := &running{sv: &Service{Version: version, Idle: idle, Clock: clock}, done: make(chan error, 1)}
+	// The host keeps its comments in a temp folder, never in the config folder of the user.
+	r := &running{sv: &Service{Host: NewHostIn(t.TempDir()), Version: version, Idle: idle, Clock: clock}, done: make(chan error, 1)}
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() { r.done <- r.sv.Serve(ctx, ln) }()
 	t.Cleanup(func() {

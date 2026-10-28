@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
@@ -51,6 +52,7 @@ type Viewer struct {
 	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
 	ind         indicators
 	agent       agentUI
+	cm          commentUI
 
 	press      press
 	inline     *view.Editor
@@ -176,6 +178,7 @@ func (v *Viewer) themeChanged() {
 	}
 	v.applyBackground()
 	v.refreshOutline()
+	v.itemsUI.sig = "" // the grey rows take the colour of the new theme
 	v.rebuildItems()
 	v.syncIndicators()
 }
@@ -240,6 +243,7 @@ func (v *Viewer) toolbar() {
 			{Title: "Fit to Window", Symbol: "arrow.up.left.and.arrow.down.right", OnClick: v.fitCommand},
 		}},
 		look.ToolbarItem{Title: "Reset Zoom", Text: v.zoomText, Small: true, OnClick: v.resetZoom},
+		look.ToolbarItem{Title: "Comment Mode (C)", Symbol: "text.bubble", Small: true, ID: "comment-mode", OnClick: v.toggleCommentMode},
 		look.ToolbarItem{Space: true},
 		look.ToolbarItem{Title: "Item", Inspector: true, Small: true, Group: []look.ToolbarItem{
 			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
@@ -327,8 +331,17 @@ func (v *Viewer) initView(vw *view.View) {
 func (v *Viewer) isDirty() bool { return v.tracker != nil && v.tracker.Dirty() }
 
 func (v *Viewer) updateTitle() {
-	v.win.SetTitle(Title(v.state.Doc.Path, v.isDirty()))
+	v.setTitle()
 	v.updateMenus()
+}
+
+// setTitle shows the entry document when the file is loaded in its context: "part.tenn - in Design".
+func (v *Viewer) setTitle() {
+	title := Title(v.state.Doc.Path, v.isDirty())
+	if v.entry != "" {
+		title += " - in " + strings.TrimSuffix(filepath.Base(v.entry), ".tenn")
+	}
+	v.win.SetTitle(title)
 }
 
 // openPath makes path the document of this window: selection and viewports start over. Unsaved edits
@@ -391,6 +404,7 @@ func (v *Viewer) openDialog() {
 
 func (v *Viewer) poll() {
 	v.agentTick()
+	v.syncComments()
 	if !v.asking && v.libsChanged() {
 		v.sceneReload()
 	}

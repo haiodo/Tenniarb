@@ -89,6 +89,11 @@ Inside the block of a `use`:
   it starts with the element name: `kit.Kit.Card`.
 - To change a component, `edit` the library file itself, not the line that mounts it: the mounting file
   never holds the library text.
+- Mount a library once, in the entry document (`PlatformDesign.tenn`), and mount the app files there
+  too. A mounted file does not repeat the library mount: its names are looked up in the file, then where
+  it is mounted, up to the entry. The same file mounted under two entries uses each entry's library.
+  A part opened alone is checked in the context of its entry (found by searching up the folders, or set
+  with a first line `entry "../PlatformDesign.tenn"`); `validate` and `tenniarb check` name it.
 
 Paths to remember:
 

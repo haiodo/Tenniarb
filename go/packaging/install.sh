@@ -12,4 +12,5 @@ cp "$here/tenniarb-mime.xml" "$share/mime/packages/tenniarb.xml"
 cp "$here/tenniarb.png" "$share/icons/hicolor/512x512/apps/tenniarb.png"
 update-mime-database "$share/mime" 2>/dev/null || true
 update-desktop-database "$share/applications" 2>/dev/null || true
+xdg-mime default "$id.desktop" x-scheme-handler/tenniarb 2>/dev/null || true
 echo "installed to $dest"

@@ -204,12 +204,8 @@ func (p *prep) warnOutside(rn *RNode) {
 		}
 		if clip && (ln.Dir == layout.Abs || kn.Absolute) && kn.RW > 0 && kn.RH > 0 &&
 			(kn.RX >= ln.RW || kn.RY >= ln.RH || kn.RX+kn.RW <= 0 || kn.RY+kn.RH <= 0) {
-			hint := ""
-			if k.Inst {
-				hint = "; an instance takes the pos of its component unless the use sets pos"
-			}
-			p.t.warn(k.Pos, "item %q is at %g, %g (size %g x %g) outside its clipping parent %q (%g x %g) and is not drawn%s",
-				k.Name, kn.RX, kn.RY, kn.RW, kn.RH, rn.Name, ln.RW, ln.RH, hint)
+			p.t.warn(k.Pos, "item %q is at %g, %g (size %g x %g) outside its clipping parent %q (%g x %g) and is not drawn",
+				k.Name, kn.RX, kn.RY, kn.RW, kn.RH, rn.Name, ln.RW, ln.RH)
 		}
 		p.warnOutside(k)
 	}
