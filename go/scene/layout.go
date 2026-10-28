@@ -169,6 +169,9 @@ func (p *prep) item(rn *RNode, parentAuto bool) *layout.Node {
 		p.limits(rn, n)
 		n.Absolute = p.flag(rn, "absolute")
 	}
+	if pr := p.prop(rn, "padding"); pr != nil && parentAuto && !auto {
+		p.t.warn(pr.Pos, "padding has no effect without auto-layout on the item itself; a text leaf has no inset, wrap it in an item with auto-layout and padding")
+	}
 	if auto {
 		p.container(rn, n)
 	} else {
@@ -187,6 +190,29 @@ func (p *prep) item(rn *RNode, parentAuto bool) *layout.Node {
 		p.links(rn)
 	}
 	return n
+}
+
+// warnOutside reports an absolutely placed item that lies wholly outside its clipping parent: it is
+// laid out but never drawn. Items of a flow that overflow are cut by design and not reported.
+func (p *prep) warnOutside(rn *RNode) {
+	ln := p.frames[rn]
+	clip := p.styles[rn].clip
+	for _, k := range rn.Kids {
+		kn := p.frames[k]
+		if k.Kind != RItem || kn == nil {
+			continue
+		}
+		if clip && (ln.Dir == layout.Abs || kn.Absolute) && kn.RW > 0 && kn.RH > 0 &&
+			(kn.RX >= ln.RW || kn.RY >= ln.RH || kn.RX+kn.RW <= 0 || kn.RY+kn.RH <= 0) {
+			hint := ""
+			if k.Inst {
+				hint = "; an instance takes the pos of its component unless the use sets pos"
+			}
+			p.t.warn(k.Pos, "item %q is at %g, %g (size %g x %g) outside its clipping parent %q (%g x %g) and is not drawn%s",
+				k.Name, kn.RX, kn.RY, kn.RW, kn.RH, rn.Name, ln.RW, ln.RH, hint)
+		}
+		p.warnOutside(k)
+	}
 }
 
 func (p *prep) limits(rn *RNode, n *layout.Node) {

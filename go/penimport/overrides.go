@@ -145,11 +145,26 @@ func (c *conv) finish(u *Node) {
 		rest = withoutSame(rest, t.Pen)
 	}
 	u.Props = append(hiddenProp(u.Pen, false), c.props(u.res, rest, u.Typ, pctx{mode: u.b.mode, explicit: true, eff: effPen(u)})...)
-	u.Props = append(u.Props, posProps(u.Pen, u.b, false)...)
+	u.Props = append(u.Props, posProps(u.Pen, u.b, hasPos(t))...)
 	if th := u.Pen["theme"]; th != nil {
 		u.File.unsup("theme on an instance (colors stay light)")
 	}
 	c.buildBlock(u)
+}
+
+// hasPos tells whether the component places itself: an instance would inherit that pos, not 0 0.
+func hasPos(t *Node) bool {
+	for ; t != nil; t = t.Target {
+		for _, p := range t.Props {
+			if p.Name == "pos" {
+				return true
+			}
+		}
+		if t.Kind != KUse {
+			break
+		}
+	}
+	return false
 }
 
 // ovAcc collects what the descendants of one instance say, per expanded node.

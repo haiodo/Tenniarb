@@ -48,7 +48,10 @@ An item whose parent or itself has `auto-layout` is in a layout context. There:
 
 - the name is **not** shown; text is drawn only with `title`;
 - there is **no fill and no border** until you set `color` or `border-color`;
-- text has no padding: the container's `padding` gives the space.
+- text has no padding and no hidden inset: an explicit `width` is the text box, so `width 80` wraps text wider than 80;
+  the container's `padding` gives the space. `padding` on a leaf without its own `auto-layout` does nothing and
+  `check` warns; wrap the text in an item with `auto-layout` and `padding`;
+- spaces at the start and end of a `title` are kept and count in the `hug` width (`title "    indented"`).
 
 Outside auto-layout (classic diagrams) an item shows its name and has a white box with a black frame.
 
@@ -64,9 +67,10 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `letter-spacing`, `line-height`, `line-spacing` | number | |
 | `text-color` | color | default black, or white on a dark `color` of the same item |
 | `layout` | `left`, `right` | aligns the lines of a leaf with a width; default centered |
-| `color` | color | fill |
+| `color` | color, or `linear ANGLE COLOR [POS] COLOR [POS] ...` | fill; the gradient angle is CSS: 0 up, 90 right, 180 down; positions 0..1 on every stop or on none |
 | `border-color`, `line-width` | color, number | frame; `line-width` alone draws nothing |
 | `corner-radius` | `N` or `TL TR BR BL` | |
+| `shadow` | `DX DY [BLUR [COLOR]]` | drop shadow of the box (of the border without `color`); Y points up, so `shadow 0 -4 8` falls down; blur 5 and black at 1/3 by default |
 | `clip` | `yes` | children are cut at the box |
 | `opacity` | 0..1 | multiplies down the subtree |
 | `hidden` | `yes` | not laid out, not drawn |

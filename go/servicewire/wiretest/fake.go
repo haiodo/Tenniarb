@@ -27,6 +27,7 @@ type Fake struct {
 	docs     map[string]*doc
 	sel      servicewire.Selection
 	selected []servicewire.SelectArgs
+	presence []servicewire.Presence
 }
 
 func New() *Fake { return &Fake{docs: map[string]*doc{}} }
@@ -85,6 +86,20 @@ func (f *Fake) Selected() []servicewire.SelectArgs {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return append([]servicewire.SelectArgs(nil), f.selected...)
+}
+
+// Presence records a notification from the service.
+func (f *Fake) Presence(p servicewire.Presence) {
+	f.mu.Lock()
+	f.presence = append(f.presence, p)
+	f.mu.Unlock()
+}
+
+// Presences lists the Presence notifications received, in arrival order.
+func (f *Fake) Presences() []servicewire.Presence {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return append([]servicewire.Presence(nil), f.presence...)
 }
 
 func (f *Fake) SetSelection(s servicewire.Selection) {

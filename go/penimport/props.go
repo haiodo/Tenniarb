@@ -117,8 +117,9 @@ func (c *conv) variable(f *File, name string) map[string]any {
 	return nil
 }
 
-// paint returns the color of a fill or stroke value; gradients give their first stop.
-func (c *conv) paint(f *File, v any, mode string) (string, bool) {
+// paint returns the color of a fill or stroke value; gradients give their first stop. With grad set
+// (the fill of an item) a linear gradient is also stored there as the value of color, in full.
+func (c *conv) paint(f *File, v any, mode string, grad *[]Arg) (string, bool) {
 	switch x := v.(type) {
 	case string:
 		return c.color(f, x, mode)
@@ -127,7 +128,7 @@ func (c *conv) paint(f *File, v any, mode string) (string, bool) {
 			f.unsup("several fills (first used)")
 		}
 		if len(x) > 0 {
-			return c.paint(f, x[0], mode)
+			return c.paint(f, x[0], mode, grad)
 		}
 	case map[string]any:
 		if en, ok := x["enabled"].(bool); ok && !en {
@@ -136,6 +137,12 @@ func (c *conv) paint(f *File, v any, mode string) (string, bool) {
 		if x["type"] != "gradient" {
 			f.unsup("fill " + toStr(x["type"]))
 			return "", false
+		}
+		if grad != nil {
+			if args, ok := c.linearGradient(f, x, mode); ok {
+				*grad = args
+				return args[2].S, true
+			}
 		}
 		f.unsup("gradient fill (first stop)")
 		cols, _ := x["colors"].([]any)
@@ -148,6 +155,44 @@ func (c *conv) paint(f *File, v any, mode string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// linearGradient is the value of color for a pen linear gradient: "linear angle color pos ...". The
+// pen rotation is degrees counter-clockwise from up and the angle here is CSS degrees (clockwise from
+// up), the direction from the first stop to the last. A gradient with a center or a length of its own,
+// another kind, or a stop that is not a color gives false.
+func (c *conv) linearGradient(f *File, m map[string]any, mode string) ([]Arg, bool) {
+	if k, ok := m["gradientType"].(string); ok && k != "linear" {
+		return nil, false
+	}
+	if _, ok := m["center"]; ok {
+		return nil, false
+	}
+	if sz, ok := m["size"].(map[string]any); ok {
+		if h, ok := sz["height"].(float64); ok && h != 1 {
+			return nil, false
+		}
+		if _, ok := sz["width"]; ok {
+			return nil, false
+		}
+	}
+	rot, _ := m["rotation"].(float64)
+	cols, _ := m["colors"].([]any)
+	if len(cols) < 2 {
+		return nil, false
+	}
+	args := []Arg{wordArg("linear"), numArg(math.Mod(math.Mod(360-rot, 360)+360, 360))}
+	for _, ci := range cols {
+		cm, _ := ci.(map[string]any)
+		cs, _ := cm["color"].(string)
+		pos, okp := cm["position"].(float64)
+		col, okc := c.color(f, cs, mode)
+		if !okp || !okc {
+			return nil, false
+		}
+		args = append(args, wordArg(col), numArg(pos))
+	}
+	return args, true
 }
 
 func toStr(v any) string {
@@ -311,13 +356,23 @@ func (c *conv) shadowProp(f *File, v any, mode string) []Prop {
 			col = cc
 		}
 	}
-	return []Prop{prop("shadow", numArg(dx), numArg(dy), numArg(blur), wordArg(col))}
+	// Y is up in .tenn as in pos, pen's offset is down.
+	return []Prop{prop("shadow", numArg(dx), numArg(-dy), numArg(blur), wordArg(col))}
 }
 
 // lookProps are the fill and the border of an item. go/scene reads display only on a link, so none is written.
 func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
-	fill, hasFill := c.paint(f, m["fill"], x.mode)
-	stroke, hasStroke := c.paint(f, m["stroke"], x.mode)
+	var grad []Arg
+	var gp *[]Arg
+	if typ != "text" && typ != "path" { // a text color and an icon fill are one color
+		gp = &grad
+	}
+	fill, hasFill := c.paint(f, m["fill"], x.mode, gp)
+	stroke, hasStroke := c.paint(f, m["stroke"], x.mode, nil)
+	fillArgs := []Arg{wordArg(fill)}
+	if grad != nil {
+		fillArgs = grad
+	}
 	sw, _ := m["strokeWidth"].(float64)
 	if _, perSide := m["strokeWidth"].(map[string]any); perSide {
 		f.unsup("per-side stroke width")
@@ -329,7 +384,7 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 		f.unsup("stroke alignment other than inner")
 	}
 	if x.explicit {
-		return explicitLook(typ, m, x.eff, fill, stroke, sw, hasFill, hasStroke)
+		return explicitLook(typ, m, x.eff, fillArgs, stroke, sw, hasFill, hasStroke)
 	}
 	switch typ {
 	case "text":
@@ -351,7 +406,7 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	}
 	switch {
 	case hasFill:
-		ps = append(ps, prop("color", wordArg(fill)))
+		ps = append(ps, prop("color", fillArgs...))
 	case typ == "ellipse":
 		ps = append(ps, prop("color", wordArg("#00000000")))
 	}
@@ -401,7 +456,7 @@ func pathLook(f *File, m map[string]any, fill, stroke string, sw float64, hasFil
 	return ps
 }
 
-func explicitLook(typ string, m, eff map[string]any, fill, stroke string, sw float64, hasFill, hasStroke bool) []Prop {
+func explicitLook(typ string, m, eff map[string]any, fill []Arg, stroke string, sw float64, hasFill, hasStroke bool) []Prop {
 	var ps []Prop
 	if g, ok := m["geometry"].(string); ok && typ == "path" {
 		ps = append(ps, prop("path", strArg(g)))
@@ -419,7 +474,7 @@ func explicitLook(typ string, m, eff map[string]any, fill, stroke string, sw flo
 		if typ == "text" {
 			name = "text-color"
 		}
-		ps = append(ps, prop(name, wordArg(fill)))
+		ps = append(ps, prop(name, fill...))
 	}
 	if _, ok := m["stroke"]; ok && hasStroke {
 		ps = append(ps, prop("border-color", wordArg(stroke)))

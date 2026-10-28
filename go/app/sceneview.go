@@ -107,6 +107,7 @@ func (v *Viewer) realizeScene() {
 	}
 	v.drawSceneOverlay()
 	v.rebuildItems()
+	v.syncIndicators()
 }
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.

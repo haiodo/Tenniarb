@@ -13,4 +13,7 @@ element "Slots" {
     use kit.Window as w4 {
         slot toolbar {}
     }
+    use kit.Window as w5 {
+        slot {}
+    }
 }

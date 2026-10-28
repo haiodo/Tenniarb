@@ -122,7 +122,7 @@ func (s *Server) editLive(abs, rel string, d *liveDoc, edits []EditOp) (string, 
 	if err != nil {
 		return "", err
 	}
-	after, err := s.check(rel, text, before)
+	after, tree, err := s.check(rel, text, before)
 	if err != nil {
 		return "", err
 	}
@@ -130,25 +130,26 @@ func (s *Server) editLive(abs, rel string, d *liveDoc, edits []EditOp) (string, 
 	if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: cur.Version, Text: text}, &res); err != nil {
 		return "", fmt.Errorf("nothing changed: Tenniarb did not apply the edit: %v", err)
 	}
+	s.noteEdit(abs, rel, tree, cur.Text, text)
 	return fmt.Sprintf("ok: %s changed in Tenniarb as one undo step, not saved (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true, rel)), nil
 }
 
 // check validates text as the content of rel and fails when it adds an error to before.
-func (s *Server) check(rel, text string, before scene.Errors) (scene.Errors, error) {
-	after, _, err := s.diagnoseText(rel, text)
+func (s *Server) check(rel, text string, before scene.Errors) (scene.Errors, *scene.Tree, error) {
+	after, tree, err := s.diagnoseText(rel, text)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if bad := newErrors(before, after); len(bad) > 0 {
-		return nil, fmt.Errorf("nothing written: the edit adds errors:\n%s", bad)
+		return nil, nil, fmt.Errorf("nothing written: the edit adds errors:\n%s", bad)
 	}
-	return after, nil
+	return after, tree, nil
 }
 
 // commit validates text as the content of rel and, when it adds no error, stages it next to the
 // target and renames it over the target.
 func (s *Server) commit(abs, rel, text string, before scene.Errors) (string, error) {
-	after, err := s.check(rel, text, before)
+	after, _, err := s.check(rel, text, before)
 	if err != nil {
 		return "", err
 	}

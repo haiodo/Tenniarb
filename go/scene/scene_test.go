@@ -166,6 +166,7 @@ func TestSlots(t *testing.T) {
 		"w2": "Title Empty",      // nothing passed: the fallback of the default slot
 		"w3": "Title help X",     // named slot comes first in the component
 		"w4": "Title Empty",      // an empty block for a slot without fallback adds nothing
+		"w5": "Title",            // slot {} clears the fallback of the default slot, as slot body {} does a named one
 	}
 	for inst, want := range cases {
 		if got := kids(inst); got != want {
@@ -179,7 +180,8 @@ func TestSlotErrors(t *testing.T) {
 	wantIn(t, got,
 		`slot_errors.tenn:4:27: unknown slot "nosuch" (slots: toolbar, (default))`,
 		"slot_errors.tenn:5:27: nodes passed, but the component has no default slot (slots: none)",
-		`slot_errors.tenn:6:27: path Missing: nothing named "Missing" inside the instance`)
+		`slot_errors.tenn:6:27: path Missing: nothing named "Missing" inside the instance`,
+		"slot_errors.tenn:7:27: nodes passed, but the component has no default slot (slots: none)")
 }
 
 func TestUseCycle(t *testing.T) {

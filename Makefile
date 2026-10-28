@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -80,10 +80,20 @@ go-mcp-install: ## MCP for agents: go install tenniarb-mcp and tenniarb-service 
 go-cli-install: ## CLI for agents: go install tenniarb (tenniarb check FILE...) into GOBIN
 	cd go && CGO_ENABLED=0 go install -trimpath -ldflags '$(GO_LDFLAGS)' ./cmd/tenniarb
 
+install: app go-mcp-install go-cli-install ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb-design skill as a link
+ifeq ($(shell uname),Darwin)
+	rm -rf /Applications/Tenniarb.app
+	cp -R $(GOPKG)/app/Tenniarb.app /Applications/
+	/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/Tenniarb.app
+endif
+	mkdir -p $(HOME)/.claude/skills
+	ln -sfn $(CURDIR)/go/mcpserver/skill $(HOME)/.claude/skills/tenniarb-design
+
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
 GOPKG := build/go
-GO_VERSION = $(shell git describe --tags --always --dirty)
-GO_SHORT = $(or $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//'),0.0.0)
+# The Go app is versioned here, apart from the Swift release tags (v1.x) that trigger release.yml.
+GO_SHORT := 2.0.0
+GO_VERSION = $(GO_SHORT)-$(shell git describe --always --dirty --exclude '*')
 GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
 GOWT_DIR = $(shell cd go && go list -m -f '{{.Dir}}' github.com/haiodo/gowt)

@@ -21,7 +21,6 @@ import (
 // under the outline.
 type itemsList struct {
 	box     *g.Panel
-	title   *g.LabelView
 	hidden  bool // collapsed by the Items button
 	tree    *g.TreeView
 	open    map[string]bool // expanded scene rows by path, for the canvas of canvasOf
@@ -30,10 +29,9 @@ type itemsList struct {
 	syncing bool
 }
 
-// itemsPane is the item navigator: the element name and the list.
+// itemsPane is the item navigator: the list alone, the element above it names the canvas.
 func (v *Viewer) itemsPane() g.Option {
 	return g.VBox(g.Ref(&v.itemsUI.box), g.Grow(), g.Padding(0), g.Gap(0),
-		g.Label("", g.Ref(&v.itemsUI.title), g.GrowX(), g.Padding(g.Scaled(8)), g.Typeface(sectionFont())),
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			v.itemsUI.tree = t
 			t.OnSelect(v.onItemSelect)
@@ -63,14 +61,6 @@ func (v *Viewer) toggleItems() {
 	v.win.Unwrap().Layout()
 }
 
-// itemsTitle names the canvas the navigator shows.
-func (v *Viewer) itemsTitle() string {
-	if v.state.Current != nil {
-		return v.state.Current.Name
-	}
-	return ""
-}
-
 // canvasOf names what is on the canvas, so the open rows are forgotten when it changes.
 func (v *Viewer) canvasOf() any {
 	return v.state.Current
@@ -82,7 +72,6 @@ func (v *Viewer) rebuildItems() {
 	if l.tree == nil {
 		return
 	}
-	l.title.SetText(v.itemsTitle())
 	if c := v.canvasOf(); c != l.canvas || l.open == nil {
 		l.canvas, l.open = c, map[string]bool{}
 	}

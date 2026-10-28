@@ -4,7 +4,7 @@ go 1.27
 
 require (
 	github.com/dop251/goja v0.0.0-20261024144015-2a9269b6b6de
-	github.com/haiodo/gowt v0.13.4
+	github.com/haiodo/gowt v0.13.5
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	golang.org/x/text v0.43.0
 )

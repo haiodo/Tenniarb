@@ -34,6 +34,12 @@ Rules that save a round of fixes:
 - Children paint over their parent's border; put the border on the child or leave a `padding` of 1.
 - `hug`, `fill`, `gap`, `padding` mean nothing outside auto-layout: there they are an error or a plain
   user property.
+- `padding` works only with `auto-layout` on the same item. On a text leaf (`title`, no children) without its
+  own `auto-layout` it does nothing and `check` warns. Text has no padding of its own: `width 80` is the text box.
+  To inset text, use `item Pill { auto-layout row; padding 4 8; item t { title Text } }` or give the leaf
+  `auto-layout row` and `padding`.
+- Spaces at the start and end of `title` are kept and widen a `hug` leaf. Browsers collapse them in SVG unless the
+  document has `xml:space="preserve"` (`tenn-render` writes it).
 
 ## App window: sidebar, content, inspector
 

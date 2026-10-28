@@ -7,21 +7,36 @@ import (
 	"sync"
 
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/servicewire"
 )
 
 // Host is what every session of one process shares: loaded trees, the documents of connected apps,
 // and the locks that order edits and renders across sessions.
 type Host struct {
-	cache  treeCache
-	live   *registry
-	editMu sync.Mutex // one edit at a time: a read-modify-write of one session must not lose another's
+	cache treeCache
+	live  *registry
+	// presence tells the apps which agents work on their documents.
+	presence *presenceHub
+	editMu   sync.Mutex // one edit at a time: a read-modify-write of one session must not lose another's
 	// renderMu serializes Build on cached trees (scene.Tree is not safe for concurrent use) and the
 	// shared CoreGraphics renderer.
 	renderMu sync.Mutex
 }
 
 func NewHost() *Host {
-	return &Host{cache: treeCache{entries: map[cacheKey]*cacheEntry{}}, live: newRegistry()}
+	h := &Host{cache: treeCache{entries: map[cacheKey]*cacheEntry{}}, live: newRegistry()}
+	h.presence = newPresenceHub(h.sendPresence)
+	return h
+}
+
+// sendPresence tells the app that holds abs; an app that moved to a newer service is not ours to tell.
+func (h *Host) sendPresence(abs string, p servicewire.Presence) {
+	d := h.live.lookup(abs)
+	if d == nil || d.moved {
+		return
+	}
+	p.Path = d.path
+	d.prov.peer.Notify(servicewire.MethodPresence, p)
 }
 
 // Session opens the workspace at root for one client.
@@ -31,6 +46,7 @@ func (h *Host) Session(root string) (*Server, error) {
 		return nil, err
 	}
 	s.host = h
+	s.agent = h.presence.open()
 	return s, nil
 }
 

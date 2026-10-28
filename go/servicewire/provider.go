@@ -10,7 +10,8 @@ import (
 )
 
 // Methods of a provider connection. The service calls the provider with MethodText..MethodRender;
-// the provider calls MethodDocuments; the service sends MethodReconnect as a notification.
+// the provider calls MethodDocuments; the service sends MethodReconnect and MethodPresence as
+// notifications.
 const (
 	MethodDocuments = "documents"
 	MethodText      = "text"
@@ -19,7 +20,17 @@ const (
 	MethodSelect    = "select"
 	MethodRender    = "render"
 	MethodReconnect = "reconnect"
+	MethodPresence  = "presence"
 )
+
+// PresenceTTL is how long an agent counts as working on a document after its last action. The
+// service drops it then, and the app does the same with a presence the service never cleared.
+const PresenceTTL = 10 * time.Minute
+
+// PresenceVersion is the version of the Presence message. New optional fields keep it; a change that
+// an older reader would misread raises it, and a reader drops messages of a version it does not know.
+// The hello protocol does not change with it: a peer that does not know MethodPresence ignores it.
+const PresenceVersion = 1
 
 // Doc is a document the app has open. Version must change on every change of the text (edit, undo,
 // redo, reload); Dirty says the text differs from the file on disk.
@@ -32,6 +43,32 @@ type Doc struct {
 // Documents is the full set of open documents; each MethodDocuments replaces the previous set.
 type Documents struct {
 	Docs []Doc `json:"docs"`
+}
+
+// Presence says which agents work on one open document through MCP. The service sends the current
+// state of a document whenever it changes: an agent acts, goes quiet for too long or leaves. Agents
+// 0 clears it.
+type Presence struct {
+	V      int    `json:"v"`
+	Path   string `json:"path"` // as the app sent it in Doc
+	Agents int    `json:"agents"`
+	// Seq orders messages of one service, which are handled concurrently: a message older than the
+	// last one seen is dropped. It grows with the clock, so it also grows across service restarts.
+	Seq int64 `json:"seq"`
+	// The rest describes the latest action among the agents.
+	Name    string `json:"name,omitempty"`    // client name from the MCP initialize, may be empty
+	Action  string `json:"action,omitempty"`  // tool name: read, edit, select ...
+	At      int64  `json:"at,omitempty"`      // Unix milliseconds; each action has its own, growing value
+	Element string `json:"element,omitempty"` // dotted path (spec 4.2) of the element the action touched
+	Node    string `json:"node,omitempty"`    // dotted path of the innermost node the action touched
+	Line    int    `json:"line,omitempty"`    // 1-based lines of the touched text, when known
+	EndLine int    `json:"endLine,omitempty"`
+}
+
+// PresenceReceiver is implemented by a Provider that wants Presence notifications. It runs on a
+// goroutine of the client, concurrently with other calls.
+type PresenceReceiver interface {
+	Presence(Presence)
 }
 
 // TextArgs asks for the current text of a document.
@@ -246,6 +283,15 @@ func (c *ProviderClient) handle(_ context.Context, method string, params json.Ra
 		}
 		png, err := c.p.Render(a.Path, a.Scale)
 		return RenderResult{PNG: png}, err
+	case MethodPresence:
+		var pr Presence
+		if err := json.Unmarshal(params, &pr); err != nil {
+			return nil, err
+		}
+		if r, ok := c.p.(PresenceReceiver); ok && pr.V <= PresenceVersion {
+			r.Presence(pr)
+		}
+		return nil, nil
 	case MethodReconnect:
 		// The service stops; Serve ends when it closes the connection and loop dials again.
 		return nil, nil

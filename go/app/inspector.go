@@ -202,7 +202,8 @@ func (in *inspector) newEntry(cfg entryCfg) *entry {
 }
 
 func (e *entry) option() g.Option {
-	return g.Text(g.ID(e.cfg.id), g.Ref(&e.ctl), g.GrowX(), g.Size(g.Scaled(48), 0), g.Init(func(t *g.TextView) {
+	// Centred in its row: a swatch beside it is taller than the field.
+	return g.Text(g.ID(e.cfg.id), g.Ref(&e.ctl), g.GrowX(), g.Place(g.AlignFill, g.AlignCenter), g.Size(g.Scaled(48), 0), g.Init(func(t *g.TextView) {
 		t.OnActivate(e.commit)
 		t.Unwrap().AddFocusListener(swt.FocusListenerFocusGainedAdapter(func(*swt.FocusEvent) { e.gained() }))
 		t.Unwrap().AddFocusListener(swt.FocusListenerFocusLostAdapter(func(*swt.FocusEvent) { e.lost() }))

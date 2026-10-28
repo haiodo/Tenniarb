@@ -87,3 +87,37 @@ func TestProviderResendsDocumentsChangedDuringRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+type presenceProvider struct {
+	Provider
+	got []Presence
+}
+
+func (p *presenceProvider) Presence(pr Presence) { p.got = append(p.got, pr) }
+
+func TestPresenceRoundTrip(t *testing.T) {
+	in := Presence{V: PresenceVersion, Path: "/a.tenn", Agents: 2, Seq: 7, Name: "claude-code", Action: "edit",
+		At: 5, Element: "A", Node: "A.x", Line: 2, EndLine: 3}
+	raw, err := json.Marshal(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pp := &presenceProvider{}
+	c := &ProviderClient{p: pp}
+	if _, err := c.handle(context.Background(), MethodPresence, raw); err != nil {
+		t.Fatal(err)
+	}
+	if len(pp.got) != 1 || pp.got[0] != in {
+		t.Errorf("got %+v, want %+v", pp.got, in)
+	}
+
+	// A version this reader does not know is dropped, and a provider without the interface is fine.
+	newer, _ := json.Marshal(Presence{V: PresenceVersion + 1, Path: "/a.tenn", Agents: 1})
+	if _, err := c.handle(context.Background(), MethodPresence, newer); err != nil || len(pp.got) != 1 {
+		t.Errorf("newer version: err %v, got %d", err, len(pp.got))
+	}
+	plain := &ProviderClient{}
+	if _, err := plain.handle(context.Background(), MethodPresence, raw); err != nil {
+		t.Errorf("provider without PresenceReceiver: %v", err)
+	}
+}

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync/atomic"
 
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -17,8 +18,16 @@ import (
 
 // Server serves one workspace root for one client.
 type Server struct {
-	root string // absolute, symlinks resolved
-	host *Host
+	root  string // absolute, symlinks resolved
+	host  *Host
+	agent *agentSession // this client, as the presence of the open documents knows it
+}
+
+// Close ends the session: the documents it worked on lose its presence.
+func (s *Server) Close() {
+	if s.agent != nil {
+		s.host.presence.close(s.agent)
+	}
 }
 
 // New opens the workspace at root with a host of its own.
@@ -85,22 +94,37 @@ func (s *Server) MCP() *mcp.Server {
 	srv := mcp.NewServer(&mcp.Implementation{Name: "tenniarb-mcp", Version: "0.1.0"}, &mcp.ServerOptions{
 		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Files open in the Tenniarb app are read and edited live, through its undo.",
 	})
+	srv.AddReceivingMiddleware(s.learnClient)
 	add(srv, "guide", "Return the .tenn scene-graph spec (docs/spec/tenn-scene.md) with short examples. topic narrows it to one section. Y axis points up; use paths follow spec section 4.2.",
 		func(in guideIn) (string, error) { return guide(in.Topic), nil })
 	add(srv, "read_skill", "Return the Tenniarb design skill: how to draw UI screens and diagrams in .tenn through these tools (the loop, the format, components, layout recipes, review). No path returns SKILL.md; path returns a file it names, such as layout.md.",
 		func(in skillIn) (string, error) { return readSkill(in.Path) })
 	add(srv, "get_state", "List the .tenn files of the workspace with the node tree of each, 2 levels deep by default (dotted paths per spec 4.2, usable in read, render and use), the renderer of each element (scene or diagram), whether Tenniarb has the file open with unsaved changes, and the errors and warnings of each file. file, path and depth list one subtree; find searches a library for components by name.",
-		func(in getStateIn) (string, error) { return s.state(in) })
+		func(in getStateIn) (string, error) {
+			if in.File != "" {
+				s.noteNode("get_state", in.File, in.Path)
+			}
+			return s.state(in)
+		})
 	add(srv, "read", "Read a .tenn file or one node of it by dotted path (spec 4.2), as source text with line numbers. The text is exactly what edit matches against.",
-		func(in readIn) (string, error) { return s.read(in.File, in.Path) })
+		func(in readIn) (string, error) {
+			s.noteNode("read", in.File, in.Path)
+			return s.read(in.File, in.Path)
+		})
 	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
 	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths follow spec section 4.2.",
-		func(in validateIn) (string, error) { return s.validate(in.File) })
+		func(in validateIn) (string, error) {
+			if in.File != "" {
+				s.noteNode("validate", in.File, "")
+			}
+			return s.validate(in.File)
+		})
 	mcp.AddTool(srv, &mcp.Tool{
 		Name:        "render",
 		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text). Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead.",
 	}, func(_ context.Context, _ *mcp.CallToolRequest, in renderIn) (*mcp.CallToolResult, any, error) {
+		s.noteNode("render", in.File, in.Element)
 		r, err := s.render(in.File, in.Element, in.Scale, in.View)
 		if err != nil {
 			return failure(err), nil, nil
@@ -113,8 +137,30 @@ func (s *Server) MCP() *mcp.Server {
 	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths. Fails when the app is not connected.",
 		func(noIn) (string, error) { return s.selection() })
 	add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths, spec 4.2), optionally revealing the first one, so the user sees what you mean.",
-		func(in selectIn) (string, error) { return s.selectNodes(in.File, in.Nodes, in.Reveal) })
+		func(in selectIn) (string, error) {
+			first := ""
+			if len(in.Nodes) > 0 {
+				first = in.Nodes[0]
+			}
+			s.noteNode("select", in.File, first)
+			return s.selectNodes(in.File, in.Nodes, in.Reveal)
+		})
 	return srv
+}
+
+// learnClient takes the client name from the initialize request at the first tool call: the SDK's
+// InitializedHandler was never called by a v1.8.0 server in a test.
+func (s *Server) learnClient(next mcp.MethodHandler) mcp.MethodHandler {
+	var named atomic.Bool
+	return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
+		if ss, ok := req.GetSession().(*mcp.ServerSession); ok && !named.Load() && method == "tools/call" && s.agent != nil {
+			if p := ss.InitializeParams(); p != nil && p.ClientInfo != nil {
+				named.Store(true)
+				s.host.presence.setName(s.agent, p.ClientInfo.Name)
+			}
+		}
+		return next(ctx, method, req)
+	}
 }
 
 // add registers a tool that takes In and answers with text; an error becomes a tool error result.

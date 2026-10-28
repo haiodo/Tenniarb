@@ -203,6 +203,29 @@ func (p provider) Render(path string, scale float64) ([]byte, error) {
 // selectPaths selects nodes named by dotted paths from the root of the file (spec 4.2), all in one
 // element; that element goes on the canvas. No paths clear the selection.
 func (v *Viewer) selectPaths(paths []string, reveal bool) error {
+	return v.selectPathsIn(paths, reveal, reveal)
+}
+
+// followPaths shows what an agent works on: the paths are selected and scrolled into view, but the
+// window does not come to front and the keyboard stays where it is.
+func (v *Viewer) followPaths(paths []string) error {
+	err := v.selectPathsIn(paths, true, false)
+	if sel := v.sessionItems(); err == nil && v.view != nil && len(sel) > 0 {
+		v.revealItem(sel[0])
+	}
+	return err
+}
+
+// sessionItems are the selected items of a classic diagram; a scene has none.
+func (v *Viewer) sessionItems() []*model.DiagramItem {
+	if v.session == nil || v.sceneMode() {
+		return nil
+	}
+	return v.session.Selection()
+}
+
+// selectPathsIn is selectPaths with front apart from reveal: front brings the window to the front.
+func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) error {
 	if v.session == nil {
 		return errors.New("the document has parse errors")
 	}
@@ -254,7 +277,7 @@ func (v *Viewer) selectPaths(paths []string, reveal bool) error {
 		}
 		nodes = append(nodes, rel)
 	}
-	if reveal && v.win != nil {
+	if front && v.win != nil {
 		v.win.Unwrap().ForceActive()
 		v.sh.active = v
 	}

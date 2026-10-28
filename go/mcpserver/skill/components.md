@@ -82,7 +82,8 @@ Inside the block of a `use`:
 - `at <path> { ... }` overrides a part; the path starts at the children of the component root;
 - `replace <path> { nodes }` puts other nodes in place of a part;
 - `slot <name> { nodes }` fills a named slot; nodes written directly (`item`, `use`) go to the default
-  slot. Filling a slot drops its fallback.
+  slot. Filling a slot drops its fallback; an empty `slot {}` (default) or `slot name {}` drops it and
+  puts nothing.
 - `element "<name>" --from-file "<file>"` takes the whole content of the element from another file. The
   path is relative to the file with the line and must stay in the workspace. The path of a use through
   it starts with the element name: `kit.Kit.Card`.

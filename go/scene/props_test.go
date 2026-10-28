@@ -168,3 +168,46 @@ func TestExpressionWarningOnlyInScenes(t *testing.T) {
 		t.Errorf("scene element: %d warnings, want 1", n)
 	}
 }
+
+func TestSpacesInTitleAreKept(t *testing.T) {
+	m := boxes(t, "props.tenn", "Spaces")
+	// 6 per rune at font-size 10: leading and trailing spaces are text and widen a hugging leaf
+	wantBox(t, m, "Col.Lead", 0, 0, 24, 11)
+	wantBox(t, m, "Col.Trail", 0, 11, 24, 11)
+	wantBox(t, m, "Col.Plain", 0, 22, 12, 11)
+	if got := strings.Join(m["Col.Lead"].Lines, "|"); got != "  ab" {
+		t.Errorf("lines = %q", got)
+	}
+}
+
+func TestExplicitWidthIsTheTextBox(t *testing.T) {
+	m := boxes(t, "props.tenn", "TextBox")
+	if got := strings.Join(m["Col.Fits"].Lines, "|"); got != "Expand levels" {
+		t.Errorf("width 78 = text width wraps: %q", got)
+	}
+	if got := strings.Join(m["Col.Wraps"].Lines, "|"); got != "Expand|levels" {
+		t.Errorf("width 77 lines = %q", got)
+	}
+}
+
+func TestPaddingWithoutOwnAutoLayoutWarns(t *testing.T) {
+	s, _ := build(t, load(t, "props.tenn"), "LeafPadding")
+	n := 0
+	for _, w := range s.Warnings {
+		if strings.Contains(w.Error(), "padding has no effect") {
+			n++
+			if !strings.Contains(w.Error(), ":") {
+				t.Errorf("no position: %v", w)
+			}
+		}
+	}
+	if n != 2 { // Ignored (a leaf) and Frame (no auto-layout); Own has its own
+		t.Errorf("%d padding warnings, want 2: %v", n, s.Warnings)
+	}
+}
+
+func TestOwnAutoLayoutPaddingInsetsLeafText(t *testing.T) {
+	m := boxes(t, "props.tenn", "LeafPadding")
+	wantBox(t, m, "Col.Ignored", 0, 0, 11, 19) // font 18: ceil(10.8), ceil(18 * 1.05)
+	wantBox(t, m, "Col.Own", 0, 19, 27, 35)    // plus 2 * 8 on each axis
+}

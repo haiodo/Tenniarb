@@ -99,6 +99,17 @@ Exit code: 0 no errors (warnings allowed), 1 errors, 2 usage or an unreadable fi
 it lists the warnings of mounted files too. The command is in the app binary (`Tenniarb.app/Contents/MacOS/tenniarb check`),
 not in `tenniarb-mcp`, which links the standard library only.
 
+## `tenniarb` command line
+
+| Command | Does |
+|---|---|
+| `tenniarb [FILE.tenn ...]` | opens the app with the files (without files: the last documents, or a new one) |
+| `tenniarb check [-json] [-root DIR] FILE...` | validates headless, see above |
+| `tenniarb help`, `-h`, `--help` | prints the usage to stdout, exit 0; no window opens |
+
+Any other argument that starts with `-` prints the usage to stderr and exits 2 before the GUI starts. The
+arguments AppKit adds itself (`-psn_*`, `-NS*`, `-Apple*`) are ignored.
+
 ## Provider protocol (for the app)
 
 Package `go/servicewire`. The app is a "provider": it connects with role `provider`, registers its open

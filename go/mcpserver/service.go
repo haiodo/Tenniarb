@@ -36,6 +36,9 @@ type Service struct {
 	Idle  time.Duration
 	Clock Clock
 	Log   *log.Logger
+	// PresenceTTL is how long an agent counts as working on a document after its last action in the
+	// app's presence indicator; 0 means servicewire.PresenceTTL.
+	PresenceTTL time.Duration
 
 	mu        sync.Mutex
 	ln        *servicewire.Listener
@@ -83,6 +86,10 @@ func (sv *Service) Serve(ctx context.Context, ln *servicewire.Listener) error {
 	if sv.Idle > 0 {
 		go sv.idleLoop()
 	}
+	if sv.PresenceTTL > 0 {
+		sv.Host.presence.ttl = sv.PresenceTTL
+	}
+	go sv.Host.presence.run(ctx, min(max(sv.Host.presence.ttl/10, time.Second), 30*time.Second))
 	for {
 		c, err := ln.Accept()
 		if err != nil {
@@ -239,6 +246,7 @@ func (sv *Service) serveMCP(ctx context.Context, conn *servicewire.Conn, h servi
 	reply(conn, "ok")
 	sv.sessionDelta(1)
 	defer sv.sessionDelta(-1)
+	defer srv.Close()
 	sv.logf("session opened at %s", srv.root)
 	err = srv.MCP().Run(ctx, &mcp.IOTransport{Reader: conn, Writer: conn})
 	sv.logf("session at %s closed: %v", srv.root, err)
@@ -256,6 +264,11 @@ func (sv *Service) serveProvider(ctx context.Context, conn *servicewire.Conn) {
 			return nil, err
 		}
 		sv.Host.live.set(p, docs.Docs)
+		paths := make([]string, len(docs.Docs))
+		for i, d := range docs.Docs {
+			paths[i] = realPath(d.Path)
+		}
+		sv.Host.presence.markTracked(paths)
 		return struct{}{}, nil
 	})
 	sv.mu.Lock()

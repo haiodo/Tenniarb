@@ -8,7 +8,7 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -55,9 +55,16 @@ func run(root, file, path string, scale float64) error {
 	for _, w := range screen.Warnings {
 		fmt.Fprintln(os.Stderr, w)
 	}
-	out := bufio.NewWriter(os.Stdout)
-	if err := gfx.WriteSubtreeSVG(out, sc, screen.Root, gfx.Rect{}, scale); err != nil {
+	var buf bytes.Buffer
+	if err := gfx.WriteSubtreeSVG(&buf, sc, screen.Root, gfx.Rect{}, scale); err != nil {
 		return err
 	}
-	return out.Flush()
+	_, err = os.Stdout.Write(preserveSpace(buf.Bytes()))
+	return err
+}
+
+// preserveSpace keeps leading, trailing and repeated spaces of a title: gfx writes plain <text> and
+// a viewer collapses whitespace in it unless the document says otherwise.
+func preserveSpace(svg []byte) []byte {
+	return bytes.Replace(svg, []byte("<svg "), []byte(`<svg xml:space="preserve" `), 1)
 }

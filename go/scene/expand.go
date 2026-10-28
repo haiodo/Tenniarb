@@ -188,32 +188,34 @@ func finalize(r *RNode) {
 }
 
 type slotFill struct {
-	name  string
-	pos   Pos
-	nodes []*RNode
+	name     string
+	pos      Pos
+	nodes    []*RNode
+	explicit bool // written as slot [name] { ... }: an empty block still replaces the fallback
 }
 
 // apply puts the block of a use onto the instance root: properties override, nodes go to the default
 // slot, at and replace reach into the instance, slot fills a named slot.
 func (x *expander) apply(root *RNode, block []*Override) {
 	var fills []*slotFill
-	add := func(name string, pos Pos, nodes []*RNode) {
+	add := func(name string, pos Pos, nodes []*RNode, explicit bool) {
 		for _, f := range fills {
 			if f.name == name {
 				f.nodes = append(f.nodes, nodes...)
+				f.explicit = f.explicit || explicit
 				return
 			}
 		}
-		fills = append(fills, &slotFill{name, pos, nodes})
+		fills = append(fills, &slotFill{name, pos, nodes, explicit})
 	}
 	for _, ov := range block {
 		switch ov.Kind {
 		case OvProp:
 			setProp(root, ov.Prop)
 		case OvNode:
-			add("", ov.Pos, x.contents([]*Node{ov.Node}))
+			add("", ov.Pos, x.contents([]*Node{ov.Node}), false)
 		case OvSlot:
-			add(NormalizeName(ov.Slot), ov.Pos, x.nodes(ov.Block))
+			add(NormalizeName(ov.Slot), ov.Pos, x.nodes(ov.Block), true)
 		case OvAt:
 			if at, ok := x.find(root, ov.Path, ov.Pos); ok {
 				x.apply(at.node(), ov.Block)
@@ -365,7 +367,8 @@ func slotNames(r *RNode, out []string) []string {
 }
 
 func (x *expander) fillSlot(root *RNode, f *slotFill) {
-	if f.name == "" && len(f.nodes) == 0 {
+	// Nodes of the block that failed leave no fill; only slot {} says the fallback goes.
+	if f.name == "" && len(f.nodes) == 0 && !f.explicit {
 		return
 	}
 	at, ok := findSlot(root, f.name)

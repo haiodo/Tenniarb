@@ -190,6 +190,7 @@ func (v *Viewer) qaState() map[string]any {
 		out["size"] = []float64{v.rendered.Width, v.rendered.Height}
 	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
+	out["indicators"] = v.ind.dots
 	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
 	items, itemRows := []string{}, map[string]map[string]any{}
 	var walkItems func(ns []*g.Node, prefix string)

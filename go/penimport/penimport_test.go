@@ -85,7 +85,7 @@ func TestLayoutFidelity(t *testing.T) {
 	out := res.Tenn(f)
 	// y points up: pen y 20 is pos y -20
 	for _, want := range []string{"pos 10 -20", "auto-layout column", "justify space-between", "padding 10 20", "width fill",
-		"height fill", `title "Hello \"quoted\" world"`, "auto-layout abs", "clip yes", "shadow 0 2 4 #00000040", "corner-radius 10", "pos 5 -7"} {
+		"height fill", `title "Hello \"quoted\" world"`, "auto-layout abs", "clip yes", "shadow 0 -2 4 #00000040", "corner-radius 10", "pos 5 -7"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("no %q in\n%s", want, out)
 		}
@@ -353,6 +353,31 @@ func TestFontAndPerCornerRadius(t *testing.T) {
 	}
 }
 
+func TestGradientFill(t *testing.T) {
+	res, dir, f := convertJSON(t, `{"version":"2.21","variables":{"bg":{"type":"color","value":"#112233"}},"children":[
+	 {"type":"frame","id":"h","name":"Header","width":100,"height":40,"fill":{"type":"gradient","gradientType":"linear","enabled":true,"rotation":270,"size":{"height":1},
+	  "colors":[{"color":"$bg","position":0},{"color":"#ffffff","position":1}]}},
+	 {"type":"frame","id":"d","name":"Diag","y":50,"width":100,"height":40,"fill":[{"type":"gradient","rotation":135,
+	  "colors":[{"color":"#000000","position":0},{"color":"#808080","position":0.33},{"color":"#ffffff","position":1}]}]},
+	 {"type":"frame","id":"r","name":"Radial","y":100,"width":100,"height":40,"fill":{"type":"gradient","gradientType":"radial",
+	  "colors":[{"color":"#000000","position":0},{"color":"#ffffff","position":1}]}},
+	 {"type":"text","id":"t","name":"T","y":150,"content":"x","fill":{"type":"gradient","rotation":0,
+	  "colors":[{"color":"#111111","position":0},{"color":"#ffffff","position":1}]}}]}`)
+	out := res.Tenn(f)
+	for _, want := range []string{"color linear 90 #112233 0 #ffffff 1", "color linear 225 #000000 0 #808080 0.33 #ffffff 1",
+		"color #000000;", "text-color #111111"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("no %q in\n%s", want, out)
+		}
+	}
+	if n := f.Unsupported["gradient fill (first stop)"]; n != 2 { // the radial fill and the text color
+		t.Errorf("unsupported %v", f.Unsupported)
+	}
+	if _, err := scene.Load(dir, f.Name+".tenn"); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // fracText has a fractional line box (17.4), which gfx/pen rounds down and go/scene used to round up.
 type fracText struct{}
 
@@ -371,5 +396,19 @@ func TestFidelityWithFractionalMetrics(t *testing.T) {
 		if s.Within != s.Compared {
 			t.Errorf("%s: %d of %d boxes within 0.5, max delta %g at %s", s.Name, s.Within, s.Compared, s.MaxDelta, s.MaxAt)
 		}
+	}
+}
+
+func TestInstanceAtOriginOverridesPosOfComponent(t *testing.T) {
+	// the component sits at y 300 of the pen canvas; an instance written at 0 0 in an absolute parent
+	// must not inherit that
+	res, dir, f := convertJSON(t, `{"version":"2.21","children":[
+	 {"type":"frame","id":"c","name":"Comp","reusable":true,"x":0,"y":300,"width":50,"height":40,"layout":"none"},
+	 {"type":"frame","id":"scr","name":"Screen","x":500,"layout":"none","width":200,"height":100,"clip":true,"children":[
+	  {"type":"ref","id":"a","name":"Inst","ref":"c","x":0,"y":0}]}]}`)
+	wantFidelity(t, f, dir)
+	out := res.Tenn(f)
+	if !strings.Contains(out, "use Comp as Inst { pos 0") {
+		t.Errorf("the instance does not say pos 0 0:\n%s", out)
 	}
 }

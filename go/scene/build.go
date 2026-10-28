@@ -93,6 +93,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 		return nil, local
 	}
 	lay.Layout()
+	p.warnOutside(rn)
 	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p}
 	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
@@ -140,7 +141,9 @@ func (t *Tree) validate() {
 		x := &expander{t: t}
 		if rn := x.container(n); rn != nil {
 			finalize(rn)
-			newPrep(t, Options{}).root(rn)
+			p := newPrep(t, Options{})
+			p.root(rn).Layout()
+			p.warnOutside(rn)
 		}
 		for _, e := range n.Elems {
 			each(e)
@@ -223,10 +226,26 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 		}
 		return r.Finish()
 	}
+	sh := st.shadow
 	if st.fill.A > 0 {
 		shape := &gfx.Path{}
 		shape.RoundRect4(0, 0, w, h, st.radius)
-		r.FillPath(shape, st.fill)
+		switch {
+		case st.grad != nil && sh != nil:
+			// The shadow follows the alpha of the fill; the gradient is drawn over an opaque base, so a
+			// gradient with transparent stops shows the base. Ceiling: gfx has no gradient with a shadow.
+			base := st.fill
+			base.A = 1
+			r.FillShadowPath(shape, base, *sh)
+			r.FillGradient(shape, st.grad.at(w, h))
+		case st.grad != nil:
+			r.FillGradient(shape, st.grad.at(w, h))
+		case sh != nil:
+			r.FillShadowPath(shape, st.fill, *sh)
+		default:
+			r.FillPath(shape, st.fill)
+		}
+		sh = nil
 	}
 	if st.lineW > 0 && st.border.A > 0 {
 		in := st.lineW / 2
@@ -236,7 +255,12 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			inner[i] = math.Max(inner[i]-in, 0)
 		}
 		edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
-		r.StrokePath(edge, gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10}, st.border)
+		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10}
+		if sh != nil { // no fill: the border casts the shadow
+			r.StrokeShadowPath(edge, line, st.border, *sh)
+		} else {
+			r.StrokePath(edge, line, st.border)
+		}
 	}
 	if ti := b.p.texts[rn]; ti != nil {
 		leaf := len(ln.Kids) == 0
@@ -328,6 +352,8 @@ func arrowHead(from, to gfx.Point, size float64) *gfx.Path {
 
 type style struct {
 	fill, border, text gfx.Color
+	grad               *gradient   // set by color linear ...; fill is then its first visible stop
+	shadow             *gfx.Shadow // nil without shadow
 	lineW              float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
 	clip               bool
@@ -361,7 +387,8 @@ func (p *prep) style(rn *RNode, inCtx bool) style {
 	if inCtx {
 		fill, border = gfx.Color{}, gfx.Color{}
 	}
-	st.fill = p.color(rn, "color", fill)
+	st.fill, st.grad = p.fill(rn, fill)
+	st.shadow = p.shadow(rn)
 	st.border = p.color(rn, "border-color", border)
 	text := black
 	if st.fill.A > 0 {

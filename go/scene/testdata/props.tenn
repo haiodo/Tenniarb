@@ -67,3 +67,29 @@ element "Defaults" {
         item "U" { title "y" }
     }
 }
+
+element "Spaces" {
+    item "Col" {
+        auto-layout column
+        item "Lead" { title "  ab"; font-size 10; layout left }
+        item "Trail" { title "ab  "; font-size 10; layout left }
+        item "Plain" { title "ab"; font-size 10; layout left }
+    }
+}
+
+element "TextBox" {
+    item "Col" {
+        auto-layout column
+        item "Fits" { title "Expand levels"; font-size 10; width 78; layout left }
+        item "Wraps" { title "Expand levels"; font-size 10; width 77; layout left }
+    }
+}
+
+element "LeafPadding" {
+    item "Col" {
+        auto-layout column
+        item "Ignored" { title "x"; padding 8 }
+        item "Own" { auto-layout row; padding 8; title "x" }
+        item "Frame" { padding 4; item "In" { width 5; height 5 } }
+    }
+}

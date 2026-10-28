@@ -4,4 +4,5 @@ element "E" {
     use kit.Window as a { slot nosuch { item "Z" {} } }
     use kit.Button as b { item "Child" {} }
     use kit.Window as c { at Missing { height 3 } }
+    use kit.Button as d { slot {} }
 }

@@ -71,7 +71,8 @@ func posProps(m map[string]any, b bctx, explicit bool) []Prop {
 	if abs {
 		ps = append(ps, prop("absolute", wordArg("yes")))
 	}
-	if b.top || b.parentAbs || abs || explicit {
+	if b.top || b.parentAbs || abs {
+		// explicit: 0 0 is written too, to override a pos the component has
 		if x != 0 || y != 0 || explicit {
 			ps = append(ps, prop("pos", numArg(x), numArg(-y)))
 		}

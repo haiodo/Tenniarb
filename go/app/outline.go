@@ -20,9 +20,13 @@ import (
 func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 	v.syncing = true
 	defer func() { v.syncing = false }()
+	hidden := v.hiddenMounts()
 	var add func(parent func(string) *g.Node, els []*model.Element, depth int)
 	add = func(parent func(string) *g.Node, els []*model.Element, depth int) {
 		for _, e := range els {
+			if hidden[e] {
+				continue
+			}
 			n := parent(v.rowLabel(e))
 			n.SetData(e)
 			n.SetImage(v.rowIcon(e))
@@ -72,9 +76,65 @@ func (v *Viewer) hasContent(e *model.Element) bool {
 	return n != nil && len(sceneKids(n)) > 0
 }
 
+// hiddenMounts are the mounted elements the outline does not show: one inside a mounted file whose file
+// is already shown by another row. Mounts written in the document come first, then the shallower ones, so
+// the library a screen file mounts again is its top-level row, and a category file is shown once.
+// Ceiling: a dependency that no row shows otherwise stays visible, the outline cannot tell it from a category.
+func (v *Viewer) hiddenMounts() map[*model.Element]bool {
+	m := v.state.Doc.Model
+	if m == nil {
+		return nil
+	}
+	hidden := map[*model.Element]bool{}
+	seen := map[string]bool{}
+	var queue []*model.Element
+	var docMounts func(e *model.Element)
+	docMounts = func(e *model.Element) {
+		for _, c := range e.Elements {
+			if c.FromFile == "" {
+				docMounts(c)
+				continue
+			}
+			if md := v.mounts[c]; md != nil {
+				seen[md.file] = true
+			}
+			queue = append(queue, c)
+		}
+	}
+	docMounts(&m.Element)
+	for len(queue) > 0 {
+		n := queue[0]
+		queue = queue[1:]
+		for _, c := range n.Elements {
+			if c.FromFile != "" {
+				if md := v.mounts[c]; md != nil {
+					if seen[md.file] {
+						hidden[c] = true
+						continue
+					}
+					seen[md.file] = true
+				}
+			}
+			queue = append(queue, c)
+		}
+	}
+	return hidden
+}
+
+// rowDirty: the file e shows, or one mounted inside it, has unsaved edits.
+func (v *Viewer) rowDirty(e *model.Element) bool {
+	return e.FromFile != "" && (v.mountDirty(e) || v.dirtyBelow(e))
+}
+
+func (v *Viewer) dirtyBelow(e *model.Element) bool {
+	return slices.ContainsFunc(e.Elements, func(c *model.Element) bool {
+		return (c.FromFile != "" && v.mountDirty(c)) || v.dirtyBelow(c)
+	})
+}
+
 // rowLabel is the name of e, marked with * while the file it shows has unsaved edits.
 func (v *Viewer) rowLabel(e *model.Element) string {
-	if e.FromFile != "" && v.mountDirty(e) {
+	if v.rowDirty(e) {
 		return e.Name + " *"
 	}
 	return e.Name
@@ -110,14 +170,19 @@ func (v *Viewer) outlineKey() string {
 	var b strings.Builder
 	b.WriteString(OutlineSignature(&m.Element))
 	if v.stree != nil {
+		hidden := v.hiddenMounts()
 		var walk func(e *model.Element)
 		walk = func(e *model.Element) {
+			if hidden[e] {
+				b.WriteByte('h')
+				return
+			}
 			if v.hasContent(e) {
 				b.WriteByte('+')
 			} else {
 				b.WriteByte('-')
 			}
-			if e.FromFile != "" && v.mountDirty(e) {
+			if v.rowDirty(e) {
 				b.WriteByte('*')
 			}
 			for _, c := range e.Elements {

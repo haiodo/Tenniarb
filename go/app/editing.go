@@ -31,6 +31,7 @@ func (v *Viewer) realize() {
 		return
 	}
 	defer v.rebuildItems()
+	defer v.syncIndicators()
 	if old := v.sv; old != nil {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
 		v.sv, v.selNodes = nil, nil
@@ -85,6 +86,7 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 		return
 	}
 	defer v.syncItems()
+	defer v.syncIndicators()
 	ds := v.session.Scene()
 	rendered, ov, pic := v.rendered, v.overlay, v.session.Overlay()
 	v.scene.Update(func(tx *gfx.Tx) {

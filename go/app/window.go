@@ -7,6 +7,7 @@ import (
 	"math"
 	"path/filepath"
 	"runtime"
+	"slices"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
@@ -48,6 +49,8 @@ type Viewer struct {
 	syncing     bool // the outline selection is being set by code
 	zoomSeen    float64
 	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
+	ind         indicators
+	agent       agentUI
 
 	press      press
 	inline     *view.Editor
@@ -174,6 +177,7 @@ func (v *Viewer) themeChanged() {
 	v.applyBackground()
 	v.refreshOutline()
 	v.rebuildItems()
+	v.syncIndicators()
 }
 
 // prefsChanged applies new settings: the canvas colour and the quick panel at once, the outline
@@ -223,8 +227,8 @@ func (v *Viewer) build() {
 // toolbar is the unified window toolbar: element, item pane and sidebar buttons, zoom, new item, inspector, and the
 // Goto Item search.
 func (v *Viewer) toolbar() {
-	look.SetToolbar(v.win,
-		look.ToolbarItem{Title: "Element", Sidebar: true, Small: true, Group: []look.ToolbarItem{
+	items := []look.ToolbarItem{
+		{Title: "Element", Sidebar: true, Small: true, Group: []look.ToolbarItem{
 			{Title: "New Element", Symbol: "plus", OnClick: func() { v.addElement(v.state.Current) }},
 			{Title: "Delete Element", Symbol: "minus", OnClick: v.removeElement},
 		}},
@@ -243,7 +247,10 @@ func (v *Viewer) toolbar() {
 		}},
 		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", Inspector: true, Small: true, OnSearch: v.searchTo},
 		look.ToolbarItem{Title: "Hide Code", Symbol: "rectangle.bottomthird.inset.filled", Inspector: true, Small: true, OnClick: v.toggleCode},
-		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector})
+		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector},
+	}
+	// The agent items sit next to the title, before the zoom controls.
+	look.SetToolbar(v.win, slices.Insert(items, 3, v.agentItems()...)...)
 }
 
 func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVisible(v.win)) }
@@ -299,7 +306,12 @@ func (v *Viewer) initView(vw *view.View) {
 			v.applyInitialCamera()
 		}
 	})
+	vw.Compositor().OnViewport(func(_, _, _ float64) { v.syncIndicators() })
 	vw.OnFrameReport(func(r view.FrameReport) {
+		if cam := (gfx.Camera{Origin: r.Origin, Zoom: r.Zoom}); cam != v.ind.seen {
+			v.ind.seen = cam
+			v.syncIndicators()
+		}
 		if r.Zoom != v.zoomSeen {
 			v.zoomSeen = r.Zoom
 			v.zoomText.Set(fmt.Sprintf("%d%%", int(math.Round(r.Zoom*100))))
@@ -378,6 +390,7 @@ func (v *Viewer) openDialog() {
 }
 
 func (v *Viewer) poll() {
+	v.agentTick()
 	if !v.asking && v.libsChanged() {
 		v.sceneReload()
 	}
