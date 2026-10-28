@@ -39,6 +39,7 @@ type props struct {
 // codePane is the text of the properties under the canvas, as Swift shows it.
 func (v *Viewer) codePane(ref **g.Panel) g.Option {
 	return g.VBox(g.Ref(ref), g.Grow(), g.Padding(0), g.Gap(0),
+		v.codeHeader(),
 		g.StyledText(g.NoBackground(), g.NoBorder(), g.Scrollbars(), g.Grow(), g.ID("props"), g.Init(v.initProps)))
 }
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/offscreen"
@@ -147,18 +148,29 @@ func (sh *Shell) Select(path string, sel Selection) (err error) {
 }
 
 func (v *Viewer) selectAPI(sel Selection) error {
+	e, items, err := v.resolveSelection(sel)
+	if err != nil {
+		return err
+	}
+	v.showSelection(e, slices.Clone(sel.Nodes), items, true)
+	return nil
+}
+
+// resolveSelection finds the element and the items of sel, and checks that its nodes exist; a path into
+// an instance (a/b) is checked by the node it starts at.
+func (v *Viewer) resolveSelection(sel Selection) (*model.Element, []*model.DiagramItem, error) {
 	if v.session == nil {
-		return errors.New("the document has parse errors")
+		return nil, nil, errors.New("the document has parse errors")
 	}
 	e := Resolve(&v.session.Root().Element, sel.Element)
 	if e == nil {
-		return fmt.Errorf("no element %q", sel.Element)
+		return nil, nil, fmt.Errorf("no element %q", sel.Element)
 	}
 	if len(sel.Nodes) > 0 {
 		el := v.elementNode(e)
 		for _, p := range sel.Nodes {
-			if NodeAt(el, p) == nil {
-				return fmt.Errorf("no node %q in the element", p)
+			if anchor, _, _ := strings.Cut(p, "/"); NodeAt(el, anchor) == nil {
+				return nil, nil, fmt.Errorf("no node %q in the element", p)
 			}
 		}
 	}
@@ -166,12 +178,11 @@ func (v *Viewer) selectAPI(sel Selection) error {
 	for _, name := range sel.Items {
 		i := slices.IndexFunc(e.Items, func(it *model.DiagramItem) bool { return it.Name == name })
 		if i < 0 {
-			return fmt.Errorf("no item %q in the element", name)
+			return nil, nil, fmt.Errorf("no item %q in the element", name)
 		}
 		items = append(items, e.Items[i])
 	}
-	v.showSelection(e, slices.Clone(sel.Nodes), items, true)
-	return nil
+	return e, items, nil
 }
 
 // showSelection puts e on the canvas with nodes (scene, by NodePath) or items (classic) selected.

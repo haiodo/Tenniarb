@@ -238,6 +238,7 @@ func (v *Viewer) selectItemPath(p string) {
 
 // syncItems selects the row of what is selected on the canvas, opening the rows above it.
 func (v *Viewer) syncItems() {
+	v.navSync()
 	l := &v.itemsUI
 	if l.tree == nil {
 		return

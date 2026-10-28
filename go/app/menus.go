@@ -110,6 +110,10 @@ func (v *Viewer) menus() {
 
 	nav := bar.Submenu("&Navigate")
 	nav.Item("&Goto Item...", v.showSearch, g.Shortcut("Cmd+F"))
+	nav.Separator()
+	v.nav.backItem = nav.Item("&Back", func() { v.navGo(-1) }, g.Shortcut("Cmd+["))
+	v.nav.fwdItem = nav.Item("&Forward", func() { v.navGo(1) }, g.Shortcut("Cmd+]"))
+	v.navSync()
 
 	viewMenu := bar.Submenu("&View")
 	viewMenu.Item("Zoom In", func() { v.zoomBy(ZoomStep) }, g.Shortcut("Cmd+="))

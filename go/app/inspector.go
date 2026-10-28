@@ -325,11 +325,12 @@ func colorOf(text string) (g.RGB, bool) {
 	return g.RGB{R: to8(c.R), G: to8(c.G), B: to8(c.B)}, true
 }
 
-// color adds a row with a swatch that opens the colour chooser and a text with the name or hex.
+// color adds a row with a swatch that opens the colour picker and a text with the name or hex.
 func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg) func() g.Option {
 	e := in.newEntry(cfg)
 	var sw *g.CanvasView
 	var cur g.RGB
+	var curText string // the value of the property, "" when it is not set
 	has, mixed := false, false
 	paint := func(gc *g.GC) {
 		w, h := gc.Size()
@@ -362,9 +363,9 @@ func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg
 				if !has {
 					start = g.RGB{R: 255, G: 255, B: 255}
 				}
-				if rgb, ok := in.v.win.ColorDialog(start); ok {
-					e.cfg.src().arg(cfg.name, cfg.idx, fmt.Sprintf("#%02x%02x%02x", rgb.R, rgb.G, rgb.B))
-				}
+				in.v.pickColor(sw, curText, !mixed, start, func(text string) {
+					e.cfg.src().arg(cfg.name, cfg.idx, text)
+				})
 			})
 		}))
 	refresh := func(selKind) {
@@ -382,6 +383,10 @@ func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg
 			text = a.Text
 		}
 		cur, has = colorOf(text)
+		curText = ""
+		if p.Set {
+			curText = text
+		}
 		e.refresh()
 		sw.Redraw()
 	}
@@ -573,6 +578,8 @@ func (in *inspector) build() g.Option {
 	body := g.VBox(g.GrowX(), g.Padding(pad), g.Gap(g.Scaled(10)),
 		in.section(title, always,
 			in.text("Name", func(k selKind) bool { return k == kindItem || k == kindNone }, entryCfg{id: "insp-name", name: "name", keep: true}),
+			// The text drawn instead of the name; empty removes it.
+			in.text("Title", func(k selKind) bool { return k == kindItem }, entryCfg{id: "insp-title", name: "title"}),
 			in.text("Label", func(k selKind) bool { return k == kindLink }, entryCfg{id: "insp-label", name: "label"}),
 			in.info("Kind", one, func(k selKind) string {
 				if k == kindLink {

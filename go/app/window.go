@@ -56,12 +56,15 @@ type Viewer struct {
 	popover    *g.Popover
 	outlineSig string
 	props      props
+	nav        navUI
 	insp       *inspector
 	search     search
 	docElem    *model.Element // the last element on the canvas that is not in a mounted file
 	docSel     []string       // its selected scene nodes, for the return from a mounted file
 	dragging   *model.Element // the outline row a drag started on
 	dropAt     [2]int         // where the drag was last over the outline
+
+	recentColors []string // colours chosen in the picker, newest first
 
 	undoItem, redoItem *g.MenuItem
 	canvasMenu         *g.Menu

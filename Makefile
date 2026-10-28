@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -76,6 +76,9 @@ go-mcp: ## MCP for agents: build/go/bin/tenniarb-mcp (proxy) and tenniarb-servic
 
 go-mcp-install: ## MCP for agents: go install tenniarb-mcp and tenniarb-service into the same GOBIN
 	cd go && go install -trimpath -ldflags '-s -w' ./cmd/tenniarb-mcp ./cmd/tenniarb-service
+
+go-cli-install: ## CLI for agents: go install tenniarb (tenniarb check FILE...) into GOBIN
+	cd go && CGO_ENABLED=0 go install -trimpath -ldflags '$(GO_LDFLAGS)' ./cmd/tenniarb
 
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
 GOPKG := build/go
