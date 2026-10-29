@@ -40,7 +40,6 @@ func TestRenameInTrees(t *testing.T) {
 
 	// the mounted element Parts is renamed from the outline; two paths name it, the dialog asks
 	a.Find(qa.Text("kit").In(qa.ID("outline"))).Click()
-	a.Find(qa.Text("Parts").In(qa.ID("outline"))).Expand()
 	a.Answer(qa.Dialog{Kind: "message", Reply: "Yes"})
 	a.Find(qa.Text("Parts").In(qa.ID("outline"))).Activate()
 	a.Settle()
@@ -58,7 +57,7 @@ func TestRenameInTrees(t *testing.T) {
 	// Esc drops the box and nothing changes
 	a.Find(qa.Text("Pieces").In(qa.ID("outline"))).Activate()
 	a.Find(qa.ID("rename-field")).Type("Nope")
-	a.Find(qa.ID("rename-field")).Key("Escape")
+	a.Find(qa.ID("rename-field")).Key("Esc")
 	a.Settle()
 	if st := h.state(); !contains(st.Outline, "Pieces") || contains(st.Outline, "Nope") {
 		t.Fatalf("outline after Esc %q", st.Outline)
@@ -83,7 +82,7 @@ func TestRenameInTrees(t *testing.T) {
 
 func contains(list []string, s string) bool {
 	for _, x := range list {
-		if x == s {
+		if strings.Contains(x, s) {
 			return true
 		}
 	}

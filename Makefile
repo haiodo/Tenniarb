@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install opencode-mcp install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -80,7 +80,13 @@ go-mcp-install: ## MCP for agents: go install tenniarb-mcp and tenniarb-service 
 go-cli-install: ## CLI for agents: go install tenniarb (tenniarb check FILE...) into GOBIN
 	cd go && CGO_ENABLED=0 go install -trimpath -ldflags '$(GO_LDFLAGS)' ./cmd/tenniarb
 
-install: app go-mcp-install go-cli-install ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb-design skill as a link
+GO_PKG_BIN = $(shell cd go && p=$$(go env GOBIN); [ -n "$$p" ] || p=$$(go env GOPATH)/bin; echo $$p)
+
+opencode-mcp: ## Register the tenniarb MCP in opencode (global config), if opencode is on PATH
+	@command -v opencode >/dev/null 2>&1 || { echo "opencode not on PATH: tenniarb MCP not registered"; exit 0; }
+	opencode mcp add --global tenniarb -- $(GO_PKG_BIN)/tenniarb-mcp
+
+install: app go-mcp-install go-cli-install opencode-mcp ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb MCP in opencode, the tenniarb-design skill as a link
 ifeq ($(shell uname),Darwin)
 	rm -rf /Applications/Tenniarb.app
 	cp -R $(GOPKG)/app/Tenniarb.app /Applications/

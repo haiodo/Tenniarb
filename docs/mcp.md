@@ -13,6 +13,10 @@ claude mcp add tenniarb -- tenniarb-mcp
 claude mcp add tenniarb -- tenniarb-mcp -root /path/to/project
 ```
 
+OpenCode: `make opencode-mcp` registers the same command in the global config with the full path
+(`opencode mcp add --global tenniarb -- <GOBIN>/tenniarb-mcp`); `make install` runs it when `opencode`
+is on PATH. Restart OpenCode afterwards.
+
 `make go-mcp` builds both into `build/go/bin/`. The two binaries must sit in the same directory: the proxy
 starts the service found next to itself (or `$TENNIARB_SERVICE_BIN`, or `tenniarb-service` on `PATH`).
 

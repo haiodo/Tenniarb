@@ -111,7 +111,8 @@ type inspField struct {
 type inspSection struct {
 	scene  bool // shown for a scene element instead of the classic sections
 	box    *g.Panel
-	title  *g.LabelView
+	d      *g.DisclosureView
+	shown  string // the title the disclosure holds
 	label  func(k selKind) string
 	when   func(k selKind) bool
 	fields []*inspField
@@ -137,18 +138,18 @@ func faint() g.Option { return g.Foreground(g.SecondaryText) }
 // labelWidth is the width of the caption column of a row.
 func labelWidth() int { return g.Scaled(68) }
 
-// section starts a section; the fields built until the next call belong to it.
+// section starts a collapsible section; the fields built until the next call belong to it. The title
+// follows the selection where it names what is shown.
 func (in *inspector) section(label func(selKind) string, when func(selKind) bool, rows ...func() g.Option) g.Option {
 	s := &inspSection{label: label, when: when, scene: in.building}
 	in.sections = append(in.sections, s)
 	in.cur = s
-	opts := []g.Option{g.Ref(&s.box), g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
-		g.Separator(g.GrowX()),
-		g.Label("", g.Ref(&s.title), g.GrowX(), g.Typeface(sectionFont()))}
+	body := []g.Option{g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6))}
 	for _, r := range rows {
-		opts = append(opts, r())
+		body = append(body, r())
 	}
-	return g.VBox(opts...)
+	return g.VBox(g.Ref(&s.box), g.GrowX(), g.Padding(0),
+		g.Disclosure(label(kindNone), append([]g.Option{g.Ref(&s.d), g.GrowX(), g.Gap(g.Scaled(6))}, body...)...))
 }
 
 func sectionFont() g.Font {
@@ -181,6 +182,7 @@ type entryCfg struct {
 	keep    bool // an empty text leaves the value, as for a name
 	src     func() propSrc
 	hint    string // the hint when the value is not set and there is no effective one
+	prefix  string // what to call the value, inside the field: X, Y, W, H
 }
 
 // entry is a Text bound to argument idx of command name.
@@ -202,12 +204,19 @@ func (in *inspector) newEntry(cfg entryCfg) *entry {
 }
 
 func (e *entry) option() g.Option {
+	opts := []g.Option{g.ID(e.cfg.id), g.Ref(&e.ctl), g.GrowX(), g.Place(g.AlignFill, g.AlignCenter),
+		g.Small(), g.Size(g.Scaled(48), g.Scaled(22)), g.Inset(g.Scaled(6), 0), g.Radius(g.Scaled(4)),
+		g.FieldFill(g.Adaptive{Light: g.RGB{R: 0xFF, G: 0xFF, B: 0xFF}, Dark: g.RGB{R: 0x1C, G: 0x1C, B: 0x1E}}),
+		g.FieldStroke(g.RGB{R: 0x80, G: 0x80, B: 0x80}.Alpha(0x40))}
+	if e.cfg.prefix != "" {
+		opts = append(opts, g.Prefix(e.cfg.prefix))
+	}
 	// Centred in its row: a swatch beside it is taller than the field.
-	return g.Text(g.ID(e.cfg.id), g.Ref(&e.ctl), g.GrowX(), g.Place(g.AlignFill, g.AlignCenter), g.Size(g.Scaled(48), 0), g.Init(func(t *g.TextView) {
+	return g.Text(append(opts, g.Init(func(t *g.TextView) {
 		t.OnActivate(e.commit)
 		t.Unwrap().AddFocusListener(swt.FocusListenerFocusGainedAdapter(func(*swt.FocusEvent) { e.gained() }))
 		t.Unwrap().AddFocusListener(swt.FocusListenerFocusLostAdapter(func(*swt.FocusEvent) { e.lost() }))
-	}))
+	}))...)
 }
 
 func (e *entry) gained() {
@@ -306,14 +315,12 @@ func (in *inspector) text(caption string, when func(selKind) bool, cfg entryCfg)
 	return in.row(caption, when, func(selKind) { e.refresh() }, e.option())
 }
 
-// pair adds a row with two entries labelled a and b.
+// pair adds a row with two entries prefixed a and b.
 func (in *inspector) pair(caption, a, b string, when func(selKind) bool, c1, c2 entryCfg) func() g.Option {
+	c1.prefix, c2.prefix = a, b
 	e1, e2 := in.newEntry(c1), in.newEntry(c2)
-	small := func(s string) g.Option {
-		return g.Label(s, faint(), g.Typeface(g.Type.Caption), g.Place(g.AlignStart, g.AlignCenter))
-	}
 	return in.row(caption, when, func(selKind) { e1.refresh(); e2.refresh() },
-		small(a), e1.option(), small(b), e2.option())
+		e1.option(), e2.option())
 }
 
 // colorOf parses the text of a colour; false for an expression or a name it does not know.
@@ -698,7 +705,12 @@ func (in *inspector) refresh() {
 		if !show {
 			continue
 		}
-		s.title.SetText(s.label(k))
+		if s.d != nil {
+			if t := s.label(k); t != s.shown {
+				s.shown = t
+				s.d.SetTitle(t)
+			}
+		}
 		for _, f := range s.fields {
 			vis := f.when(k)
 			if f.row.Visible() != vis {
