@@ -39,12 +39,18 @@ func (v *Viewer) realize() {
 	}
 	ds := v.session.Scene()
 	old, oldMap := v.rendered, v.smap
+	// A drag keeps the map: a camera move after the swap shows one frame at the old camera.
+	stays := old != nil && v.keepMap
+	v.keepMap = false
 	var next *render.Rendered
 	v.scene.Update(func(tx *gfx.Tx) {
 		if old != nil {
 			tx.Remove(old.Root)
 		}
 		next = ds.Realize(tx, nil)
+		if stays {
+			tx.Move(next.Root, oldMap.TX, oldMap.TY)
+		}
 		v.overlay = gfx.NewNode(next.NextID)
 		tx.Add(next.Root, v.overlay)
 		tx.SetZ(v.overlay, overlayZ)
@@ -53,6 +59,9 @@ func (v *Viewer) realize() {
 	v.nextID = next.NextID + 1
 	v.rendered = next
 	v.smap = MapOf(ds.Bounds())
+	if stays {
+		v.smap = oldMap
+	}
 
 	if v.shownElem != v.state.Current || old == nil {
 		v.shownElem = v.state.Current
@@ -197,6 +206,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		v.press = press{}
 		v.view.SetCursor(view.CursorArrow)
 		if v.session != nil {
+			v.keepMap = true
 			v.session.MouseUp(ev)
 			if !pressed.pan && !ev.Cancel {
 				v.maybeQuickPanel(pressed, p.Pos)
