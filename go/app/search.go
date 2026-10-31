@@ -40,7 +40,7 @@ func (v *Viewer) gotoItem(item *model.DiagramItem) {
 	c := v.smap.ToGfx(render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2})
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
-	comp.SetCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
+	v.setCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
 }
 
 // searchTo is the Goto Item field of the toolbar: it shows the first item whose name or text has the

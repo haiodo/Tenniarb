@@ -24,6 +24,11 @@ func TestAddFrame(t *testing.T) {
 	if err := os.WriteFile(file, []byte("element \"Screen\" { }\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	// the later tests start on the fixture, as they find it
+	t.Cleanup(func() {
+		h.open(fixture)
+		a.State("command", "name", "close-others")
+	})
 	h.open(file)
 	a.State("command", "name", "close-others")
 	a.Find(qa.Text("Screen").In(qa.ID("outline"))).Click()

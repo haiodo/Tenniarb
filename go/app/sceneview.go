@@ -155,7 +155,7 @@ func (v *Viewer) realizeScene() {
 		v.syncOutline()
 	} else if !v.pendingFit && oldSV != nil {
 		comp := v.view.Compositor()
-		comp.SetCamera(Follow(comp.Camera(), gfx.Point{X: sv.off.X - oldSV.off.X, Y: sv.off.Y - oldSV.off.Y}))
+		v.setCamera(Follow(comp.Camera(), gfx.Point{X: sv.off.X - oldSV.off.X, Y: sv.off.Y - oldSV.off.Y}))
 	}
 	v.drawSceneOverlay()
 	v.rebuildItems()
@@ -465,6 +465,19 @@ func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture
 	return r.Finish()
 }
 
+// setCamera moves the camera and keeps the selection frames on their nodes: the HUD is drawn in view
+// points, so a camera move leaves the frames behind.
+func (v *Viewer) setCamera(cam gfx.Camera) {
+	v.view.Compositor().SetCamera(cam)
+	v.drawSceneOverlay()
+}
+
+// panView pans the canvas and keeps the selection frames on their nodes.
+func (v *Viewer) panView(dx, dy float64) {
+	v.view.Pan(dx, dy)
+	v.drawSceneOverlay()
+}
+
 // drawSceneOverlay draws the selection frames on the HUD, so a zoom or a pan does not damage the
 // tiles of the scene.
 func (v *Viewer) drawSceneOverlay() {
@@ -512,7 +525,7 @@ func (v *Viewer) revealScene() {
 	c := gfx.Point{X: pl.X + pl.W/2 + v.sv.off.X, Y: pl.Y + pl.H/2 + v.sv.off.Y}
 	vx, vy := (c.X-cam.Origin.X)*cam.Zoom, (c.Y-cam.Origin.Y)*cam.Zoom
 	if vx < 0 || vy < 0 || vx > float64(w) || vy > float64(h) {
-		v.view.Compositor().SetCamera(CenterOn(cam, c, float64(w), float64(h)))
+		v.setCamera(CenterOn(cam, c, float64(w), float64(h)))
 	}
 }
 
@@ -552,7 +565,7 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			return
 		}
 		if v.press.pan {
-			v.view.Pan(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
+			v.panView(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
 			v.press.pos = p.Pos
 			return
 		}
@@ -836,6 +849,6 @@ func (v *Viewer) zoomToSelection() {
 	w, h := v.view.Canvas().Size()
 	z := ClampZoom(0.9 * math.Min(float64(w)/pl.W, float64(h)/pl.H))
 	c := gfx.Point{X: pl.X + pl.W/2 + v.sv.off.X, Y: pl.Y + pl.H/2 + v.sv.off.Y}
-	v.view.Compositor().SetCamera(CenterOn(gfx.Camera{Zoom: z}, c, float64(w), float64(h)))
+	v.setCamera(CenterOn(gfx.Camera{Zoom: z}, c, float64(w), float64(h)))
 	v.drawSceneOverlay()
 }

@@ -550,7 +550,7 @@ func (v *Viewer) applyInitialCamera() {
 		return
 	}
 	if cam, ok := v.state.Camera(v.state.Current); ok {
-		v.view.Compositor().SetCamera(cam)
+		v.setCamera(cam)
 		v.pendingFit = false
 		return
 	}
@@ -564,7 +564,7 @@ func (v *Viewer) applyInitialCamera() {
 func (v *Viewer) fitView() {
 	w, h := v.view.Canvas().Size()
 	cw, ch, _ := v.contentSize()
-	v.view.Compositor().SetCamera(FitCamera(cw, ch, float64(w), float64(h)))
+	v.setCamera(FitCamera(cw, ch, float64(w), float64(h)))
 }
 
 // saveCamera remembers the viewport of the element on the canvas, unless it was never placed.
@@ -577,7 +577,7 @@ func (v *Viewer) saveCamera() {
 func (v *Viewer) zoomBy(f float64) {
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
-	comp.SetCamera(ZoomCamera(comp.Camera(), f, float64(w)/2, float64(h)/2))
+	v.setCamera(ZoomCamera(comp.Camera(), f, float64(w)/2, float64(h)/2))
 }
 
 // resetZoom is Swift's Reset Zoom: zoom 1, the diagram centered.
@@ -587,7 +587,7 @@ func (v *Viewer) resetZoom() {
 		return
 	}
 	w, h := v.view.Canvas().Size()
-	v.view.Compositor().SetCamera(CenterCamera(1, cw, ch, float64(w), float64(h)))
+	v.setCamera(CenterCamera(1, cw, ch, float64(w), float64(h)))
 }
 
 // visibleScene is the part of the editor scene the canvas shows now.

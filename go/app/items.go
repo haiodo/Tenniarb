@@ -329,7 +329,7 @@ func (v *Viewer) revealNode() {
 	}
 	z := ClampZoom(math.Min(0.9*math.Min(float64(w)/pl.W, float64(h)/pl.H), math.Max(cam.Zoom, 1)))
 	c := gfx.Point{X: x + pl.W/2, Y: y + pl.H/2}
-	v.view.Compositor().SetCamera(CenterOn(gfx.Camera{Zoom: z}, c, float64(w), float64(h)))
+	v.setCamera(CenterOn(gfx.Camera{Zoom: z}, c, float64(w), float64(h)))
 	v.drawSceneOverlay()
 }
 
@@ -346,7 +346,7 @@ func (v *Viewer) revealItem(it *model.DiagramItem) {
 	c := v.smap.ToGfx(render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2})
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
-	comp.SetCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
+	v.setCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
 }
 
 // itemsEntries is the context menu of the list: the commands of the selected node, and in a mounted

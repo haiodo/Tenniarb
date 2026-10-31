@@ -79,7 +79,7 @@ func (sh *Shell) registerQA() {
 		if err := a.Decode("dy", &dy); err != nil {
 			return err
 		}
-		v.view.Pan(dx, dy)
+		v.panView(dx, dy)
 		return nil
 	})
 	// command: what the QA driver cannot reach: the application menu (quit, preferences, about), and

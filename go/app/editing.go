@@ -71,7 +71,7 @@ func (v *Viewer) realize() {
 	} else if !v.pendingFit {
 		// Edits change the bounds, which move the content on the scene; the view follows.
 		comp := v.view.Compositor()
-		comp.SetCamera(Follow(comp.Camera(), v.smap.Shift(oldMap)))
+		v.setCamera(Follow(comp.Camera(), v.smap.Shift(oldMap)))
 	}
 	v.moveInline()
 }
@@ -183,7 +183,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 			return
 		}
 		if v.press.pan {
-			v.view.Pan(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
+			v.panView(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
 			v.press.pos = p.Pos
 			// The pointer is followed on the scene as it was at the press: panning must not hide the movement.
 			if v.session != nil {
@@ -222,7 +222,7 @@ func (v *Viewer) middlePan(p *view.Pointer) {
 		v.view.SetCursor(view.CursorGrabbing)
 	case view.PointerMove:
 		if p.Drag {
-			v.view.Pan(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
+			v.panView(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
 			v.press.pos = p.Pos
 		}
 	case view.PointerUp, view.PointerCancel:
