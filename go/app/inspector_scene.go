@@ -179,16 +179,29 @@ func (in *inspector) sceneSections() g.Option {
 
 // sceneCodeKey names what the Code section shows for a scene element: the element and the node.
 func (v *Viewer) sceneCodeKey() string {
-	if len(v.selNodes) == 0 {
+	if v.state.Current == nil {
 		return ""
 	}
-	return pathKey(v.state.Current) + "\x01" + v.selNodes[0]
+	key := pathKey(v.state.Current) + "\x01"
+	if len(v.selNodes) == 0 {
+		return key
+	}
+	return key + v.selNodes[0]
+}
+
+// sceneCodeNode is the node the Code section shows: the selected one, or the element itself when nothing
+// is selected, so its own properties are there to edit.
+func (v *Viewer) sceneCodeNode() (*scene.Node, *scene.Placed) {
+	if n, pl := v.selectedScene(); n != nil || pl != nil {
+		return n, pl
+	}
+	return v.elementNode(v.state.Current), nil
 }
 
 // refreshSceneCode shows the source of the selected node in the Code section, its kids as one line each;
-// nothing selected, nothing shown: the text of a whole element can be the whole file.
+// with nothing selected, the element itself.
 func (v *Viewer) refreshSceneCode() {
-	n, pl := v.selectedScene()
+	n, pl := v.sceneCodeNode()
 	key := v.sceneCodeKey()
 	want := ""
 	switch {
@@ -219,7 +232,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 	if key == "" || key != v.sceneCodeKey() || len(editor.ParseDiagnostics(text)) > 0 {
 		return
 	}
-	n, pl := v.selectedScene()
+	n, pl := v.sceneCodeNode()
 	if n == nil && pl != nil { // a part of a component has no code of its own
 		if text != EffectiveText(pl) {
 			v.setBanner("The code of a part of an instance is read only: change it in the inspector")
@@ -248,7 +261,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 		return
 	}
 	// A renamed node keeps the selection: it starts where the old one did.
-	if NodeAt(v.sv.node, v.selNodes[0]) == nil {
+	if len(v.selNodes) == 1 && NodeAt(v.sv.node, v.selNodes[0]) == nil {
 		if m := nodeStartingAt(v.sv.node, start); m != nil {
 			v.selNodes = []string{NodePath(v.sv.node, m)}
 			v.props.sceneKey = v.sceneCodeKey()
@@ -257,7 +270,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 	}
 	// The pane keeps what was typed, as the code now holds it: a kid written in full stays open for the
 	// next lines, the kids already there stay stubs.
-	if m, _ := v.selectedScene(); m != nil {
+	if m, _ := v.sceneCodeNode(); m != nil {
 		if v.props.text.Text() != text {
 			v.setPropsText(text, editor.Target{})
 			v.props.text.SetSelection(at, length)

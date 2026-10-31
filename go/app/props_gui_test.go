@@ -158,3 +158,40 @@ func TestSceneCodeKeepsTypedKid(t *testing.T) {
 		t.Fatalf("the item is not in the scene: %s", scene)
 	}
 }
+
+const sceneElementDoc = `element "Screen" {
+    width 200
+    height 100
+    item "Card" { width 10; height 10; item "Inner" { width 1; height 1 } }
+}
+`
+
+// TestSceneCodeShowsElement: with no node selected the Code section shows the element itself, so its
+// own properties are there to edit; its items stay stubs.
+func TestSceneCodeShowsElement(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	defer h.open(fixture)
+	file := filepath.Join(t.TempDir(), "screen.tenn")
+	if err := os.WriteFile(file, []byte(sceneElementDoc), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	props := func() string { return a.Find(qa.ID("props")).Node().Value }
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Find(qa.Text("Screen").In(qa.ID("outline"))).Click()
+	a.Settle()
+	before := props()
+	if !strings.Contains(before, "width 200") || !strings.Contains(before, "item \"Card\"\n") {
+		t.Fatalf("the element's own lines are not there: %q", before)
+	}
+	a.Find(qa.ID("props")).Type(strings.Replace(before, "width 200", "width 150", 1))
+	time.Sleep(500 * time.Millisecond)
+	a.Settle()
+	if got := h.text(); !strings.Contains(got, "width 150") {
+		t.Fatalf("the element kept its width: %q", got)
+	}
+}
