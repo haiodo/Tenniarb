@@ -364,6 +364,11 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 		return []editor.Entry{{Label: "Duplicate", Run: v.session.Duplicate}, {Label: "Delete", Run: v.session.DeleteSelection}}
 	}
 	entries := []editor.Entry{
+		{Label: "Add Frame", Run: func() { v.addSceneItem("Frame") }},
+		{Label: "Add Row", Run: func() { v.addSceneItem("Row") }},
+		{Label: "Add Text", Run: func() { v.addSceneItem("Text") }},
+		{Label: "Add Box", Run: func() { v.addSceneItem("Box") }},
+		{Sep: true},
 		{Label: "Duplicate", Run: v.duplicateScene},
 		{Label: "Zoom to Item", Run: v.zoomToSelection},
 		{Sep: true},

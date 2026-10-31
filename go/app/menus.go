@@ -75,21 +75,28 @@ func (v *Viewer) menus() {
 	edit.Item("Edit Bod&y", func() { v.editKey(editor.ModShift) })
 	edit.Item("Edit &Value", func() { v.editKey(editor.ModAlt) })
 	add := edit.Submenu("A&dd")
-	add.Item("&New Item", func() {
-		if v.session != nil {
-			v.session.AddTopItem()
-		}
-	})
-	add.Item("New &Linked Item", func() {
-		if v.session != nil {
-			v.session.AddNewItem(false)
-		}
-	})
-	add.Item("Linked &Styled Item", func() {
-		if v.session != nil {
-			v.session.AddNewItem(true)
-		}
-	})
+	for _, k := range SceneKinds {
+		kind := k.Name
+		add.Item(k.Name, func() { v.addSceneItem(kind) })
+	}
+	add.Separator()
+	v.addClassic = []*g.MenuItem{
+		add.Item("&New Item", func() {
+			if v.session != nil {
+				v.session.AddTopItem()
+			}
+		}),
+		add.Item("New &Linked Item", func() {
+			if v.session != nil {
+				v.session.AddNewItem(false)
+			}
+		}),
+		add.Item("Linked &Styled Item", func() {
+			if v.session != nil {
+				v.session.AddNewItem(true)
+			}
+		}),
+	}
 	edit.OnShow(v.updateMenus)
 
 	el := bar.Submenu("E&lement")
@@ -167,6 +174,10 @@ func (v *Viewer) updateMenus() {
 	}
 	v.undoItem.SetEnabled(um != nil && um.CanUndo() && v.activeText == nil)
 	v.redoItem.SetEnabled(um != nil && um.CanRedo() && v.activeText == nil)
+	// A scene takes frames and rows; a diagram takes items.
+	for _, it := range v.addClassic {
+		it.SetEnabled(!v.sceneMode())
+	}
 }
 
 func (v *Viewer) treeFocused() bool { return v.tree.Unwrap().IsFocusControl() }

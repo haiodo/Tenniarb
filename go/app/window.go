@@ -45,7 +45,8 @@ type Viewer struct {
 	svCache     []*sceneView // views taken off the canvas, the last one first
 	keepMap     bool         // the next rebuild keeps the scene map: a drag must not scroll the canvas
 	itemsUI     itemsList
-	sceneBuilds int // how many times go/scene drew the canvas, for the tests
+	addClassic  []*g.MenuItem // the diagram commands of Edit > Add, off in a scene
+	sceneBuilds int           // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
 	shownElem   *model.Element // the element the camera was placed for
 	nextID      int
@@ -290,6 +291,10 @@ func (v *Viewer) deleteItems() {
 }
 
 func (v *Viewer) newItem() {
+	if v.sceneMode() {
+		v.addSceneItem("Frame")
+		return
+	}
 	if v.session != nil {
 		v.session.AddNewItem(false)
 	}
