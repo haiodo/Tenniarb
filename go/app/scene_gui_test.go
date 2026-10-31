@@ -90,14 +90,9 @@ func TestScene(t *testing.T) {
 		t.Fatal(err)
 	}
 	screen, lib := sceneFiles(t, dir)
-	// the later tests start from a clean window with the fixture, as the parity tests leave it
+	// the later tests start from a clean window with the fixture, as they find it
 	t.Cleanup(func() {
-		orig := filepath.Join(dir, "Restore.tenn")
-		if err := os.WriteFile(orig, mustRead(t, "../../web/fixtures/Example.tenn"), 0o644); err != nil {
-			t.Error(err)
-			return
-		}
-		qa.open(orig)
+		qa.open(fixture)
 		a.State("command", "name", "close-others")
 	})
 	screenTitle := filepath.Base(screen)

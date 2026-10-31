@@ -23,6 +23,7 @@ func TestPropsRejectsDocumentNodes(t *testing.T) {
 	}
 	h := qaHelpers{t: t, app: qatest.App(t)}
 	a := h.app
+	defer h.open(fixture)
 	data, err := os.ReadFile("../../web/fixtures/Example.tenn")
 	if err != nil {
 		t.Fatal(err)
@@ -68,6 +69,7 @@ func TestPropsKeepsInvalidDraft(t *testing.T) {
 	}
 	h := qaHelpers{t: t, app: qatest.App(t)}
 	a := h.app
+	defer h.open(fixture)
 	data, err := os.ReadFile("../../web/fixtures/Example.tenn")
 	if err != nil {
 		t.Fatal(err)
@@ -124,6 +126,7 @@ func TestSceneCodeKeepsTypedKid(t *testing.T) {
 	}
 	h := qaHelpers{t: t, app: qatest.App(t)}
 	a := h.app
+	defer h.open(fixture)
 	file := filepath.Join(t.TempDir(), "screen.tenn")
 	if err := os.WriteFile(file, []byte(sceneKidDoc), 0o644); err != nil {
 		t.Fatal(err)

@@ -491,16 +491,14 @@ func TestEditor(t *testing.T) {
 		t.Fatalf("the panel stayed open after Esc: %+v", s)
 	}
 
-	// rename a row of the outline: Rename opens a name box over the row (a double click opens the items)
+	// rename a row of the outline: Rename edits the row in place (a double click opens the items)
 	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	app.Key("Mod+Shift+R")
-	if s = editor(t, app); !s.Popover {
-		t.Fatalf("rename box not shown: %+v", s)
-	}
+	field := app.Find(qa.Class("Text").In(qa.ID("outline")))
+	field.Type("Steps")
 	app.Shot("13-rename")
-	app.Find(qa.Class("Text").In(qa.Class("Popover"))).Type("Steps")
-	app.Key("Enter")
-	if s = editor(t, app); s.Popover || !slices.Contains(s.Outline, "Documentation/Steps") {
+	field.Key("Enter")
+	if s = editor(t, app); !slices.Contains(s.Outline, "Documentation/Steps") {
 		t.Fatalf("rename: %+v", s)
 	}
 	app.Key("Mod+Z")
