@@ -15,6 +15,53 @@ import (
 
 // TestPropsKeepsInvalidDraft keeps text that does not parse in the props pane: the user fixes it there,
 // and it goes away only when the code changes the text.
+// TestPropsRejectsDocumentNodes keeps an item line out of the properties: applied, it would nest an
+// item and take the colour, the text and the place of the item it was typed into.
+func TestPropsRejectsDocumentNodes(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	data, err := os.ReadFile("../../web/fixtures/Example.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(t.TempDir(), "Example.tenn")
+	if err := os.WriteFile(file, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	props := func() string { return a.Find(qa.ID("props")).Node().Value }
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
+	a.Settle()
+	a.Find(qa.Text("Big yellow item").In(qa.ID("items"))).Click()
+	a.Settle()
+	before := props()
+	if before == "" {
+		t.Fatal("nothing in the pane")
+	}
+
+	// a new item line: the pane keeps it, the item keeps its properties
+	draft := before + "\nitem\n"
+	a.Find(qa.ID("props")).Type(draft)
+	time.Sleep(500 * time.Millisecond)
+	a.Settle()
+	a.Find(qa.Text("Big yellow item").In(qa.ID("items"))).Click()
+	a.Settle()
+	if got := props(); got != draft {
+		t.Fatalf("the draft went away: %q", got)
+	}
+	a.Find(qa.ID("canvas")).ClickAt(700, 700)
+	a.Settle()
+	a.Find(qa.Text("Big yellow item").In(qa.ID("items"))).Click()
+	a.Settle()
+	if got := props(); got != before {
+		t.Fatalf("the item changed to %q, want %q", got, before)
+	}
+}
+
 func TestPropsKeepsInvalidDraft(t *testing.T) {
 	if os.Getenv("GOWT_GUI_TEST") == "" {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")

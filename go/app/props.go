@@ -13,6 +13,7 @@ import (
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -76,6 +77,20 @@ func (v *Viewer) onPropsChange(text string) {
 	})
 }
 
+// propsOnly says text holds properties: a document node typed here would nest an item instead of
+// setting a value once the element is written back.
+func propsOnly(text string) bool {
+	node, _ := tenn.Parse(text)
+	only := true
+	model.TraverseBlock(node, func(name string, _ *tenn.Node) {
+		switch name {
+		case "item", "link", "element", "model", "annotation":
+			only = false
+		}
+	})
+	return only
+}
+
 // applyProps marks the text, evaluates it and, when it parses, hands it to the session.
 func (v *Viewer) applyProps(target editor.Target, text string) {
 	if v.session == nil {
@@ -86,8 +101,10 @@ func (v *Viewer) applyProps(target editor.Target, text string) {
 		v.props.values = v.session.PropsValues(target, text)
 		v.props.text.Unwrap().Redraw()
 	}
-	if len(editor.ParseDiagnostics(text)) == 0 {
-		v.session.ApplyProps(target, text)
+	if len(editor.ParseDiagnostics(text)) == 0 && propsOnly(text) {
+		if v.session.ApplyProps(target, text) {
+			v.props.want = v.session.PropsText(target)
+		}
 	}
 }
 
@@ -112,18 +129,13 @@ func (v *Viewer) refreshProps() {
 	target := v.session.PropsTarget()
 	want := v.session.PropsText(target)
 	cur := v.props.text.Text()
-	if target == v.props.target && cur != "" {
-		node, p := tenn.Parse(cur)
-		// A draft that does not parse stays on screen until the code changes its text: the user is fixing it.
-		if p.Errors.HasErrors() && want == v.props.want {
-			return
-		}
-		if !p.Errors.HasErrors() && tenn.ToStr(node, 0, false) == want {
-			v.props.want = want
+	// What the user typed stays on screen, valid or not, until the code changes its text.
+	if target == v.props.target && cur != "" && want == v.props.want {
+		if node, p := tenn.Parse(cur); !p.Errors.HasErrors() && tenn.ToStr(node, 0, false) == want {
 			v.props.values = v.session.PropsValues(target, cur)
 			v.props.text.Unwrap().Redraw()
-			return
 		}
+		return
 	}
 	v.setPropsText(want, target)
 }
