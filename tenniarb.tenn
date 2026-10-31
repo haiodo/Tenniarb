@@ -742,6 +742,7 @@ diagram"
                 item Forward { width 20; height 20; view-box 0 0 24 24; path "M5 12h14M12 5l7 7-7 7"; border-color #3a3a3c; line-width 2 }
                 item Back { width 20; height 20; view-box 0 0 24 24; path "M19 12H5M12 19l-7-7 7-7"; border-color #3a3a3c; line-width 2 }
                 item Close { width 20; height 20; view-box 0 0 24 24; path "M18 6L6 18M6 6l12 12"; border-color #3a3a3c; line-width 2 }
+                item Comment { width 20; height 20; view-box 0 0 24 24; path "M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"; border-color #3a3a3c; line-width 2 }
                 item Check { width 20; height 20; view-box 0 0 24 24; path "M20 6L9 17l-5-5"; border-color #3a3a3c; line-width 2 }
             }
             item Chrome {
@@ -912,7 +913,7 @@ diagram"
                 }
             }
             item Inspector {
-                pos 0 -250
+                pos -185 -258
                 auto-layout row
                 wrap yes
                 width 880
@@ -998,6 +999,27 @@ diagram"
                         align center
                         item Caption { title Shadow; width 76; font-size 13; text-color #86868b; layout left }
                         item Sw { auto-layout row; width 34; height 20; padding 2; align center; corner-radius 10; color #e0e0e3; item Knob { width 16; height 16; corner-radius 8; color #ffffff; shadow 0 -1 2 #00000033 } }
+                    }
+                    item "Row size mode" {
+                        auto-layout row
+                        width fill
+                        height 24
+                        gap 8
+                        align center
+                        item Caption { title W; width 76; font-size 13; text-color #86868b; layout left }
+                        item Seg {
+                            auto-layout row
+                            width fill
+                            height 24
+                            padding 2
+                            gap 2
+                            align center
+                            corner-radius 7
+                            color #e3e3e6
+                            item Fixed { auto-layout row; width fill; height 20; align center; justify center; corner-radius 5; color #ffffff; shadow 0 -1 2 #00000026; item T { title Fixed; font-size 11; font-weight 600; text-color #1d1d1f } }
+                            item Hug { auto-layout row; width fill; height 20; align center; justify center; item T { title Hug; font-size 11; text-color #86868b } }
+                            item Fill { auto-layout row; width fill; height 20; align center; justify center; item T { title Fill; font-size 11; text-color #86868b } }
+                        }
                     }
                     item "Row info" {
                         auto-layout row
@@ -1094,6 +1116,27 @@ diagram"
                         align center
                         item Caption { title Shadow; width 76; font-size 13; text-color #98989d; layout left }
                         item Sw { auto-layout row; width 34; height 20; padding 2; align center; corner-radius 10; color #5a5a5c; item Knob { width 16; height 16; corner-radius 8; color #ffffff; shadow 0 -1 2 #00000033 } }
+                    }
+                    item "Row size mode dark" {
+                        auto-layout row
+                        width fill
+                        height 24
+                        gap 8
+                        align center
+                        item Caption { title W; width 76; font-size 13; text-color #98989d; layout left }
+                        item Seg {
+                            auto-layout row
+                            width fill
+                            height 24
+                            padding 2
+                            gap 2
+                            align center
+                            corner-radius 7
+                            color #444446
+                            item Fixed { auto-layout row; width fill; height 20; align center; justify center; corner-radius 5; color #6a6a6d; item T { title Fixed; font-size 11; font-weight 600; text-color #f2f2f7 } }
+                            item Hug { auto-layout row; width fill; height 20; align center; justify center; item T { title Hug; font-size 11; text-color #98989d } }
+                            item Fill { auto-layout row; width fill; height 20; align center; justify center; item T { title Fill; font-size 11; text-color #98989d } }
+                        }
                     }
                     item "Row info dark" {
                         auto-layout row
@@ -1473,8 +1516,10 @@ diagram"
                         use Components.Chrome.Tool_pill_1 as hidesidebar { slot a { use Components.Icons.Sidebar as i4 { width 18; height 18; border-color #3a3a3c } } }
                         item pad2 { width 20; height 1 }
                         use Components.Chrome.Window_title as wtitle { width 110; layout left }
+                        slot agent
                         use Components.Chrome.Tool_pill_3 as zoom { slot a { use Components.Icons.Zoom_out as i5 { width 18; height 18; border-color #3a3a3c } }; slot b { use Components.Icons.Zoom_in as i6 { width 18; height 18; border-color #3a3a3c } }; slot c { use Components.Icons.Fit as i7 { width 18; height 18; border-color #3a3a3c } } }
                         use Components.Chrome.Tool_pill_text as zoomlabel
+                        use Components.Chrome.Tool_pill_1 as comments { slot a { use Components.Icons.Comment as ic25 { width 18; height 18; border-color #3a3a3c } } }
                         item grow { width fill; height 1 }
                         use Components.Chrome.Tool_pill_2 as itempill { slot a { use Components.Icons.Plus as i8 { width 18; height 18; border-color #3a3a3c } }; slot b { use Components.Icons.Minus as i9 { width 18; height 18; border-color #3a3a3c } } }
                         use Components.Chrome.Tool_pill_1 as goto { slot a { use Components.Icons.Search as i10 { width 18; height 18; border-color #3a3a3c } } }
@@ -1556,8 +1601,10 @@ diagram"
                         use Components.Chrome.Tool_pill_1_dark as hidesidebar { slot a { use Components.Icons.Sidebar as i16 { width 18; height 18; border-color #e5e5ea } } }
                         item pad2 { width 20; height 1 }
                         use Components.Chrome.Window_title_dark as wtitle { width 110; layout left }
+                        slot agent
                         use Components.Chrome.Tool_pill_3_dark as zoom { slot a { use Components.Icons.Zoom_out as i17 { width 18; height 18; border-color #e5e5ea } }; slot b { use Components.Icons.Zoom_in as i18 { width 18; height 18; border-color #e5e5ea } }; slot c { use Components.Icons.Fit as i19 { width 18; height 18; border-color #e5e5ea } } }
                         use Components.Chrome.Tool_pill_text_dark as zoomlabel
+                        use Components.Chrome.Tool_pill_1_dark as comments { slot a { use Components.Icons.Comment as ic26 { width 18; height 18; border-color #e5e5ea } } }
                         item grow { width fill; height 1 }
                         use Components.Chrome.Tool_pill_2_dark as itempill { slot a { use Components.Icons.Plus as i20 { width 18; height 18; border-color #e5e5ea } }; slot b { use Components.Icons.Minus as i21 { width 18; height 18; border-color #e5e5ea } } }
                         use Components.Chrome.Tool_pill_1_dark as goto { slot a { use Components.Icons.Search as i22 { width 18; height 18; border-color #e5e5ea } } }
@@ -2212,6 +2259,10 @@ diagram"
                 pos -120 -160
             }
             link "App UI" "Menus"
+            item "Comments and agent" {
+                pos -120 -50
+            }
+            link "App UI" "Comments and agent"
             item "Windows" {
                 pos 140 -160
             }
@@ -2224,13 +2275,13 @@ diagram"
                 pos 140 170
             }
             link "App UI" "Components"
-            item "Inspector v2" {
+            item "Inspector concept" {
                 pos -120 170
             }
-            link "App UI" "Inspector v2"
-            link "Main window - scene" "Inspector v2"
-            link "Inspector v2" "Components"
-            item "Source: go/app window.go, outline.go, items.go, inspector.go, inspector_scene.go, props.go, navpanel.go, colorpicker.go, prefs.go, menus.go" {
+            link "App UI" "Inspector concept"
+            link "Main window - scene" "Inspector concept"
+            link "Inspector concept" "Components"
+            item "Source: go/app window.go, outline.go, items.go, inspector.go, inspector_scene.go, props.go, navpanel.go, colorpicker.go, prefs.go, menus.go, agent.go, comments_ui.go, links_ui.go, rename_ui.go, add_scene.go" {
                 pos -380 -260
             }
             item "Light and dark variants are separate components (suffix dark); icons are Lucide paths" {
@@ -2379,6 +2430,8 @@ diagram"
                         at Title { title "Layout" }
                         use Components.Inspector.Light.Row_pair as r92 { at Caption { title "Position" }; at LX { title X }; at LY { title Y }; at VX.T { title "-70" }; at VY.T { title "103" } }
                         use Components.Inspector.Light.Row_pair as r93 { at Caption { title "Size" }; at LX { title W }; at LY { title H }; at VX.T { title "" }; at VY.T { title "" } }
+                        use Components.Inspector.Light.Row_size_mode as mode93w
+                        use Components.Inspector.Light.Row_size_mode as mode93h { at Caption { title H } }
                     }
                     use Components.Inspector.Light.Insp_section as sec96 {
                         at Title { title "Fill" }
@@ -2698,7 +2751,7 @@ diagram"
                     }
                     use Components.Code.Light.Code_line as ln248 {
                         padding 0 0 0 18
-                        use Components.Code.Light.Code_stub as t247 { title "item v" }
+                        use Components.Code.Light.Code_plain as t247 { title "item v { title \"name@example.com\"; font-size 14; text-color #9ca3af }" }
                     }
                     use Components.Code.Light.Code_line as ln250 {
                         use Components.Code.Light.Code_plain as t249 { title "}" }
@@ -2715,6 +2768,13 @@ diagram"
                         use Components.Inspector.Light.Row_combo as r254 { at Caption { title "Auto layout" }; at Val.T { title "row" } }
                         use Components.Inspector.Light.Row_pair as r255 { at Caption { title "Position" }; at LX { title X }; at LY { title Y }; at VX.T { title "" }; at VY.T { title "" } }
                         use Components.Inspector.Light.Row_pair as r256 { at Caption { title "Size" }; at LX { title W }; at LY { title H }; at VX.T { title "fill" }; at VY.T { title "38" } }
+                        use Components.Inspector.Light.Row_size_mode as mode256w {
+                            at Seg.Fixed { color #e3e3e6; shadow 0 0 0 #00000000 }
+                            at Seg.Fixed.T { font-weight normal; text-color #86868b }
+                            at Seg.Fill { color #ffffff; shadow 0 -1 2 #00000026 }
+                            at Seg.Fill.T { font-weight 600; text-color #1d1d1f }
+                        }
+                        use Components.Inspector.Light.Row_size_mode as mode256h { at Caption { title H } }
                         use Components.Inspector.Light.Row_text as r257 { at Caption { title "Gap" }; at Val.T { title "" } }
                         use Components.Inspector.Light.Row_text as r258 { at Caption { title "Padding" }; at Val.T { title "0 12" } }
                         use Components.Inspector.Light.Row_combo as r259 { at Caption { title "Align" }; at Val.T { title "center" } }
@@ -2747,7 +2807,7 @@ diagram"
                 }
             }
         }
-        element "Inspector v2" {
+        element "Inspector concept" {
             item Light {
                 pos 0 0
                 auto-layout row
@@ -4404,7 +4464,7 @@ diagram"
                 corner-radius 12
                 border-color #d1d5db
                 align start
-                item CapBox { auto-layout row; width fill; padding 0 0 12 0; item Cap { title "Rename (Cmd+Shift+R): a box under the row"; width fill; font-size 13; font-weight 700; layout left } }
+                item CapBox { auto-layout row; width fill; padding 0 0 12 0; item Cap { title "Rename (Cmd+Shift+R): inline in the tree row"; width fill; font-size 13; font-weight 700; layout left } }
                 item Frame {
                     auto-layout column
                     width 240
@@ -4416,27 +4476,24 @@ diagram"
                         slot icon { use Components.Icons.Folder as i431 { width 16; height 16; border-color #3a3a3c } }
                         at Label { title "Tenniarb" }
                     }
-                    use Components.Sidebar.Light.Tree_row as row434 {
+                    item row434 {
+                        auto-layout row
+                        width fill
+                        height 26
+                        padding 0 8
+                        gap 6
+                        align center
+                        corner-radius 7
                         color #0000000f
-                        at Indent { width 18 }
-                        slot icon { use Components.Icons.File as i433 { width 16; height 16; border-color #f28a26 } }
-                        at Label { title "Naming"; text-color #f28a26 }
+                        item Indent { width 18; height 1 }
+                        use Components.Icons.File as i433 { width 16; height 16; border-color #f28a26 }
+                        item Field { auto-layout row; width fill; height 22; padding 0 5; align center; color #ffffff; corner-radius 4; border-color #0a84ff; line-width 1; item T { title Naming; width fill; font-size 13; layout left; text-color #1d1d1f } }
                     }
                     use Components.Sidebar.Light.Tree_row as row436 {
                         at Indent { width 18 }
                         slot icon { use Components.Icons.File as i435 { width 16; height 16; border-color #3a3a3c } }
                         at Label { title "MVP" }
                     }
-                }
-                item ArrowRow {
-                    auto-layout row
-                    width 240
-                    padding 0 0 0 50
-                    use Components.Popover.Light.Popover_arrow as arrow437
-                }
-                use Components.Popover.Light.Popover as rename {
-                    width 240
-                    use Components.Popover.Light.Text_field as name { at T { title Naming } }
                 }
             }
             item "Quick Style panel" {
@@ -4630,6 +4687,8 @@ diagram"
                             at Label { title "Delete" }
                             slot lead { use Components.Icons.Minus as i483 { width 12; height 12; border-color #3a3a3c } }
                         }
+                        use Components.Popover.Light.Menu_rule as r485
+                        use Components.Popover.Light.Menu_item as m486 { at Label { title "Copy Link" } }
                     }
                     use Components.Popover.Light.Menu_panel as menu519 {
                         width 170
@@ -4741,6 +4800,8 @@ diagram"
                     use Components.Popover.Light.Menu_item as m531 {
                         at Label { title "Delete" }
                     }
+                    use Components.Popover.Light.Menu_rule as r532
+                    use Components.Popover.Light.Menu_item as m533 { at Label { title "Copy Link" } }
                 }
             }
             item "Items menu and scene canvas menu" {
@@ -4760,6 +4821,11 @@ diagram"
                     align start
                     use Components.Popover.Light.Menu_panel as menu537 {
                         width 170
+                        use Components.Popover.Light.Menu_item as add_frame { at Label { title "Add Frame" } }
+                        use Components.Popover.Light.Menu_item as add_row { at Label { title "Add Row" } }
+                        use Components.Popover.Light.Menu_item as add_text { at Label { title "Add Text" } }
+                        use Components.Popover.Light.Menu_item as add_box { at Label { title "Add Box" } }
+                        use Components.Popover.Light.Menu_rule as add_rule
                         use Components.Popover.Light.Menu_item as m533 {
                             at Label { title "Duplicate" }
                         }
@@ -4770,9 +4836,20 @@ diagram"
                         use Components.Popover.Light.Menu_item as m536 {
                             at Label { title "Delete" }
                         }
+                        use Components.Popover.Light.Menu_rule as link_rule
+                        use Components.Popover.Light.Menu_item as copy_link { at Label { title "Copy Link" } }
                     }
                     use Components.Popover.Light.Menu_panel as menu544 {
                         width 190
+                        use Components.Popover.Light.Menu_item as m543 {
+                            at Label { title "Insert Component" }
+                        }
+                        use Components.Popover.Light.Menu_rule as r542
+                        use Components.Popover.Light.Menu_item as add_frame2 { at Label { title "Add Frame" } }
+                        use Components.Popover.Light.Menu_item as add_row2 { at Label { title "Add Row" } }
+                        use Components.Popover.Light.Menu_item as add_text2 { at Label { title "Add Text" } }
+                        use Components.Popover.Light.Menu_item as add_box2 { at Label { title "Add Box" } }
+                        use Components.Popover.Light.Menu_rule as add_rule2
                         use Components.Popover.Light.Menu_item as m538 {
                             at Label { title "Duplicate" }
                         }
@@ -4783,10 +4860,8 @@ diagram"
                         use Components.Popover.Light.Menu_item as m541 {
                             at Label { title "Delete" }
                         }
-                        use Components.Popover.Light.Menu_rule as r542
-                        use Components.Popover.Light.Menu_item as m543 {
-                            at Label { title "Insert Component" }
-                        }
+                        use Components.Popover.Light.Menu_rule as link_rule2
+                        use Components.Popover.Light.Menu_item as copy_link2 { at Label { title "Copy Link" } }
                     }
                     use Components.Popover.Light.Menu_panel as menu550 {
                         width 250
@@ -4803,8 +4878,103 @@ diagram"
                         use Components.Popover.Light.Menu_item as m549 {
                             at Label { title "Insert Component from Library..." }
                         }
+                        use Components.Popover.Light.Menu_rule as link_rule3
+                        use Components.Popover.Light.Menu_item as copy_link3 { at Label { title "Copy Link" } }
                     }
                 }
+            }
+        }
+        element "Comments and agent" {
+            item "Comment mode and pins" {
+                pos 0 0
+                auto-layout column
+                width 420
+                padding 20
+                color #e7e9eb
+                corner-radius 12
+                border-color #d1d5db
+                align start
+                item CapBox { auto-layout row; width fill; padding 0 0 12 0; item Cap { title "Comment Mode (C): numbered pins and a canvas hint; Escape leaves the mode"; width fill; font-size 13; font-weight 700; layout left } }
+                item Canvas {
+                    auto-layout abs
+                    width 380
+                    height 210
+                    color #ffffff
+                    border-color #d1d5db
+                    corner-radius 6
+                    item Hint { pos 12 -12; auto-layout row; padding 5 10; color #1e1e1ed1; corner-radius 8; item T { title "Comment mode: click to place a comment, Esc to leave"; font-size 12; text-color #ffffff } }
+                    item Brain { pos 70 -80; auto-layout row; width 100; height 48; align center; justify center; color #bbdefb; border-color #90a4ae; corner-radius 4; item T { title Brain; font-size 14 } }
+                    item Pin1 { pos 184 -116; auto-layout row; width 24; height 24; align center; justify center; color #ff9500; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "1"; font-size 11; font-weight 700; text-color #ffffff } }
+                    item Pin2 { pos 270 -60; auto-layout row; width 24; height 24; align center; justify center; color #8e8e93; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "2"; font-size 11; font-weight 700; text-color #ffffff } }
+                    item Pin3 { pos 55 -160; auto-layout row; width 24; height 24; align center; justify center; color #ffffff; border-color #ff9500; line-width 2; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "3"; font-size 11; font-weight 700; text-color #ff9500 } }
+                }
+                item Note { title "Orange: open; grey: resolved; ring: detached pin at the element origin"; font-size 12; text-color #6b7280 }
+            }
+            item "Compose and thread" {
+                pos 460 0
+                auto-layout column
+                width 400
+                padding 20
+                gap 14
+                color #e7e9eb
+                corner-radius 12
+                border-color #d1d5db
+                align start
+                item CapBox { auto-layout row; width fill; item Cap { title "New comment and thread popovers"; width fill; font-size 13; font-weight 700; layout left } }
+                use Components.Popover.Light.Popover as compose {
+                    width 350
+                    item Field { auto-layout row; width fill; height 58; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Comment; font-size 13; text-color #86868b } }
+                    item Buttons { auto-layout row; width fill; gap 6; justify end; use Components.Popover.Light.Push_button as cancel { at Label { title Cancel } }; use Components.Popover.Light.Push_button_default as post { at Label { title Post } } }
+                }
+                use Components.Popover.Light.Popover as thread {
+                    width 350
+                    item Head { title "#1  haiodo  now"; font-size 12; text-color #86868b }
+                    item Place { title "Naming / Brain"; font-size 12; text-color #86868b }
+                    item Text { title "Should this node link to the execution model?"; width fill; font-size 13; layout left }
+                    item ReplyHead { title "kimi-code  now"; font-size 12; text-color #86868b }
+                    item ReplyText { title "Yes, the relation is already in the model."; width fill; font-size 13; layout left }
+                    item ReplyField { auto-layout row; width fill; height 42; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Reply; font-size 13; text-color #86868b } }
+                    item Buttons { auto-layout row; width fill; gap 6; use Components.Popover.Light.Push_button_default as reply { at Label { title Reply } }; use Components.Popover.Light.Push_button as resolve { at Label { title Resolve } }; use Components.Popover.Light.Push_button as delete { at Label { title Delete } } }
+                }
+            }
+            item "Comment list and Open Link" {
+                pos -63 -370
+                auto-layout column
+                width 500
+                padding 20
+                gap 14
+                color #e7e9eb
+                corner-radius 12
+                border-color #d1d5db
+                align start
+                item CapBox { auto-layout row; width fill; item Cap { title "View > Comments and File > Open Link (Cmd+Shift+O)"; width fill; font-size 13; font-weight 700; layout left } }
+                use Components.Popover.Light.Popover as list {
+                    width 450
+                    gap 4
+                    use Components.Popover.Light.Menu_item as resolved { at Label { title "Show resolved" }; slot lead { item Check { width 12; height 12; view-box 0 0 12 12; path "M2 6L5 9L10 3"; border-color #3a3a3c; line-width 1.5 } } }
+                    use Components.Popover.Light.List_row as row1 { color #0000000f; at Label { title "#1  Naming / Brain  Should this node link to the execution model?" } }
+                    use Components.Popover.Light.List_row as row2 { at Label { title "#2  MVP  Check the empty state" } }
+                    use Components.Popover.Light.List_row as row3 { at Label { title "#3  App UI  Update the source note" } }
+                }
+                use Components.Popover.Light.Popover as open_link {
+                    width 450
+                    use Components.Popover.Light.Text_field as field { at T { title "tenniarb://open?... or File.tenn#Element/node"; text-color #86868b } }
+                }
+            }
+            item "Agent toolbar" {
+                pos 466 -414
+                auto-layout column
+                width 420
+                padding 20
+                gap 12
+                color #e7e9eb
+                corner-radius 12
+                border-color #d1d5db
+                align start
+                item CapBox { auto-layout row; width fill; item Cap { title "Conditional MCP agent controls, next to the document title"; width fill; font-size 13; font-weight 700; layout left } }
+                item Toolbar { auto-layout row; width fill; height 38; padding 0 10; gap 10; align center; color #f6f6f6; border-color #d1d5db; corner-radius 7; item Title { title tenniarb.tenn; width fill; font-size 13; layout center }; item Status { title "● kimi-code"; font-size 12; text-color #3a3a3c }; use Components.Popover.Light.Push_button as follow { at Label { title Follow } } }
+                item Toolbar2 { auto-layout row; width fill; height 38; padding 0 10; gap 10; align center; color #f6f6f6; border-color #d1d5db; corner-radius 7; item Title { title tenniarb.tenn; width fill; font-size 13; layout center }; item Status { title "○ kimi-code (2)"; font-size 12; text-color #3a3a3c }; use Components.Popover.Light.Push_button as following { at Label { title Following } } }
+                item Note { title "Filled dot: active for 10 seconds; count appears with several agents"; font-size 12; text-color #6b7280 }
             }
         }
         element "Windows" {
