@@ -200,9 +200,10 @@ func (v *Viewer) refreshSceneCode() {
 	if key == v.props.sceneKey && v.props.text.Text() == want {
 		return
 	}
-	if key == v.props.sceneKey && v.propsFocused() {
-		if _, p := tenn.Parse(v.props.text.Text()); p.Errors.HasErrors() {
-			return // being typed
+	if key == v.props.sceneKey {
+		// A draft that does not parse stays on screen until the code changes its text: the user is fixing it.
+		if _, p := tenn.Parse(v.props.text.Text()); p.Errors.HasErrors() && want == v.props.want {
+			return
 		}
 	}
 	v.setPropsText(want, editor.Target{})

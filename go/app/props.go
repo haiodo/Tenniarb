@@ -30,6 +30,7 @@ type props struct {
 	changes int           // counts edits; a timer applies only the last one
 	applied int           // the edit the last timer applied: the user is typing while changes differs
 	loading bool          // the text is being set by code
+	want    string        // the text the code last put in: a draft that does not parse stays until this changes
 	// values are the evaluated expressions by 0-based line, drawn at the line ends.
 	values map[int]string
 	// sceneKey is the scene node the text belongs to (sceneCodeKey), when a scene element is shown.
@@ -112,12 +113,13 @@ func (v *Viewer) refreshProps() {
 	want := v.session.PropsText(target)
 	cur := v.props.text.Text()
 	if target == v.props.target && cur != "" {
-		if node, p := tenn.Parse(cur); p.Errors.HasErrors() {
-			// The user is typing something that does not parse yet.
-			if v.propsFocused() {
-				return
-			}
-		} else if tenn.ToStr(node, 0, false) == want {
+		node, p := tenn.Parse(cur)
+		// A draft that does not parse stays on screen until the code changes its text: the user is fixing it.
+		if p.Errors.HasErrors() && want == v.props.want {
+			return
+		}
+		if !p.Errors.HasErrors() && tenn.ToStr(node, 0, false) == want {
+			v.props.want = want
 			v.props.values = v.session.PropsValues(target, cur)
 			v.props.text.Unwrap().Redraw()
 			return
@@ -132,6 +134,7 @@ func (v *Viewer) setPropsText(text string, target editor.Target) {
 	t.SetText(text)
 	v.props.loading = false
 	v.props.target = target
+	v.props.want = text
 	t.SetCaret(0)
 	v.styleProps(text)
 	v.props.values = nil
