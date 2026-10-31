@@ -105,3 +105,53 @@ func TestPropsKeepsInvalidDraft(t *testing.T) {
 		t.Fatalf("the draft outlived the new text: %q", got)
 	}
 }
+
+const sceneKidDoc = `element "Screen" {
+    item "Card" {
+        width 100
+        height 50
+        item "Title" { width 10; height 10 }
+    }
+    link "Card" "Card"
+}
+`
+
+// TestSceneCodeKeepsTypedKid keeps a kid typed in full in the Code section: its properties stay on
+// screen to keep writing them, while the kids already there stay stubs.
+func TestSceneCodeKeepsTypedKid(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	file := filepath.Join(t.TempDir(), "screen.tenn")
+	if err := os.WriteFile(file, []byte(sceneKidDoc), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	props := func() string { return a.Find(qa.ID("props")).Node().Value }
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Find(qa.Text("Screen").In(qa.ID("outline"))).Click()
+	a.Settle()
+	a.Find(qa.Text("Card").In(qa.ID("items"))).Click()
+	a.Settle()
+	before := props()
+	if !strings.Contains(before, "item \"Title\"\n") {
+		t.Fatalf("the kid is not a stub: %q", before)
+	}
+
+	draft := strings.Replace(before, "    item \"Title\"", "    item \"New\" { width 5 }\n    item \"Title\"", 1)
+	a.Find(qa.ID("props")).Type(draft)
+	time.Sleep(500 * time.Millisecond)
+	a.Settle()
+	got := props()
+	if !strings.Contains(got, "item \"New\" { width 5 }") {
+		t.Fatalf("the new kid was stubbed: %q", got)
+	}
+	if !strings.Contains(got, "item \"Title\"\n") {
+		t.Fatalf("the kid already there is shown: %q", got)
+	}
+	if scene := string(a.State("scene")); !strings.Contains(scene, "Card.New") {
+		t.Fatalf("the item is not in the scene: %s", scene)
+	}
+}

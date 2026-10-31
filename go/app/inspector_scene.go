@@ -200,11 +200,10 @@ func (v *Viewer) refreshSceneCode() {
 	if key == v.props.sceneKey && v.props.text.Text() == want {
 		return
 	}
-	if key == v.props.sceneKey {
-		// A draft that does not parse stays on screen until the code changes its text: the user is fixing it.
-		if _, p := tenn.Parse(v.props.text.Text()); p.Errors.HasErrors() && want == v.props.want {
-			return
-		}
+	// What the user typed stays on screen until the code changes the text: a kid written in full keeps
+	// its properties, the kids already there stay stubs.
+	if key == v.props.sceneKey && want == v.props.want {
+		return
 	}
 	v.setPropsText(want, editor.Target{})
 	v.props.sceneKey = key
@@ -244,6 +243,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 		return
 	}
 	start := n.Range.Start
+	at, length := v.props.text.Selection()
 	if !v.sceneEdit(n, e) {
 		return
 	}
@@ -254,6 +254,15 @@ func (v *Viewer) applySceneCode(key, text string) {
 			v.props.sceneKey = v.sceneCodeKey()
 			v.drawSceneOverlay()
 		}
+	}
+	// The pane keeps what was typed, as the code now holds it: a kid written in full stays open for the
+	// next lines, the kids already there stay stubs.
+	if m, _ := v.selectedScene(); m != nil {
+		if v.props.text.Text() != text {
+			v.setPropsText(text, editor.Target{})
+			v.props.text.SetSelection(at, length)
+		}
+		v.props.want = OwnText(v.fileText(v.fileOf(m)), m)
 	}
 }
 
