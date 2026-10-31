@@ -211,6 +211,9 @@ func (v *Viewer) styleStubs(text string) {
 	}
 	t := v.props.text
 	for _, s := range stubs {
+		if s.Full { // a kid written out in full is no link
+			continue
+		}
 		from, to := utf8.RuneCountInString(text[:s.Start]), utf8.RuneCountInString(text[:s.End])
 		t.SetStyle(from, to-from, g.TextStyle{Foreground: &c, Underline: true})
 		start := len(utf16.Encode([]rune(text[:s.Start])))
@@ -252,7 +255,7 @@ func (v *Viewer) selectStubAt(text string, off int) {
 	}
 	stubs, _ := findStubs(n, text)
 	for _, s := range stubs {
-		if off < s.Start || off >= s.End {
+		if s.Full || off < s.Start || off >= s.End {
 			continue
 		}
 		p := NodePath(v.sv.node, s.Kid)

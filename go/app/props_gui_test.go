@@ -110,7 +110,7 @@ const sceneKidDoc = `element "Screen" {
     item "Card" {
         width 100
         height 50
-        item "Title" { width 10; height 10 }
+        item "Group" { width 10; height 10; item "Inner" { width 1; height 1 } }
     }
     link "Card" "Card"
 }
@@ -136,11 +136,11 @@ func TestSceneCodeKeepsTypedKid(t *testing.T) {
 	a.Find(qa.Text("Card").In(qa.ID("items"))).Click()
 	a.Settle()
 	before := props()
-	if !strings.Contains(before, "item \"Title\"\n") {
-		t.Fatalf("the kid is not a stub: %q", before)
+	if !strings.Contains(before, "item \"Group\"\n") {
+		t.Fatalf("the kid with kids is not a stub: %q", before)
 	}
 
-	draft := strings.Replace(before, "    item \"Title\"", "    item \"New\" { width 5 }\n    item \"Title\"", 1)
+	draft := strings.Replace(before, "    item \"Group\"", "    item \"New\" { width 5 }\n    item \"Group\"", 1)
 	a.Find(qa.ID("props")).Type(draft)
 	time.Sleep(500 * time.Millisecond)
 	a.Settle()
@@ -148,7 +148,7 @@ func TestSceneCodeKeepsTypedKid(t *testing.T) {
 	if !strings.Contains(got, "item \"New\" { width 5 }") {
 		t.Fatalf("the new kid was stubbed: %q", got)
 	}
-	if !strings.Contains(got, "item \"Title\"\n") {
+	if !strings.Contains(got, "item \"Group\"\n") {
 		t.Fatalf("the kid already there is shown: %q", got)
 	}
 	if scene := string(a.State("scene")); !strings.Contains(scene, "Card.New") {

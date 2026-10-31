@@ -298,7 +298,8 @@ func kidHead(text string, k *scene.Node) string {
 }
 
 // OwnText is NodeText with every kid the item tree lists (items, uses, slots) cut down to its head
-// line, so the Code section holds what n itself writes, not the thousands of lines below it.
+// line, so the Code section holds what n itself writes, not the thousands of lines below it. A kid
+// without kids of its own is written in full: there is no subtree to hide behind a link.
 func OwnText(text string, n *scene.Node) string {
 	var b strings.Builder
 	at := n.Range.Start
@@ -307,18 +308,24 @@ func OwnText(text string, n *scene.Node) string {
 			continue
 		}
 		b.WriteString(text[at:k.Range.Start])
-		b.WriteString(kidHead(text, k))
+		if len(sceneKids(k)) == 0 {
+			b.WriteString(text[k.Range.Start:k.Range.End])
+		} else {
+			b.WriteString(kidHead(text, k))
+		}
 		at = k.Range.End
 	}
 	b.WriteString(text[at:n.Range.End])
 	return dedent(b.String(), indentAt(text, n.Range.Start))
 }
 
-// Stub is a kid command of the Code section text that stands for a kid of the node: a command without
-// a block, of the kind and name of that kid. Start and End are bytes of the section text.
+// Stub is a kid command of the Code section text that stands for a kid of the node: a command of the
+// kind and name of that kid. Start and End are bytes of the section text. Full is set for a kid the
+// text writes out itself: it hides nothing, so it is no link and the panel keeps its text as typed.
 type Stub struct {
 	Start, End int
 	Kid        *scene.Node
+	Full       bool
 }
 
 // kidCmd reads a command as a kid of an owner: its kind and key; not ok when it is no kid, as a use
@@ -395,18 +402,16 @@ func findStubs(n *scene.Node, code string) ([]Stub, *tenn.Node) {
 	var stubs []Stub
 	var left []*tenn.Node
 	for _, c := range kidCmds(root, n.Kind, nil) {
-		if hasBlock(c) {
-			continue
-		}
 		kind, key, _ := kidCmd(c, n.Kind)
 		q := byName[name{kind, key}]
 		if len(q) == 0 {
 			left = append(left, c)
 			continue
 		}
+		k := kids[q[0]]
 		used[q[0]] = true
 		byName[name{kind, key}] = q[1:]
-		stubs = append(stubs, Stub{c.Token.Pos, c.End, kids[q[0]]})
+		stubs = append(stubs, Stub{c.Token.Pos, c.End, k, hasBlock(c) || k.Body == (scene.Range{})})
 	}
 	for _, kind := range []scene.Kind{scene.KItem, scene.KUse, scene.KSlot} {
 		var cmds []*tenn.Node
@@ -425,7 +430,7 @@ func findStubs(n *scene.Node, code string) ([]Stub, *tenn.Node) {
 			continue
 		}
 		for i, c := range cmds {
-			stubs = append(stubs, Stub{c.Token.Pos, c.End, free[i]})
+			stubs = append(stubs, Stub{c.Token.Pos, c.End, free[i], hasBlock(c)})
 		}
 	}
 	slices.SortFunc(stubs, func(a, b Stub) int { return a.Start - b.Start })
@@ -489,7 +494,9 @@ func ReplaceOwnEdit(text string, n *scene.Node, panel string) TextEdit {
 	var edits []kidEdit
 	for _, s := range stubs {
 		byKid[s.Kid] = s
-		edits = append(edits, kidEdit{s.Start, s.End, raw(s.Kid)})
+		if !s.Full {
+			edits = append(edits, kidEdit{s.Start, s.End, raw(s.Kid)})
+		}
 	}
 	var prev *Stub
 	var lost []*scene.Node // kids before the first stub that is left

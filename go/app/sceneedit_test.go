@@ -45,9 +45,9 @@ func merge(t *testing.T, text, path, panel string) string {
 func TestOwnTextStubsKids(t *testing.T) {
 	cases := []struct{ path, want string }{
 		{"Page", stubPage},
-		{"Page.Header", "item Header {\n  title Hi\n  item Logo\n}"},
-		{"Page.Row", "item Row { item A; item B; gap 2 }"},
-		{"Page.ok", "use kit.Button as ok {\n  title Go\n  at inner { item X }\n}"},
+		{"Page.Header", "item Header {\n  title Hi\n  item Logo { color red }\n}"},
+		{"Page.Row", "item Row { item A; item B { gap 1 }; gap 2 }"},
+		{"Page.ok", "use kit.Button as ok {\n  title Go\n  at inner { item X { color red } }\n}"},
 		{"Page.Row2", "item Row2"},
 	}
 	for _, c := range cases {
@@ -399,5 +399,23 @@ func TestInstancePropEditUndo(t *testing.T) {
 	v.session.Undo()
 	if v.text != sharedDoc {
 		t.Errorf("undo:\n%s", v.text)
+	}
+}
+
+// TestLeafKidsAreWrittenInFull: a kid without kids of its own shows its properties in the Code section
+// and is no link, while a kid with kids stays one line.
+func TestLeafKidsAreWrittenInFull(t *testing.T) {
+	text := "item Page {\n  item Leaf { color red }\n  item Box { item Inner { color red } }\n}\n"
+	n := nodeOf(t, text, "Page")
+	want := "item Page {\n  item Leaf { color red }\n  item Box\n}"
+	if got := OwnText(text, n); got != want {
+		t.Fatalf("own text:\n%s\nwant\n%s", got, want)
+	}
+	stubs, _ := findStubs(n, OwnText(text, n))
+	if len(stubs) != 2 || !stubs[0].Full || stubs[0].Kid.Name != "Leaf" || stubs[1].Full || stubs[1].Kid.Name != "Box" {
+		t.Fatalf("stubs %+v", stubs)
+	}
+	if got := merge(t, text, "Page", OwnText(text, n)); got != text {
+		t.Errorf("merge:\n%s", got)
 	}
 }
