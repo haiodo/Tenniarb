@@ -43,8 +43,8 @@ func TestRenameInTrees(t *testing.T) {
 	a.Answer(qa.Dialog{Kind: "message", Reply: "Yes"})
 	a.Find(qa.Text("Parts").In(qa.ID("outline"))).Activate()
 	a.Settle()
-	a.Find(qa.ID("rename-field")).Type("Pieces")
-	a.Find(qa.ID("rename-field")).Key("Enter")
+	a.Find(qa.Class("Text").In(qa.ID("outline"))).Type("Pieces")
+	a.Find(qa.Class("Text").In(qa.ID("outline"))).Key("Enter")
 	time.Sleep(400 * time.Millisecond)
 	a.Settle()
 	if d := a.Dialogs(); len(d) == 0 || !strings.Contains(d[0].Message, "1 references") || !strings.Contains(d[0].Message, "kit.Parts.Button") {
@@ -56,8 +56,8 @@ func TestRenameInTrees(t *testing.T) {
 
 	// Esc drops the box and nothing changes
 	a.Find(qa.Text("Pieces").In(qa.ID("outline"))).Activate()
-	a.Find(qa.ID("rename-field")).Type("Nope")
-	a.Find(qa.ID("rename-field")).Key("Esc")
+	a.Find(qa.Class("Text").In(qa.ID("outline"))).Type("Nope")
+	a.Find(qa.Class("Text").In(qa.ID("outline"))).Key("Esc")
 	a.Settle()
 	if st := h.state(); !contains(st.Outline, "Pieces") || contains(st.Outline, "Nope") {
 		t.Fatalf("outline after Esc %q", st.Outline)
@@ -66,7 +66,10 @@ func TestRenameInTrees(t *testing.T) {
 	// an item row: no references, so no dialog
 	a.Find(qa.Text("Screen").In(qa.ID("outline"))).Click()
 	a.Find(qa.Text("Card").In(qa.ID("items"))).Activate()
-	h.enterIn("rename-field", "Panel")
+	a.Find(qa.Class("Text").In(qa.ID("items"))).Type("Panel")
+	a.Find(qa.Class("Text").In(qa.ID("items"))).Key("Enter")
+	time.Sleep(400 * time.Millisecond)
+	a.Settle()
 	if st := h.state(); st.Error != "" || !contains(st.Items, "Panel") {
 		t.Fatalf("items %q, error %q", st.Items, st.Error)
 	}

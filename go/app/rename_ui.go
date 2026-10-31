@@ -54,39 +54,13 @@ func (h *navHistory) each(f func(Selection) Selection) {
 	}
 }
 
-// editName shows a box under row n of tree. Enter or a click outside commits a changed name, Esc drops it.
-// Ceiling: gowt 0.13.5 has no editor in a tree row, so the box is a popover.
+// editName edits row n of tree in place; Enter or a click elsewhere commits a changed name, Esc drops it.
 func (v *Viewer) editName(tree *g.TreeView, n *g.Node, name string, commit func(string)) {
-	v.closePopover()
-	p := v.win.Popover(g.Gap(4))
-	var field *g.TextView
-	done := false
-	finish := func(text string) {
-		if done {
-			return
-		}
-		done = true
+	tree.Edit(n, func(text string) {
 		if text = strings.TrimSpace(text); text != name {
 			v.app.Async(func() { commit(text) })
 		}
-	}
-	b := n.Unwrap().GetBounds()
-	p.Add(g.Text(g.Focused(), g.Ref(&field), g.Size(max(int(b.Width), 200), 0), g.ID("rename-field"), g.Init(func(t *g.TextView) {
-		t.SetText(name)
-		t.OnActivate(func() {
-			finish(t.Text())
-			p.Close()
-		})
-	})))
-	p.OnEscape(func() bool {
-		done = true
-		return false
-	})
-	p.OnClose(func() { finish(field.Text()) })
-	v.openPopover(p)
-	v.activeText = field.Unwrap()
-	field.Unwrap().SelectAll()
-	p.ShowAtPoint(tree, int(b.X), int(b.Y+b.Height), g.PopoverBelow)
+	}, nil)
 }
 
 // renameElement asks for the new name of the element in a box under its row.

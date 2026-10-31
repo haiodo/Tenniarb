@@ -153,6 +153,8 @@ func (in *inspector) sceneSections() g.Option {
 			in.combo("Auto layout", node, "scene-auto-layout", "auto-layout", []string{"none", "row", "column", "abs"}, "none", src),
 			in.pair("Position", "X", "Y", node, num("scene-pos-x", "pos", 0), num("scene-pos-y", "pos", 1)),
 			in.pair("Size", "W", "H", node, t("scene-width", "width"), t("scene-height", "height")),
+			in.sizeModes("W", "scene-width-mode", "width", 0, node, func() float64 { w, _ := v.itemSize(); return w }, src),
+			in.sizeModes("H", "scene-height-mode", "height", 0, node, func() float64 { _, h := v.itemSize(); return h }, src),
 			in.text("Gap", node, num("scene-gap", "gap", 0)),
 			in.text("Padding", node, t("scene-padding", "padding")),
 			in.combo("Align", node, "scene-align", "align", []string{"start", "center", "end"}, "start", src),

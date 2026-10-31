@@ -323,6 +323,79 @@ func (in *inspector) pair(caption, a, b string, when func(selKind) bool, c1, c2 
 		e1.option(), e2.option())
 }
 
+// segmentTexts turns words into segments of a Segmented control.
+func segmentTexts(words []string) []g.Segment {
+	segs := make([]g.Segment, len(words))
+	for i, w := range words {
+		segs[i] = g.Segment{Text: w}
+	}
+	return segs
+}
+
+// itemSize is the drawn size of the selection: the scene node's, or the classic drawable's.
+func (v *Viewer) itemSize() (w, h float64) {
+	if _, pl := v.selectedScene(); pl != nil {
+		return pl.W, pl.H
+	}
+	if v.session == nil {
+		return 0, 0
+	}
+	ds := v.session.Scene()
+	for _, it := range v.session.Selection() {
+		if d, ok := ds.Drawables[it]; ok {
+			b := d.Bounds()
+			return b.Width, b.Height
+		}
+	}
+	return 0, 0
+}
+
+// sizeModes adds Fixed / Hug / Fill for one side of a size: Fixed takes the size the item has now,
+// the other two the word. A size in `.tenn` is text, so an expression keeps the field and the segments
+// say nothing.
+func (in *inspector) sizeModes(caption, id, name string, idx int, when func(selKind) bool, measured func() float64, src func() propSrc) func() g.Option {
+	if src == nil {
+		src = in.src
+	}
+	var c *g.SegmentedView
+	refresh := func(selKind) {
+		s := src()
+		p := s.get(name)
+		i := 0 // a size that is not written behaves as fixed
+		switch {
+		case p.Mixed:
+			i = -1
+		case !p.Set:
+		case p.Arg(idx).Expr:
+			i = -1
+		case p.Arg(idx).Text == "hug":
+			i = 1
+		case p.Arg(idx).Text == "fill":
+			i = 2
+		}
+		in.loading = true
+		c.Select(i)
+		in.loading = false
+	}
+	ctl := g.Segmented(segmentTexts([]string{"Fixed", "Hug", "Fill"}), g.Small(), g.GrowX(), g.ID(id), g.Ref(&c),
+		g.Init(func(c *g.SegmentedView) {
+			c.OnSelect(func(i int) {
+				if in.loading || in.v.session == nil {
+					return
+				}
+				switch i {
+				case 1:
+					src().set(name, "hug")
+				case 2:
+					src().set(name, "fill")
+				case 0:
+					src().arg(name, idx, strconv.FormatFloat(measured(), 'f', 0, 64))
+				}
+			})
+		}))
+	return in.row(caption, when, refresh, ctl)
+}
+
 // colorOf parses the text of a colour; false for an expression or a name it does not know.
 func colorOf(text string) (g.RGB, bool) {
 	c, ok := render.ParseColor(text)
@@ -610,7 +683,9 @@ func (in *inspector) build() g.Option {
 			in.pair("Position", "X", "Y", items,
 				entryCfg{id: "insp-pos-x", name: "pos", numeric: true, keep: true},
 				entryCfg{id: "insp-pos-y", name: "pos", idx: 1, numeric: true, keep: true}),
-			in.pair("Size", "W", "H", items, n("insp-width", "width"), n("insp-height", "height"))),
+			in.pair("Size", "W", "H", items, n("insp-width", "width"), n("insp-height", "height")),
+			in.sizeModes("W", "insp-width-mode", "width", 0, items, func() float64 { w, _ := v.itemSize(); return w }, nil),
+			in.sizeModes("H", "insp-height-mode", "height", 0, items, func() float64 { _, h := v.itemSize(); return h }, nil)),
 		in.section(sectionTitle("Fill"), notLink,
 			in.color("Color", notLink, entryCfg{id: "insp-color", name: "color"})),
 		in.section(sectionTitle("Text"), selected,
