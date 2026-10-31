@@ -385,3 +385,30 @@ func TestNestedFallbackDropped(t *testing.T) {
 	}
 	wantIn(t, tree.Diagnostics().Error(), "nested_warn.tenn:9:17: warning: slot cells is filled here")
 }
+
+// TestFillOutsideLayout: fill needs a layout parent to fill, so a top level item takes the size of its
+// own content instead of shrinking to zero.
+func TestFillOutsideLayout(t *testing.T) {
+	tree, err := scene.LoadSource(t.TempDir(), "fill.tenn", `element "E" {
+    item "Card" {
+        auto-layout column
+        padding 10
+        width fill
+        item "Kid" { title "Alfa" }
+    }
+}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen, _ := build(t, tree, "E")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if b := m["Card"]; b.W <= 20 || b.H <= 20 {
+		t.Errorf("Card = %+v, want the size of its content", b)
+	}
+	if !warned(screen, "width fill needs auto-layout on the parent") {
+		t.Errorf("no warning: %v", screen.Warnings)
+	}
+}

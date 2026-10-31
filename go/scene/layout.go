@@ -164,7 +164,7 @@ func (p *prep) item(rn *RNode, parentAuto bool) *layout.Node {
 		y, _ := pr.num(1)
 		n.Y = 0 - y
 	}
-	n.W, n.H = p.size(rn, "width", inCtx), p.size(rn, "height", inCtx)
+	n.W, n.H = p.size(rn, "width", inCtx, parentAuto), p.size(rn, "height", inCtx, parentAuto)
 	if inCtx {
 		p.limits(rn, n)
 		n.Absolute = p.flag(rn, "absolute")
@@ -309,7 +309,7 @@ func (p *prep) word(rn *RNode, name string, allowed ...string) (string, bool) {
 }
 
 // size reads width or height: a number, or hug and fill where an auto-layout is at work.
-func (p *prep) size(rn *RNode, name string, inCtx bool) layout.Size {
+func (p *prep) size(rn *RNode, name string, inCtx, parentAuto bool) layout.Size {
 	pr := p.prop(rn, name)
 	if pr == nil || len(pr.Args) == 0 {
 		return layout.Size{}
@@ -321,7 +321,7 @@ func (p *prep) size(rn *RNode, name string, inCtx bool) layout.Size {
 	s, _ := a.GetIdentText()
 	switch {
 	case s == "hug" || s == "fill":
-		return p.sizeWord(pr, s, inCtx)
+		return p.sizeWord(pr, s, inCtx, parentAuto)
 	case strings.HasSuffix(s, "%"):
 		p.t.warn(pr.Pos, "%s: percentages are not supported, the size is hug", name)
 	default:
@@ -330,7 +330,7 @@ func (p *prep) size(rn *RNode, name string, inCtx bool) layout.Size {
 	return layout.Size{}
 }
 
-func (p *prep) sizeWord(pr *Prop, word string, inCtx bool) layout.Size {
+func (p *prep) sizeWord(pr *Prop, word string, inCtx, parentAuto bool) layout.Size {
 	if !inCtx {
 		p.t.fail(pr.Pos, "%s %s needs auto-layout on the item or on its parent", pr.Name, word)
 		return layout.Size{}
@@ -339,6 +339,11 @@ func (p *prep) sizeWord(pr *Prop, word string, inCtx bool) layout.Size {
 		p.t.warn(pr.Pos, "%s fill with a fallback value is not supported", pr.Name)
 	}
 	if word == "fill" {
+		// There is nothing to fill in a plain parent: the item takes its own size, as in pen.
+		if !parentAuto {
+			p.t.warn(pr.Pos, "%s fill needs auto-layout on the parent, the size is hug", pr.Name)
+			return layout.Size{}
+		}
 		return layout.Fill
 	}
 	return layout.Size{}
