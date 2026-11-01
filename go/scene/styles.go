@@ -91,8 +91,7 @@ func styleScope(n *Node) *Node {
 	return nil
 }
 
-// StyleScope is the element whose styles n may name, the one the inspector offers the groups of: the
-// nearest element above n with a styles block; nil when there is none.
+// StyleScope is the element whose styles n may name: the inspector offers its groups.
 func StyleScope(n *Node) *Node { return styleScope(n) }
 
 // StyleRefs are the styles props name with use-style, in order; "-name" drops the one named before.
@@ -114,7 +113,6 @@ func StyleRefs(props []*Prop) []string {
 	return names
 }
 
-// styleRefs are the styles a node names, in order.
 func styleRefs(r *RNode) []string { return StyleRefs(r.Props) }
 
 func dropName(names []string, name string) []string {

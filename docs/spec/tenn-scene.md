@@ -393,11 +393,9 @@ use Actions.Button as save { at Btn { use-style secondary large } at Btn.Label {
 **[реализовано]**, `afterUseStyle` и `inheritProps` в `go/scene/styles.go`.
 
 Проверено на прототипе `examples/button-styles.tenn`: один `Button` (14 стилей, 4 группы) покрывает 48
-вариантов каталога `foundation/dev/design/tenn/lib/actions.tenn`. Чего не хватает для библиотеки:
-`text-color` не наследуется (в стиле приходится писать `Label { text-color ... }`); стиль не может отменить
-свойство другого стиля (прозрачный `border-color` вместо «без бордюра»); собственная запись компонента
-главнее стиля, поэтому умолчания частей приходится держать в стилях; нет `aspect-ratio` для icon-only;
-`use-style` в блоке самого `use` игнорируется (`at Btn { use-style ... }` работает) - это закрывает 5c.
+вариантов каталога `foundation/dev/design/tenn/lib/actions.tenn`. Чего не хватает для библиотеки: нет
+`aspect-ratio` (у icon-only ширина дублирует высоту в стиле размера); `use-style` в блоке самого `use`
+игнорируется - это закрывает 5c; нейтральный член `one-of` приходится объявлять пустым стилем.
 
 ## 5c. Компонент и его параметры [предложение 2026-11-01]
 
