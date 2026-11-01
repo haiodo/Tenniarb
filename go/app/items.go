@@ -30,13 +30,43 @@ type itemsList struct {
 	syncing  bool
 	grey     *swt.Color // the colour of instance rows in the theme greyDark
 	greyDark bool
+
+	addCol *g.Column // the column of the hover "+"
+	firstW int       // the width of the name column
+	addW   int       // the width of the "+" column in points
+	addX   int       // the x of the "+" in the tree, for the tests
+	hover  *g.Node   // the row that shows the "+"
 }
 
-// itemsPane is the item navigator: the list alone, the element above it names the canvas.
+// mouseMoveFunc is a MouseMoveListener for the hover "+" of the item rows.
+type mouseMoveFunc func(*swt.MouseEvent)
+
+func (f mouseMoveFunc) MouseMove(e *swt.MouseEvent) { f(e) }
+
+// itemsPane is the item navigator: a header with Add, then the list alone, the element above it names
+// the canvas.
 func (v *Viewer) itemsPane() g.Option {
-	return g.VBox(g.Ref(&v.itemsUI.box), g.Grow(), g.Padding(0), g.Gap(0),
+	l := &v.itemsUI
+	return g.VBox(g.Ref(&l.box), g.Grow(), g.Padding(0), g.Gap(0),
+		g.HBox(g.GrowX(), g.Padding(4), g.Gap(g.Scaled(4)),
+			g.Label("Items", faint(), g.GrowX(), g.Place(g.AlignStart, g.AlignCenter)),
+			g.Button("+", g.Small(), g.ID("items-add"), g.Tooltip("Add an item"),
+				g.Init(func(b *g.ButtonView) {
+					m := g.PopupMenu(b)
+					// The entries are made for the opening and gone when it closes, so the Add menu of
+					// the menu bar stays the one a test finds by its label.
+					b.OnClick(func() {
+						fillMenu(m, v.addEntries())
+						m.Show()
+					})
+					m.Unwrap().AddMenuListener(swt.MenuListenerMenuHiddenAdapter(func(*swt.MenuEvent) { fillMenu(m, nil) }))
+				}))),
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
-			v.itemsUI.tree = t
+			l.tree = t
+			l.firstW = g.Scaled(220)
+			t.Column("", l.firstW)
+			l.addCol = t.Column("", g.Scaled(24), g.Right())
+			t.ShowHeader(false)
 			t.OnSelect(v.onItemSelect)
 			t.OnActivate(v.activateItem)
 			t.OnExpand(v.onItemExpand)
@@ -45,6 +75,10 @@ func (v *Viewer) itemsPane() g.Option {
 					delete(v.itemsUI.open, r.Path)
 				}
 			})
+			tree := t.Unwrap()
+			tree.AddMouseMoveListener(mouseMoveFunc(func(e *swt.MouseEvent) { v.hoverItemRow(int(e.X), int(e.Y)) }))
+			tree.AddMouseTrackListener(swt.MouseTrackListenerMouseExitAdapter(func(*swt.MouseEvent) { v.hoverItemRow(-1, -1) }))
+			tree.AddControlListener(swt.ControlListenerControlResizedAdapter(func(*swt.ControlEvent) { v.sizeItemsAdd() }))
 			// A right click acts on the row under the pointer.
 			t.OnCellClick(func(c g.TreeClick) {
 				if c.Button == 3 && c.Node != nil {
@@ -54,7 +88,85 @@ func (v *Viewer) itemsPane() g.Option {
 					}
 				}
 			})
+			// A click in the "+" column adds a frame into that row, in its content or slot.
+			tree.AddMouseListener(swt.MouseListenerMouseUpAdapter(func(e *swt.MouseEvent) {
+				if e.Button != 1 {
+					return
+				}
+				n, col := t.CellAt(int(e.X), int(e.Y))
+				if col != 1 || !v.rowAdds(n) {
+					return
+				}
+				if sel := t.Selected(); len(sel) != 1 || sel[0].Data() != n.Data() {
+					t.Select(n)
+					v.onItemSelect(n)
+				}
+				v.addSceneItem("Frame")
+			}))
+			v.sizeItemsAdd()
 		})))
+}
+
+// sizeItemsAdd keeps the "+" column at the right edge of the Items tree, clear of a scrollbar.
+func (v *Viewer) sizeItemsAdd() {
+	l := &v.itemsUI
+	if l.tree == nil || l.addCol == nil {
+		return
+	}
+	t := l.tree.Unwrap()
+	w := int(t.GetClientArea().Width)
+	n := w - l.firstW - g.Scaled(18)
+	if n < g.Scaled(24) {
+		n = g.Scaled(24)
+	}
+	if n == l.addW {
+		return
+	}
+	l.addW, l.addX = n, l.firstW+n-8
+	l.addCol.SetWidth(n)
+}
+
+// hoverItemRow puts the "+" on the row under the pointer, on no other row.
+func (v *Viewer) hoverItemRow(x, y int) {
+	l := &v.itemsUI
+	var row *g.Node
+	if x >= 0 && l.tree != nil {
+		row, _ = l.tree.CellAt(x, y)
+	}
+	if row != nil && !v.rowAdds(row) {
+		row = nil
+	}
+	if row == l.hover {
+		return
+	}
+	if l.hover != nil {
+		l.hover.SetTextAt(1, "")
+	}
+	l.hover = row
+	if row != nil {
+		row.SetTextAt(1, "+")
+	}
+}
+
+// rowAdds reports whether a row takes a new node: a node written in the scene element, but not a use
+// whose component has no default slot to put it in.
+func (v *Viewer) rowAdds(row *g.Node) bool {
+	if !v.sceneMode() || v.sv.node == nil {
+		return false
+	}
+	r, ok := row.Data().(*ItemRow)
+	if !ok || r.Path == "" {
+		return false
+	}
+	n := NodeAt(v.sv.node, r.Path)
+	if n == nil {
+		return false
+	}
+	if n.Kind == scene.KUse {
+		into, _ := InsertTarget(v.stree, n)
+		return into != nil
+	}
+	return true
 }
 
 // toggleItems is the Items toolbar button: it collapses or expands the item pane under the outline.
@@ -90,11 +202,13 @@ func (v *Viewer) rebuildItems() {
 	}
 	l.sig = sig
 	l.syncing = true
+	l.hover = nil
 	l.tree.Batch(func() {
 		l.tree.Clear()
 		v.addItemRows(l.tree.Node, rows)
 	})
 	l.syncing = false
+	v.sizeItemsAdd()
 	v.syncItems()
 }
 
@@ -369,11 +483,20 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 		{Label: "Add Text", Run: func() { v.addSceneItem("Text") }},
 		{Label: "Add Box", Run: func() { v.addSceneItem("Box") }},
 		{Sep: true},
-		{Label: "Duplicate", Run: v.duplicateScene},
-		{Label: "Zoom to Item", Run: v.zoomToSelection},
-		{Sep: true},
-		{Label: "Delete", Run: v.deleteSceneNode},
 	}
+	if NodeAt(v.sv.node, r.Path) != nil {
+		entries = append(entries,
+			editor.Entry{Label: "Move Up", Run: func() { v.moveNodeBy(-1) }},
+			editor.Entry{Label: "Move Down", Run: func() { v.moveNodeBy(1) }},
+			editor.Entry{Label: "Move into Previous", Run: func() { v.moveNodeInto(-1) }},
+			editor.Entry{Label: "Move into Next", Run: func() { v.moveNodeInto(1) }},
+			editor.Entry{Sep: true})
+	}
+	entries = append(entries,
+		editor.Entry{Label: "Duplicate", Run: v.duplicateScene},
+		editor.Entry{Label: "Zoom to Item", Run: v.zoomToSelection},
+		editor.Entry{Sep: true},
+		editor.Entry{Label: "Delete", Run: v.deleteSceneNode})
 	if m := model.MountOf(v.state.Current, false); m != nil {
 		entries = append([]editor.Entry{{Label: "Insert Component", Run: func() { v.insertFromMount(m, r) }}, {Sep: true}}, entries...)
 	}

@@ -512,6 +512,7 @@ func (v *Viewer) selectScene(paths []string) {
 	v.drawSceneOverlay()
 	v.refreshProps()
 	v.syncItems()
+	v.updateMenus()
 	v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventSelect, Version: v.version})
 }
 

@@ -21,22 +21,27 @@ func install(args []string, stdout, stderr io.Writer) int {
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
-	targets := skill.Targets()
 	if *dir != "" {
-		targets = []string{*dir}
+		if err := skill.Write(*dir); err != nil {
+			fmt.Fprintf(stderr, "tenniarb install: %s: %v\n", *dir, err)
+			return 1
+		}
+		fmt.Fprintf(stdout, "installed %s to %s\n", strings.Join(skill.Names(), ", "), *dir)
+		return 0
 	}
-	if len(targets) == 0 {
+	done, errs := skill.Install()
+	if len(done) == 0 && len(errs) == 0 {
 		fmt.Fprintln(stderr, "tenniarb install: no home directory to install the skill into")
 		return 1
 	}
-	code := 0
-	for _, t := range targets {
-		if err := skill.Install(t); err != nil {
-			fmt.Fprintf(stderr, "tenniarb install: %s: %v\n", t, err)
-			code = 1
-			continue
-		}
+	for _, t := range done {
 		fmt.Fprintf(stdout, "installed %s to %s\n", strings.Join(skill.Names(), ", "), t)
 	}
-	return code
+	for _, err := range errs {
+		fmt.Fprintf(stderr, "tenniarb install: %v\n", err)
+	}
+	if len(errs) > 0 {
+		return 1
+	}
+	return 0
 }

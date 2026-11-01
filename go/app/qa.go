@@ -176,6 +176,17 @@ func (v *Viewer) qaState() map[string]any {
 		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win), "code": look.BottomPanelVisible(v.win),
 		"inline": v.inline != nil, "popover": v.popover != nil, "gotoAsked": v.search.asked,
 	}
+	out["banner"] = v.banner.Unwrap().GetText()
+	// hint: the rows of the start hint over an empty element, by label and box in view points
+	hint := []map[string]any{}
+	for _, r := range v.hint.rows {
+		hint = append(hint, map[string]any{"label": r.label, "box": []float64{r.box.Min.X, r.box.Min.Y, r.box.W(), r.box.H()}})
+	}
+	out["hint"] = hint
+	if v.itemsUI.hover != nil && v.itemsUI.addCol != nil {
+		b := v.itemsUI.hover.Unwrap().GetBounds()
+		out["itemsAdd"] = []int{v.itemsUI.addX, int(b.Y + b.Height/2)}
+	}
 	if v.props.text != nil {
 		st := v.props.text
 		out["props"], out["propsValues"], out["propsStyles"] = st.Text(), v.props.values, len(st.Styles())

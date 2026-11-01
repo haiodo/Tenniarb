@@ -3,7 +3,6 @@
 package app
 
 import (
-	"fmt"
 	"strings"
 
 	g "github.com/haiodo/gowt"
@@ -14,13 +13,10 @@ import (
 // installSkills writes the design skill where the agents read it (Claude Code, opencode) and says where,
 // or what went wrong.
 func (v *Viewer) installSkills() {
-	var done, failed []string
-	for _, dir := range skill.Targets() {
-		if err := skill.Install(dir); err != nil {
-			failed = append(failed, fmt.Sprintf("%s: %v", dir, err))
-			continue
-		}
-		done = append(done, dir)
+	done, problems := skill.Install()
+	var failed []string
+	for _, err := range problems {
+		failed = append(failed, err.Error())
 	}
 	title, icon := "Agent skill installed", g.IconInfo
 	text := strings.Join(done, "\n")

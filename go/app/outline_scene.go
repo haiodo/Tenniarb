@@ -3,10 +3,17 @@
 package app
 
 import (
+	"errors"
+	"fmt"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	g "github.com/haiodo/gowt"
 
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // library is a file of components the document mounts with --from-file.
@@ -82,11 +89,94 @@ func (v *Viewer) components(q string, limit int) []Component {
 	return out
 }
 
+// addLibrary is Element > Add Library...: a file of components becomes a top-level element of the
+// document, and Insert Component offers what it holds.
+func (v *Viewer) addLibrary() {
+	if v.session == nil {
+		return
+	}
+	dir := v.root
+	if v.state.Doc.Path != "" {
+		dir = filepath.Dir(v.state.Doc.Path)
+	}
+	paths := v.win.FileDialog(g.FileDialog{Title: "Add Library", Dir: dir, Filters: tennFilters})
+	if len(paths) != 1 {
+		return
+	}
+	if err := v.addLibraryFile(paths[0]); err != nil {
+		v.setBanner(err.Error())
+		return
+	}
+	v.setBanner(v.bannerText())
+}
+
+// addLibraryFile writes the element that mounts the library at the end of the document, as one undo
+// step. The path is relative to the document; a file outside the workspace root is refused.
+func (v *Viewer) addLibraryFile(path string) error {
+	if v.session == nil {
+		return errors.New("no document")
+	}
+	target, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	root, err := filepath.Abs(v.root)
+	if err != nil {
+		return err
+	}
+	if r, err := filepath.EvalSymlinks(target); err == nil {
+		target = r
+	}
+	if r, err := filepath.EvalSymlinks(root); err == nil {
+		root = r
+	}
+	out, err := filepath.Rel(root, target)
+	if err != nil || out == ".." || strings.HasPrefix(out, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("%s is outside the workspace root %s: move it into the folder of the document, then add it again",
+			filepath.Base(path), root)
+	}
+	base := v.root
+	if v.state.Doc.Path != "" {
+		base = filepath.Dir(v.state.Doc.Path)
+	}
+	if r, err := filepath.EvalSymlinks(base); err == nil {
+		base = r
+	}
+	rel, err := filepath.Rel(base, target)
+	if err != nil {
+		return err
+	}
+	rel = filepath.ToSlash(rel)
+	if rel == "." || rel == "" {
+		return errors.New("the document cannot mount itself as a library")
+	}
+	name := strings.TrimSuffix(filepath.Base(target), filepath.Ext(target))
+	if name == "" {
+		name = "library"
+	}
+	taken := map[string]bool{}
+	for _, e := range v.session.Root().Elements {
+		taken[e.Name] = true
+	}
+	first := name
+	for i := 2; taken[name]; i++ {
+		name = first + " " + strconv.Itoa(i)
+	}
+	cmd := "element " + tenn.ToStr(tenn.NewStrNode(name), 0, false) + " " + scene.FromFileFlag + " " +
+		tenn.ToStr(tenn.NewStrNode(rel), 0, false)
+	at := len(v.text)
+	pre := ""
+	if at > 0 && v.text[at-1] != '\n' {
+		pre = "\n"
+	}
+	return v.applyText(at, at, pre+cmd+"\n")
+}
+
 // showComponentPicker is Insert Component...: a filtered list of the components of the libraries;
 // Return or a double click inserts the one chosen.
 func (v *Viewer) showComponentPicker() {
 	if len(v.libraries()) == 0 {
-		v.setBanner("The document mounts no library.")
+		v.setBanner("The document mounts no library: add one with Element > Add Library...")
 		return
 	}
 	if !v.leaveMount() {

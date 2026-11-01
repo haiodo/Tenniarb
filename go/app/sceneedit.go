@@ -316,6 +316,143 @@ func InsertEdit(text string, n *scene.Node, cmd string) TextEdit {
 	return TextEdit{closing, closing, "\n" + indentLines(cmd, ind) + "\n" + indentAt(text, n.Range.Start)}
 }
 
+// PrependEdit adds cmd as the first command of the content of n: the block of an element, an item or
+// a use, a new block when n has none, the start of the file for a file root.
+func PrependEdit(text string, n *scene.Node, cmd string) TextEdit {
+	if n.Mount != nil { // the content of an element with --from-file is written in that file
+		n = n.Mount
+	}
+	unit := indentUnit(text)
+	if n.Kind == scene.KFile {
+		return TextEdit{0, 0, cmd + "\n"}
+	}
+	if n.Body == (scene.Range{}) {
+		if strings.Contains(cmd, "\n") {
+			ind := indentAt(text, n.Range.Start)
+			return TextEdit{n.Range.End, n.Range.End, " {\n" + indentLines(cmd, ind+unit) + "\n" + ind + "}"}
+		}
+		return TextEdit{n.Range.End, n.Range.End, " { " + cmd + " }"}
+	}
+	open, closing := n.Body.Start, n.Body.End-1
+	inner := text[open+1 : closing]
+	if blank(strings.ReplaceAll(inner, "\n", "")) && !strings.Contains(cmd, "\n") {
+		return TextEdit{open + 1, closing, " " + cmd + " "}
+	}
+	if !strings.Contains(inner, "\n") && !strings.Contains(cmd, "\n") {
+		return TextEdit{open + 1, open + 1, " " + cmd + ";"}
+	}
+	// the command goes before the first line of the content, with that line's indentation
+	first := open + 1
+	for first < closing && strings.ContainsRune(" \t\r\n", rune(text[first])) {
+		first++
+	}
+	if first >= closing {
+		return TextEdit{open + 1, open + 1, " " + cmd + " "}
+	}
+	ls := lineStart(text, first)
+	if ls <= open { // the content starts on the line of the opening brace
+		ind := indentAt(text, n.Range.Start) + unit
+		return TextEdit{open + 1, open + 1, "\n" + indentLines(cmd, ind) + "\n" + indentAt(text, n.Range.Start) + " "}
+	}
+	return TextEdit{ls, ls, indentLines(cmd, indentAt(text, first)) + "\n"}
+}
+
+// flowLayout reports whether n lays its kids out in a flow: `auto-layout row` or `column`, also
+// written bare. An item without auto-layout, or with `auto-layout abs`, places them by pos.
+func flowLayout(n *scene.Node) bool {
+	p := ownProp(n, "auto-layout")
+	if p == nil {
+		return false
+	}
+	vals := p.Values()
+	return len(vals) == 0 || vals[0] != "abs"
+}
+
+// movedText is the source of n as a move writes it: into a flow layout its pos goes, so the node does
+// not jump; an absolute parent keeps it.
+func movedText(text string, n, into *scene.Node) string {
+	raw := text[n.Range.Start:n.Range.End]
+	if !flowLayout(into) {
+		return raw
+	}
+	own := ownProp(n, "pos")
+	if own == nil {
+		return raw
+	}
+	e := removeEdit(text, own.Range)
+	if e.Start < n.Range.Start || e.End > n.Range.End {
+		return raw
+	}
+	return text[n.Range.Start:e.Start] + e.New + text[e.End:n.Range.End]
+}
+
+// MoveNodeEdit swaps n with the sibling delta places away among the kids of its parent, as one edit;
+// at is where n starts in the new text. A node of a flow layout loses its pos.
+func MoveNodeEdit(text string, n *scene.Node, delta int) (e TextEdit, at int, ok bool) {
+	if n == nil || n.Parent == nil {
+		return TextEdit{}, 0, false
+	}
+	sibs := sceneKids(n.Parent)
+	i := slices.Index(sibs, n)
+	j := i + delta
+	if i < 0 || j < 0 || j >= len(sibs) {
+		return TextEdit{}, 0, false
+	}
+	a, b := n, sibs[j]
+	if a.Range.Start > b.Range.Start {
+		a, b = b, a
+	}
+	if b.Range.Start < a.Range.End {
+		return TextEdit{}, 0, false
+	}
+	left, gap, right := text[a.Range.Start:a.Range.End], text[a.Range.End:b.Range.Start], text[b.Range.Start:b.Range.End]
+	moved := movedText(text, n, n.Parent)
+	if n == a {
+		return TextEdit{a.Range.Start, b.Range.End, right + gap + moved}, a.Range.Start + len(right) + len(gap), true
+	}
+	return TextEdit{a.Range.Start, b.Range.End, moved + gap + left}, a.Range.Start, true
+}
+
+// MoveNodeIntoEdit moves n into the sibling delta places away, as its last kid (delta < 0) or its
+// first (delta > 0), as one edit; at is where n starts in the new text.
+func MoveNodeIntoEdit(text string, n *scene.Node, delta int) (e TextEdit, at int, ok bool) {
+	if n == nil || n.Parent == nil || delta == 0 {
+		return TextEdit{}, 0, false
+	}
+	sibs := sceneKids(n.Parent)
+	i := slices.Index(sibs, n)
+	j := i + delta
+	if i < 0 || j < 0 || j >= len(sibs) {
+		return TextEdit{}, 0, false
+	}
+	into := sibs[j]
+	moved := movedText(text, n, into)
+	ins := InsertEdit(text, into, moved)
+	if delta > 0 {
+		ins = PrependEdit(text, into, moved)
+	}
+	rem := removeEdit(text, n.Range)
+	if rem.Start < ins.Start && ins.Start < rem.End {
+		return TextEdit{}, 0, false
+	}
+	idx := strings.Index(ins.New, moved)
+	if idx < 0 {
+		return TextEdit{}, 0, false
+	}
+	lo, hi := ins, rem
+	if rem.Start < ins.Start {
+		lo, hi = rem, ins
+	}
+	if hi.Start < lo.End {
+		return TextEdit{}, 0, false
+	}
+	at = ins.Start + idx
+	if delta > 0 { // the removal comes first: what it took shifts the inserted node
+		at = lo.Start + len(lo.New) + (hi.Start - lo.End) + idx
+	}
+	return TextEdit{lo.Start, hi.End, lo.New + text[lo.End:hi.Start] + hi.New}, at, true
+}
+
 // NodeText is the source of n as the Code section shows it: the lines after the first lose the
 // indentation of the line n starts on.
 func NodeText(text string, n *scene.Node) string {

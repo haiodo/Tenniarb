@@ -46,9 +46,29 @@ func Names() []string {
 	return out
 }
 
-// Install writes every file of the skill into dir, replacing what is there. A link there, as an older
+// Install writes the skill into every directory of Targets and links the Claude Code one to the shared
+// copy, as the other skills of this setup are linked. It returns what it wrote and what failed.
+func Install() ([]string, []error) {
+	var done []string
+	var errs []error
+	for _, dir := range Targets() {
+		if err := Write(dir); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", dir, err))
+			continue
+		}
+		done = append(done, dir)
+	}
+	if len(done) > 0 {
+		if err := link(claudeDir(), done[0]); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", claudeDir(), err))
+		}
+	}
+	return done, errs
+}
+
+// Write writes every file of the skill into dir, replacing what is there. A link there, as an older
 // `make install` left it, is replaced by the real files.
-func Install(dir string) error {
+func Write(dir string) error {
 	if fi, err := os.Lstat(dir); err == nil && fi.Mode()&os.ModeSymlink != 0 {
 		if err := os.Remove(dir); err != nil {
 			return err
@@ -69,15 +89,43 @@ func Install(dir string) error {
 	return nil
 }
 
-// Targets are the directories the skill is installed into: Claude Code and opencode, each when its config
-// directory exists or always for Claude Code, which every agent setup here has.
+// Targets are the directories the skill is written into: the shared ~/.agents/skills and opencode.
 func Targets() []string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil
 	}
 	return []string{
-		filepath.Join(home, ".claude", "skills", Name),
+		filepath.Join(home, ".agents", "skills", Name),
 		filepath.Join(home, ".config", "opencode", "skill", Name),
 	}
+}
+
+// claudeDir is where Claude Code reads its skills: a link to the shared copy, as the other skills there.
+func claudeDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, ".claude", "skills", Name)
+}
+
+// link makes dir a link to target, replacing a directory an older install wrote there.
+func link(dir, target string) error {
+	if dir == "" {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(dir), 0o755); err != nil {
+		return err
+	}
+	if fi, err := os.Lstat(dir); err == nil && fi.Mode()&os.ModeSymlink == 0 {
+		if err := os.RemoveAll(dir); err != nil {
+			return err
+		}
+	}
+	if cur, err := os.Readlink(dir); err == nil && cur == target {
+		return nil
+	}
+	_ = os.Remove(dir)
+	return os.Symlink(target, dir)
 }

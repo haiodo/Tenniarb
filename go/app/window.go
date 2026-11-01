@@ -45,6 +45,9 @@ type Viewer struct {
 	svCache     []*sceneView // views taken off the canvas, the last one first
 	itemsUI     itemsList
 	addClassic  []*g.MenuItem // the diagram commands of Edit > Add, off in a scene
+	moveItems   []*g.MenuItem // Element > Move Left/Right, on for a selected scene node
+	sizeMenu    bool          // the canvas menu shows the screen sizes of the start hint
+	hint        hintUI        // the start hint over an empty element
 	sceneBuilds int           // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
 	shownElem   *model.Element // the element the camera was placed for

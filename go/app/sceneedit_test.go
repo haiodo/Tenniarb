@@ -419,3 +419,54 @@ func TestLeafKidsAreWrittenInFull(t *testing.T) {
 		t.Errorf("merge:\n%s", got)
 	}
 }
+
+// TestMoveNodeEdits: a node swaps with a sibling by ranges, or goes into the one before or after it;
+// the pos goes in a flow layout and stays in an absolute one, and the new start is reported.
+func TestMoveNodeEdits(t *testing.T) {
+	text := "item P {\n  item A { pos 1 2; width 10 }\n  item B { width 20 }\n  item F {\n    auto-layout column\n  }\n}\n"
+	cases := []struct {
+		name  string
+		path  string
+		delta int
+		into  bool
+		want  string
+		head  string
+	}{
+		{"swap up", "P.B", -1, false,
+			"item P {\n  item B { width 20 }\n  item A { pos 1 2; width 10 }\n  item F {\n    auto-layout column\n  }\n}\n", "item B {"},
+		{"swap down", "P.A", 1, false,
+			"item P {\n  item B { width 20 }\n  item A { pos 1 2; width 10 }\n  item F {\n    auto-layout column\n  }\n}\n", "item A {"},
+		{"into the next, first kid, pos kept", "P.A", 1, true,
+			"item P {\n  item B { item A { pos 1 2; width 10 }; width 20 }\n  item F {\n    auto-layout column\n  }\n}\n", "item A {"},
+		{"into the next, pos goes in a flow", "P.B", 1, true,
+			"item P {\n  item A { pos 1 2; width 10 }\n  item F {\n    item B { width 20 }\n    auto-layout column\n  }\n}\n", "item B {"},
+		{"into a flow, pos dropped", "P.A", 2, true,
+			"item P {\n  item B { width 20 }\n  item F {\n    item A { width 10 }\n    auto-layout column\n  }\n}\n", "item A {"},
+	}
+	for _, c := range cases {
+		n := nodeOf(t, text, c.path)
+		var e TextEdit
+		var at int
+		var ok bool
+		if c.into {
+			e, at, ok = MoveNodeIntoEdit(text, n, c.delta)
+		} else {
+			e, at, ok = MoveNodeEdit(text, n, c.delta)
+		}
+		if !ok {
+			t.Errorf("%s: no edit", c.name)
+			continue
+		}
+		got := apply(text, e)
+		if got != c.want {
+			t.Errorf("%s:\n%s\nwant\n%s", c.name, got, c.want)
+		}
+		if at < 0 || at >= len(got) || !strings.HasPrefix(got[at:], c.head) {
+			t.Errorf("%s: the moved node starts at %d, not at %q:\n%s", c.name, at, c.head, got[at:])
+		}
+	}
+	// no place to move into
+	if _, _, ok := MoveNodeIntoEdit(text, nodeOf(t, text, "P.A"), -1); ok {
+		t.Error("a node moved before the first of its siblings")
+	}
+}

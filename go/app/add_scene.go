@@ -2,6 +2,8 @@
 
 package app
 
+import "github.com/haiodo/tenniarb/go/editor"
+
 // SceneKinds are the nodes Add offers for a scene, with the lines each one starts as.
 var SceneKinds = []struct{ Name, Text string }{
 	{"Frame", "width 200; height 120; auto-layout column; gap 8; padding 8"},
@@ -40,4 +42,33 @@ func (v *Viewer) addSceneItem(kind string) {
 			v.activateItem(row)
 		}
 	}
+}
+
+// addEntries are the entries of the Add menu: the node kinds of a scene, and the classic items of a
+// diagram. The "+" of the Items pane and Edit > Add offer them.
+func (v *Viewer) addEntries() []editor.Entry {
+	out := make([]editor.Entry, 0, len(SceneKinds)+4)
+	for _, k := range SceneKinds {
+		kind := k.Name
+		out = append(out, editor.Entry{Label: kind, Run: func() { v.addSceneItem(kind) }})
+	}
+	if v.sceneMode() {
+		return out
+	}
+	return append(out, editor.Entry{Sep: true},
+		editor.Entry{Label: "New Item", Run: func() {
+			if v.session != nil {
+				v.session.AddTopItem()
+			}
+		}},
+		editor.Entry{Label: "New Linked Item", Run: func() {
+			if v.session != nil {
+				v.session.AddNewItem(false)
+			}
+		}},
+		editor.Entry{Label: "Linked Styled Item", Run: func() {
+			if v.session != nil {
+				v.session.AddNewItem(true)
+			}
+		}})
 }

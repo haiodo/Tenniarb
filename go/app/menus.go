@@ -11,6 +11,7 @@ import (
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
@@ -106,14 +107,18 @@ func (v *Viewer) menus() {
 	el.Item("D&uplicate Element", v.duplicateElement)
 	el.Item("&Delete Element", v.removeElement, g.Shortcut("Cmd+Shift+Backspace"))
 	el.Separator()
-	el.Item("Move &Up", func() { v.moveElement(-1) }, g.Shortcut("Cmd+Alt+Up"))
-	el.Item("Move D&own", func() { v.moveElement(1) }, g.Shortcut("Cmd+Alt+Down"))
+	el.Item("Move &Up", func() { v.moveSelected(-1) }, g.Shortcut("Cmd+Alt+Up"))
+	el.Item("Move D&own", func() { v.moveSelected(1) }, g.Shortcut("Cmd+Alt+Down"))
+	v.moveItems = []*g.MenuItem{
+		el.Item("Move &Left", func() { v.moveNodeInto(-1) }, g.Shortcut("Cmd+Alt+Left")),
+		el.Item("Move &Right", func() { v.moveNodeInto(1) }, g.Shortcut("Cmd+Alt+Right")),
+	}
+	el.OnShow(v.updateMenus)
 	el.Separator()
 	screens := el.Submenu("New &Screen")
-	for _, sz := range ScreenSizes {
-		screens.Item(fmt.Sprintf("%s %d x %d", sz.Name, sz.W, sz.H), func() { v.newScreen(sz.W, sz.H) })
-	}
+	fillMenu(screens, v.screenSizeEntries())
 	el.Item("&Insert Component...", v.showComponentPicker, g.Shortcut("Cmd+Shift+I"))
+	el.Item("Add &Library...", v.addLibrary)
 
 	if !v.sh.sysMenu {
 		edit.Separator()
@@ -145,6 +150,7 @@ func (v *Viewer) menus() {
 
 	help := bar.Submenu("&Help")
 	help.Item("Tenniarb &Help", v.sh.showHelp, g.Shortcut("Cmd+Shift+/"))
+	help.Item("Install Agent &Skill", v.installSkills)
 	if !v.sh.sysMenu {
 		help.Item("&About Tenniarb", v.sh.showAbout)
 	}
@@ -177,6 +183,10 @@ func (v *Viewer) updateMenus() {
 	// A scene takes frames and rows; a diagram takes items.
 	for _, it := range v.addClassic {
 		it.SetEnabled(!v.sceneMode())
+	}
+	// Move Left/Right puts a scene node into its neighbouring sibling: no element takes that.
+	for _, it := range v.moveItems {
+		it.SetEnabled(v.sceneMode() && len(v.selNodes) > 0)
 	}
 }
 
@@ -363,6 +373,9 @@ func (v *Viewer) contextMenus() {
 	outline := g.PopupMenu(v.tree)
 	outline.OnShow(func() { fillMenu(outline, v.withLink(v.outlineEntries())) })
 
+	// The start hint opens the canvas menu with the screen sizes; it goes when the menu closes.
+	canvas.Unwrap().AddMenuListener(swt.MenuListenerMenuHiddenAdapter(func(*swt.MenuEvent) { v.sizeMenu = false }))
+
 	items := g.PopupMenu(v.itemsUI.tree)
 	items.OnShow(func() { fillMenu(items, v.withLink(v.itemsEntries())) })
 }
@@ -371,6 +384,9 @@ func (v *Viewer) contextMenus() {
 func (v *Viewer) canvasEntries() []editor.Entry {
 	if v.menuOverride != nil {
 		return v.menuOverride
+	}
+	if v.sizeMenu {
+		return v.screenSizeEntries()
 	}
 	if v.session == nil {
 		return nil
@@ -382,12 +398,30 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 	return append(v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML}), v.exportEntries()...)
 }
 
+// screenSizeEntries are the frames New Screen offers, the entries of the Element submenu and of the
+// menu the start hint opens.
+func (v *Viewer) screenSizeEntries() []editor.Entry {
+	out := make([]editor.Entry, 0, len(ScreenSizes))
+	for _, sz := range ScreenSizes {
+		sz := sz
+		out = append(out, editor.Entry{Label: fmt.Sprintf("%s %d x %d", sz.Name, sz.W, sz.H), Run: func() {
+			v.sizeMenu = false
+			v.newScreen(sz.W, sz.H)
+		}})
+	}
+	return out
+}
+
 // sceneEntries are the canvas menu of a scene: the commands of the selected node, the screens.
 func (v *Viewer) sceneEntries() []editor.Entry {
 	var out []editor.Entry
 	if len(v.selNodes) > 0 {
 		out = append(out,
 			editor.Entry{Label: "Duplicate", Run: v.duplicateScene},
+			editor.Entry{Label: "Move Up", Run: func() { v.moveNodeBy(-1) }},
+			editor.Entry{Label: "Move Down", Run: func() { v.moveNodeBy(1) }},
+			editor.Entry{Label: "Move into Previous", Run: func() { v.moveNodeInto(-1) }},
+			editor.Entry{Label: "Move into Next", Run: func() { v.moveNodeInto(1) }},
 			editor.Entry{Label: "Zoom to Item", Run: v.zoomToSelection},
 			editor.Entry{Label: "Delete", Run: v.deleteSceneNode},
 			editor.Entry{Sep: true})

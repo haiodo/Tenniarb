@@ -11,7 +11,7 @@ import (
 // TestInstall writes the skill into a directory: every file lands, and the second run replaces them.
 func TestInstall(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "tenniarb-design")
-	if err := skill.Install(dir); err != nil {
+	if err := skill.Write(dir); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range skill.Names() {
@@ -31,7 +31,7 @@ func TestInstall(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte("stale"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := skill.Install(dir); err != nil {
+	if err := skill.Write(dir); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(filepath.Join(dir, "SKILL.md")); string(b) == "stale" {
@@ -57,7 +57,7 @@ func TestInstallReplacesLink(t *testing.T) {
 	if err := os.Symlink(filepath.Join(dir, "gone"), link); err != nil {
 		t.Skipf("no symlinks here: %v", err)
 	}
-	if err := skill.Install(link); err != nil {
+	if err := skill.Write(link); err != nil {
 		t.Fatal(err)
 	}
 	fi, err := os.Lstat(link)

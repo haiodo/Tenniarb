@@ -54,6 +54,7 @@ func (v *Viewer) syncIndicators() {
 		return
 	}
 	defer v.syncPins()
+	defer v.syncHint()
 	comp := v.view.Compositor()
 	w, h, _ := comp.Viewport()
 	cam := comp.Camera()
