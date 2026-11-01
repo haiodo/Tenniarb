@@ -401,6 +401,8 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 			l.setKind(owner, argText(args, 0), l.pos(c))
 		case name == "export" && owner.Kind == KElement:
 			l.addParam(owner, c)
+		case name == "template" && owner.Kind == KElement:
+			l.addTemplate(owner, c)
 		default:
 			owner.Props = append(owner.Props, l.prop(c))
 		}
@@ -484,6 +486,73 @@ func spanOf(args []*tenn.Node) Range {
 		return Range{}
 	}
 	return Range{args[0].Token.Pos, args[len(args)-1].Token.EndPos()}
+}
+
+// addTemplate reads "template { ... }", "template %{ ... }" or "template "..."": the code the element
+// generates (spec 5c). A block is kept as written - the commands the parser reads inside it are not read
+// as commands - so the text of the file is the text of the template.
+func (l *loader) addTemplate(owner *Node, c *tenn.Node) {
+	pos := l.pos(c)
+	if owner.Template != nil {
+		l.t.warn(pos, "the element has a second template: the first one is used")
+		return
+	}
+	args, _ := split(c)
+	text := ""
+	switch {
+	case hasBlock(c):
+		src := l.t.src[l.file]
+		if b := bodyOf(c); b.Start+1 <= b.End-1 && b.End <= len(src) {
+			text = src[b.Start+1 : b.End-1]
+		}
+	case len(args) > 0 && (args[0].Kind == tenn.KindMarkdownLit || args[0].Kind == tenn.KindStringLit):
+		text, _ = args[0].GetIdentText()
+		// "%{ ... %}" is what a reader writes: the markdown literal closes at "}", so the percent of the
+		// closing marker lands in the text and is cut here.
+		if a := args[0]; a.Token != nil && strings.HasSuffix(text, "%") {
+			at := a.Token.Pos + len(text) // the literal is a slice of the file text
+			if src := l.t.src[l.file]; at < len(src) && src[at] == '}' {
+				text = strings.TrimSuffix(text, "%")
+			}
+		}
+	default:
+		l.t.fail(pos, "template needs text: template { ... } or template %%{ ... }")
+		return
+	}
+	owner.Template = &Template{Text: dedent(text), Pos: pos}
+}
+
+// dedent cuts the blank lines around text and the indentation its lines share, so the code of a template
+// starts at column 0 and reads the way it is written in a component.
+func dedent(text string) string {
+	lines := strings.Split(strings.Trim(text, "\n"), "\n")
+	indent := -1
+	for _, ln := range lines {
+		if strings.TrimSpace(ln) == "" {
+			continue
+		}
+		if n := len(ln) - len(strings.TrimLeft(ln, " \t")); indent < 0 || n < indent {
+			indent = n
+		}
+	}
+	out := make([]string, 0, len(lines))
+	if indent < 0 {
+		indent = 0
+	}
+	for _, ln := range lines {
+		if strings.TrimSpace(ln) == "" {
+			out = append(out, "")
+		} else {
+			out = append(out, ln[indent:])
+		}
+	}
+	for len(out) > 0 && out[0] == "" {
+		out = out[1:]
+	}
+	for len(out) > 0 && out[len(out)-1] == "" {
+		out = out[:len(out)-1]
+	}
+	return strings.Join(out, "\n")
 }
 
 // fromFile reads "--from-file <path>" among the arguments of an element command.

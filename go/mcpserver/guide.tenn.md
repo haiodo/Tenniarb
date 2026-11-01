@@ -86,6 +86,36 @@ Content at a negative position is kept in the scene bounds.
   `width ${size + 12}`, `use-style ${tone}`. `${...}` and `$(...)` run on the classic engine before
   the styles, so a style can be picked by a value.
 
+### Templates
+
+A component can generate code (Svelte, React, gowt, any text): `template` is a command in its block.
+
+```tenn
+element "Button" {
+    kind Component
+    export let title = "Button"
+    export let tone = secondary
+    template %{<button class="btn-${tone}">${title}<slot/></button>}
+    item Btn { auto-layout row; item Label { title ${title} }; slot }
+}
+element "Actions" {
+    item row {
+        auto-layout row
+        use Button as save { title "Save"; tone primary; item Icon { title "<b>+</b>" } }
+    }
+}
+```
+
+- `template %{ ... }` is a markdown literal: its text is not read as commands, so write real code there
+  (braces inside must pair up). `template { ... }` is a block whose text is the file's bytes, but each line
+  must start with a bare word and `{...}` pairs count as blocks; `template "..."` is one line. The shared
+  indentation and the blank lines around the text are cut.
+- `${name}` is a parameter, `-set name=value` or the use block overrides the default; `<slot/>` is what the
+  use passes (each node as its `title`, else its name), `<slot name/>` a named `slot name { ... }`; every
+  other form, `<slot></slot>` included, stays text.
+- A use can pass nodes only where the component writes a scene `slot` (section 5); an empty slot is an error.
+- `tenniarb gen [-set name=value]... FILE ELEMENT` prints the text, ELEMENT being the component or a use of it.
+
 ## 7. styles and use-style
 
 - `styles { primary { color #6b3ad3 } large { height 48 } }` in an element: named sets of
@@ -136,8 +166,8 @@ Content at a negative position is kept in the scene bounds.
 The engine reads none of these; they are ignored or warned about, so do not write them:
 `frame`, `param`, `variant`, `native`, `detach`, `import` (mount a file with `element ...
 --from-file`), percentages (`width 50%` becomes `hug` and warns), `justify space-around`,
-`aspect-ratio`, `display none` and `line-style` (a scene link reads `display arrow` only), and the
-other commands of classic diagrams.
+`aspect-ratio`, `display none` and `line-style` (a scene link reads `display arrow` only), `animation`
+and `transition` (spec 13 is a proposal), and the other commands of classic diagrams.
 
 ## 11. Examples
 

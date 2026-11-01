@@ -97,18 +97,25 @@ func (x *expander) defaults(n *Node) map[string]string {
 // value is the value of one parameter: its arguments as words, each an expression evaluated in vars. A
 // list of styles is written as several words: "extras outlined rounded" (spec 5b, any-of).
 func (x *expander) value(pr *Prop, vars map[string]string) string {
+	v, ok := evalWords(x.eval, pr, vars)
+	if !ok && x.eval != nil {
+		x.t.warn(pr.Pos, "%s: the expression is not evaluated", pr.Name)
+	}
+	return v
+}
+
+// evalWords is the arguments of a property as words, each an expression evaluated in vars; ok is false
+// when an expression could not be evaluated, and the words before it still come back.
+func evalWords(eval evalFunc, pr *Prop, vars map[string]string) (string, bool) {
 	words := make([]string, 0, len(pr.Args))
 	for _, a := range pr.Args {
-		v, ok := evalArg(x.eval, a, vars)
+		v, ok := evalArg(eval, a, vars)
 		if !ok {
-			if x.eval != nil {
-				x.t.warn(pr.Pos, "%s: the expression is not evaluated", pr.Name)
-			}
-			return strings.Join(words, " ")
+			return strings.Join(words, " "), false
 		}
 		words = append(words, v)
 	}
-	return strings.Join(words, " ")
+	return strings.Join(words, " "), true
 }
 
 func quoteAll(names []string) string {

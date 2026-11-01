@@ -132,6 +132,11 @@ type Node struct {
 	// name, and what ${name} reads in the body (spec 5c). Empty for an element that declares none.
 	Params []Param
 
+	// Template is the code the element generates, from "template { ... }" or "template %{ ... }" in its
+	// block (spec 5c): Tree.Render fills in the parameters and the slots. Nil for an element that generates
+	// no text.
+	Template *Template
+
 	// The arguments of the command in the text of its file, delimiters included; zero when it has none.
 	NameArg        Range // the name, for a use the one after as
 	PathArg        Range // KUse
