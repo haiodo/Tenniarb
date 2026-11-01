@@ -62,6 +62,11 @@ func (sh *Shell) registerQA() {
 	qa.Handle("style", func(a qa.Args) error {
 		return sh.active.pressStyle(a.String("group"), a.String("value"))
 	})
+	// param: the choice of a segmented parameter of the Parameters section, which the QA driver cannot make
+	// as a click on a segment of a segmented control
+	qa.Handle("param", func(a qa.Args) error {
+		return sh.active.pressParam(a.String("name"), a.String("value"))
+	})
 	qa.Handle("zoom", func(a qa.Args) error {
 		v := sh.active
 		f := 1.0

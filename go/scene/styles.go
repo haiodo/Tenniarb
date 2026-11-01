@@ -103,11 +103,14 @@ func StyleRefs(props []*Prop) []string {
 		}
 		for i := range p.Args {
 			name, _ := p.text(i)
-			if rest, ok := strings.CutPrefix(name, "-"); ok {
-				names = dropName(names, rest)
-				continue
+			// a parameter may hold several styles: "extras outlined rounded" names both
+			for _, word := range strings.Fields(name) {
+				if rest, ok := strings.CutPrefix(word, "-"); ok {
+					names = dropName(names, rest)
+					continue
+				}
+				names = append(names, NormalizeName(word))
 			}
-			names = append(names, NormalizeName(name))
 		}
 	}
 	return names

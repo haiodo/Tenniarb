@@ -94,19 +94,21 @@ func (x *expander) defaults(n *Node) map[string]string {
 	return values
 }
 
-// value is the value of one parameter: its single argument, an expression evaluated in vars.
+// value is the value of one parameter: its arguments as words, each an expression evaluated in vars. A
+// list of styles is written as several words: "extras outlined rounded" (spec 5b, any-of).
 func (x *expander) value(pr *Prop, vars map[string]string) string {
-	if len(pr.Args) == 0 {
-		return ""
+	words := make([]string, 0, len(pr.Args))
+	for _, a := range pr.Args {
+		v, ok := evalArg(x.eval, a, vars)
+		if !ok {
+			if x.eval != nil {
+				x.t.warn(pr.Pos, "%s: the expression is not evaluated", pr.Name)
+			}
+			return strings.Join(words, " ")
+		}
+		words = append(words, v)
 	}
-	if len(pr.Args) > 1 {
-		x.t.warn(pr.Pos, "%s takes one value: the rest is ignored", pr.Name)
-	}
-	v, ok := evalArg(x.eval, pr.Args[0], vars)
-	if !ok && x.eval != nil {
-		x.t.warn(pr.Pos, "%s: the expression is not evaluated", pr.Name)
-	}
-	return v
+	return strings.Join(words, " ")
 }
 
 func quoteAll(names []string) string {

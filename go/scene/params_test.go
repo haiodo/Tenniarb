@@ -209,3 +209,33 @@ func TestComponentOnItsOwn(t *testing.T) {
 		t.Errorf("warnings: %v", screen.Warnings)
 	}
 }
+
+// TestParamList: an any-of parameter holds several styles, written as words: "extras plain rounded",
+// and use-style ${extras} names them all, replacing the default.
+func TestParamList(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "list.tenn", `element "Card" {
+  kind Component
+  export let extras = outlined
+  styles {
+    outlined { width 40 }
+    rounded { height 22 }
+    plain { }
+  }
+  item Box { width 20; height 20; use-style ${extras} }
+}
+element "Screen" {
+  item col { auto-layout column
+    use Card as two { extras plain rounded }
+  }
+}`), "Screen")
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+	box := screen.Boxes()[2]
+	if box.H != 22 {
+		t.Errorf("height %v, want 22 from the rounded style of the list", box.H)
+	}
+	if box.W != 20 {
+		t.Errorf("width %v, want 20: the default outlined style is replaced", box.W)
+	}
+}

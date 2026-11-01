@@ -78,6 +78,69 @@ func SetPropEdit(text string, n *scene.Node, name string, args ...string) (TextE
 	return InsertEdit(text, n, line), true
 }
 
+// ParamEdit writes the values of parameter prm into the block of the use that sets it: in place of the
+// command of that name, else as a new command. An empty list writes the bare name, which names no style.
+func ParamEdit(text string, use *scene.Node, prm scene.Param, values ...string) (TextEdit, bool) {
+	line := prm.Name
+	for _, v := range values {
+		line += " " + paramValue(prm, v)
+	}
+	if own := ownProp(use, prm.Name); own != nil {
+		return TextEdit{own.Range.Start, own.Range.End, line}, true
+	}
+	return InsertEdit(text, use, line), true
+}
+
+// RemoveParamEdit deletes the value parameter prm of the use sets, so the default of the declaration comes
+// back.
+func RemoveParamEdit(text string, use *scene.Node, prm scene.Param) (TextEdit, bool) {
+	own := ownProp(use, prm.Name)
+	if own == nil {
+		return TextEdit{}, false
+	}
+	return removeEdit(text, own.Range), true
+}
+
+// paramValue is one value of parameter prm as the file writes it (spec 5c): a string in quotes, a number
+// or a word bare, as the default of the declaration is written.
+func paramValue(prm scene.Param, v string) string {
+	kind := tenn.KindIdent
+	if prm.Default != nil && len(prm.Default.Args) > 0 {
+		kind = prm.Default.Args[0].Kind
+	}
+	switch kind {
+	case tenn.KindStringLit:
+		return tenn.ToStr(tenn.NewStrNode(v), 0, false)
+	case tenn.KindIntLit, tenn.KindFloatLit:
+		if isNumber(v) {
+			return v
+		}
+	case tenn.KindIdent, tenn.KindCharLit:
+		if plainWord(v) {
+			return v
+		}
+	}
+	// no default of a shape, or a value that is not one of it: a number stays a number, else it is a string
+	if isNumber(v) {
+		return v
+	}
+	return tenn.ToStr(tenn.NewStrNode(v), 0, false)
+}
+
+// isNumber reports a value written as a number is read back the same, so "007" stays text.
+func isNumber(v string) bool {
+	f, err := strconv.ParseFloat(v, 64)
+	return err == nil && strconv.FormatFloat(f, 'f', -1, 64) == v
+}
+
+// plainWord reports a value that a command can hold as one bare word.
+func plainWord(v string) bool {
+	if v == "" || strings.ContainsAny(v, " \t\r\n\"';{}") {
+		return false
+	}
+	return !isNumber(v)
+}
+
 // EffectiveText is the item drawn as pl with the properties in effect, the overrides applied; its kids are
 // not listed.
 func EffectiveText(pl *scene.Placed) string {
