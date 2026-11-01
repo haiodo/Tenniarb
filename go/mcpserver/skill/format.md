@@ -66,14 +66,14 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | Property | Values | Notes |
 |---|---|---|
 | `title` | text | the text of a leaf |
-| `font-size` | number | default 18: set it on every text |
+| `font-size` | number | default 18; inherited by the parts below, so set it once on the box |
 | `font-weight` | 100..900, `normal`, `bold` | |
 | `font-family` | name | default Helvetica |
 | `font-style` | `italic`, `normal` | |
 | `letter-spacing`, `line-height`, `line-spacing` | number | |
-| `text-color` | color | default black, or white on a dark `color` of the same item |
+| `text-color` | color | inherited down the tree; default black, or the contrast of the box (`white` on a dark `color`) |
 | `layout` | `left`, `right` | aligns the lines of a leaf with a width; default centered |
-| `color` | color, or `linear ANGLE COLOR [POS] COLOR [POS] ...` | fill; the gradient angle is CSS: 0 up, 90 right, 180 down; positions 0..1 on every stop or on none |
+| `color` | color, or `linear ANGLE COLOR [POS] COLOR [POS] ...`; `none` is transparent | fill; the gradient angle is CSS: 0 up, 90 right, 180 down; positions 0..1 on every stop or on none |
 | `border-color`, `line-width` | color, number | frame; `line-width` alone draws nothing |
 | `corner-radius` | `N` or `TL TR BR BL` | |
 | `shadow` | `DX DY [BLUR [COLOR]]` | drop shadow of the box (of the border without `color`); Y points up, so `shadow 0 -4 8` falls down; blur 5 and black at 1/3 by default |

@@ -40,7 +40,8 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 ## Cheap habits
 
 - Never `read` a whole library or a large file: list it with `get_state` and read one node.
-- Use components, do not copy their text: `use lib.Kit.Button as ok { at Label { title OK } }`.
+- Use components, do not copy their text: `use lib.Kit.Button as ok { title OK; kind secondary }` -
+  a parameter by name; `at Label { title OK }` only when the component declares no such parameter.
 - One `edit` call can carry several find/replace pairs for one file.
 - `find` must match exactly once: take the shortest unique text, a name in quotes with its line.
 - After a successful edit do not read the file again to check it: the edit result says what you need.

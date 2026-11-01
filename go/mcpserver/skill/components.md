@@ -1,7 +1,37 @@
 # Components and libraries
 
-Any item is a component: there is no marker. `use <path> as <name> { overrides }` makes an instance;
-the name after `as` is required. Write a part once and use it, instead of copying its text.
+`use <path> as <name> { overrides }` makes an instance of any element or item; the name after `as` is
+required. Write a part once and use it, instead of copying its text.
+
+An element written for reuse says so and declares what an instance may set:
+
+```tenn
+element "Button" {
+  kind Component                 // a label for the app's lists, changes no layout
+  export let title = "Button"    // a parameter with a default; without "=" it is required
+  export let kind = primary      // a value that picks a style, see "Styles" below
+  export let size = medium
+  styles {
+    primary { color #6b3ad3 }
+    secondary { color #ffffff; border-color #d1d5db; text-color #111827 }
+    large { height 48; padding 0 16 }
+    medium { height 40; padding 0 12 }
+    kind one-of primary secondary
+    size one-of large medium
+  }
+  item Btn {
+    auto-layout row
+    corner-radius 8
+    use-style ${kind} ${size}
+    item Label { title ${title}; font-size 14 }
+  }
+}
+
+use Button as save { title "Save"; kind secondary; size large }
+```
+
+`${...}` is evaluated: a parameter is an ordinary variable inside the element, so `width ${size + 12}`
+and a style picked by `${kind}` work. A parameter may hold a list of words (`extras outlined rounded`).
 
 ## A library
 
@@ -12,19 +42,22 @@ fallback shown while nobody fills it.
 ```tenn
 // file: lib/kit.tenn
 element "Kit" {
-  item Button {
-    auto-layout row
-    padding 8 14
-    corner-radius 6
-    color #2563eb
-    item Label { title Button; font-size 14; text-color #ffffff }
-  }
-  item "Button secondary" {
-    auto-layout row
-    padding 8 14
-    corner-radius 6
-    border-color #d1d5db
-    item Label { title Button; font-size 14 }
+  element "Button" {
+    kind Component
+    export let title = "Button"
+    export let kind = primary
+    styles {
+      primary { color #2563eb; text-color #ffffff }
+      secondary { color #ffffff; border-color #d1d5db }
+      kind one-of primary secondary
+    }
+    item Btn {
+      auto-layout row
+      padding 8 14
+      corner-radius 6
+      use-style ${kind}
+      item Label { title ${title}; font-size 14 }
+    }
   }
   item Card {
     auto-layout column
@@ -69,8 +102,8 @@ element "Invite" {
       item v { title "name@example.com"; font-size 14; text-color #9ca3af }
     }
     slot actions {
-      use kit.Kit.Button_secondary as cancel { at Label { title Cancel } }
-      use kit.Kit.Button as send { at Label { title "Send invite" } }
+      use kit.Kit.Button as cancel { title Cancel; kind secondary }
+      use kit.Kit.Button as send { title "Send invite" }
     }
   }
 }
@@ -103,10 +136,37 @@ Paths to remember:
   unnamed slot is `default`). A path that ends on a slot is an error: fill it with `slot <name> { }`.
 - A path that matches two nodes is an error with the candidates listed: add a segment.
 
-## Variants
+## Styles: one component, many looks
 
-A variant is a separate component: `Button`, `Button secondary`, `Button/primary/large`. Pick the one
-you need by its path, then override the rest. Do not rebuild a variant by hand from another one.
+A variant is a named style of the same component, not a second copy: `styles { primary { … } large { … } }`
+in the element, `use-style primary large` on the part that looks different. Rules that matter when writing
+one:
+
+- a style comes where its `use-style` is written: properties above it are defaults, properties below it win,
+  and `at` from the instance wins over both;
+- the last style named wins per property; `use-style -large` drops one;
+- a block inside a style is a selector for a kid: `wide { Label { width 200 } }`;
+- `one-of` and `any-of` lines in `styles` list what is valid: the app shows them as a menu and check boxes,
+  and a parameter whose default is a member of the group becomes that menu on the instance;
+- `text-color` and the font are inherited by the parts below, the text colour defaults to the contrast of the
+  box; `none` is the transparent colour (`border-color none`).
+
+A catalogue of copies (`Button`, `Button secondary`, `Button/primary/large`) is the old form: keep using it
+when a library already has it (a pen.dev import does), but a new part is one component with styles.
+
+## Templates: code out of a component
+
+A component can carry the code it generates: `template %{ … }` with `${param}` and `<slot/>`, and
+`tenniarb gen [-set name=value] FILE ELEMENT` prints it. The text inside `%{ … }` is not parsed, so it may be
+Svelte, JSX or anything else.
+
+```tenn
+element "Chip" {
+  kind Component
+  export let label = "Chip"
+  template %{<span class="chip">${label}<slot/></span>%}
+}
+```
 
 ## Finding components in a large library
 
