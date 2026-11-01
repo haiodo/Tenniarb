@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -66,7 +67,7 @@ func (s *Server) render(file, element string, scale float64, view bool) (*render
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: rast.Measurer(), FontName: "Helvetica"})
+		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: rast.Measurer(), FontName: "Helvetica", Eval: exec.SceneEval})
 	})
 	if err != nil {
 		return nil, err

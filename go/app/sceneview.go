@@ -12,6 +12,7 @@ import (
 	"github.com/haiodo/gowt/gfx/view"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -122,7 +123,7 @@ func (v *Viewer) realizeScene() {
 		if node == nil {
 			return
 		}
-		sv.screen, err = v.stree.BuildElement(tx, sv.root, node, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2})
+		sv.screen, err = v.stree.BuildElement(tx, sv.root, node, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, Eval: exec.SceneEval})
 		next := 2
 		if sv.screen != nil {
 			sv.placed = sv.screen.Placed()

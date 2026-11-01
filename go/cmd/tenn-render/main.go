@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -47,7 +48,7 @@ func run(root, file, path string, scale float64) error {
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, path, scene.Options{FontName: "Helvetica, Arial, sans-serif"})
+		screen, err = tree.Build(tx, nil, path, scene.Options{FontName: "Helvetica, Arial, sans-serif", Eval: exec.SceneEval})
 	})
 	if err != nil {
 		return err

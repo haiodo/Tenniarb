@@ -22,6 +22,9 @@ type Options struct {
 	FontName string
 	// FirstID is the id of the first scene node made; ids grow from there. 1 when zero.
 	FirstID int
+	// Eval evaluates the code of a ${...} or $(...) argument, or a string with ${...} inside, and returns
+	// the value as text (spec 6). nil: an expression is a warning and the property is ignored.
+	Eval func(code string) (string, bool)
 }
 
 // Defaults of a text leaf, as in the Tenniarb app (font-size 18) plus a padding around the text.
@@ -42,6 +45,7 @@ type prep struct {
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
 	icons   map[*RNode]*icon
+	evals   map[*Prop]*Prop // a property with an expression -> its evaluated copy
 }
 
 type textInfo struct {
@@ -65,7 +69,8 @@ func newPrep(t *Tree, o Options) *prep {
 		o.FirstID = 1
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
-		styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{}}
+		styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
+		evals: map[*Prop]*Prop{}}
 }
 
 // root is the layout of an element: its content at their own positions.
@@ -93,23 +98,71 @@ func sceneRoot(rn *RNode) bool {
 	return false
 }
 
-// prop is rn.prop, except that a property with an expression ($(...), ${...}) is treated as absent:
-// expressions are not evaluated here. A scene element reports it once; in a classic diagram an
-// expression is normal and go/render evaluates it.
+// prop is rn.prop with the expressions of the arguments evaluated (spec 6). Without a scene.Options.Eval
+// an expression is a warning and the property is ignored; in a classic diagram it is normal and
+// go/render evaluates it.
 func (p *prep) prop(rn *RNode, name string) *Prop {
 	pr := rn.prop(name)
 	if pr == nil {
 		return nil
 	}
+	if !hasExpr(pr) {
+		return pr
+	}
+	if p.opts.Eval == nil {
+		if !p.classic {
+			p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
+		}
+		return nil
+	}
+	if out, ok := p.evals[pr]; ok {
+		return out
+	}
+	out := p.evaluated(pr)
+	if out != nil { // a failed expression is no value at all
+		p.evals[pr] = out
+	}
+	return out
+}
+
+// hasExpr reports whether an argument is an expression, or a string with one inside.
+func hasExpr(pr *Prop) bool {
 	for _, a := range pr.Args {
 		if a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock {
-			if !p.classic {
-				p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
+			return true
+		}
+		if a.Kind == tenn.KindStringLit {
+			if s, _ := a.GetIdentText(); strings.Contains(s, "${") {
+				return true
 			}
-			return nil
 		}
 	}
-	return pr
+	return false
+}
+
+// evaluated is a copy of pr with every argument evaluated, the plain ones copied as they are; nil when an
+// expression failed. The source property is shared between instances, so it is never changed.
+func (p *prep) evaluated(pr *Prop) *Prop {
+	out := &Prop{Name: pr.Name, Args: pr.Args, Block: pr.Block, Pos: pr.Pos, Range: pr.Range,
+		Val: make([]string, len(pr.Args))}
+	for i, a := range pr.Args {
+		code, _ := a.GetIdentText()
+		switch {
+		case a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock:
+		case a.Kind == tenn.KindStringLit && strings.Contains(code, "${"):
+			code = "`" + code + "`" // a template string, as the classic engine runs it
+		default:
+			out.Val[i] = code
+			continue
+		}
+		v, ok := p.opts.Eval(code)
+		if !ok {
+			p.t.warn(pr.Pos, "%s: the expression %q is not evaluated", pr.Name, code)
+			return nil
+		}
+		out.Val[i] = v
+	}
+	return out
 }
 
 // A link end is the n-th sibling with that NFC name (source-index/target-index, default 0),

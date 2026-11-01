@@ -30,14 +30,23 @@ func (k Kind) String() string {
 
 // Prop is a command that is not structure: a property of its node, in file order.
 type Prop struct {
-	Name  string
-	Args  []*tenn.Node // arguments after the name, a block excluded
+	Name string
+	Args []*tenn.Node // arguments after the name, a block excluded
+	// Val is the evaluated text of every argument, when the property holds an expression (spec 6);
+	// text and num read it instead of the tokens.
+	Val   []string
 	Block *tenn.Node
 	Pos   Pos
 	Range Range
 }
 
 func (p *Prop) text(i int) (string, bool) {
+	if p.Val != nil { // evaluated (spec 6)
+		if i >= len(p.Val) {
+			return "", false
+		}
+		return p.Val[i], true
+	}
 	if i >= len(p.Args) {
 		return "", false
 	}
@@ -45,6 +54,13 @@ func (p *Prop) text(i int) (string, bool) {
 }
 
 func (p *Prop) num(i int) (float64, bool) {
+	if p.Val != nil {
+		if i >= len(p.Val) {
+			return 0, false
+		}
+		v, err := strconv.ParseFloat(p.Val[i], 64)
+		return v, err == nil
+	}
 	if i >= len(p.Args) {
 		return 0, false
 	}

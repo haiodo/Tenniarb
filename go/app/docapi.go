@@ -12,6 +12,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/offscreen"
 
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -268,7 +269,7 @@ func (v *Viewer) renderPNG(scale float64) ([]byte, error) {
 	var screen *scene.Screen
 	var err error
 	s.Update(func(tx *gfx.Tx) {
-		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{Measurer: gfx.DefaultMeasurer})
+		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{Measurer: gfx.DefaultMeasurer, Eval: exec.SceneEval})
 	})
 	if err != nil {
 		return nil, err
