@@ -1,9 +1,14 @@
-// Prototype: one Button component, every catalogue variant a named style (spec 5b).
-// Review only, nothing generated uses it yet. An instance is placed with
-//     use Button as save { at Btn { use-style primary large } }
-// A nested block of a style must sit on its own line: two blocks on one line lose the first
-// (see the report; the same hurts two "at" blocks of an instance).
-element "Button" {
+// Prototype: one Button component, every catalogue variant a named style (spec 5b), and the
+// instance picks the variant by parameter (spec 5c):
+//     use Button as save { title "Save"; kind primary; size large }
+// Review only, nothing generated uses it yet. A block sits on its own line: two blocks on one line
+// are one command, so the second name would be lost.
+element "Button" kind Component {
+    export let title = "Button"
+    export let kind = secondary
+    export let size = medium
+    export let shape = with-icon
+
     styles {
         // kind: the box; the text inside takes its colour (the contrast of the fill, or text-color here),
         // and the icon of the catalogue is drawn by stroke, so it keeps its own border-color
@@ -70,14 +75,12 @@ element "Button" {
     }
     item Btn {
         auto-layout row; gap 8; padding 0 16; align center; justify center; clip yes; corner-radius 8
-        use-style secondary
-        use-style medium
-        use-style with-icon
+        use-style ${kind} ${size} ${shape}
         item Icon {
             width 16; height 16; path "M8 3v10M3 8h10"; view-box 0 0 16 16; line-width 1.3
         }
         item Label {
-            title Button; font-size 14; line-height 16; font-family "IBM Plex Sans"; font-weight 500; layout left
+            title ${title}; font-size 14; line-height 16; font-family "IBM Plex Sans"; font-weight 500; layout left
         }
     }
 }
@@ -89,96 +92,94 @@ element "Screen" {
         item "row primary" {
             auto-layout row; gap 16; align center
             item cap { title primary; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "primary/large" { at Btn { use-style primary large } }
-            use Button as "primary/medium" { at Btn { use-style primary medium } }
-            use Button as "primary/small" { at Btn { use-style primary small } }
-            use Button as "primary/extra-small" { at Btn { use-style primary extra-small } }
-            use Button as "primary/large/icon" { at Btn { use-style primary large icon-only } }
-            use Button as "primary/medium/icon" { at Btn { use-style primary medium icon-only } }
-            use Button as "primary/small/icon" { at Btn { use-style primary small icon-only } }
-            use Button as "primary/extra-small/icon" { at Btn { use-style primary extra-small icon-only } }
+            use Button as "primary/large" { kind primary; size large }
+            use Button as "primary/medium" { kind primary; size medium }
+            use Button as "primary/small" { kind primary; size small }
+            use Button as "primary/extra-small" { kind primary; size extra-small }
+            use Button as "primary/large/icon" { kind primary; size large; shape icon-only }
+            use Button as "primary/medium/icon" { kind primary; size medium; shape icon-only }
+            use Button as "primary/small/icon" { kind primary; size small; shape icon-only }
+            use Button as "primary/extra-small/icon" { kind primary; size extra-small; shape icon-only }
         }
         item "row secondary" {
             auto-layout row; gap 16; align center
             item cap { title secondary; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "secondary/large" { at Btn { use-style secondary large } }
-            use Button as "secondary/medium" { at Btn { use-style secondary medium } }
-            use Button as "secondary/small" { at Btn { use-style secondary small } }
-            use Button as "secondary/extra-small" { at Btn { use-style secondary extra-small } }
-            use Button as "secondary/large/icon" { at Btn { use-style secondary large icon-only } }
-            use Button as "secondary/medium/icon" { at Btn { use-style secondary medium icon-only } }
-            use Button as "secondary/small/icon" { at Btn { use-style secondary small icon-only } }
-            use Button as "secondary/extra-small/icon" { at Btn { use-style secondary extra-small icon-only } }
+            use Button as "secondary/large" { kind secondary; size large }
+            use Button as "secondary/medium" { kind secondary; size medium }
+            use Button as "secondary/small" { kind secondary; size small }
+            use Button as "secondary/extra-small" { kind secondary; size extra-small }
+            use Button as "secondary/large/icon" { kind secondary; size large; shape icon-only }
+            use Button as "secondary/medium/icon" { kind secondary; size medium; shape icon-only }
+            use Button as "secondary/small/icon" { kind secondary; size small; shape icon-only }
+            use Button as "secondary/extra-small/icon" { kind secondary; size extra-small; shape icon-only }
         }
         item "row tertiary" {
             auto-layout row; gap 16; align center
             item cap { title tertiary; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "tertiary/large" { at Btn { use-style tertiary large } }
-            use Button as "tertiary/medium" { at Btn { use-style tertiary medium } }
-            use Button as "tertiary/small" { at Btn { use-style tertiary small } }
-            use Button as "tertiary/extra-small" { at Btn { use-style tertiary extra-small } }
-            use Button as "tertiary/large/icon" { at Btn { use-style tertiary large icon-only } }
-            use Button as "tertiary/medium/icon" { at Btn { use-style tertiary medium icon-only } }
-            use Button as "tertiary/small/icon" { at Btn { use-style tertiary small icon-only } }
-            use Button as "tertiary/extra-small/icon" { at Btn { use-style tertiary extra-small icon-only } }
+            use Button as "tertiary/large" { kind tertiary; size large }
+            use Button as "tertiary/medium" { kind tertiary; size medium }
+            use Button as "tertiary/small" { kind tertiary; size small }
+            use Button as "tertiary/extra-small" { kind tertiary; size extra-small }
+            use Button as "tertiary/large/icon" { kind tertiary; size large; shape icon-only }
+            use Button as "tertiary/medium/icon" { kind tertiary; size medium; shape icon-only }
+            use Button as "tertiary/small/icon" { kind tertiary; size small; shape icon-only }
+            use Button as "tertiary/extra-small/icon" { kind tertiary; size extra-small; shape icon-only }
         }
         item "row ghost" {
             auto-layout row; gap 16; align center
             item cap { title ghost; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "ghost/large" { at Btn { use-style ghost large } }
-            use Button as "ghost/medium" { at Btn { use-style ghost medium } }
-            use Button as "ghost/small" { at Btn { use-style ghost small } }
-            use Button as "ghost/extra-small" { at Btn { use-style ghost extra-small } }
-            use Button as "ghost/large/icon" { at Btn { use-style ghost large icon-only } }
-            use Button as "ghost/medium/icon" { at Btn { use-style ghost medium icon-only } }
-            use Button as "ghost/small/icon" { at Btn { use-style ghost small icon-only } }
-            use Button as "ghost/extra-small/icon" { at Btn { use-style ghost extra-small icon-only } }
+            use Button as "ghost/large" { kind ghost; size large }
+            use Button as "ghost/medium" { kind ghost; size medium }
+            use Button as "ghost/small" { kind ghost; size small }
+            use Button as "ghost/extra-small" { kind ghost; size extra-small }
+            use Button as "ghost/large/icon" { kind ghost; size large; shape icon-only }
+            use Button as "ghost/medium/icon" { kind ghost; size medium; shape icon-only }
+            use Button as "ghost/small/icon" { kind ghost; size small; shape icon-only }
+            use Button as "ghost/extra-small/icon" { kind ghost; size extra-small; shape icon-only }
         }
         item "row negative" {
             auto-layout row; gap 16; align center
             item cap { title negative; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "negative/large" { at Btn { use-style negative large } }
-            use Button as "negative/medium" { at Btn { use-style negative medium } }
-            use Button as "negative/small" { at Btn { use-style negative small } }
-            use Button as "negative/extra-small" { at Btn { use-style negative extra-small } }
-            use Button as "negative/large/icon" { at Btn { use-style negative large icon-only } }
-            use Button as "negative/medium/icon" { at Btn { use-style negative medium icon-only } }
-            use Button as "negative/small/icon" { at Btn { use-style negative small icon-only } }
-            use Button as "negative/extra-small/icon" { at Btn { use-style negative extra-small icon-only } }
+            use Button as "negative/large" { kind negative; size large }
+            use Button as "negative/medium" { kind negative; size medium }
+            use Button as "negative/small" { kind negative; size small }
+            use Button as "negative/extra-small" { kind negative; size extra-small }
+            use Button as "negative/large/icon" { kind negative; size large; shape icon-only }
+            use Button as "negative/medium/icon" { kind negative; size medium; shape icon-only }
+            use Button as "negative/small/icon" { kind negative; size small; shape icon-only }
+            use Button as "negative/extra-small/icon" { kind negative; size extra-small; shape icon-only }
         }
         item "row brand" {
             auto-layout row; gap 16; align center
             item cap { title brand; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "brand/large" { at Btn { use-style brand large } }
-            use Button as "brand/medium" { at Btn { use-style brand medium } }
-            use Button as "brand/small" { at Btn { use-style brand small } }
-            use Button as "brand/extra-small" { at Btn { use-style brand extra-small } }
-            use Button as "brand/large/icon" { at Btn { use-style brand large icon-only } }
-            use Button as "brand/medium/icon" { at Btn { use-style brand medium icon-only } }
-            use Button as "brand/small/icon" { at Btn { use-style brand small icon-only } }
-            use Button as "brand/extra-small/icon" { at Btn { use-style brand extra-small icon-only } }
+            use Button as "brand/large" { kind brand; size large }
+            use Button as "brand/medium" { kind brand; size medium }
+            use Button as "brand/small" { kind brand; size small }
+            use Button as "brand/extra-small" { kind brand; size extra-small }
+            use Button as "brand/large/icon" { kind brand; size large; shape icon-only }
+            use Button as "brand/medium/icon" { kind brand; size medium; shape icon-only }
+            use Button as "brand/small/icon" { kind brand; size small; shape icon-only }
+            use Button as "brand/extra-small/icon" { kind brand; size extra-small; shape icon-only }
         }
         item "row shape" {
             auto-layout row; gap 16; align center
             item cap { title shape; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "shape/with icon" { at Btn { use-style primary large } }
-            use Button as "shape/icon only" { at Btn { use-style primary large icon-only } }
-            use Button as "shape/no icon" { at Btn { use-style primary large no-icon } }
-            use Button as "shape/other icon" {
-                at Btn { use-style primary large }
+            use Button as "shape/with icon" { kind primary; size large }
+            use Button as "shape/icon only" { kind primary; size large; shape icon-only }
+            use Button as "shape/no icon" { kind primary; size large; shape no-icon }
+            use Button as "shape/other icon" { kind primary; size large; title More
                 at Btn.Icon { path "M3.5 6L8 10.5 12.5 6" }
-                at Btn.Label { title More }
             }
         }
         item "row disabled" {
             auto-layout row; gap 16; align center
             item cap { title disabled; width 88; font-size 12; line-height 16; text-color #5a667e }
-            use Button as "disabled/primary" { at Btn { use-style primary large disabled } }
-            use Button as "disabled/secondary" { at Btn { use-style secondary large disabled } }
-            use Button as "disabled/tertiary" { at Btn { use-style tertiary large disabled } }
-            use Button as "disabled/ghost" { at Btn { use-style ghost large disabled } }
-            use Button as "disabled/negative" { at Btn { use-style negative large disabled } }
-            use Button as "disabled/brand" { at Btn { use-style brand large disabled } }
+            use Button as "disabled/primary" { kind primary; size large; at Btn { use-style disabled } }
+            use Button as "disabled/secondary" { kind secondary; size large; at Btn { use-style disabled } }
+            use Button as "disabled/tertiary" { kind tertiary; size large; at Btn { use-style disabled } }
+            use Button as "disabled/ghost" { kind ghost; size large; at Btn { use-style disabled } }
+            use Button as "disabled/negative" { kind negative; size large; at Btn { use-style disabled } }
+            use Button as "disabled/brand" { kind brand; size large; at Btn { use-style disabled } }
         }
     }
 }

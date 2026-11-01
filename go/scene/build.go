@@ -149,7 +149,9 @@ func (t *Tree) validate() {
 		x := &expander{t: t, ctx: c}
 		if rn := x.container(n); rn != nil {
 			finalize(rn)
-			p := newPrep(t, Options{})
+			// validate lays out without an evaluator: an expression is a value check cannot know, not a
+			// problem of the file (the build with Options.Eval and check report it).
+			p := newPrep(t, Options{noExprWarn: true})
 			p.root(rn).Layout()
 			p.warnOutside(rn)
 		}

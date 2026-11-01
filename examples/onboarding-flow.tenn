@@ -1,40 +1,31 @@
-element "Onboarding" {
+// A screen built from one component: every step is `use Step`, its text and tone come from the
+// parameters of the instance (spec 5c), not from copies of the item.
+element "Step" kind Component {
+    export let title = "Step"
+    export let tone = step
+
     styles {
-        item {
-            font-size 14
-        }
-        step {
-            color blue-200
-        }
-        end {
-            color green-200
-        }
+        box { font-size 14 }
+        step { color blue-200 }
+        end { color green-200 }
+        warn { color red-200 }
+        tone one-of step end warn
     }
-    item "Sign up" {
-        use-style step
+
+    item Box {
+        title ${title}
+        use-style box ${tone}
     }
-    item "Verify email" {
-        pos 200.0 0.0
-        use-style step
-    }
-    item "Create workspace" {
-        pos 413.34475416133273 10.364410427996972
-        use-style step
-        height 40
-    }
-    item "Invite team" {
-        pos 420.0 -120.0
-        use-style step
-        body "optional"
-    }
-    item "First project" {
-        pos 640.0 0.0
-        use-style end
-    }
-    item "Email not received" {
-        pos 200.0 -120.0
-        color red-200
-    }
+}
+
+element "Onboarding" {
+    use Step as "Sign up" { title "Sign up" }
+    use Step as "Verify email" { title "Verify email"; pos 200 0 }
+    use Step as "Create workspace" { title "Create workspace"; pos 413.34475416133273 10.364410427996972; at Box { height 40 } }
+    use Step as "Invite team" { title "Invite team"; pos 420 -120; at Box { body "optional" } }
+    use Step as "First project" { title "First project"; pos 640 0; tone end }
+    use Step as "Email not received" { title "Email not received"; pos 200 -120; tone warn }
+
     link "Sign up" "Verify email" {
         display arrow
     }

@@ -6,24 +6,33 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // dead reports the commands that change nothing (rule 4): a style nobody names, a group nobody chooses
 // from, an override that sets the value the component already has, a pos a flow layout ignores.
 func (a *analyzer) dead(root *scene.Node) {
-	refs := a.styleRefs(root)
-	a.deadStyles(root, refs)
+	refs, dynamic := a.styleRefs(root)
+	a.deadStyles(root, refs, dynamic)
 	a.deadPos()
 	a.deadOverrides(root)
 }
 
 // styleRefs lists, for every node whose styles its nodes may name, the style names they name with
-// use-style; the names a use names belong to the component, not to the place it sits in.
-func (a *analyzer) styleRefs(root *scene.Node) map[*scene.Node][]string {
+// use-style; the names a use names belong to the component, not to the place it sits in. dynamic holds
+// the nodes a use-style with an expression names: which style it picks is known only at build time, so
+// no style of theirs is dead.
+func (a *analyzer) styleRefs(root *scene.Node) (map[*scene.Node][]string, map[*scene.Node]bool) {
 	out := map[*scene.Node][]string{}
+	dynamic := map[*scene.Node]bool{}
 	add := func(owner *scene.Node, props []*scene.Prop) {
 		if sc := nearestStyles(owner); sc != nil {
 			out[sc] = append(out[sc], scene.StyleRefs(props)...)
+			for _, pr := range props {
+				if isDynamic(pr) {
+					dynamic[sc] = true
+				}
+			}
 		}
 	}
 	a.eachNode(root, func(n *scene.Node) {
@@ -44,7 +53,18 @@ func (a *analyzer) styleRefs(root *scene.Node) map[*scene.Node][]string {
 			}
 		}
 	})
-	return out
+	return out, dynamic
+}
+
+// isDynamic reports a use-style whose names are expressions (spec 6): a parameter or a value of the
+// instance, not a literal.
+func isDynamic(pr *scene.Prop) bool {
+	for _, a := range pr.Args {
+		if a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock {
+			return true
+		}
+	}
+	return false
 }
 
 // useStyleProps are the direct use-style commands of an override block.
@@ -104,7 +124,7 @@ func instanceChild(comp *scene.Node, seg string) *scene.Node {
 var implicitStyle = map[string]bool{"item": true, "line": true}
 
 // deadStyles reports the named styles and the groups of an element that no use-style names.
-func (a *analyzer) deadStyles(root *scene.Node, refs map[*scene.Node][]string) {
+func (a *analyzer) deadStyles(root *scene.Node, refs map[*scene.Node][]string, dynamic map[*scene.Node]bool) {
 	var each func(n *scene.Node)
 	each = func(n *scene.Node) {
 		for _, e := range n.Elems {
@@ -112,6 +132,9 @@ func (a *analyzer) deadStyles(root *scene.Node, refs map[*scene.Node][]string) {
 		}
 		if a.other(n) || n.Mount != nil {
 			return // the styles of a mounted file belong to that file
+		}
+		if dynamic[n] {
+			return // a use-style with an expression may name any of them
 		}
 		used := map[string]bool{}
 		for _, name := range refs[n] {

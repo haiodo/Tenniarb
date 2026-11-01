@@ -22,6 +22,9 @@ type Options struct {
 	FontName string
 	// FirstID is the id of the first scene node made; ids grow from there. 1 when zero.
 	FirstID int
+	// noExprWarn: expressions are a normal value here, not worth a warning (validate lays out without an
+	// evaluator, so every ${...} of a screen would be reported).
+	noExprWarn bool
 	// Eval evaluates the code of a ${...} or $(...) argument, or a string with ${...} inside, and returns
 	// the value as text (spec 6). nil: an expression is a warning and the property is ignored.
 	Eval func(code string) (string, bool)
@@ -101,6 +104,16 @@ func (p *prep) root(rn *RNode) *layout.Node {
 
 // sceneRoot is model.SceneElement on the expanded tree: an instance, an item with child nodes or
 // auto-layout. Other elements are classic diagrams, which go/render draws with their expressions.
+// holdsItems reports whether the node has an item kid, so it draws no box of its own unless it asks.
+func holdsItems(rn *RNode) bool {
+	for _, k := range rn.Kids {
+		if k.Kind == RItem {
+			return true
+		}
+	}
+	return false
+}
+
 func sceneRoot(rn *RNode) bool {
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && (k.Inst || len(k.Kids) > 0 || k.prop("auto-layout") != nil) {
@@ -119,7 +132,7 @@ func (p *prep) prop(rn *RNode, name string) *Prop {
 		return pr
 	}
 	if p.eval == nil {
-		if !p.classic {
+		if !p.classic && !p.opts.noExprWarn {
 			p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
 		}
 		return nil
@@ -258,7 +271,9 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 	} else {
 		n.Dir = layout.Abs
 	}
-	p.styles[rn] = p.style(rn, inCtx, up)
+	// The root of an instance that holds items is a container for what the element draws, not a box of
+	// its own: a white fill there would cover the screen behind it.
+	p.styles[rn] = p.style(rn, inCtx || (rn.Inst && holdsItems(rn)), up)
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
 			n.Kids = append(n.Kids, p.item(k, auto, p.styles[rn].text))
@@ -267,7 +282,9 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 	if len(n.Kids) == 0 {
 		p.leaf(rn, n, inCtx)
 	} else {
-		p.texts[rn] = p.textOf(rn, inCtx)
+		if !rn.Inst { // the name of an instance is an alias, not its content
+			p.texts[rn] = p.textOf(rn, inCtx)
+		}
 		p.links(rn)
 	}
 	return n
