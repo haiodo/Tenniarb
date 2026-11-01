@@ -5288,6 +5288,448 @@ diagram"
             }
         }
     }
+    element "Diff view" {
+        item New {
+            pos 0 0
+            auto-layout column
+            width 1200
+            height 760
+            color #ffffff
+            border-color #d1d5db
+            corner-radius 10
+            clip yes
+            item Bar {
+                auto-layout row
+                width fill
+                height 44
+                padding 0 12
+                gap 10
+                align center
+                border-color #e5e7eb
+                item Title { title Diff; font-size 13; font-weight 700 }
+                item Doc { title "tenniarb.tenn"; font-size 13; text-color #6b7280 }
+                item Grow { width fill }
+                item Modes {
+                    auto-layout row
+                    padding 2
+                    gap 2
+                    corner-radius 7
+                    color #f3f4f6
+                    item On { auto-layout row; padding 3 10; corner-radius 5; color #ffffff; item T { title New; font-size 12; font-weight 600 } }
+                    item Split { auto-layout row; padding 3 10; corner-radius 5; item T { title Split; font-size 12; text-color #6b7280 } }
+                    item Blend { auto-layout row; padding 3 10; corner-radius 5; item T { title Blend; font-size 12; text-color #6b7280 } }
+                }
+                item Changes {
+                    auto-layout row
+                    gap 6
+                    align center
+                    padding 3 8
+                    corner-radius 6
+                    border-color #d1d5db
+                    item Box { width 12; height 12; corner-radius 3; color #2563eb; border-color #2563eb }
+                    item T { title Changes; font-size 12 }
+                }
+                item Git {
+                    auto-layout row
+                    gap 6
+                    align center
+                    padding 3 8
+                    corner-radius 6
+                    color #ecfdf5
+                    item Dot { width 6; height 6; corner-radius 3; color #16a34a }
+                    item T { title "git main"; font-size 11; text-color #166534 }
+                }
+            }
+            item Body {
+                auto-layout row
+                width fill
+                height fill
+                item List {
+                    auto-layout column
+                    width 300
+                    height fill
+                    padding 10
+                    gap 1
+                    color #f9fafb
+                    border-color #e5e7eb
+                    item Head {
+                        auto-layout row
+                        width fill
+                        padding 0 4 8 4
+                        align center
+                        item T { title Changes; font-size 12; font-weight 700 }
+                        item Grow { width fill }
+                        item N { title 7; font-size 11; text-color #6b7280 }
+                    }
+                    item Elem {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6
+                        corner-radius 6
+                        item Chev { width 8; height 8; view-box 0 0 16 16; path "M4 6l4 4 4-4"; border-color #6b7280 }
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M2 2h12v12H2zM2 7h12M7 2v12"; border-color #6b7280 }
+                        item T { title "App UI.Popovers"; font-size 12; font-weight 600; width fill; layout left }
+                        item N { title 4; font-size 11; text-color #6b7280 }
+                    }
+                    item Added {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6 5 26
+                        corner-radius 6
+                        color #ecfdf5
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M4 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"; border-color #16a34a }
+                        item T { title Footer; font-size 12; width fill; layout left }
+                        item B { title "added"; font-size 10; text-color #16a34a }
+                    }
+                    item Changed {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6 5 26
+                        corner-radius 6
+                        color #fffbeb
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M4 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"; border-color #d97706 }
+                        item T { title Card; font-size 12; width fill; layout left }
+                        item B { title 2; font-size 10; text-color #d97706 }
+                    }
+                    item Sub1 {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 3 6 3 45
+                        corner-radius 6
+                        item T { title "width 240 -> 200"; font-size 10; text-color #6b7280 }
+                    }
+                    item Sub2 {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 3 6 3 45
+                        corner-radius 6
+                        item T { title "title Header -> Title"; font-size 10; text-color #6b7280 }
+                    }
+                    item Removed {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6 5 26
+                        corner-radius 6
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M2 8h12M10 5l3 3-3 3"; border-color #ef4444 }
+                        item T { title "Card Footer"; font-size 12; width fill; layout left }
+                        item B { title removed; font-size 10; text-color #ef4444 }
+                    }
+                    item Moved {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6 5 26
+                        corner-radius 6
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M4 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"; border-color #2563eb }
+                        item T { title Badge; font-size 12; width fill; layout left }
+                        item B { title moved; font-size 10; text-color #2563eb }
+                    }
+                    item Elem2 {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6
+                        corner-radius 6
+                        item Chev { width 8; height 8; view-box 0 0 16 16; path "M6 4l4 4-4 4"; border-color #6b7280 }
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M2 2h12v12H2zM2 7h12M7 2v12"; border-color #6b7280 }
+                        item T { title "kit.Button"; font-size 12; font-weight 600; width fill; layout left }
+                        item N { title 1; font-size 11; text-color #6b7280 }
+                    }
+                    item Changed2 {
+                        auto-layout row
+                        width fill
+                        gap 7
+                        align center
+                        padding 5 6 5 26
+                        corner-radius 6
+                        item Ic { width 12; height 12; view-box 0 0 16 16; path "M3 3h10M8 3v10"; border-color #d97706 }
+                        item T { title color; font-size 12; width fill; layout left }
+                        item B { title 1; font-size 10; text-color #d97706 }
+                    }
+                    item Legend {
+                        auto-layout row
+                        width fill
+                        gap 10
+                        padding 10 4 0 4
+                        align center
+                        item L1 { width 12; height 12; view-box 0 0 16 16; path "M2 2h12v12H2zM2 7h12M7 2v12"; border-color #9ca3af }
+                        item T1 { title element; font-size 10; text-color #9ca3af }
+                        item L2 { width 12; height 12; view-box 0 0 16 16; path "M4 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"; border-color #9ca3af }
+                        item T2 { title item; font-size 10; text-color #9ca3af }
+                        item L3 { width 12; height 12; view-box 0 0 16 16; path "M2 8h12M10 5l3 3-3 3"; border-color #9ca3af }
+                        item T3 { title link; font-size 10; text-color #9ca3af }
+                        item L4 { width 12; height 12; view-box 0 0 16 16; path "M3 3h10M8 3v10"; border-color #9ca3af }
+                        item T4 { title text; font-size 10; text-color #9ca3af }
+                    }
+                }
+                item Canvas {
+                    auto-layout column
+                    width fill
+                    height fill
+                    padding 24
+                    gap 14
+                    color #f3f4f6
+                    item Card {
+                        auto-layout column
+                        width 260
+                        gap 8
+                        padding 12
+                        color #ffffff
+                        border-color #d97706
+                        corner-radius 8
+                        item Head {
+                            auto-layout row
+                            width fill
+                            gap 8
+                            align center
+                            item T { title Title; font-size 13; font-weight 600 }
+                            item Old { title "(was Header)"; font-size 10; text-color #d97706 }
+                            item Grow { width fill }
+                            item Tag {
+                                auto-layout row
+                                padding 1 5
+                                corner-radius 4
+                                color #fffbeb
+                                item T { title changed; font-size 9; text-color #b45309 }
+                            }
+                        }
+                        item Line { width fill; height 1; color #e5e7eb }
+                        item Body { title "Body text"; font-size 12; text-color #6b7280 }
+                        item Footer {
+                            auto-layout row
+                            width fill
+                            gap 6
+                            align center
+                            padding 5 6
+                            corner-radius 5
+                            border-color #16a34a
+                            item T { title "new Footer"; font-size 11; text-color #16a34a }
+                            item Grow { width fill }
+                            item Tag { auto-layout row; padding 1 5; corner-radius 4; color #ecfdf5; item T { title added; font-size 9; text-color #15803d } }
+                        }
+                    }
+                    item Ghost {
+                        auto-layout row
+                        width 260
+                        gap 6
+                        align center
+                        padding 5 8
+                        corner-radius 6
+                        border-color #ef4444
+                        item T { title "link Card -> Footer"; font-size 11; text-color #ef4444 }
+                        item Grow { width fill }
+                        item Tag { auto-layout row; padding 1 5; corner-radius 4; color #fef2f2; item T { title removed; font-size 9; text-color #b91c1c } }
+                    }
+                    item Hint { title "The new scene with markers where it changed. The Changes toggle hides the frames and the ghosts."; width fill; font-size 11; layout left; text-color #6b7280 }
+                }
+                item Detail {
+                    auto-layout column
+                    width 280
+                    height fill
+                    padding 12
+                    gap 10
+                    border-color #e5e7eb
+                    item Cap { title "App UI.Popovers.Card"; font-size 11; text-color #6b7280; width fill; layout left }
+                    item Prop {
+                        auto-layout row
+                        width fill
+                        gap 8
+                        align center
+                        item Name { title width; font-size 12; width 70; layout left; text-color #6b7280 }
+                        item Old { title 240; font-size 12; text-color #ef4444 }
+                        item Arrow { title "->"; font-size 12; text-color #6b7280 }
+                        item New { title 200; font-size 12; font-weight 600; text-color #16a34a }
+                    }
+                    item Prop2 {
+                        auto-layout row
+                        width fill
+                        gap 8
+                        align center
+                        item Name { title title; font-size 12; width 70; layout left; text-color #6b7280 }
+                        item Old { title "Header"; font-size 12; text-color #ef4444 }
+                        item Arrow { title "->"; font-size 12; text-color #6b7280 }
+                        item New { title "Title"; font-size 12; font-weight 600; text-color #16a34a }
+                    }
+                    item Line { width fill; height 1; color #e5e7eb }
+                    item Revert {
+                        auto-layout row
+                        width fill
+                        gap 8
+                        item Btn {
+                            auto-layout row
+                            padding 5 10
+                            corner-radius 6
+                            border-color #d1d5db
+                            item T { title "Revert node"; font-size 12; text-color #9ca3af }
+                        }
+                        item Btn2 {
+                            auto-layout row
+                            padding 5 10
+                            corner-radius 6
+                            border-color #d1d5db
+                            item T { title "Copy patch"; font-size 12 }
+                        }
+                    }
+                    item Note { title "Revert works when the file is in a git repository: the diff is taken from the last commit, and taking an old node back is a normal edit."; width fill; font-size 11; layout left; text-color #6b7280 }
+                    item Hint { title "Space next change, Shift-Space previous, Cmd-click a node to compare it."; width fill; font-size 11; layout left; text-color #6b7280 }
+                }
+            }
+        }
+        item Split {
+            pos 0 -820
+            auto-layout column
+            width 580
+            height 420
+            color #ffffff
+            border-color #d1d5db
+            corner-radius 8
+            clip yes
+            item Bar {
+                auto-layout row
+                width fill
+                height 36
+                padding 0 10
+                gap 8
+                align center
+                border-color #e5e7eb
+                item Title { title "Diff Split"; font-size 12; font-weight 700 }
+                item Grow { width fill }
+                item Modes {
+                    auto-layout row
+                    padding 2
+                    gap 2
+                    corner-radius 6
+                    color #f3f4f6
+                    item N { auto-layout row; padding 2 8; corner-radius 4; item T { title New; font-size 10; text-color #6b7280 } }
+                    item On { auto-layout row; padding 2 8; corner-radius 4; color #ffffff; item T { title Split; font-size 10; font-weight 600 } }
+                    item B { auto-layout row; padding 2 8; corner-radius 4; item T { title Blend; font-size 10; text-color #6b7280 } }
+                }
+            }
+            item Panes {
+                auto-layout row
+                width fill
+                height fill
+                gap 0
+                color #f3f4f6
+                item Before {
+                    auto-layout column
+                    width fill
+                    height fill
+                    padding 12
+                    gap 8
+                    item Cap { title "Before HEAD"; font-size 10; font-weight 600; text-color #6b7280 }
+                    item Scene {
+                        auto-layout column
+                        width 220
+                        padding 10
+                        gap 6
+                        color #ffffff
+                        corner-radius 6
+                        border-color #e5e7eb
+                        item T { title Header; font-size 11; font-weight 600 }
+                        item Body { title "Body text"; font-size 10; text-color #9ca3af }
+                    }
+                }
+                item Sep { width 1; height fill; color #d1d5db }
+                item After {
+                    auto-layout column
+                    width fill
+                    height fill
+                    padding 12
+                    gap 8
+                    item Cap { title "After working copy"; font-size 10; font-weight 600; text-color #6b7280 }
+                    item Scene {
+                        auto-layout column
+                        width 200
+                        padding 10
+                        gap 6
+                        color #ffffff
+                        corner-radius 6
+                        border-color #16a34a
+                        item T { title Title; font-size 11; font-weight 600 }
+                        item Body { title "Body text"; font-size 10; text-color #9ca3af }
+                        item F { title "new Footer"; font-size 10; text-color #16a34a }
+                    }
+                }
+            }
+        }
+        item Blend {
+            pos 620 -820
+            auto-layout column
+            width 580
+            height 420
+            color #ffffff
+            border-color #d1d5db
+            corner-radius 8
+            clip yes
+            item Bar {
+                auto-layout row
+                width fill
+                height 36
+                padding 0 10
+                gap 8
+                align center
+                border-color #e5e7eb
+                item Title { title "Diff Blend"; font-size 12; font-weight 700 }
+                item Grow { width fill }
+                item Modes {
+                    auto-layout row
+                    padding 2
+                    gap 2
+                    corner-radius 6
+                    color #f3f4f6
+                    item N { auto-layout row; padding 2 8; corner-radius 4; item T { title New; font-size 10; text-color #6b7280 } }
+                    item S { auto-layout row; padding 2 8; corner-radius 4; item T { title Split; font-size 10; text-color #6b7280 } }
+                    item On { auto-layout row; padding 2 8; corner-radius 4; color #ffffff; item T { title Blend; font-size 10; font-weight 600 } }
+                }
+            }
+            item Canvas {
+                auto-layout column
+                width fill
+                height fill
+                padding 12
+                gap 10
+                color #f3f4f6
+                item Scene {
+                    auto-layout column
+                    width 240
+                    padding 10
+                    gap 6
+                    color #ffffff
+                    corner-radius 6
+                    border-color #e5e7eb
+                    item T { title Title; font-size 11; font-weight 600 }
+                    item Body { title "Body text"; font-size 10; text-color #9ca3af }
+                    item F { title "new Footer"; font-size 10; text-color #16a34a }
+                }
+                item Slider {
+                    auto-layout row
+                    width 240
+                    height 4
+                    gap 0
+                    corner-radius 2
+                    color #d1d5db
+                    item Fill { width 120; height 4; corner-radius 2; color #2563eb }
+                    item Knob { width 10; height 10; corner-radius 5; color #ffffff; border-color #2563eb }
+                }
+                item Hint { title "Both versions blended: drag the slider to fade from HEAD to the working copy."; width 340; font-size 10; layout left; text-color #6b7280 }
+            }
+        }
+    }
 }
 element "Documentation" {
     element "Basic steps" {
