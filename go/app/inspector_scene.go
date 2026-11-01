@@ -285,9 +285,9 @@ func (in *inspector) paramRow(prm scene.Param) (g.Option, func()) {
 				}
 			}
 	case gr != nil:
-		var seg *g.SegmentedView
-		ctl := g.Segmented(segmentTexts(gr.Styles), g.Small(), g.GrowX(), g.ID(id), g.Ref(&seg),
-			g.Init(func(c *g.SegmentedView) {
+		var combo *g.ComboView
+		ctl := g.Combo(gr.Styles, g.ReadOnly(), g.ID(id), g.Ref(&combo), g.GrowX(), g.Size(g.Scaled(60), 0),
+			g.Init(func(c *g.ComboView) {
 				c.OnSelect(func(i int) {
 					if !in.loading && i >= 0 && i < len(gr.Styles) {
 						v.setParam(prm, gr.Styles[i])
@@ -302,7 +302,7 @@ func (in *inspector) paramRow(prm scene.Param) (g.Option, func()) {
 				}
 			}
 			in.loading = true
-			seg.Select(at)
+			combo.Select(at)
 			in.loading = false
 		}
 		return styleRow(prm.Name, ctl), refresh
@@ -341,9 +341,10 @@ func (in *inspector) styleGroup(gr scene.StyleGroup) ([]g.Option, []func()) {
 		}
 		return rows, refresh
 	}
-	var seg *g.SegmentedView
-	ctl := g.Segmented(segmentTexts(gr.Styles), g.Small(), g.GrowX(), g.ID("scene-style-"+gr.Name), g.Ref(&seg),
-		g.Init(func(c *g.SegmentedView) {
+	// A drop-down, not a switch: six segment labels make the whole inspector that wide.
+	var combo *g.ComboView
+	ctl := g.Combo(gr.Styles, g.ReadOnly(), g.ID("scene-style-"+gr.Name), g.Ref(&combo), g.GrowX(),
+		g.Size(g.Scaled(60), 0), g.Init(func(c *g.ComboView) {
 			c.OnSelect(func(i int) {
 				if !in.loading && i >= 0 && i < len(gr.Styles) {
 					set(gr.Styles[i])
@@ -358,7 +359,7 @@ func (in *inspector) styleGroup(gr scene.StyleGroup) ([]g.Option, []func()) {
 			}
 		}
 		in.loading = true
-		seg.Select(at)
+		combo.Select(at)
 		in.loading = false
 	}
 	return []g.Option{styleRow(gr.Name, ctl)}, []func(){refresh}
