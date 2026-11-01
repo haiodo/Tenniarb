@@ -322,6 +322,112 @@ item "Card" {
 внутри item с `auto-layout` **[предложение]**. Вне такого item слово вместо числа - ошибка `validate`. Значения `width` как выражение
 `${...}` разрешены и сейчас; для `hug`/`fill` выражение не подставляется.
 
+## 5b. Стили компонента (варианты) [предложение 2026-11-01]
+
+Один компонент описывает все варианты; варианты не копируются в отдельные элементы, как сейчас в
+`dev/design/tenn/lib/actions.tenn` (`Button/primary/large`, `Button/primary/medium`, ...).
+
+Имена и место те же, что уже работают для item в классических диаграммах (`styles { имя { ... } }` на
+элементе, `use-style имя` у item, `render/scene.go`): сцена берёт тот же синтаксис, иначе два похожих
+механизма в одном формате.
+
+```tenn
+element "Button" {
+    styles {
+        primary   { color #6b3ad3; text-color #ffffff }
+        secondary { color #ffffff; border-color #1725471a; text-color #172547 }
+        ghost     { color #00000000; text-color #6b3ad3 }
+        large     { height 48; padding 0 16 }
+        medium    { height 40; padding 0 12 }
+        outlined  { border-color #1725471a }
+        kind      one-of primary secondary ghost
+        size      one-of large medium
+        extras    any-of outlined
+    }
+    item Btn {
+        auto-layout row; gap 8; align center; justify center; corner-radius 8
+        use-style primary medium
+        item Label { title Button; font-size 14; font-weight 500 }
+    }
+}
+```
+
+Место вставки выбирает вариант; остальное - умолчания компонента:
+
+```tenn
+use Actions.Button as save { at Btn { use-style secondary large } at Btn.Label { title Save } }
+```
+
+Правила ([движок готов 2026-11-01], `go/scene/styles.go`):
+
+- `styles { имя { команды } }` - именованный набор свойств в области элемента; узел выбирает его
+  командой `use-style имя`, можно несколько, для каждого свойства побеждает последний по порядку;
+- объявленные для компонента группы: `имя one-of a b c` (ровно один) и `имя any-of a b` (любое
+  число). Инспектор показывает группу `one-of` переключателем, `any-of` - чекбоксами; список валидных
+  стилей компонента - это его группы;
+- на месте вставки `use-style` добавляет стиль к умолчаниям компонента; убрать умолчание - `use-style -имя`;
+- явные свойства узла (и `at` с места вставки) главнее стиля;
+- вложенный блок `Label { ... }` внутри стиля задаёт свойства ребёнка с этим именем (селектор потомка,
+  как в CSS), глубже - так же вложенно; сам по себе стиль вниз не наследуется;
+- темы (этап 1e.6) строятся тем же механизмом: `dark { ... }` в `styles` и `use-style dark` на корне.
+
+Движку нужен один проход после развёртывания (`go/scene`): собрать `styles` области, для узлов с
+`use-style` подставить свойства перед собственными (явные главнее), вложенные селекторы разложить по детям,
+группы отдать инспектору (`go/app`) как список стилей компонента.
+
+## 5c. Компонент и его параметры [предложение 2026-11-01]
+
+Сейчас компонент - это обычный `element`, а его настройка на месте вставки - `at <путь> { свойства }`.
+Хочется, как в Svelte: элемент объявлен компонентом, у него есть объявленные параметры с умолчаниями, и
+место вставки задаёт их по имени, не зная внутренних путей.
+
+```tenn
+element "Button" kind Component {
+    export let title = "Button"
+    export let kind = primary
+    export let size = medium
+
+    styles {
+        primary   { color #6b3ad3; text-color #ffffff }
+        secondary { color #ffffff; border-color #1725471a; text-color #172547 }
+        large     { height 48; padding 0 16 }
+        medium    { height 40; padding 0 12 }
+        kind      one-of primary secondary
+        size      one-of large medium
+    }
+
+    item Btn {
+        auto-layout row; gap 8; align center; justify center; corner-radius 8
+        use-style ${kind} ${size}
+        item Label { title ${title}; font-size 14; font-weight 500 }
+    }
+}
+
+use Actions.Button as save { title "Save"; kind secondary; size large }
+```
+
+Правила ([предложение]):
+
+- `kind Component` - признак компонента: он попадает в picker компонентов, а не в список экранов; `use`
+  работает как теперь. Файлы и элементы без признака - экраны; отдельно можно `kind Screen`.
+- `export let <имя> = <значение>` объявляет параметр с умолчанием; без `=` параметр обязателен.
+- в сцене `${...}` **вычисляются тем же движком**, что и в классике (`go/exec` на goja): параметры
+  `export let` попадают в область видимости экземпляра как обычные переменные, поэтому `title ${title}`
+  и `width ${size + 12}` работают. Движок сцены получает вычислитель через `scene.Options.Eval` и сам от
+  goja не зависит (`tenn-render` может передать `NoEvaluate`).
+- параметр, значение которого входит в группу `one-of` из `styles` (5b), инспектор показывает
+  переключателем; `any-of` - чекбоксами; остальные - полем.
+- место вставки задаёт параметры по имени без пути: `use ... { title "Save"; kind secondary }`; старые
+  `at`/`replace` остаются для нестандартных правок.
+- те же `export let` служат шаблонам (1d.5): шаблон компонента - текст с `${имя}` и `<slot>`, генератор
+  подставляет параметры и детей, так из компонента получается код.
+
+Решено владельцем (2026-11-01): выражения в сценах вычисляются, а не подставляются текстом; `kind` есть и
+у элемента, и у файла (`kind Library`, `kind Application`, `PlatformDesign.tenn`).
+
+Открытые вопросы: порядок вычисления (параметры экземпляра до свойств узла), кэш результатов на один
+build, и что показывать, когда выражение падает (сейчас в классике - значение `Error`).
+
 ## 5a. Реализация в `go/scene`
 
 Первый конвейер `.tenn` -> resolver -> `gfx/layout` -> `gfx.Scene` -> SVG (`go/scene`, `go/cmd/tenn-render`). Статусы:

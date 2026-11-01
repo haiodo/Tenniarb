@@ -87,6 +87,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	if rn == nil {
 		return nil, local.asError()
 	}
+	applyStyles(rn)
 	p := newPrep(t, o)
 	lay := p.root(rn)
 	if local.Fatal() {

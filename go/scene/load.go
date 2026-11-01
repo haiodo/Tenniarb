@@ -373,6 +373,8 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		case name == "element" && owner.isContainer():
 			l.addElement(owner, c)
 		case l.addContent(owner, c, name) != nil:
+		case name == "styles" && owner.isContainer():
+			l.addStyles(owner, c)
 		default:
 			owner.Props = append(owner.Props, l.prop(c))
 		}
@@ -436,6 +438,44 @@ func (l *loader) resolveFile(rel string, pos Pos, what string) (string, bool) {
 		l.t.fail(pos, "%s %q leaves the workspace root", what, rel)
 	}
 	return abs, in
+}
+
+// addStyles reads "styles { name { properties } ... }": the named styles an element gives its nodes.
+// A command without a block is a group declaration for the inspector, not a style.
+func (l *loader) addStyles(owner *Node, c *tenn.Node) {
+	_, block := split(c)
+	if owner.Styles == nil {
+		owner.Styles = map[string]*Style{}
+	}
+	for _, b := range block {
+		name := cmdName(b)
+		if name == "" || !hasBlock(b) {
+			continue
+		}
+		owner.Styles[NormalizeName(name)] = l.style(b)
+	}
+}
+
+// style reads one style: its properties and the blocks of kid names in it.
+func (l *loader) style(c *tenn.Node) *Style {
+	st := &Style{}
+	_, block := split(c)
+	for _, cmd := range block {
+		name := cmdName(cmd)
+		if name == "" {
+			continue
+		}
+		if hasBlock(cmd) {
+			st.Kids = append(st.Kids, StyleKid{Key: NormalizeName(name), Style: l.style(cmd)})
+			continue
+		}
+		st.Props = append(st.Props, l.prop(cmd))
+	}
+	return st
+}
+
+func hasBlock(c *tenn.Node) bool {
+	return len(c.Children) > 0 && c.Children[len(c.Children)-1].Kind == tenn.KindBlockExpr
 }
 
 // addContent adds an item, link, use or slot command to owner; it returns nil when c is not one, so

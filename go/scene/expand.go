@@ -285,6 +285,10 @@ func withoutProp(props []*Prop, name string) []*Prop {
 
 // setProp replaces the properties of that name, in the place of the first one, or appends.
 func setProp(r *RNode, p *Prop) {
+	if p.Name == "use-style" { // styles add to the ones the component names, the instance's last
+		r.Props = append(r.Props, p)
+		return
+	}
 	out := make([]*Prop, 0, len(r.Props)+1)
 	done := false
 	for _, q := range r.Props {

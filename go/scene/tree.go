@@ -100,10 +100,26 @@ type Node struct {
 	Path     string      // KUse
 	Block    []*Override // KUse
 
+	// Styles are the named styles of an element from its styles block: a set of properties for the node
+	// that names it with use-style, and for the kids its blocks name.
+	Styles map[string]*Style
+
 	// The arguments of the command in the text of its file, delimiters included; zero when it has none.
 	NameArg        Range // the name, for a use the one after as
 	PathArg        Range // KUse
 	FromArg, ToArg Range // KLink
+}
+
+// Style is one named style: properties of the node that names it, and of the kids its blocks name.
+type Style struct {
+	Props []*Prop
+	Kids  []StyleKid
+}
+
+// StyleKid is the part of a style for a kid with that key, as a CSS descendant selector.
+type StyleKid struct {
+	Key   string
+	Style *Style
 }
 
 // Nodes lists the elements, items and uses written directly in n, in file order: the nodes a path
