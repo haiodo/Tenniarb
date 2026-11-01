@@ -149,7 +149,7 @@ element "Screen" { item col { use C as x } }`)
 // and an unknown kind is a warning, not an error.
 func TestKind(t *testing.T) {
 	tree := paramsTree(t, "kinds.tenn", `kind Library
-element "Button" kind Component { item Btn { width 10; height 10 } }
+element "Button" { kind Component; item Btn { width 10; height 10 } }
 element "Screen" { use Button as b }
 element "Other" { item Box { width 4; height 4 } }
 `)
@@ -161,19 +161,28 @@ element "Other" { item Box { width 4; height 4 } }
 		t.Errorf("element kinds %q, %q, %q; want component, empty, empty", elems[0].Type, elems[1].Type, elems[2].Type)
 	}
 
-	other := paramsTree(t, "gadget.tenn", `element "Loose" kind Gadget { item Box { width 4; height 4 } }`)
+	other := paramsTree(t, "gadget.tenn", `element "Loose" { kind Gadget; item Box { width 4; height 4 } }`)
 	if got := other.File("gadget.tenn").Elems[0].Type; got != "gadget" {
 		t.Errorf("unknown kind %q, want it kept as written in lowercase", got)
 	}
 	if !strings.Contains(other.Diagnostics().Error(), `kind "Gadget" is not one of`) {
 		t.Errorf("no warning about the unknown kind: %v", other.Diagnostics())
 	}
+	// the kind of the old header form: the classic model reads the block at child 2 and would lose the
+	// whole content of the element, so it is a warning and nothing else
+	head := paramsTree(t, "head.tenn", `element "Loose" kind Component { item Box { width 4; height 4 } }`)
+	if got := head.File("head.tenn").Elems[0].Type; got != "" {
+		t.Errorf("header kind %q is applied, want it ignored", got)
+	}
+	if !strings.Contains(head.Diagnostics().Error(), "kind goes inside the element block") {
+		t.Errorf("no warning about the header kind: %v", head.Diagnostics())
+	}
 }
 
 // TestComponentOnItsOwn: a component opened as a screen, not through a use, shows its defaults: its own
 // parameters are in scope with their default values.
 func TestComponentOnItsOwn(t *testing.T) {
-	screen, _ := paramsBuild(t, paramsTree(t, "own.tenn", `element "Button" kind Component {
+	screen, _ := paramsBuild(t, paramsTree(t, "own.tenn", `element "Button" { kind Component
   export let title = "Button"
   export let size = medium
   styles {

@@ -396,7 +396,7 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		case l.addContent(owner, c, name) != nil:
 		case name == "styles" && owner.isContainer():
 			l.addStyles(owner, c)
-		case name == "kind" && owner.Kind == KFile: // kind Library: the kind of the file itself
+		case name == "kind": // kind Library in a file, kind Component in an element
 			args, _ := split(c)
 			l.setKind(owner, argText(args, 0), l.pos(c))
 		case name == "export" && owner.Kind == KElement:
@@ -421,8 +421,8 @@ func (l *loader) addElement(owner *Node, c *tenn.Node) {
 	n := l.newNode(KElement, owner, c)
 	owner.Elems = append(owner.Elems, n)
 	args, block := split(c)
-	if name, at, ok := kindOf(args); ok {
-		l.setKind(n, name, l.pos(at))
+	if _, at, ok := kindOf(args); ok {
+		l.t.warn(l.pos(at), "kind goes inside the element block: %q", `element "`+n.Name+`" { kind Component }`)
 	}
 	if rel, ok := fromFile(args); ok {
 		if len(block) > 0 {
@@ -434,7 +434,9 @@ func (l *loader) addElement(owner *Node, c *tenn.Node) {
 	l.fill(n, block)
 }
 
-// kindOf reads "kind <name>" among the arguments of an element command: "element X kind Component".
+// kindOf reads "kind <name>" among the arguments of an element command. The kind goes inside the block:
+// the classic model reads the content of an element at child 2, so an argument before the block hides
+// everything the element holds from the app that draws classic diagrams.
 func kindOf(args []*tenn.Node) (string, *tenn.Node, bool) {
 	for i, a := range args {
 		if s, _ := a.GetIdentText(); s == "kind" && i+1 < len(args) {

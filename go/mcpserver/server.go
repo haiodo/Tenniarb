@@ -1,5 +1,5 @@
 // Package mcpserver is a headless MCP server for .tenn workspaces: agents read, edit, validate
-// and render the scene-graph format of docs/spec/tenn-scene.md through text tools.
+// and render UI scenes and classic diagrams through text tools.
 package mcpserver
 
 import (
@@ -55,7 +55,7 @@ func open(root string) (*Server, error) {
 
 type (
 	guideIn struct {
-		Topic string `json:"topic,omitempty" jsonschema:"'examples', a spec heading number such as 4.7a, or a word of a heading; empty for examples plus the whole spec"`
+		Topic string `json:"topic,omitempty" jsonschema:"'examples' for the examples only; a reference section number such as 3, or a word of its heading such as styles; empty for examples plus the whole reference"`
 	}
 	noIn    struct{}
 	skillIn struct {
@@ -69,7 +69,7 @@ type (
 	}
 	readIn struct {
 		File string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Path string `json:"path,omitempty" jsonschema:"dotted node path (spec 4.2) inside the file; empty for the whole file"`
+		Path string `json:"path,omitempty" jsonschema:"dotted node path inside the file; empty for the whole file"`
 	}
 	editIn struct {
 		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
@@ -83,7 +83,7 @@ type (
 	}
 	selectIn struct {
 		File   string   `json:"file" jsonschema:"path of a .tenn file open in Tenniarb, relative to the workspace root; or a link from the selection tool, File.tenn#Element/node (docs/links.md), which also gives nodes"`
-		Nodes  []string `json:"nodes,omitempty" jsonschema:"dotted node paths (spec 4.2) to select; empty clears the selection, or takes the place of a link"`
+		Nodes  []string `json:"nodes,omitempty" jsonschema:"dotted node paths to select; empty clears the selection, or takes the place of a link"`
 		Reveal bool     `json:"reveal,omitempty" jsonschema:"bring the window to front and scroll the first node into view"`
 	}
 	validateIn struct {
@@ -97,25 +97,25 @@ func (s *Server) MCP() *mcp.Server {
 		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Files open in the Tenniarb app are read and edited live, through its undo. The user may leave comments on a design: after a task call comments, answer with reply or resolve, and loop wait_comment to stay on duty.",
 	})
 	srv.AddReceivingMiddleware(s.learnClient)
-	add(srv, "guide", "Return the .tenn scene-graph spec (docs/spec/tenn-scene.md) with short examples. topic narrows it to one section. Y axis points up; use paths follow spec section 4.2.",
+	add(srv, "guide", "Return short examples and a reference of the .tenn commands the scene engine runs: elements, kinds and --from-file, items and auto-layout, pos and the Y axis, use with at/replace/slot, parameters, styles and use-style, colors and text, traps, and what is not supported. topic narrows it to one section by number (3) or heading word (styles); 'examples' returns the examples only.",
 		func(in guideIn) (string, error) { return guide(in.Topic), nil })
 	add(srv, "read_skill", "Return the Tenniarb design skill: how to draw UI screens and diagrams in .tenn through these tools (the loop, the format, components, layout recipes, review). No path returns SKILL.md; path returns a file it names, such as layout.md.",
 		func(in skillIn) (string, error) { return readSkill(in.Path) })
-	add(srv, "get_state", "List the .tenn files of the workspace with the node tree of each, 2 levels deep by default (dotted paths per spec 4.2, usable in read, render and use), the renderer of each element (scene or diagram), whether Tenniarb has the file open with unsaved changes, and the errors and warnings of each file. file, path and depth list one subtree; find searches a library for components by name.",
+	add(srv, "get_state", "List the .tenn files of the workspace with the node tree of each, 2 levels deep by default (dotted paths, usable in read, render and use), the renderer of each element (scene or diagram), whether Tenniarb has the file open with unsaved changes, and the errors and warnings of each file. file, path and depth list one subtree; find searches a library for components by name.",
 		func(in getStateIn) (string, error) {
 			if in.File != "" {
 				s.noteNode("get_state", in.File, in.Path)
 			}
 			return s.state(in)
 		})
-	add(srv, "read", "Read a .tenn file or one node of it by dotted path (spec 4.2), as source text with line numbers. The text is exactly what edit matches against.",
+	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. The text is exactly what edit matches against.",
 		func(in readIn) (string, error) {
 			s.noteNode("read", in.File, in.Path)
 			return s.read(in.File, in.Path)
 		})
 	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
-	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths follow spec section 4.2.",
+	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths are dotted.",
 		func(in validateIn) (string, error) {
 			if in.File != "" {
 				s.noteNode("validate", in.File, "")
@@ -138,7 +138,7 @@ func (s *Server) MCP() *mcp.Server {
 	})
 	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths, with a link to it (link, link_text) to share. Fails when the app is not connected.",
 		func(noIn) (string, error) { return s.selection() })
-	add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths, spec 4.2), optionally revealing the first one, so the user sees what you mean.",
+	add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths), optionally revealing the first one, so the user sees what you mean.",
 		func(in selectIn) (string, error) {
 			in, err := s.expandLink(in)
 			if err != nil {

@@ -6,18 +6,18 @@ import (
 	"strings"
 )
 
-// specText is a copy of docs/spec/tenn-scene.md; TestSpecCopyInSync fails when they differ.
+// refText is the reference of the commands the scene engine runs, kept next to the code it describes.
 //
-//go:embed spec/tenn-scene.md
-var specText string
+//go:embed guide.tenn.md
+var refText string
 
 const examples = `To draw a screen or a diagram, read the design skill first: read_skill (no arguments).
 
 # Examples
 
 Y axis points up: pos 10 20 puts the top left corner of an item 20 units above the origin.
-Paths of use follow spec section 4.2: element names, then node names, joined by dots; a name
-is normalized (every non-letter, non-digit becomes "_"), so "Primary button" is Primary_button.
+Paths are dotted: element names, then node names; a name is normalized (every non-letter, non-digit
+becomes "_"), so "Primary button" is Primary_button.
 
 A card with auto-layout:
 
@@ -71,7 +71,7 @@ element "Plan" {
 # Scenes and diagrams
 
 One rule decides how an element draws, by what is written directly in it: a use, or an item with
-children, a slot or auto-layout, makes it a UI scene (components, auto-layout; spec below, 5a.17);
+children, a slot or auto-layout, makes it a UI scene (components, auto-layout; Reference below);
 content at the file root, outside any element, follows the same rule. A slot written directly in an
 element is a plain property. Otherwise it is a classic diagram, drawn as the Tenniarb
 canvas draws it: items at pos, links, styles, element layouts, ${...} expressions evaluated.
@@ -89,17 +89,17 @@ Typical loop: get_state, read the file or one node, edit with find/replace, vali
 edit is atomic: on any mismatch, parse error or new validation error nothing is written.
 `
 
-// guide returns the examples and the spec, or the spec sections that match topic: a heading
-// number such as "4.7a" or a word of the heading.
+// guide returns the examples and the reference, or the reference sections that match topic: a section
+// number such as "3" or a word of the heading.
 func guide(topic string) string {
 	topic = strings.TrimSpace(topic)
 	switch strings.ToLower(topic) {
 	case "":
-		return examples + "\n# Spec (docs/spec/tenn-scene.md)\n\n" + specText
+		return examples + "\n# Reference\n\n" + refText
 	case "examples":
 		return examples
 	}
-	secs := specSections()
+	secs := refSections()
 	var out []string
 	for _, sec := range secs {
 		if matchHeading(sec.title, topic) {
@@ -118,9 +118,9 @@ func guide(topic string) string {
 
 type section struct{ title, body string }
 
-// specSections cuts the spec at "##" and "###" headings; a "##" section includes its "###" parts.
-func specSections() []section {
-	lines := strings.Split(specText, "\n")
+// refSections cuts the reference at "##" and "###" headings; a "##" section includes its "###" parts.
+func refSections() []section {
+	lines := strings.Split(refText, "\n")
 	var out []section
 	for i, ln := range lines {
 		level := headingLevel(ln)

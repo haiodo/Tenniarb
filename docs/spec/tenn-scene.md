@@ -403,7 +403,8 @@ use Actions.Button as save { at Btn { use-style secondary large } at Btn.Label {
 место вставки задаёт их по имени, не зная внутренних путей.
 
 ```tenn
-element "Button" kind Component {
+element "Button" {
+    kind Component
     export let title = "Button"
     export let kind = primary
     export let size = medium
@@ -429,8 +430,11 @@ use Actions.Button as save { title "Save"; kind secondary; size large }
 
 Правила ([реализовано в `go/scene`, `go/app` ждёт]):
 
-- `kind Component` - признак компонента: он попадает в picker компонентов, а не в список экранов; `use`
-  работает как теперь. Файлы и элементы без признака - экраны; отдельно можно `kind Screen`.
+- `kind Component` - команда **внутри блока элемента** (и `kind Library`/`Application` в корне файла):
+  признак компонента, он попадает в picker компонентов, а не в список экранов. В шапке (`element "X" kind
+  Component`) писать нельзя: классический слой читает содержимое элемента в позиции 2 (`element "X" { ... }`),
+  лишний аргумент сдвигает блок, и приложение, рисующее классику, не видит у элемента ничего. Такой `kind`
+  даёт предупреждение и не применяется. Файлы и элементы без признака - экраны; отдельно `kind Screen`.
 - `export let <имя> = <значение>` объявляет параметр с умолчанием; без `=` параметр обязателен.
 - в сцене `${...}` **вычисляются тем же движком**, что и в классике (`go/exec` на goja): параметры
   `export let` попадают в область видимости экземпляра как обычные переменные, поэтому `title ${title}`

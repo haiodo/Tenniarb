@@ -131,44 +131,30 @@ var tennBlock = regexp.MustCompile("(?s)```tenn\n(.*?)```")
 
 func TestGuide(t *testing.T) {
 	cs, root := workspace(t)
-	if all := mustOK(t, cs, "guide", nil); !strings.Contains(all, "## 4. `use`") || !strings.Contains(all, "Y axis points up") {
-		t.Errorf("guide without topic lacks spec or examples")
+	if all := mustOK(t, cs, "guide", nil); !strings.Contains(all, "## 1. Commands") || !strings.Contains(all, "Y axis points up") {
+		t.Errorf("guide without topic lacks the reference or the examples")
 	}
-	sec := mustOK(t, cs, "guide", map[string]any{"topic": "4.7a"})
-	if !strings.Contains(sec, "Slots как в Svelte") || strings.Contains(sec, "4.8 Detach") {
-		t.Errorf("topic 4.7a returned %q", sec[:min(len(sec), 80)])
+	sec := mustOK(t, cs, "guide", map[string]any{"topic": "5"})
+	if !strings.Contains(sec, "replace <path>") || strings.Contains(sec, "Not supported") {
+		t.Errorf("topic 5 returned %q", sec[:min(len(sec), 80)])
 	}
 	if got := mustOK(t, cs, "guide", map[string]any{"topic": "nothing-like-this"}); !strings.Contains(got, "no section matches") {
 		t.Errorf("unknown topic: %q", got)
 	}
-	blocks := tennBlock.FindAllStringSubmatch(examples, -1)
-	if len(blocks) == 0 {
-		t.Fatal("no examples")
-	}
-	for i, b := range blocks {
-		name := filepath.Join(root, "example_"+string(rune('a'+i))+".tenn")
-		if err := os.WriteFile(name, []byte(b[1]), 0o644); err != nil {
-			t.Fatal(err)
+	for _, text := range []string{examples, refText} {
+		blocks := tennBlock.FindAllStringSubmatch(text, -1)
+		if len(blocks) == 0 {
+			t.Fatal("no examples")
 		}
-		if _, err := scene.Load(root, filepath.Base(name)); err != nil {
-			t.Errorf("example %d does not validate: %v", i, err)
+		for i, b := range blocks {
+			name := filepath.Join(root, "example_"+string(rune('a'+i))+".tenn")
+			if err := os.WriteFile(name, []byte(b[1]), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := scene.Load(root, filepath.Base(name)); err != nil {
+				t.Errorf("example %d does not validate: %v", i, err)
+			}
 		}
-	}
-}
-
-func TestSpecCopyInSync(t *testing.T) {
-	want, err := os.ReadFile(filepath.Join("..", "..", "docs", "spec", "tenn-scene.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if os.Getenv("UPDATE_SPEC") != "" {
-		if err := os.WriteFile(filepath.Join("spec", "tenn-scene.md"), want, 0o644); err != nil {
-			t.Fatal(err)
-		}
-		return
-	}
-	if !bytes.Equal([]byte(specText), want) {
-		t.Fatal("mcpserver/spec/tenn-scene.md differs from docs/spec/tenn-scene.md: run UPDATE_SPEC=1 go test ./mcpserver -run SpecCopy")
 	}
 }
 

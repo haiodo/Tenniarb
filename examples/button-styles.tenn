@@ -3,7 +3,8 @@
 //     use Button as save { title "Save"; kind primary; size large }
 // Review only, nothing generated uses it yet. A block sits on its own line: two blocks on one line
 // are one command, so the second name would be lost.
-element "Button" kind Component {
+element "Button" {
+    kind Component
     export let title = "Button"
     export let kind = secondary
     export let size = medium

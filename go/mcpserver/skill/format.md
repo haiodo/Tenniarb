@@ -1,6 +1,6 @@
 # The .tenn format for screens
 
-The full spec is `guide {topic}` (sections such as `4.7a` or `5a`); this is the part you need to draw.
+The reference is `guide {topic}` (a section such as `3` or `styles`); this is the part you need to draw.
 
 ## Commands
 

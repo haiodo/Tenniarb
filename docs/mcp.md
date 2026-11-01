@@ -52,7 +52,7 @@ tool stays inside the root. A root with more than 50 000 entries (a home directo
 | Tool | What it does |
 |---|---|
 | `read_skill` | The design skill: how to draw screens and diagrams with these tools; `path` returns a file it names (`layout.md`) |
-| `guide` | Examples, the scenes/diagrams rule and the scene spec (`docs/spec/tenn-scene.md`); `topic` narrows it |
+| `guide` | Short examples and a reference of the .tenn commands the scene engine runs (`go/mcpserver/guide.tenn.md`); `topic` narrows it by section number or heading word |
 | `get_state` | Files, node trees 2 levels deep, renderer of each element, open/unsaved in the app, diagnostics (10 per file); `file`, `path`, `depth` list one subtree, `find` searches nodes by name |
 | `read` | A file or one node by dotted path, with line numbers |
 | `edit` | Atomic find/replace; nothing changes on a mismatch, a parse error or a new validation error |

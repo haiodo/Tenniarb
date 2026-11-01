@@ -1,6 +1,7 @@
 // A screen built from one component: every step is `use Step`, its text and tone come from the
 // parameters of the instance (spec 5c), not from copies of the item.
-element "Step" kind Component {
+element "Step" {
+    kind Component
     export let title = "Step"
     export let tone = step
 
