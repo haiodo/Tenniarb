@@ -36,17 +36,21 @@ func applyStyle(r *RNode, st *Style) {
 // styleScope is the element whose styles a node may name: the nearest one above it in its own file.
 func styleScope(n *Node) *Node {
 	for p := n.Parent; p != nil; p = p.Parent {
-		if len(p.Styles) > 0 {
+		if len(p.Styles) > 0 || len(p.StyleGroups) > 0 {
 			return p
 		}
 	}
 	return nil
 }
 
-// styleRefs are the styles a node names, in order; "-name" drops the one named before.
-func styleRefs(r *RNode) []string {
+// StyleScope is the element whose styles n may name, the one the inspector offers the groups of: the
+// nearest element above n with a styles block; nil when there is none.
+func StyleScope(n *Node) *Node { return styleScope(n) }
+
+// StyleRefs are the styles props name with use-style, in order; "-name" drops the one named before.
+func StyleRefs(props []*Prop) []string {
 	var names []string
-	for _, p := range r.Props {
+	for _, p := range props {
 		if p.Name != "use-style" {
 			continue
 		}
@@ -61,6 +65,9 @@ func styleRefs(r *RNode) []string {
 	}
 	return names
 }
+
+// styleRefs are the styles a node names, in order; "-name" drops the one named before.
+func styleRefs(r *RNode) []string { return StyleRefs(r.Props) }
 
 func dropName(names []string, name string) []string {
 	key := NormalizeName(name)

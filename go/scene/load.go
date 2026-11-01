@@ -264,6 +264,7 @@ func (t *Tree) loadFile(abs string, at *Pos) *Node {
 	}
 	l := &loader{t: t, file: rel}
 	l.fill(root, ast.Children)
+	l.joinedBlocks(ast.Children)
 	t.stack = t.stack[:len(t.stack)-1]
 	t.files[abs] = root
 	t.order = append(t.order, root)
@@ -279,6 +280,26 @@ func (t *Tree) importCycle(i int, abs string, at *Pos) {
 	}
 	hops = append(hops, fmt.Sprintf("%s imports %s", at, t.rel(abs)))
 	t.fail(*at, "import cycle: %s", strings.Join(hops, ", "))
+}
+
+// joinedBlocks warns on a command with two blocks. The format joins them into one command, so
+// "item a { ... } item c { ... }" or "at A { ... } at B { ... }" on one line silently lose the
+// second name: each block belongs on its own line.
+func (l *loader) joinedBlocks(ns []*tenn.Node) {
+	for _, n := range ns {
+		if n.Kind == tenn.KindCommand {
+			blocks := 0
+			for _, c := range n.Children {
+				if c.Kind == tenn.KindBlockExpr {
+					blocks++
+				}
+			}
+			if blocks > 1 {
+				l.t.warn(l.pos(n), "%d blocks in one command %q are joined: put each block on its own line", blocks, cmdName(n))
+			}
+		}
+		l.joinedBlocks(n.Children)
+	}
 }
 
 func (l *loader) pos(c *tenn.Node) Pos {
@@ -449,11 +470,32 @@ func (l *loader) addStyles(owner *Node, c *tenn.Node) {
 	}
 	for _, b := range block {
 		name := cmdName(b)
-		if name == "" || !hasBlock(b) {
+		if name == "" {
+			continue
+		}
+		if !hasBlock(b) {
+			if g, ok := styleGroup(b); ok {
+				owner.StyleGroups = append(owner.StyleGroups, g)
+			}
 			continue
 		}
 		owner.Styles[NormalizeName(name)] = l.style(b)
 	}
+}
+
+// styleGroup reads a group declaration "name one-of a b" or "name any-of a b"; ok is false for any other
+// command without a block, which is no group.
+func styleGroup(c *tenn.Node) (StyleGroup, bool) {
+	args, _ := split(c)
+	mode := argText(args, 0)
+	if mode != "one-of" && mode != "any-of" {
+		return StyleGroup{}, false
+	}
+	g := StyleGroup{Name: NormalizeName(cmdName(c)), AnyOf: mode == "any-of"}
+	for i := 1; i < len(args); i++ {
+		g.Styles = append(g.Styles, NormalizeName(argText(args, i)))
+	}
+	return g, true
 }
 
 // style reads one style: its properties and the blocks of kid names in it.

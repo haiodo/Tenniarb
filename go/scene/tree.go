@@ -104,6 +104,10 @@ type Node struct {
 	// that names it with use-style, and for the kids its blocks name.
 	Styles map[string]*Style
 
+	// StyleGroups are the groups the same block declares, in declaration order: the styles the inspector
+	// offers as a choice among them (one-of) or as flags (any-of).
+	StyleGroups []StyleGroup
+
 	// The arguments of the command in the text of its file, delimiters included; zero when it has none.
 	NameArg        Range // the name, for a use the one after as
 	PathArg        Range // KUse
@@ -120,6 +124,14 @@ type Style struct {
 type StyleKid struct {
 	Key   string
 	Style *Style
+}
+
+// StyleGroup is one group declaration of a styles block, "name one-of a b c" or "name any-of a b": the
+// styles a node of the element may name, in the order they were written.
+type StyleGroup struct {
+	Name   string   // normalized, as a style name
+	AnyOf  bool     // any number of the styles; otherwise a one-of group takes one of them
+	Styles []string // normalized style names
 }
 
 // Nodes lists the elements, items and uses written directly in n, in file order: the nodes a path

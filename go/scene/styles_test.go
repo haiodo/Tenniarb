@@ -1,6 +1,7 @@
 package scene_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/haiodo/tenniarb/go/scene"
@@ -68,6 +69,63 @@ func TestStylesFromUseStyle(t *testing.T) {
 			t.Errorf("%s height %v, want %v", path, b.H, h)
 		}
 	}
+}
+
+// TestStyleGroups: the group declarations of a styles block are read in declaration order, both kinds
+// apart, and they stay out of the styles: a group is no style and a style is no group.
+func TestStyleGroups(t *testing.T) {
+	const doc = `element "Button" {
+  styles {
+    kind one-of primary secondary ghost
+    primary { color #6b3ad3 }
+    size any-of large wide_label
+    large { height 48 }
+    bare
+  }
+  item Btn { use-style primary large }
+}`
+	tree, err := scene.LoadSource(t.TempDir(), "groups.tenn", doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	el := tree.File("groups.tenn").Elems[0]
+	want := []scene.StyleGroup{
+		{Name: "kind", Styles: []string{"primary", "secondary", "ghost"}},
+		{Name: "size", AnyOf: true, Styles: []string{"large", "wide_label"}},
+	}
+	if len(el.StyleGroups) != len(want) {
+		t.Fatalf("groups %v, want %v", el.StyleGroups, want)
+	}
+	for i, g := range el.StyleGroups {
+		if g.Name != want[i].Name || g.AnyOf != want[i].AnyOf || strings.Join(g.Styles, ",") != strings.Join(want[i].Styles, ",") {
+			t.Errorf("group %d is %+v, want %+v", i, g, want[i])
+		}
+	}
+	for _, name := range []string{"primary", "large"} {
+		if el.Styles[name] == nil {
+			t.Errorf("no style %q in %v", name, el.Styles)
+		}
+	}
+	for _, name := range []string{"kind", "size", "secondary", "ghost", "wide_label", "bare"} {
+		if el.Styles[name] != nil {
+			t.Errorf("%q is no style but is in the styles map", name)
+		}
+	}
+	if scope := scene.StyleScope(ownItem(t, el, "Btn")); scope != el {
+		t.Errorf("the scope of Btn is %v, want the element", scope)
+	}
+}
+
+// ownItem is the kid of n with that name.
+func ownItem(t *testing.T, n *scene.Node, name string) *scene.Node {
+	t.Helper()
+	for _, c := range n.Content {
+		if c.Kind == scene.KItem && c.Name == name {
+			return c
+		}
+	}
+	t.Fatalf("no item %q in %q", name, n.Name)
+	return nil
 }
 
 // TestStylesFromUseStyleProps: a property written on the node wins over the style.

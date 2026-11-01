@@ -1,0 +1,189 @@
+// Prototype: one Button component, every catalogue variant a named style (spec 5b).
+// Review only, nothing generated uses it yet. An instance is placed with
+//     use Button as save { at Btn { use-style primary large } }
+// A nested block of a style must sit on its own line: two blocks on one line lose the first
+// (see the report; the same hurts two "at" blocks of an instance).
+element "Button" {
+    styles {
+        // kind: the box, and the colours of the two parts (text-color and border-color are not inherited)
+        primary {
+            color #6b3ad3; border-color #1725471a
+            Label { text-color #ffffff }
+            Icon { border-color #ffffff }
+        }
+        secondary {
+            color #1725470d; border-color #1725471a
+            Label { text-color #0f121a }
+            Icon { border-color #000000 }
+        }
+        tertiary {
+            color #00000000; border-color #00000000
+            Label { text-color #6b3ad3 }
+            Icon { border-color #6b3ad3 }
+        }
+        ghost {
+            color #00000000; border-color #00000000
+            Label { text-color #0f121a }
+            Icon { border-color #5a667e }
+        }
+        negative {
+            color #cb4b42; border-color #d1d5de26
+            Label { text-color #ffffff }
+            Icon { border-color #ffffff }
+        }
+        brand {
+            color #cf13a2; border-color #00000000
+            Label { text-color #ffffff }
+            Icon { border-color #ffffff }
+        }
+
+        // size: the box, and the icon-only width as the same number
+        large {
+            height 48; min-width 48; gap 8; padding 0 16; corner-radius 8
+        }
+        medium {
+            height 40; min-width 40; gap 8; padding 0 16; corner-radius 8
+        }
+        small {
+            height 32; min-width 32; gap 4; padding 0 8; corner-radius 6
+        }
+        extra-small {
+            height 24; min-width 24; gap 4; padding 0 8; corner-radius 4
+        }
+
+        // shape: which parts are drawn; "with-icon" is the neutral member of the group
+        with-icon { }
+        icon-only {
+            padding 0
+            Label { hidden yes }
+        }
+        no-icon {
+            Icon { hidden yes }
+        }
+
+        // state
+        disabled {
+            color #f0f0f2; border-color #0000000f
+            Label { text-color #00000066 }
+            Icon { border-color #00000066 }
+        }
+
+        kind one-of primary secondary tertiary ghost negative brand
+        size one-of large medium small extra-small
+        shape one-of with-icon icon-only no-icon
+        state any-of disabled
+    }
+    item Btn {
+        auto-layout row; gap 8; padding 0 16; align center; justify center; clip yes; corner-radius 8
+        use-style secondary
+        use-style medium
+        use-style with-icon
+        item Icon {
+            width 16; height 16; path "M8 3v10M3 8h10"; view-box 0 0 16 16; line-width 1.3
+        }
+        item Label {
+            title Button; font-size 14; line-height 16; font-family "IBM Plex Sans"; font-weight 500; layout left
+        }
+    }
+}
+
+element "Screen" {
+    // the root of an element is placed absolutely, so the column needs one item around it
+    item canvas {
+        auto-layout column; gap 24; padding 32; color #ffffff
+        item "row primary" {
+            auto-layout row; gap 16; align center
+            item cap { title primary; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "primary/large" { at Btn { use-style primary large } }
+            use Button as "primary/medium" { at Btn { use-style primary medium } }
+            use Button as "primary/small" { at Btn { use-style primary small } }
+            use Button as "primary/extra-small" { at Btn { use-style primary extra-small } }
+            use Button as "primary/large/icon" { at Btn { use-style primary large icon-only } }
+            use Button as "primary/medium/icon" { at Btn { use-style primary medium icon-only } }
+            use Button as "primary/small/icon" { at Btn { use-style primary small icon-only } }
+            use Button as "primary/extra-small/icon" { at Btn { use-style primary extra-small icon-only } }
+        }
+        item "row secondary" {
+            auto-layout row; gap 16; align center
+            item cap { title secondary; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "secondary/large" { at Btn { use-style secondary large } }
+            use Button as "secondary/medium" { at Btn { use-style secondary medium } }
+            use Button as "secondary/small" { at Btn { use-style secondary small } }
+            use Button as "secondary/extra-small" { at Btn { use-style secondary extra-small } }
+            use Button as "secondary/large/icon" { at Btn { use-style secondary large icon-only } }
+            use Button as "secondary/medium/icon" { at Btn { use-style secondary medium icon-only } }
+            use Button as "secondary/small/icon" { at Btn { use-style secondary small icon-only } }
+            use Button as "secondary/extra-small/icon" { at Btn { use-style secondary extra-small icon-only } }
+        }
+        item "row tertiary" {
+            auto-layout row; gap 16; align center
+            item cap { title tertiary; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "tertiary/large" { at Btn { use-style tertiary large } }
+            use Button as "tertiary/medium" { at Btn { use-style tertiary medium } }
+            use Button as "tertiary/small" { at Btn { use-style tertiary small } }
+            use Button as "tertiary/extra-small" { at Btn { use-style tertiary extra-small } }
+            use Button as "tertiary/large/icon" { at Btn { use-style tertiary large icon-only } }
+            use Button as "tertiary/medium/icon" { at Btn { use-style tertiary medium icon-only } }
+            use Button as "tertiary/small/icon" { at Btn { use-style tertiary small icon-only } }
+            use Button as "tertiary/extra-small/icon" { at Btn { use-style tertiary extra-small icon-only } }
+        }
+        item "row ghost" {
+            auto-layout row; gap 16; align center
+            item cap { title ghost; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "ghost/large" { at Btn { use-style ghost large } }
+            use Button as "ghost/medium" { at Btn { use-style ghost medium } }
+            use Button as "ghost/small" { at Btn { use-style ghost small } }
+            use Button as "ghost/extra-small" { at Btn { use-style ghost extra-small } }
+            use Button as "ghost/large/icon" { at Btn { use-style ghost large icon-only } }
+            use Button as "ghost/medium/icon" { at Btn { use-style ghost medium icon-only } }
+            use Button as "ghost/small/icon" { at Btn { use-style ghost small icon-only } }
+            use Button as "ghost/extra-small/icon" { at Btn { use-style ghost extra-small icon-only } }
+        }
+        item "row negative" {
+            auto-layout row; gap 16; align center
+            item cap { title negative; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "negative/large" { at Btn { use-style negative large } }
+            use Button as "negative/medium" { at Btn { use-style negative medium } }
+            use Button as "negative/small" { at Btn { use-style negative small } }
+            use Button as "negative/extra-small" { at Btn { use-style negative extra-small } }
+            use Button as "negative/large/icon" { at Btn { use-style negative large icon-only } }
+            use Button as "negative/medium/icon" { at Btn { use-style negative medium icon-only } }
+            use Button as "negative/small/icon" { at Btn { use-style negative small icon-only } }
+            use Button as "negative/extra-small/icon" { at Btn { use-style negative extra-small icon-only } }
+        }
+        item "row brand" {
+            auto-layout row; gap 16; align center
+            item cap { title brand; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "brand/large" { at Btn { use-style brand large } }
+            use Button as "brand/medium" { at Btn { use-style brand medium } }
+            use Button as "brand/small" { at Btn { use-style brand small } }
+            use Button as "brand/extra-small" { at Btn { use-style brand extra-small } }
+            use Button as "brand/large/icon" { at Btn { use-style brand large icon-only } }
+            use Button as "brand/medium/icon" { at Btn { use-style brand medium icon-only } }
+            use Button as "brand/small/icon" { at Btn { use-style brand small icon-only } }
+            use Button as "brand/extra-small/icon" { at Btn { use-style brand extra-small icon-only } }
+        }
+        item "row shape" {
+            auto-layout row; gap 16; align center
+            item cap { title shape; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "shape/with icon" { at Btn { use-style primary large } }
+            use Button as "shape/icon only" { at Btn { use-style primary large icon-only } }
+            use Button as "shape/no icon" { at Btn { use-style primary large no-icon } }
+            use Button as "shape/other icon" {
+                at Btn { use-style primary large }
+                at Btn.Icon { path "M3.5 6L8 10.5 12.5 6" }
+                at Btn.Label { title More }
+            }
+        }
+        item "row disabled" {
+            auto-layout row; gap 16; align center
+            item cap { title disabled; width 88; font-size 12; line-height 16; text-color #5a667e }
+            use Button as "disabled/primary" { at Btn { use-style primary large disabled } }
+            use Button as "disabled/secondary" { at Btn { use-style secondary large disabled } }
+            use Button as "disabled/tertiary" { at Btn { use-style tertiary large disabled } }
+            use Button as "disabled/ghost" { at Btn { use-style ghost large disabled } }
+            use Button as "disabled/negative" { at Btn { use-style negative large disabled } }
+            use Button as "disabled/brand" { at Btn { use-style brand large disabled } }
+        }
+    }
+}

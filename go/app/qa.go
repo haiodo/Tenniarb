@@ -57,6 +57,11 @@ func (sh *Shell) registerQA() {
 		sh.active = v
 		return nil
 	})
+	// style: the choice of a style group of the inspector, which the QA driver cannot make as a click on
+	// a segment of a segmented control
+	qa.Handle("style", func(a qa.Args) error {
+		return sh.active.pressStyle(a.String("group"), a.String("value"))
+	})
 	qa.Handle("zoom", func(a qa.Args) error {
 		v := sh.active
 		f := 1.0
