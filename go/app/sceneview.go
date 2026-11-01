@@ -123,7 +123,7 @@ func (v *Viewer) realizeScene() {
 		if node == nil {
 			return
 		}
-		sv.screen, err = v.stree.BuildElement(tx, sv.root, node, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, Eval: exec.SceneEval})
+		sv.screen, err = v.stree.BuildElement(tx, sv.root, node, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, EvalVars: exec.SceneEvalVars})
 		next := 2
 		if sv.screen != nil {
 			sv.placed = sv.screen.Placed()

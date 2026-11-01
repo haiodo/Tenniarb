@@ -64,7 +64,7 @@ func (s *Screen) Boxes() []Box {
 //
 // A Tree is not safe for concurrent use.
 func (t *Tree) Build(tx *gfx.Tx, parent *gfx.Node, path string, o Options) (*Screen, error) {
-	return t.build(tx, parent, o, func() *RNode { return t.element(path) })
+	return t.build(tx, parent, o, func() *RNode { return t.element(path, evaluator(o)) })
 }
 
 // BuildElement is Build of an element or file root of the tree, for a caller that holds the node:
@@ -75,7 +75,7 @@ func (t *Tree) BuildElement(tx *gfx.Tx, parent *gfx.Node, el *Node, o Options) (
 			t.fail(el.Pos, "a %s is not an element", el.Kind)
 			return nil
 		}
-		return t.expandElement(el, t.ctxOf(el))
+		return t.expandElement(el, t.ctxOf(el), evaluator(o))
 	})
 }
 
@@ -87,8 +87,14 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	if rn == nil {
 		return nil, local.asError()
 	}
-	applyStyles(rn)
+	// The expressions of the screen come before the styles, in the scope of their instance: use-style
+	// ${kind} picks a style by its value (spec 5c, 6).
 	p := newPrep(t, o)
+	p.classic = !sceneRoot(rn)
+	if p.eval != nil {
+		p.evalTree(rn)
+	}
+	applyStyles(rn)
 	lay := p.root(rn)
 	if local.Fatal() {
 		return nil, local
@@ -111,7 +117,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 }
 
 // element expands the element at path into resolved nodes, slots filled.
-func (t *Tree) element(path string) *RNode {
+func (t *Tree) element(path string, eval evalFunc) *RNode {
 	target, ctx := t.main, t.ctxOf(t.main)
 	if path != "" {
 		target, ctx = t.resolve(t.main, ctx, path, t.main.Pos)
@@ -123,11 +129,11 @@ func (t *Tree) element(path string) *RNode {
 		t.fail(t.main.Pos, "path %s names a %s, not an element", path, target.Kind)
 		return nil
 	}
-	return t.expandElement(target, ctx)
+	return t.expandElement(target, ctx, eval)
 }
 
-func (t *Tree) expandElement(target *Node, ctx *mountCtx) *RNode {
-	x := &expander{t: t, ctx: ctx}
+func (t *Tree) expandElement(target *Node, ctx *mountCtx, eval evalFunc) *RNode {
+	x := &expander{t: t, ctx: ctx, eval: eval}
 	rn := x.container(target)
 	if rn != nil {
 		finalize(rn)

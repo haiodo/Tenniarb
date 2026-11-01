@@ -24,3 +24,22 @@ func TestSceneEval(t *testing.T) {
 		t.Errorf("SceneEval of a throwing expression = %q, true", got)
 	}
 }
+
+// TestSceneEvalVars: the parameters of a component instance are variables of the expression, a numeric
+// value is a number (spec 5c), and a name that is no variable still throws.
+func TestSceneEvalVars(t *testing.T) {
+	vars := map[string]string{"size": "40", "who": "Bob", "kind": "primary", "code": "007"}
+	for _, c := range []struct{ code, want string }{
+		{"size + 12", "52"},
+		{"kind", "primary"},
+		{"`Hi ${who}`", "Hi Bob"},
+		{"code", "007"}, // text that only looks like a number keeps its form
+	} {
+		if got, ok := exec.SceneEvalVars(c.code, vars); !ok || got != c.want {
+			t.Errorf("SceneEvalVars(%q) = %q, %v; want %q, true", c.code, got, ok, c.want)
+		}
+	}
+	if got, ok := exec.SceneEvalVars("nosuch", vars); ok {
+		t.Errorf("SceneEvalVars of an unknown name = %q, true", got)
+	}
+}

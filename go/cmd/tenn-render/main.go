@@ -48,7 +48,7 @@ func run(root, file, path string, scale float64) error {
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, path, scene.Options{FontName: "Helvetica, Arial, sans-serif", Eval: exec.SceneEval})
+		screen, err = tree.Build(tx, nil, path, scene.Options{FontName: "Helvetica, Arial, sans-serif", EvalVars: exec.SceneEvalVars})
 	})
 	if err != nil {
 		return err

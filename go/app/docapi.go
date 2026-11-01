@@ -269,7 +269,7 @@ func (v *Viewer) renderPNG(scale float64) ([]byte, error) {
 	var screen *scene.Screen
 	var err error
 	s.Update(func(tx *gfx.Tx) {
-		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{Measurer: gfx.DefaultMeasurer, Eval: exec.SceneEval})
+		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{Measurer: gfx.DefaultMeasurer, EvalVars: exec.SceneEvalVars})
 	})
 	if err != nil {
 		return nil, err

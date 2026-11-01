@@ -396,6 +396,11 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		case l.addContent(owner, c, name) != nil:
 		case name == "styles" && owner.isContainer():
 			l.addStyles(owner, c)
+		case name == "kind" && owner.Kind == KFile: // kind Library: the kind of the file itself
+			args, _ := split(c)
+			l.setKind(owner, argText(args, 0), l.pos(c))
+		case name == "export" && owner.Kind == KElement:
+			l.addParam(owner, c)
 		default:
 			owner.Props = append(owner.Props, l.prop(c))
 		}
@@ -416,6 +421,9 @@ func (l *loader) addElement(owner *Node, c *tenn.Node) {
 	n := l.newNode(KElement, owner, c)
 	owner.Elems = append(owner.Elems, n)
 	args, block := split(c)
+	if name, at, ok := kindOf(args); ok {
+		l.setKind(n, name, l.pos(at))
+	}
 	if rel, ok := fromFile(args); ok {
 		if len(block) > 0 {
 			l.t.fail(n.Pos, "element %q takes its content from %s: remove the block", n.Name, rel)
@@ -424,6 +432,56 @@ func (l *loader) addElement(owner *Node, c *tenn.Node) {
 		return
 	}
 	l.fill(n, block)
+}
+
+// kindOf reads "kind <name>" among the arguments of an element command: "element X kind Component".
+func kindOf(args []*tenn.Node) (string, *tenn.Node, bool) {
+	for i, a := range args {
+		if s, _ := a.GetIdentText(); s == "kind" && i+1 < len(args) {
+			return argText(args, i+1), args[i+1], true
+		}
+	}
+	return "", nil, false
+}
+
+// setKind records the kind of n, from "kind Component" on an element or "kind Library" in a file. A kind
+// the format does not know is a warning: the command stays harmless (spec 5c).
+func (l *loader) setKind(n *Node, name string, pos Pos) {
+	n.Type = strings.ToLower(name)
+	switch n.Type {
+	case TypeComponent, TypeScreen, TypeLibrary, TypeApplication:
+	default:
+		l.t.warn(pos, "kind %q is not one of %s, %s, %s, %s", name, TypeComponent, TypeScreen, TypeLibrary, TypeApplication)
+	}
+}
+
+// addParam reads "export let name = value": a parameter of the element, with its default (spec 5c).
+// Without "=" the parameter is required, and a use has to set it.
+func (l *loader) addParam(owner *Node, c *tenn.Node) {
+	args, _ := split(c)
+	pos := l.pos(c)
+	if len(args) != 2 && len(args) != 4 || argText(args, 0) != "let" || len(args) == 4 && argText(args, 2) != "=" {
+		l.t.fail(pos, "a parameter is written: export let <name> or export let <name> = <value>")
+		return
+	}
+	name := argText(args, 1)
+	if owner.Param(name) != nil {
+		l.t.warn(l.pos(args[1]), "parameter %q is declared twice", name)
+		return
+	}
+	p := Param{Name: name, Pos: l.pos(args[1])}
+	if len(args) == 4 {
+		p.Default = &Prop{Name: name, Args: args[3:], Pos: l.pos(args[3]), Range: spanOf(args[3:])}
+	}
+	owner.Params = append(owner.Params, p)
+}
+
+// spanOf is the range from the first to the last of args; zero when there is none.
+func spanOf(args []*tenn.Node) Range {
+	if len(args) == 0 || args[0].Token == nil {
+		return Range{}
+	}
+	return Range{args[0].Token.Pos, args[len(args)-1].Token.EndPos()}
 }
 
 // fromFile reads "--from-file <path>" among the arguments of an element command.
@@ -449,6 +507,9 @@ func (l *loader) mountFile(n *Node, rel string) {
 	}
 	n.Mount = file
 	n.Props, n.Content, n.Elems = file.Props, file.Content, file.Elems
+	if n.Type == "" { // the kind of the mounted file, unless the mounting element says its own
+		n.Type = file.Type
+	}
 }
 
 // resolveFile finds rel relative to the file being read; it fails when the path leaves the workspace root.

@@ -25,6 +25,10 @@ type Options struct {
 	// Eval evaluates the code of a ${...} or $(...) argument, or a string with ${...} inside, and returns
 	// the value as text (spec 6). nil: an expression is a warning and the property is ignored.
 	Eval func(code string) (string, bool)
+	// EvalVars is Eval with the parameters of the component instance in scope, by name and as text
+	// (spec 5c): so ${title} and ${size + 12} read what the use sets. It wins over Eval; nil: only Eval
+	// runs, and a parameter is an unknown name to it.
+	EvalVars func(code string, vars map[string]string) (string, bool)
 }
 
 // Defaults of a text leaf, as in the Tenniarb app (font-size 18) plus a padding around the text.
@@ -45,7 +49,15 @@ type prep struct {
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
 	icons   map[*RNode]*icon
-	evals   map[*Prop]*Prop // a property with an expression -> its evaluated copy
+	eval    evalFunc          // Options.Eval or EvalVars; nil: no expression runs
+	evals   map[evalKey]*Prop // a property with an expression -> its evaluated copy, nil if it failed
+}
+
+// evalKey is one property of one node: the Prop of a scene is shared between instances, so its
+// evaluation is not.
+type evalKey struct {
+	rn *RNode
+	pr *Prop
 }
 
 type textInfo struct {
@@ -70,7 +82,7 @@ func newPrep(t *Tree, o Options) *prep {
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
 		styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
-		evals: map[*Prop]*Prop{}}
+		eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
 
 // root is the layout of an element: its content at their own positions.
@@ -98,35 +110,57 @@ func sceneRoot(rn *RNode) bool {
 	return false
 }
 
-// prop is rn.prop with the expressions of the arguments evaluated (spec 6). Without a scene.Options.Eval
-// an expression is a warning and the property is ignored; in a classic diagram it is normal and
-// go/render evaluates it.
+// prop is rn.prop with the expressions of the arguments evaluated (spec 6), in the scope of the instance
+// of the node (spec 5c). Without an evaluator an expression is a warning and the property is ignored; in a
+// classic diagram it is normal and go/render evaluates it.
 func (p *prep) prop(rn *RNode, name string) *Prop {
 	pr := rn.prop(name)
-	if pr == nil {
-		return nil
-	}
-	if !hasExpr(pr) {
+	if pr == nil || !hasExpr(pr) {
 		return pr
 	}
-	if p.opts.Eval == nil {
+	if p.eval == nil {
 		if !p.classic {
 			p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
 		}
 		return nil
 	}
-	if out, ok := p.evals[pr]; ok {
+	return p.evalProp(rn, pr)
+}
+
+// evalProp is pr evaluated in the scope of rn, once per build; nil when an expression failed, which leaves
+// the property unset.
+func (p *prep) evalProp(rn *RNode, pr *Prop) *Prop {
+	k := evalKey{rn, pr}
+	if out, ok := p.evals[k]; ok {
 		return out
 	}
-	out := p.evaluated(pr)
-	if out != nil { // a failed expression is no value at all
-		p.evals[pr] = out
-	}
+	out := p.evaluated(rn, pr)
+	p.evals[k] = out
 	return out
+}
+
+// evalTree evaluates the expressions of every property of the screen before the styles are applied: the
+// arguments of "use-style ${kind}" have to be values by then, or the style cannot be chosen (spec 5c). Only
+// the nodes change, never the shared Prop: a node of an instance is its own, its Prop is not.
+func (p *prep) evalTree(rn *RNode) {
+	for i, pr := range rn.Props {
+		if !hasExpr(pr) {
+			continue
+		}
+		if out := p.evalProp(rn, pr); out != nil {
+			rn.Props[i] = out
+		}
+	}
+	for _, k := range rn.Kids {
+		p.evalTree(k)
+	}
 }
 
 // hasExpr reports whether an argument is an expression, or a string with one inside.
 func hasExpr(pr *Prop) bool {
+	if pr.Val != nil { // already evaluated
+		return false
+	}
 	for _, a := range pr.Args {
 		if a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock {
 			return true
@@ -142,21 +176,13 @@ func hasExpr(pr *Prop) bool {
 
 // evaluated is a copy of pr with every argument evaluated, the plain ones copied as they are; nil when an
 // expression failed. The source property is shared between instances, so it is never changed.
-func (p *prep) evaluated(pr *Prop) *Prop {
+func (p *prep) evaluated(rn *RNode, pr *Prop) *Prop {
 	out := &Prop{Name: pr.Name, Args: pr.Args, Block: pr.Block, Pos: pr.Pos, Range: pr.Range,
 		Val: make([]string, len(pr.Args))}
 	for i, a := range pr.Args {
-		code, _ := a.GetIdentText()
-		switch {
-		case a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock:
-		case a.Kind == tenn.KindStringLit && strings.Contains(code, "${"):
-			code = "`" + code + "`" // a template string, as the classic engine runs it
-		default:
-			out.Val[i] = code
-			continue
-		}
-		v, ok := p.opts.Eval(code)
+		v, ok := evalArg(p.eval, a, rn.Vars)
 		if !ok {
+			code, _ := a.GetIdentText()
 			p.t.warn(pr.Pos, "%s: the expression %q is not evaluated", pr.Name, code)
 			return nil
 		}

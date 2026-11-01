@@ -67,7 +67,7 @@ func (s *Server) render(file, element string, scale float64, view bool) (*render
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: rast.Measurer(), FontName: "Helvetica", Eval: exec.SceneEval})
+		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: rast.Measurer(), FontName: "Helvetica", EvalVars: exec.SceneEvalVars})
 	})
 	if err != nil {
 		return nil, err

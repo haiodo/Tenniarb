@@ -124,10 +124,45 @@ type Node struct {
 	// offers as a choice among them (one-of) or as flags (any-of).
 	StyleGroups []StyleGroup
 
+	// Type is the kind the command "kind" gives an element or a file (spec 5c): TypeComponent,
+	// TypeScreen, TypeLibrary or TypeApplication; "" when none is written, which is a screen.
+	Type string
+
+	// Params are the parameters the element declares with "export let name = value": what a use sets by
+	// name, and what ${name} reads in the body (spec 5c). Empty for an element that declares none.
+	Params []Param
+
 	// The arguments of the command in the text of its file, delimiters included; zero when it has none.
 	NameArg        Range // the name, for a use the one after as
 	PathArg        Range // KUse
 	FromArg, ToArg Range // KLink
+}
+
+// The kinds of an element or a file, as "kind Component" writes them; the words are stored lowercase.
+const (
+	TypeComponent   = "component"
+	TypeScreen      = "screen"
+	TypeLibrary     = "library"
+	TypeApplication = "application"
+)
+
+// Param is one parameter of a component: "export let Name = value", or "export let Name" for a parameter
+// without a default, which a use must set.
+type Param struct {
+	Name    string // as written: the variable of ${...} and the command name of a use
+	Default *Prop  // the value after "=", arguments unevaluated; nil when the parameter is required
+	Pos     Pos
+}
+
+// Param is the parameter of n with that name, nil when n declares none: a use sets a parameter by the
+// command name it is written with.
+func (n *Node) Param(name string) *Param {
+	for i := range n.Params {
+		if n.Params[i].Name == name {
+			return &n.Params[i]
+		}
+	}
+	return nil
 }
 
 // Style is one named style: properties of the node that names it, and of the kids its blocks name.

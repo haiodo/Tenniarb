@@ -26,6 +26,9 @@ type RNode struct {
 	Inst     bool     // the root of an instance: slots below it belong to it, not to the use around
 	touched  bool     // RSlot: at or replace went through it into the fallback
 	From, To string   // RLink
+	// Vars are the parameters of the component instance the node is in, by name (spec 5c): what an
+	// expression in its properties reads. Nil outside a component.
+	Vars map[string]string
 	// Src is the command written for the node: the item, link or slot, the use for the root of an
 	// instance, the element or file for the root of a screen.
 	Src *Node
@@ -48,9 +51,11 @@ type frame struct {
 type expander struct {
 	t     *Tree
 	stack []frame
-	depth int        // uses being expanded; slots stay open until the outermost one is done
-	ctx   *mountCtx  // mount context of the file the node being expanded lives in
-	rec   *refFinder // set by References: sees the paths that resolve
+	depth int               // uses being expanded; slots stay open until the outermost one is done
+	ctx   *mountCtx         // mount context of the file the node being expanded lives in
+	rec   *refFinder        // set by References: sees the paths that resolve
+	eval  evalFunc          // Options.EvalVars or Eval, for the values of parameters (spec 5c); nil: no expression runs
+	vars  map[string]string // parameters of the instance being expanded
 }
 
 func label(n *Node) string {
@@ -84,8 +89,8 @@ func (x *expander) enter(n *Node, pos Pos) bool {
 
 func (x *expander) leave() { x.stack = x.stack[:len(x.stack)-1] }
 
-func newR(kind RKind, n *Node) *RNode {
-	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...), Src: n}
+func (x *expander) newR(kind RKind, n *Node) *RNode {
+	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...), Src: n, Vars: x.vars}
 }
 
 // container expands an element or a file: its content is the scene.
@@ -99,7 +104,7 @@ func (x *expander) container(n *Node) *RNode {
 		x.ctx = saved.push(n)
 		defer func() { x.ctx = saved }()
 	}
-	r := newR(RItem, n)
+	r := x.newR(RItem, n)
 	r.Kids = x.contents(n.Content)
 	return r
 }
@@ -121,11 +126,11 @@ func (x *expander) content(n *Node) *RNode {
 	case KUse:
 		return x.use(n, false)
 	case KLink:
-		r := newR(RLink, n)
+		r := x.newR(RLink, n)
 		r.Name, r.Key, r.From, r.To = "", "", n.From, n.To
 		return r
 	case KSlot:
-		r := newR(RSlot, n)
+		r := x.newR(RSlot, n)
 		r.Slot = n.Key
 		r.Kids = x.contents(n.Content)
 		return r
@@ -138,7 +143,7 @@ func (x *expander) item(n *Node) *RNode {
 		return nil
 	}
 	defer x.leave()
-	r := newR(RItem, n)
+	r := x.newR(RItem, n)
 	r.Kids = x.contents(n.Content)
 	return r
 }
@@ -159,15 +164,22 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	if x.rec != nil {
 		x.rec.use(n, ctx)
 	}
+	// The values of the parameters are the scope of the block of the use, a default the scope of the
+	// declaration; without parameters of its own the target reads the scope it is written in.
+	caller := x.vars
+	values, used := x.params(target, n, caller)
 	x.ctx = tctx // the component's names resolve in its own file, the block's in this one
+	if values != nil {
+		x.vars = values
+	}
 	inst := x.instance(target, n)
-	x.ctx = ctx
+	x.ctx, x.vars = ctx, caller
 	if inst == nil {
 		return nil
 	}
 	inst.Name, inst.Key, inst.Pos, inst.Inst, inst.Src = n.Name, n.Key, n.Pos, true, n
 	inst.Props = withoutProp(inst.Props, "pos") // the component's pos is its place on the library canvas
-	x.apply(inst, n.Block)
+	x.apply(inst, n.Block, used)
 	if !asTarget && x.depth == 1 {
 		finalize(inst)
 	}
@@ -209,8 +221,10 @@ type slotFill struct {
 }
 
 // apply puts the block of a use onto the instance root: properties override, nodes go to the default
-// slot, at and replace reach into the instance, slot fills a named slot.
-func (x *expander) apply(root *RNode, block []*Override) {
+// slot, at and replace reach into the instance, slot fills a named slot. A command named as a parameter of
+// the component is no property: used holds those overrides (spec 5c); an undeclared name is a property of
+// the root, as before.
+func (x *expander) apply(root *RNode, block []*Override, used map[*Override]bool) {
 	var fills []*slotFill
 	add := func(name string, pos Pos, nodes []*RNode, explicit bool) {
 		for _, f := range fills {
@@ -225,7 +239,9 @@ func (x *expander) apply(root *RNode, block []*Override) {
 	for _, ov := range block {
 		switch ov.Kind {
 		case OvProp:
-			setProp(root, ov.Prop)
+			if !used[ov] {
+				setProp(root, ov.Prop)
+			}
 		case OvNode:
 			add("", ov.Pos, x.contents([]*Node{ov.Node}), false)
 		case OvSlot:
@@ -235,7 +251,7 @@ func (x *expander) apply(root *RNode, block []*Override) {
 				if x.rec != nil {
 					x.rec.at(ov, root, at.node())
 				}
-				x.apply(at.node(), ov.Block)
+				x.apply(at.node(), ov.Block, nil)
 			}
 		case OvReplace:
 			if at, ok := x.find(root, ov.Path, ov.Pos); ok {
