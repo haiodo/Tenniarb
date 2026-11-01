@@ -12,16 +12,20 @@ var inheritFont = []string{"font-family", "font-size", "font-weight", "font-styl
 func applyStyles(r *RNode) {
 	if r.Src != nil {
 		if scope := styleScope(r.Src); scope != nil {
+			names := styleRefs(r)
 			var props []*Prop
-			for _, name := range styleRefs(r) { // the last style named wins per property
-				st := scope.Styles[name]
-				if st == nil { // a group declaration is no style
-					continue
+			for _, name := range names { // the last style named wins per property
+				if st := scope.Styles[name]; st != nil {
+					props = append(props, st.Props...)
 				}
-				props = append(props, st.Props...)
-				applyKidStyles(r, st)
 			}
 			r.Props = afterUseStyle(r.Props, props)
+			// Kid blocks prepend, so the styles go in reverse: the one named last stays nearest the end.
+			for i := len(names) - 1; i >= 0; i-- {
+				if st := scope.Styles[names[i]]; st != nil {
+					applyKidStyles(r, st)
+				}
+			}
 		}
 	}
 	for _, k := range r.Kids {

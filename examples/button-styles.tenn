@@ -5,35 +5,30 @@
 // (see the report; the same hurts two "at" blocks of an instance).
 element "Button" {
     styles {
-        // kind: the box, and the colours of the two parts (text-color and border-color are not inherited)
+        // kind: the box; the text inside takes its colour (the contrast of the fill, or text-color here),
+        // and the icon of the catalogue is drawn by stroke, so it keeps its own border-color
         primary {
             color #6b3ad3; border-color #1725471a
-            Label { text-color #ffffff }
             Icon { border-color #ffffff }
         }
         secondary {
-            color #1725470d; border-color #1725471a
-            Label { text-color #0f121a }
+            color #1725470d; border-color #1725471a; text-color #0f121a
             Icon { border-color #000000 }
         }
         tertiary {
-            color #00000000; border-color #00000000
-            Label { text-color #6b3ad3 }
+            color none; border-color none; text-color #6b3ad3
             Icon { border-color #6b3ad3 }
         }
         ghost {
-            color #00000000; border-color #00000000
-            Label { text-color #0f121a }
+            color none; border-color none; text-color #0f121a
             Icon { border-color #5a667e }
         }
         negative {
             color #cb4b42; border-color #d1d5de26
-            Label { text-color #ffffff }
             Icon { border-color #ffffff }
         }
         brand {
-            color #cf13a2; border-color #00000000
-            Label { text-color #ffffff }
+            color #cf13a2; border-color none
             Icon { border-color #ffffff }
         }
 

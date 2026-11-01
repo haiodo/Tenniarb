@@ -206,3 +206,22 @@ func TestStyleOrder(t *testing.T) {
 		t.Errorf("B height %v, want its own 40 after the style", heights["B"])
 	}
 }
+
+// TestKidStyleOrder: of two styles with a block for the same kid, the one named last wins, as the box
+// properties of the last style win.
+func TestKidStyleOrder(t *testing.T) {
+	_, svg := buildSrc(t, `element "E" {
+  styles {
+    a { Label { text-color #ff0000 } }
+    b { Label { text-color #00ff00 } }
+  }
+  item One { width 10; height 10; use-style a; item Label { title one } }
+  item Box { auto-layout row; use-style a; use-style b; item Label { title t } }
+}`)
+	if !strings.Contains(svg, `rgb(255,0,0)">one`) {
+		t.Errorf("the only style of One did not reach its label:\n%s", svg)
+	}
+	if !strings.Contains(svg, `rgb(0,255,0)">t`) {
+		t.Errorf("the last style of Box did not win over the first:\n%s", svg)
+	}
+}
