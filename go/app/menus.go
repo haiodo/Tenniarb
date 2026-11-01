@@ -11,7 +11,6 @@ import (
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
-	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
@@ -373,9 +372,6 @@ func (v *Viewer) contextMenus() {
 	outline := g.PopupMenu(v.tree)
 	outline.OnShow(func() { fillMenu(outline, v.withLink(v.outlineEntries())) })
 
-	// The start hint opens the canvas menu with the screen sizes; it goes when the menu closes.
-	canvas.Unwrap().AddMenuListener(swt.MenuListenerMenuHiddenAdapter(func(*swt.MenuEvent) { v.sizeMenu = false }))
-
 	items := g.PopupMenu(v.itemsUI.tree)
 	items.OnShow(func() { fillMenu(items, v.withLink(v.itemsEntries())) })
 }
@@ -384,9 +380,6 @@ func (v *Viewer) contextMenus() {
 func (v *Viewer) canvasEntries() []editor.Entry {
 	if v.menuOverride != nil {
 		return v.menuOverride
-	}
-	if v.sizeMenu {
-		return v.screenSizeEntries()
 	}
 	if v.session == nil {
 		return nil
@@ -405,7 +398,6 @@ func (v *Viewer) screenSizeEntries() []editor.Entry {
 	for _, sz := range ScreenSizes {
 		sz := sz
 		out = append(out, editor.Entry{Label: fmt.Sprintf("%s %d x %d", sz.Name, sz.W, sz.H), Run: func() {
-			v.sizeMenu = false
 			v.newScreen(sz.W, sz.H)
 		}})
 	}

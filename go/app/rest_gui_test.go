@@ -14,15 +14,6 @@ import (
 	"github.com/haiodo/gowt/qa/qatest"
 )
 
-// hintDoc has an empty element that the start hint is for, and one with content.
-const hintDoc = `element "Empty" {
-}
-
-element "Full" {
-  item Box { width 10; height 10 }
-}
-`
-
 // moveDoc is a scene of nodes in file order: A, B and Flow, the last with its own kid C.
 const moveDoc = `element "Screen" {
   item A { pos 400 0; width 100; height 40; title A }
@@ -41,19 +32,13 @@ const libraryKitDoc = `element "Parts" {
 }
 `
 
-// restState is the QA state plus what the start hint, the banner and the hover "+" show.
+// restState is the QA state plus what the banner and the hover "+" show.
 type restState struct {
 	sceneState
-	Banner    string         `json:"banner"`
-	Hint      []hintRowState `json:"hint"`
-	ItemsAdd  []int          `json:"itemsAdd"`
-	ItemCount int            `json:"itemCount"`
-	Dirty     bool           `json:"dirty"`
-}
-
-type hintRowState struct {
-	Label string
-	Box   []float64
+	Banner    string `json:"banner"`
+	ItemsAdd  []int  `json:"itemsAdd"`
+	ItemCount int    `json:"itemCount"`
+	Dirty     bool   `json:"dirty"`
 }
 
 func readRest(t *testing.T, a *qatest.Client) (s restState) {
@@ -88,82 +73,6 @@ func restWait(a *qatest.Client) { time.Sleep(300 * time.Millisecond); a.Settle()
 func order(text, a, b string) bool {
 	i, j := strings.Index(text, a), strings.Index(text, b)
 	return i >= 0 && j >= 0 && i < j
-}
-
-// TestSceneHint drives the start hint of an empty element: three rows, a click on each does what the
-// matching menu command does, and the hint goes as soon as the element has content.
-func TestSceneHint(t *testing.T) {
-	if os.Getenv("GOWT_GUI_TEST") == "" {
-		t.Skip("set GOWT_GUI_TEST=1 to open windows")
-	}
-	h := qaHelpers{t: t, app: qatest.App(t)}
-	a := h.app
-	file := restDoc(t, h, "Hint.tenn", hintDoc)
-	canvas := a.Find(qa.ID("canvas"))
-	before := h.text()
-
-	a.State("select", "path", file, "element", []string{"Empty"}, "nodes", []string{})
-	restWait(a)
-	s := readRest(t, a)
-	var labels []string
-	for _, r := range s.Hint {
-		labels = append(labels, r.Label)
-	}
-	if strings.Join(labels, ",") != "New screen,New brain map item,Insert component" {
-		t.Fatalf("the start hint: %v", labels)
-	}
-	clickRow := func(i int) {
-		b := s.Hint[i].Box
-		canvas.ClickAt(b[0]+b[2]/2, b[1]+b[3]/2)
-		restWait(a)
-	}
-	a.ShotTitle("hint-1-empty", h.title(file))
-
-	// New screen: the sizes, the same entries as Element > New Screen
-	clickRow(0)
-	a.Find(qa.Text("Phone 390 x 844").In(qa.ID("canvas"))).Click()
-	restWait(a)
-	if got := h.text(); !strings.Contains(got, "width 390") || !strings.Contains(got, "height 844") {
-		t.Fatalf("New screen:\n%s", got)
-	}
-	if s = readRest(t, a); !s.SceneMode || len(s.Nodes) != 1 || len(s.Hint) != 0 {
-		t.Fatalf("after New screen: %+v", s)
-	}
-	a.ShotTitle("hint-2-screen", h.title(file))
-	canvas.Focus()
-	a.Key("Mod+Z")
-	restWait(a)
-	if got := h.text(); got != before {
-		t.Fatalf("New screen took more than one undo step:\n%s", got)
-	}
-
-	// New brain map item: a plain item of the diagram, as Edit > Add > New Item
-	if s = readRest(t, a); len(s.Hint) != 3 {
-		t.Fatalf("the hint did not come back: %v", s.Hint)
-	}
-	clickRow(1)
-	if s = readRest(t, a); s.ItemCount != 1 || !s.Dirty || len(s.Hint) != 0 {
-		t.Fatalf("New brain map item: %+v", s)
-	}
-	canvas.Focus()
-	a.Key("Mod+Z")
-	restWait(a)
-	if got := h.text(); got != before {
-		t.Fatalf("New brain map item took more than one undo step:\n%s", got)
-	}
-	if s = readRest(t, a); len(s.Hint) != 3 {
-		t.Fatalf("the hint did not come back: %v", s.Hint)
-	}
-
-	// Insert component with no library says how to get one, and leaves the element empty
-	clickRow(2)
-	if s = readRest(t, a); !strings.Contains(s.Banner, "mounts no library") || !strings.Contains(s.Banner, "Add Library") {
-		t.Fatalf("Insert component with no library: %q", s.Banner)
-	}
-	if got := h.text(); got != before {
-		t.Fatalf("Insert component changed the text:\n%s", got)
-	}
-	a.ShotTitle("hint-3-nolib", h.title(file))
 }
 
 // TestItemsAdd drives the "+" of the Items pane: the header one offers the Add menu, the one that

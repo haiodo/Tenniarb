@@ -19,7 +19,6 @@ const overlayZ = 1 << 20
 type press struct {
 	active bool
 	pan    bool // the window pans: the session refused the press, or the middle button
-	hint   bool // the press began on the start hint
 	cam    gfx.Camera
 	pos    gfx.Point // view point of the last event
 	from   gfx.Point // view point of the press
@@ -147,9 +146,6 @@ func (v *Viewer) sceneEvent(p *view.Pointer, at gfx.Point) editor.MouseEvent {
 // The middle button always pans; the right one opens the context menu.
 func (v *Viewer) onPointer(p *view.Pointer) {
 	if v.commentPointer(p) {
-		return
-	}
-	if v.hintPointer(p) {
 		return
 	}
 	if p.Button == 3 {
