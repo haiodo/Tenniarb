@@ -4268,9 +4268,9 @@ diagram"
                     }
                 }
             }
-            item badge291 { pos 30 -102; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }
+            item badge291 { pos 30 -76; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }
             item badge292 { pos 98 -75; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 2; font-size 12; font-weight 700; text-color #ffffff } }
-            item badge293 { pos 232 -402; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 3; font-size 12; font-weight 700; text-color #ffffff } }
+            item badge293 { pos 118 -402; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 3; font-size 12; font-weight 700; text-color #ffffff } }
             item nt294 { pos 0 -790; auto-layout row; gap 10; align center; item b { auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }; item t { title "Element mounted from a file (element \"lib\" --from-file): link icon instead of file or folder."; font-size 14; text-color #1d1d1f } }
             item nt295 { pos 0 -824; auto-layout row; gap 10; align center; item b { auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; item n { title 2; font-size 12; font-weight 700; text-color #ffffff } }; item t { title "Star after the name: the mounted file has unsaved edits; the window title says \"- Edited\". Save writes the library file."; font-size 14; text-color #1d1d1f } }
             item nt296 { pos 0 -858; auto-layout row; gap 10; align center; item b { auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; item n { title 3; font-size 12; font-weight 700; text-color #ffffff } }; item t { title "The canvas and the Items list show the nodes of the library file itself; Insert Component... brings the document back and adds a use."; font-size 14; text-color #1d1d1f } }
@@ -4514,7 +4514,7 @@ diagram"
                     use Components.Popover.Light.Quick_button as q438 { at Label { title "✑" } }
                     use Components.Popover.Light.Quick_button as q439 { at Label { title "Ƭ" } }
                     use Components.Popover.Light.Quick_button as q440 { at Label { title "❑" } }
-                    use Components.Popover.Light.Quick_button as q441 { at Label { title "●" } }
+                    use Components.Popover.Light.Quick_button as q441 { at Label { title "🔴" } }
                     use Components.Popover.Light.Quick_button as q442 { at Label { title "⊞" } }
                     use Components.Popover.Light.Quick_button as q443 { at Label { title "〰" } }
                 }
@@ -4922,18 +4922,18 @@ diagram"
                 align start
                 item CapBox { auto-layout row; width fill; item Cap { title "New comment and thread popovers"; width fill; font-size 13; font-weight 700; layout left } }
                 use Components.Popover.Light.Popover as compose {
-                    width 350
-                    item Field { auto-layout row; width fill; height 58; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Comment; font-size 13; text-color #86868b } }
+                    width 316
+                    item Field { auto-layout row; width fill; height 80; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Comment; font-size 13; text-color #86868b } }
                     item Buttons { auto-layout row; width fill; gap 6; justify end; use Components.Popover.Light.Push_button as cancel { at Label { title Cancel } }; use Components.Popover.Light.Push_button_default as post { at Label { title Post } } }
                 }
                 use Components.Popover.Light.Popover as thread {
-                    width 350
+                    width 336
                     item Head { title "#1  haiodo  now"; font-size 12; text-color #86868b }
                     item Place { title "Naming / Brain"; font-size 12; text-color #86868b }
                     item Text { title "Should this node link to the execution model?"; width fill; font-size 13; layout left }
                     item ReplyHead { title "kimi-code  now"; font-size 12; text-color #86868b }
                     item ReplyText { title "Yes, the relation is already in the model."; width fill; font-size 13; layout left }
-                    item ReplyField { auto-layout row; width fill; height 42; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Reply; font-size 13; text-color #86868b } }
+                    item ReplyField { auto-layout row; width fill; height 54; padding 8; color #ffffff; border-color #00000040; corner-radius 5; item T { title Reply; font-size 13; text-color #86868b } }
                     item Buttons { auto-layout row; width fill; gap 6; use Components.Popover.Light.Push_button_default as reply { at Label { title Reply } }; use Components.Popover.Light.Push_button as resolve { at Label { title Resolve } }; use Components.Popover.Light.Push_button as delete { at Label { title Delete } } }
                 }
             }
@@ -5029,7 +5029,7 @@ diagram"
                             gap 8
                             align center
                             item Cap { title "Light"; width 50; font-size 13; text-color #1d1d1f; layout left }
-                            use Components.Popover.Light.Text_field as tf558 { width 130; at T { title "#e7e9ebff" } }
+                            use Components.Popover.Light.Text_field as tf558 { width 110; at T { title "#e7e9ebff" } }
                             use Components.Popover.Light.Push_button as rs559 { at Label { title Reset } }
                         }
                         item row563 {
@@ -5038,7 +5038,7 @@ diagram"
                             gap 8
                             align center
                             item Cap { title "Dark"; width 50; font-size 13; text-color #1d1d1f; layout left }
-                            use Components.Popover.Light.Text_field as tf561 { width 130; at T { title "#2e2e2eff" } }
+                            use Components.Popover.Light.Text_field as tf561 { width 110; at T { title "#2e2e2eff" } }
                             use Components.Popover.Light.Push_button as rs562 { at Label { title Reset } }
                         }
                     }
@@ -5099,7 +5099,7 @@ diagram"
                     item Page {
                         auto-layout column
                         width fill
-                        height 420
+                        height 524
                         padding 24
                         gap 12
                         color #ffffff
@@ -5215,15 +5215,15 @@ diagram"
                     }
                 }
                 slot canvas {
-                    item link619 { pos 165 -114; width 160; height 76; view-box 0 0 160 76; path "M160 0L0 76"; border-color #8e8e93; line-width 1.5 }
-                    item link620 { pos 325 -114; width 160; height 76; view-box 0 0 160 76; path "M0 0L160 76"; border-color #8e8e93; line-width 1.5 }
-                    item link621 { pos 165 -234; width 2; height 86; view-box 0 0 2 86; path "M1 0L1 86"; border-color #8e8e93; line-width 1.5 }
-                    item link622 { pos 485 -234; width 2; height 86; view-box 0 0 2 86; path "M1 0L1 86"; border-color #8e8e93; line-width 1.5 }
-                    item "Product naming" { pos 250 -70; auto-layout row; width 150; height 44; align center; justify center; color #3a3a3c; border-color #8e8e93; line-width 1; corner-radius 4; item T { title "Product naming"; font-size 16; text-color #f2f2f7 } }
-                    item "Net" { pos 110 -190; auto-layout row; width 110; height 44; align center; justify center; color #3a3a3c; border-color #8e8e93; line-width 1; corner-radius 4; item T { title "Net"; font-size 15; text-color #f2f2f7 } }
-                    item "Brain" { pos 430 -190; auto-layout row; width 110; height 44; align center; justify center; color #3a3a3c; border-color #8e8e93; line-width 1; corner-radius 4; item T { title "Brain"; font-size 15; text-color #f2f2f7 } }
-                    item "Ten" { pos 110 -320; auto-layout row; width 110; height 44; align center; justify center; color #3a3a3c; border-color #8e8e93; line-width 1; corner-radius 4; item T { title "Ten"; font-size 15; text-color #f2f2f7 } }
-                    item "Niarb" { pos 430 -320; auto-layout row; width 110; height 44; align center; justify center; color #3a3a3c; border-color #8e8e93; line-width 1; corner-radius 4; item T { title "Niarb"; font-size 15; text-color #f2f2f7 } }
+                    item link619 { pos 165 -114; width 160; height 76; view-box 0 0 160 76; path "M160 0L0 76"; border-color #ffffff; line-width 1 }
+                    item link620 { pos 325 -114; width 160; height 76; view-box 0 0 160 76; path "M0 0L160 76"; border-color #ffffff; line-width 1 }
+                    item link621 { pos 165 -234; width 2; height 86; view-box 0 0 2 86; path "M1 0L1 86"; border-color #ffffff; line-width 1 }
+                    item link622 { pos 485 -234; width 2; height 86; view-box 0 0 2 86; path "M1 0L1 86"; border-color #ffffff; line-width 1 }
+                    item "Product naming" { pos 250 -70; auto-layout row; width 150; height 44; align center; justify center; color #424242; border-color #ffffff; line-width 0.3; corner-radius 4; item T { title "Product naming"; font-size 18; text-color #ffffff } }
+                    item "Net" { pos 110 -190; auto-layout row; width 110; height 44; align center; justify center; color #424242; border-color #ffffff; line-width 0.3; corner-radius 4; item T { title "Net"; font-size 18; text-color #ffffff } }
+                    item "Brain" { pos 430 -190; auto-layout row; width 110; height 44; align center; justify center; color #424242; border-color #ffffff; line-width 0.3; corner-radius 4; item T { title "Brain"; font-size 18; text-color #ffffff } }
+                    item "Ten" { pos 110 -320; auto-layout row; width 110; height 44; align center; justify center; color #424242; border-color #ffffff; line-width 0.3; corner-radius 4; item T { title "Ten"; font-size 18; text-color #ffffff } }
+                    item "Niarb" { pos 430 -320; auto-layout row; width 110; height 44; align center; justify center; color #424242; border-color #ffffff; line-width 0.3; corner-radius 4; item T { title "Niarb"; font-size 18; text-color #ffffff } }
                 }
                 slot code {
                     use Components.Code.Dark.Code_line_dark as ln625 {
