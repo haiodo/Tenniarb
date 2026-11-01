@@ -49,3 +49,25 @@ func TestRead(t *testing.T) {
 		t.Error("no error for an unknown file")
 	}
 }
+
+// TestInstallReplacesLink: an older `make install` left a link there; the install puts the real files.
+func TestInstallReplacesLink(t *testing.T) {
+	dir := t.TempDir()
+	link := filepath.Join(dir, "tenniarb-design")
+	if err := os.Symlink(filepath.Join(dir, "gone"), link); err != nil {
+		t.Skipf("no symlinks here: %v", err)
+	}
+	if err := skill.Install(link); err != nil {
+		t.Fatal(err)
+	}
+	fi, err := os.Lstat(link)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fi.IsDir() {
+		t.Error("the link was not replaced by a directory")
+	}
+	if _, err := os.Stat(filepath.Join(link, "SKILL.md")); err != nil {
+		t.Errorf("SKILL.md: %v", err)
+	}
+}

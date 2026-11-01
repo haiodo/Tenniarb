@@ -46,8 +46,14 @@ func Names() []string {
 	return out
 }
 
-// Install writes every file of the skill into dir, replacing what is there.
+// Install writes every file of the skill into dir, replacing what is there. A link there, as an older
+// `make install` left it, is replaced by the real files.
 func Install(dir string) error {
+	if fi, err := os.Lstat(dir); err == nil && fi.Mode()&os.ModeSymlink != 0 {
+		if err := os.Remove(dir); err != nil {
+			return err
+		}
+	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}

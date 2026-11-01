@@ -93,7 +93,7 @@ ifeq ($(shell uname),Darwin)
 	/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/Tenniarb.app
 endif
 
-skill-install: ## Write the tenniarb-design skill where Claude Code and opencode read it
+skill-install: go-cli-install ## Write the tenniarb-design skill where Claude Code and opencode read it
 	$(GO_PKG_BIN)/tenniarb install
 
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
