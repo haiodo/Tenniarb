@@ -228,8 +228,7 @@ use kit.Window as login {
 - **[решено 2026-10-28]** Пустой блок `slot {}` (безымянный) убирает запасное содержимое безымянного slot так же, как
   `slot toolbar {}` - именованного: заполнение есть, детей в нём нет. Без `slot {}` и без узлов запасное содержимое остаётся.
   Компонент без безымянного slot с `slot {}` в блоке - та же ошибка, что и с узлами.
-- Генерация: Svelte 4 - `<slot>` / `<slot name>` / `slot="..."` (foundation на Svelte 4: `<slot>` в 208 `.svelte`-файлах,
-  snippets не используются); Svelte 5 - snippets (`{@render children()}`); React - `children` и именованные props;
+- Генерация: Svelte 4 - `<slot>` / `<slot name>` / `slot="..."` (snippets не используются); Svelte 5 - snippets (`{@render children()}`); React - `children` и именованные props;
   gowt - дети контейнера.
 - Параметры slot (как `let:` в Svelte 4) - не в v1.
 - **[решено 2026-10-26]** Slots вложенных `use` остаются открытыми, пока не закончен внешний `use`, и адресуются из него
@@ -393,7 +392,7 @@ use Actions.Button as save { at Btn { use-style secondary large } at Btn.Label {
 **[реализовано]**, `afterUseStyle` и `inheritProps` в `go/scene/styles.go`.
 
 Проверено на прототипе `examples/button-styles.tenn`: один `Button` (14 стилей, 4 группы) покрывает 48
-вариантов каталога `foundation/dev/design/tenn/lib/actions.tenn`. Чего не хватает для библиотеки: нет
+вариантов каталога дизайн-библиотеки (по шесть видов, четыре размера, с иконкой и без). Чего не хватает для библиотеки: нет
 `aspect-ratio` (у icon-only ширина дублирует высоту в стиле размера); `use-style` в блоке самого `use`
 игнорируется - это закрывает 5c; нейтральный член `one-of` приходится объявлять пустым стилем.
 

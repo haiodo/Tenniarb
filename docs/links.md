@@ -9,12 +9,12 @@ Code: package `go/link` (format, remotes, resolution) and `go/app/links*.go` (co
 **URL**, what Copy Link puts on the clipboard:
 
 ```
-tenniarb://open?repo=github.com/haiodo/foundation&path=design/PlatformDesign.tenn&el=Tracker.Boards&node=Screen.Kanban
+tenniarb://open?repo=github.com/haiodo/tenniarb&path=tenniarb.tenn&el=Tracker.Boards&node=Screen.Kanban
 ```
 
 | Parameter | Meaning |
 |---|---|
-| `repo` | Git remote of the repository, normalised: `host/owner/name`, lower case, no scheme, user, port or `.git`. `git@github.com:haiodo/foundation.git` and `https://github.com/haiodo/foundation` give the same value. Taken from `origin`, else the first remote. |
+| `repo` | Git remote of the repository, normalised: `host/owner/name`, lower case, no scheme, user, port or `.git`. `git@github.com:haiodo/tenniarb.git` and `https://github.com/haiodo/tenniarb` give the same value. Taken from `origin`, else the first remote. |
 | `home` | `1` when the file is in no repository with a remote. `path` is then relative to the home folder of the user, `repo` is absent. Such a link works only for people who keep the file at the same place under home; Copy Link says so in the banner. |
 | `path` | Slash-separated path of the file from the repository root. Must end in `.tenn`, must not be absolute and must not contain `..`; a link that breaks this is refused. |
 | `el` | The element on the canvas: the names from the root, joined by `.`, as the app writes element paths (`PathOf`): a repeated name among siblings gets `#n`, n from 1 for the second one. In a name `%`, `.` and `/` are written `%25`, `%2E`, `%2F`. Absent: the root. |
