@@ -2,11 +2,13 @@
 //
 //	tenniarb [file.tenn | tenniarb://open?... ...]
 //	tenniarb check [-json] [-root DIR] FILE...
+//	tenniarb suggest [-json] [-root DIR] FILE...
 //	tenniarb help | -h | --help
 //
 // Each file opens in its own window; without files the untitled documents of the last launch come
 // back, or a new document opens. Settings, the recent list and window frames live in the OS config
 // directory (TENNIARB_CONFIG_DIR overrides it). check validates files headless: exit 0 clean, 1 errors, 2 usage.
+// suggest reports what could be tidied in a file (repeats, styles, dead commands) and changes nothing.
 // Help prints the usage to stdout and exits 0; an unknown flag prints it to stderr and exits 2.
 package main
 
@@ -19,11 +21,13 @@ import (
 
 	"github.com/haiodo/tenniarb/go/app"
 	"github.com/haiodo/tenniarb/go/check"
+	"github.com/haiodo/tenniarb/go/optimize"
 )
 
 const usage = `usage:
   tenniarb [FILE.tenn | LINK ...]               open the files or tenniarb:// links in the app; without files the last documents come back
   tenniarb check [-json] [-root DIR] FILE...    validate files without a window: exit 0 clean, 1 errors, 2 usage
+  tenniarb suggest [-json] [-root DIR] FILE...  report what could be tidied in the files, changing nothing
   tenniarb help | -h | --help                   print this text
 `
 
@@ -36,6 +40,8 @@ func dispatch(args []string, stdout, stderr io.Writer) (launch bool, files []str
 	switch args[0] {
 	case "check":
 		return false, nil, check.Run(args[1:], stdout, stderr)
+	case "suggest":
+		return false, nil, optimize.Run(args[1:], stdout, stderr)
 	case "help", "-h", "-help", "--help":
 		fmt.Fprint(stdout, usage)
 		return false, nil, 0

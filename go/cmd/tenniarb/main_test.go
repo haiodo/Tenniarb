@@ -26,6 +26,7 @@ func TestDispatch(t *testing.T) {
 		{args: []string{"a.tenn", "-x"}, code: 2, errOut: "unknown flag -x"},
 		{args: []string{"-psn_0_123", "a.tenn"}, launch: true, files: []string{"a.tenn"}},
 		{args: []string{"check"}, code: 2, errOut: "usage: tenniarb check"},
+		{args: []string{"suggest"}, code: 2, errOut: "usage: tenniarb suggest"},
 	}
 	for _, c := range cases {
 		var out, errOut bytes.Buffer
