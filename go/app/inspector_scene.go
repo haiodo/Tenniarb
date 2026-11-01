@@ -373,11 +373,12 @@ func styleRow(caption string, ctl ...g.Option) g.Option {
 	return g.HBox(append(opts, ctl...)...)
 }
 
-// styleGroups are the groups the selected node may name: those of the nearest styles block above it. A
-// group that names no style is no choice the inspector can offer, so it is left out.
+// styleGroups are the groups of the styles the selected node already names: the nearest styles block
+// above it. A node that names no style gets no choice - the styles of a component belong to the part they
+// were written for, not to every item inside it. A group that names no style is left out.
 func (v *Viewer) styleGroups() []scene.StyleGroup {
 	n := v.shownNode()
-	if n == nil {
+	if n == nil || len(v.nodeStyles()) == 0 {
 		return nil
 	}
 	scope := scene.StyleScope(n)

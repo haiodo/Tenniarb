@@ -138,7 +138,12 @@ func TestSceneStyles(t *testing.T) {
 		t.Fatalf("a split use-style list:\n%s", got)
 	}
 
-	// a node that may name no style gets no Styles section at all
+	// a node that names no style gets no Styles section: the styles of the component belong to Btn
+	a.State("select", "path", file, "element", []string{"Button"}, "nodes", []string{"Btn/Label"})
+	wait()
+	if visible("scene-style-kind") || visible("scene-style-extras-outlined") {
+		t.Fatal("a part of the component that names no style still shows the Styles section")
+	}
 	a.State("select", "path", file, "element", []string{"Screen"}, "nodes", []string{"Box"})
 	wait()
 	if visible("scene-style-kind") || visible("scene-style-extras-outlined") {
