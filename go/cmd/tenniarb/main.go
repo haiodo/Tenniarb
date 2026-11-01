@@ -4,6 +4,7 @@
 //	tenniarb check [-json] [-root DIR] FILE...
 //	tenniarb suggest [-json] [-root DIR] FILE...
 //	tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
+//	tenniarb install [-dir DIR]
 //	tenniarb help | -h | --help
 //
 // Each file opens in its own window; without files the untitled documents of the last launch come
@@ -33,6 +34,7 @@ const usage = `usage:
   tenniarb suggest [-json] [-root DIR] FILE...  report what could be tidied in the files, changing nothing
   tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
                                                 print the text the template of ELEMENT generates
+  tenniarb install [-dir DIR]                   write the agent skill where Claude Code and opencode read it
   tenniarb help | -h | --help                   print this text
 `
 
@@ -49,6 +51,8 @@ func dispatch(args []string, stdout, stderr io.Writer) (launch bool, files []str
 		return false, nil, optimize.Run(args[1:], stdout, stderr)
 	case "gen":
 		return false, nil, gen(args[1:], stdout, stderr)
+	case "install":
+		return false, nil, install(args[1:], stdout, stderr)
 	case "help", "-h", "-help", "--help":
 		fmt.Fprint(stdout, usage)
 		return false, nil, 0
