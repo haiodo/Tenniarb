@@ -80,7 +80,7 @@ func (p *prep) icon(rn *RNode, n *layout.Node) {
 	}
 	hasFill, hasStroke := p.prop(rn, "color") != nil, p.prop(rn, "border-color") != nil
 	if !hasFill && !hasStroke {
-		ic.fill = black
+		ic.fill = p.styles[rn].text // the colour of the text around it
 	} else {
 		ic.fill = p.color(rn, "color", gfx.Color{})
 		ic.stroke = p.color(rn, "border-color", gfx.Color{})

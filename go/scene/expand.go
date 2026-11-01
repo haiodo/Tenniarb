@@ -284,25 +284,10 @@ func withoutProp(props []*Prop, name string) []*Prop {
 }
 
 // setProp replaces the properties of that name, in the place of the first one, or appends.
+// setProp puts p after the properties of the node: what the use site writes wins over the definition and
+// over the styles of the component, which sit where their use-style is written (spec 5b).
 func setProp(r *RNode, p *Prop) {
-	if p.Name == "use-style" { // styles add to the ones the component names, the instance's last
-		r.Props = append(r.Props, p)
-		return
-	}
-	out := make([]*Prop, 0, len(r.Props)+1)
-	done := false
-	for _, q := range r.Props {
-		switch {
-		case q.Name != p.Name:
-			out = append(out, q)
-		case !done:
-			out, done = append(out, p), true
-		}
-	}
-	if !done {
-		out = append(out, p)
-	}
-	r.Props = out
+	r.Props = append(r.Props, p)
 }
 
 type loc struct {

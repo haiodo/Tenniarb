@@ -75,7 +75,7 @@ func (p *prep) root(rn *RNode) *layout.Node {
 	p.frames[rn] = n
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
-			n.Kids = append(n.Kids, p.item(k, false))
+			n.Kids = append(n.Kids, p.item(k, false, black))
 		}
 	}
 	p.links(rn)
@@ -152,7 +152,9 @@ func (p *prep) links(parent *RNode) {
 	}
 }
 
-func (p *prep) item(rn *RNode, parentAuto bool) *layout.Node {
+// item lays out one node; up is the text colour of its parent, which it takes when it sets none and has
+// no fill of its own (spec 5b).
+func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 	n := &layout.Node{Tag: rn}
 	p.frames[rn] = n
 	auto := p.prop(rn, "auto-layout") != nil
@@ -177,12 +179,12 @@ func (p *prep) item(rn *RNode, parentAuto bool) *layout.Node {
 	} else {
 		n.Dir = layout.Abs
 	}
+	p.styles[rn] = p.style(rn, inCtx, up)
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
-			n.Kids = append(n.Kids, p.item(k, auto))
+			n.Kids = append(n.Kids, p.item(k, auto, p.styles[rn].text))
 		}
 	}
-	p.styles[rn] = p.style(rn, inCtx)
 	if len(n.Kids) == 0 {
 		p.leaf(rn, n, inCtx)
 	} else {

@@ -384,7 +384,7 @@ func (p *prep) color(rn *RNode, name string, def gfx.Color) gfx.Color {
 
 // style reads the look of an item: Tenniarb's defaults are a white fill and a black 1 point border;
 // in a layout context there is no fill and no border until color or border-color is given.
-func (p *prep) style(rn *RNode, inCtx bool) style {
+func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	st := style{lineW: 1, opacity: 1}
 	fill, border := white, black
 	if inCtx {
@@ -393,7 +393,7 @@ func (p *prep) style(rn *RNode, inCtx bool) style {
 	st.fill, st.grad = p.fill(rn, fill)
 	st.shadow = p.shadow(rn)
 	st.border = p.color(rn, "border-color", border)
-	text := black
+	text := up // inherited from the parent, black at the root
 	if st.fill.A > 0 {
 		text = contrast(st.fill)
 	}

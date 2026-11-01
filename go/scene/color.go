@@ -13,6 +13,9 @@ import (
 // optional "#": the forms PreferencesController.parseColor takes.
 func parseColor(s string) (gfx.Color, bool) {
 	s = strings.ToLower(strings.TrimSpace(s))
+	if s == "none" || s == "transparent" { // no fill, no border: what alpha 0 draws anyway
+		return gfx.Color{}, true
+	}
 	// The cmkdown table maps "#00000000" itself to "": such an entry is not a name.
 	if hex, ok := markdown.ColorNames[s]; ok && hex != "" {
 		s = hex

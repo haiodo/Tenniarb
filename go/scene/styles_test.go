@@ -128,7 +128,8 @@ func ownItem(t *testing.T, n *scene.Node, name string) *scene.Node {
 	return nil
 }
 
-// TestStylesFromUseStyleProps: a property written on the node wins over the style.
+// TestStylesFromUseStyleProps: a property written on the node after its use-style wins over the style, a
+// property written before it is a default the style overrides (TestStyleOrder).
 func TestStylesFromUseStyleProps(t *testing.T) {
 	tree, err := scene.LoadSource(t.TempDir(), "styles.tenn", `element "E" {
   styles { big { height 120; padding 0 20 } }
@@ -142,5 +143,66 @@ func TestStylesFromUseStyleProps(t *testing.T) {
 		if b.Path == "Btn" && b.H != 30 {
 			t.Errorf("Btn height %v, want the property 30", b.H)
 		}
+	}
+}
+
+// TestTextInherited: the text of a nested item takes the colour and the font of the box it is in, unless
+// it sets its own (spec 5b).
+func TestTextInherited(t *testing.T) {
+	_, svg := buildSrc(t, `element "E" {
+  styles { primary { color #6b3ad3; font-size 20 } }
+  item Box { auto-layout row; use-style primary
+    item Label { title Own }
+    item Green { title Yes; text-color #00ff00 }
+  }
+}`)
+	if !strings.Contains(svg, `fill="rgb(255,255,255)">Own<`) {
+		t.Errorf("Own is not the contrast of the purple box:\n%s", svg)
+	}
+	if !strings.Contains(svg, `font-size="20"`) {
+		t.Errorf("the font size of the box did not reach the label:\n%s", svg)
+	}
+	if !strings.Contains(svg, `fill="rgb(0,255,0)">Yes<`) {
+		t.Errorf("the own colour of a label was lost:\n%s", svg)
+	}
+}
+
+// TestColorNone: none and transparent are the colour that alpha 0 draws anyway, so a style drops a border
+// another style gives.
+func TestColorNone(t *testing.T) {
+	_, svg := buildSrc(t, `element "E" {
+  styles {
+    framed { border-color #ff0000; line-width 2 }
+    plain { border-color none }
+  }
+  item A { width 10; height 10; border-color #ff0000; line-width 2 }
+  item B { width 10; height 10; use-style framed; use-style plain }
+}`)
+	if n := strings.Count(svg, `stroke="rgb(255,0,0)"`); n != 1 {
+		t.Errorf("%d red borders, want the one of A:\n%s", n, svg)
+	}
+}
+
+// TestStyleOrder: a style comes where its use-style is written, so properties above it are defaults and
+// properties below it win.
+func TestStyleOrder(t *testing.T) {
+	tree, err := scene.LoadSource(t.TempDir(), "order.tenn", `element "E" {
+  styles { large { height 48 } }
+  item A { width 20; height 40; use-style large }
+  item B { width 20; use-style large; height 40 }
+}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen, _ := build(t, tree, "E")
+	heights := map[string]float64{}
+	for _, b := range screen.Boxes() {
+		heights[b.Path] = b.H
+	}
+	if heights["A"] != 48 {
+		t.Errorf("A height %v, want the style 48 over the default 40", heights["A"])
+	}
+	if heights["B"] != 40 {
+		t.Errorf("B height %v, want its own 40 after the style", heights["B"])
 	}
 }
