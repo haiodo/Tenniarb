@@ -385,9 +385,9 @@ func TestUsage(t *testing.T) {
 }
 
 // TestExamples is the quality gate: the report on the three real files. button-styles.tenn is one
-// deliberate component with styles, so it may only offer a style for the repeated captions; the
-// onboarding flow has no repeat at all; every finding anywhere has at least two nodes and a real
-// position.
+// deliberate component with styles, so it may offer a style for the repeated captions and a component
+// for the six equal rows, but nothing dead; the onboarding flow has no finding at all; every finding
+// anywhere has at least two nodes and a real position.
 func TestExamples(t *testing.T) {
 	for _, tc := range []struct {
 		file  string
@@ -400,7 +400,7 @@ func TestExamples(t *testing.T) {
 		}},
 		{"examples/button-styles.tenn", func(t *testing.T, fs []Finding) {
 			for _, f := range fs {
-				if f.Rule == RuleRepeat || strings.HasPrefix(f.Rule, RuleDead) {
+				if strings.HasPrefix(f.Rule, RuleDead) {
 					t.Errorf("%s: %s", f.Rule, f.Detail)
 				}
 			}

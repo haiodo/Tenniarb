@@ -77,6 +77,23 @@ func (x *expander) params(target, use *Node, caller map[string]string) (values m
 	return values, used
 }
 
+// defaults are the parameter values of an element expanded on its own, not through a use: a component
+// shown as a screen looks like an instance that sets nothing.
+func (x *expander) defaults(n *Node) map[string]string {
+	if len(n.Params) == 0 {
+		return nil
+	}
+	values := make(map[string]string, len(n.Params))
+	for _, prm := range n.Params {
+		if prm.Default != nil {
+			values[prm.Name] = x.value(prm.Default, nil)
+			continue
+		}
+		values[prm.Name] = "" // a required parameter has no value on its own, and no warning either
+	}
+	return values
+}
+
 // value is the value of one parameter: its single argument, an expression evaluated in vars.
 func (x *expander) value(pr *Prop, vars map[string]string) string {
 	if len(pr.Args) == 0 {

@@ -169,3 +169,34 @@ element "Other" { item Box { width 4; height 4 } }
 		t.Errorf("no warning about the unknown kind: %v", other.Diagnostics())
 	}
 }
+
+// TestComponentOnItsOwn: a component opened as a screen, not through a use, shows its defaults: its own
+// parameters are in scope with their default values.
+func TestComponentOnItsOwn(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "own.tenn", `element "Button" kind Component {
+  export let title = "Button"
+  export let size = medium
+  styles {
+    medium { height 40 }
+    large { height 48 }
+  }
+  item Btn {
+    auto-layout row
+    use-style ${size}
+    item Label { title ${title} }
+  }
+}`), "Button")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if h := m["Btn"].H; h != 40 {
+		t.Errorf("height %v, want the default size medium 40", h)
+	}
+	if l := m["Btn.Label"].Lines; len(l) != 1 || l[0] != "Button" {
+		t.Errorf("label %v, want the default Button", l)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}

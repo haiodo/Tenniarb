@@ -134,6 +134,7 @@ func (t *Tree) element(path string, eval evalFunc) *RNode {
 
 func (t *Tree) expandElement(target *Node, ctx *mountCtx, eval evalFunc) *RNode {
 	x := &expander{t: t, ctx: ctx, eval: eval}
+	x.vars = x.defaults(target) // a component on its own shows its defaults (spec 5c)
 	rn := x.container(target)
 	if rn != nil {
 		finalize(rn)
