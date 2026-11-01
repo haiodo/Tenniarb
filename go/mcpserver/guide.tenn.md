@@ -80,6 +80,8 @@ Content at a negative position is kept in the scene bounds.
 - `export let title = "Step"` declares a parameter with a default; `export let title` makes it
   required, and a use that does not set it is an error.
 - The use sets it by name: `use Step as "Sign up" { title "Sign up"; tone warn }`.
+- A parameter may hold a list of words (`export let extras = outlined`), set as `extras outlined rounded`;
+  `use-style ${extras}` names every style of the list - that is how an `any-of` group is chosen.
 - Inside the element the parameter is an ordinary variable: `title ${title}`,
   `width ${size + 12}`, `use-style ${tone}`. `${...}` and `$(...)` run on the classic engine before
   the styles, so a style can be picked by a value.
