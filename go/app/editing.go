@@ -39,9 +39,9 @@ func (v *Viewer) realize() {
 	}
 	ds := v.session.Scene()
 	old, oldMap := v.rendered, v.smap
-	// A drag keeps the map: a camera move after the swap shows one frame at the old camera.
-	stays := old != nil && v.keepMap
-	v.keepMap = false
+	// The content stays where it is drawn, and the map with it: the bounds of an edit change under the
+	// content, and a camera following in the same turn can show a frame of the jump before it moves.
+	stays := old != nil && v.shownElem == v.state.Current
 	var next *render.Rendered
 	v.scene.Update(func(tx *gfx.Tx) {
 		if old != nil {
@@ -63,15 +63,11 @@ func (v *Viewer) realize() {
 		v.smap = oldMap
 	}
 
-	if v.shownElem != v.state.Current || old == nil {
+	if !stays {
 		v.shownElem = v.state.Current
 		v.pendingFit = true
 		v.applyInitialCamera()
 		v.syncOutline()
-	} else if !v.pendingFit {
-		// Edits change the bounds, which move the content on the scene; the view follows.
-		comp := v.view.Compositor()
-		v.setCamera(Follow(comp.Camera(), v.smap.Shift(oldMap)))
 	}
 	v.moveInline()
 }
@@ -206,7 +202,6 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		v.press = press{}
 		v.view.SetCursor(view.CursorArrow)
 		if v.session != nil {
-			v.keepMap = true
 			v.session.MouseUp(ev)
 			if !pressed.pan && !ev.Cancel {
 				v.maybeQuickPanel(pressed, p.Pos)

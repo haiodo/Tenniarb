@@ -43,7 +43,6 @@ type Viewer struct {
 	selHUD      *gfx.Node    // the selection frames of a scene element, on the HUD
 	sv          *sceneView   // the element on the canvas is drawn by go/scene
 	svCache     []*sceneView // views taken off the canvas, the last one first
-	keepMap     bool         // the next rebuild keeps the scene map: a drag must not scroll the canvas
 	itemsUI     itemsList
 	addClassic  []*g.MenuItem // the diagram commands of Edit > Add, off in a scene
 	sceneBuilds int           // how many times go/scene drew the canvas, for the tests
