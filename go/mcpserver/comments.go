@@ -361,17 +361,34 @@ func (m mountRef) move(c comments.Comment) (comments.Comment, bool) {
 	return c, true
 }
 
-// mountRefs lists the documents of the workspace that show rel as a mounted element, and where.
+// mountRefs lists the documents that show rel as a mounted element, and where: the document of its
+// entry and of the files of the workspace, or, when the workspace is too big to list, the documents the
+// app has open.
 func (s *Server) mountRefs(rel string) []mountRef {
-	files, err := s.files()
-	if err != nil {
-		return nil
+	var docs []string
+	seen := map[string]bool{}
+	add := func(f string) {
+		if f != "" && f != rel && !seen[f] {
+			seen[f] = true
+			docs = append(docs, f)
+		}
+	}
+	if _, tree, err := s.diagnose(rel); err == nil && tree != nil {
+		add(tree.Entry())
+	}
+	if files, err := s.files(); err == nil {
+		for _, f := range files {
+			add(f)
+		}
+	} else {
+		for abs := range s.host.live.entries() {
+			if within(s.root, abs) {
+				add(s.fileOf(abs))
+			}
+		}
 	}
 	var out []mountRef
-	for _, f := range files {
-		if f == rel {
-			continue
-		}
+	for _, f := range docs {
 		_, tree, err := s.diagnose(f)
 		if err != nil || tree == nil {
 			continue
