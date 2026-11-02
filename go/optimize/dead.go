@@ -159,10 +159,11 @@ func (a *analyzer) deadStyles(root *scene.Node, refs map[*scene.Node][]string, d
 			if used[name] || implicitStyle[name] || inGroup[name] {
 				continue
 			}
-			a.note("dead-style", n.Pos.File, n.Range.Start,
+			f := a.note("dead-style", n.Pos.File, n.Range.Start,
 				[]string{nodePath(n) + " -> " + name},
 				fmt.Sprintf("style %q is never named with use-style: delete it or use it", name),
 				"a style nobody names", 0)
+			f.elem, f.name = n, name
 		}
 		for _, g := range n.StyleGroups {
 			chosen := false
@@ -175,10 +176,11 @@ func (a *analyzer) deadStyles(root *scene.Node, refs map[*scene.Node][]string, d
 			if chosen {
 				continue
 			}
-			a.note("dead-group", n.Pos.File, n.Range.Start,
+			f := a.note("dead-group", n.Pos.File, n.Range.Start,
 				[]string{nodePath(n) + " -> " + g.Name},
 				fmt.Sprintf("no node chooses a member of group %q (%d members): delete the group or one of its styles", g.Name, len(g.Styles)),
 				"a group nobody chooses from", 0)
+			f.elem, f.name = n, g.Name
 		}
 	}
 	each(root)
@@ -199,10 +201,13 @@ func (a *analyzer) deadPos() {
 		if !flowDir(parent) || flagOn(effectiveProps(c.n), "absolute") {
 			continue
 		}
-		a.note("dead-pos", c.n.Pos.File, c.n.Range.Start,
+		f := a.note("dead-pos", c.n.Pos.File, c.n.Range.Start,
 			[]string{a.withPos(c.n)},
 			fmt.Sprintf("%s sits in a %s layout, so its pos is ignored: drop the pos, or make the item absolute", nodePath(c.n), flowDirName(parent)),
 			"a command the layout ignores", 0)
+		if own := findProp(c.n.Props, "pos"); own != nil {
+			f.del = &own.Range
+		}
 	}
 }
 
@@ -261,15 +266,17 @@ func (a *analyzer) deadOverrides(root *scene.Node) {
 				if ov.Kind == scene.OvReplace {
 					word = "replace"
 				}
-				a.note("dead-override", ov.Pos.File, ov.Range.Start,
+				f := a.note("dead-override", ov.Pos.File, ov.Range.Start,
 					[]string{nodePath(n) + " -> " + word + " " + ov.Path},
 					fmt.Sprintf("%s %s of the instance has an empty block: delete it", word, ov.Path),
 					"an override that does nothing", 0)
+				f.del = &ov.Range
 			case ov.Kind == scene.OvAt && a.sameAsDefinition(n, ov):
-				a.note("dead-override", ov.Pos.File, ov.Range.Start,
+				f := a.note("dead-override", ov.Pos.File, ov.Range.Start,
 					[]string{nodePath(n) + " -> at " + ov.Path},
 					fmt.Sprintf("at %s sets the values the component already has: delete the override", ov.Path),
 					"an override that changes nothing", 0)
+				f.del = &ov.Range
 			}
 		}
 	})

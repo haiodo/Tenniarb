@@ -55,7 +55,9 @@ type Viewer struct {
 	itemsUI     itemsList
 	addClassic  []*g.MenuItem // the diagram commands of Edit > Add, off in a scene
 	moveItems   []*g.MenuItem // Element > Move Left/Right, on for a selected scene node
-	sceneBuilds int           // how many times go/scene drew the canvas, for the tests
+	suggestItem *g.MenuItem   // Element > Suggest Improvements, on for a scene
+	sug         suggestUI
+	sceneBuilds int // how many times go/scene drew the canvas, for the tests
 	smap        SceneMap
 	shownElem   *model.Element // the element the camera was placed for
 	nextID      int

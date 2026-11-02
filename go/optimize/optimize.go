@@ -1,6 +1,7 @@
 // Package optimize suggests layout tidy-ups for a loaded .tenn file: repeated structure that wants a
-// component, repeated looks that want a named style, and dead commands. It reports only: no file is
-// changed and nothing is applied (spec 5b, 5c; applying the suggestions is a later task).
+// component, repeated looks that want a named style, and dead commands (spec 5b, 5c). Analyze reports
+// them; Apply builds the text edits of one finding, and the caller writes them. A component (repeat) and
+// the warning not to merge are reported only.
 package optimize
 
 import (
@@ -47,6 +48,13 @@ type Finding struct {
 	Saving string   `json:"saving"` // rough gain of applying it
 
 	score int // sort key within a rule, not printed
+
+	// What Apply needs to build the change; not printed and not part of the JSON report.
+	nodes []*scene.Node // styles, literal: the nodes that get use-style
+	props []propVal     // styles, literal: the look the style holds
+	elem  *scene.Node   // dead-style, dead-group: the node whose styles block holds the name
+	name  string        // dead-style, dead-group: what to delete from that block
+	del   *scene.Range  // dead-pos, dead-override: the command to delete
 }
 
 // Run reads the files named in args and prints what could be tidied in them: 0 always, 2 on usage or a
@@ -395,12 +403,13 @@ func (a *analyzer) at(file string, off int) (int, int) {
 }
 
 // note adds a finding whose position is the byte offset off of file, and keeps the output short.
-func (a *analyzer) note(rule, file string, off int, paths []string, detail, saving string, score int) {
+func (a *analyzer) note(rule, file string, off int, paths []string, detail, saving string, score int) *Finding {
 	line, col := a.at(file, off)
 	a.findings = append(a.findings, Finding{
 		Rule: rule, File: file, Line: line, Col: col,
 		Paths: paths, Detail: detail, Saving: saving, score: score,
 	})
+	return &a.findings[len(a.findings)-1]
 }
 
 // propVal is one property in effect: a command of the node, or one a style gives it.
@@ -697,10 +706,19 @@ func (a *analyzer) styles(g []*cand, shared []propVal, varies []string) {
 		paths = append(paths, a.withPos(c.n))
 		a.covered[c.n] = true
 	}
-	a.note(RuleStyles, first.Pos.File, first.Range.Start, paths,
+	f := a.note(RuleStyles, first.Pos.File, first.Range.Start, paths,
 		fmt.Sprintf("%d nodes are the same except %s; they share %d properties (%s): name that look once and use-style it",
 			len(g), strings.Join(varies, ", "), len(shared), strings.Join(names, ", ")),
 		fmt.Sprintf("%d repeated properties", (len(g)-1)*len(shared)), (len(g)-1)*len(shared))
+	a.applyNodes(f, g, shared)
+}
+
+// applyNodes remembers what Apply changes: the nodes that get use-style, and the look the style holds.
+func (a *analyzer) applyNodes(f *Finding, g []*cand, props []propVal) {
+	for _, c := range g {
+		f.nodes = append(f.nodes, c.n)
+	}
+	f.props = props
 }
 
 // repeat reports a set worth one component: the definition holds the structure once, each copy becomes
@@ -789,9 +807,10 @@ func (a *analyzer) literals() {
 			paths = append(paths, a.withPos(c.n))
 			a.covered[c.n] = true
 		}
-		a.note(RuleLiteral, first.Pos.File, first.Range.Start, paths,
+		f := a.note(RuleLiteral, first.Pos.File, first.Range.Start, paths,
 			fmt.Sprintf("%d nodes share the same look (%s): name a style and use-style it", len(g), strings.TrimSuffix(k, ";")),
 			fmt.Sprintf("%d repeated properties", (len(g)-1)*len(ps)), (len(g)-1)*len(ps))
+		a.applyNodes(f, g, ps)
 	}
 }
 

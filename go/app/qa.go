@@ -131,6 +131,9 @@ func (sh *Shell) registerQA() {
 	// closing the windows a test is done with (the question of a dirty document is skipped).
 	qa.Handle("command", func(a qa.Args) error {
 		switch a.String("name") {
+		case "undo":
+			sh.active.cmdUndo()
+			return nil
 		case "preferences":
 			sh.showPrefs()
 			return nil
@@ -267,6 +270,8 @@ func (v *Viewer) qaState() map[string]any {
 	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
 	out["marks"] = v.qaMarks()
 	out["compare"] = v.qaCompare()
+	// suggest: the findings the list shows, the last preview and the version the list was built from
+	out["suggest"] = map[string]any{"findings": len(v.sug.findings), "preview": v.sug.preview, "version": v.sug.version}
 	n := 0
 	if v.animScreen != nil {
 		n = len(v.animScreen.AnimatedNodes())

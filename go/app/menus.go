@@ -116,6 +116,8 @@ func (v *Viewer) menus() {
 	pages := el.Submenu("Export &Pages")
 	pages.Item("PNG...", v.exportPagesPNG)
 	pages.Item("PDF...", v.exportPagesPDF)
+	el.Separator()
+	v.suggestItem = el.Item("S&uggest Improvements...", v.showSuggest, g.Shortcut("Cmd+Alt+U"))
 	el.OnShow(v.updateMenus)
 	el.Separator()
 	screens := el.Submenu("New &Screen")
@@ -194,6 +196,10 @@ func (v *Viewer) updateMenus() {
 	// Move Left/Right puts a scene node into its neighbouring sibling: no element takes that.
 	for _, it := range v.moveItems {
 		it.SetEnabled(v.sceneMode() && len(v.selNodes) > 0)
+	}
+	// A suggestion is a scene node or a style: a classic diagram has neither.
+	if v.suggestItem != nil {
+		v.suggestItem.SetEnabled(v.sceneMode())
 	}
 	// A comparison needs a version in a repository: the item is off for a file outside one.
 	if v.compareItem != nil {
