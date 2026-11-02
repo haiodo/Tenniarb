@@ -29,8 +29,8 @@ func (sh *Shell) registerQA() {
 			return nil, err
 		}
 		return map[string]any{"version": v.version, "builds": v.sceneBuilds, "sceneMode": v.sceneMode(),
-			"nodes": v.selNodes, "dirty": v.isDirty(), "error": v.bannerText(), "kind": v.kind,
-			"title": Title(v.state.Doc.Path, v.isDirty()), "agent": v.agent.statusText(), "follow": v.agent.follow}, nil
+			"nodes": v.selNodes, "dirty": v.isDirty(), "edited": v.edited(), "error": v.bannerText(), "kind": v.kind,
+			"title": Title(v.state.Doc.Path, v.edited()), "agent": v.agent.statusText(), "follow": v.agent.follow}, nil
 	})
 	// select: what the MCP service will do, for the window of path
 	qa.Handle("select", func(a qa.Args) error {
@@ -227,7 +227,7 @@ func (v *Viewer) qaState() map[string]any {
 	out := map[string]any{
 		"path": v.state.Doc.Path, "error": v.state.Error, "canvas": []int{w, h},
 		"zoom": cam.Zoom, "originX": cam.Origin.X, "originY": cam.Origin.Y,
-		"dirty": v.isDirty(), "title": Title(v.state.Doc.Path, v.isDirty()),
+		"dirty": v.isDirty(), "edited": v.edited(), "title": Title(v.state.Doc.Path, v.edited()),
 		"sidebar": look.SidebarVisible(v.win), "inspector": look.InspectorVisible(v.win), "code": look.BottomPanelVisible(v.win),
 		"inline": v.inline != nil, "popover": v.popover != nil, "gotoAsked": v.search.asked,
 	}

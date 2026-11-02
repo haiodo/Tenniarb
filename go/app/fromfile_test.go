@@ -82,6 +82,10 @@ func TestMountClassicEditWritesBack(t *testing.T) {
 	if !v.mountDirty(kit) || fileText(t, lib) != wbLib || kit.Elements[0] != parts {
 		t.Fatalf("unsaved edit is held until save: dirty %v, same element %v", v.mountDirty(kit), kit.Elements[0] == parts)
 	}
+	// the title says Edited for an edit held in a mounted file, though the document itself is unchanged
+	if !v.edited() || !strings.Contains(Title(v.state.Doc.Path, v.edited()), "Edited") {
+		t.Fatalf("a mounted edit shows no unsaved indication: dirty %v libs %v", v.isDirty(), v.libsDirty())
+	}
 	if err := v.saveLibs(); err != nil {
 		t.Fatal(err)
 	}

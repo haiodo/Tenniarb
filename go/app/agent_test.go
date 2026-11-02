@@ -3,6 +3,7 @@
 package app
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -106,5 +107,34 @@ func TestPresenceFollow(t *testing.T) {
 	p.Presence(left)
 	if v.agent.statusText() != "" {
 		t.Errorf("the agent left, label %q", v.agent.statusText())
+	}
+}
+
+// TestPresenceForAMountedFile: an agent working on a file the document shows as a mounted element lights
+// the indicator of that window, and Follow does not jump there: the node path belongs to another file.
+func TestPresenceForAMountedFile(t *testing.T) {
+	dir := t.TempDir()
+	sh := &Shell{}
+	p := provider{sh}
+	if err := os.WriteFile(filepath.Join(dir, "lib.tenn"), []byte(libText), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	v := newDoc(t, sh, filepath.Join(dir, "screen.tenn"), screenText)
+	lib := realPath(filepath.Join(dir, "lib.tenn"))
+	if !v.showsFile(lib) {
+		t.Fatalf("the document does not see %s as mounted: %d mounts", lib, len(v.mounts))
+	}
+	base := time.Now().UnixMilli()
+	msg := func(seq int64) servicewire.Presence {
+		return servicewire.Presence{V: 1, Path: lib, Agents: 1, Seq: seq, At: base + seq, Action: "read", Node: "ok"}
+	}
+	p.Presence(msg(1))
+	if v.agent.statusText() != "● Agent" || v.agent.direct {
+		t.Fatalf("indicator %q, direct %v", v.agent.statusText(), v.agent.direct)
+	}
+	v.toggleFollow()
+	p.Presence(msg(2))
+	if v.selNodes != nil || v.agent.pending {
+		t.Fatalf("follow jumped to a path of the mounted file: %v pending %v", v.selNodes, v.agent.pending)
 	}
 }

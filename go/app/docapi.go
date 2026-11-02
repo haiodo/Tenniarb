@@ -85,6 +85,32 @@ func (sh *Shell) viewer(path string) (*Viewer, error) {
 	return nil, ErrNoDocument
 }
 
+// viewerShowing finds the window to show a message about path: the one that holds the file, else the one
+// whose document shows it as a mounted element. direct is false for the second: the agent worked on the
+// file, not on this document, so its node paths do not address this canvas.
+func (sh *Shell) viewerShowing(path string) (v *Viewer, direct bool, err error) {
+	if v, err := sh.viewer(path); err == nil {
+		return v, true, nil
+	}
+	want := realPath(path)
+	for _, v := range sh.viewers {
+		if v.showsFile(want) {
+			return v, false, nil
+		}
+	}
+	return nil, false, ErrNoDocument
+}
+
+// showsFile reports whether a mounted element of the document shows abs.
+func (v *Viewer) showsFile(abs string) bool {
+	for _, md := range v.mounts {
+		if realPath(v.libPath(md.file)) == abs {
+			return true
+		}
+	}
+	return false
+}
+
 // realPath is p absolute with symlinks resolved, as go/scene names files.
 func realPath(p string) string {
 	if a, err := filepath.Abs(p); err == nil {

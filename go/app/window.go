@@ -361,6 +361,10 @@ func (v *Viewer) initView(vw *view.View) {
 
 func (v *Viewer) isDirty() bool { return v.tracker != nil && v.tracker.Dirty() }
 
+// edited reports whether the document or a file it shows has changes that are not on disk: an edit
+// inside a mounted element dirties the mounted file, not the document.
+func (v *Viewer) edited() bool { return v.isDirty() || v.libsDirty() }
+
 func (v *Viewer) updateTitle() {
 	v.setTitle()
 	v.updateMenus()
@@ -368,7 +372,7 @@ func (v *Viewer) updateTitle() {
 
 // setTitle shows the entry document when the file is loaded in its context: "part.tenn - in Design".
 func (v *Viewer) setTitle() {
-	title := Title(v.state.Doc.Path, v.isDirty())
+	title := Title(v.state.Doc.Path, v.edited())
 	if v.entry != "" {
 		title += " - in " + strings.TrimSuffix(filepath.Base(v.entry), ".tenn")
 	}

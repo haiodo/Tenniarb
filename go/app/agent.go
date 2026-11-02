@@ -22,6 +22,7 @@ type agentUI struct {
 	// bar says the toolbar holds the agent items now; they come and go with the agent.
 	bar        bool
 	follow     bool // the user asked to watch the agent; kept while the window lives
+	direct     bool // the agent touched this document itself, not a file it shows
 	pending    bool // a place to show waits for the user to stop typing
 	followedAt int64
 	status     *rx.State[string]
@@ -83,21 +84,22 @@ func followTarget(p servicewire.Presence) []string {
 // Presence is called by the service client on one of its goroutines.
 func (p provider) Presence(pr servicewire.Presence) {
 	p.sh.ui(func() {
-		if v, err := p.sh.viewer(pr.Path); err == nil {
-			v.onPresence(pr)
+		v, direct, err := p.sh.viewerShowing(pr.Path)
+		if err == nil {
+			v.onPresence(pr, direct)
 		}
 	})
 }
 
 // onPresence takes a message from the service. Messages are handled concurrently, so an older one
 // than the last is dropped.
-func (v *Viewer) onPresence(p servicewire.Presence) {
+func (v *Viewer) onPresence(p servicewire.Presence, direct bool) {
 	a := &v.agent
 	if a.seen && p.Seq <= a.p.Seq {
 		return
 	}
-	a.p, a.seen = p, true
-	if a.follow && p.At > a.followedAt && followTarget(p) != nil {
+	a.p, a.seen, a.direct = p, true, direct
+	if a.follow && direct && p.At > a.followedAt && followTarget(p) != nil {
 		a.pending = true
 	}
 	v.agentTick()
@@ -148,7 +150,7 @@ func (v *Viewer) followFlush() {
 	}
 	a.pending = false
 	a.followedAt = a.p.At
-	if paths := followTarget(a.p); paths != nil {
+	if paths := followTarget(a.p); paths != nil && a.direct {
 		// A node the agent removed since is no reason to complain.
 		_ = v.followPaths(paths)
 	}
@@ -160,7 +162,7 @@ func (v *Viewer) toggleFollow() {
 	a.follow = !a.follow
 	if a.follow {
 		a.followText.Set("Following")
-		a.pending = followTarget(a.p) != nil
+		a.pending = a.direct && followTarget(a.p) != nil
 	} else {
 		a.followText.Set("Follow")
 		a.pending = false
