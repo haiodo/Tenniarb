@@ -17,7 +17,6 @@ jobs:
     name: Vet and test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    continue-on-error: ${{ matrix.os == 'windows-latest' }} # not run on Windows yet, see go-port plan
     strategy:
       fail-fast: false
       matrix:
@@ -36,13 +35,12 @@ jobs:
       - name: Vet and test
         run: cd go && go vet ./... && go test ./...
 
-  # GUI tests start the app and drive it through gowt's QA server. gowt runs its own GUI gates this way
-  # (Xvfb + openbox); the Tenniarb app tests have not been run on Linux yet, so failures do not block.
+  # GUI tests start the app and drive it through gowt's QA server, as gowt runs its own GUI gates
+  # (Xvfb + openbox).
   gui-linux:
     name: GUI tests (Linux, Xvfb)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
