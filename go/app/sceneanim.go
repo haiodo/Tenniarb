@@ -70,7 +70,9 @@ func (v *Viewer) animTick() {
 	}()
 	v.scene.Update(func(tx *gfx.Tx) {
 		for _, a := range sc.AnimatedNodes() {
-			rot, scale, opacity := animValues(a.Anim, now)
+			// The editor previews every animation in a loop: a one-shot one would be over before the
+			// user looks at it.
+			rot, scale, opacity := animValues(a.Anim, now, true)
 			cx, cy := a.Box.X+a.Box.W/2, a.Box.Y+a.Box.H/2
 			m := gfx.TranslateBy(cx, cy)
 			if rot != 0 {
@@ -87,14 +89,14 @@ func (v *Viewer) animTick() {
 }
 
 // animValues are the rotate in degrees, the scale and the opacity of the animation a at now, from its
-// frames.
-func animValues(a *scene.Animation, now time.Duration) (rot, scale, opacity float64) {
+// frames. loop plays a finite animation again after its end: the editor previews every animation that way.
+func animValues(a *scene.Animation, now time.Duration, loop bool) (rot, scale, opacity float64) {
 	if len(a.Frames) == 0 || a.Duration <= 0 {
 		return 0, 1, 1
 	}
 	total := a.Duration
 	switch {
-	case a.Repeat < 0: // forever
+	case loop || a.Repeat < 0: // forever
 		total = 0
 	case a.Repeat > 1:
 		total *= time.Duration(a.Repeat)

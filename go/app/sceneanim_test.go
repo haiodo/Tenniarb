@@ -49,7 +49,7 @@ func TestAnimValues(t *testing.T) {
 		{2 * time.Second, 0},   // the loop starts again
 		{3 * time.Second, 180}, // and stays in step
 	} {
-		if rot, _, _ := animValues(spin, c.at); math.Abs(rot-c.want) > 1e-6 {
+		if rot, _, _ := animValues(spin, c.at, false); math.Abs(rot-c.want) > 1e-6 {
 			t.Errorf("rotate at %v = %v, want %v", c.at, rot, c.want)
 		}
 	}
@@ -57,7 +57,7 @@ func TestAnimValues(t *testing.T) {
 	// a finite animation keeps its last frame
 	once := *spin
 	once.Repeat, once.Duration = 1, time.Second
-	if rot, _, _ := animValues(&once, 10*time.Second); math.Abs(rot-360) > 1e-6 {
+	if rot, _, _ := animValues(&once, 10*time.Second, false); math.Abs(rot-360) > 1e-6 {
 		t.Errorf("after the end rotate = %v, want 360", rot)
 	}
 
@@ -70,8 +70,29 @@ func TestAnimValues(t *testing.T) {
 			frame(1, map[string]string{"opacity": "0.2", "scale": "2"}),
 		},
 	}
-	if _, scale, opacity := animValues(fade, 500*time.Millisecond); math.Abs(scale-1.5) > 1e-6 || math.Abs(opacity-0.6) > 1e-6 {
+	if _, scale, opacity := animValues(fade, 500*time.Millisecond, false); math.Abs(scale-1.5) > 1e-6 || math.Abs(opacity-0.6) > 1e-6 {
 		t.Errorf("half way scale %v opacity %v, want 1.5 and 0.6", scale, opacity)
+	}
+}
+
+// TestAnimLoop: the editor plays a finite animation again, while the export keeps its repeat.
+func TestAnimLoop(t *testing.T) {
+	fade := &scene.Animation{
+		Duration: time.Second,
+		Easing:   "linear",
+		Repeat:   1, // once, as written
+		Frames: []scene.Frame{
+			frame(0, map[string]string{"opacity": "0"}),
+			frame(1, map[string]string{"opacity": "1"}),
+		},
+	}
+	// as written: the last frame stays after a second
+	if _, _, opacity := animValues(fade, 2500*time.Millisecond, false); math.Abs(opacity-1) > 1e-6 {
+		t.Errorf("after the end opacity = %v, want 1", opacity)
+	}
+	// in the editor: it starts again, so a quarter into the second turn is a quarter of the fade
+	if _, _, opacity := animValues(fade, 1250*time.Millisecond, true); math.Abs(opacity-0.25) > 1e-6 {
+		t.Errorf("looped opacity = %v, want 0.25", opacity)
 	}
 }
 
@@ -129,7 +150,7 @@ func BenchmarkAnimFrame(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				now := time.Duration(i) * 16 * time.Millisecond
-				rot, scale, opacity := animValues(a, now)
+				rot, scale, opacity := animValues(a, now, true)
 				cx, cy := 5.0, 5.0
 				m := gfx.TranslateBy(cx, cy)
 				if rot != 0 {

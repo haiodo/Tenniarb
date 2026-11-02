@@ -1,7 +1,9 @@
 // Animations (spec 13), one row each: the keyframes live in the element that uses them (a component
-// carries its own), the item names one with a duration, an easing and a repeat. An infinite one plays on
-// the canvas and in the exported SVG; a static PNG takes its first frame. One block per line: two blocks
-// on one line are one command.
+// carries its own), the item names one with a duration, an easing and a repeat.
+//
+// In the editor every animation plays in a loop, a finite one included, so that it can be seen; the
+// exported SVG keeps the repeat as written (once, twice, forever) and a static PNG takes the first frame.
+// One block per line: two blocks on one line are one command.
 element "Animations" {
     animation spin {
         from { rotate 0 }
@@ -14,7 +16,7 @@ element "Animations" {
     }
     animation breathe {
         0% { scale 1 }
-        50% { scale 1.25 }
+        50% { scale 1.4 }
         100% { scale 1 }
     }
     animation fade-in {
@@ -91,7 +93,7 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "rotate, linear, forever"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "rotate 0 → 360°, linear, forever"; width 240; font-size 12; text-color #5a667e }
             // an arc, not a circle: a turning circle looks still
             item Spinner {
                 width 28
@@ -115,7 +117,7 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "opacity, ease-in-out"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "opacity 1 → 0.25, ease-in-out"; width 240; font-size 12; text-color #5a667e }
             item Dot {
                 width 24
                 height 24
@@ -137,13 +139,21 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "scale, twice then stops"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "scale 1 → 1.4, twice"; width 240; font-size 12; text-color #5a667e }
             item Heart {
-                width 24
-                height 24
-                corner-radius 6
+                width 28
+                height 28
+                corner-radius 7
                 color #cb4b42
                 animation breathe 900ms ease-out 2
+            }
+            item Heart2 {
+                width 28
+                height 28
+                corner-radius 14
+                border-color #cb4b42
+                line-width 2
+                animation breathe 900ms ease-in-out 2
             }
         }
 
@@ -151,7 +161,7 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "opacity, once"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "opacity 0 → 1: 600ms and 2s"; width 240; font-size 12; text-color #5a667e }
             item Card {
                 width 80
                 height 32
@@ -163,7 +173,7 @@ element "Animations" {
                 width 80
                 height 32
                 corner-radius 8
-                color #172547
+                color #cf13a2
                 animation fade-in 2s ease-in
             }
         }
@@ -172,7 +182,7 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "colour, forever"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "colour #cf13a2 → #2f6bff"; width 240; font-size 12; text-color #5a667e }
             item Chip {
                 width 48
                 height 24
@@ -186,7 +196,7 @@ element "Animations" {
             auto-layout row
             gap 24
             align center
-            item cap { title "a style with an animation"; width 220; font-size 12; text-color #5a667e }
+            item cap { title "the animation is in the style"; width 240; font-size 12; text-color #5a667e }
             use Badge as syncing { title "Syncing" }
             use Badge as ready { title "Ready"; state idle }
             use Badge as failed { title "Failed"; state error }
