@@ -1,5 +1,37 @@
 #  Changelog
 
+## Version 2.0
+
+The application is written in Go now: one binary for macOS, Windows and Linux, with the same `.tenn` format
+and the same calculation engine. The Swift app stays in the repository as history and is no longer shipped.
+
++ Components and parameters: `kind Component`, `export let`, values set on a `use`, and `${…}` expressions
+  evaluated in the component instance.
++ Named styles with `use-style`, groups of styles (`one-of`/`any-of`), and the cascade in declaration order.
++ Slots: a slot declared inside `replace` is filled from the same `use`; a named slot of a component a
+  wrapper uses is passed through by its name.
++ Animations: `animation <name> <duration> [easing] [repeat]` with frames; the editor plays them, the SVG
+  export keeps `repeat`, a PNG is the first frame.
++ Path segments in double quotes, so a name with punctuation is addressed as written: `at "2 Пространства - пусто"`.
++ `width`/`height` accept an expression that gives a number or `hug`/`fill`; animation frames accept expressions.
++ Export pages: every element of a file as a PNG file, or as a page of one PDF.
++ Compare with Git: a tree of changed nodes (added, removed, changed, moved) with the old and the new value,
+  and Revert to HEAD as a single undo step.
++ `suggest` reports what could be tidied (components from repeats, named styles, dead commands) and applies a
+  finding with a preview and one undo.
++ MCP for agents: `get_state` names the kind, parameters, styles, groups and use arguments of a node; `gen`
+  prints the text a component template generates; `suggest` reports; a comment on a part a document shows from
+  a mounted file belongs to that file.
++ Builds: unsigned packages for macOS (universal dmg and app zip), Windows (zip) and Linux (tar.gz); macOS
+  asks to allow the app in Security, Windows shows a SmartScreen warning.
+
+### Cross-platform application
+
++ Native on macOS, Windows and Linux through the `gowt` toolkit.
++ The same outline, inspector, canvas, scene renderer and export as the macOS app.
++ Editor with the calculation engine, styles, components, animations, undo/redo, quick styles, settings,
+  Open Recent, autosave, print, and MCP for agents.
+
 ## Version 1.4
 
 + Resize the selected item with the keyboard: Shift+Arrows changes width/height by the grid step, Cmd+Arrows resizes around the center.
