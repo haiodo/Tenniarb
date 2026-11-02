@@ -396,7 +396,7 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		case name == "element" && owner.isContainer():
 			l.addElement(owner, c)
 		case l.addContent(owner, c, name) != nil:
-		case name == "styles" && owner.isContainer():
+		case name == "styles" && (owner.isContainer() || owner.Kind == KItem):
 			l.addStyles(owner, c)
 		case name == "kind": // kind Library in a file, kind Component in an element
 			args, _ := split(c)

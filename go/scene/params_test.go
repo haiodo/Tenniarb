@@ -278,7 +278,9 @@ element "Screen" {
 	if l := m["col.two.Text"].Lines; len(l) != 1 || l[0] != "Two" {
 		t.Errorf("two %v, want Two", l)
 	}
-	_ = svg // a style on the item that an instance is (use-style in its root) is not applied yet
+	if !strings.Contains(svg, "rgb(107,58,211)") {
+		t.Errorf("the accent tone of the use did not reach the item:\n%s", svg)
+	}
 
 	// the item on its own: its defaults
 	own, _ := paramsBuild(t, tree, "Kit.Chip")

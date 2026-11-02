@@ -11,7 +11,11 @@ var inheritFont = []string{"font-family", "font-size", "font-weight", "font-styl
 // reach the kids as their defaults.
 func applyStyles(r *RNode) {
 	if r.Src != nil {
-		if scope := styleScope(r.Src); scope != nil {
+		def := r.Src
+		if r.Def != nil { // the root of an instance takes the styles of what it uses
+			def = r.Def
+		}
+		if scope := styleOwner(def); scope != nil {
 			names := styleRefs(r)
 			var props []*Prop
 			for _, name := range names { // the last style named wins per property
@@ -79,6 +83,15 @@ func inheritProps(k, parent *RNode) {
 			k.Props = append([]*Prop{pr}, k.Props...)
 		}
 	}
+}
+
+// styleOwner is the node whose styles a node may name: the node itself when it holds a styles block (an
+// item that is a component), else the nearest element above it.
+func styleOwner(n *Node) *Node {
+	if len(n.Styles) > 0 || len(n.StyleGroups) > 0 {
+		return n
+	}
+	return styleScope(n)
 }
 
 // styleScope is the element whose styles a node may name: the nearest one above it in its own file.
