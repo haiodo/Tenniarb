@@ -9,6 +9,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -55,12 +56,41 @@ func (v *Viewer) exportSVGOf(e *model.Element, p Prefs) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// pageDrawing is an element as gfx draws it: a scene element through go/scene, a classic one through
+// go/render, with the area it covers.
+type pageDrawing struct {
+	scene *gfx.Scene
+	root  *gfx.Node
+	area  gfx.Rect
+}
+
+// exportDrawing builds what both the PNG and the PDF export draw for e.
+func (v *Viewer) exportDrawing(e *model.Element) (pageDrawing, error) {
+	var d pageDrawing
+	if v.isScene(e) {
+		sc, screen, err := v.exportScene(e)
+		if err != nil {
+			return d, err
+		}
+		d.scene, d.root = sc, screen.Root
+		sc.Read(func() { d.area = screen.Root.SubtreeBounds() })
+	} else {
+		s := render.Build(e, exportOptions())
+		d.scene = gfx.NewScene()
+		var r *render.Rendered
+		d.scene.Update(func(tx *gfx.Tx) { r = s.Realize(tx, nil) })
+		d.scene.Commit()
+		d.root, d.area = r.Root, r.Area()
+	}
+	if len(d.root.Children()) == 0 {
+		return d, fmt.Errorf("%s draws nothing", e.Name)
+	}
+	return d, nil
+}
+
 // exportPNGOf is ExportPNG for an element the viewer has.
 func (v *Viewer) exportPNGOf(e *model.Element, p Prefs, scale float64) ([]byte, error) {
-	if !v.isScene(e) {
-		return ExportPNG(e, p, scale)
-	}
-	sc, screen, err := v.exportScene(e)
+	d, err := v.exportDrawing(e)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +98,7 @@ func (v *Viewer) exportPNGOf(e *model.Element, p Prefs, scale float64) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
-	raster, err := gfx.RenderSubtree(rend, sc, screen.Root, gfx.Rect{}, scale, p.exportBackground())
+	raster, err := gfx.RenderSubtree(rend, d.scene, d.root, d.area, scale, p.exportBackground())
 	if err != nil {
 		return nil, err
 	}

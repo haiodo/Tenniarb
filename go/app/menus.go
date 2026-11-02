@@ -112,6 +112,10 @@ func (v *Viewer) menus() {
 		el.Item("Move &Left", func() { v.moveNodeInto(-1) }, g.Shortcut("Cmd+Alt+Left")),
 		el.Item("Move &Right", func() { v.moveNodeInto(1) }, g.Shortcut("Cmd+Alt+Right")),
 	}
+	el.Separator()
+	pages := el.Submenu("Export &Pages")
+	pages.Item("PNG...", v.exportPagesPNG)
+	pages.Item("PDF...", v.exportPagesPDF)
 	el.OnShow(v.updateMenus)
 	el.Separator()
 	screens := el.Submenu("New &Screen")
