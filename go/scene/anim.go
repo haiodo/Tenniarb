@@ -178,7 +178,7 @@ func (p *prep) animations(rn *RNode, defs map[string]*Animation) {
 		if pr.Block == nil {
 			continue
 		}
-		a := p.keyframes(pr)
+		a := p.keyframes(pr, rn)
 		if a == nil {
 			continue
 		}
@@ -240,8 +240,9 @@ func (p *prep) allProps(rn *RNode, name string) []*Prop {
 }
 
 // keyframes reads "animation <name> { <frame> { properties } ... }": the frames every node that names the
-// animation plays, as a CSS @keyframes block.
-func (p *prep) keyframes(pr *Prop) *Animation {
+// animation plays, as a CSS @keyframes block. A frame property may be an expression (spec 6), evaluated in
+// the scope of rn, the node the block is written on.
+func (p *prep) keyframes(pr *Prop, rn *RNode) *Animation {
 	name, _ := pr.text(0)
 	if name == "" {
 		p.t.warn(pr.Pos, "animation: the block needs a name, as in animation spin { from { ... } to { ... } }")
@@ -267,6 +268,14 @@ func (p *prep) keyframes(pr *Prop) *Animation {
 			}
 			args, _ := split(pc)
 			fp := &Prop{Name: pn, Args: args, Pos: nodePos(pr.Pos.File, pc)}
+			if hasExpr(fp) {
+				if p.eval == nil { // a value check cannot know; the build with an evaluator reports it
+					continue
+				}
+				if fp = p.evalProp(rn, fp); fp == nil {
+					continue
+				}
+			}
 			switch {
 			case decl(fp) != "":
 				f.Props = append(f.Props, fp)

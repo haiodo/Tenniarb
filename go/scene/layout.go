@@ -417,8 +417,8 @@ func (p *prep) size(rn *RNode, name string, inCtx, parentAuto bool) layout.Size 
 	if v, ok := pr.num(0); ok {
 		return layout.Fixed(v)
 	}
-	a := pr.Args[0]
-	s, _ := a.GetIdentText()
+	// text, not the token: an expression may give the word as well as a number (spec 6).
+	s, _ := pr.text(0)
 	switch {
 	case s == "hug" || s == "fill":
 		return p.sizeWord(pr, s, inCtx, parentAuto)

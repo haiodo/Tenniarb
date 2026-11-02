@@ -89,6 +89,9 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 Colors: `#rrggbb`, `#rrggbbaa`, or a name from the palette (`red`, `blue`, `gray-400`, `green-200`).
 Three-digit `#fff` is not a color; for a transparent fill leave `color` out.
 
+An expression `${...}` may stand for any value, a word included: `width ${icon ? 44 : "hug"}` is 44 or
+`hug`, and `${...}` works in a `styles` row and in a keyframe too (`components.md`).
+
 ## Text and icons
 
 ```tenn

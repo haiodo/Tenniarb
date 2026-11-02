@@ -91,6 +91,7 @@ Content at a negative position is kept in the scene bounds.
 - Inside the element the parameter is an ordinary variable: `title ${title}`,
   `width ${size + 12}`, `use-style ${tone}`. `${...}` and `$(...)` run on the classic engine before
   the styles, so a style can be picked by a value.
+- An expression may give a word too: `width ${shape === "icon" ? 44 : "hug"}`; a `styles` row and an animation step take one as well.
 
 ### Templates
 

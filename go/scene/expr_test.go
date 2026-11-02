@@ -84,3 +84,105 @@ func TestSceneExpressionFails(t *testing.T) {
 		t.Errorf("the failed expression gave a width")
 	}
 }
+
+// TestExpressionSizeWord: width and height take the word an expression gives, as they take a number: a
+// parametrized item with `width ${shape === "icon" ? 44 : "hug"}` is 44 wide for an icon and hugs its text
+// otherwise (spec 6, 5c).
+func TestExpressionSizeWord(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "size.tenn", `element "Button" kind Component {
+  export let shape = text
+  item Btn {
+    auto-layout row
+    width ${shape === "icon" ? 44 : "hug"}
+    height 20
+    title "Hi"
+  }
+}
+element "Screen" {
+  item col {
+    auto-layout column
+    use Button as icon { shape icon }
+    use Button as text
+  }
+}`), "Screen")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if w := m["col.icon.Btn"].W; w != 44 {
+		t.Errorf("icon width %v, want the number 44 of the expression", w)
+	}
+	// hug is the title "Hi" of the frac measurer: 10 a letter
+	if w := m["col.text.Btn"].W; w != 20 {
+		t.Errorf("text width %v, want the hug size 20 of the expression", w)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}
+
+// TestExpressionSizeInStyle: a property of a style row is evaluated too, in the scope of the instance whose
+// node names the style.
+func TestExpressionSizeInStyle(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "style.tenn", `element "Button" kind Component {
+  export let shape = text
+  styles {
+    icon   { width ${shape === "icon" ? 44 : "hug"} }
+    round  { corner-radius ${shape === "icon" ? 12 : 4} }
+  }
+  item Btn {
+    auto-layout row
+    height 20
+    title "Hi"
+    use-style icon round
+  }
+}
+element "Screen" {
+  item col {
+    auto-layout column
+    use Button as icon { shape icon }
+    use Button as text
+  }
+}`), "Screen")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if w := m["col.icon.Btn"].W; w != 44 {
+		t.Errorf("icon width %v, want 44 from the style row", w)
+	}
+	if w := m["col.text.Btn"].W; w != 20 {
+		t.Errorf("text width %v, want the hug size 20 from the style row", w)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}
+
+// TestExpressionSizeInUseOverride: a property of the block of a use is evaluated in the scope of the
+// instance root, and at reaches a node inside it with the same scope.
+func TestExpressionSizeInUseOverride(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "override.tenn", `element "Card" kind Component {
+  export let w = 40
+  item Box { height 20 }
+}
+element "Screen" {
+  item col {
+    auto-layout column
+    use Card as a { width ${w + 2}; at Box { width ${w * 2} } }
+  }
+}`), "Screen")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if w := m["col.a"].W; w != 42 {
+		t.Errorf("instance width %v, want 42 from ${w + 2}", w)
+	}
+	if w := m["col.a.Box"].W; w != 80 {
+		t.Errorf("box width %v, want 80 from ${w * 2}", w)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}

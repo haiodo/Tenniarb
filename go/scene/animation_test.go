@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -75,6 +76,43 @@ func TestAnimationTiming(t *testing.T) {
 	want := []string{"fade 300ms ease-out 2", "spin 1s linear -1", "spin 1s linear -1"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("animations = %v, want %v", got, want)
+	}
+}
+
+// TestAnimationFrameExpression: a keyframe property takes the value of an expression (spec 6), evaluated in
+// the scope of the node the keyframes block is written on.
+func TestAnimationFrameExpression(t *testing.T) {
+	tree, err := scene.LoadSource(t.TempDir(), "frame.tenn", `element "E" {
+  export let turn = 90
+  item Box {
+    width 20
+    height 20
+    animation turn {
+      from { rotate 0 }
+      to { rotate ${turn * 4} }
+    }
+    animation turn 1s linear
+  }
+}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sc := gfx.NewScene()
+	var screen *scene.Screen
+	sc.Update(func(tx *gfx.Tx) {
+		screen, err = tree.Build(tx, nil, "E", scene.Options{Measurer: frac{}, EvalVars: exec.SceneEvalVars})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sc.Commit()
+	var out bytes.Buffer
+	if err := screen.WriteSVG(&out, sc, gfx.Rect{}, 1); err != nil {
+		t.Fatal(err)
+	}
+	wantIn(t, out.String(), "@keyframes turn{from{rotate:0deg}to{rotate:360deg}}")
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
 	}
 }
 
