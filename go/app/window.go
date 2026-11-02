@@ -65,6 +65,7 @@ type Viewer struct {
 	animScreen *scene.Screen // the screen whose animations play
 	animCancel func()        // stops the frame timer of the animations
 	animTicks  int           // frames played, for the QA state
+	animMS     float64       // the average cost of a frame, ms
 
 	press      press
 	inline     *view.Editor

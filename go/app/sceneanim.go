@@ -31,7 +31,10 @@ func (v *Viewer) animStart(sc *scene.Screen) {
 		return
 	}
 	v.animFrom, v.animScreen = time.Now(), sc
-	if v.app != nil && os.Getenv(gqa.EnvSocket) == "" {
+	// Under the QA driver the frames are frozen (its settle waits for two equal frames); TENNIARB_ANIM=1
+	// plays them there too, to measure what a frame costs.
+	frozen := os.Getenv(gqa.EnvSocket) != "" && os.Getenv("TENNIARB_ANIM") != "1"
+	if v.app != nil && !frozen {
 		// Every, not After: a short timer counts as pending and keeps the QA harness from settling. The QA
 		// driver freezes the animation: its settle waits for two equal frames, and a spinning scene never
 		// gives one.
@@ -60,6 +63,11 @@ func (v *Viewer) animTick() {
 	}
 	now := time.Since(v.animFrom)
 	v.animTicks++
+	started := time.Now()
+	defer func() {
+		// what a frame costs, for the QA state: the average of the last frames
+		v.animMS = 0.9*v.animMS + 0.1*float64(time.Since(started).Microseconds())/1000
+	}()
 	v.scene.Update(func(tx *gfx.Tx) {
 		for _, a := range sc.AnimatedNodes() {
 			rot, scale, opacity := animValues(a.Anim, now)

@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+	"math"
 	"slices"
 
 	g "github.com/haiodo/gowt"
@@ -231,7 +232,8 @@ func (v *Viewer) qaState() map[string]any {
 	if hasScreen {
 		n = len(v.sv.screen.AnimatedNodes())
 	}
-	out["anim"] = map[string]any{"animated": n, "ticks": v.animTicks, "sv": hasSV, "screen": hasScreen}
+	out["anim"] = map[string]any{"animated": n, "ticks": v.animTicks, "sv": hasSV, "screen": hasScreen,
+		"ms": math.Round(v.animMS*100) / 100}
 	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
 	items, itemRows := []string{}, map[string]map[string]any{}
 	var walkItems func(ns []*g.Node, prefix string)

@@ -4,8 +4,11 @@ package app
 
 import (
 	"math"
+	"strconv"
 	"testing"
 	"time"
+
+	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -95,5 +98,54 @@ func TestEase(t *testing.T) {
 	}
 	if ease("ease-out", 0.3) <= 0.3 {
 		t.Error("ease-out is not faster than linear at the start")
+	}
+}
+
+// spinner is an animation of a full turn in a second, forever.
+func spinner() *scene.Animation {
+	return &scene.Animation{Duration: time.Second, Easing: "linear", Repeat: -1,
+		Frames: []scene.Frame{
+			frame(0, map[string]string{"rotate": "0"}),
+			frame(1, map[string]string{"rotate": "360"}),
+		}}
+}
+
+// BenchmarkAnimFrame is the cost of one animation frame: the transform of every animated node. Its
+// repaint is the cost of the scene, measured by gfx itself.
+func BenchmarkAnimFrame(b *testing.B) {
+	for _, n := range []int{1, 10, 100} {
+		b.Run(strconv.Itoa(n), func(b *testing.B) {
+			sc := gfx.NewScene()
+			nodes := make([]scene.Animated, n)
+			sc.Update(func(tx *gfx.Tx) {
+				for i := range nodes {
+					node := gfx.NewNode(i + 2)
+					tx.Add(nil, node)
+					nodes[i] = scene.Animated{Node: node, Box: scene.Box{X: float64(i) * 10, W: 10, H: 10},
+						Anim: spinner(), Opacity: 1}
+				}
+			})
+			a := nodes[0].Anim
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				now := time.Duration(i) * 16 * time.Millisecond
+				rot, scale, opacity := animValues(a, now)
+				cx, cy := 5.0, 5.0
+				m := gfx.TranslateBy(cx, cy)
+				if rot != 0 {
+					m = m.Mul(gfx.RotateBy(rot * math.Pi / 180))
+				}
+				if scale != 1 {
+					m = m.Mul(gfx.ScaleBy(scale, scale))
+				}
+				m = m.Mul(gfx.TranslateBy(-cx, -cy)).Mul(gfx.TranslateBy(0, 0))
+				sc.Update(func(tx *gfx.Tx) {
+					for _, n := range nodes {
+						tx.SetTransform(n.Node, m)
+						tx.SetOpacity(n.Node, n.Opacity*opacity)
+					}
+				})
+			}
+		})
 	}
 }
