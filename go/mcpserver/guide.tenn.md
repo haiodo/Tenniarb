@@ -78,7 +78,8 @@ Content at a negative position is kept in the scene bounds.
 ## 6. Parameters
 
 - `export let title = "Step"` declares a parameter with a default; `export let title` makes it
-  required, and a use that does not set it is an error.
+  required, and a use that does not set it is an error. Parameters and `styles` work on an `item` too,
+  so a component may be one node: `item Chip { export let label = "Chip"; styles { … } }`.
 - The use sets it by name: `use Step as "Sign up" { title "Sign up"; tone warn }`.
 - A parameter may hold a list of words (`export let extras = outlined`), set as `extras outlined rounded`;
   `use-style ${extras}` names every style of the list - that is how an `any-of` group is chosen.
