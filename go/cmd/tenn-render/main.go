@@ -57,7 +57,7 @@ func run(root, file, path string, scale float64) error {
 		fmt.Fprintln(os.Stderr, w)
 	}
 	var buf bytes.Buffer
-	if err := gfx.WriteSubtreeSVG(&buf, sc, screen.Root, gfx.Rect{}, scale); err != nil {
+	if err := screen.WriteSVG(&buf, sc, gfx.Rect{}, scale); err != nil {
 		return err
 	}
 	_, err = os.Stdout.Write(preserveSpace(buf.Bytes()))
