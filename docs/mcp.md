@@ -62,7 +62,7 @@ tool stays inside the root. A root with more than 50 000 entries (a home directo
 | `render` | PNG of an element; `view` renders the app window of the file |
 | `selection` | Documents open in the app and the user's selection |
 | `select` | Select (and reveal) nodes in the app; `file` may be a link, see [links.md](links.md) |
-| `comments` | The comments the user left on a file: id, author, text, anchor (`element`, `node`, `point`, `link_text` that `select` takes), replies; `state` `open` (default) or `all`. A comment on a part the document shows from a mounted file belongs to that file, with the path it has there |
+| `comments` | The comments the user left on a file: id, author, text, anchor (`element`, `node`, `point`, `link_text` that `select` takes), replies; `state` `open` (default) or `all`. A comment on a part the document shows from a mounted file belongs to that file, with the path it has there; an older one stored with the document is still listed for the file |
 | `reply` | Answer a comment (`file`, `id`, `text`); it shows in the thread in the app at once |
 | `resolve` | Mark a comment done (`file`, `id`, optional closing `text`) |
 | `wait_comment` | Block until the user leaves a new comment, reply or reopens one (`file` or any document, `timeout_s` default 60, at most 600); returns a list of events, `[]` on timeout |

@@ -259,3 +259,52 @@ func TestCommentsFollowTheDocumentAcrossClones(t *testing.T) {
 		t.Fatal("setup")
 	}
 }
+
+// TestCommentsOfAMountedPart: a comment stored with the document that shows a mounted file, made before
+// the app kept such comments with their file, is listed for the file with the path inside it.
+func TestCommentsOfAMountedPart(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv(comments.EnvConfigDir, t.TempDir())
+	files := map[string]string{
+		"lib.tenn":  "element \"Panel\" {\n  item Box\n}\n",
+		"main.tenn": "element Lib --from-file \"lib.tenn\"\n",
+	}
+	for name, text := range files {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	srv, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mainAbs := filepath.Join(srv.root, "main.tenn") // the root with symlinks resolved, as the store keys it
+	if _, err := srv.host.comments.store.Update(docKey(mainAbs), func(d *comments.Doc) error {
+		_, err := d.Add(comments.User, "here", comments.Anchor{Element: []string{"Lib", "Panel"}, Node: "Box"}, time.Now())
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	out, err := srv.listComments(commentsIn{File: "lib.tenn", State: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := parseComments(t, out)
+	if len(got) != 1 || got[0].Anchor.Element != "Panel" || got[0].Anchor.Node != "Box" {
+		t.Fatalf("comments of the mounted file: %s", out)
+	}
+	if strings.Contains(got[0].Anchor.Element, "Lib") {
+		t.Fatalf("the mount prefix stays in the path: %s", out)
+	}
+	// an answer goes to the document that holds the comment, though the agent works on the file
+	if _, err := srv.replyComment(replyIn{File: "lib.tenn", ID: got[0].ID, Text: "done"}); err != nil {
+		t.Fatal(err)
+	}
+	out, err = srv.listComments(commentsIn{File: "lib.tenn", State: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got = parseComments(t, out); len(got) != 1 || len(got[0].Replies) != 1 || got[0].Replies[0].Text != "done" {
+		t.Fatalf("after the reply: %s", out)
+	}
+}

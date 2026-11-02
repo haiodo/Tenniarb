@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/haiodo/tenniarb/go/comments"
 	"github.com/haiodo/tenniarb/go/link"
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/servicewire"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -298,37 +301,137 @@ func (s *Server) notePlace(action, file string, c *comments.Comment) {
 }
 
 func (s *Server) listComments(in commentsIn) (string, error) {
-	abs, _, err := s.resolve(in.File)
+	abs, rel, err := s.resolve(in.File)
 	if err != nil {
 		return "", err
 	}
 	if in.State != "" && in.State != comments.Open && in.State != "all" {
 		return "", fmt.Errorf("state must be open or all, not %q", in.State)
 	}
+	s.noteNode("comments", in.File, "")
+	out := []commentJSON{}
+	seen := map[string]bool{}
+	add := func(c comments.Comment) {
+		if seen[c.ID] || (in.State != "all" && c.State != comments.Open) {
+			return
+		}
+		seen[c.ID] = true
+		out = append(out, toJSON(abs, c))
+	}
 	d, err := s.host.comments.store.Load(docKey(abs))
 	if err != nil {
 		return "", err
 	}
-	s.noteNode("comments", in.File, "")
-	out := []commentJSON{}
 	for _, c := range d.Comments {
-		if in.State == "all" || c.State == comments.Open {
-			out = append(out, toJSON(abs, c))
+		add(c)
+	}
+	// A comment on a part a document shows from this file, made before the app kept such comments with
+	// their file, is still stored with that document: find it under the path of the mount.
+	for _, m := range s.mountRefs(rel) {
+		md, err := s.host.comments.store.Load(docKey(m.abs(s.root)))
+		if err != nil {
+			continue
+		}
+		for _, c := range md.Comments {
+			if c2, ok := m.move(c); ok {
+				add(c2)
+			}
 		}
 	}
 	return marshal(out)
 }
 
+// mountRef is a document that shows a file as a mounted element: the document's path and the element
+// path of the mount, as the app writes element paths.
+type mountRef struct {
+	file   string   // the document, relative to the workspace root
+	prefix []string // elements from the document root down to the mount
+}
+
+// abs is the absolute path of the document that mounts the file.
+func (m mountRef) abs(root string) string { return filepath.Join(root, filepath.FromSlash(m.file)) }
+
+// move is c with its element path made relative to the mounted file; false when the comment is not about
+// an element under the mount.
+func (m mountRef) move(c comments.Comment) (comments.Comment, bool) {
+	if len(c.Anchor.Element) <= len(m.prefix) || !slices.Equal(c.Anchor.Element[:len(m.prefix)], m.prefix) {
+		return c, false
+	}
+	c.Anchor.Element = slices.Clone(c.Anchor.Element[len(m.prefix):])
+	return c, true
+}
+
+// mountRefs lists the documents of the workspace that show rel as a mounted element, and where.
+func (s *Server) mountRefs(rel string) []mountRef {
+	files, err := s.files()
+	if err != nil {
+		return nil
+	}
+	var out []mountRef
+	for _, f := range files {
+		if f == rel {
+			continue
+		}
+		_, tree, err := s.diagnose(f)
+		if err != nil || tree == nil {
+			continue
+		}
+		if root := tree.File(f); root != nil {
+			s.eachMount(root, nil, func(prefix []string, file string) {
+				if file == rel {
+					out = append(out, mountRef{file: f, prefix: prefix})
+				}
+			})
+		}
+	}
+	return out
+}
+
+// eachMount calls visit for every element below parent that shows a file, with the element path of the
+// mount and the file: the names as the app writes them, "#n" for a repeat among siblings.
+func (s *Server) eachMount(parent *scene.Node, path []string, visit func(prefix []string, file string)) {
+	seen := map[string]int{}
+	for _, c := range parent.Nodes() {
+		if c.Kind == scene.KUse {
+			continue
+		}
+		if c.Kind != scene.KElement {
+			s.eachMount(c, path, visit)
+			continue
+		}
+		seg := c.Name
+		if n := seen[c.Name]; n > 0 {
+			seg += "#" + strconv.Itoa(n)
+		}
+		seen[c.Name]++
+		p := append(append([]string{}, path...), seg)
+		if c.Mount != nil {
+			visit(p, c.Mount.Pos.File)
+		}
+		s.eachMount(c, p, visit)
+	}
+}
+
 func (s *Server) answer(file, id string, op func(abs string) (comments.Doc, error), action string) (string, error) {
-	abs, _, err := s.resolve(file)
+	abs, rel, err := s.resolve(file)
 	if err != nil {
 		return "", err
 	}
+	// A comment of a mounted part may still be stored with the document that shows it.
+	owner := abs
+	if d, err := s.host.comments.store.Load(docKey(abs)); err != nil || d.Find(id) == nil {
+		for _, m := range s.mountRefs(rel) {
+			if d, err := s.host.comments.store.Load(docKey(m.abs(s.root))); err == nil && d.Find(id) != nil {
+				owner = m.abs(s.root)
+				break
+			}
+		}
+	}
 	// Before the change: the user sees where the agent looks while it works.
-	if d, err := s.host.comments.store.Load(docKey(abs)); err == nil {
+	if d, err := s.host.comments.store.Load(docKey(owner)); err == nil {
 		s.notePlace(action, file, d.Find(id))
 	}
-	d, err := op(abs)
+	d, err := op(owner)
 	if err != nil {
 		return "", err
 	}
@@ -378,7 +481,7 @@ func (s *Server) waitComment(ctx context.Context, in waitIn) (string, error) {
 
 // addCommentTools registers the tools a user's comments reach an agent through.
 func (s *Server) addCommentTools(srv *mcp.Server) {
-	add(srv, "comments", "List the comments the user left on a .tenn file in Tenniarb: id, author, text, the anchor (element, node, and link_text that select takes), the replies. state open (default) or all. Call it after you finish a task, and answer each comment with reply or resolve.",
+	add(srv, "comments", "List the comments the user left on a .tenn file in Tenniarb: id, author, text, the anchor (element, node, and link_text that select takes), the replies. state open (default) or all. A comment on a part a document shows from this file is listed here too, with the path it has in this file. Call it after you finish a task, and answer each comment with reply or resolve.",
 		s.listComments)
 	add(srv, "reply", "Answer a comment of the user; the answer shows in the thread in Tenniarb at once.", s.replyComment)
 	add(srv, "resolve", "Mark a comment as done, optionally with a closing reply; the user sees it resolved in Tenniarb.", s.resolveComment)
