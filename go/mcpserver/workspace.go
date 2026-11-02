@@ -191,6 +191,10 @@ func (s *Server) text(abs string) (text string, live *liveDoc, err error) {
 		return res.Text, d, nil
 	}
 	b, err := os.ReadFile(abs)
+	if errors.Is(err, fs.ErrNotExist) {
+		// resolve lets a file that is not there yet through, to check its folder; a tool asked for it.
+		return "", nil, fmt.Errorf("path %q: no such file", s.fileOf(abs))
+	}
 	return string(b), nil, err
 }
 
