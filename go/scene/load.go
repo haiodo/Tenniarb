@@ -401,7 +401,7 @@ func (l *loader) fill(owner *Node, cmds []*tenn.Node) {
 		case name == "kind": // kind Library in a file, kind Component in an element
 			args, _ := split(c)
 			l.setKind(owner, argText(args, 0), l.pos(c))
-		case name == "export" && owner.Kind == KElement:
+		case name == "export" && (owner.Kind == KElement || owner.Kind == KItem):
 			l.addParam(owner, c)
 		case name == "template" && owner.Kind == KElement:
 			l.addTemplate(owner, c)

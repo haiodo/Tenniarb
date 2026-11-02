@@ -169,8 +169,15 @@ func (t *Tree) element(path string, eval evalFunc) *RNode {
 		}
 	}
 	if !target.isContainer() {
-		t.fail(t.main.Pos, "path %s names a %s, not an element", path, target.Kind)
-		return nil
+		// An item is drawn on its own with the defaults of its parameters: a component may be an item,
+		// and a render of it must not need an element around it (spec 5c).
+		if target.Kind != KItem {
+			t.fail(t.main.Pos, "path %s names a %s, not an element or an item", path, target.Kind)
+			return nil
+		}
+		x := &expander{t: t, ctx: ctx, eval: eval}
+		x.vars = x.defaults(target)
+		return x.item(target)
 	}
 	return t.expandElement(target, ctx, eval)
 }

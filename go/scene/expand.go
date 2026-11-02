@@ -29,6 +29,9 @@ type RNode struct {
 	// Vars are the parameters of the component instance the node is in, by name (spec 5c): what an
 	// expression in its properties reads. Nil outside a component.
 	Vars map[string]string
+	// Def is the definition the root of an instance stands for: the item or element the use names, nil
+	// elsewhere. The styles of the root come from there, not from the place the use is written in.
+	Def *Node
 	// Src is the command written for the node: the item, link or slot, the use for the root of an
 	// instance, the element or file for the root of a screen.
 	Src *Node
@@ -177,6 +180,7 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	if inst == nil {
 		return nil
 	}
+	inst.Def = target
 	inst.Name, inst.Key, inst.Pos, inst.Inst, inst.Src = n.Name, n.Key, n.Pos, true, n
 	inst.Props = withoutProp(inst.Props, "pos") // the component's pos is its place on the library canvas
 	x.apply(inst, n.Block, used)

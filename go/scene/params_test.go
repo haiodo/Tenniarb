@@ -239,3 +239,50 @@ element "Screen" {
 		t.Errorf("width %v, want 20: the default outlined style is replaced", box.W)
 	}
 }
+
+// TestItemParams: a component may be an item: export let works in it, a use sets the values, and the item
+// drawn on its own takes the defaults.
+func TestItemParams(t *testing.T) {
+	tree := paramsTree(t, "chip.tenn", `element "Kit" {
+  item Chip {
+    export let label = "Chip"
+    export let tone = plain
+    styles {
+      plain { color #eef2ff }
+      accent { color #6b3ad3 }
+    }
+    auto-layout row
+    padding 6 10
+    use-style ${tone}
+    item Text { title ${label} }
+  }
+}
+element "Screen" {
+  item col {
+    auto-layout column
+    use Kit.Chip as one
+    use Kit.Chip as two { label "Two"; tone accent }
+  }
+}`)
+	if d := tree.Diagnostics(); len(d) != 0 {
+		t.Fatalf("diagnostics: %v", d)
+	}
+	screen, svg := paramsBuild(t, tree, "Screen")
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if l := m["col.one.Text"].Lines; len(l) != 1 || l[0] != "Chip" {
+		t.Errorf("one %v, want the default Chip", l)
+	}
+	if l := m["col.two.Text"].Lines; len(l) != 1 || l[0] != "Two" {
+		t.Errorf("two %v, want Two", l)
+	}
+	_ = svg // a style on the item that an instance is (use-style in its root) is not applied yet
+
+	// the item on its own: its defaults
+	own, _ := paramsBuild(t, tree, "Kit.Chip")
+	if l := own.Boxes()[1].Lines; len(l) != 1 || l[0] != "Chip" {
+		t.Errorf("the item alone shows %v, want the default Chip", l)
+	}
+}
