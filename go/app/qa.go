@@ -169,6 +169,13 @@ func (sh *Shell) registerQA() {
 				sh.app.SetAppearance(g.AppearanceLight)
 			}
 			return nil
+		case "sidebar-width":
+			var w int
+			if err := a.Decode("width", &w); err != nil {
+				return err
+			}
+			look.SetSidebarWidth(sh.active.win, w)
+			return nil
 		case "close-others":
 			for _, v := range slices.Clone(sh.viewers) {
 				if v != sh.active {
@@ -180,6 +187,16 @@ func (sh *Shell) registerQA() {
 		}
 		return fmt.Errorf("no command %q", a.String("name"))
 	})
+}
+
+// treeCols are the column widths of a tree in points: a test reads them to see a name column that does
+// not fill the tree.
+func treeCols(t *g.TreeView) []int {
+	var w []int
+	for _, c := range t.Unwrap().GetColumns() {
+		w = append(w, int(c.GetWidth()))
+	}
+	return w
 }
 
 // qaState is the state of the active window with what the application keeps for all of them.
@@ -235,6 +252,7 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	walk(v.tree.Roots(), "")
 	out["outline"], out["rows"] = outline, rows
+	out["outlineCols"], out["outlineClient"] = treeCols(v.tree), int(v.tree.Unwrap().GetClientArea().Width)
 	if v.state.Current != nil {
 		out["element"] = PathOf(v.state.Current)
 	}
@@ -275,6 +293,7 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	walkItems(v.itemsUI.tree.Roots(), "")
 	out["itemList"], out["itemRows"] = items, itemRows
+	out["itemCols"], out["itemClient"] = treeCols(v.itemsUI.tree), int(v.itemsUI.tree.Unwrap().GetClientArea().Width)
 	if sel := v.itemsUI.tree.Selected(); len(sel) == 1 {
 		out["itemSelected"] = sel[0].Text()
 	}

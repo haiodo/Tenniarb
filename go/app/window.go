@@ -192,8 +192,10 @@ func (v *Viewer) themeChanged() {
 	}
 	v.applyBackground()
 	v.refreshOutline()
-	v.itemsUI.sig = "" // the grey rows take the colour of the new theme
+	v.sizeOutlineColumn() // a denser theme moves the rows and the scrollbar
+	v.itemsUI.sig = ""    // the grey rows take the colour of the new theme
 	v.rebuildItems()
+	v.sizeItemsAdd()
 	v.syncIndicators()
 }
 
@@ -216,6 +218,8 @@ func (v *Viewer) build() {
 					v.tree = t
 					t.Column("", g.Scaled(220))
 					t.ShowHeader(false)
+					t.Unwrap().AddControlListener(swt.ControlListenerControlResizedAdapter(func(*swt.ControlEvent) { v.sizeOutlineColumn() }))
+					v.sizeOutlineColumn()
 					t.OnSelect(v.onOutlineSelect)
 					t.OnActivate(v.activateNode)
 					v.outlineKeys(t)

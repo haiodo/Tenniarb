@@ -31,11 +31,12 @@ type itemsList struct {
 	grey     *swt.Color // the colour of instance rows in the theme greyDark
 	greyDark bool
 
-	addCol *g.Column // the column of the hover "+"
-	firstW int       // the width of the name column
-	addW   int       // the width of the "+" column in points
-	addX   int       // the x of the "+" in the tree, for the tests
-	hover  *g.Node   // the row that shows the "+"
+	addCol  *g.Column // the column of the hover "+"
+	nameCol *g.Column // the column of the name, as wide as the pane
+	firstW  int       // the width of the name column
+	addW    int       // the width of the "+" column in points
+	addX    int       // the x of the "+" in the tree, for the tests
+	hover   *g.Node   // the row that shows the "+"
 }
 
 // mouseMoveFunc is a MouseMoveListener for the hover "+" of the item rows.
@@ -64,7 +65,7 @@ func (v *Viewer) itemsPane() g.Option {
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			l.tree = t
 			l.firstW = g.Scaled(220)
-			t.Column("", l.firstW)
+			l.nameCol = t.Column("", l.firstW)
 			l.addCol = t.Column("", g.Scaled(24), g.Right())
 			t.ShowHeader(false)
 			t.OnSelect(v.onItemSelect)
@@ -107,23 +108,29 @@ func (v *Viewer) itemsPane() g.Option {
 		})))
 }
 
-// sizeItemsAdd keeps the "+" column at the right edge of the Items tree, clear of a scrollbar.
+// sizeItemsAdd sizes the columns of the Items tree: the name fills the pane, the "+" keeps its narrow
+// column at the right edge, clear of a scrollbar. It runs on every resize and after the rows are rebuilt.
 func (v *Viewer) sizeItemsAdd() {
 	l := &v.itemsUI
-	if l.tree == nil || l.addCol == nil {
+	if l.tree == nil || l.nameCol == nil || l.addCol == nil {
 		return
 	}
-	t := l.tree.Unwrap()
-	w := int(t.GetClientArea().Width)
-	n := w - l.firstW - g.Scaled(18)
-	if n < g.Scaled(24) {
-		n = g.Scaled(24)
-	}
-	if n == l.addW {
+	w := int(l.tree.Unwrap().GetClientArea().Width)
+	if w <= 0 {
 		return
 	}
-	l.addW, l.addX = n, l.firstW+n-8
-	l.addCol.SetWidth(n)
+	add := g.Scaled(24)
+	name := w - add - g.Scaled(18)
+	if name < add {
+		name = add
+	}
+	if name == l.firstW && add == l.addW {
+		return
+	}
+	l.addW, l.addX = add, name+add-8
+	l.firstW = name
+	l.nameCol.SetWidth(name)
+	l.addCol.SetWidth(add)
 }
 
 // hoverItemRow puts the "+" on the row under the pointer, on no other row.

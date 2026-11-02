@@ -53,7 +53,29 @@ func (v *Viewer) rebuildOutline(expanded map[string]bool) {
 		}
 	})
 	v.outlineSig = v.outlineKey()
+	v.sizeOutlineColumn()
 	v.syncOutline()
+}
+
+// sizeOutlineColumn makes the name column as wide as the outline, so a name is cut only when the panel is
+// narrower than the name. It runs on every resize of the tree, so a sidebar toggle, a wider sidebar and a
+// denser theme all refit it.
+func (v *Viewer) sizeOutlineColumn() {
+	if v.tree == nil {
+		return
+	}
+	t := v.tree.Unwrap()
+	cols := t.GetColumns()
+	if len(cols) == 0 {
+		return
+	}
+	w := int(t.GetClientArea().Width) - g.Scaled(18)
+	if w < g.Scaled(40) {
+		w = g.Scaled(40)
+	}
+	if int(cols[0].GetWidth()) != w {
+		cols[0].SetWidth(int32(w))
+	}
 }
 
 // rootLabel names the row of the root element: the file without .tenn.
@@ -348,6 +370,11 @@ func (v *Viewer) outlineEntries() []editor.Entry {
 		{Sep: true},
 		{Label: "Move up", Run: func() { v.moveElement(-1) }},
 		{Label: "Move down", Run: func() { v.moveElement(1) }},
+		{Sep: true},
+		{Label: "Export Pages", Sub: []editor.Entry{
+			{Label: "PNG...", Run: v.exportPagesPNG},
+			{Label: "PDF...", Run: v.exportPagesPDF},
+		}},
 		{Sep: true},
 		{Label: "Delete", Run: v.removeElement},
 	}
