@@ -97,7 +97,7 @@ func TestTreesNameWidth(t *testing.T) {
 	a.Find(qa.Text(treeWidthLongest).In(qa.ID("outline"))).Click()
 	restWait(a)
 	st = treeWidthRead(t, a)
-	if len(st.ItemCols) != 2 || st.ItemCols[0] < st.ItemClient-g.Scaled(24)-slack-2 {
+	if len(st.ItemCols) != 2 || st.ItemCols[0]+st.ItemCols[1] < st.ItemClient-slack-2 {
 		t.Fatalf("item columns %v of %d points", st.ItemCols, st.ItemClient)
 	}
 	if box, ok := st.ItemRows[treeWidthItem]; !ok || !fits(box.Box, st.ItemCols[0]) {

@@ -63,6 +63,7 @@ type Viewer struct {
 	nextID      int
 	pendingFit  bool // the canvas had no size yet when the element was shown
 	syncing     bool // the outline selection is being set by code
+	outlineAuto bool // code cleared the outline selection: the toolkit may select the first row itself
 	zoomSeen    float64
 	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
 	ind         indicators
@@ -578,6 +579,17 @@ func (v *Viewer) selectElement(e *model.Element) {
 func (v *Viewer) onOutlineSelect(n *g.Node) {
 	if v.syncing || n == nil {
 		return
+	}
+	if v.outlineAuto {
+		v.outlineAuto = false
+		// GTK puts the cursor on the first row when the tree gains focus with nothing selected. The
+		// canvas then shows an element the outline has no row for, so that is not a click.
+		if roots := v.tree.Roots(); len(roots) > 0 && n.Data() != nil && n.Data() == roots[0].Data() {
+			v.syncing = true
+			defer func() { v.syncing = false }()
+			v.tree.Deselect()
+			return
+		}
 	}
 	switch d := n.Data().(type) {
 	case *model.Element:

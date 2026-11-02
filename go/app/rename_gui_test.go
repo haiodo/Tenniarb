@@ -19,7 +19,7 @@ const (
 )
 
 // TestRenameInTrees renames from the outline and from the item list: the box opens on a double click,
-// the dialog lists the references, Cmd+Z brings the files back.
+// the dialog lists the references, Mod+Z brings the files back.
 func TestRenameInTrees(t *testing.T) {
 	if os.Getenv("GOWT_GUI_TEST") == "" {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")
@@ -75,8 +75,8 @@ func TestRenameInTrees(t *testing.T) {
 	}
 
 	// undo steps back over the item rename, then over the element rename and the paths together
-	a.Key("Cmd+Z")
-	a.Key("Cmd+Z")
+	a.Key("Mod+Z")
+	a.Key("Mod+Z")
 	a.Settle()
 	if st := h.state(); !contains(st.Outline, "Parts") || st.Error != "" {
 		t.Fatalf("outline after undo %q, error %q", st.Outline, st.Error)

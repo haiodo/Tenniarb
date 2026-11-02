@@ -116,6 +116,10 @@ func TestItemsAdd(t *testing.T) {
 	if !ok {
 		t.Fatalf("no row A among %v", s.ItemRows)
 	}
+	// A click on a row selects it; the synthetic hover below moves only the pointer, so select the row
+	// the way a click does before pressing its "+".
+	a.Find(qa.Text("A").In(qa.ID("items"))).Click()
+	restWait(a)
 	tree.Pointer(qa.PointerEvent{Kind: "move", X: float64(row.Box[0] + 20), Y: float64(row.Box[1] + row.Box[3]/2)})
 	restWait(a)
 	if s = readRest(t, a); len(s.ItemsAdd) != 2 {

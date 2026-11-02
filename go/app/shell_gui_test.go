@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -56,6 +57,9 @@ func TestShell(t *testing.T) {
 	}
 	app := qatest.App(t)
 	dir := t.TempDir()
+	// The tests before this one leave their own window: start on the fixture, as TestMain does.
+	app.State("command", "name", "open-document", "path", fixture)
+	app.Settle()
 	app.State("command", "name", "close-others")
 	was := shell(t, app)
 	docTitle := was.Title
@@ -259,15 +263,23 @@ func TestPrefsAndHelp(t *testing.T) {
 		t.Fatal("the window stays registered after close")
 	}
 
+	// "Tenniarb Help" opens the readme in a web view; a machine without one says so in a message box.
 	menu(app, "Tenniarb Help")
-	if s := shell(t, app); !s.HelpOpen {
-		t.Fatalf("help: %+v", s)
-	}
-	time.Sleep(1500 * time.Millisecond) // the page loads
-	app.ShotTitle("34-help", "Tenniarb Help")
-	app.Find(qa.Selector{Class: "Shell", Text: "Tenniarb Help"}).Close()
-	if s := shell(t, app); s.HelpOpen {
-		t.Fatal("help window stays registered after close")
+	if d := app.Dialogs(); len(d) > 0 {
+		t.Logf("no web view on this machine: %s", d[0].Message)
+	} else {
+		if s := shell(t, app); !s.HelpOpen {
+			t.Fatalf("help: %+v", s)
+		}
+		time.Sleep(1500 * time.Millisecond) // the page loads
+		if runtime.GOOS == "darwin" {
+			// WebKit under X11 draws into a surface of its own: the capture of its window can be empty.
+			app.ShotTitle("34-help", "Tenniarb Help")
+		}
+		app.Find(qa.Selector{Class: "Shell", Text: "Tenniarb Help"}).Close()
+		if s := shell(t, app); s.HelpOpen {
+			t.Fatal("help window stays registered after close")
+		}
 	}
 
 	// Clear Menu empties Open Recent

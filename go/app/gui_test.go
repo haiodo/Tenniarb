@@ -99,6 +99,12 @@ func TestViewer(t *testing.T) {
 	}
 	app := qatest.App(t)
 	app.Settle()
+	// The broken file below is written to the shared fixture: put it back for the tests that open it.
+	orig, err := os.ReadFile("../../web/fixtures/Example.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.WriteFile(fixture, orig, 0o644) })
 	app.Shot("viewer-open")
 
 	s := state(t, app)
@@ -190,6 +196,15 @@ func editor(t *testing.T, app *qatest.Client) editorState {
 }
 
 func center(r []float64) (x, y float64) { return r[0] + r[2]/2, r[1] + r[3]/2 }
+
+// linkMods is the drag modifier that draws a link: Ctrl on macOS, Ctrl+Alt where Ctrl toggles the
+// selection (editor.PCKeys).
+func linkMods() string {
+	if runtime.GOOS == "darwin" {
+		return "Ctrl"
+	}
+	return "Ctrl+Alt"
+}
 
 // itemNames lists the items of an element of a parsed document.
 func itemNames(t *testing.T, text string, path ...string) map[string]*model.DiagramItem {
@@ -387,11 +402,11 @@ func TestEditor(t *testing.T) {
 		t.Fatalf("delete: %d items, was %d", s.ItemCount, count)
 	}
 
-	// Ctrl-drag from one item to another draws a link
+	// Ctrl-drag from one item to another draws a link (Ctrl+Alt where Ctrl toggles the selection)
 	links := len(s.Links)
 	fx, fy := center(s.Screen["Item"])
 	tx, ty := center(s.Screen["New Item"])
-	canvas.Pointer(qa.PointerEvent{Kind: "drag", X: fx, Y: fy, ToX: tx, ToY: ty, Mods: "Ctrl"})
+	canvas.Pointer(qa.PointerEvent{Kind: "drag", X: fx, Y: fy, ToX: tx, ToY: ty, Mods: linkMods()})
 	if s = editor(t, app); len(s.Links) != links+1 || !slices.Contains(s.Links, "Item -> New Item") {
 		t.Fatalf("ctrl-drag: links %v, were %d", s.Links, links)
 	}
@@ -523,7 +538,7 @@ func TestEditor(t *testing.T) {
 	if s = editor(t, app); s.Path != "" {
 		t.Fatalf("New did not make an untitled window: %+v", s)
 	}
-	app.Find(qa.Text("Close Window").In(qa.Text("Example.tenn - Edited"))).Click()
+	app.Find(inWindow(qa.Text("Close Window"), "Example.tenn - Edited")).Click()
 	if read() == onDisk {
 		t.Fatal("closing did not save the edit")
 	}
@@ -623,6 +638,7 @@ func TestPanels(t *testing.T) {
 	app.Answer(qa.Dialog{Kind: "message", Reply: "No"}) // TestEditor left edits in the shared window
 	app.Answer(qa.Dialog{Kind: "file", Reply: file})
 	menu(app, "Open...")
+	app.State("command", "name", "close-others") // Open makes a window of its own
 	app.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	app.Settle()
 
@@ -714,10 +730,12 @@ func TestPanels(t *testing.T) {
 	app.Shot("23-goto")
 	gotoField.Key("Enter")
 	app.Settle()
-	gotoField.Key("Esc")
-	app.Settle()
-	if v := gotoField.Node().Value; v != "" {
-		t.Fatalf("Esc left %q in the field", v)
+	if runtime.GOOS == "darwin" { // the native search field clears on Esc, the gowt Text of the toolbar does not
+		gotoField.Key("Esc")
+		app.Settle()
+		if v := gotoField.Node().Value; v != "" {
+			t.Fatalf("Esc left %q in the field", v)
+		}
 	}
 
 	// drop "General info" on the top edge of "Basic steps": the order of the siblings flips

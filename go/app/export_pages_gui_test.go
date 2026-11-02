@@ -4,6 +4,8 @@ package app_test
 
 import (
 	"bytes"
+	"compress/zlib"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -29,8 +31,18 @@ const pagesDoc = `element "Book" {
 }
 `
 
-// pdfPageCount is the page count of a PDF, read from the /Count of its page tree.
+// pdfPageCount is the page count of a PDF, read from the /Count of its page tree, which cairo writes
+// into a compressed object stream.
 func pdfPageCount(data []byte) int {
+	n := pdfMaxCount(data)
+	if m := pdfMaxCount(pdfStreams(data)); m > n {
+		n = m
+	}
+	return n
+}
+
+// pdfMaxCount is the largest /Count of the text.
+func pdfMaxCount(data []byte) int {
 	n := 0
 	for i := 0; ; {
 		j := bytes.Index(data[i:], []byte("/Count "))
@@ -45,6 +57,38 @@ func pdfPageCount(data []byte) int {
 		if v, err := strconv.Atoi(string(data[i:k])); err == nil && v > n {
 			n = v
 		}
+	}
+}
+
+// pdfStreams is what the FlateDecode streams of a PDF hold, joined.
+func pdfStreams(data []byte) []byte {
+	var out bytes.Buffer
+	for i := 0; ; {
+		j := bytes.Index(data[i:], []byte("stream"))
+		if j < 0 {
+			return out.Bytes()
+		}
+		j += i
+		i = j + len("stream")
+		if j > 0 && data[j-1] == 'd' { // endstream
+			continue
+		}
+		for i < len(data) && (data[i] == '\r' || data[i] == '\n') {
+			i++
+		}
+		k := bytes.Index(data[i:], []byte("endstream"))
+		if k < 0 {
+			return out.Bytes()
+		}
+		zr, err := zlib.NewReader(bytes.NewReader(data[i : i+k]))
+		if err != nil {
+			i += k + len("endstream")
+			continue
+		}
+		if b, err := io.ReadAll(zr); err == nil {
+			out.Write(b)
+		}
+		i += k + len("endstream")
 	}
 }
 

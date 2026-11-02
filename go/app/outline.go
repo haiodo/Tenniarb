@@ -285,8 +285,14 @@ func (v *Viewer) syncOutline() {
 	chain := find(v.tree.Roots())
 	if chain == nil {
 		v.tree.Deselect()
+		// The canvas shows an element the outline has no row for, and GTK puts its cursor on the first
+		// row when the tree gains focus with nothing selected. That selection is the toolkit's, not a
+		// click, and it comes in this turn: onOutlineSelect drops it, see there.
+		v.outlineAuto = true
+		v.app.Async(func() { v.outlineAuto = false })
 		return
 	}
+	v.outlineAuto = false
 	for _, a := range chain[1:] {
 		a.SetExpanded(true)
 	}
