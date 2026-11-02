@@ -123,7 +123,7 @@ func TestResolve(t *testing.T) {
 		{"/work/foundation", "github.com/haiodo/foundation"},
 	}
 	l := Link{Repo: "github.com/haiodo/foundation", Path: "design/P.tenn"}
-	if p, ok := Resolve(l, roots, "/home/me", exists); !ok || p != "/work/foundation/design/P.tenn" {
+	if p, ok := Resolve(l, roots, "/home/me", exists); !ok || filepath.ToSlash(p) != "/work/foundation/design/P.tenn" {
 		t.Fatalf("%q %v", p, ok)
 	}
 	l.Repo = "GitHub.com/Haiodo/Foundation"
@@ -139,10 +139,10 @@ func TestResolve(t *testing.T) {
 		t.Fatal("the clone has no such file")
 	}
 	// A plain link takes the first clone that has the file.
-	if p, ok := Resolve(Link{Path: "design/P.tenn"}, roots, "/home/me", exists); !ok || p != "/work/other/design/P.tenn" {
+	if p, ok := Resolve(Link{Path: "design/P.tenn"}, roots, "/home/me", exists); !ok || filepath.ToSlash(p) != "/work/other/design/P.tenn" {
 		t.Fatalf("%q %v", p, ok)
 	}
-	if p, ok := Resolve(Link{Home: true, Path: "notes/n.tenn"}, nil, "/home/me", exists); !ok || p != "/home/me/notes/n.tenn" {
+	if p, ok := Resolve(Link{Home: true, Path: "notes/n.tenn"}, nil, "/home/me", exists); !ok || filepath.ToSlash(p) != "/home/me/notes/n.tenn" {
 		t.Fatalf("%q %v", p, ok)
 	}
 	if _, ok := Resolve(Link{Home: true, Path: "notes/n.tenn"}, nil, "", exists); ok {

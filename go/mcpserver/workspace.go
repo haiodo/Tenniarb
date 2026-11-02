@@ -59,6 +59,9 @@ func (s *Server) resolve(rel string) (abs, relSlash string, err error) {
 		return "", "", fmt.Errorf("path %q is not a %s file", rel, tennExt)
 	}
 	real, err := evalExisting(p)
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", "", fmt.Errorf("path %q: no such file", rel)
+	}
 	if err != nil {
 		return "", "", fmt.Errorf("path %q: %v", rel, err)
 	}

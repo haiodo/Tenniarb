@@ -1,0 +1,18 @@
+# Check out text with LF on every platform: the tests compare file text with LF fixtures, and the
+# editors of the app and of the MCP tools match text exactly.
+* text=auto eol=lf
+
+# The fixture is about CRLF handling: it must keep its line endings on every platform.
+web/fixtures/crlf.tenn -text
+
+# Binary files are detected automatically, these are named for clarity.
+*.png binary
+*.icns binary
+*.jpg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.dmg binary
+*.zip binary

@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -85,7 +86,8 @@ func TestWriteFileAtomic(t *testing.T) {
 	if string(got) != "new" {
 		t.Fatalf("content %q", got)
 	}
-	if fi, _ := os.Stat(path); fi.Mode().Perm() != 0o600 {
+	// Windows has no Unix permission bits: the file keeps whatever the system gives it.
+	if fi, _ := os.Stat(path); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600 {
 		t.Fatalf("mode %v", fi.Mode())
 	}
 	if l := leftovers(t, dir); len(l) != 0 {

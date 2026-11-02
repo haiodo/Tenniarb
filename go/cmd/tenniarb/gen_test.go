@@ -45,7 +45,7 @@ func TestGen(t *testing.T) {
 		{args: []string{file}, code: 2, errOut: "usage: tenniarb gen"},
 		{args: []string{file, "Chip", "extra"}, code: 2, errOut: "usage: tenniarb gen"},
 		{args: []string{"-set", "label", file, "Chip"}, code: 2, errOut: "want name=value"},
-		{args: []string{filepath.Join(dir, "missing.tenn"), "Chip"}, code: 2, errOut: "no such file"},
+		{args: []string{filepath.Join(dir, "missing.tenn"), "Chip"}, code: 2, errOut: "missing.tenn"},
 	}
 	for _, c := range cases {
 		var out, errOut bytes.Buffer
