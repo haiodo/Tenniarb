@@ -125,6 +125,17 @@ go-pkg-mac: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-<arch>.{app.zip,dmg} (un
 	rm -f $(GOPKG)/Tenniarb-$(GO_VERSION)-$(GOARCH_HOST).dmg
 	hdiutil create -quiet -volname Tenniarb -srcfolder $(GOPKG)/mac/dmg -format UDZO $(GOPKG)/Tenniarb-$(GO_VERSION)-$(GOARCH_HOST).dmg
 
+go-pkg-mac-universal: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-universal.{app.zip,dmg} for arm64 and amd64 (unsigned)
+	rm -rf $(GOPKG)/mac && mkdir -p $(GOPKG)/mac/dmg
+	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-arm64 ./cmd/tenniarb
+	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-amd64 ./cmd/tenniarb
+	lipo -create -output $(GOPKG)/mac/tenniarb $(GOPKG)/mac/tenniarb-arm64 $(GOPKG)/mac/tenniarb-amd64
+	go/packaging/macos.sh $(GOPKG)/mac/tenniarb $(GOPKG)/mac/dmg $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED)
+	ditto -c -k --keepParent $(GOPKG)/mac/dmg/Tenniarb.app $(GOPKG)/Tenniarb-$(GO_VERSION)-universal.app.zip
+	ln -sfn /Applications $(GOPKG)/mac/dmg/Applications
+	rm -f $(GOPKG)/Tenniarb-$(GO_VERSION)-universal.dmg
+	hdiutil create -quiet -volname Tenniarb -srcfolder $(GOPKG)/mac/dmg -format UDZO $(GOPKG)/Tenniarb-$(GO_VERSION)-universal.dmg
+
 go-pkg-win: $(EMBED) ## Go app: build/go/tenniarb-<ver>-windows-amd64.zip (cross-built, no icon resource yet)
 	rm -rf $(GOPKG)/win && mkdir -p $(GOPKG)/win
 	cd go && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS) -H=windowsgui' -o ../$(GOPKG)/win/tenniarb.exe ./cmd/tenniarb

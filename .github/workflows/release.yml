@@ -1,4 +1,7 @@
-name: Release (build & publish)
+name: Release (Go)
+
+# The Swift app is no longer shipped: 2.0 is the Go application. The Xcode project stays in the tree
+# (the Swift tests still run in CI), but nothing here builds it.
 
 on:
   push:
@@ -7,138 +10,139 @@ on:
   workflow_dispatch:  # allow manual runs
 
 permissions:
-  contents: write    # needed to push commits and create releases
+  contents: write    # needed to create the release and upload assets
 
 concurrency:
   group: release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  build-and-release:
-    name: Build on tag and publish release
-    runs-on: macos-latest
-    timeout-minutes: 45
-
+  test:
+    name: Vet and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          fetch-depth: 0
-          persist-credentials: true
-      - name: Setup Swift 6.2
-        uses: swift-actions/setup-swift@v2
+          go-version-file: go/go.mod
+          cache-dependency-path: go/go.sum
+      - name: Vet and test
+        run: cd go && go vet ./... && go test ./...
+
+  mac:
+    name: Package macOS (universal)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
         with:
-          swift-version: '6.2'
-
-      - name: Extract tag and version
-        id: extract
-        run: |
-          set -euo pipefail
-          echo "GITHUB_REF=$GITHUB_REF"
-          TAG="${GITHUB_REF#refs/tags/}"
-          # strip a leading 'v' (v1.2.3 -> 1.2.3) but keep others untouched
-          VERSION="${TAG#v}"
-          echo "Tag: $TAG"
-          echo "Version: $VERSION"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Validate version format
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.extract.outputs.version }}"
-          # simple semver-ish check; adjust if you allow other formats
-          if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}([.-][A-Za-z0-9]+)?$ ]]; then
-            echo "Version \"$VERSION\" doesn't look like a supported version (expected e.g. 1.2.3 or 1.2)"
-            exit 1
-          fi
-
-      - name: Set MARKETING_VERSION in project (for build)
-        env:
-          VERSION: ${{ steps.extract.outputs.version }}
-        run: |
-          set -euo pipefail
-          FILE="Tenniarb.xcodeproj/project.pbxproj"
-          if [ ! -f "$FILE" ]; then
-            echo "::error file=$FILE::Xcode project file not found"
-            exit 1
-          fi
-          echo "Setting MARKETING_VERSION to $VERSION in $FILE (temporary for this build)"
-          # Use perl to replace all occurrences robustly (works on macOS)
-          perl -0777 -pe 'BEGIN{$v=$ENV{"VERSION"}} s/(MARKETING_VERSION\s*=\s*)([^;\n]+);/${1}$v;/g' -i "$FILE"
-          echo "Diff after update:"
-          git --no-pager diff -- "$FILE" || true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+          fetch-depth: 0 # git describe and the commit count for the build number
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go/go.mod
+          cache-dependency-path: go/go.sum
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
-
-      - name: Build macOS app
+      - name: Version from the tag
+        id: version
         run: |
           set -euo pipefail
-          make embed
-          echo "Building Tenniarb (Release)..."
-          xcodebuild -project Tenniarb.xcodeproj -scheme Tenniarb -configuration Release \
-            -derivedDataPath build clean build CODE_SIGNING_ALLOWED=NO
-
-      - name: Package built app into zip
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.extract.outputs.version }}"
-          APP_PATH=$(find build -name "Tenniarb.app" -print -quit || true)
-          if [ -z "$APP_PATH" ]; then
-            echo "::error::Could not find built Tenniarb.app under derived data"
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}([.-][A-Za-z0-9]+)?$ ]]; then
+            echo "::error::Version \"$VERSION\" doesn't look like 2.0 or 2.0.1"
             exit 1
           fi
-          ZIP_NAME="Tenniarb-${VERSION}.zip"
-          echo "Packaging $APP_PATH -> $ZIP_NAME"
-          # Use ditto to create an archive preserving macOS resource forks
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
-          ls -lh "$ZIP_NAME"
-          echo "asset=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Build the app and the disk image
+        run: make go-pkg-mac-universal GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: |
+            build/go/*.dmg
+            build/go/*.app.zip
+          if-no-files-found: error
 
-      # Create only if missing, so a re-run for the same tag uploads into the existing release.
-      - name: Create GitHub Release and upload asset
+  windows-linux:
+    name: Package Windows and Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go/go.mod
+          cache-dependency-path: go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Version from the tag
+        id: version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Build the packages
+        run: make go-pkg-win go-pkg-linux GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-linux
+          path: |
+            build/go/*.zip
+            build/go/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Publish the release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [mac, windows-linux]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version and notes
+        id: version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # The section of docs/Changelog.md for this version, if it is there.
+          NOTES=/tmp/notes.md
+          awk -v v="$VERSION" '
+            $0 ~ "^## Version " v "([^0-9.]|$)" {on=1; next}
+            on && /^## Version / {exit}
+            on {print}
+          ' docs/Changelog.md > "$NOTES" || true
+          if [ ! -s "$NOTES" ]; then
+            printf 'Tenniarb %s.\n\nAssets are unsigned: macOS asks you to allow the app in Security, Windows shows a SmartScreen warning.\n' "$VERSION" > "$NOTES"
+          fi
+          echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.extract.outputs.tag }}
-          ASSET: Tenniarb-${{ steps.extract.outputs.version }}.zip
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          NOTES: ${{ steps.version.outputs.notes }}
         run: |
           set -euo pipefail
-          gh release view "$TAG" >/dev/null 2>&1 \
-            || gh release create "$TAG" --title "$TAG" --notes "Automated release created from tag $TAG." \
-            || gh release view "$TAG" >/dev/null
-          gh release upload "$TAG" "$ASSET" --clobber
-
-      - name: Push MARKETING_VERSION change to default branch
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          VERSION: ${{ steps.extract.outputs.version }}
-          TAG_NAME: ${{ steps.extract.outputs.tag }}
-        run: |
-          set -euo pipefail
-          FILE="Tenniarb.xcodeproj/project.pbxproj"
-          echo "Preparing to push version bump to default branch: $DEFAULT_BRANCH"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Fetch and checkout the default branch
-          git fetch origin "$DEFAULT_BRANCH"
-          git checkout "$DEFAULT_BRANCH"
-          git reset --hard "origin/$DEFAULT_BRANCH"
-          # Re-apply the same version replacement on the default branch to ensure it's committed there
-          if [ ! -f "$FILE" ]; then
-            echo "::error file=$FILE::project file not found on $DEFAULT_BRANCH"
-            exit 1
-          fi
-          perl -0777 -pe 'BEGIN{$v=$ENV{"VERSION"}} s/(MARKETING_VERSION\s*=\s*)([^;\n]+);/${1}$v;/g' -i "$FILE"
-          if git diff --quiet -- "$FILE"; then
-            echo "No MARKETING_VERSION changes to commit on $DEFAULT_BRANCH"
-          else
-            git add "$FILE"
-            git commit -m "ci: set MARKETING_VERSION to ${VERSION} (from tag ${TAG_NAME}) [skip ci]"
-            git push origin "$DEFAULT_BRANCH"
-            echo "Pushed MARKETING_VERSION update to $DEFAULT_BRANCH"
-          fi
+          ls -lh dist
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "Tenniarb $VERSION" --notes-file "$NOTES" --draft
+          gh release upload "$TAG" dist/* --clobber
