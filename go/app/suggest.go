@@ -47,7 +47,7 @@ func (v *Viewer) showSuggest() {
 			g.GrowX(), g.Padding(0), g.Gap(g.Scaled(2)),
 			g.Label(f.Rule+": "+f.Detail+" ("+f.Saving+")", g.Wrap(), g.Size(suggestRowWidth(), 0)),
 		}
-		if f.Rule == optimize.RuleRepeat || f.Rule == optimize.RuleNoMerge {
+		if f.Rule == optimize.RuleNoMerge {
 			row = append(row, g.Label("Report only: nothing to apply here.", faint()))
 		} else {
 			row = append(row, g.HBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
@@ -115,9 +115,17 @@ func (v *Viewer) applySuggestion(f optimize.Finding) bool {
 		v.notice("Not applied: " + f.File + " is not part of this document")
 		return false
 	}
+	path := PathOf(v.state.Current) // the element on the canvas: a component at the end of the file moves the model
 	if !v.sceneEdit(n, TextEdit{Start: one.Start, End: one.End, New: one.New}) {
 		v.sug.preview = "Not applied: the change adds scene errors"
 		return false
+	}
+	// an element added at the end of the file replaces the elements of the model, and the canvas falls
+	// back to the file root: show the same element again, so the list is built from a scene
+	if v.session != nil && len(path) > 0 {
+		if e := Resolve(&v.session.Root().Element, path); e != nil {
+			v.session.SetElement(e)
+		}
 	}
 	switch d := strings.Count(text, "\n") - strings.Count(v.fileText(f.File), "\n"); {
 	case d > 0:

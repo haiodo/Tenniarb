@@ -261,7 +261,7 @@ element "B" {
 	}
 }
 
-// TestApplyReportOnly: a component and a warning to keep nodes apart are reported, never applied.
+// TestApplyReportOnly: a warning to keep nodes apart is reported, never applied.
 func TestApplyReportOnly(t *testing.T) {
 	text := `element "E" {
     item Card {
@@ -276,13 +276,6 @@ func TestApplyReportOnly(t *testing.T) {
     }
 }
 `
-	fs := Analyze(load(t, text))
-	if len(fs) != 1 || fs[0].Rule != RuleRepeat {
-		t.Fatalf("findings %v", rules(fs))
-	}
-	if _, _, err := Apply(load(t, text), fs[0]); err == nil || !strings.Contains(err.Error(), "not applied") {
-		t.Errorf("repeat applied: %v", err)
-	}
 	f := Finding{Rule: RuleNoMerge}
 	if _, _, err := Apply(load(t, text), f); err == nil {
 		t.Error("no-merge applied")
@@ -312,8 +305,8 @@ func TestApplyTextOneEdit(t *testing.T) {
 	}
 }
 
-// TestApplyExamples is the quality gate on the real files: every finding that is not a report-only one
-// becomes a file that still loads without new errors.
+// TestApplyExamples is the quality gate on the real files: every finding that can be applied becomes a
+// file that still loads without new errors.
 func TestApplyExamples(t *testing.T) {
 	for _, file := range []string{"examples/button-styles.tenn", "examples/onboarding-flow.tenn"} {
 		root := filepath.Join("..", "..")
@@ -328,7 +321,7 @@ func TestApplyExamples(t *testing.T) {
 		for _, f := range Analyze(tree) {
 			edits, preview, err := Apply(tree, f)
 			if err != nil {
-				continue // repeat and no-merge: report only
+				continue // no-merge, and a set that cannot become one element
 			}
 			if preview == "" {
 				t.Errorf("%s: %s: empty preview", file, f.Rule)

@@ -39,7 +39,7 @@ func Apply(tree *scene.Tree, f Finding) ([]Edit, string, error) {
 	case f.Rule == RuleNoMerge:
 		return nil, "", errors.New("no-merge changes nothing: it warns against merging the nodes")
 	case f.Rule == RuleRepeat:
-		return nil, "", errors.New("repeat is not applied yet: it needs a component with parameters, which is a later slice")
+		edits, err = repeatEdits(tree, src, f)
 	default:
 		return nil, "", fmt.Errorf("nothing to apply for %s", f.Rule)
 	}
@@ -158,6 +158,158 @@ func styleEdits(src string, f Finding) ([]Edit, error) {
 		edits = append(edits, nodeEdits(src, n, name, props)...)
 	}
 	return edits, nil
+}
+
+// repeatEdits makes a component of a repeat finding: the block of the first node becomes the body of an
+// element at the end of the file, the literals that differ become its parameters, and every node of the
+// set a use that passes them (spec 5c). The pos of a node goes to its use as an override: a use drops
+// the pos written on the element, which is the place of the definition.
+func repeatEdits(tree *scene.Tree, src string, f Finding) ([]Edit, error) {
+	if f.why != "" {
+		return nil, fmt.Errorf("%s: apply by hand", f.why)
+	}
+	if f.comp == nil || len(f.nodes) < 2 {
+		return nil, errors.New("the finding carries no nodes to fold into a component")
+	}
+	// stale offsets would cut the wrong text: every node must still be an item where the finding found it
+	s := newSrc(src)
+	for _, n := range f.nodes {
+		switch {
+		case n.Pos.File != f.File:
+			return nil, errDifferent
+		case insideUse(n):
+			return nil, errors.New("a node sits in the block of a use or an at: apply by hand")
+		case n.Range.Start < 0 || n.Range.End > len(src):
+			return nil, errors.New("the finding is out of date: run Suggest Improvements again")
+		}
+		if c := s.at(n.Range.Start); c != nil {
+			if id, _ := c.GetIdent(0); id == "item" {
+				continue
+			}
+		}
+		return nil, errors.New("the finding is out of date: run Suggest Improvements again")
+	}
+	name := componentName(tree, f)
+	c := f.comp
+	first := f.nodes[0]
+	body := ""
+	if inner := first.Body; inner != (scene.Range{}) && inner.End-1 <= len(src) {
+		base := inner.Start + 1
+		body = src[base : inner.End-1]
+		var bodyEdits []Edit
+		for _, p := range c.params {
+			if p.rng.Start < base || p.rng.End > inner.End-1 {
+				return nil, errors.New("the finding is out of date: run Suggest Improvements again")
+			}
+			bodyEdits = append(bodyEdits, Edit{p.rng.Start - base, p.rng.End - base, "${" + p.name + "}"})
+		}
+		if c.pos != nil {
+			pos := findProp(first.Props, "pos")
+			if pos == nil || pos.Range.Start < base || pos.Range.End > inner.End-1 {
+				return nil, errors.New("the finding is out of date: run Suggest Improvements again")
+			}
+			bodyEdits = append(bodyEdits, removeEdit(body, scene.Range{Start: pos.Range.Start - base, End: pos.Range.End - base}))
+		}
+		if len(bodyEdits) > 0 {
+			var err error
+			if body, err = applyText(body, bodyEdits); err != nil {
+				return nil, err
+			}
+		}
+	}
+	// the body sits one level inside the element: take away the indentation of the node's block
+	ind, unit := indentAt(src, first.Range.Start), indentUnit(src)
+	if !strings.Contains(body, "\n") {
+		body = strings.TrimSpace(body)
+	}
+	body = trimBlank(dedent(body, ind+unit))
+	if body != "" {
+		body = indentLines(body, unit)
+	}
+	var b strings.Builder
+	b.WriteString("element " + scene.QuoteName(name) + " {\n")
+	b.WriteString(unit + "kind Component\n")
+	for _, p := range c.params {
+		b.WriteString(unit + "export let " + p.name + " = " + p.source + "\n")
+	}
+	if body != "" {
+		b.WriteString(body + "\n")
+	}
+	b.WriteString("}\n")
+
+	var edits []Edit
+	for j, n := range f.nodes {
+		cmds := make([]string, 0, len(c.params)+1)
+		for _, p := range c.params {
+			cmds = append(cmds, commandText(p.name, p.args[j]))
+		}
+		if c.pos != nil {
+			cmds = append(cmds, commandText("pos", c.pos[j]...))
+		}
+		line := "use " + scene.SegText(name) + " as " + scene.SegText(n.Name)
+		if len(cmds) > 0 {
+			line += " { " + strings.Join(cmds, "; ") + " }"
+		}
+		edits = append(edits, Edit{n.Range.Start, n.Range.End, line})
+	}
+	sep := "\n"
+	switch {
+	case strings.HasSuffix(src, "\n\n"):
+		sep = ""
+	case !strings.HasSuffix(src, "\n"):
+		sep = "\n\n"
+	}
+	return append(edits, Edit{len(src), len(src), sep + b.String()}), nil
+}
+
+// componentName is the name of the element a repeat finding adds: the name of its first node, with -2,
+// -3 when the file or one of the instances already uses it. A use named as its own path would find
+// itself, so the name of an instance is taken too.
+func componentName(tree *scene.Tree, f Finding) string {
+	taken := map[string]bool{}
+	if root := tree.File(f.File); root != nil {
+		a := &analyzer{file: f.File}
+		a.eachNode(root, func(n *scene.Node) { taken[n.Key] = true })
+	}
+	for _, n := range f.nodes {
+		taken[n.Key] = true
+	}
+	base := scene.NormalizeName(f.nodes[0].Name)
+	if base == "" {
+		base = "Component"
+	}
+	name := base
+	for i := 2; taken[scene.NormalizeName(name)]; i++ {
+		name = base + "-" + strconv.Itoa(i)
+	}
+	return name
+}
+
+// trimBlank drops the blank lines at the edges of a block, and the spaces of every line after the last.
+func trimBlank(s string) string {
+	lines := strings.Split(s, "\n")
+	for i := range lines {
+		lines[i] = strings.TrimRight(lines[i], " \t")
+	}
+	for len(lines) > 0 && lines[0] == "" {
+		lines = lines[1:]
+	}
+	for len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+	return strings.Join(lines, "\n")
+}
+
+// dedent removes the indentation of the node from every line of the text copied out of it.
+func dedent(s, ind string) string {
+	if ind == "" {
+		return s
+	}
+	lines := strings.Split(s, "\n")
+	for i, l := range lines {
+		lines[i] = strings.TrimRight(strings.TrimPrefix(l, ind), " \t")
+	}
+	return strings.Join(lines, "\n")
 }
 
 // nodeEdits removes the shared properties from n and adds use-style name to it, appending the name to

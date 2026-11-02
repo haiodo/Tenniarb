@@ -1,7 +1,8 @@
 // Package optimize suggests layout tidy-ups for a loaded .tenn file: repeated structure that wants a
 // component, repeated looks that want a named style, and dead commands (spec 5b, 5c). Analyze reports
-// them; Apply builds the text edits of one finding, and the caller writes them. A component (repeat) and
-// the warning not to merge are reported only.
+// them; Apply builds the text edits of one finding, and the caller writes them. A component (repeat) is
+// applied as one element and a use per node, unless the values that differ are not written in the text;
+// the warning not to merge is reported only.
 package optimize
 
 import (
@@ -16,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Rules, most valuable first: a component removes structure, a style removes a look, a dead command
@@ -50,11 +52,29 @@ type Finding struct {
 	score int // sort key within a rule, not printed
 
 	// What Apply needs to build the change; not printed and not part of the JSON report.
-	nodes []*scene.Node // styles, literal: the nodes that get use-style
+	nodes []*scene.Node // repeat: the nodes that become use; styles, literal: the nodes that get use-style
 	props []propVal     // styles, literal: the look the style holds
+	comp  *component    // repeat: the element the finding makes; nil when it cannot be applied
+	why   string        // repeat: why Apply refuses it, empty when it can
 	elem  *scene.Node   // dead-style, dead-group: the node whose styles block holds the name
 	name  string        // dead-style, dead-group: what to delete from that block
 	del   *scene.Range  // dead-pos, dead-override: the command to delete
+}
+
+// param is one parameter of the element a repeat finding makes: where the first node writes its value,
+// that value as the default of the declaration, and what every node writes in its use.
+type param struct {
+	name   string
+	rng    scene.Range // the value in the text of the first node
+	source string      // the text at rng, as the default of the export let
+	args   []string    // the value of every node of the finding, in the order of its paths
+}
+
+// component is what Apply makes of a repeat finding: the parameters of the element, and the pos every
+// use writes, since a use drops the pos written on the element it uses.
+type component struct {
+	params []param
+	pos    [][]string // the pos of every node, in the order of the finding's paths; nil when it writes none
 }
 
 // Run reads the files named in args and prints what could be tidied in them: 0 always, 2 on usage or a
@@ -229,6 +249,9 @@ type leaf struct {
 	label string // dotted place in the subtree, for the report only: leaves are matched by index
 	prop  string // the property it came from; "@name" for a node name, "@path" for an at path
 	value string
+	path  string      // the node that writes it: "" for the node the form is of, its descendants otherwise
+	rng   scene.Range // where the text writes it; zero when the node does not write it
+	why   string      // why rng is zero, for the refusal of a repeat
 }
 
 // form is the shape of a subtree with its literals taken out: two nodes with one form are the same
@@ -297,20 +320,21 @@ func (a *analyzer) form(n *scene.Node) *form {
 
 func (a *analyzer) walk(n *scene.Node, p string, f *form, b *strings.Builder) {
 	b.WriteString("(" + n.Kind.String())
-	a.val(f, b, p+"@name", "@name", n.Name)
+	val(f, b, leaf{label: p + "@name", prop: "@name", value: n.Name, path: p, rng: n.NameArg})
 	switch n.Kind {
 	case scene.KUse:
-		a.val(f, b, p+"@use", "@use", n.Path)
+		val(f, b, leaf{label: p + "@use", prop: "@use", value: n.Path, path: p, rng: n.PathArg})
 	case scene.KLink:
-		a.val(f, b, p+"@from", "@from", n.From)
-		a.val(f, b, p+"@to", "@to", n.To)
+		val(f, b, leaf{label: p + "@from", prop: "@from", value: n.From, path: p, rng: n.FromArg})
+		val(f, b, leaf{label: p + "@to", prop: "@to", value: n.To, path: p, rng: n.ToArg})
 	}
 	props := effectiveProps(n)
 	f.cmds += 1 + len(props)
 	for _, pr := range props {
 		b.WriteString("|" + pr.name + ":" + strconv.Itoa(len(pr.args)))
 		for i, v := range pr.args {
-			a.val(f, b, propLabel(p, pr.name, i, len(pr.args)), pr.name, v)
+			rng, why := leafRange(pr.at, i)
+			val(f, b, leaf{label: propLabel(p, pr.name, i, len(pr.args)), prop: pr.name, value: v, path: p, rng: rng, why: why})
 		}
 	}
 	a.walkOverrides(n.Block, p, f, b)
@@ -335,25 +359,52 @@ func (a *analyzer) walkOverrides(ovs []*scene.Override, p string, f *form, b *st
 			args := propArgs(ov.Prop)
 			b.WriteString("|@" + ov.Prop.Name + ":" + strconv.Itoa(len(args)))
 			for i, v := range args {
-				a.val(f, b, propLabel(p+"@", ov.Prop.Name, i, len(args)), ov.Prop.Name, v)
+				rng, why := leafRange(ov.Prop, i)
+				val(f, b, leaf{label: propLabel(p+"@", ov.Prop.Name, i, len(args)), prop: ov.Prop.Name, value: v, path: p, rng: rng, why: why})
 			}
 		case scene.OvNode:
 			a.walk(ov.Node, childLabel(p, ov.Node, 0), f, b)
 		case scene.OvAt, scene.OvReplace:
 			b.WriteString("|@path")
-			a.val(f, b, p+"@at", "@path", ov.Path)
+			val(f, b, leaf{label: p + "@at", prop: "@path", value: ov.Path, path: p, rng: ov.PathArg})
 			a.walkOverrides(ov.Block, p+"@"+ov.Path, f, b)
 		case scene.OvSlot:
 			b.WriteString("|@slot")
-			a.val(f, b, p+"@slot", "@slot", ov.Slot)
+			val(f, b, leaf{label: p + "@slot", prop: "@slot", value: ov.Slot, path: p, why: "a slot name is no value of the text"})
 			a.walkOverrides(ov.Block, p+"@slot", f, b)
 		}
 	}
 }
 
-func (a *analyzer) val(f *form, b *strings.Builder, label, prop, v string) {
+// val takes one literal out of the subtree.
+func val(f *form, b *strings.Builder, l leaf) {
 	b.WriteString("#")
-	f.leaves = append(f.leaves, leaf{label: label, prop: prop, value: v})
+	f.leaves = append(f.leaves, l)
+}
+
+// leafRange is where argument i of the command p is written in the text, and why it is not when the node
+// does not write it: a property a style gives it, or a computed value, has no literal to replace.
+func leafRange(p *scene.Prop, i int) (scene.Range, string) {
+	switch {
+	case p == nil:
+		return scene.Range{}, "a style gives it"
+	case isExpression(p), p.Val != nil:
+		return scene.Range{}, "it is a computed value"
+	case i >= len(p.Args):
+		return scene.Range{}, "it is not written on the node"
+	}
+	return argRange(p.Args[i]), ""
+}
+
+// argRange is the span of an argument in the text, with the quotes of a string, as scene.Range holds it.
+func argRange(a *tenn.Node) scene.Range {
+	if a == nil || a.Token == nil {
+		return scene.Range{}
+	}
+	if t := a.Token; t.Type == tenn.TokStringLit {
+		return scene.Range{Start: t.Pos - 1, End: t.EndPos()}
+	}
+	return scene.Range{Start: a.Token.Pos, End: a.Token.EndPos()}
 }
 
 func childLabel(p string, n *scene.Node, i int) string {
@@ -416,6 +467,7 @@ func (a *analyzer) note(rule, file string, off int, paths []string, detail, savi
 type propVal struct {
 	name string
 	args []string
+	at   *scene.Prop // the command written on the node; nil when a style gives it
 }
 
 func propArgs(p *scene.Prop) []string {
@@ -426,7 +478,7 @@ func propArgs(p *scene.Prop) []string {
 }
 
 func propOf(p *scene.Prop) propVal {
-	return propVal{name: p.Name, args: propArgs(p)}
+	return propVal{name: p.Name, args: propArgs(p), at: p}
 }
 
 // effectiveProps is what the node ends up with: its own commands, with the properties of the styles it
@@ -451,7 +503,7 @@ func effectiveProps(n *scene.Node) []propVal {
 				continue
 			}
 			for _, p := range st.Props {
-				out = append(out, propOf(p))
+				out = append(out, propVal{name: p.Name, args: propArgs(p)}) // no at: the node does not write it
 			}
 		}
 	}
@@ -723,6 +775,10 @@ func (a *analyzer) applyNodes(f *Finding, g []*cand, props []propVal) {
 
 // repeat reports a set worth one component: the definition holds the structure once, each copy becomes
 // a use whose parameters are the values that differ (spec 5c). It reports whether it did.
+//
+// The finding carries what Apply needs, or the reason these nodes cannot become one element: a value
+// that is not written on the node, a nested name or pos, a use path, a style from outside the set. The
+// report says the reason too, so a refused set is not silently left alone.
 func (a *analyzer) repeat(g []*cand, vary []leaf, params []string) bool {
 	if len(vary) > g[0].f.cmds/2 {
 		return false // too many parameters: the component would be a layer of indirection, not a saving
@@ -752,9 +808,285 @@ func (a *analyzer) repeat(g []*cand, vary []leaf, params []string) bool {
 		paths = append(paths, a.withPos(c.n))
 		a.covered[c.n] = true
 	}
-	a.note(RuleRepeat, first.Pos.File, first.Range.Start, paths, detail,
+	f := a.note(RuleRepeat, first.Pos.File, first.Range.Start, paths, detail,
 		fmt.Sprintf("%d lines fewer, %d parameters", saved, len(params)), saved)
+	f.comp, f.why = a.plan(g)
+	for _, c := range g {
+		f.nodes = append(f.nodes, c.n)
+	}
+	if f.why != "" {
+		f.Detail += "; needs a component with parameters, apply by hand: " + f.why
+	}
 	return true
+}
+
+// plan is the element a repeat finding makes: the body is the block of the first node, the parameters are
+// the literals that differ. It returns the reason the set cannot become one element instead.
+func (a *analyzer) plan(g []*cand) (*component, string) {
+	first := g[0].n
+	src := a.source(a.file)
+	for _, c := range g {
+		switch {
+		case c.n.Pos.File != a.file:
+			return nil, "a node is written in another file"
+		case insideUse(c.n):
+			return nil, "a node sits in the block of a use or an at"
+		case c.n.Name == "":
+			return nil, "a node has no name to give its use"
+		case c.n.Range.Start < 0 || c.n.Range.End > len(src):
+			return nil, "a node has no text in the file"
+		}
+	}
+	if reason := subtreeReason(a.tree, first); reason != "" {
+		return nil, reason
+	}
+	for _, c := range g[1:] {
+		if styleText(c.n) != styleText(first) {
+			return nil, "the nodes name different styles, so a style writes what the text does not show"
+		}
+	}
+	if reason := rootReason(first); reason != "" {
+		return nil, reason
+	}
+	inner := first.Body
+	c := &component{}
+	taken := map[string]bool{}
+	for _, p := range first.Params {
+		taken[p.Name] = true
+	}
+	posVaries := false
+	for i, l := range g[0].f.leaves {
+		varies := false
+		for _, other := range g[1:] {
+			if other.f.leaves[i].value != l.value {
+				varies = true
+				break
+			}
+		}
+		if !varies {
+			continue
+		}
+		switch {
+		case l.prop == "@name" && l.path == "":
+			continue // the name of the node is the alias of its use
+		case l.prop == "pos" && l.path == "":
+			posVaries = true
+			continue
+		case l.prop == "@name":
+			return nil, "a nested node is named differently: at would be needed"
+		case l.prop == "pos":
+			return nil, "a nested node sits at another place: at would be needed"
+		case l.prop == "@use":
+			return nil, "a nested use has another path"
+		case l.prop == "@path":
+			return nil, "an at or replace path differs"
+		case l.prop == "@from" || l.prop == "@to":
+			return nil, "an end of a link differs"
+		case l.prop == "@slot":
+			return nil, "a slot name differs"
+		case l.why != "":
+			return nil, fmt.Sprintf("the value of %q differs, but %s", l.prop, l.why)
+		case inner == (scene.Range{}) || l.rng.Start < inner.Start+1 || l.rng.End > inner.End-1:
+			return nil, fmt.Sprintf("the value of %q is not in the body of the node", l.prop)
+		}
+		values := make([]string, len(g))
+		for j, other := range g {
+			values[j] = other.f.leaves[i].value
+		}
+		c.params = append(c.params, param{
+			name: paramName(l.prop, taken), rng: l.rng, source: src[l.rng.Start:l.rng.End], args: values,
+		})
+	}
+	sort.SliceStable(c.params, func(i, j int) bool { return c.params[i].name < c.params[j].name })
+	// the element of a use loses its own pos (it is the place of the definition), so the place of every
+	// node goes to its use, unchanged; a pos a style gives stays in the element with the style
+	if findProp(first.Props, "pos") != nil {
+		c.pos = make([][]string, len(g))
+		for j, other := range g {
+			own := findProp(other.n.Props, "pos")
+			if own == nil || isExpression(own) {
+				return nil, "pos is not written on every node of the set"
+			}
+			c.pos[j] = propArgs(own)
+		}
+	} else if posVaries {
+		return nil, "pos differs, but a style gives it: the text has no value to pass"
+	}
+	return c, ""
+}
+
+// rootReason is why the root of the set cannot be the body of an element: a component root with items
+// draws no title of its own, and one that its parent lays out would take the default box instead.
+func rootReason(root *scene.Node) string {
+	if findProp(root.Props, "template") != nil {
+		return "the node has a template"
+	}
+	kids := 0
+	for _, c := range root.Content {
+		if c.Kind == scene.KItem {
+			kids++
+		}
+	}
+	if kids == 0 {
+		return ""
+	}
+	for _, p := range effectiveProps(root) {
+		if textProps[p.name] {
+			return fmt.Sprintf("the %s of a node with children is not drawn on a component", p.name)
+		}
+	}
+	if findProp(root.Props, "auto-layout") == nil && !laidOutByParent(root) {
+		return "the parent lays the node out, and a component root would draw its own box instead"
+	}
+	for _, c := range root.Content {
+		for _, p := range effectiveProps(c) {
+			if (p.name == "width" || p.name == "height") && len(p.args) > 0 && p.args[0] == "fill" {
+				return fmt.Sprintf("the %s of %q fills the node, and an element is laid out on its own", p.name, c.Name)
+			}
+		}
+	}
+	return ""
+}
+
+// laidOutByParent reports whether the parent of n has an auto-layout that places n: the root of an
+// element does not, so its content sits at its own pos.
+func laidOutByParent(n *scene.Node) bool {
+	p := n.Parent
+	if p == nil || p.Kind != scene.KItem {
+		return false
+	}
+	for _, pr := range effectiveProps(p) {
+		if pr.name == "auto-layout" {
+			return true
+		}
+	}
+	return false
+}
+
+// paramName is the name of the parameter a property takes: the property itself, made one word so ${name}
+// reads as a variable, and _2, _3 when another parameter wants it.
+func paramName(prop string, taken map[string]bool) string {
+	base := scene.NormalizeName(strings.TrimPrefix(prop, "@"))
+	if base == "" {
+		base = "value"
+	}
+	name := base
+	for i := 2; taken[name]; i++ {
+		name = base + "_" + strconv.Itoa(i)
+	}
+	taken[name] = true
+	return name
+}
+
+// subtreeReason is why the subtree of n cannot move into an element at the top of the file: what it takes
+// from around it, a mount, a slot, a computed value or a use path whose scope would change.
+func subtreeReason(tree *scene.Tree, n *scene.Node) string {
+	reason := ""
+	root := tree.File(n.Pos.File)
+	a := &analyzer{file: n.Pos.File}
+	a.eachNode(n, func(c *scene.Node) {
+		if reason != "" {
+			return
+		}
+		switch {
+		case c.Mount != nil || findProp(c.Props, "from-file") != nil:
+			reason = "the subtree mounts another file"
+			return
+		case c.Kind == scene.KSlot:
+			reason = "the subtree has a slot"
+			return
+		case hasExpression(c.Props):
+			reason = fmt.Sprintf("%q is computed in the place the node sits: a component would lose its scope", expressionName(c.Props))
+			return
+		case c.Kind == scene.KUse:
+			if why := movedPath(tree, root, c); why != "" {
+				reason = why
+				return
+			}
+		}
+		for _, ov := range c.Block {
+			if ov.Prop != nil && isExpression(ov.Prop) {
+				reason = fmt.Sprintf("%q of a use is computed in the place the node sits", ov.Prop.Name)
+			}
+		}
+		for _, name := range scene.StyleRefs(c.Props) {
+			if !declares(n, name) {
+				reason = fmt.Sprintf("the style %q comes from an element outside the set: the component cannot see it", name)
+			}
+		}
+	})
+	return reason
+}
+
+// movedPath is why the path of a use reads another node from the top of the file, or "" when it does not:
+// the component sits above the place the use was written in, so the search starts from there.
+func movedPath(tree *scene.Tree, root *scene.Node, use *scene.Node) string {
+	was, err := tree.Resolve(use.Parent, use.Path)
+	if err != nil {
+		return fmt.Sprintf("the path %q does not resolve where the node sits", use.Path)
+	}
+	now, err := tree.Resolve(root, use.Path)
+	if err != nil || now != was {
+		return fmt.Sprintf("the path %q reads another node from the top of the file", use.Path)
+	}
+	return ""
+}
+
+// styleText is the use-style of every node of the subtree, in tree order: a copy of the text keeps the
+// first styles only, so a set whose nodes name other styles would change its look.
+func styleText(root *scene.Node) string {
+	var b strings.Builder
+	b.WriteString("root:" + strings.Join(scene.StyleRefs(root.Props), ",") + ";")
+	a := &analyzer{file: root.Pos.File}
+	a.eachNode(root, func(n *scene.Node) {
+		b.WriteString(n.Kind.String() + ":" + strings.Join(scene.StyleRefs(n.Props), ",") + ";")
+	})
+	return b.String()
+}
+
+// declares reports whether the styles block of the root or of one of its descendants declares name: only
+// such a style moves with the text into the component.
+func declares(root *scene.Node, name string) bool {
+	found := false
+	a := &analyzer{file: root.Pos.File}
+	a.eachNode(root, func(n *scene.Node) {
+		if _, ok := n.Styles[name]; ok || hasGroup(n, name) {
+			found = true
+		}
+	})
+	if _, ok := root.Styles[name]; ok || hasGroup(root, name) {
+		found = true
+	}
+	return found
+}
+
+func hasGroup(n *scene.Node, name string) bool {
+	for _, g := range n.StyleGroups {
+		if g.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// hasExpression reports a command with an expression among its arguments (spec 6).
+func hasExpression(props []*scene.Prop) bool {
+	for _, p := range props {
+		if isExpression(p) {
+			return true
+		}
+	}
+	return false
+}
+
+// expressionName is the name of the first computed command, for the refusal.
+func expressionName(props []*scene.Prop) string {
+	for _, p := range props {
+		if isExpression(p) {
+			return p.Name
+		}
+	}
+	return ""
 }
 
 // literals finds one set of look properties repeated by many nodes: a named style is worth it even
