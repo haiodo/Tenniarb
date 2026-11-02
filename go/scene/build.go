@@ -19,13 +19,28 @@ type Screen struct {
 	// Warnings are the warnings of this element and of what it pulls in through use and import.
 	Warnings Errors
 	// Animations are the animations of the items, by the scene node they play on (spec 13): WriteSVG
-	// puts them into the document as CSS.
+	// puts them into the document as CSS, and a viewer plays them with Animated.
 	Animations map[*gfx.Node]*Animation
+	// animated is Animations with what playing one needs: the box of the node in its parent and the
+	// opacity the style gives it.
+	animated []Animated
 
 	tree *RNode
 	p    *prep
 	gfx  map[*RNode]*gfx.Node
 }
+
+// Animated is one animation a viewer plays on its node: the node, the box of the item in its parent (a
+// rotation turns about its center) and the opacity the style gives it.
+type Animated struct {
+	Node    *gfx.Node
+	Box     Box
+	Anim    *Animation
+	Opacity float64
+}
+
+// AnimatedNodes lists the animations of the screen for a viewer that plays them.
+func (s *Screen) AnimatedNodes() []Animated { return s.animated }
 
 // Box is the laid out rectangle of one item, relative to its parent.
 type Box struct {
@@ -111,9 +126,16 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	if len(p.anim) > 0 {
 		sc.Animations = make(map[*gfx.Node]*Animation, len(p.anim))
 		for rn, a := range p.anim {
-			if n := sc.gfx[rn]; n != nil {
-				sc.Animations[n] = a
+			n := sc.gfx[rn]
+			if n == nil {
+				continue
 			}
+			sc.Animations[n] = a
+			an := Animated{Node: n, Anim: a, Opacity: p.styles[rn].opacity}
+			if ln := p.frames[rn]; ln != nil {
+				an.Box = Box{X: ln.RX, Y: ln.RY, W: ln.RW, H: ln.RH}
+			}
+			sc.animated = append(sc.animated, an)
 		}
 	}
 	if local.Fatal() {

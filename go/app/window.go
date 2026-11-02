@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+	"time"
 
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
@@ -20,6 +21,7 @@ import (
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/scene"
 )
 
 // Viewer is the window: the outline as the sidebar, the diagram of the selected element, and the
@@ -58,6 +60,11 @@ type Viewer struct {
 	agent       agentUI
 	marks       markUI
 	cm          commentUI
+
+	animFrom   time.Time     // the clock of the animations of the shown scene
+	animScreen *scene.Screen // the screen whose animations play
+	animCancel func()        // stops the frame timer of the animations
+	animTicks  int           // frames played, for the QA state
 
 	press      press
 	inline     *view.Editor

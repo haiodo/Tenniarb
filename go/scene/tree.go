@@ -53,6 +53,9 @@ func (p *Prop) text(i int) (string, bool) {
 	return p.Args[i].GetIdentText()
 }
 
+// Num is num of the i-th argument, for a caller outside the package that plays a frame.
+func (p *Prop) Num(i int) (float64, bool) { return p.num(i) }
+
 func (p *Prop) num(i int) (float64, bool) {
 	if p.Val != nil {
 		if i >= len(p.Val) {

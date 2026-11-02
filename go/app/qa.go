@@ -223,6 +223,15 @@ func (v *Viewer) qaState() map[string]any {
 	out["indicators"] = v.ind.dots
 	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
 	out["marks"] = v.qaMarks()
+	n := 0
+	if v.animScreen != nil {
+		n = len(v.animScreen.AnimatedNodes())
+	}
+	hasSV, hasScreen := v.sv != nil, v.sv != nil && v.sv.screen != nil
+	if hasScreen {
+		n = len(v.sv.screen.AnimatedNodes())
+	}
+	out["anim"] = map[string]any{"animated": n, "ticks": v.animTicks, "sv": hasSV, "screen": hasScreen}
 	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
 	items, itemRows := []string{}, map[string]map[string]any{}
 	var walkItems func(ns []*g.Node, prefix string)

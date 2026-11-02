@@ -135,6 +135,7 @@ func (v *Viewer) realizeScene() {
 		sv.tree, sv.ver, sv.next, sv.err = v.stree, v.version, v.nextID, err
 	})
 	v.rendered, v.overlay, v.sv = nil, nil, sv
+	v.animStart(sv.screen)
 	if !cached {
 		v.sceneBuilds++
 		if sv.placed != nil {

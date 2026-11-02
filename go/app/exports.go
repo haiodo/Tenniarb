@@ -72,9 +72,9 @@ func (v *Viewer) exportTo(k exportKind, path string) error {
 	var err error
 	switch k {
 	case exportPNG:
-		data, err = ExportPNG(e, p, v.exportScale())
+		data, err = v.exportPNGOf(e, p, v.exportScale())
 	case exportSVG:
-		data, err = ExportSVG(e, p)
+		data, err = v.exportSVGOf(e, p)
 	case exportHTML:
 		data, err = ExportHTML(e, p, v.exportScale())
 	case exportLive:
