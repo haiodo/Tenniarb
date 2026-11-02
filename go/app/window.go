@@ -66,6 +66,7 @@ type Viewer struct {
 	animCancel func()        // stops the frame timer of the animations
 	animTicks  int           // frames played, for the QA state
 	animMS     float64       // the average cost of a frame, ms
+	animOff    bool          // the playback is paused by the scrub of the inspector
 
 	press      press
 	inline     *view.Editor

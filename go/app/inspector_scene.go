@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	g "github.com/haiodo/gowt"
 
@@ -145,6 +146,7 @@ func (in *inspector) sceneSections() g.Option {
 		return k == kindScene && n != nil && n.Kind == scene.KUse
 	}
 	hasStyles := func(k selKind) bool { return node(k) && len(v.styleGroups()) > 0 }
+	hasAnim := func(k selKind) bool { return node(k) && v.animOf() != nil }
 	hasParams := func(k selKind) bool { return k == kindScene && v.paramNode() != nil }
 	return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(10)),
 		in.section(title, scr,
@@ -155,6 +157,8 @@ func (in *inspector) sceneSections() g.Option {
 			in.info("Size", scr, size)),
 		in.section(sectionTitle("Parameters"), hasParams,
 			in.sceneParams(hasParams)),
+		in.section(sectionTitle("Animation"), hasAnim,
+			in.sceneAnimation(hasAnim)),
 		in.section(sectionTitle("Styles"), hasStyles,
 			in.sceneStyles(hasStyles)),
 		in.section(sectionTitle("Layout"), node,
@@ -363,6 +367,70 @@ func (in *inspector) styleGroup(gr scene.StyleGroup) ([]g.Option, []func()) {
 		in.loading = false
 	}
 	return []g.Option{styleRow(gr.Name, ctl)}, []func(){refresh}
+}
+
+// animOf is the animation of the selected item, nil when it has none.
+func (v *Viewer) animOf() *scene.Animation {
+	_, pl := v.selectedScene()
+	if pl == nil || pl.Gfx == nil || v.sv == nil || v.sv.screen == nil {
+		return nil
+	}
+	return v.sv.screen.AnimationOf(pl.Gfx)
+}
+
+// sceneAnimation is the Animation section: what plays on the item, a play switch and a slider that walks
+// through its frames - the editor previews every animation in a loop, the slider stops it at a moment.
+func (in *inspector) sceneAnimation(shown func(selKind) bool) func() g.Option {
+	v := in.v
+	var play *g.ButtonView
+	var frame *g.SliderView
+	var text *g.LabelView
+	f := &inspField{when: shown, refresh: func(selKind) {
+		a := v.animOf()
+		in.loading = true
+		play.SetChecked(!v.animOff)
+		if a != nil {
+			text.SetText(animTitle(a))
+			frame.Unwrap().SetEnabled(!v.animOff)
+		}
+		in.loading = false
+	}}
+	in.cur.fields = append(in.cur.fields, f)
+	return func() g.Option {
+		return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
+			styleRow("Animation", g.Label("", faint(), g.GrowX(), g.Ref(&text))),
+			styleRow("Play", g.Button("Play", g.Check(), g.Small(), g.ID("scene-anim-play"),
+				g.Ref(&play), g.Init(func(b *g.ButtonView) {
+					b.OnClick(func() {
+						if in.loading {
+							return
+						}
+						if v.animOff {
+							v.animPlay()
+						} else {
+							v.animOff = true
+							v.stopAnim()
+						}
+					})
+				}))),
+			styleRow("Frame", g.Slider(0, 100, g.GrowX(), g.ID("scene-anim-frame"), g.Ref(&frame),
+				g.Init(func(s *g.SliderView) {
+					s.OnChange(func(at int) {
+						if !in.loading {
+							v.animScrub(float64(at) / 100)
+						}
+					})
+				}))))
+	}
+}
+
+// animTitle is the animation as the inspector shows it: the name, the duration and the easing.
+func animTitle(a *scene.Animation) string {
+	d := a.Duration
+	if d%time.Second == 0 {
+		return fmt.Sprintf("%s, %ds %s", a.Name, int(d/time.Second), a.Easing)
+	}
+	return fmt.Sprintf("%s, %dms %s", a.Name, d/time.Millisecond, a.Easing)
 }
 
 // styleRow is a row of the Styles or Parameters section: the caption on the left, the controls on the

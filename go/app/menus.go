@@ -140,6 +140,7 @@ func (v *Viewer) menus() {
 	viewMenu.Separator()
 	viewMenu.Item("&Quick Style Panel", v.showQuickPanel, g.Shortcut("Cmd+E"))
 	viewMenu.Separator()
+	viewMenu.Item("Play &Animations", v.toggleAnimations)
 	viewMenu.Item("Comment &Mode", v.toggleCommentMode)
 	viewMenu.Item("Comments...", v.showCommentList)
 	viewMenu.Separator()

@@ -30,16 +30,39 @@ func (v *Viewer) animStart(sc *scene.Screen) {
 	if sc == nil || len(sc.AnimatedNodes()) == 0 {
 		return
 	}
-	v.animFrom, v.animScreen = time.Now(), sc
-	// Under the QA driver the frames are frozen (its settle waits for two equal frames); TENNIARB_ANIM=1
-	// plays them there too, to measure what a frame costs.
+	v.animFrom, v.animScreen, v.animOff = time.Now(), sc, false
+	v.animRun()
+}
+
+// animRun starts the frame timer, unless the playback is paused or the QA driver runs: its settle waits
+// for two equal frames, and a spinning scene never gives one (TENNIARB_ANIM=1 plays there too).
+func (v *Viewer) animRun() {
 	frozen := os.Getenv(gqa.EnvSocket) != "" && os.Getenv("TENNIARB_ANIM") != "1"
-	if v.app != nil && !frozen {
-		// Every, not After: a short timer counts as pending and keeps the QA harness from settling. The QA
-		// driver freezes the animation: its settle waits for two equal frames, and a spinning scene never
-		// gives one.
-		v.animCancel = v.app.Every(animFrame, v.animTick)
+	if v.app == nil || frozen || v.animOff || v.animScreen == nil || v.animCancel != nil {
+		return
 	}
+	// Every, not After: a short timer counts as pending and keeps the QA harness from settling.
+	v.animCancel = v.app.Every(animFrame, v.animTick)
+}
+
+// toggleAnimations stops or plays the animations of the scene, as the Play switch of the inspector does.
+func (v *Viewer) toggleAnimations() {
+	if v.animOff {
+		v.animPlay()
+		return
+	}
+	v.animOff = true
+	v.stopAnim()
+}
+
+// animPlay resumes the playback from the start after a scrub.
+func (v *Viewer) animPlay() {
+	if v.animScreen == nil {
+		return
+	}
+	v.animOff = false
+	v.animFrom = time.Now()
+	v.animRun()
 }
 
 // stopAnim ends the frame timer, if one runs.
@@ -61,6 +84,9 @@ func (v *Viewer) animTick() {
 		v.stopAnim()
 		return
 	}
+	if v.animOff {
+		return // paused: the picture keeps the frame the scrub left
+	}
 	now := time.Since(v.animFrom)
 	v.animTicks++
 	started := time.Now()
@@ -68,11 +94,33 @@ func (v *Viewer) animTick() {
 		// what a frame costs, for the QA state: the average of the last frames
 		v.animMS = 0.9*v.animMS + 0.1*float64(time.Since(started).Microseconds())/1000
 	}()
+	v.animApply(sc, now, -1)
+}
+
+// animScrub stops the playback and shows every animation at at (0..1 of its duration): the slider of the
+// inspector walks through the frames.
+func (v *Viewer) animScrub(at float64) {
+	sc := v.animScreen
+	if sc == nil || v.scene == nil {
+		return
+	}
+	v.animOff = true
+	v.stopAnim()
+	v.animApply(sc, 0, at)
+}
+
+// animApply sets the transform and the opacity of every animated node of sc for now; a frac from 0 to 1
+// takes that part of each animation instead, as the scrub of the inspector does.
+func (v *Viewer) animApply(sc *scene.Screen, now time.Duration, frac float64) {
 	v.scene.Update(func(tx *gfx.Tx) {
 		for _, a := range sc.AnimatedNodes() {
+			at := now
+			if frac >= 0 {
+				at = time.Duration(frac * float64(a.Anim.Duration))
+			}
 			// The editor previews every animation in a loop: a one-shot one would be over before the
 			// user looks at it.
-			rot, scale, opacity := animValues(a.Anim, now, true)
+			rot, scale, opacity := animValues(a.Anim, at, true)
 			cx, cy := a.Box.X+a.Box.W/2, a.Box.Y+a.Box.H/2
 			m := gfx.TranslateBy(cx, cy)
 			if rot != 0 {

@@ -73,6 +73,27 @@ func (sh *Shell) registerQA() {
 	})
 	// style: the choice of a style group of the inspector, which the QA driver cannot make as a click on
 	// a segment of a segmented control
+	// anim: the playback of the scene animations, paused or resumed, and the frame a scrub shows
+	qa.Handle("anim", func(a qa.Args) error {
+		v := sh.active
+		if a.Has("play") {
+			on := a.Bool("play")
+			if on {
+				v.animPlay()
+			} else {
+				v.animOff = true
+				v.stopAnim()
+			}
+		}
+		if a.Has("at") {
+			var at float64
+			if err := a.Decode("at", &at); err != nil {
+				return err
+			}
+			v.animScrub(at)
+		}
+		return nil
+	})
 	qa.Handle("style", func(a qa.Args) error {
 		return sh.active.pressStyle(a.String("group"), a.String("value"))
 	})
@@ -233,7 +254,7 @@ func (v *Viewer) qaState() map[string]any {
 		n = len(v.sv.screen.AnimatedNodes())
 	}
 	out["anim"] = map[string]any{"animated": n, "ticks": v.animTicks, "sv": hasSV, "screen": hasScreen,
-		"ms": math.Round(v.animMS*100) / 100}
+		"ms": math.Round(v.animMS*100) / 100, "paused": v.animOff}
 	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
 	items, itemRows := []string{}, map[string]map[string]any{}
 	var walkItems func(ns []*g.Node, prefix string)

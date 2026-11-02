@@ -42,6 +42,16 @@ type Animated struct {
 // AnimatedNodes lists the animations of the screen for a viewer that plays them.
 func (s *Screen) AnimatedNodes() []Animated { return s.animated }
 
+// AnimationOf is the animation playing on node, if any: the inspector offers it for the selected item.
+func (s *Screen) AnimationOf(node *gfx.Node) *Animation {
+	for _, a := range s.animated {
+		if a.Node == node {
+			return a.Anim
+		}
+	}
+	return nil
+}
+
 // Box is the laid out rectangle of one item, relative to its parent.
 type Box struct {
 	Path, Name string // Path: normalized names from the element, joined by "."
