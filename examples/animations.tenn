@@ -1,0 +1,195 @@
+// Animations (spec 13), one row each: the keyframes live in the element that uses them (a component
+// carries its own), the item names one with a duration, an easing and a repeat. An infinite one plays on
+// the canvas and in the exported SVG; a static PNG takes its first frame. One block per line: two blocks
+// on one line are one command.
+element "Animations" {
+    animation spin {
+        from { rotate 0 }
+        to { rotate 360 }
+    }
+    animation pulse {
+        0% { opacity 1 }
+        50% { opacity 0.25 }
+        100% { opacity 1 }
+    }
+    animation breathe {
+        0% { scale 1 }
+        50% { scale 1.25 }
+        100% { scale 1 }
+    }
+    animation fade-in {
+        from { opacity 0 }
+        to { opacity 1 }
+    }
+    animation blink {
+        from { opacity 1 }
+        to { opacity 0.1 }
+    }
+    animation warm {
+        from { color #cf13a2 }
+        to { color #2f6bff }
+    }
+
+    // a component with a loading variant: the animation is part of the style, as in a real library
+    element "Badge" {
+        kind Component
+        export let title = "Syncing"
+        export let state = loading
+
+        animation spin {
+            from { rotate 0 }
+            to { rotate 360 }
+        }
+        animation pulse {
+            0% { opacity 1 }
+            50% { opacity 0.25 }
+            100% { opacity 1 }
+        }
+        animation blink {
+            from { opacity 1 }
+            to { opacity 0.1 }
+        }
+
+        styles {
+            idle {
+                color #eef2ff
+                border-color #c7d2fe
+            }
+            loading {
+                color #eef2ff
+                border-color #c7d2fe
+                animation pulse 1.2s ease-in-out infinite
+            }
+            error {
+                color #fee2e2
+                border-color #fca5a5
+                animation blink 700ms ease-in 3
+            }
+            state one-of idle loading error
+        }
+
+        item Frame {
+            auto-layout row
+            gap 8
+            padding 8 12
+            corner-radius 8
+            use-style ${state}
+            item Label {
+                title ${title}
+                font-size 13
+            }
+        }
+    }
+
+    item canvas {
+        auto-layout column
+        gap 28
+        padding 40
+        color #ffffff
+
+        item "row spinner" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "rotate, linear, forever"; width 220; font-size 12; text-color #5a667e }
+            // an arc, not a circle: a turning circle looks still
+            item Spinner {
+                width 28
+                height 28
+                path "M14 2a12 12 0 1 0 12 12"
+                view-box 0 0 28 28
+                line-width 3
+                border-color #6b3ad3
+                animation spin 1.2s linear infinite
+            }
+            item Square {
+                width 16
+                height 16
+                corner-radius 3
+                color #6b3ad3
+                animation spin 3s linear infinite
+            }
+        }
+
+        item "row pulse" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "opacity, ease-in-out"; width 220; font-size 12; text-color #5a667e }
+            item Dot {
+                width 24
+                height 24
+                corner-radius 12
+                color #cf13a2
+                animation pulse 1.2s ease-in-out infinite
+            }
+            item Ring {
+                width 24
+                height 24
+                corner-radius 12
+                border-color #cf13a2
+                line-width 2
+                animation pulse 1.2s ease-in-out 2
+            }
+        }
+
+        item "row breathe" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "scale, twice then stops"; width 220; font-size 12; text-color #5a667e }
+            item Heart {
+                width 24
+                height 24
+                corner-radius 6
+                color #cb4b42
+                animation breathe 900ms ease-out 2
+            }
+        }
+
+        item "row fade in" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "opacity, once"; width 220; font-size 12; text-color #5a667e }
+            item Card {
+                width 80
+                height 32
+                corner-radius 8
+                color #172547
+                animation fade-in 600ms ease-out
+            }
+            item Card2 {
+                width 80
+                height 32
+                corner-radius 8
+                color #172547
+                animation fade-in 2s ease-in
+            }
+        }
+
+        item "row colour" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "colour, forever"; width 220; font-size 12; text-color #5a667e }
+            item Chip {
+                width 48
+                height 24
+                corner-radius 12
+                color #cf13a2
+                animation warm 2s linear infinite
+            }
+        }
+
+        item "row component" {
+            auto-layout row
+            gap 24
+            align center
+            item cap { title "a style with an animation"; width 220; font-size 12; text-color #5a667e }
+            use Badge as syncing { title "Syncing" }
+            use Badge as ready { title "Ready"; state idle }
+            use Badge as failed { title "Failed"; state error }
+        }
+    }
+}
