@@ -78,6 +78,8 @@ export class Element {
   items: DiagramItem[] = [];
   description: string | null = null;
   properties: ModelProperties = new ModelProperties(); // Extra nodes not supported directly by model.
+  /** The arguments of the element command after its name, such as --from-file "lib.tenn"; printed back. */
+  extraArgs: TennNode[] = [];
 
   // Transient data values
   ox = 0;
@@ -101,6 +103,7 @@ export class Element {
     cloneEl.description = this.description;
 
     cloneEl.properties.appendContentsOf([...this.properties].map((itm) => itm.clone()));
+    cloneEl.extraArgs = this.extraArgs.map((itm) => itm.clone());
 
     if (cloneItems) {
       const itemsMap = new Map<DiagramItem, DiagramItem>();
@@ -283,6 +286,8 @@ export class DiagramItem {
   properties: ModelProperties = new ModelProperties(); // Extra nodes not supported directly by model.
   x = 0;
   y = 0;
+  /** The position of the item command in the text it was read from; -1 when it was made in code. */
+  sourcePos = -1;
 
   constructor(kind: ItemKind, name: string) {
     this.kind = kind;

@@ -26,6 +26,8 @@ export interface Canvas2D {
   lineCap?: string;
   setLineDash(segments: number[]): void;
 
+  globalAlpha?: number;
+
   shadowColor: string;
   shadowBlur: number;
   shadowOffsetX: number;

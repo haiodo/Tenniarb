@@ -6,6 +6,7 @@ export * from "./text.ts";
 export * from "./images.ts";
 export * from "./drawable.ts";
 export * from "./scene.ts";
+export * from "./scene-tenn.ts";
 export * from "./render.ts";
 export * from "./fonts.ts";
 export * from "./elements.ts";

@@ -3,9 +3,12 @@ import { ExecutionContext } from "@tenniarb/core";
 import type { DiagramItem, Element, ExecutionContextEvaluator } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { DrawableContainer } from "./drawable.ts";
+import type { Drawable } from "./drawable.ts";
 import type { Rect, Size } from "./geometry.ts";
 import type { ImageDecoder } from "./images.ts";
 import { DrawableScene } from "./scene.ts";
+import { buildTennScene, isSceneElement } from "./scene-tenn.ts";
+import type { TennScene } from "./scene-tenn.ts";
 import { AttributedString, layoutLines, setMeasureContext, systemFont } from "./text.ts";
 
 export interface RenderOptions {
@@ -56,10 +59,47 @@ export function createExecutionContext(options: { evaluate?: boolean; decodeImag
   return context;
 }
 
+/**
+ * A scene element (spec 4, 5b, 5c) drawn by the port of go/scene instead of the classic item renderer:
+ * the same DrawableScene surface (bounds, layout, draw in y-up space), so every caller stays the same.
+ * The expanded nodes are not the model items, so nothing in `drawables`: an editor shows the picture but
+ * does not select its parts yet.
+ */
+class SceneView extends DrawableScene {
+  readonly tenn: TennScene;
+
+  constructor(element: Element, options: RenderOptions) {
+    super(element, options.darkMode ?? false, null, {});
+    this.tenn = buildTennScene(element);
+  }
+
+  /** The classic item renderer has nothing to build: this scene draws its own nodes. */
+  override buildElementScene(): Drawable {
+    return new DrawableContainer();
+  }
+
+  override getBounds(): Rect {
+    return this.tenn.bounds;
+  }
+
+  override layout(_bounds: Rect, _dirty: Rect): void {}
+
+  override draw(context: Canvas2D, at = this.offset): void {
+    this.tenn.draw(context, at);
+  }
+
+  override drawBox(context: Canvas2D, at = this.offset): void {
+    this.tenn.draw(context, at);
+  }
+}
+
 /** Evaluated, built and laid out scene, ready for draw(). */
 export function buildScene(element: Element, options: RenderOptions = {}): DrawableScene {
   if (options.measureContext !== undefined) {
     setMeasureContext(options.measureContext);
+  }
+  if (isSceneElement(element)) {
+    return new SceneView(element, options);
   }
   let executionContext = options.executionContext;
   if (executionContext === undefined) {
@@ -73,6 +113,9 @@ export function buildScene(element: Element, options: RenderOptions = {}): Drawa
 export function layoutScene(element: Element, executionContext: ExecutionContextEvaluator | null, options: Omit<RenderOptions, "evaluate" | "executionContext"> = {}): DrawableScene {
   if (options.measureContext !== undefined) {
     setMeasureContext(options.measureContext);
+  }
+  if (isSceneElement(element)) {
+    return new SceneView(element, options);
   }
   const scene = new DrawableScene(element, options.darkMode ?? false, executionContext, { items: options.items, decodeImage: options.decodeImage });
   const bounds = scene.getBounds();

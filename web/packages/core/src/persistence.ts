@@ -288,6 +288,11 @@ function buildElement(e: Element, topParent: TennNode, includeSubElements: boole
 
   topParent.add(enode);
 
+  // Arguments the model keeps as written, such as --from-file "lib.tenn".
+  for (const a of e.extraArgs) {
+    enode.add(a.clone());
+  }
+
   const enodeBlock = newBlockExpr();
 
   enode.add(enodeBlock);
@@ -439,6 +444,14 @@ function parseElement(node: TennNode): Element | null {
       el.name = name;
     }
 
+    // Optional arguments after the name before the block, e.g. --from-file "lib.tenn"; keep them as written.
+    if (node.count > 2 && node.getChild(2)?.kind !== "BlockExpr") {
+      const children = node.children ?? [];
+      const block = children.findIndex((c) => c.kind === "BlockExpr");
+      const end = block === -1 ? children.length : block;
+      el.extraArgs = children.slice(2, end).map((c) => c.clone());
+    }
+
     parseChildCommands(node, 2, (cmdName, blChild) => {
       parseElementData(el, cmdName, blChild, linkElements);
     });
@@ -511,6 +524,7 @@ function parseItem(node: TennNode): DiagramItem | null {
     if (name !== null) {
       el.name = name;
     }
+    el.sourcePos = node.token?.pos ?? -1;
 
     parseChildCommands(node, 2, (cmdName, blChild) => {
       parseItemData(el, cmdName, blChild);
@@ -521,7 +535,9 @@ function parseItem(node: TennNode): DiagramItem | null {
 
 function parseLink(node: TennNode): LinkItem | null {
   if (node.count >= 2) {
-    return new LinkItem("Link", "", null, null);
+    const link = new LinkItem("Link", "", null, null);
+    link.sourcePos = node.token?.pos ?? -1;
+    return link;
   }
   return null;
 }
