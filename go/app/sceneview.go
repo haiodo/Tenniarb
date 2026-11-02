@@ -492,17 +492,17 @@ func (v *Viewer) drawSceneOverlay() {
 	if v.sceneMode() {
 		pic = v.sv.selectionPicture(v.selNodes, comp.Camera())
 	}
-	if v.selHUD == nil && pic.Len() == 0 {
-		return
+	if v.selHUD != nil || pic.Len() > 0 {
+		comp.HUD().Update(func(tx *gfx.Tx) {
+			if v.selHUD == nil {
+				v.selHUD = gfx.NewNode(3)
+				tx.Add(nil, v.selHUD)
+				tx.SetShape(v.selHUD, nil, gfx.HitNone) // hit-testing of the selection is done on the scene
+			}
+			tx.SetPicture(v.selHUD, pic)
+		})
 	}
-	comp.HUD().Update(func(tx *gfx.Tx) {
-		if v.selHUD == nil {
-			v.selHUD = gfx.NewNode(3)
-			tx.Add(nil, v.selHUD)
-			tx.SetShape(v.selHUD, nil, gfx.HitNone) // hit-testing of the selection is done on the scene
-		}
-		tx.SetPicture(v.selHUD, pic)
-	})
+	v.syncCompareHUD()
 }
 
 // selectScene makes paths the selection of the scene element on the canvas.

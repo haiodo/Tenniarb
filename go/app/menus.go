@@ -151,6 +151,9 @@ func (v *Viewer) menus() {
 	viewMenu.Item("Toggle &Sidebar", v.toggleSidebar, g.Shortcut("Cmd+Alt+S"))
 	viewMenu.Item("Toggle &Inspector", v.toggleInspector, g.Shortcut("Cmd+Alt+I"))
 	viewMenu.Item("Toggle &Code", v.toggleCode, g.Shortcut("Cmd+Shift+Y"))
+	viewMenu.Separator()
+	v.compareItem = viewMenu.Item("Compare with &Git...", v.compareToggle, g.Shortcut("Cmd+Shift+G"))
+	viewMenu.OnShow(v.updateMenus)
 
 	help := bar.Submenu("&Help")
 	help.Item("Tenniarb &Help", v.sh.showHelp, g.Shortcut("Cmd+Shift+/"))
@@ -191,6 +194,11 @@ func (v *Viewer) updateMenus() {
 	// Move Left/Right puts a scene node into its neighbouring sibling: no element takes that.
 	for _, it := range v.moveItems {
 		it.SetEnabled(v.sceneMode() && len(v.selNodes) > 0)
+	}
+	// A comparison needs a version in a repository: the item is off for a file outside one.
+	if v.compareItem != nil {
+		_, repo := v.gitRepo()
+		v.compareItem.SetEnabled(v.cmp != nil || repo)
 	}
 }
 

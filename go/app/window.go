@@ -18,6 +18,7 @@ import (
 	"github.com/haiodo/gowt/rx"
 	"github.com/haiodo/gowt/swt"
 
+	"github.com/haiodo/tenniarb/go/diff"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
@@ -43,8 +44,14 @@ type Viewer struct {
 	rendered    *render.Rendered
 	overlay     *gfx.Node
 	selHUD      *gfx.Node    // the selection frames of a scene element, on the HUD
+	diffHUD     *gfx.Node    // the frames of compare mode, on the HUD
 	sv          *sceneView   // the element on the canvas is drawn by go/scene
 	svCache     []*sceneView // views taken off the canvas, the last one first
+	cmp         *compare     // compare mode: the file against a version from git
+	repoDir     string       // the folder the repository of the document was looked up in
+	repoRoot    string       // its repository, when it has one
+	repoOK      bool
+	compareItem *g.MenuItem // View > Compare with Git, off outside a repository
 	itemsUI     itemsList
 	addClassic  []*g.MenuItem // the diagram commands of Edit > Add, off in a scene
 	moveItems   []*g.MenuItem // Element > Move Left/Right, on for a selected scene node
@@ -485,6 +492,7 @@ func (v *Viewer) reloadCommand() {
 	v.reload()
 }
 
+// setBanner shows text in the banner in the colour of an error.
 func (v *Viewer) setBanner(text string) {
 	v.banner.SetText(text)
 	v.banner.SetVisible(text != "")
@@ -494,10 +502,25 @@ func (v *Viewer) setBanner(text string) {
 	v.win.Unwrap().Layout()
 }
 
+// setNote shows a line of information in the banner, in the text colour.
+func (v *Viewer) setNote(text string) {
+	c := g.RGB{R: 80, G: 80, B: 80}
+	if v.app.Dark() {
+		c = g.RGB{R: 200, G: 200, B: 200}
+	}
+	v.banner.SetText(text)
+	v.banner.SetVisible(text != "")
+	if text != "" {
+		v.banner.SetForeground(c)
+	}
+	v.win.Unwrap().Layout()
+}
+
 // startSession makes a new editing session on the current element of the document, with its own undo history.
 func (v *Viewer) startSession() {
 	v.endInline(false)
 	v.session, v.tracker, v.shownElem, v.docElem = nil, nil, nil, nil
+	v.cmp = nil // the comparison was of the document that was open
 	if v.state.Doc.Model == nil || v.state.Current == nil {
 		v.clearCanvas()
 		v.updateTitle()
@@ -553,6 +576,8 @@ func (v *Viewer) onOutlineSelect(n *g.Node) {
 	switch d := n.Data().(type) {
 	case *model.Element:
 		v.selectElement(d)
+	case *diff.Node:
+		v.selectCompare(d)
 	}
 }
 

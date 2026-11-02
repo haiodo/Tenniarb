@@ -252,6 +252,9 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	walk(v.tree.Roots(), "")
 	out["outline"], out["rows"] = outline, rows
+	if sel := v.tree.Selected(); len(sel) == 1 {
+		out["outlineSelected"] = sel[0].Text()
+	}
 	out["outlineCols"], out["outlineClient"] = treeCols(v.tree), int(v.tree.Unwrap().GetClientArea().Width)
 	if v.state.Current != nil {
 		out["element"] = PathOf(v.state.Current)
@@ -263,6 +266,7 @@ func (v *Viewer) qaState() map[string]any {
 	out["indicators"] = v.ind.dots
 	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
 	out["marks"] = v.qaMarks()
+	out["compare"] = v.qaCompare()
 	n := 0
 	if v.animScreen != nil {
 		n = len(v.animScreen.AnimatedNodes())

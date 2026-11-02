@@ -18,6 +18,10 @@ import (
 // first when it holds content itself. A mounted file is the row of its element. expanded is the set of rows to open
 // by path key; nil opens the first ExpandLevel+1 levels when the settings have auto expand, as Swift does.
 func (v *Viewer) rebuildOutline(expanded map[string]bool) {
+	if v.cmp != nil {
+		v.paintCompare()
+		return
+	}
 	v.syncing = true
 	defer func() { v.syncing = false }()
 	hidden := v.hiddenMounts()
@@ -224,6 +228,10 @@ func (v *Viewer) outlineKey() string {
 
 // refreshOutline follows the model: the rows are rebuilt when they would look different.
 func (v *Viewer) refreshOutline() {
+	if v.cmp != nil {
+		v.refreshCompare()
+		return
+	}
 	if v.state.Doc.Model == nil {
 		return
 	}
@@ -252,6 +260,9 @@ func (v *Viewer) expandedRows() map[string]bool {
 
 // syncOutline selects the row of the canvas: the current element, opening its ancestors. The root has a row only when it holds content.
 func (v *Viewer) syncOutline() {
+	if v.cmp != nil {
+		return // the comparison rows name no element of the model
+	}
 	v.syncing = true
 	defer func() { v.syncing = false }()
 	cur := v.state.Current
@@ -348,6 +359,9 @@ func (v *Viewer) moveElement(delta int) {
 
 // activateNode is a double click or Enter on a row: the name of the element is edited.
 func (v *Viewer) activateNode(n *g.Node) {
+	if v.cmp != nil {
+		return // a row of the comparison: nothing is renamed there
+	}
 	if e, ok := n.Data().(*model.Element); ok {
 		v.renameElement(e)
 	}
@@ -355,6 +369,9 @@ func (v *Viewer) activateNode(n *g.Node) {
 
 // outlineEntries is the context menu of the outline (Swift's, plus rename and moves).
 func (v *Viewer) outlineEntries() []editor.Entry {
+	if v.cmp != nil {
+		return v.compareEntries()
+	}
 	if v.session == nil {
 		return nil
 	}
