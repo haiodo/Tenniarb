@@ -3,7 +3,6 @@ package optimize
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -92,8 +91,12 @@ func nearestStyles(n *scene.Node) *scene.Node {
 // instanceNode follows an at/replace path along the tree as written in the component. A path through a
 // nested use is not followed: its children come from another component.
 func (a *analyzer) instanceNode(comp *scene.Node, path string) *scene.Node {
+	segs, ok := scene.SplitPath(path)
+	if !ok {
+		return nil
+	}
 	n := comp
-	for _, seg := range strings.Split(path, ".") {
+	for _, seg := range segs {
 		if n == nil || n.Kind == scene.KUse {
 			return nil
 		}
@@ -104,11 +107,10 @@ func (a *analyzer) instanceNode(comp *scene.Node, path string) *scene.Node {
 
 // instanceChild is the direct child of a component a segment of an at path names; nil when there is no
 // such child or more than one (validate reports the ambiguity).
-func instanceChild(comp *scene.Node, seg string) *scene.Node {
-	key := scene.NormalizeName(seg)
+func instanceChild(comp *scene.Node, seg scene.Segment) *scene.Node {
 	var found *scene.Node
 	for _, c := range comp.Nodes() {
-		if c.Key != key {
+		if !seg.Matches(c) {
 			continue
 		}
 		if found != nil {

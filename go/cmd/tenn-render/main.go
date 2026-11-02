@@ -3,8 +3,9 @@
 //	tenn-render -root DIR FILE ELEMENT > out.svg
 //
 // FILE is relative to DIR (the workspace root, "." by default). ELEMENT is a dotted path of element
-// names; "" or "." is the content of the file itself. Validation errors go to stderr with the exit
-// code 1; warnings go to stderr and do not stop the render.
+// names, a name with punctuation in double quotes (S."2 Пространства - пусто"); "" or "." is the
+// content of the file itself. Validation errors go to stderr with the exit code 1; warnings go to
+// stderr and do not stop the render.
 package main
 
 import (

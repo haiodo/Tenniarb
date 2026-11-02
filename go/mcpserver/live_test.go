@@ -180,3 +180,22 @@ func TestLiveRestartTombstone(t *testing.T) {
 		t.Errorf("edit after reconnect: app %q", text)
 	}
 }
+
+// select takes a path with a quoted name, as get_state prints it.
+func TestSelectQuotedPath(t *testing.T) {
+	dir := serviceDir(t)
+	startService(t, dir, "v1", nil, 0)
+	text := "element \"S\" {\n    item \"2 Пространства - пусто\"\n}\n"
+	root := tempRoot(t, map[string]string{"a.tenn": text})
+	cs := session(t, dir, root, "v1", nil)
+	fake, _ := connectFake(t, dir)
+	abs := filepath.Join(root, "a.tenn")
+	if err := fake.Open(abs, text); err != nil {
+		t.Fatal(err)
+	}
+	path := `S."2 Пространства - пусто"`
+	mustOK(t, cs, "select", map[string]any{"file": "a.tenn", "nodes": []string{path}, "reveal": true})
+	if sel := fake.Selected(); len(sel) != 1 || len(sel[0].Nodes) != 1 || sel[0].Nodes[0] != path {
+		t.Fatalf("a quoted path reached the app as %+v", sel)
+	}
+}

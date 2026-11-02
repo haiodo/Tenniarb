@@ -68,13 +68,16 @@ func TestClassicDiagram(t *testing.T) {
 	root := tempRoot(t, map[string]string{"map.tenn": brainMap})
 	cs := memSession(t, root)
 	state := mustOK(t, cs, "get_state", nil)
-	for _, want := range []string{"  Map element 1 diagram", "    Map.Next_step item 10", "  Screen element 18 scene", "  Flat element 24 scene"} {
+	for _, want := range []string{"  Map element 1 diagram", `    Map."Next step" item 10`, "  Screen element 18 scene", "  Flat element 24 scene"} {
 		if !strings.Contains(state, want) {
 			t.Errorf("state lacks %s:\n%s", want, state)
 		}
 	}
-	if got := mustOK(t, cs, "read", map[string]any{"file": "map.tenn", "path": "Map.Next_step"}); !strings.Contains(got, "color red") {
-		t.Errorf("read node: %s", got)
+	// the path get_state prints works as it is; the key of the old form still does
+	for _, path := range []string{`Map."Next step"`, "Map.Next_step"} {
+		if got := mustOK(t, cs, "read", map[string]any{"file": "map.tenn", "path": path}); !strings.Contains(got, "color red") {
+			t.Errorf("read node %q: %s", path, got)
+		}
 	}
 	mustOK(t, cs, "edit", withFile(edits("color red", "color blue"), "map.tenn"))
 	if got := mustOK(t, cs, "validate", map[string]any{"file": "map.tenn"}); !strings.Contains(got, "0 errors") {

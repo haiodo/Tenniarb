@@ -693,21 +693,56 @@ func (l *loader) addContent(owner *Node, c *tenn.Node, name string) *Node {
 	return n
 }
 
-// newUse reads "use <path> as <name> { overrides }". A bare use stays a property.
+// newUse reads "use <path> as <name> { overrides }". A bare use stays a property. The path may hold
+// names in double quotes: use Kit."My Button" as b.
 func (l *loader) newUse(owner *Node, c *tenn.Node, args, block []*tenn.Node) *Node {
 	if len(args) == 0 {
 		return nil
 	}
 	pos := l.pos(c)
-	if len(args) != 3 || argText(args, 1) != "as" {
+	as := -1
+	for i, a := range args {
+		if a.Kind == tenn.KindIdent && argText(args, i) == "as" {
+			as = i
+			break
+		}
+	}
+	if as < 1 || as+2 != len(args) {
 		l.t.fail(pos, "use needs the form: use <path> as <name>")
 		return nil
 	}
-	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Body: bodyOf(c), Path: argText(args, 0), Name: argText(args, 2),
-		PathArg: argAt(args, 0), NameArg: argAt(args, 2)}
+	path, ok := pathText(args[:as])
+	if !ok {
+		l.t.fail(pos, "bad path %q: separate segments with dots, and write a name with spaces in quotes", pathArgsText(args[:as]))
+		return nil
+	}
+	n := &Node{Kind: KUse, Parent: owner, Pos: pos, Range: rangeOf(c), Body: bodyOf(c), Path: path, Name: argText(args, as+1),
+		PathArg: argSpan(args, 0, as), NameArg: argAt(args, as+1)}
 	n.Key = NormalizeName(n.Name)
 	n.Block = l.overrides(n, block)
 	return n
+}
+
+// pathArgsText is the argument tokens of a path as written, for a message about a path the loader
+// cannot read.
+func pathArgsText(args []*tenn.Node) string {
+	parts := make([]string, len(args))
+	for i := range args {
+		parts[i] = argText(args, i)
+	}
+	return strings.Join(parts, " ")
+}
+
+// argSpan is the range from argument i up to but not including j, quotes of a string included.
+func argSpan(args []*tenn.Node, i, j int) Range {
+	if i >= j || i >= len(args) {
+		return Range{}
+	}
+	r := argRange(args[i])
+	if j-1 > i && j-1 < len(args) {
+		r.End = argRange(args[j-1]).End
+	}
+	return r
 }
 
 // overrides reads the block of a use. Nodes inside it, however deep, get the use as their scope.
@@ -722,7 +757,12 @@ func (l *loader) overrides(use *Node, cmds []*tenn.Node) []*Override {
 		ov := &Override{Pos: l.pos(c), Range: rangeOf(c), Body: bodyOf(c)}
 		switch name {
 		case "at", "replace":
-			ov.Kind, ov.Path, ov.PathArg = OvAt, argText(args, 0), argAt(args, 0)
+			path, n, ok := pathPrefix(args)
+			if !ok {
+				l.t.fail(ov.Pos, "bad path %q: separate segments with dots, and write a name with spaces in quotes", pathArgsText(args))
+				continue
+			}
+			ov.Kind, ov.Path, ov.PathArg = OvAt, path, argSpan(args, 0, n)
 			if name == "replace" {
 				ov.Kind = OvReplace
 			}

@@ -108,8 +108,8 @@ func TestImportMountedElementPath(t *testing.T) {
 func TestAmbiguousPath(t *testing.T) {
 	got := loadErrors(t, "ambiguous.tenn")
 	wantIn(t, got,
-		"ambiguous path Item: candidates ambiguous.tenn:2:5, ambiguous.tenn:3:5",
-		"ambiguous path a_b: candidates ambiguous.tenn:7:5, ambiguous.tenn:8:5")
+		`ambiguous path Item: candidates "Item" (ambiguous.tenn:2:5), "Item" (ambiguous.tenn:3:5)`,
+		`ambiguous path a_b: candidates "a b" (ambiguous.tenn:7:5), "a_b" (ambiguous.tenn:8:5)`)
 	if strings.Contains(got, "Wrap.Inner") {
 		t.Errorf("unique path reported: %s", got)
 	}
@@ -145,7 +145,7 @@ func TestReplace(t *testing.T) {
 func TestOverrideErrors(t *testing.T) {
 	got := loadErrors(t, "override_errors.tenn")
 	wantIn(t, got,
-		"override_errors.tenn:6:21: ambiguous path Same: candidates override_errors.tenn:3:9, override_errors.tenn:4:9",
+		`override_errors.tenn:6:21: ambiguous path Same: candidates "Same" (override_errors.tenn:3:9), "Same" (override_errors.tenn:4:9)`,
 		`override_errors.tenn:7:21: path Nope: nothing named "Nope" inside the instance`)
 }
 
@@ -375,7 +375,7 @@ func TestNestedPathErrors(t *testing.T) {
 		`nested_errors.tenn:9:27: path r1.nosuch: nothing named "nosuch" inside the instance`,
 		`nested_errors.tenn:10:27: path cells.Cell: nothing named "cells" inside the instance`,
 		"nested_errors.tenn:11:27: nodes passed, but the component has no default slot (slots: none)",
-		"nested_errors.tenn:12:26: ambiguous path cells: candidates nested_errors.tenn:4:18, nested_errors.tenn:4:36")
+		`nested_errors.tenn:12:26: ambiguous path cells: candidates "cells" (nested_errors.tenn:4:18), "cells" (nested_errors.tenn:4:36)`)
 }
 
 func TestNestedFallbackDropped(t *testing.T) {

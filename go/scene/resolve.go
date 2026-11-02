@@ -7,20 +7,21 @@ import (
 	"strings"
 )
 
-func pick(nodes []*Node, key string) []*Node {
+func pick(nodes []*Node, seg Segment) []*Node {
 	var out []*Node
 	for _, n := range nodes {
-		if n.Key == key {
+		if seg.Matches(n) {
 			out = append(out, n)
 		}
 	}
 	return out
 }
 
+// where lists nodes as the quoted names a path writes, each with its position.
 func where(nodes []*Node) string {
 	parts := make([]string, len(nodes))
 	for i, n := range nodes {
-		parts[i] = n.Pos.String()
+		parts[i] = QuoteName(n.Name) + " (" + n.Pos.String() + ")"
 	}
 	return strings.Join(parts, ", ")
 }
@@ -54,9 +55,9 @@ type hit struct {
 	via []*Node // the nodes of the segments before it; kept only when the lookup tracks them
 }
 
-func pickHits(n *Node, c *mountCtx, key string) []hit {
+func pickHits(n *Node, c *mountCtx, seg Segment) []hit {
 	var out []hit
-	for _, m := range pick(n.named(), key) {
+	for _, m := range pick(n.named(), seg) {
 		out = append(out, hit{n: m, c: c})
 	}
 	return out
@@ -79,8 +80,9 @@ func (t *Tree) ctxOf(n *Node) *mountCtx {
 }
 
 // Resolve finds the node a path names from scope, by the rules of spec 4.2/4.3: the first segment
-// is looked up from scope up, the rest is followed from there. Names are normalized. The error
-// says what is wrong with the path; nothing is added to the diagnostics.
+// is looked up from scope up, the rest is followed from there. A bare segment matches the key of a
+// name, a segment in quotes the name as written. The error says what is wrong with the path;
+// nothing is added to the diagnostics.
 func (t *Tree) Resolve(scope *Node, path string) (*Node, error) {
 	n, _, msg := lookup(scope, t.ctxOf(scope), path)
 	if msg != "" {
@@ -134,7 +136,7 @@ func lookupHit(scope *Node, ctx *mountCtx, path string, track bool) (hit, string
 				next = append(next, found...)
 			}
 			if len(next) == 0 {
-				return hit{}, fmt.Sprintf("path %s: nothing named %q under %s", path, seg, where(hitNodes(cur)))
+				return hit{}, fmt.Sprintf("path %s: nothing named %q under %s", path, seg.Name, where(hitNodes(cur)))
 			}
 			cur = next
 		}
@@ -143,5 +145,5 @@ func lookupHit(scope *Node, ctx *mountCtx, path string, track bool) (hit, string
 		}
 		return cur[0], ""
 	}
-	return hit{}, fmt.Sprintf("path %s: %q is not defined here or above", path, segs[0])
+	return hit{}, fmt.Sprintf("path %s: %q is not defined here or above", path, segs[0].Name)
 }

@@ -69,7 +69,7 @@ type (
 	}
 	readIn struct {
 		File string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Path string `json:"path,omitempty" jsonschema:"dotted node path inside the file; empty for the whole file"`
+		Path string `json:"path,omitempty" jsonschema:"dotted node path inside the file, a name with punctuation in double quotes (S.\"2 Пространства - пусто\"); empty for the whole file"`
 	}
 	editIn struct {
 		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
@@ -108,7 +108,7 @@ func (s *Server) MCP() *mcp.Server {
 			}
 			return s.state(in)
 		})
-	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. The text is exactly what edit matches against.",
+	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against.",
 		func(in readIn) (string, error) {
 			s.noteNode("read", in.File, in.Path)
 			return s.read(in.File, in.Path)
@@ -276,11 +276,13 @@ func children(parent *scene.Node) []*scene.Node {
 	return out
 }
 
+// keyOf is the path segment of n, quoted when the name needs it (spec 4.2), so that the path get_state
+// prints goes straight into read, at or select.
 func keyOf(n *scene.Node) string {
-	if n.Kind == scene.KSlot && n.Key == "" {
+	if n.Kind == scene.KSlot && n.Name == "" {
 		return "default"
 	}
-	return n.Key
+	return scene.SegText(n.Name)
 }
 
 func writeTree(b *strings.Builder, parent *scene.Node, prefix string, level, depth int, rend *renderers) {

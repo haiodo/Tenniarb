@@ -13,7 +13,10 @@ at a new line or `;`; the `{` stays on the line of its command.
 - `//` starts a comment that runs to the end of the line.
 - A name becomes a path segment: every character that is not a letter or digit turns into `_`, so
   `item "Primary button"` is `Primary_button`. Paths are dotted and case-sensitive:
-  `Screens.Login.Card.Heading`. A path that matches two nodes is an error.
+  `Screens.Login.Card.Heading`. To name a node by its name as written, use a segment in double quotes -
+  `Screens.Login."2 Пространства - пусто"`, `use Kit."My Button" as b`; `\"` inside a name is a quote.
+  Both forms work; `get_state` prints a name with punctuation in quotes, ready to paste. A path that
+  matches two nodes is an error and lists the candidates in quotes (`"a b"`, `"a_b"`).
 - `link "A" "B" { display arrow }` joins two items of the same parent by name;
   `source-index`/`target-index` pick among equal names. `display arrow` draws the head, `color` and
   `line-width` style the line.
@@ -67,7 +70,9 @@ Content at a negative position is kept in the scene bounds.
 - `at <path> { ... }` reaches a node inside the instance and applies properties to it, under the same
   rules as the component's body: `at Btn.Icon { path "M3 3L9 9" }`.
 - `replace <path> { item ... }` swaps that node for the nodes of the block; only `item`, `use` and
-  `link` are allowed there.
+  `link` are allowed there, and a `slot <name> { … }` the new nodes declare stays open: the same `use`
+  block fills it, `at <path>.<slot>.Node` reaches its fallback, an empty fill drops it. A slot of the
+  replacement wins over one of the same name in the component.
 - `slot <name> { ... }` fills a named slot; an empty `slot {}` drops the fallback. Nodes with no
   default slot, or an unknown slot name, are errors.
 - The path follows the expanded tree: item, instance and slot names, with `default` for the unnamed

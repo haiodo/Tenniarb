@@ -113,7 +113,10 @@ Inside the block of a `use`:
 
 - a property (`width 400`, `color red`, `pos 0 -300`) overrides the root of the instance;
 - `at <path> { ... }` overrides a part; the path starts at the children of the component root;
-- `replace <path> { nodes }` puts other nodes in place of a part;
+- `replace <path> { nodes }` puts other nodes in place of a part; a `slot <name> { … }` declared by the
+  new nodes is filled from the same `use` block, so a replaced part keeps its slot open to the outside
+  (its fallback is reached with `at <path>.<slot>.Node`); a slot of the replacement wins over one of the
+  same name in the component;
 - `slot <name> { nodes }` fills a named slot; nodes written directly (`item`, `use`) go to the default
   slot. Filling a slot drops its fallback; an empty `slot {}` (default) or `slot name {}` drops it and
   puts nothing.
@@ -134,7 +137,11 @@ Paths to remember:
   the label of the instance `save` inside `Toolbar`.
 - A slot name is a segment only to reach its fallback (`at default.Empty { title "No one yet" }`; the
   unnamed slot is `default`). A path that ends on a slot is an error: fill it with `slot <name> { }`.
-- A path that matches two nodes is an error with the candidates listed: add a segment.
+- A name with spaces or punctuation is written in quotes: `at "Кнопка (primary)"`, `use Kit."My Button"
+  as b`, `replace "2 Пространства - пусто"`. Quotes compare the name as written; the old underscored
+  key (`My_Button`) still works. `get_state` prints such names in quotes, ready to paste.
+- A path that matches two nodes is an error with the candidates listed in quotes (`"a b"`, `"a_b"`): add
+  a segment or quote the name you mean.
 
 ## Styles: one component, many looks
 

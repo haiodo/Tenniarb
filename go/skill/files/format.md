@@ -36,7 +36,9 @@ element "Screens" {
   text, a box or an icon.
 - Names: `item "Primary button"` has the path segment `Primary_button` (every character that is not a
   letter or a digit becomes `_`). Paths are case-sensitive: `Screens.Login.Card.Heading`.
-  Names may repeat, but a path that matches two nodes is an error.
+  A name can also be written in double quotes, as it is: `Screens.Login."2 Пространства - пусто"`;
+  `get_state` prints such names that way. Names may repeat, but a path that matches two nodes is an
+  error.
 
 An element can take its content from another file: `element "kit" --from-file "lib/kit.tenn"`. The line
 has no block; the elements and items of that file become the content of `kit`, and `use kit.Card as c`

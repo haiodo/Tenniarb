@@ -240,6 +240,22 @@ func TestReadFileAndNode(t *testing.T) {
 	mustFail(t, cs, "read", map[string]any{"file": "import.tenn", "path": "Screens.Nope"}, `nothing named "Nope"`)
 }
 
+// A name with punctuation is written in quotes in the paths get_state prints, and read takes it; the
+// key of the old form still reaches the node.
+func TestReadQuotedPath(t *testing.T) {
+	root := tempRoot(t, map[string]string{"q.tenn": "element \"S\" {\n  item \"2 Пространства - пусто\" { width 10; height 10 }\n}\n"})
+	cs := memSession(t, root)
+	state := mustOK(t, cs, "get_state", map[string]any{"file": "q.tenn"})
+	if !strings.Contains(state, `  S."2 Пространства - пусто" item 2`) {
+		t.Errorf("get_state does not quote the path: %s", state)
+	}
+	for _, path := range []string{`S."2 Пространства - пусто"`, "S.2_Пространства___пусто"} {
+		if got := mustOK(t, cs, "read", map[string]any{"file": "q.tenn", "path": path}); !strings.Contains(got, "width 10") {
+			t.Errorf("read %q: %s", path, got)
+		}
+	}
+}
+
 func TestReadAmbiguousPath(t *testing.T) {
 	cs, root := workspace(t)
 	if err := os.WriteFile(filepath.Join(root, "dup.tenn"), []byte("element \"E\" {\n    item \"A\"\n    item \"A\"\n}\n"), 0o644); err != nil {

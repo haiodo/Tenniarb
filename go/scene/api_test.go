@@ -41,7 +41,7 @@ func TestResolveFromScope(t *testing.T) {
 		t.Errorf("Resolve reported into diagnostics: %v", tree.Diagnostics())
 	}
 	amb, _ := scene.Load("testdata", "ambiguous.tenn")
-	if _, err := amb.Resolve(amb.File("ambiguous.tenn"), "A.Item"); err == nil || !strings.Contains(err.Error(), "ambiguous path A.Item: candidates ambiguous.tenn:2:5") {
+	if _, err := amb.Resolve(amb.File("ambiguous.tenn"), "A.Item"); err == nil || !strings.Contains(err.Error(), `ambiguous path A.Item: candidates "Item" (ambiguous.tenn:2:5)`) {
 		t.Errorf("ambiguous: %v", err)
 	}
 }

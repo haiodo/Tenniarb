@@ -114,9 +114,9 @@ func (f *refFinder) at(ov *Override, root, final *RNode) {
 }
 
 // chainTo is the nodes the segments name from root down to final.
-func chainTo(root *RNode, segs []string, final *RNode) []*RNode {
+func chainTo(root *RNode, segs []Segment, final *RNode) []*RNode {
 	for _, k := range root.Kids {
-		if !(k.Kind == RItem && k.Key == segs[0] || k.Kind == RSlot && slotSegment(k) == segs[0]) {
+		if !matchesSeg(k, segs[0]) {
 			continue
 		}
 		if len(segs) == 1 {

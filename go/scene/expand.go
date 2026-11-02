@@ -3,6 +3,8 @@ package scene
 import (
 	"fmt"
 	"strings"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // RKind is the kind of a resolved node.
@@ -25,6 +27,7 @@ type RNode struct {
 	Slot     string   // RSlot: normalized name, "" for the default slot; Kids are the fallback
 	Inst     bool     // the root of an instance: slots below it belong to it, not to the use around
 	touched  bool     // RSlot: at or replace went through it into the fallback
+	replaced bool     // RSlot: declared by the nodes of a replace, which win over a slot of the same name
 	From, To string   // RLink
 	// Vars are the parameters of the component instance the node is in, by name (spec 5c): what an
 	// expression in its properties reads. Nil outside a component.
@@ -249,7 +252,7 @@ func (x *expander) apply(root *RNode, block []*Override, used map[*Override]bool
 		case OvNode:
 			add("", ov.Pos, x.contents([]*Node{ov.Node}), false)
 		case OvSlot:
-			add(NormalizeName(ov.Slot), ov.Pos, x.nodes(ov.Block), true)
+			add(NormalizeName(ov.Slot), ov.Pos, x.nodes(ov.Block, false), true)
 		case OvAt:
 			if at, ok := x.find(root, ov.Path, ov.Pos); ok {
 				if x.rec != nil {
@@ -262,7 +265,9 @@ func (x *expander) apply(root *RNode, block []*Override, used map[*Override]bool
 				if x.rec != nil {
 					x.rec.at(ov, root, at.node())
 				}
-				at.parent.Kids = splice(at.parent.Kids, at.i, x.nodes(ov.Block))
+				nodes := x.nodes(ov.Block, true)
+				markReplaced(nodes)
+				at.parent.Kids = splice(at.parent.Kids, at.i, nodes)
 			}
 		}
 	}
@@ -271,19 +276,34 @@ func (x *expander) apply(root *RNode, block []*Override, used map[*Override]bool
 	}
 }
 
-// nodes expands the block of a slot or replace, which takes nodes only.
-func (x *expander) nodes(block []*Override) []*RNode {
+// nodes expands the block of a slot or replace, which takes nodes only; slots too in a replace block,
+// because a slot the replacement declares is filled from the outside as any other (spec 4.7a).
+func (x *expander) nodes(block []*Override, slots bool) []*RNode {
 	var out []*RNode
 	for _, ov := range block {
-		if ov.Kind != OvNode {
+		switch {
+		case ov.Kind == OvNode:
+			if r := x.content(ov.Node); r != nil {
+				out = append(out, r)
+			}
+		case ov.Kind == OvSlot && slots:
+			out = append(out, &RNode{Kind: RSlot, Name: ov.Slot, Pos: ov.Pos, Slot: NormalizeName(ov.Slot), Kids: x.nodes(ov.Block, false)})
+		default:
 			x.t.fail(ov.Pos, "only item, link and use are allowed here")
-			continue
-		}
-		if r := x.content(ov.Node); r != nil {
-			out = append(out, r)
 		}
 	}
 	return out
+}
+
+// markReplaced marks the slots the nodes of a replace declare: a fill reaches them before a slot of the
+// same name the component declares elsewhere (spec 4.7a).
+func markReplaced(nodes []*RNode) {
+	for _, n := range nodes {
+		if n.Kind == RSlot {
+			n.replaced = true
+		}
+		markReplaced(n.Kids)
+	}
 }
 
 func splice(kids []*RNode, i int, with []*RNode) []*RNode {
@@ -332,13 +352,13 @@ func (x *expander) find(root *RNode, path string, pos Pos) (loc, bool) {
 		locs = locs[:0:0]
 		for _, p := range nodes {
 			for i, k := range p.Kids {
-				if k.Kind == RItem && k.Key == seg || k.Kind == RSlot && slotSegment(k) == seg {
+				if matchesSeg(k, seg) {
 					locs = append(locs, loc{p, i})
 				}
 			}
 		}
 		if len(locs) == 0 {
-			x.t.fail(pos, "path %s: nothing named %q inside the instance", path, seg)
+			x.t.fail(pos, "path %s: nothing named %q inside the instance", path, seg.Name)
 			return loc{}, false
 		}
 		nodes = nodes[:0:0]
@@ -353,16 +373,42 @@ func (x *expander) find(root *RNode, path string, pos Pos) (loc, bool) {
 	if len(nodes) > 1 {
 		parts := make([]string, len(nodes))
 		for i, n := range nodes {
-			parts[i] = n.Pos.String()
+			parts[i] = QuoteName(rName(n)) + " (" + n.Pos.String() + ")"
 		}
 		x.t.fail(pos, "ambiguous path %s: candidates %s", path, strings.Join(parts, ", "))
 		return loc{}, false
 	}
 	if nodes[0].Kind == RSlot {
-		x.t.fail(pos, "path %s names a slot, not a node; fill it with slot %s { ... }", path, segs[len(segs)-1])
+		x.t.fail(pos, "path %s names a slot, not a node; fill it with slot %s { ... }", path, segs[len(segs)-1].Text())
 		return loc{}, false
 	}
 	return locs[0], true
+}
+
+// matchesSeg reports whether a segment of an at or replace path names the drawn node k. A slot is
+// named "default" when it has no name.
+func matchesSeg(k *RNode, seg Segment) bool {
+	switch k.Kind {
+	case RItem:
+		if seg.Quoted {
+			return norm.NFC.String(seg.Name) == norm.NFC.String(k.Name)
+		}
+		return k.Key == seg.Key()
+	case RSlot:
+		if seg.Quoted {
+			return NormalizeName(seg.Name) == k.Slot
+		}
+		return slotSegment(k) == seg.Key()
+	}
+	return false
+}
+
+// rName is the name a path or a message gives a drawn node; the unnamed slot is "default".
+func rName(n *RNode) string {
+	if n.Kind == RSlot && n.Slot == "" {
+		return "default"
+	}
+	return n.Name
 }
 
 // slotSegment is the path segment of a slot.
@@ -373,15 +419,24 @@ func slotSegment(r *RNode) string {
 	return r.Slot
 }
 
+// findSlot is the slot a fill of name goes into: one the nodes of a replace declared wins over one of
+// the component, then the first in file order.
 func findSlot(r *RNode, name string) (loc, bool) {
+	if l, ok := findSlotIn(r, name, true); ok {
+		return l, true
+	}
+	return findSlotIn(r, name, false)
+}
+
+func findSlotIn(r *RNode, name string, replaced bool) (loc, bool) {
 	for i, k := range r.Kids {
-		if k.Kind == RSlot && k.Slot == name {
+		if k.Kind == RSlot && k.Slot == name && k.replaced == replaced {
 			return loc{r, i}, true
 		}
 		if k.Inst {
 			continue
 		}
-		if l, ok := findSlot(k, name); ok {
+		if l, ok := findSlotIn(k, name, replaced); ok {
 			return l, true
 		}
 	}
