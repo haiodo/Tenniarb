@@ -74,7 +74,7 @@ Content at a negative position is kept in the scene bounds.
   block fills it, `at <path>.<slot>.Node` reaches its fallback, an empty fill drops it. A slot of the
   replacement wins over one of the same name in the component.
 - `slot <name> { ... }` fills a named slot; an empty `slot {}` drops the fallback. Nodes with no
-  default slot, or an unknown slot name, are errors.
+  default slot, or an unknown name, are errors; a wrapper passes a named slot of a use below through.
 - The path follows the expanded tree: item, instance and slot names, with `default` for the unnamed
   slot. `at` cannot end at a slot. Several matches make the path an error.
 - `use-style` in the use block names a style of the element the use is written in, not of the

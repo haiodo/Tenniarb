@@ -117,6 +117,9 @@ Inside the block of a `use`:
   new nodes is filled from the same `use` block, so a replaced part keeps its slot open to the outside
   (its fallback is reached with `at <path>.<slot>.Node`); a slot of the replacement wins over one of the
   same name in the component;
+- A wrapper passes a named slot of a component it uses through: `slot content { … }` on the wrapper goes
+  to the one nested slot of that name (a wrapper of a wrapper too). Two components below with the same
+  slot name are an error; declare the slot on the wrapper to choose.
 - `slot <name> { nodes }` fills a named slot; nodes written directly (`item`, `use`) go to the default
   slot. Filling a slot drops its fallback; an empty `slot {}` (default) or `slot name {}` drops it and
   puts nothing.

@@ -443,6 +443,59 @@ func findSlotIn(r *RNode, name string, replaced bool) (loc, bool) {
 	return loc{}, false
 }
 
+// forwardedSlot is a slot of a component nested in a wrapper, with the path a reader writes it with.
+type forwardedSlot struct {
+	loc
+	path string
+}
+
+// forwardedSlots lists the slots named name that live in the components r uses, in file order: a wrapper
+// passes a slot of a component it uses through by its name (spec 4.7a). The slots of r itself are not
+// here, findSlot looks at them first; a slot of a replace wins over a plain one, as fillSlot prefers.
+func forwardedSlots(r *RNode, name string) []forwardedSlot {
+	if out := collectSlots(r, name, "", false, true, nil); len(out) > 0 {
+		return out
+	}
+	return collectSlots(r, name, "", false, false, nil)
+}
+
+// collectSlots walks the children of r; inInstance tells that they belong to an instance, whose slots a
+// fill of the wrapper may reach.
+func collectSlots(r *RNode, name, prefix string, inInstance, replaced bool, out []forwardedSlot) []forwardedSlot {
+	for i, k := range r.Kids {
+		p := joinPath(prefix, nodeSegment(k))
+		switch {
+		case k.Kind == RSlot:
+			if inInstance && k.Slot == name && k.replaced == replaced {
+				out = append(out, forwardedSlot{loc{r, i}, joinPath(p, slotSegment(k))})
+			}
+		case k.Inst:
+			out = collectSlots(k, name, p, true, replaced, out)
+		default:
+			out = collectSlots(k, name, p, inInstance, replaced, out)
+		}
+	}
+	return out
+}
+
+// nodeSegment is the path segment of a node: its name, else the key the format writes.
+func nodeSegment(n *RNode) string {
+	if n.Name != "" {
+		return n.Name
+	}
+	return n.Key
+}
+
+func joinPath(prefix, seg string) string {
+	if prefix == "" {
+		return seg
+	}
+	if seg == "" {
+		return prefix
+	}
+	return prefix + "." + seg
+}
+
 func slotNames(r *RNode, out []string) []string {
 	for _, k := range r.Kids {
 		if k.Inst {
@@ -466,6 +519,22 @@ func (x *expander) fillSlot(root *RNode, f *slotFill) {
 		return
 	}
 	at, ok := findSlot(root, f.name)
+	if !ok && f.name != "" {
+		// A wrapper passes a slot of a component it uses through by its name (spec 4.7a).
+		switch hits := forwardedSlots(root, f.name); len(hits) {
+		case 1:
+			at, ok = hits[0].loc, true
+		case 0:
+		default:
+			paths := make([]string, len(hits))
+			for i, h := range hits {
+				paths[i] = h.path
+			}
+			x.t.fail(f.pos, "slot %q is in %d nested components: %s; give the wrapper a slot of its own",
+				f.name, len(hits), strings.Join(paths, ", "))
+			return
+		}
+	}
 	if ok {
 		if at.node().touched {
 			x.t.warn(f.pos, "slot %s is filled here, the at/replace changes to its fallback are dropped", slotSegment(at.node()))
