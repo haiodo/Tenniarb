@@ -8,8 +8,8 @@ import (
 // TestGuideReference guards the reference: non-empty, short, sections present, no leftovers of the
 // draft spec that agents used to be given.
 func TestGuideReference(t *testing.T) {
-	if n := strings.Count(refText, "\n"); n > 240 {
-		t.Errorf("reference has %d lines, want at most 240", n)
+	if n := strings.Count(refText, "\n"); n > 250 {
+		t.Errorf("reference has %d lines, want at most 250", n)
 	}
 	for _, want := range []string{"## 1. Commands", "## 7. styles and use-style", "## 10. Not supported", "auto-layout", "--from-file"} {
 		if !strings.Contains(refText, want) {

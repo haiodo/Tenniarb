@@ -52,8 +52,9 @@ type prep struct {
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
 	icons   map[*RNode]*icon
-	eval    evalFunc          // Options.Eval or EvalVars; nil: no expression runs
-	evals   map[evalKey]*Prop // a property with an expression -> its evaluated copy, nil if it failed
+	anim    map[*RNode]*Animation // the animation a node plays (spec 13)
+	eval    evalFunc              // Options.Eval or EvalVars; nil: no expression runs
+	evals   map[evalKey]*Prop     // a property with an expression -> its evaluated copy, nil if it failed
 }
 
 // evalKey is one property of one node: the Prop of a scene is shared between instances, so its
@@ -85,12 +86,13 @@ func newPrep(t *Tree, o Options) *prep {
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
 		styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
-		eval: evaluator(o), evals: map[evalKey]*Prop{}}
+		anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
 
 // root is the layout of an element: its content at their own positions.
 func (p *prep) root(rn *RNode) *layout.Node {
 	p.classic = !sceneRoot(rn)
+	p.animations(rn, nil) // before the layout: the first frame of an animation is part of the picture
 	n := &layout.Node{Dir: layout.Abs, Tag: rn}
 	p.frames[rn] = n
 	for _, k := range rn.Kids {

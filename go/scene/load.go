@@ -302,12 +302,14 @@ func (l *loader) joinedBlocks(ns []*tenn.Node) {
 	}
 }
 
-func (l *loader) pos(c *tenn.Node) Pos {
-	tok := c.Token
-	if tok == nil {
-		return Pos{File: l.file, Line: 1, Col: 1}
+func (l *loader) pos(c *tenn.Node) Pos { return nodePos(l.file, c) }
+
+// nodePos is the position of a command of the file named file, 1-based.
+func nodePos(file string, c *tenn.Node) Pos {
+	if c.Token == nil {
+		return Pos{File: file, Line: 1, Col: 1}
 	}
-	return Pos{File: l.file, Line: tok.Line + 1, Col: tok.Col - tok.Size + 1}
+	return Pos{File: file, Line: c.Token.Line + 1, Col: c.Token.Col - c.Token.Size + 1}
 }
 
 func rangeOf(c *tenn.Node) Range {
@@ -640,6 +642,10 @@ func (l *loader) style(c *tenn.Node) *Style {
 			continue
 		}
 		if hasBlock(cmd) {
+			if name == "animation" {
+				l.t.warn(l.pos(cmd), "the keyframes block goes in the element, not in a style: write it next to styles")
+				continue
+			}
 			st.Kids = append(st.Kids, StyleKid{Key: NormalizeName(name), Style: l.style(cmd)})
 			continue
 		}

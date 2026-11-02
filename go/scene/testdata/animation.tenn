@@ -1,0 +1,54 @@
+element "Spin" {
+    styles {
+        loading { animation spin 1s linear infinite }
+    }
+    animation spin {
+        from { rotate 0 }
+        to { rotate 360 }
+    }
+    animation fade {
+        0% { opacity 1 }
+        100% { opacity 0.2 }
+    }
+    item Row {
+        auto-layout row; gap 8; padding 8
+        item Box { width 20; height 20; color #ff0000 }
+        item Icon { width 16; height 16; path "M8 3v10M3 8h10"; view-box 0 0 16 16; animation spin 1s linear infinite }
+        item Bar { width 20; height 20; color #00ff00; animation fade 300ms ease-out 2 }
+        item Tint { width 20; height 20; color #0000ff; use-style loading }
+    }
+}
+
+element "Still" {
+    styles {
+        dim { opacity 0.5 }
+    }
+    animation pulse {
+        from { color #0000ff }
+        to { color #ff0000 }
+    }
+    item Row {
+        auto-layout row; gap 8
+        item Dot { width 20; height 20; color #ff0000; animation pulse 1s }
+        item Faded { width 20; height 20; color #ff0000; use-style dim; animation pulse 2s }
+    }
+}
+
+element "Warn" {
+    styles {
+        oops { animation nope { from { opacity 1 } } }
+    }
+    animation broken {
+        middle { rotate 10 }
+        from { width 40; shadow 0 1 2 }
+        to { opacity 0.5 }
+    }
+    item A { width 10; height 10; animation missing 1s }
+    item B { width 10; height 10; animation broken 0ms }
+    item C { width 10; height 10; animation broken 1s sideways }
+    item D { width 10; height 10; animation broken 1s linear -2 }
+    transition color 200ms ease
+    transition opacity 300ms slow
+    transition width 200ms
+    transition
+}

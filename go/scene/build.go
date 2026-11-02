@@ -18,6 +18,9 @@ type Screen struct {
 	NextID int
 	// Warnings are the warnings of this element and of what it pulls in through use and import.
 	Warnings Errors
+	// Animations are the animations of the items, by the scene node they play on (spec 13): WriteSVG
+	// puts them into the document as CSS.
+	Animations map[*gfx.Node]*Animation
 
 	tree *RNode
 	p    *prep
@@ -105,6 +108,14 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
 	sc.gfx, sc.NextID = b.made, b.next
+	if len(p.anim) > 0 {
+		sc.Animations = make(map[*gfx.Node]*Animation, len(p.anim))
+		for rn, a := range p.anim {
+			if n := sc.gfx[rn]; n != nil {
+				sc.Animations[n] = a
+			}
+		}
+	}
 	if local.Fatal() {
 		return nil, local
 	}

@@ -132,6 +132,17 @@ element "Actions" {
   and `shape any-of icon-only` (any number). A line without a block and without `one-of`/`any-of` is
   not a style.
 
+## 7b. animation
+
+- `animation spin 1s linear infinite` on an item or in a style plays the keyframes block of that name:
+  `animation spin { from { rotate 0 } to { rotate 360 } }` written on the item or above it. Duration
+  `300ms` or `1s`; easing `linear`, `ease`, `ease-in`, `ease-out`, `ease-in-out` (default `ease`);
+  repeat a number or `infinite`. The selectors are `from`, `to` and `0%`..`100%`.
+- Keyframes animate `rotate`, `scale`, `opacity`, `color`, `border-color`, `text-color` and `pos` only:
+  layout (`width`, `gap`, `padding`, ...) warns and is not animated. The still picture (PNG) shows the
+  first of them; the animation itself is CSS in the SVG export.
+- `transition color 200ms ease-in-out` is read and checked, but does not play yet.
+
 ## 8. Colors and text
 
 - `color` fills, `border-color` draws the border (`line-width N` for its width), `text-color` colors
@@ -166,8 +177,8 @@ element "Actions" {
 The engine reads none of these; they are ignored or warned about, so do not write them:
 `frame`, `param`, `variant`, `native`, `detach`, `import` (mount a file with `element ...
 --from-file`), percentages (`width 50%` becomes `hug` and warns), `justify space-around`,
-`aspect-ratio`, `display none` and `line-style` (a scene link reads `display arrow` only), `animation`
-and `transition` (spec 13 is a proposal), and the other commands of classic diagrams.
+`aspect-ratio`, `display none` and `line-style` (a scene link reads `display arrow` only), and the
+other commands of classic diagrams.
 
 ## 11. Examples
 
