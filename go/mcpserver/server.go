@@ -115,6 +115,10 @@ func (s *Server) MCP() *mcp.Server {
 		})
 	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
+	add(srv, "gen", "Print the text the template of a component generates (spec 5c): the template with its ${parameters} filled and its slots taken from the use, for code generation. set gives the parameter values by name; without it the defaults of the element are used, and where the element is the use, the block of the use.",
+		func(in genToolIn) (string, error) { return s.gen(in) })
+	add(srv, "suggest", "Report what could be tidied in a .tenn file, as tenniarb suggest does: repeated structures that could be one component, nodes that differ only in a colour or a size and could be one style, literals used again and again, dead styles and overrides that change nothing. Reads only, changes nothing. file is one file; empty lists the whole workspace.",
+		func(in suggestToolIn) (string, error) { return s.suggest(in) })
 	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths are dotted.",
 		func(in validateIn) (string, error) {
 			if in.File != "" {
@@ -193,7 +197,7 @@ const (
 )
 
 // stateHead explains the node lines of get_state.
-const stateHead = "node lines: path kind line [renderer] [+N nodes below, cut by depth]\n"
+const stateHead = "node lines: path kind line [renderer] [kind=TYPE] [params=a,b] [styles=a,b] [groups=name:one-of(a b)] [+N nodes below, cut by depth]\n"
 
 // writeDiags lists the problems of file rel, errors first, at most maxDiags.
 func writeDiags(b *strings.Builder, es scene.Errors, rel string) {
@@ -217,6 +221,45 @@ func writeNode(b *strings.Builder, n *scene.Node, path string, level int, rend *
 	fmt.Fprintf(b, "%s%s %s %d", strings.Repeat("  ", level), path, n.Kind, n.Pos.Line)
 	if n.Kind == scene.KElement && hasContent(n) {
 		b.WriteString(" " + rend.of(n))
+	}
+	writeNodeNotes(b, n)
+}
+
+// writeNodeNotes adds what a node declares about itself, so that an agent picks a component without
+// reading it: its kind, the parameters a use may set, the styles it holds and the groups it offers
+// (spec 5b, 5c).
+func writeNodeNotes(b *strings.Builder, n *scene.Node) {
+	if n.Type != "" {
+		b.WriteString(" kind=" + n.Type)
+	}
+	if len(n.Params) > 0 {
+		names := make([]string, len(n.Params))
+		for i, p := range n.Params {
+			names[i] = p.Name
+			if p.Default == nil {
+				names[i] += "!"
+			}
+		}
+		b.WriteString(" params=" + strings.Join(names, ","))
+	}
+	if len(n.Styles) > 0 {
+		names := make([]string, 0, len(n.Styles))
+		for name := range n.Styles {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		b.WriteString(" styles=" + strings.Join(names, ","))
+	}
+	if len(n.StyleGroups) > 0 {
+		var gs []string
+		for _, g := range n.StyleGroups {
+			kind := "one-of"
+			if g.AnyOf {
+				kind = "any-of"
+			}
+			gs = append(gs, fmt.Sprintf("%s:%s(%s)", g.Name, kind, strings.Join(g.Styles, " ")))
+		}
+		b.WriteString(" groups=" + strings.Join(gs, ","))
 	}
 }
 

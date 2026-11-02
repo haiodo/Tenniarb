@@ -68,7 +68,7 @@ func TestClassicDiagram(t *testing.T) {
 	root := tempRoot(t, map[string]string{"map.tenn": brainMap})
 	cs := memSession(t, root)
 	state := mustOK(t, cs, "get_state", nil)
-	for _, want := range []string{"  Map element 1 diagram\n", "    Map.Next_step item 10\n", "  Screen element 18 scene\n", "  Flat element 24 scene\n"} {
+	for _, want := range []string{"  Map element 1 diagram", "    Map.Next_step item 10", "  Screen element 18 scene", "  Flat element 24 scene"} {
 		if !strings.Contains(state, want) {
 			t.Errorf("state lacks %s:\n%s", want, state)
 		}

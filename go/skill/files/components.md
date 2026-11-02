@@ -157,7 +157,7 @@ when a library already has it (a pen.dev import does), but a new part is one com
 ## Templates: code out of a component
 
 A component can carry the code it generates: `template %{ … }` with `${param}` and `<slot/>`, and
-`tenniarb gen [-set name=value] FILE ELEMENT` prints it. The text inside `%{ … }` is not parsed, so it may be
+`tenniarb gen [-set name=value] FILE ELEMENT` prints it, and the MCP tool `gen` does the same. The text inside `%{ … }` is not parsed, so it may be
 Svelte, JSX or anything else.
 
 ```tenn

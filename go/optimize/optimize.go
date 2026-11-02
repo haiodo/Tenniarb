@@ -112,6 +112,9 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	return ExitOK
 }
 
+// Text is the human-readable line of a finding, as tenniarb suggest prints it.
+func (f Finding) Text() string { return f.text() }
+
 // text is the human-readable line of a finding: position, rule, what repeats, what it saves.
 func (f Finding) text() string {
 	var b strings.Builder
