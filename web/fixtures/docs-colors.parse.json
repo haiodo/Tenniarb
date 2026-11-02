@@ -23,7 +23,7 @@
     },
     {
       "col" : 0,
-      "line" : 2,
+      "line" : 1,
       "literal" : "\n",
       "pos" : 30,
       "size" : 1,
@@ -31,7 +31,7 @@
     },
     {
       "col" : 5,
-      "line" : 2,
+      "line" : 1,
       "literal" : "color",
       "pos" : 31,
       "size" : 5,
@@ -39,7 +39,7 @@
     },
     {
       "col" : 13,
-      "line" : 2,
+      "line" : 1,
       "literal" : "#ffeeff",
       "pos" : 37,
       "size" : 7,
@@ -47,7 +47,7 @@
     },
     {
       "col" : 0,
-      "line" : 4,
+      "line" : 2,
       "literal" : "\n",
       "pos" : 72,
       "size" : 1,
@@ -55,7 +55,7 @@
     },
     {
       "col" : 10,
-      "line" : 4,
+      "line" : 2,
       "literal" : "text-color",
       "pos" : 73,
       "size" : 10,
@@ -63,7 +63,7 @@
     },
     {
       "col" : 14,
-      "line" : 4,
+      "line" : 2,
       "literal" : "red",
       "pos" : 84,
       "size" : 3,
@@ -71,7 +71,7 @@
     },
     {
       "col" : 0,
-      "line" : 6,
+      "line" : 3,
       "literal" : "\n",
       "pos" : 114,
       "size" : 1,
@@ -79,7 +79,7 @@
     },
     {
       "col" : 0,
-      "line" : 6,
+      "line" : 3,
       "literal" : "\u0000",
       "pos" : 114,
       "size" : 1,
@@ -129,7 +129,7 @@
             "kind" : "Ident",
             "token" : {
               "col" : 5,
-              "line" : 2,
+              "line" : 1,
               "literal" : "color",
               "pos" : 31,
               "size" : 5,
@@ -140,7 +140,7 @@
             "kind" : "Ident",
             "token" : {
               "col" : 13,
-              "line" : 2,
+              "line" : 1,
               "literal" : "#ffeeff",
               "pos" : 37,
               "size" : 7,
@@ -151,7 +151,7 @@
         "kind" : "Command",
         "token" : {
           "col" : 5,
-          "line" : 2,
+          "line" : 1,
           "literal" : "color",
           "pos" : 31,
           "size" : 5,
@@ -164,7 +164,7 @@
             "kind" : "Ident",
             "token" : {
               "col" : 10,
-              "line" : 4,
+              "line" : 2,
               "literal" : "text-color",
               "pos" : 73,
               "size" : 10,
@@ -175,7 +175,7 @@
             "kind" : "Ident",
             "token" : {
               "col" : 14,
-              "line" : 4,
+              "line" : 2,
               "literal" : "red",
               "pos" : 84,
               "size" : 3,
@@ -186,7 +186,7 @@
         "kind" : "Command",
         "token" : {
           "col" : 10,
-          "line" : 4,
+          "line" : 2,
           "literal" : "text-color",
           "pos" : 73,
           "size" : 10,

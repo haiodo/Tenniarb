@@ -211,13 +211,23 @@ func TestLexerBOMInsideSymbol(t *testing.T) {
 	}
 }
 
-// The line comment leaves its LF to the main loop, which counts it again.
+// The line comment leaves its LF to the main loop, which counts it once.
 func TestLexerLineCounterAfterComment(t *testing.T) {
 	toks := tokenize("a // c\nb")
 	for _, tok := range toks {
-		if tok.Literal == "b" && tok.Line != 2 {
-			t.Errorf("line of b = %d, want 2 (Swift quirk)", tok.Line)
+		if tok.Literal == "b" && tok.Line != 1 {
+			t.Errorf("line of b = %d, want 1", tok.Line)
 		}
+	}
+}
+
+// Two comments above must not shift the line of a later parser error.
+func TestParserErrorLineAfterTwoComments(t *testing.T) {
+	parser := NewParser(nil)
+	parser.Parse("// one\n// two\n}")
+	errs := parser.Errors.Errors
+	if len(errs) != 1 || errs[0].Line != 2 {
+		t.Errorf("errors %v, want one at line 2", errs)
 	}
 }
 

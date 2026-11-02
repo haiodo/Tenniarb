@@ -172,13 +172,8 @@ export class TennLexer implements TennLexerProtocol {
     if (this.next() === STAR) {
       this.skipCComment();
     } else if (this.next() === SLASH) {
-      // End of line comment
-      while (this.pos < this.bufferCount) {
-        if (this.currentCharValue === LF) {
-          this.currentLine += 1;
-          this.currentChar = 0;
-          break;
-        }
+      // End of line comment: stop at LF without consuming it; processNewLine counts it.
+      while (this.pos < this.bufferCount && this.currentCharValue !== LF) {
         this.inc();
       }
     } else {

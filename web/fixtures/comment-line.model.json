@@ -49,7 +49,7 @@
           "kind" : "Ident",
           "token" : {
             "col" : 1,
-            "line" : 4,
+            "line" : 2,
             "literal" : "b",
             "pos" : 29,
             "size" : 1,
@@ -60,7 +60,7 @@
           "kind" : "IntLit",
           "token" : {
             "col" : 3,
-            "line" : 4,
+            "line" : 2,
             "literal" : "2",
             "pos" : 31,
             "size" : 1,
@@ -71,7 +71,7 @@
       "kind" : "Command",
       "token" : {
         "col" : 1,
-        "line" : 4,
+        "line" : 2,
         "literal" : "b",
         "pos" : 29,
         "size" : 1,

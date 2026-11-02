@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { TennLexer } from "../src/index.ts";
+import { TennLexer, TennParser } from "../src/index.ts";
 import { graphemeCount, toSwiftToken } from "./swift-units.ts";
 import type { LexerError, TennToken } from "../src/index.ts";
 
@@ -91,6 +91,18 @@ test("line and size", () => {
   assert.equal(syms[0]!.line, 0);
   assert.equal(syms[1]!.line, 1);
   assert.equal(syms[1]!.size, 2);
+});
+
+// A line comment must not count its own newline: two comments above, error on line 2.
+test("line counter after comments", () => {
+  const b = tokenize("a // c\nb").filter((t) => t.literal === "b")[0];
+  assert.equal(b!.line, 1);
+  const parser = new TennParser();
+  parser.parse("// one\n// two\n}");
+  assert.deepEqual(
+    parser.errors.errors.map((e) => e.line),
+    [2],
+  );
 });
 
 test("revert", () => {

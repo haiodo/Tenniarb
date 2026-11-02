@@ -220,13 +220,8 @@ public class SlowLexer: TennLexerProtocol {
             // C/C++ multi-line comment
             self.skipCComment()
         } else if self.next() == "/" {
-            // End of line comment
-            while self.pos < self.bufferCount {
-                if currentCharValue == "\n" {
-                    self.currentLine += 1
-                    self.currentChar = 0
-                    break
-                }
+            // End of line comment: stop at LF without consuming it; processNewLine counts it once.
+            while self.pos < self.bufferCount && currentCharValue != "\n" {
                 self.inc()
             }
         } else {

@@ -23,7 +23,7 @@
     },
     {
       "col" : 0,
-      "line" : 2,
+      "line" : 1,
       "literal" : "\n",
       "pos" : 14,
       "size" : 1,
@@ -31,7 +31,7 @@
     },
     {
       "col" : 0,
-      "line" : 4,
+      "line" : 2,
       "literal" : "\n",
       "pos" : 28,
       "size" : 1,
@@ -39,7 +39,7 @@
     },
     {
       "col" : 1,
-      "line" : 4,
+      "line" : 2,
       "literal" : "b",
       "pos" : 29,
       "size" : 1,
@@ -47,7 +47,7 @@
     },
     {
       "col" : 3,
-      "line" : 4,
+      "line" : 2,
       "literal" : "2",
       "pos" : 31,
       "size" : 1,
@@ -55,7 +55,7 @@
     },
     {
       "col" : 0,
-      "line" : 5,
+      "line" : 3,
       "literal" : "\n",
       "pos" : 32,
       "size" : 1,
@@ -63,7 +63,7 @@
     },
     {
       "col" : 0,
-      "line" : 5,
+      "line" : 3,
       "literal" : "\u0000",
       "pos" : 32,
       "size" : 1,
@@ -113,7 +113,7 @@
             "kind" : "Ident",
             "token" : {
               "col" : 1,
-              "line" : 4,
+              "line" : 2,
               "literal" : "b",
               "pos" : 29,
               "size" : 1,
@@ -124,7 +124,7 @@
             "kind" : "IntLit",
             "token" : {
               "col" : 3,
-              "line" : 4,
+              "line" : 2,
               "literal" : "2",
               "pos" : 31,
               "size" : 1,
@@ -135,7 +135,7 @@
         "kind" : "Command",
         "token" : {
           "col" : 1,
-          "line" : 4,
+          "line" : 2,
           "literal" : "b",
           "pos" : 29,
           "size" : 1,

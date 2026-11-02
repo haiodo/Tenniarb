@@ -178,18 +178,14 @@ func (l *Lexer) skipCComment() {
 	}
 }
 
-// processComment: the line comment stops at LF without consuming it, so the main loop counts
-// that LF a second time (line counter quirk of the Swift lexer).
+// processComment: a line comment stops at LF without consuming it, so the main loop counts
+// that LF once, in processNewLine.
 func (l *Lexer) processComment() {
 	switch l.next() {
 	case '*':
 		l.skipCComment()
 	case '/':
-		for l.pos < l.bufferCount {
-			if l.currentCharValue == '\n' {
-				l.newLine()
-				break
-			}
+		for l.pos < l.bufferCount && l.currentCharValue != '\n' {
 			l.inc()
 		}
 	default:
