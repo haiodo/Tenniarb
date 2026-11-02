@@ -135,7 +135,7 @@ func TestItemsAdd(t *testing.T) {
 	if got := h.text(); !strings.Contains(got, "item Frame") {
 		t.Fatalf("the row + wrote nothing:\n%s", got)
 	}
-	a.ShotTitle("items-2-row", h.title(file))
+	a.ShotOf("items-2-row", qa.ID("items")) // by control: the title lags the state on Linux
 	a.Find(qa.ID("canvas")).Focus()
 	a.Key("Mod+Z")
 	restWait(a)

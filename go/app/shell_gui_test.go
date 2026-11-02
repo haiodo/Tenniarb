@@ -263,7 +263,9 @@ func TestPrefsAndHelp(t *testing.T) {
 		t.Fatal("the window stays registered after close")
 	}
 
-	// "Tenniarb Help" opens the readme in a web view; a machine without one says so in a message box.
+	// "Tenniarb Help" opens the readme in a web view; a machine without one says so in a message box,
+	// which has to be answered or the click that opens it fails. An unused answer is dropped by App.
+	app.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
 	menu(app, "Tenniarb Help")
 	if d := app.Dialogs(); len(d) > 0 {
 		t.Logf("no web view on this machine: %s", d[0].Message)
