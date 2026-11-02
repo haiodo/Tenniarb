@@ -170,6 +170,9 @@ element "Chip" {
 
 ## Finding components in a large library
 
+- A component line of `get_state` also names its `kind`, `params`, `styles` and `groups`
+  (`Kit.Button element 2 scene kind=component params=title,kind styles=primary,secondary groups=kind:one-of(primary secondary)`),
+  so the overrides are known without reading the component; `!` after a parameter marks it required.
 - `get_state {file: "lib/kit.tenn", find: "Button"}` lists every node whose name has the text, with its
   full path inside that file; prefix the alias to use it.
 - `get_state {file: "screen.tenn", path: "kit", find: "Button"}` searches through the mounted file and prints

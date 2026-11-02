@@ -37,6 +37,7 @@ and `validate` do the same.
 | the frame of a container is hidden | filled children paint over it | `padding 1` or a frame on the child |
 | `"#fff" is not a color` | three hex digits | `#ffffff` |
 | `color: "#00000000" is not a color` | fully transparent fill written as color | leave `color` out |
+| a piece should move but looks still | the animation is named on another item, or the item is drawn by a nested element that needs its own keyframes | `animation` on that item; `guide {topic: "animations"}` |
 | `nothing named "X" inside the instance` | `at` path is not a part of the component | list its parts with `get_state` |
 | `names a slot, not a node; fill it with slot ...` | `at` used to fill a slot | `slot name { ... }` |
 | `nodes passed, but the component has no default slot` | items written in a `use` block | fill a named slot or use `at`/`replace` |

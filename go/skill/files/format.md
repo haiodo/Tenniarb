@@ -111,6 +111,27 @@ A leaf with a fixed or `fill` width wraps its text at spaces; without a width it
 is 400 units below `pos 0 0`. Children of auto-layout need no `pos`; an `absolute yes` child takes
 `pos X Y` from the top left of its parent, so 8 units down is `pos 8 -8`.
 
+## Animations
+
+An item can spin, pulse or fade: the keyframes live in the element that uses them, the item names one.
+
+```tenn
+animation spin {
+  from { rotate 0 }
+  to { rotate 360 }
+}
+item Spinner { width 28; height 28; path "M14 2a12 12 0 1 0 12 12"; border-color #6b3ad3; animation spin 1.2s linear infinite }
+```
+
+- `animation <name> <duration> [easing] [repeat]` on an item or in a style line; the duration is `300ms` or
+  `1s`, the easing `linear|ease|ease-in|ease-out|ease-in-out`, the repeat a count or `infinite`.
+- A frame is `from`/`to` or `0%`/`50%`/`100%`, and sets `rotate`, `scale`, `opacity`, `color`,
+  `border-color`, `text-color` or `pos`. Sizes, gaps and padding cannot animate: they warn and stay.
+- One block per line. A nested element (a component inside another) does not see the keyframes of its
+  parent: give it its own copy.
+- The editor plays every animation in a loop; an exported SVG keeps the repeat as written; a PNG is the
+  first frame.
+
 ## Compact form
 
 Files made for agents use two spaces per level and one-line blocks of plain commands:
