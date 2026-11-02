@@ -424,6 +424,43 @@ func NodeAt(el *scene.Node, path string) *scene.Node {
 	if el == nil || path == "" {
 		return nil
 	}
+	segs, ok := scene.SplitPath(path)
+	if !ok {
+		return nodeAtKeys(el, path) // a path of NodePath with an empty name, "Page."
+	}
+	cur := el
+	for _, seg := range segs {
+		var next *scene.Node
+		if seg.Quoted {
+			for _, c := range sceneKids(cur) {
+				if seg.Matches(c) {
+					next = c
+					break
+				}
+			}
+		} else {
+			key, k := splitIndex(seg.Name)
+			for _, c := range sceneKids(cur) {
+				if c.Key == key {
+					if k == 0 {
+						next = c
+						break
+					}
+					k--
+				}
+			}
+		}
+		if next == nil {
+			return nil
+		}
+		cur = next
+	}
+	return cur
+}
+
+// nodeAtKeys is NodeAt for a path of keys with empty segments, which NodePath writes for a node
+// without a name.
+func nodeAtKeys(el *scene.Node, path string) *scene.Node {
 	cur := el
 	for _, seg := range strings.Split(path, ".") {
 		key, k := splitIndex(seg)

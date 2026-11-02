@@ -43,13 +43,20 @@ func argText(a string) string { return strings.TrimPrefix(CommandText("x", a), "
 func refEdit(r scene.Ref, name string) (TextEdit, bool) {
 	text := name
 	if r.Seg >= 0 {
-		segs := strings.Split(r.Text, ".")
+		segs, ok := scene.SplitPath(r.Text)
 		key := scene.NormalizeName(name)
-		if r.Seg >= len(segs) || scene.NormalizeName(segs[r.Seg]) == key {
+		if !ok || r.Seg >= len(segs) {
 			return TextEdit{}, false
 		}
-		segs[r.Seg] = key
-		text = strings.Join(segs, ".")
+		if segs[r.Seg].IsName(name) {
+			return TextEdit{}, false
+		}
+		parts := make([]string, len(segs))
+		for i, s := range segs {
+			parts[i] = s.Text()
+		}
+		parts[r.Seg] = key
+		text = strings.Join(parts, ".")
 	} else if r.Text == name {
 		return TextEdit{}, false
 	}
