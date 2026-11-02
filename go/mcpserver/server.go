@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -197,7 +198,7 @@ const (
 )
 
 // stateHead explains the node lines of get_state.
-const stateHead = "node lines: path kind line [renderer] [kind=TYPE] [params=a,b] [styles=a,b] [groups=name:one-of(a b)] [+N nodes below, cut by depth]\n"
+const stateHead = "node lines: path kind line [renderer] [kind=TYPE] [params=a,b] [styles=a,b] [groups=name:one-of(a b)] [args=a=v,b=v] [+N nodes below, cut by depth]\n"
 
 // writeDiags lists the problems of file rel, errors first, at most maxDiags.
 func writeDiags(b *strings.Builder, es scene.Errors, rel string) {
@@ -261,6 +262,32 @@ func writeNodeNotes(b *strings.Builder, n *scene.Node) {
 		}
 		b.WriteString(" groups=" + strings.Join(gs, ","))
 	}
+	if n.Kind == scene.KUse {
+		if args := useArgs(n); args != "" {
+			b.WriteString(" args=" + args)
+		}
+	}
+}
+
+// useArgs is the parameter values a use sets, as name=value, so an agent knows the variant of an
+// instance without reading it. A value with a space or a quote is quoted back.
+func useArgs(n *scene.Node) string {
+	var parts []string
+	for _, ov := range n.Block {
+		if ov.Kind != scene.OvProp || ov.Prop == nil {
+			continue
+		}
+		var vals []string
+		for _, a := range ov.Prop.Args {
+			s, _ := a.GetIdentText()
+			if strings.ContainsAny(s, " \t\"") {
+				s = strconv.Quote(s)
+			}
+			vals = append(vals, s)
+		}
+		parts = append(parts, ov.Prop.Name+"="+strings.Join(vals, " "))
+	}
+	return strings.Join(parts, " ")
 }
 
 // children are the nodes get_state lists under parent: Nodes and the slots, which a use fills by

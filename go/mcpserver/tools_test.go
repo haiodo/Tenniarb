@@ -70,6 +70,7 @@ func TestStateShowsComponent(t *testing.T) {
 		"params=title,kind",
 		"styles=primary,secondary",
 		"groups=kind:one-of(primary secondary)",
+		"args=title=Save kind=secondary",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("get_state lacks %q:\n%s", want, out)

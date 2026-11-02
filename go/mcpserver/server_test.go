@@ -170,7 +170,7 @@ func TestGetState(t *testing.T) {
 		t.Errorf("staging files or nodes below depth 2 listed:\n%s", text)
 	}
 	deep := mustOK(t, cs, "get_state", map[string]any{"file": "import.tenn", "depth": 3})
-	if !strings.Contains(deep, "      Screens.Login.ok use 9\n") || strings.Contains(deep, "lib/kit.tenn") {
+	if !strings.Contains(deep, "      Screens.Login.ok use 9 args=color=green\n") || strings.Contains(deep, "lib/kit.tenn") {
 		t.Errorf("depth 3 of one file:\n%s", deep)
 	}
 	// A subtree through a mounting element: paths relative to it, slots listed by name.
