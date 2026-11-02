@@ -485,6 +485,7 @@ func (v *Viewer) drawSceneOverlay() {
 	if v.view == nil {
 		return
 	}
+	v.syncMarks() // the marks sit on the nodes, so they move with the camera
 	comp := v.view.Compositor()
 	pic := gfx.NewRecorder().Finish()
 	if v.sceneMode() {
@@ -651,11 +652,16 @@ func (v *Viewer) sceneEdit(n *scene.Node, e TextEdit) bool {
 		v.setBanner("Not applied: the change adds scene errors")
 		return false
 	}
+	var path string
+	if v.sv != nil {
+		path = NodePath(v.sv.node, n) // before the apply: it rebuilds the tree of the element
+	}
 	if err := v.applyFileText(file, e.Start, e.End, e.New); err != nil {
 		v.pending = nil
 		v.setBanner(err.Error())
 		return false
 	}
+	v.markNode(path, markPulse, "")
 	return true
 }
 

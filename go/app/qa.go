@@ -48,6 +48,19 @@ func (sh *Shell) registerQA() {
 		}
 		return v.selectAPI(sel)
 	})
+	// edit: what an agent's edit of the text does to the window of path
+	qa.Handle("edit", func(a qa.Args) error {
+		var e TextEdit
+		if err := a.Decode("start", &e.Start); err != nil {
+			return err
+		}
+		if err := a.Decode("end", &e.End); err != nil {
+			return err
+		}
+		e.New = a.String("new")
+		_, _, err := sh.ApplyEdit(a.String("path"), 0, e)
+		return err
+	})
 	qa.Handle("activate", func(a qa.Args) error {
 		v, err := sh.viewer(a.String("path"))
 		if err != nil {
@@ -208,6 +221,8 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
 	out["indicators"] = v.ind.dots
+	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
+	out["marks"] = v.qaMarks()
 	// itemList: the rows of the Items list made so far, as the outline; itemRows: text -> path, kind, bounds
 	items, itemRows := []string{}, map[string]map[string]any{}
 	var walkItems func(ns []*g.Node, prefix string)

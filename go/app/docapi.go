@@ -154,6 +154,7 @@ func (v *Viewer) selectAPI(sel Selection) error {
 		return err
 	}
 	v.showSelection(e, slices.Clone(sel.Nodes), items, true)
+	v.markNodes(sel.Nodes)
 	return nil
 }
 
@@ -221,6 +222,7 @@ func (sh *Shell) ApplyEdit(path string, version int, e TextEdit) (text string, v
 		}
 		if err = v.applyText(e.Start, e.End, e.New); err == nil {
 			text, ver = v.text, v.version
+			v.markEdited(e.Start)
 		}
 	})
 	return

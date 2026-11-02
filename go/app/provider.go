@@ -151,6 +151,7 @@ func (p provider) Apply(path string, base int64, text string) (ver int64, err er
 			if err := v.applyText(a, len(v.text)-b, text[a:len(text)-b]); err != nil {
 				return err
 			}
+			v.markEdited(a)
 		}
 		ver = int64(v.version)
 		return nil
@@ -204,13 +205,18 @@ func (p provider) Render(path string, scale float64) ([]byte, error) {
 // selectPaths selects nodes named by dotted paths from the root of the file (spec 4.2), all in one
 // element; that element goes on the canvas. No paths clear the selection.
 func (v *Viewer) selectPaths(paths []string, reveal bool) error {
-	return v.selectPathsIn(paths, reveal, reveal)
+	marks, err := v.selectPathsIn(paths, reveal, reveal)
+	if err != nil {
+		return err
+	}
+	v.markNodes(marks)
+	return nil
 }
 
 // followPaths shows what an agent works on: the paths are selected and scrolled into view, but the
 // window does not come to front and the keyboard stays where it is.
 func (v *Viewer) followPaths(paths []string) error {
-	err := v.selectPathsIn(paths, true, false)
+	_, err := v.selectPathsIn(paths, true, false)
 	if sel := v.sessionItems(); err == nil && v.view != nil && len(sel) > 0 {
 		v.revealItem(sel[0])
 	}
@@ -225,17 +231,18 @@ func (v *Viewer) sessionItems() []*model.DiagramItem {
 	return v.session.Selection()
 }
 
-// selectPathsIn is selectPaths with front apart from reveal: front brings the window to the front.
-func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) error {
+// selectPathsIn is selectPaths with front apart from reveal: front brings the window to the front. It
+// returns what the marks name: the selected scene nodes, or the selected classic items by name.
+func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) (marks []string, err error) {
 	if v.session == nil {
-		return errors.New("the document has parse errors")
+		return nil, errors.New("the document has parse errors")
 	}
 	tree := v.stree
 	if tree == nil {
 		tree, _ = scene.LoadOverlay(v.root, v.rel(), map[string]string{v.rel(): v.text})
 	}
 	if tree == nil || tree.File(v.rel()) == nil {
-		return errors.New("the document does not load")
+		return nil, errors.New("the document does not load")
 	}
 	e := v.state.Current
 	var el *scene.Node
@@ -244,10 +251,10 @@ func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) error {
 	for i, p := range paths {
 		n, err := tree.Resolve(tree.File(v.rel()), p)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if n.Kind != scene.KItem && n.Kind != scene.KUse && n.Kind != scene.KElement {
-			return fmt.Errorf("%s is not an item, a use or an element", p)
+			return nil, fmt.Errorf("%s is not an item, a use or an element", p)
 		}
 		owner := n
 		for owner.Kind != scene.KElement && owner.Kind != scene.KFile {
@@ -256,10 +263,10 @@ func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) error {
 		if i == 0 {
 			el = owner
 			if e = Resolve(&v.session.Root().Element, elementSegs(owner)); e == nil {
-				return fmt.Errorf("no element for %s", p)
+				return nil, fmt.Errorf("no element for %s", p)
 			}
 		} else if owner != el {
-			return fmt.Errorf("%s is in another element than %s", p, paths[0])
+			return nil, fmt.Errorf("%s is in another element than %s", p, paths[0])
 		}
 		if n == owner {
 			continue
@@ -267,23 +274,25 @@ func (v *Viewer) selectPathsIn(paths []string, reveal, front bool) error {
 		if !model.SceneElement(e) {
 			it := classicItem(e, owner, n)
 			if it == nil {
-				return fmt.Errorf("%s is not an item of the diagram", p)
+				return nil, fmt.Errorf("%s is not an item of the diagram", p)
 			}
 			items = append(items, it)
+			marks = append(marks, it.Name)
 			continue
 		}
 		rel := NodePath(owner, n)
 		if rel == "" {
-			return fmt.Errorf("%s is inside a component, not written in the element", p)
+			return nil, fmt.Errorf("%s is inside a component, not written in the element", p)
 		}
 		nodes = append(nodes, rel)
+		marks = append(marks, rel)
 	}
 	if front && v.win != nil {
 		v.win.Unwrap().ForceActive()
 		v.sh.active = v
 	}
 	v.showSelection(e, nodes, items, reveal)
-	return nil
+	return marks, nil
 }
 
 // elementSegs is the PathOf of the model element of the scene element n.

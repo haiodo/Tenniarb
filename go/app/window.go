@@ -56,6 +56,7 @@ type Viewer struct {
 	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
 	ind         indicators
 	agent       agentUI
+	marks       markUI
 	cm          commentUI
 
 	press      press

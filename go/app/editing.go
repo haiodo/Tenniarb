@@ -107,6 +107,8 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 
 // onElement runs when the session puts another element on the canvas; the camera of the old one is kept.
 func (v *Viewer) onElement() {
+	// The paths of the marks name nodes of the element that was on the canvas: they mean nothing here.
+	v.marks.list = nil
 	v.saveCamera()
 	v.state.Current = v.session.Element()
 	v.trackDocElem()
