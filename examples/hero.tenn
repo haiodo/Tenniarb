@@ -1,0 +1,318 @@
+// Hero for the landing page: one frame of the Tenniarb editor. The order cards on the right are
+// instances of one component with parameters, the inspector shows those parameters, and the frame
+// uses a gradient fill and a soft shadow. Rendered as `tenn-render examples/hero.tenn Hero`.
+element "OrderCard" {
+    kind Component
+    export let name = "Заказ #2841"
+    export let meta = "3 позиции"
+    export let total = "$128.00"
+    export let tone = ok
+
+    styles {
+        ok   { color #e8f6ee; text-color #0f9d58 }
+        warn { color #fff4e5; text-color #b45309 }
+        tone one-of ok warn
+    }
+
+    item Card {
+        auto-layout column
+        gap 6
+        padding 12 16
+        width 576
+        corner-radius 12
+        color #ffffff
+        border-color #e6e9f2
+        line-width 1
+        shadow 0 -3 10 #17254714
+
+        item Head {
+            auto-layout row
+            width fill
+            align center
+            gap 8
+            item Name { title ${name}; font-size 13; font-weight 600 }
+            item grow { width fill }
+            item Badge {
+                auto-layout row
+                padding 2 8
+                corner-radius 9
+                use-style ${tone}
+                item t { title ${tone}; font-size 10; font-weight 600 }
+            }
+        }
+        item Meta { title ${meta}; font-size 11; text-color #8a94a6 }
+        item Sum { title ${total}; font-size 19; font-weight 700 }
+    }
+}
+
+element "Hero" {
+    item Canvas {
+        auto-layout column
+        width 1200
+        height 600
+        padding 48
+        color linear 135 #f8f9ff #e6ecfa
+
+        item Window {
+            auto-layout row
+            width fill
+            height fill
+            corner-radius 16
+            color #ffffff
+            shadow 0 -12 30 #1725472e
+            clip yes
+
+            item Sidebar {
+                auto-layout column
+                width 206
+                height fill
+                padding 16
+                gap 6
+                color #f7f8fc
+
+                item Brand {
+                    auto-layout row
+                    width fill
+                    align center
+                    gap 8
+                    item Mark { width 24; height 24; corner-radius 7; color linear 135 #6b3ad3 #cf13a2 }
+                    item Name { title Tenniarb; font-size 14; font-weight 700 }
+                    item grow { width fill }
+                    item Ver { auto-layout row; padding 1 6; corner-radius 6; color #eef2ff; item t { title "2.0"; font-size 10; font-weight 600; text-color #6b3ad3 } }
+                }
+                item Gap { height 8 }
+                item Cap { title "ПРОЕКТ"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item Nav1 { auto-layout row; width fill; padding 6 9; corner-radius 7; color #eef2ff; item t { title "Экран оформления"; font-size 12; font-weight 600; text-color #2f6bff } }
+                item Nav2 { auto-layout row; width fill; padding 6 9; corner-radius 7; item t { title "Компоненты"; font-size 12; text-color #3d4759 } }
+                item Nav3 { auto-layout row; width fill; padding 6 9; corner-radius 7; item t { title "Токены"; font-size 12; text-color #3d4759 } }
+                item Nav4 { auto-layout row; width fill; padding 6 9; corner-radius 7; item t { title "История"; font-size 12; text-color #3d4759 } }
+                item Div { width fill; height 1; color #e6e9f2 }
+                item Cap2 { title "ФАЙЛЫ"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item File1 {
+                    auto-layout row
+                    width fill
+                    padding 5 9
+                    gap 6
+                    align center
+                    item d { width 6; height 6; corner-radius 3; color #6b3ad3 }
+                    item t { title "design-kit.tenn"; font-size 11; text-color #3d4759 }
+                }
+                item File2 {
+                    auto-layout row
+                    width fill
+                    padding 5 9
+                    gap 6
+                    align center
+                    item d { width 6; height 6; corner-radius 3; color #2f6bff }
+                    item t { title "checkout.tenn"; font-size 11; font-weight 600; text-color #2f6bff }
+                }
+                item grow { height fill }
+                item Mcp {
+                    auto-layout row
+                    width fill
+                    align center
+                    gap 6
+                    item d { width 6; height 6; corner-radius 3; color #0f9d58 }
+                    item t { title "MCP подключён"; font-size 10; text-color #5a667e }
+                }
+                item Foot { title "v2.0 · macOS"; font-size 10; text-color #9aa4b5 }
+            }
+
+            item Div1 { width 1; height fill; color #e6e9f2 }
+
+            item Main {
+                auto-layout column
+                width fill
+                height fill
+
+                item Head {
+                    auto-layout row
+                    width fill
+                    padding 14 20
+                    align center
+                    gap 8
+                    item Title { title "Оформление"; font-size 16; font-weight 700 }
+                    item Tag { auto-layout row; padding 2 8; corner-radius 7; color #f1f3f9; item t { title "Screen · 1200 × 600"; font-size 10; text-color #5a667e } }
+                    item grow { width fill }
+                    item Preview { auto-layout row; padding 6 12; corner-radius 7; border-color #d1d5de; line-width 1; item t { title Просмотр; font-size 12 } }
+                    item Publish {
+                        auto-layout row
+                        padding 6 13
+                        corner-radius 7
+                        color linear 90 #6b3ad3 #cf13a2
+                        shadow 0 -4 12 #cf13a24d
+                        item t { title Опубликовать; font-size 12; font-weight 600; text-color #ffffff }
+                    }
+                }
+                item Div2 { width fill; height 1; color #eceff6 }
+
+                item Body {
+                    auto-layout column
+                    width fill
+                    height fill
+                    padding 16 20
+                    gap 10
+
+                    item Cards {
+                        auto-layout column
+                        width fill
+                        gap 10
+                        use OrderCard as o1 { name "Заказ #2841"; meta "3 позиции · доставка 12 ноября"; total "$128.00"; tone ok }
+                        use OrderCard as o2 { name "Заказ #2842"; meta "1 позиция · ждёт оплаты"; total "$42.00"; tone warn }
+                        use OrderCard as o3 { name "Заказ #2843"; meta "2 позиции · доставлен 9 ноября"; total "$76.00"; tone ok }
+                    }
+
+                    item Promo {
+                        auto-layout column
+                        width fill
+                        gap 4
+                        padding 12 16
+                        corner-radius 12
+                        color linear 135 #6b3ad3 #cf13a2
+                        shadow 0 -6 16 #cf13a238
+                        item t { title "Готово к публикации"; font-size 12; font-weight 600; text-color #ffffff }
+                        item n { title "0 ошибок · 2 предупреждения · 18 компонентов"; font-size 10; text-color #ffffffcc }
+                    }
+
+                    item grow { height fill }
+
+                    item Foot {
+                        auto-layout row
+                        width fill
+                        align center
+                        gap 8
+                        item Total { title "Итого $170.00"; font-size 13; font-weight 600 }
+                        item grow { width fill }
+                        item Later { auto-layout row; padding 6 12; corner-radius 7; border-color #d1d5de; line-width 1; item t { title Отмена; font-size 12 } }
+                        item Pay { auto-layout row; padding 6 12; corner-radius 7; color #2f6bff; item t { title Оплатить; font-size 12; font-weight 600; text-color #ffffff } }
+                    }
+                }
+            }
+
+            item Div3 { width 1; height fill; color #e6e9f2 }
+
+            item Inspector {
+                auto-layout column
+                width 280
+                height fill
+                padding 16
+                gap 10
+                color #fbfbfe
+
+                item Cap { title "КОМПОНЕНТ"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item Comp {
+                    auto-layout row
+                    width fill
+                    align center
+                    gap 8
+                    item Mark {
+                        auto-layout row
+                        width 26
+                        height 26
+                        align center
+                        justify center
+                        corner-radius 8
+                        color linear 135 #6b3ad3 #cf13a2
+                        item t { title OC; font-size 10; font-weight 700; text-color #ffffff }
+                    }
+                    item Names {
+                        auto-layout column
+                        gap 2
+                        item n { title OrderCard; font-size 13; font-weight 600 }
+                        item m { title "design-kit.tenn"; font-size 10; text-color #8a94a6 }
+                    }
+                    item grow { width fill }
+                    item Count { auto-layout row; padding 2 7; corner-radius 8; color #eef2ff; item t { title "3 экз."; font-size 10; font-weight 600; text-color #2f6bff } }
+                }
+                item Div { width fill; height 1; color #eceff6 }
+                item Cap2 { title "ПАРАМЕТРЫ"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item P1 {
+                    auto-layout row
+                    width fill
+                    align center
+                    justify space-between
+                    item k { title name; font-size 11; text-color #5a667e }
+                    item v { title "Заказ #2841"; font-size 11; text-color #0f121a }
+                }
+                item P2 {
+                    auto-layout row
+                    width fill
+                    align center
+                    justify space-between
+                    item k { title meta; font-size 11; text-color #5a667e }
+                    item v { title "3 позиции"; font-size 11; text-color #0f121a }
+                }
+                item P3 {
+                    auto-layout row
+                    width fill
+                    align center
+                    justify space-between
+                    item k { title total; font-size 11; text-color #5a667e }
+                    item v { title "$128.00"; font-size 11; text-color #0f121a }
+                }
+                item P4 {
+                    auto-layout row
+                    width fill
+                    align center
+                    justify space-between
+                    item k { title tone; font-size 11; text-color #5a667e }
+                    item v {
+                        auto-layout row
+                        padding 1 7
+                        corner-radius 7
+                        color #e8f6ee
+                        item t { title ok; font-size 10; font-weight 600; text-color #0f9d58 }
+                    }
+                }
+                item Div2 { width fill; height 1; color #eceff6 }
+                item Cap3 { title "ИСПОЛЬЗОВАНИЕ"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item Code {
+                    auto-layout column
+                    width fill
+                    gap 3
+                    padding 10 12
+                    corner-radius 8
+                    color #f4f6fb
+                    border-color #e6e9f2
+                    line-width 1
+                    item l1 { title "use OrderCard as order {"; font-size 10; text-color #6b3ad3 }
+                    item l2 { title "  tone ok"; font-size 10; text-color #3d4759 }
+                    item l3 { title "}"; font-size 10; text-color #6b3ad3 }
+                }
+                item Div3 { width fill; height 1; color #eceff6 }
+                item Cap4 { title "ПРОВЕРКА"; font-size 9; font-weight 700; letter-spacing 0.7; text-color #9aa4b5 }
+                item V1 {
+                    auto-layout row
+                    width fill
+                    justify space-between
+                    item k { title Ошибки; font-size 11; text-color #5a667e }
+                    item v { title 0; font-size 11; font-weight 600; text-color #0f9d58 }
+                }
+                item V2 {
+                    auto-layout row
+                    width fill
+                    justify space-between
+                    item k { title Предупреждения; font-size 11; text-color #5a667e }
+                    item v { title 2; font-size 11; text-color #0f121a }
+                }
+                item V3 {
+                    auto-layout row
+                    width fill
+                    justify space-between
+                    item k { title Компонентов; font-size 11; text-color #5a667e }
+                    item v { title 18; font-size 11; text-color #0f121a }
+                }
+                item grow { height fill }
+                item Swatch {
+                    auto-layout row
+                    width fill
+                    align center
+                    gap 8
+                    item bar { width fill; height 8; corner-radius 4; color linear 90 #6b3ad3 #cf13a2 }
+                    item t { title "90°"; font-size 10; text-color #8a94a6 }
+                }
+                item Note { title "Компонент описан один раз — экземпляры отличаются параметрами"; width fill; font-size 10; layout left; text-color #8a94a6 }
+            }
+        }
+    }
+}
