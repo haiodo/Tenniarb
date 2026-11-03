@@ -1,4 +1,4 @@
-name: Release (Go)
+name: Release
 
 # The Swift app is no longer shipped: 2.0 is the Go application. The Xcode project stays in the tree
 # (the Swift tests still run in CI), but nothing here builds it.
