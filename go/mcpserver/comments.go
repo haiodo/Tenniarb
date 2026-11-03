@@ -484,14 +484,28 @@ func (s *Server) answer(file, id string, op func(abs string) (comments.Doc, erro
 	if err != nil {
 		return "", err
 	}
-	// A comment of a mounted part may still be stored with the document that shows it.
+	// A comment is answered from either side of a mount: it may be stored with the document that shows a
+	// part, or with the part a document shows.
 	owner := abs
 	if d, err := s.host.comments.store.Load(docKey(abs)); err != nil || d.Find(id) == nil {
+		owner = ""
 		for _, m := range s.mountRefs(rel) {
 			if d, err := s.host.comments.store.Load(docKey(m.abs(s.root))); err == nil && d.Find(id) != nil {
 				owner = m.abs(s.root)
 				break
 			}
+		}
+		if owner == "" {
+			for _, f := range s.mountedFiles(rel) {
+				fabs := filepath.Join(s.root, filepath.FromSlash(f))
+				if d, err := s.host.comments.store.Load(docKey(fabs)); err == nil && d.Find(id) != nil {
+					owner = fabs
+					break
+				}
+			}
+		}
+		if owner == "" {
+			owner = abs
 		}
 	}
 	// Before the change: the user sees where the agent looks while it works.

@@ -215,6 +215,47 @@ func TestCommentsOfMountedFilesInTheEntry(t *testing.T) {
 	}
 }
 
+// TestReplyThroughTheEntry: a comment of a mounted file is answered from the document that shows it, so an
+// agent that works from the entry never has to know which file holds the comment.
+func TestReplyThroughTheEntry(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv(comments.EnvConfigDir, t.TempDir())
+	files := map[string]string{
+		"lib.tenn":  "element \"Panel\" {\n  item Box\n}\n",
+		"main.tenn": "element Lib --from-file \"lib.tenn\"\n",
+	}
+	for name, text := range files {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	srv, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	libAbs := filepath.Join(srv.root, "lib.tenn")
+	var id string
+	if _, err := srv.host.comments.store.Update(docKey(libAbs), func(d *comments.Doc) error {
+		c, err := d.Add(comments.User, "round the box", comments.Anchor{Element: []string{"Panel"}, Node: "Box"}, time.Now())
+		if err == nil {
+			id = c.ID
+		}
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := srv.replyComment(replyIn{File: "main.tenn", ID: id, Text: "done"}); err != nil {
+		t.Fatalf("reply through the entry: %v", err)
+	}
+	d, err := srv.host.comments.store.Load(docKey(libAbs))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c := d.Find(id); c == nil || len(c.Replies) != 1 || c.Replies[0].Text != "done" {
+		t.Fatalf("the reply is not in the part: %+v", c)
+	}
+}
+
 func TestWaitCommentTimeout(t *testing.T) {
 	e := newCommentEnv(t)
 	start := time.Now()
