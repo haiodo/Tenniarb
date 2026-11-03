@@ -51,6 +51,7 @@ element "Release plan" {
   and 100 between rows; the box grows to fit its text.
 - `color` (fill; text turns white or black to contrast), `text-color`, `font-size`, `width`, `height`,
   `corner-radius`, `line-width`, `line-style dashed|dotted`.
+- A divider is an item 1 point high with `corner-radius 0`: the default 8 points round it into a capsule.
 - `display`: `rect` (default), `no-fill`, `circle` (set `width` and `height`), `stack`, `text` (no box,
   for headings and notes).
 - Colors: `#rrggbb` or a palette name with a shade, `red-200`, `gray-400`, `blue-500`.

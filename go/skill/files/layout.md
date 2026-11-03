@@ -29,7 +29,10 @@ Rules that save a round of fixes:
 - `fill` needs a parent that knows its size: a `fill` child in a `hug` parent shrinks to nothing.
   Give the screen root a fixed `width` and `height`, then `fill` downwards.
 - A spacer pushes the rest to the end: `item grow { width fill }` in a row.
-- Lines and dividers are leaves: `item line { width fill; height 1; color #e5e7eb }`.
+- Lines and dividers are leaves: `item line { width fill; height 1; color #e5e7eb; corner-radius 0 }`.
+  In a classic diagram every item gets 8 points of rounding unless told otherwise (`render/drawable.go`), so a
+  1 point high divider draws a capsule, not a line: write `corner-radius 0` on it, and beware a `styles` group
+  that sets `corner-radius` for every item - it rounds the dividers too.
 - A border is a box around the item: there are no one-sided borders, use a divider leaf.
 - Children paint over their parent's border; put the border on the child or leave a `padding` of 1.
 - `hug`, `fill`, `gap`, `padding` mean nothing outside auto-layout: there they are an error or a plain
