@@ -3,6 +3,8 @@
 # so Finder associations match. Usage: macos.sh <binary> <out-dir> <gowt-dir> <short-version> <build> <embed-js> [mcp-proxy]
 set -euo pipefail
 bin=$1; out=$2; gowt=$3; ver=$4; build=$5; embed=$6; mcp=${7:-}
+# An empty gowt dir shifts every argument left, and the build would sign the wrong plist instead.
+[ -n "$gowt" ] || { echo "macos.sh: the gowt directory is empty" >&2; exit 2; }
 root=$(cd "$(dirname "$0")/../.." && pwd)
 # The source .icns carries a resource fork and Finder info, which codesign refuses; cat drops them.
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT

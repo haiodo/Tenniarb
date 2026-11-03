@@ -108,7 +108,7 @@ GO_SHORT := 2.0.0
 GO_VERSION = $(GO_SHORT)-$(shell git describe --always --dirty --exclude '*')
 GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
-GOWT_DIR = $(shell cd go && go list -m -f '{{.Dir}}' github.com/haiodo/gowt)
+GOWT_DIR = $(shell cd go && go mod download github.com/haiodo/gowt 2>/dev/null; go list -m -f '{{.Dir}}' github.com/haiodo/gowt)
 GOARCH_HOST = $(shell go env GOARCH)
 
 app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned)
