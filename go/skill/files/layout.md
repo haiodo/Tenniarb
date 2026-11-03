@@ -40,6 +40,11 @@ Rules that save a round of fixes:
   `auto-layout row` and `padding`.
 - Spaces at the start and end of `title` are kept and widen a `hug` leaf. Browsers collapse them in SVG unless the
   document has `xml:space="preserve"` (`tenn-render` writes it).
+- Text is laid out by its own height: **do not set `height` on a `body` or on a text leaf**. A paragraph,
+  a list or a piece of documentation is one `body` (`format.md`), and it hugs; a fixed height cuts the text
+  as soon as a sentence changes.
+- Many lines of text are one `body`, not many items: `item P1`, `item P2` ... with hand-picked heights
+  is the shape that breaks on the first edit.
 
 ## App window: sidebar, content, inspector
 

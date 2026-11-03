@@ -68,6 +68,7 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | Property | Values | Notes |
 |---|---|---|
 | `title` | text | the text of a leaf |
+| `body` | markdown: a string, `%{ ... }` or `{ text ... }` | text under the title; wraps and hugs (see below) |
 | `font-size` | number | default 18; inherited by the parts below, so set it once on the box |
 | `font-weight` | 100..900, `normal`, `bold` | |
 | `font-family` | name | default Helvetica |
@@ -109,6 +110,42 @@ element "Bits" {
 ```
 
 A leaf with a fixed or `fill` width wraps its text at spaces; without a width it is one line.
+
+## Text blocks: `body`
+
+A paragraph, a list or a whole piece of documentation goes into **one** item's `body`, not into an
+item per line. The body is markdown, it wraps by the item's width and the item's height hugs it.
+
+```tenn
+item Doc {
+  auto-layout column
+  width 640
+  gap 12
+  item Title { title "Architecture"; font-size 24; font-weight 700 }
+  body %{
+## Goal
+Take the call nobody picked up and **bring it to payment**.
+
+- a hold by an idempotent key
+- `booking-gateway` keeps no state
+- the queue is PostgreSQL: `SKIP LOCKED`
+
+> the booking system does not change
+  }
+}
+```
+
+- Forms: `body "one line"`, `body %{ ... }` for markdown, `body { text "..." ; font-size 13 }` to
+  change the font of one block.
+- Markdown: `#`/`##`/`###` headings, paragraphs, `- `/`* `/`+ ` lists, fenced code, `> ` quotes, and
+  inline `**bold**`, `*italic*`, code in backticks and `[label](url)` - a link draws its label, it
+  does not navigate.
+- The body is drawn under the `title`, 2 points smaller than the item's font; headings are +6/+4/+2
+  and bold, code is monospaced on a light background, a quote has a bar on the left.
+- The width wraps the text and the height hugs it. **Never set `height` on a text block** and never
+  split one piece of text into items with hand-picked heights: one edited sentence then overflows the
+  box, and every neighbour moves by hand.
+- Unknown markdown (a table, an HTML block) is drawn as written: keep to the list above.
 
 ## The Y axis
 

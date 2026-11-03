@@ -20,7 +20,9 @@ and `validate` do the same.
 5. **Spacing.** One `gap` per container instead of spacer items; `padding` on the container, not on
    the text.
 6. **Overflow.** Text that runs out of its box needs a width (it wraps then) or `clip yes` on the box.
-7. **Instances.** Overrides reached the right part: if a label still shows the component's text, the
+7. **Text in blocks.** Paragraphs, lists and documentation are one `body`, not an item per line; a text
+   block has no `height`. If the text looks cut, a fixed height or a missing width is the cause.
+8. **Instances.** Overrides reached the right part: if a label still shows the component's text, the
    `at` path names another node; `get_state {file, path: <component>, depth: 3}` shows the parts.
 
 ## Typical mistakes
@@ -33,6 +35,8 @@ and `validate` do the same.
 | an empty box where text should be | no `title`, or only a name | `item t { title Save; font-size 14 }` |
 | an invisible box | no fill by default in layout | `color #ffffff` or `border-color` |
 | huge text | default `font-size` is 18 | set `font-size` on every text |
+| a paragraph is cut in the middle | a fixed `height` on the text | drop the `height`; the body hugs |
+| ten items for ten paragraphs | text split into items | one item with `body %{ ... }` |
 | a bar of zero width | `width fill` in a `hug` parent | give the parent a width or `width fill` |
 | the frame of a container is hidden | filled children paint over it | `padding 1` or a frame on the child |
 | `"#fff" is not a color` | three hex digits | `#ffffff` |

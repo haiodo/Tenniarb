@@ -45,7 +45,8 @@ element "Release plan" {
 
 ## Items
 
-- The name is the text; `title` replaces it, `body "..."` (or `body %{ multi-line }`) adds text under it.
+- The name is the text; `title` replaces it, `body "..."` (or `body %{ multi-line markdown }`) adds text
+  under it. Markdown works here as in a screen: headings, lists, code, `**bold**` (`format.md`).
 - `pos X Y`: Y points up, so children of a map go to negative Y. Leave about 200 units between columns
   and 100 between rows; the box grows to fit its text.
 - `color` (fill; text turns white or black to contrast), `text-color`, `font-size`, `width`, `height`,
