@@ -377,7 +377,7 @@ func addEntries(m *g.Menu, entries []editor.Entry) {
 	}
 }
 
-// contextMenus attaches the menus that open on a right click: the canvas and the outline.
+// contextMenus attaches the menus that open on a right click: the canvas, outline, Items and code.
 func (v *Viewer) contextMenus() {
 	canvas := g.PopupMenu(v.view.Canvas())
 	canvas.OnShow(func() {
@@ -395,6 +395,21 @@ func (v *Viewer) contextMenus() {
 
 	items := g.PopupMenu(v.itemsUI.tree)
 	items.OnShow(func() { fillMenu(items, v.withLink(v.itemsEntries())) })
+
+	code := g.PopupMenu(v.props.text)
+	action := func(f func()) func() {
+		return func() {
+			v.props.text.Focus()
+			if sel := v.props.menuSelection; sel != nil {
+				v.props.text.SetSelection(int(sel.X), int(sel.Y))
+			}
+			f()
+		}
+	}
+	code.Item("Cu&t", action(v.props.text.Cut), g.Shortcut("Cmd+X"))
+	code.Item("&Copy", action(v.props.text.Copy), g.Shortcut("Cmd+C"))
+	code.Item("&Paste", action(v.props.text.Paste), g.Shortcut("Cmd+V"))
+	code.Item("Select &All", action(func() { v.props.text.SetSelection(0, len([]rune(v.props.text.Text()))) }), g.Shortcut("Cmd+A"))
 }
 
 // canvasEntries are the entries of the menu about to open on the canvas.

@@ -757,3 +757,32 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("undo of the drag: %v", s.Outline)
 	}
 }
+
+func TestPropsContextMenu(t *testing.T) {
+	app := qatest.App(t)
+	props := app.Find(qa.ID("props"))
+	const text = "name \"Root\""
+	props.Type(text)
+	for _, item := range []struct {
+		label, shortcut string
+	}{{"Cut", "Ctrl+X"}, {"Copy", "Ctrl+C"}, {"Paste", "Ctrl+V"}, {"Select All", "Ctrl+A"}} {
+		props.RightClickAt(12, 12)
+		node := app.Find(qa.Text(item.label).In(qa.ID("props"))).Node()
+		if node.Value != item.shortcut {
+			t.Errorf("%s shortcut %q, want %q", item.label, node.Value, item.shortcut)
+		}
+	}
+	props.RightClickAt(12, 12)
+	app.Find(qa.Text("Select All").In(qa.ID("props"))).Click()
+	props.RightClickAt(12, 12)
+	app.Find(qa.Text("Copy").In(qa.ID("props"))).Click()
+	props.Type("x")
+	app.SetClipboard(qa.Clipboard{Text: text})
+	props.RightClickAt(12, 12)
+	app.Find(qa.Text("Paste").In(qa.ID("props"))).Click()
+	if got := props.Node().Value; !strings.Contains(got, text) {
+		t.Fatalf("paste: %q does not contain %q", got, text)
+	}
+	props.RightClickAt(12, 12)
+	app.Find(qa.Text("Cut").In(qa.ID("props"))).Click()
+}

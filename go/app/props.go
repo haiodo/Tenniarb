@@ -32,6 +32,8 @@ type props struct {
 	applied int           // the edit the last timer applied: the user is typing while changes differs
 	loading bool          // the text is being set by code
 	want    string        // the text the code last put in: a draft that does not parse stays until this changes
+	// menuSelection is the selection before the code context menu opened.
+	menuSelection *swt.Point
 	// values are the evaluated expressions by 0-based line, drawn at the line ends.
 	values map[int]string
 	// sceneKey is the scene node the text belongs to (sceneCodeKey), when a scene element is shown.
@@ -52,7 +54,14 @@ func (v *Viewer) initProps(t *g.StyledTextView) {
 	t.OnChange(v.onPropsChange)
 	t.Unwrap().AddPaintListener(&valuePainter{v})
 	t.Unwrap().AddMouseListener(swt.MouseListenerMouseUpAdapter(v.onPropsClick))
+	t.Unwrap().AddMenuDetectListener(menuDetectFunc(func(*swt.MenuDetectEvent) {
+		v.props.menuSelection = t.Unwrap().GetSelection()
+	}))
 }
+
+type menuDetectFunc func(*swt.MenuDetectEvent)
+
+func (f menuDetectFunc) MenuDetected(e *swt.MenuDetectEvent) { f(e) }
 
 func (v *Viewer) propsFocused() bool { return v.props.text.Unwrap().IsFocusControl() }
 
