@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { readTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
 import { buildTennScene, isSceneElement } from "../src/scene-tenn.ts";
-import type { TennScene } from "../src/scene-tenn.ts";
+import type { SceneLoadOptions, TennScene } from "../src/scene-tenn.ts";
 import type { Canvas2D } from "../src/canvas-types.ts";
 
 interface Painted {
@@ -76,13 +76,13 @@ function record(): { ctx: Canvas2D; texts: Painted[]; rects: Rect[] } {
   return { ctx, texts, rects };
 }
 
-function scene(text: string, name = "E"): TennScene {
+function scene(text: string, name = "E", options: SceneLoadOptions = {}): TennScene {
   const model = readTenn(text);
   assert.ok(model !== null, "the document parses");
   const element: Element | undefined = model.elements.find((e) => e.name === name);
   assert.ok(element !== undefined, `element ${name}`);
   assert.ok(isSceneElement(element), `${name} is a scene`);
-  return buildTennScene(element);
+  return buildTennScene(element, options);
 }
 
 const painted = (s: TennScene): ReturnType<typeof record> => {
@@ -275,4 +275,97 @@ test("body: the closing % of a markdown literal leaves no percent", () => {
   const s = scene(`element "E" { item "D" { auto-layout column; body %{ hi there %} } }`);
   const { texts } = painted(s);
   assert.deepEqual(texts.map((it) => it.text), ["hi there"]);
+});
+
+// body --from-file (spec 5d, go/scene/body.go): the text under the title is read from a markdown file
+// through the same reader element --from-file uses, whole or cut to one heading.
+const planMD = `# План
+
+Вступление.
+
+## Цель
+
+Документация в markdown.
+Вторая строка.
+
+- пункт
+
+## Дальше
+
+Мимо.
+`;
+
+const readPlan = (files: Record<string, string> = { "docs/plan.md": planMD }): SceneLoadOptions => ({
+  file: "a.tenn",
+  readFile: (p) => files[p] ?? null,
+});
+
+const texts = (s: TennScene): string[] => painted(s).texts.map((it) => it.text);
+
+test("body --from-file: the whole markdown file", () => {
+  const s = scene(`element "E" { item "Doc" { auto-layout column; width 400; body --from-file "docs/plan.md" } }`, "E", readPlan());
+  assert.deepEqual(s.diagnostics, []);
+  const drawn = texts(s);
+  for (const want of ["План", "Вступление.", "Цель", "Мимо."]) {
+    assert.ok(drawn.includes(want), `no "${want}" in ${JSON.stringify(drawn)}`);
+  }
+});
+
+test("body --from-file: one section, the neighbours stay out", () => {
+  const s = scene(`element "E" { item "Doc" { auto-layout column; width 1000; body --from-file "docs/plan.md#Цель" { font-size 14 } } }`, "E", readPlan());
+  assert.deepEqual(s.diagnostics, []);
+  const { texts: drawn } = painted(s);
+  const of = (t: string): Painted => {
+    const hit = drawn.find((it) => it.text === t);
+    assert.ok(hit !== undefined, `no "${t}" in ${JSON.stringify(drawn.map((it) => it.text))}`);
+    return hit;
+  };
+  assert.equal(of("Документация в markdown. Вторая строка.").font, "14px Helvetica, Arial, sans-serif");
+  // h2 of a 14 point body is 14 + 6 - 2, as for markdown written in the .tenn.
+  assert.match(of("Цель").font, /700 18px/);
+  assert.ok(of("• пункт") !== undefined, "the list of the section");
+  for (const gone of ["Вступление.", "Мимо.", "План"]) {
+    assert.ok(!drawn.some((it) => it.text.includes(gone)), `"${gone}" is outside the section, but drawn`);
+  }
+});
+
+test("body --from-file: a missing file is an error with the path", () => {
+  const s = scene(`element "E" { item "Doc" { auto-layout column; body --from-file "nope.md" } }`, "E", readPlan({}));
+  assert.deepEqual(
+    s.diagnostics.map((d) => [d.message, d.warn, d.file, d.line]),
+    [["body --from-file \"nope.md\": cannot read nope.md", false, "a.tenn", 1]],
+  );
+});
+
+test("body --from-file: a missing section names the headings of the file", () => {
+  const s = scene(`element "E" { item "Doc" { auto-layout column; body --from-file "docs/plan.md#Нет" } }`, "E", readPlan());
+  assert.deepEqual(
+    s.diagnostics.map((d) => d.message),
+    ['body --from-file "docs/plan.md#Нет": docs/plan.md has no heading "Нет"; headings: План, Цель, Дальше'],
+  );
+});
+
+test("body --from-file: a section named in Cyrillic and spelled with closing hashes", () => {
+  const files = { "docs/plan.md": "# One\n\ntext one\n\n##   Цель   ##\n\ntext two\n\n### Three\n\ntext three\n" };
+  const s = scene(`element "E" { item "Doc" { auto-layout column; width 400; body --from-file "docs/plan.md#Цель" } }`, "E", readPlan(files));
+  assert.deepEqual(s.diagnostics, []);
+  const drawn = texts(s);
+  assert.ok(drawn.some((t) => t.startsWith("Цель")), `no heading in ${JSON.stringify(drawn)}`);
+  for (const want of ["text two", "Three", "text three"]) {
+    assert.ok(drawn.includes(want), `no "${want}" in ${JSON.stringify(drawn)}`);
+  }
+  assert.ok(!drawn.includes("text one"), "a heading above the section is drawn");
+});
+
+test("body --from-file: a fixed height warns with the numbers the text needs", () => {
+  const hug = scene(`element "E" { item "Doc" { auto-layout column; width 400; body --from-file "docs/plan.md#Цель" } }`, "E", readPlan());
+  assert.deepEqual(hug.diagnostics, []);
+  const short = scene(`element "E" { item "Doc" { auto-layout column; width 400; height 40; body --from-file "docs/plan.md#Цель" } }`, "E", readPlan());
+  assert.equal(short.diagnostics.length, 1, JSON.stringify(short.diagnostics));
+  const d = short.diagnostics[0]!;
+  assert.equal(d.warn, true);
+  assert.match(
+    d.message,
+    /^body --from-file "docs\/plan\.md#Цель" needs \d+(?:\.\d+)? points of height, the item leaves \d+(?:\.\d+)?: raise height or shorten the text$/,
+  );
 });

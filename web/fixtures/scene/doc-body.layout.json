@@ -1,0 +1,63 @@
+{
+  "element": "Doc",
+  "height": 93,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Doc",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 93,
+        "w": 320,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Page",
+      "opacity": 1,
+      "path": "Page",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 93,
+        "w": 320,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": [
+        "План",
+        "Цель",
+        "Документация в markdown. Вторая ",
+        "строка.",
+        "• пункт"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 320
+}

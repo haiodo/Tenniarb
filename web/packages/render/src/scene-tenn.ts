@@ -169,6 +169,8 @@ export interface SceneProp {
   block: TennNode | null;
   /** The evaluated text of every argument, when the property holds an expression (spec 6). */
   val?: string[];
+  /** The command that wrote the property, for the position of a diagnostic about it. */
+  pos?: DiagPos;
 }
 
 export interface TennStyle {
@@ -288,7 +290,8 @@ const hasBlock = (c: TennNode): boolean => {
 function toProp(c: TennNode): SceneProp {
   const { args, block } = splitCommand(c);
   const last = c.children?.[c.children.length - 1];
-  return { name: cmdName(c), args, block: last !== undefined && hasBlock(c) ? last : null };
+  const line = (c.token?.line ?? 0) + 1;
+  return { name: cmdName(c), args, block: last !== undefined && hasBlock(c) ? last : null, pos: { line, col: c.token?.col ?? 1 } };
 }
 
 const holdsContent = (n: SceneNode): boolean => n.kind === "file" || n.kind === "element" || n.kind === "item" || n.kind === "slot";
@@ -906,7 +909,7 @@ interface RNode {
   src: SceneNode | null;
 }
 
-const cloneProp = (p: SceneProp): SceneProp => ({ name: p.name, args: p.args, block: p.block, val: p.val });
+const cloneProp = (p: SceneProp): SceneProp => ({ name: p.name, args: p.args, block: p.block, val: p.val, pos: p.pos });
 
 function rnode(kind: RKind, n: SceneNode | null, name: string, vars: Record<string, string> | null): RNode {
   return {
@@ -2312,6 +2315,8 @@ interface BodyText {
   padX: number;
   padY: number;
   blocks: BodyBlock[];
+  pos: DiagPos; // the body command, for a warning about its height
+  from: string; // the markdown file the text was read from; "" for text written in the .tenn
 }
 
 /** gfx's estimate for one run: 0.6 em a rune plus its spacing, as textWidth. */
@@ -2737,6 +2742,39 @@ function bodyHeight(b: BodyText, width: number): number {
   return h;
 }
 
+/** Go's %g: six significant digits, no trailing zeros, for the numbers of a warning. */
+const goNum = (v: number): string => String(Number(v.toPrecision(6)));
+
+/** Warns when a body read from a file needs more room than the item gives it: the page is fixed, the file grows. */
+function warnBodyFit(prep: Prep, rn: RNode): void {
+  const body = prep.bodies.get(rn);
+  const ln = prep.frames.get(rn);
+  if (body !== undefined && body.from !== "" && ln !== undefined) {
+    let width = ln.rw - 2 * body.padX;
+    let top = body.padY;
+    const bn = prep.bodyAt.get(rn);
+    if (bn !== undefined) {
+      width = bn.rw;
+      top = 0;
+    } else {
+      const ti = prep.texts.get(rn);
+      if (ti !== undefined) {
+        top = ti.padY + textWrap(ti, ln.rw - 2 * ti.padX).length * ti.lineH;
+      }
+    }
+    const room = ln.rh - top - body.padY;
+    const need = bodyHeight(body, width);
+    if (need > room + 0.5) {
+      prep.diag.warn(body.pos, `body --from-file "${body.from}" needs ${goNum(need)} points of height, the item leaves ${goNum(room)}: raise height or shorten the text`);
+    }
+  }
+  for (const k of rn.kids) {
+    if (k.kind === "item") {
+      warnBodyFit(prep, k);
+    }
+  }
+}
+
 /** The text of a string or markdown literal; a closing "%}" leaves no percent in it. */
 function markdownArg(src: string | null, a: TennNode | undefined): string {
   if (a === undefined) {
@@ -2747,6 +2785,110 @@ function markdownArg(src: string | null, a: TennNode | undefined): string {
     text = text.slice(0, -1);
   }
   return text;
+}
+
+/** The path after --from-file among the arguments of a body command; "" when the flag has no path, null without the flag. */
+function bodyFileArg(args: TennNode[]): string | null {
+  for (let i = 0; i < args.length; i += 1) {
+    if (argText(args[i]) === "--from-file") {
+      return argText(args[i + 1]);
+    }
+  }
+  return null;
+}
+
+/** An ATX heading: one to six hashes and a space; its level and title, or null. */
+function headingAt(line: string): { level: number; title: string } | null {
+  const s = line.trim();
+  let n = 0;
+  while (n < s.length && s[n] === "#") {
+    n += 1;
+  }
+  if (n === 0 || n > 6 || n === s.length || s[n] !== " ") {
+    return null;
+  }
+  return { level: n, title: s.slice(n + 1) };
+}
+
+/** A heading name as sections compare it: spaces collapsed, the closing hashes of an ATX heading dropped. */
+function headingKey(s: string): string {
+  return s.trim().replace(/#+$/, "").split(/\s+/).filter((w) => w !== "").join(" ");
+}
+
+/** The section under the heading name: the heading line and everything below up to the next heading of the same or a higher level. */
+function bodySection(text: string, name: string): string | null {
+  const want = headingKey(name);
+  const lines = text.split("\n");
+  let start = -1;
+  let level = 0;
+  for (let i = 0; i < lines.length; i += 1) {
+    const h = headingAt(lines[i]!);
+    if (h === null) {
+      continue;
+    }
+    if (start < 0) {
+      if (headingKey(h.title) === want) {
+        start = i;
+        level = h.level;
+      }
+      continue;
+    }
+    if (h.level <= level) {
+      return lines.slice(start, i).join("\n");
+    }
+  }
+  return start < 0 ? null : lines.slice(start).join("\n");
+}
+
+/** The headings of a markdown file, for the message about a section that is not there. */
+function bodyHeadings(text: string): string[] {
+  const out: string[] = [];
+  for (const line of text.split("\n")) {
+    const h = headingAt(line);
+    if (h !== null) {
+      out.push(headingKey(h.title));
+    }
+  }
+  return out;
+}
+
+/**
+ * The text of "body --from-file <path>": the whole markdown file, or the section named after "#".
+ * The path is relative to the file that writes the body and may not leave the workspace root, as for
+ * element --from-file. Every problem is reported here, and null is returned then.
+ */
+function bodyFileText(prep: Prep, rn: RNode, ref: string, at: DiagPos): string | null {
+  const cut = ref.indexOf("#");
+  const file = cut < 0 ? ref : ref.slice(0, cut);
+  const section = cut < 0 ? "" : ref.slice(cut + 1);
+  if (file === "") {
+    prep.diag.fail(at, "body --from-file needs a file: body --from-file \"docs/plan.md\"");
+    return null;
+  }
+  const rel = resolvePath(rn.src?.file ?? "", file);
+  if (rel === null) {
+    prep.diag.fail(at, `body --from-file "${file}" leaves the workspace root`);
+    return null;
+  }
+  const text = prep.readFile === null ? null : prep.readFile(rel);
+  if (text === null) {
+    prep.diag.fail(at, `body --from-file "${file}": cannot read ${rel}`);
+    return null;
+  }
+  if (cut < 0) {
+    return text;
+  }
+  const found = bodySection(text, section);
+  if (found !== null) {
+    return found;
+  }
+  const all = bodyHeadings(text);
+  if (all.length > 0) {
+    prep.diag.fail(at, `body --from-file "${ref}": ${rel} has no heading "${section}"; headings: ${all.join(", ")}`);
+  } else {
+    prep.diag.fail(at, `body --from-file "${ref}": ${rel} has no heading "${section}" and no headings at all`);
+  }
+  return null;
 }
 
 /** font-size of the item, the size the title is drawn with and the body is based on. */
@@ -2770,7 +2912,11 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   if (pr === null) {
     return null;
   }
-  const at = rn.src ?? { line: 0, col: 0 };
+  const at: DiagPos = {
+    file: rn.src?.file ?? "",
+    line: pr.pos?.line ?? rn.src?.line ?? 0,
+    col: pr.pos?.col ?? rn.src?.col ?? 0,
+  };
   let size = 0;
   let lineH = 0;
   let gap = bodyBlockGap;
@@ -2778,6 +2924,7 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   let mono = bodyMonoFace;
   let color = styleColor;
   let text = "";
+  let from = "";
   const textArg = (i: number): string =>
     pr.val !== undefined ? (pr.val[i] ?? "") : i < pr.args.length ? markdownArg(rn.src?.src ?? null, pr.args[i]) : "";
   if (pr.block !== null) {
@@ -2841,6 +2988,15 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   } else {
     text = textArg(0);
   }
+  const fileArg = bodyFileArg(pr.args);
+  if (fileArg !== null) {
+    const fromFile = bodyFileText(prep, rn, fileArg, at);
+    if (fromFile === null) {
+      return null;
+    }
+    text = fromFile;
+    from = fileArg;
+  }
   if (text.trim() === "") {
     return null;
   }
@@ -2868,6 +3024,8 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
     padX: inCtx ? 0 : textPadX,
     padY: inCtx ? 0 : textPadY,
     blocks: [],
+    pos: at,
+    from,
   };
   b.blocks = bodyParse(b, text);
   return b;
@@ -3095,6 +3253,8 @@ interface Prep {
   bodies: Map<RNode, BodyText>;
   /** The text block a body takes in the flow of an auto-layout item, after its children. */
   bodyAt: Map<RNode, LayoutNode>;
+  /** Reads the markdown of `body --from-file`; null when the caller gave no reader. */
+  readFile: ((path: string) => string | null) | null;
 }
 
 const defaultFontSize = 18;
@@ -3175,7 +3335,7 @@ function sceneNodeFor(file: SceneNode, element: Element): SceneNode | null {
 }
 
 /** The prep of a screen: sizes, styles and text of every node, then the layout. */
-function prepare(expanded: RNode, diag: Diagnostics): { prep: Prep; root: LayoutNode } {
+function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions = {}): { prep: Prep; root: LayoutNode } {
   const prep: Prep = {
     diag,
     frames: new Map(),
@@ -3184,6 +3344,7 @@ function prepare(expanded: RNode, diag: Diagnostics): { prep: Prep; root: Layout
     icons: new Map(),
     bodies: new Map(),
     bodyAt: new Map(),
+    readFile: options.readFile ?? null,
   };
   animations(expanded, new Map(), diag);
   const root = newLayout(expanded);
@@ -3233,7 +3394,7 @@ function evaluate(diag: Diagnostics, rn: RNode, p: SceneProp): SceneProp | null 
     }
     val.push(v);
   }
-  return { name: p.name, args: p.args, block: p.block, val };
+  return { name: p.name, args: p.args, block: p.block, val, pos: p.pos };
 }
 
 function num(prep: Prep, rn: RNode, name: string): number | null {
@@ -4019,8 +4180,9 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
   }
   evalTree(expanded, diag);
   applyStyles(expanded);
-  const { prep, root } = prepare(expanded, diag);
+  const { prep, root } = prepare(expanded, diag, options);
   layoutRoot(root);
+  warnBodyFit(prep, expanded);
   const width = root.rw;
   const height = root.rh;
 

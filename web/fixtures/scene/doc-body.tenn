@@ -1,0 +1,9 @@
+// The layout lives here, the words in doc.md: one section of the file is the body (spec 5d).
+element "Doc" {
+    item "Page" {
+        auto-layout column
+        title "План"
+        width 320
+        body --from-file "doc.md#Цель" { font-size 14 }
+    }
+}
