@@ -3,6 +3,7 @@
 //	tenniarb [file.tenn | tenniarb://open?... ...]
 //	tenniarb check [-json] [-root DIR] FILE...
 //	tenniarb suggest [-json] [-root DIR] FILE...
+//	tenniarb bundle [-root DIR] [-o OUT] FILE
 //	tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
 //	tenniarb install [-dir DIR]
 //	tenniarb help | -h | --help
@@ -11,7 +12,9 @@
 // back, or a new document opens. Settings, the recent list and window frames live in the OS config
 // directory (TENNIARB_CONFIG_DIR overrides it). check validates files headless: exit 0 clean, 1 errors, 2 usage.
 // suggest reports what could be tidied in a file (repeats, styles, dead commands) and changes nothing.
-// gen prints the code the template of an element generates, the parameters set by name: exit 0 done,
+// bundle replaces every --from-file with the block of the file it mounts, so one file holds the whole
+// document: the browser has no neighbours to read. gen prints the code the template of an element
+// generates, the parameters set by name: exit 0 done,
 // 1 errors, 2 usage. Help prints the usage to stdout and exits 0; an unknown flag prints it to stderr
 // and exits 2.
 package main
@@ -32,6 +35,7 @@ const usage = `usage:
   tenniarb [FILE.tenn | LINK ...]               open the files or tenniarb:// links in the app; without files the last documents come back
   tenniarb check [-json] [-root DIR] FILE...    validate files without a window: exit 0 clean, 1 errors, 2 usage
   tenniarb suggest [-json] [-root DIR] FILE...  report what could be tidied in the files, changing nothing
+  tenniarb bundle [-root DIR] [-o OUT] FILE     replace every --from-file with the block of the file it mounts
   tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
                                                 print the text the template of ELEMENT generates
   tenniarb install [-dir DIR]                   write the agent skill where Claude Code and opencode read it
@@ -49,6 +53,8 @@ func dispatch(args []string, stdout, stderr io.Writer) (launch bool, files []str
 		return false, nil, check.Run(args[1:], stdout, stderr)
 	case "suggest":
 		return false, nil, optimize.Run(args[1:], stdout, stderr)
+	case "bundle":
+		return false, nil, bundle(args[1:], stdout, stderr)
 	case "gen":
 		return false, nil, gen(args[1:], stdout, stderr)
 	case "install":

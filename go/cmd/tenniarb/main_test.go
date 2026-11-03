@@ -28,6 +28,7 @@ func TestDispatch(t *testing.T) {
 		{args: []string{"check"}, code: 2, errOut: "usage: tenniarb check"},
 		{args: []string{"suggest"}, code: 2, errOut: "usage: tenniarb suggest"},
 		{args: []string{"gen"}, code: 2, errOut: "usage: tenniarb gen"},
+		{args: []string{"bundle"}, code: 2, errOut: "usage: tenniarb bundle"},
 	}
 	for _, c := range cases {
 		var out, errOut bytes.Buffer
