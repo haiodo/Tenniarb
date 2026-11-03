@@ -137,6 +137,12 @@ Take the call nobody picked up and **bring it to payment**.
 
 - Forms: `body "one line"`, `body %{ ... }` for markdown, `body { text "..." ; font-size 13 }` to
   change the font of one block.
+- Text from a markdown file, whole or one section: `body --from-file "docs/plan.md"` and
+  `body --from-file "docs/plan.md#Goal"`. The section starts at that heading and ends before the next
+  heading of the same or a higher level; the heading itself is kept. The path is relative to the
+  `.tenn` file, as with `element --from-file`. A missing file or heading is an error with the list of
+  headings the file has. Text edited in the `.md` comes back on Reload, so one section serves several
+  screens.
 - Markdown: `#`/`##`/`###` headings, paragraphs, `- `/`* `/`+ ` lists, fenced code, `> ` quotes, and
   inline `**bold**`, `*italic*`, code in backticks and `[label](url)` - a link draws its label, it
   does not navigate.
