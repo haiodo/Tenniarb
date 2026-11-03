@@ -20,7 +20,7 @@ A single model rarely stays in one tool:
 
 The picture is right in one place, the numbers in another, and nobody knows which copy is the current one.
 
-![Four separate clusters of blue spheres; thin rods reach toward each other between them and stop short](docs/Images/readme/problem.webp)
+![A glass tree, a grid of tiles, a frame and a stack of pages floating apart, with broken rods between them](docs/Images/readme/problem.webp)
 
 ## What Tenniarb does
 
