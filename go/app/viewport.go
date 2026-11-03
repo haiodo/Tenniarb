@@ -11,6 +11,8 @@ const (
 	MinZoom  = 0.02
 	MaxZoom  = 64.0
 	ZoomStep = 1 / 0.75 // Swift zoomIn divides the zoom by 0.75 and zoomOut multiplies it
+	// wheelLine is the view points one notch of a wheel pans by, as in the gfx view's own router.
+	wheelLine = 16.0
 )
 
 // ClampZoom keeps z within [MinZoom, MaxZoom].

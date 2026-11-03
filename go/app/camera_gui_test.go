@@ -42,3 +42,24 @@ func TestEditKeepsCamera(t *testing.T) {
 		t.Fatalf("the camera moved: %v,%v@%v -> %v,%v@%v", st.OriginX, st.OriginY, st.Zoom, st2.OriginX, st2.OriginY, st2.Zoom)
 	}
 }
+
+// TestWheelShiftPansSideways: a mouse wheel has no horizontal axis, so Shift+wheel pans the canvas
+// sideways and leaves the vertical position alone.
+func TestWheelShiftPansSideways(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	defer h.open(fixture)
+	h.open(fixture)
+	a.State("command", "name", "close-others")
+	a.Settle()
+	before := editor(t, a)
+	a.Find(qa.ID("canvas")).ScrollEvent(qa.ScrollEvent{X: 200, Y: 200, DY: 3, Mods: "Shift"})
+	a.Settle()
+	after := editor(t, a)
+	if after.OriginX == before.OriginX || after.OriginY != before.OriginY {
+		t.Fatalf("Shift+wheel panned to %v,%v, from %v,%v", after.OriginX, after.OriginY, before.OriginX, before.OriginY)
+	}
+}

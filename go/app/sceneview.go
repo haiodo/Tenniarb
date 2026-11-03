@@ -481,6 +481,20 @@ func (v *Viewer) panView(dx, dy float64) {
 	v.drawSceneOverlay()
 }
 
+// onScroll pans the canvas sideways with Shift+wheel. GTK reports the wheel on one axis only, so
+// without this the canvas moves up and down but never sideways.
+func (v *Viewer) onScroll(s *view.Scroll) bool {
+	if !s.Mods.Shift || s.DX != 0 {
+		return false
+	}
+	dx := s.DY
+	if !s.Precise {
+		dx *= wheelLine
+	}
+	v.panView(dx, 0)
+	return true
+}
+
 // drawSceneOverlay draws the selection frames on the HUD, so a zoom or a pan does not damage the
 // tiles of the scene.
 func (v *Viewer) drawSceneOverlay() {
