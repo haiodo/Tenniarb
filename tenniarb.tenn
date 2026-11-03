@@ -4902,13 +4902,13 @@ diagram"
                     color #ffffff
                     border-color #d1d5db
                     corner-radius 6
-                    item Hint { pos 12 -12; auto-layout row; padding 5 10; color #1e1e1ed1; corner-radius 8; item T { title "Comment mode: click to place a comment, Esc to leave"; font-size 12; text-color #ffffff } }
+                    item Hint { pos 12 -12; width fill; auto-layout row; padding 5 10; color #1e1e1ed1; corner-radius 8; item T { title "Comment mode: click to place a comment, Esc to leave"; font-size 12; text-color #ffffff } }
                     item Brain { pos 70 -80; auto-layout row; width 100; height 48; align center; justify center; color #bbdefb; border-color #90a4ae; corner-radius 4; item T { title Brain; font-size 14 } }
                     item Pin1 { pos 184 -116; auto-layout row; width 24; height 24; align center; justify center; color #ff9500; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "1"; font-size 11; font-weight 700; text-color #ffffff } }
                     item Pin2 { pos 270 -60; auto-layout row; width 24; height 24; align center; justify center; color #8e8e93; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "2"; font-size 11; font-weight 700; text-color #ffffff } }
                     item Pin3 { pos 55 -160; auto-layout row; width 24; height 24; align center; justify center; color #ffffff; border-color #ff9500; line-width 2; corner-radius 12; shadow 0 -1 3 #00000059; item N { title "3"; font-size 11; font-weight 700; text-color #ff9500 } }
                 }
-                item Note { title "Orange: open; grey: resolved; ring: detached pin at the element origin"; font-size 12; text-color #6b7280 }
+                item Note { width fill; title "Orange: open; grey: resolved; ring: detached pin at the element origin"; font-size 12; text-color #6b7280 }
             }
             item "Compose and thread" {
                 pos 460 0
@@ -4962,7 +4962,7 @@ diagram"
                 }
             }
             item "Agent toolbar" {
-                pos 466 -414
+                pos 466 -444
                 auto-layout column
                 width 420
                 padding 20
@@ -4974,7 +4974,7 @@ diagram"
                 item CapBox { auto-layout row; width fill; item Cap { title "Conditional MCP agent controls, next to the document title"; width fill; font-size 13; font-weight 700; layout left } }
                 item Toolbar { auto-layout row; width fill; height 38; padding 0 10; gap 10; align center; color #f6f6f6; border-color #d1d5db; corner-radius 7; item Title { title tenniarb.tenn; width fill; font-size 13; layout center }; item Status { title "● kimi-code"; font-size 12; text-color #3a3a3c }; use Components.Popover.Light.Push_button as follow { at Label { title Follow } } }
                 item Toolbar2 { auto-layout row; width fill; height 38; padding 0 10; gap 10; align center; color #f6f6f6; border-color #d1d5db; corner-radius 7; item Title { title tenniarb.tenn; width fill; font-size 13; layout center }; item Status { title "○ kimi-code (2)"; font-size 12; text-color #3a3a3c }; use Components.Popover.Light.Push_button as following { at Label { title Following } } }
-                item Note { title "Filled dot: active for 10 seconds; count appears with several agents"; font-size 12; text-color #6b7280 }
+                item Note { width fill; title "Filled dot: active for 10 seconds; count appears with several agents"; font-size 12; text-color #6b7280 }
             }
         }
         element "Windows" {
