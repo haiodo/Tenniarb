@@ -102,9 +102,9 @@ func (v *Viewer) hasContent(e *model.Element) bool {
 	return n != nil && len(sceneKids(n)) > 0
 }
 
-// hiddenMounts are the mounted elements the outline does not show: one inside a mounted file whose file
-// is already shown by another row. Mounts written in the document come first, then the shallower ones, so
-// the library a screen file mounts again is its top-level row, and a category file is shown once.
+// hiddenMounts are the mounted elements the outline does not show: a file keeps the row of its first
+// mount, wherever that row comes in the tree, and every later mount of the same file is a duplicate.
+// A hidden mount is not walked, so a file only its duplicate mounts still gets a row of its own.
 // Ceiling: a dependency that no row shows otherwise stays visible, the outline cannot tell it from a category.
 func (v *Viewer) hiddenMounts() map[*model.Element]bool {
 	m := v.state.Doc.Model
@@ -113,25 +113,9 @@ func (v *Viewer) hiddenMounts() map[*model.Element]bool {
 	}
 	hidden := map[*model.Element]bool{}
 	seen := map[string]bool{}
-	var queue []*model.Element
-	var docMounts func(e *model.Element)
-	docMounts = func(e *model.Element) {
+	var walk func(e *model.Element)
+	walk = func(e *model.Element) {
 		for _, c := range e.Elements {
-			if c.FromFile == "" {
-				docMounts(c)
-				continue
-			}
-			if md := v.mounts[c]; md != nil {
-				seen[md.file] = true
-			}
-			queue = append(queue, c)
-		}
-	}
-	docMounts(&m.Element)
-	for len(queue) > 0 {
-		n := queue[0]
-		queue = queue[1:]
-		for _, c := range n.Elements {
 			if c.FromFile != "" {
 				if md := v.mounts[c]; md != nil {
 					if seen[md.file] {
@@ -141,9 +125,10 @@ func (v *Viewer) hiddenMounts() map[*model.Element]bool {
 					seen[md.file] = true
 				}
 			}
-			queue = append(queue, c)
+			walk(c)
 		}
 	}
+	walk(&m.Element)
 	return hidden
 }
 
