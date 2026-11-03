@@ -75,7 +75,8 @@ func (sh *Shell) showPrefs() {
 			check("export-background", "Render background", p.ExportBackground, func(p *Prefs, v bool) { p.ExportBackground = v }),
 			check("export-native", "Use native resolution", p.ExportNativeScale, func(p *Prefs, v bool) { p.ExportNativeScale = v })),
 		g.Group("UI", g.Gap(6),
-			check("quick-panel", "Show popup quick panel", p.QuickPanel, func(p *Prefs, v bool) { p.QuickPanel = v })))
+			check("quick-panel", "Show popup quick panel", p.QuickPanel, func(p *Prefs, v bool) { p.QuickPanel = v }),
+			check("check-updates", "Check for updates", p.CheckUpdates, func(p *Prefs, v bool) { p.CheckUpdates = v })))
 	pw.win.Unwrap().AddListener(swt.Dispose, listenerFunc(func(*swt.Event) { sh.prefsWin = nil }))
 	pw.win.Show()
 }

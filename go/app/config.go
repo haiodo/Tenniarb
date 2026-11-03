@@ -52,6 +52,9 @@ type Prefs struct {
 	BackgroundDark string `json:"backgroundDark"`
 	// QuickPanel shows the quick style panel after a click on an item.
 	QuickPanel bool `json:"quickPanel"`
+	// CheckUpdates asks GitHub for a newer release at a start, once a day; Help > Check for Updates
+	// always asks.
+	CheckUpdates bool `json:"checkUpdates"`
 	// ExportBackground fills the PNG export with Background; ExportNativeScale renders it at the screen scale.
 	ExportBackground  bool `json:"exportBackground"`
 	ExportNativeScale bool `json:"exportNativeScale"`
@@ -66,7 +69,7 @@ func DefaultPrefs() Prefs {
 	return Prefs{
 		AutoExpand: true, ExpandLevel: 2,
 		Background: "#e7e9ebff", BackgroundDark: "#2e2e2eff",
-		QuickPanel: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
+		QuickPanel: true, CheckUpdates: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
 		Appearance: AppearanceSystem,
 	}
 }

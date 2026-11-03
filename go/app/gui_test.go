@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 	if err := os.MkdirAll(cfg, 0o755); err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile(filepath.Join(cfg, "settings.json"), []byte(`{"quickPanel": false}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(cfg, "settings.json"), []byte(`{"quickPanel": false, "checkUpdates": false}`), 0o644); err != nil {
 		panic(err)
 	}
 	os.Setenv("TENNIARB_CONFIG_DIR", cfg)

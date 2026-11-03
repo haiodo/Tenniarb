@@ -29,6 +29,7 @@ func TestPrefs(t *testing.T) {
 	}
 	p := DefaultPrefs()
 	p.ExpandLevel, p.QuickPanel, p.Background = 4, false, "#112233"
+	p.CheckUpdates = false
 	if err := p.Save(dir); err != nil {
 		t.Fatal(err)
 	}
@@ -42,6 +43,9 @@ func TestPrefs(t *testing.T) {
 	d := DefaultPrefs()
 	if got.AutoExpand || got.ExpandLevel != d.ExpandLevel || got.Background != d.Background || !got.ExportBackground {
 		t.Fatalf("partial file: %+v", got)
+	}
+	if !got.CheckUpdates {
+		t.Fatal("check updates is on unless the file turns it off")
 	}
 	os.WriteFile(filepath.Join(dir, prefsFile), []byte(`{"appearance":"purple"}`), 0o644)
 	if LoadPrefs(dir).Appearance != AppearanceSystem {

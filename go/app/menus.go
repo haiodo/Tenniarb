@@ -160,6 +160,7 @@ func (v *Viewer) menus() {
 
 	help := bar.Submenu("&Help")
 	help.Item("Tenniarb &Help", v.sh.showHelp, g.Shortcut("Cmd+Shift+/"))
+	help.Item("Check for &Updates...", v.checkUpdatesCommand)
 	help.Item("Install Agent &Skill", v.installSkills)
 	help.Item("Install MCP for &Agents", v.installMCP)
 	if !v.sh.sysMenu {

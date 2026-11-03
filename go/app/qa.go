@@ -13,6 +13,7 @@ import (
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/update"
 )
 
 // registerQA exposes the application to the QA driver (build with -tags gowtqa); without the tag Handle
@@ -101,6 +102,18 @@ func (sh *Shell) registerQA() {
 	// as a click on a segment of a segmented control
 	qa.Handle("param", func(a qa.Args) error {
 		return sh.active.pressParam(a.String("name"), a.String("value"))
+	})
+	// update-check: the check of Help > Check for Updates, against "url" when a test gives one; the
+	// answer is in the "update" state, and no dialog is shown.
+	qa.Handle("update-check", func(a qa.Args) error {
+		if api := a.String("url"); api != "" {
+			updateAPI = api
+		}
+		o := sh.updOptions()
+		o.Force = true // a QA check always asks its server; the menu path is what tests the cache
+		r, err := update.Latest(sh.ctx, o)
+		sh.setUpdate(r, err)
+		return nil
 	})
 	qa.Handle("zoom", func(a qa.Args) error {
 		v := sh.active
@@ -214,6 +227,8 @@ func (sh *Shell) qaState() map[string]any {
 	out["stash"] = v.id
 	out["prefsOpen"] = sh.prefsWin != nil
 	out["helpOpen"] = sh.helpWin != nil
+	out["updateOpen"] = sh.updWin != nil
+	out["update"] = sh.update
 	b := v.win.Unwrap().GetBounds()
 	out["frame"] = []int{int(b.X), int(b.Y), int(b.Width), int(b.Height)}
 	out["scale"] = v.exportScale()

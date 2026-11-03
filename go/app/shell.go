@@ -41,6 +41,8 @@ type Shell struct {
 
 	prefsWin *prefsWindow
 	helpWin  *helpWindow
+	updWin   *g.Window    // the dialog of Help > Check for Updates
+	update   updateStatus // the last check, for the QA state
 	// sysMenu is set when About and Preferences are in the macOS application menu.
 	sysMenu bool
 
@@ -135,6 +137,7 @@ func (sh *Shell) start(args []string) {
 	for _, a := range links { // a window is needed to ask where the clone is
 		sh.openLink(a, nil)
 	}
+	sh.checkUpdatesOnStart()
 }
 
 func appearanceOf(s string) g.Appearance {
@@ -212,7 +215,7 @@ func (sh *Shell) remove(v *Viewer) {
 	sh.viewers = slices.DeleteFunc(sh.viewers, func(o *Viewer) bool { return o == v })
 	sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventClose, Version: v.version})
 	if len(sh.viewers) == 0 { // as Swift: the application ends with the last document
-		for _, w := range []*g.Window{sh.prefsWin.window(), sh.helpWin.window()} {
+		for _, w := range []*g.Window{sh.prefsWin.window(), sh.helpWin.window(), sh.updWin} {
 			if w != nil {
 				w.Unwrap().Dispose()
 			}
