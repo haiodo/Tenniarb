@@ -730,12 +730,14 @@ func TestPanels(t *testing.T) {
 	app.Shot("23-goto")
 	gotoField.Key("Enter")
 	app.Settle()
+	gotoField.Key("Esc")
+	app.Settle()
 	if runtime.GOOS == "darwin" { // the native search field clears on Esc, the gowt Text of the toolbar does not
-		gotoField.Key("Esc")
-		app.Settle()
 		if v := gotoField.Node().Value; v != "" {
 			t.Fatalf("Esc left %q in the field", v)
 		}
+	} else if app.Find(qa.ID("goto-field")).Exists() { // the field is a popover here: Esc closes it
+		t.Fatal("Esc left the Goto Item popover open")
 	}
 
 	// drop "General info" on the top edge of "Basic steps": the order of the siblings flips

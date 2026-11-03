@@ -10,7 +10,7 @@ import (
 	"github.com/haiodo/gowt/webview"
 )
 
-// readme is Swift's help page (Tenniarb/readme.html, a copy of docs/readme.html).
+// readme is Swift's help page.
 //
 //go:embed help/readme.html
 var readme string
