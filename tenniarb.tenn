@@ -4268,8 +4268,8 @@ diagram"
                     }
                 }
             }
-            item badge291 { pos 30 -76; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }
-            item badge292 { pos 98 -75; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 2; font-size 12; font-weight 700; text-color #ffffff } }
+            item badge291 { pos 16 -76; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }
+            item badge292 { pos 112 -75; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 2; font-size 12; font-weight 700; text-color #ffffff } }
             item badge293 { pos 118 -402; auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; border-color #ffffff; line-width 1.5; item n { title 3; font-size 12; font-weight 700; text-color #ffffff } }
             item nt294 { pos 0 -790; auto-layout row; gap 10; align center; item b { auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; item n { title 1; font-size 12; font-weight 700; text-color #ffffff } }; item t { title "Element mounted from a file (element \"lib\" --from-file): link icon instead of file or folder."; font-size 14; text-color #1d1d1f } }
             item nt295 { pos 0 -824; auto-layout row; gap 10; align center; item b { auto-layout row; width 22; height 22; align center; justify center; corner-radius 11; color #ff3b30; item n { title 2; font-size 12; font-weight 700; text-color #ffffff } }; item t { title "Star after the name: the mounted file has unsaved edits; the window title says \"- Edited\". Save writes the library file."; font-size 14; text-color #1d1d1f } }
