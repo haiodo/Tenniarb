@@ -158,6 +158,13 @@ func TestCommentsStayOutOfTheWorkspace(t *testing.T) {
 	}
 }
 
+// TestCommentsOfAMissingFileFail pins the answer a wrong path gets: an error naming the path, never an
+// empty list, which reads as "the user left no comments here".
+func TestCommentsOfAMissingFileFail(t *testing.T) {
+	e := newCommentEnv(t)
+	mustFail(t, e.agent, "comments", map[string]any{"file": "no-such-file.tenn"}, "no such file")
+}
+
 func TestWaitCommentTimeout(t *testing.T) {
 	e := newCommentEnv(t)
 	start := time.Now()

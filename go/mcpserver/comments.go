@@ -305,6 +305,11 @@ func (s *Server) listComments(in commentsIn) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// resolve lets a file that is not there yet through, for the tools that write one: a comment list of a
+	// missing file would say "no comments" and hide the real answer, which is that the path is wrong.
+	if _, err := os.Stat(abs); err != nil {
+		return "", fmt.Errorf("path %q: no such file", in.File)
+	}
 	if in.State != "" && in.State != comments.Open && in.State != "all" {
 		return "", fmt.Errorf("state must be open or all, not %q", in.State)
 	}
