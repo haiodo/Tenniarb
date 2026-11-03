@@ -5,6 +5,7 @@ package app
 import (
 	"fmt"
 	"math"
+	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -15,6 +16,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
 	"github.com/haiodo/gowt/look"
+	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/rx"
 	"github.com/haiodo/gowt/swt"
 
@@ -135,7 +137,17 @@ func (sh *Shell) newViewer(in viewerInit) *Viewer {
 		v.openText(in.text, in.stashed)
 	}
 	v.trackWindow()
+	v.raise()
 	return v
+}
+
+// raise brings the window and the application to the front, as AppKit does when a document is opened
+// from Finder or with `open`; a QA run leaves the focus where the test put it.
+func (v *Viewer) raise() {
+	if os.Getenv(qa.EnvSocket) != "" {
+		return
+	}
+	v.win.Unwrap().ForceActive()
 }
 
 // placeWindow puts the window where the document was last closed, else a step down and right of the

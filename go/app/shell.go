@@ -163,12 +163,13 @@ func (sh *Shell) openPath(path string) {
 	}
 	for _, v := range sh.viewers {
 		if v.state.Doc.Path == path {
-			v.win.Unwrap().ForceActive()
+			v.raise()
 			return
 		}
 	}
 	if a := sh.active; a != nil && a.state.Doc.Path == "" && !a.isDirty() {
 		a.openPath(path)
+		a.raise()
 		return
 	}
 	sh.newViewer(viewerInit{path: path})
