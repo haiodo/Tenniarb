@@ -170,6 +170,8 @@ func TestInspector(t *testing.T) {
 	}
 
 	// Goto Item through the toolbar search, sidebar and inspector toggles
+	app.Key("Mod+F") // the field is a popover where the inspector items sit in the panel
+	app.Settle()
 	field("goto-field").Type("'Ctrl'")
 	app.Settle()
 	if sel := insp(t, app).Selection; len(sel) != 1 || sel[0] != "hold 'Ctrl'" {
@@ -192,6 +194,8 @@ func TestInspector(t *testing.T) {
 
 	// a link
 	canvas.ClickAt(5, 5)
+	app.Key("Mod+F")
+	app.Settle()
 	field("goto-field").Type("Ctrl")
 	app.Settle()
 

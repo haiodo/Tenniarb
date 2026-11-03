@@ -275,6 +275,12 @@ func (v *Viewer) build() {
 // toolbar is the unified window toolbar: element, item pane and sidebar buttons, zoom, new item, inspector, and the
 // Goto Item search.
 func (v *Viewer) toolbar() {
+	// macOS puts the inspector items in the window bar, where the Goto Item field has room; Windows and
+	// Linux put them at the top of the panel, so there the field is a popover opened by this button.
+	searchItem := look.ToolbarItem{Title: "Goto Item", ID: "goto", Symbol: "magnifyingglass", Inspector: true, Small: true, OnClick: v.showSearch}
+	if runtime.GOOS == "darwin" {
+		searchItem = look.ToolbarItem{Title: "Goto Item", ID: "goto-field", Inspector: true, Small: true, OnSearch: v.searchTo}
+	}
 	items := []look.ToolbarItem{
 		{Title: "Element", Sidebar: true, Small: true, Group: []look.ToolbarItem{
 			{Title: "New Element", Symbol: "plus", OnClick: func() { v.addElement(v.state.Current) }},
@@ -294,7 +300,7 @@ func (v *Viewer) toolbar() {
 			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
 			{Title: "Delete Item", Symbol: "minus", OnClick: v.deleteItems},
 		}},
-		look.ToolbarItem{Title: "Goto Item", ID: "goto-field", Inspector: true, Small: true, OnSearch: v.searchTo},
+		searchItem,
 		look.ToolbarItem{Title: "Hide Code", Symbol: "rectangle.bottomthird.inset.filled", Inspector: true, Small: true, OnClick: v.toggleCode},
 		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector},
 	}
@@ -362,6 +368,7 @@ func (v *Viewer) initView(vw *view.View) {
 		}
 	}))
 	vw.OnPointer(v.onPointer)
+	vw.OnScroll(v.onScroll)
 	vw.OnKey(v.onKey)
 	vw.OnResize(func(int, int) {
 		if v.pendingFit {

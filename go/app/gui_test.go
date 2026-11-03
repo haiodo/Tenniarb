@@ -701,8 +701,8 @@ func TestPanels(t *testing.T) {
 		t.Fatalf("saved file lacks the item typed in the panel: %v", read())
 	}
 
-	// Goto Item: Cmd+F focuses the toolbar field, typing selects and centers the first result, Enter
-	// goes to the next one, Esc clears the field
+	// Goto Item: Cmd+F focuses the field (in the toolbar on macOS, in a popover elsewhere), typing
+	// selects and centers the first result, Enter goes to the next one, Esc clears the field
 	asked := gotoAsked(t, app)
 	canvas.Key("Mod+F")
 	if gotoAsked(t, app) != asked+1 {

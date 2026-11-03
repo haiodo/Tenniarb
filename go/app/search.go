@@ -3,6 +3,7 @@
 package app
 
 import (
+	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/look"
 
@@ -23,10 +24,30 @@ type search struct {
 	asked int
 }
 
-// showSearch is Cmd+F: the focus goes to the Goto Item field of the toolbar.
+// showSearch is Cmd+F: the focus goes to the Goto Item field, the toolbar one on macOS where it sits
+// in the window bar, else the popover one.
 func (v *Viewer) showSearch() {
 	v.search.asked++
-	look.FocusSearch(v.win)
+	if !look.FocusSearch(v.win) {
+		v.openSearch()
+	}
+}
+
+// openSearch is the Goto Item field over the canvas: Windows and Linux draw the inspector toolbar
+// items at the top of the panel, where a field of its own width made the panel wider than its
+// buttons ask for and hung over the window edge.
+func (v *Viewer) openSearch() {
+	v.closePopover()
+	p := v.win.Popover(g.Gap(6), g.Padding(8))
+	p.Add(g.Text(g.Search(), g.ID("goto-field"), g.Focused(), g.Hint("Goto Item"),
+		g.Size(g.Scaled(280), g.Spacing.ControlHeight),
+		g.Init(func(t *g.TextView) {
+			t.OnChange(v.searchTo)
+			t.OnActivate(func() { v.searchTo(t.Text()) }) // Return goes to the next result
+		})))
+	v.openPopover(p)
+	w, _ := v.view.Canvas().Size()
+	p.ShowAtPoint(v.view.Canvas(), w/2, g.Scaled(8), g.PopoverBelow)
 }
 
 // gotoItem selects the item and scrolls the canvas so that it is in the middle.
