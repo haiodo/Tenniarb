@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	g "github.com/haiodo/gowt"
+
+	"github.com/haiodo/tenniarb/go/bundle"
 )
 
 type exportKind struct {
@@ -78,10 +80,17 @@ func (v *Viewer) exportTo(k exportKind, path string) error {
 	case exportHTML:
 		data, err = ExportHTML(e, p, v.exportScale())
 	case exportLive:
-		var bundle string
-		if bundle, err = v.embedBundle(); err == nil {
-			data = InteractiveHTML(bundle, v.text, e)
+		var pack string
+		if pack, err = v.embedBundle(); err != nil {
+			break
 		}
+		text := v.text
+		if v.state.Doc.Path != "" { // the mounts are files of their own, which the browser cannot read
+			if text, err = bundle.Text(v.root, v.state.Doc.Path, text); err != nil {
+				break
+			}
+		}
+		data = InteractiveHTML(pack, text, e)
 	}
 	if err != nil {
 		return err

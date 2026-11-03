@@ -1,6 +1,6 @@
 import { TennParser, parseTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
-import { buildScene, findElement, preloadImages } from "@tenniarb/render";
+import { buildScene, findElement, isSceneElement, preloadImages } from "@tenniarb/render";
 import type { DecodedImage } from "@tenniarb/render";
 import { defaultFontBase, loadFonts } from "./fonts.ts";
 import { drawable, elementTree, pathOf, pickElement } from "./util.ts";
@@ -143,7 +143,7 @@ export async function render(el: HTMLElement, text: string, opts: EmbedOptions =
   let token = 0;
   async function show(e: Element): Promise<void> {
     const mine = ++token;
-    if (e.items.length === 0) {
+    if (e.items.length === 0 && !isSceneElement(e)) { // a scene element draws from its uses, not from items
       current = e;
       const names = e.elements.map((c) => pathOf(c));
       showError(el, `"${pathOf(e)}" has no items to draw`, names.length > 0 ? ["nested elements:", ...names] : []);

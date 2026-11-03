@@ -64,7 +64,7 @@ element "Screen" {
 }
 `
 	var out, errOut bytes.Buffer
-	if code := bundle([]string{main}, &out, &errOut); code != 0 {
+	if code := bundleCmd([]string{main}, &out, &errOut); code != 0 {
 		t.Fatalf("exit %d: %s", code, errOut.String())
 	}
 	if out.String() != want {
@@ -76,7 +76,7 @@ element "Screen" {
 		t.Fatal(err)
 	}
 	var again, errOut2 bytes.Buffer
-	if code := bundle([]string{once}, &again, &errOut2); code != 0 {
+	if code := bundleCmd([]string{once}, &again, &errOut2); code != 0 {
 		t.Fatalf("exit %d: %s", code, errOut2.String())
 	}
 	if again.String() != out.String() {
@@ -93,7 +93,7 @@ func TestBundleLiteral(t *testing.T) {
 		"lib.tenn":  "element T {\n  template %{<p>\ntext</p>%}\n}\n",
 	})
 	var out, errOut bytes.Buffer
-	if code := bundle([]string{filepath.Join(dir, "main.tenn")}, &out, &errOut); code != 0 {
+	if code := bundleCmd([]string{filepath.Join(dir, "main.tenn")}, &out, &errOut); code != 0 {
 		t.Fatalf("exit %d: %s", code, errOut.String())
 	}
 	want := "element \"x\" {\n  element T {\n    template %{<p>\ntext</p>%}\n  }\n}\n"
@@ -123,14 +123,14 @@ func TestBundleProblems(t *testing.T) {
 	}
 	for _, c := range cases {
 		var out, errOut bytes.Buffer
-		code := bundle([]string{filepath.Join(dir, c.file)}, &out, &errOut)
+		code := bundleCmd([]string{filepath.Join(dir, c.file)}, &out, &errOut)
 		if code != c.code || !strings.Contains(errOut.String(), c.errOut) {
 			t.Errorf("%s: exit %d, stderr %q", c.file, code, errOut.String())
 		}
 	}
 	// The blank line and the comment before the mount are kept.
 	var out, errOut bytes.Buffer
-	if code := bundle([]string{filepath.Join(dir, "comments.tenn")}, &out, &errOut); code != 0 {
+	if code := bundleCmd([]string{filepath.Join(dir, "comments.tenn")}, &out, &errOut); code != 0 {
 		t.Fatalf("exit %d: %s", code, errOut.String())
 	}
 	if !strings.HasPrefix(out.String(), "// keep me\n\nelement \"x\" {\n  element X { item a { title b } }\n}\n") {
@@ -138,7 +138,7 @@ func TestBundleProblems(t *testing.T) {
 	}
 	// -o writes the file.
 	dst := filepath.Join(dir, "out.tenn")
-	if code := bundle([]string{"-o", dst, filepath.Join(dir, "comments.tenn")}, &out, &errOut); code != 0 {
+	if code := bundleCmd([]string{"-o", dst, filepath.Join(dir, "comments.tenn")}, &out, &errOut); code != 0 {
 		t.Fatalf("exit %d: %s", code, errOut.String())
 	}
 	if b, err := os.ReadFile(dst); err != nil || string(b) != out.String() {

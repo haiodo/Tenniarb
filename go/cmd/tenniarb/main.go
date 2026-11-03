@@ -54,7 +54,7 @@ func dispatch(args []string, stdout, stderr io.Writer) (launch bool, files []str
 	case "suggest":
 		return false, nil, optimize.Run(args[1:], stdout, stderr)
 	case "bundle":
-		return false, nil, bundle(args[1:], stdout, stderr)
+		return false, nil, bundleCmd(args[1:], stdout, stderr)
 	case "gen":
 		return false, nil, gen(args[1:], stdout, stderr)
 	case "install":
