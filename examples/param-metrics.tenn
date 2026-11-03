@@ -1,0 +1,87 @@
+// Component with parameters (spec 5c): one Metric card declares what an instance may set
+// (`kind Component`, `export let`), and the dashboard below is four instances that differ only by
+// the values passed - no part of the card is copied. `${...}` is evaluated, so the trend arrow is
+// built from the tone as well, not from a second copy of the item.
+element "Metric" {
+    kind Component
+    export let label = "Revenue"
+    export let value = "$0"
+    export let delta = "0%"
+    export let tone = up
+
+    styles {
+        up {
+            color #ffffff; border-color #e4e7ee; text-color #0f121a
+            Delta { text-color #0f9d58 }
+        }
+        down {
+            color #ffffff; border-color #e4e7ee; text-color #0f121a
+            Delta { text-color #cb4b42 }
+        }
+        flat {
+            color #ffffff; border-color #e4e7ee; text-color #0f121a
+            Delta { text-color #5a667e }
+        }
+        tone one-of up down flat
+    }
+
+    item Card {
+        auto-layout column
+        gap 10
+        padding 16
+        width 232
+        corner-radius 12
+        line-width 1
+        use-style ${tone}
+        item label { title ${label}; font-size 12; text-color #5a667e }
+        item Value { title ${value}; font-size 26; font-weight 700; line-height 30 }
+        // the style of the tone reaches its direct children only: Delta sits right under Card
+        item Delta { title ${delta}; font-size 12; font-weight 600 }
+    }
+}
+
+element "Metrics" {
+    item canvas {
+        auto-layout column
+        gap 20
+        padding 32
+        color #f6f7fb
+        item Head {
+            auto-layout column
+            gap 4
+            item Title { title "This week"; font-size 20; font-weight 700 }
+            item Note { title "Four cards, one component"; font-size 12; text-color #5a667e }
+        }
+        item Row {
+            auto-layout row
+            gap 16
+            align start
+            wrap yes
+            width 990
+            use Metric as mrr {
+                label "MRR"
+                value "$48.2k"
+                delta "+12.4%"
+                tone up
+            }
+            use Metric as signups {
+                label "Sign-ups"
+                value "1 284"
+                delta "+3.1%"
+                tone up
+            }
+            use Metric as churn {
+                label "Churn"
+                value "2.8%"
+                delta "+0.6%"
+                tone down
+            }
+            use Metric as nps {
+                label "NPS"
+                value "41"
+                delta "no change"
+                tone flat
+            }
+        }
+    }
+}

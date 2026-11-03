@@ -1,0 +1,91 @@
+// Styles on the element and `use-style` on its nodes (spec 5b): one sheet of named looks - surfaces,
+// tones, type - and every node picks the look it wants, several at once. A property written below
+// `use-style` wins over the style, one written above it is only a default. The chip takes its tone
+// from a declared parameter, so one component covers every colour of the palette.
+element "Palette" {
+    styles {
+        // surfaces
+        page { color #f7f8fb }
+        card { color #ffffff; border-color #e4e7ee; line-width 1; corner-radius 12 }
+        sunken { color #eef1f7; corner-radius 8 }
+
+        // tones: text-color and the font are inherited down, so one line paints the row and its text
+        accent { color #6b3ad3; border-color none; text-color #ffffff }
+        quiet { color #ffffff; border-color #d1d5de; text-color #0f121a }
+        danger { color #cb4b42; border-color none; text-color #ffffff }
+
+        // type
+        heading { font-size 24; font-weight 700 }
+        caption { font-size 12; text-color #5a667e }
+    }
+
+    element "Chip" {
+        kind Component
+        export let label = "Chip"
+        export let tone = quiet
+        item Box {
+            auto-layout row
+            padding 4 10
+            corner-radius 14
+            use-style ${tone}
+            item t { title ${label}; font-size 12; font-weight 600 }
+        }
+    }
+
+    item sheet {
+        auto-layout column
+        gap 20
+        padding 32
+        width 520
+        use-style page
+
+        item Head {
+            auto-layout column
+            gap 4
+            item Title { title "Theme sheet"; use-style heading }
+            item Note {
+                title "Every look below is a named style of this element";
+                use-style caption
+            }
+        }
+
+        item Card {
+            auto-layout column
+            gap 12
+            padding 16
+            use-style card
+
+            item Row {
+                auto-layout row
+                gap 8
+                use Chip as primary { label "Primary"; tone accent }
+                use Chip as quiet { label "Quiet"; tone quiet }
+                use Chip as danger { label "Danger"; tone danger }
+            }
+
+            // the same style on a different node: the look is not tied to one part
+            item Well {
+                auto-layout column
+                gap 6
+                padding 12
+                width fill
+                use-style sunken
+                item WellTitle { title "Sunken well"; font-size 13; font-weight 600 }
+                item WellNote {
+                    title "One style, two nodes, no copy of the colour";
+                    use-style caption
+                }
+            }
+
+            item Banner {
+                auto-layout row
+                padding 8 12
+                width fill
+                use-style danger
+                // after the style: this corner wins over the style's own
+                corner-radius 6
+                item t { title "Payment failed - retry the charge"; font-size 13 }
+            }
+        }
+    }
+}
