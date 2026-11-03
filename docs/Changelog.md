@@ -1,6 +1,6 @@
 #  Changelog
 
-## Version 2.0
+## Version 2.0.0
 
 The application is written in Go now: one binary for macOS, Windows and Linux, with the same `.tenn` format
 and the same calculation engine. The Swift app stays in the repository as history and is no longer shipped.
