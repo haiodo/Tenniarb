@@ -5,13 +5,14 @@
 // The input is the model (@tenniarb/core): an element keeps its commands, an item keeps its block, so the
 // scene tree is rebuilt here instead of in the editor, the viewer and the exporter separately.
 //
-// Not ported yet: element --from-file (a mounted library), template, gradients, shadows, transitions, CSS
-// @keyframes of the animations (the still picture is their first frame, as in Go).
+// Not ported yet: element --from-file (a mounted library), template, transitions, CSS @keyframes of the
+// animations (the still picture is their first frame, as in Go).
 import { newCommand, newFloatNode } from "@tenniarb/core";
 import type { DiagramItem, Element, LinkItem, TennNode } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { parseColor } from "./color.ts";
 import type { Color } from "./color.ts";
+import { canvasQuirks, shadowScale } from "./drawable.ts";
 import type { Point, Rect } from "./geometry.ts";
 
 // MARK: - Names and paths (spec 4.2, go/scene/names.go)
@@ -1933,12 +1934,29 @@ function textWrap(ti: TextInfo, w: number): string[] {
 
 interface Look {
   fill: Color;
+  /** The `color linear` of the box, painted over fill (the first visible stop, as Go's gradient.base). */
+  grad: SceneGradient | null;
+  shadow: SceneShadow | null;
   border: Color;
   text: Color;
   lineW: number;
   radius: [number, number, number, number];
   clip: boolean;
   opacity: number;
+}
+
+/** A linear gradient as Go's `gradient`: the line runs at angle degrees (0 up, 90 right) through the centre. */
+interface SceneGradient {
+  angle: number;
+  stops: { offset: number; color: Color }[];
+}
+
+/** `shadow dx dy [blur [color]]`; y is up as in pos, the canvas offset is device space, y down. */
+interface SceneShadow {
+  dx: number;
+  dy: number;
+  blur: number;
+  color: Color;
 }
 
 const colorBlack: Color = { r: 0, g: 0, b: 0, a: 1 };
@@ -1958,6 +1976,119 @@ function sceneColor(s: string): Color | null {
 function contrast(c: Color): Color {
   const sum = (c.r * 255 * 299 + c.g * 255 * 587 + c.b * 255 * 114) / 1000;
   return sum + 0.5 >= 129 ? colorBlack : colorWhite;
+}
+
+/** Go's prep.color: the colour of the property, or def when it is not a colour. */
+function colorOf(prep: Prep, rn: RNode, name: string, def: Color): Color {
+  const p = propOf(prep, rn, name);
+  return p === null ? def : (sceneColor(propText(p, 0)) ?? def);
+}
+
+/** Go's prep.fill: `color <c>` or `color linear <angle> <c> [pos] ...`; the gradient's base is the fill. */
+function fillOf(prep: Prep, rn: RNode, def: Color): { fill: Color; grad: SceneGradient | null } {
+  const p = propOf(prep, rn, "color");
+  if (p === null) {
+    return { fill: def, grad: null };
+  }
+  if (propText(p, 0) !== "linear") {
+    return { fill: colorOf(prep, rn, "color", def), grad: null };
+  }
+  const grad = gradientOf(prep, rn, p);
+  if (grad === null) {
+    return { fill: def, grad: null };
+  }
+  return { fill: gradientBase(grad), grad };
+}
+
+/** Go's prep.gradient: positions 0..1 for every stop or for none, growing; a bad one warns and gives null. */
+function gradientOf(prep: Prep, rn: RNode, p: SceneProp): SceneGradient | null {
+  const bad = (message: string): null => {
+    prep.diag.warn(rn.src ?? { line: 0, col: 0 }, `color linear: ${message}, the default is used`);
+    return null;
+  };
+  const angle = propNum(p, 1);
+  if (angle === null || !Number.isFinite(angle)) {
+    return bad("the angle is not a number");
+  }
+  const stops: SceneGradient["stops"] = [];
+  let placed = 0;
+  for (let i = 2; i < p.args.length; ) {
+    const text = propText(p, i);
+    const color = sceneColor(text);
+    if (color === null) {
+      return bad(`"${text}" is not a color`);
+    }
+    i += 1;
+    const offset = propNum(p, i);
+    if (offset !== null) {
+      i += 1;
+      placed += 1;
+    }
+    stops.push({ offset: offset ?? 0, color });
+  }
+  const n = stops.length;
+  if (n < 2) {
+    return bad("needs at least 2 stops");
+  }
+  if (placed === 0) {
+    for (let i = 0; i < n; i += 1) {
+      stops[i]!.offset = i / (n - 1);
+    }
+  } else if (placed !== n) {
+    return bad("give a position to every stop or to none");
+  }
+  for (let i = 0; i < n; i += 1) {
+    const off = stops[i]!.offset;
+    if (off < 0 || off > 1 || (i > 0 && off < stops[i - 1]!.offset)) {
+      return bad("positions must grow within 0..1");
+    }
+  }
+  return { angle: ((angle % 360) + 360) % 360, stops };
+}
+
+/** Go's gradient.base: the first stop that shows, the first one when all are transparent. */
+function gradientBase(g: SceneGradient): Color {
+  return g.stops.find((s) => s.color.a > 0)?.color ?? g.stops[0]!.color;
+}
+
+const defaultShadowBlur = 5;
+const defaultShadowColor: Color = { r: 0, g: 0, b: 0, a: 1 / 3 };
+
+/** Go's prep.shadow; blur 5 and black at 1/3 alpha by default. A bad offset drops the shadow. */
+function shadowOf(prep: Prep, rn: RNode): SceneShadow | null {
+  const p = propOf(prep, rn, "shadow");
+  if (p === null) {
+    return null;
+  }
+  const at = rn.src ?? { line: 0, col: 0 };
+  const dx = propNum(p, 0);
+  const dy = propNum(p, 1);
+  if (dx === null || dy === null) {
+    prep.diag.warn(at, "shadow takes dx dy [blur [color]], numbers for the offset; ignored");
+    return null;
+  }
+  const sh: SceneShadow = { dx, dy, blur: defaultShadowBlur, color: defaultShadowColor };
+  if (p.args.length > 2) {
+    const v = propNum(p, 2);
+    if (v !== null && v >= 0) {
+      sh.blur = v;
+    } else {
+      prep.diag.warn(at, `shadow: the blur is not a number from 0, ${defaultShadowBlur} is used`);
+    }
+  }
+  if (p.args.length > 3) {
+    const text = propText(p, 3);
+    const color = sceneColor(text);
+    if (color !== null) {
+      sh.color = color;
+    } else {
+      prep.diag.warn(at, `shadow: "${text}" is not a color, the default is used`);
+    }
+  }
+  if (p.args.length > 4) {
+    prep.diag.warn(at, "shadow takes dx dy [blur [color]], the extra values are ignored");
+  }
+  return sh;
 }
 
 interface Icon {
@@ -2305,35 +2436,27 @@ function fontCss(f: Font): string {
 }
 
 function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
-  // shortcut: shadow and "color linear ..." are not painted yet; a scene screen with them draws the flat
-  // fill of Go's first stop. Add when a library screen needs them.
-  const look: Look = { fill: inCtx ? noColor : colorWhite, border: inCtx ? noColor : colorBlack, text: up, lineW: 1, radius: [0, 0, 0, 0], clip: false, opacity: 1 };
-  const color = propOf(prep, rn, "color");
-  if (color !== null) {
-    const c = sceneColor(propText(color, 0));
-    if (c !== null) {
-      look.fill = c;
-    }
-  }
-  const border = propOf(prep, rn, "border-color");
-  if (border !== null) {
-    const c = sceneColor(propText(border, 0));
-    if (c !== null) {
-      look.border = c;
-    }
-  }
+  const look: Look = {
+    fill: inCtx ? noColor : colorWhite,
+    grad: null,
+    shadow: null,
+    border: inCtx ? noColor : colorBlack,
+    text: up,
+    lineW: 1,
+    radius: [0, 0, 0, 0],
+    clip: false,
+    opacity: 1,
+  };
+  const fill = fillOf(prep, rn, look.fill);
+  look.fill = fill.fill;
+  look.grad = fill.grad;
+  look.shadow = shadowOf(prep, rn);
+  look.border = colorOf(prep, rn, "border-color", look.border);
   let text = up;
   if (look.fill.a > 0) {
     text = contrast(look.fill);
   }
-  const textColor = propOf(prep, rn, "text-color");
-  if (textColor !== null) {
-    const c = sceneColor(propText(textColor, 0));
-    if (c !== null) {
-      text = c;
-    }
-  }
-  look.text = text;
+  look.text = colorOf(prep, rn, "text-color", text);
   const lw = num(prep, rn, "line-width");
   if (lw !== null) {
     look.lineW = lw;
@@ -2763,6 +2886,39 @@ function roundRectPath(ctx: Canvas2D, x: number, y: number, w: number, h: number
   ctx.closePath();
 }
 
+/** The linear gradient of the box, through its centre at the angle and reaching the corners (Go's gradient.at). */
+function fillGradient(ctx: Canvas2D, g: SceneGradient, w: number, h: number): boolean {
+  // shortcut: the SVG writer has no gradient object, so an SVG export draws the base colour; add one to
+  // SvgContext when the export needs gradients.
+  if (typeof ctx.createLinearGradient !== "function") {
+    return false;
+  }
+  const a = (g.angle * Math.PI) / 180;
+  // draw() flips the canvas once, so y is up here and 0 degrees points up as it does on screen in Go.
+  const dx = Math.sin(a);
+  const dy = Math.cos(a);
+  const half = (Math.abs(w * dx) + Math.abs(h * dy)) / 2;
+  const line = ctx.createLinearGradient(w / 2 - dx * half, h / 2 - dy * half, w / 2 + dx * half, h / 2 + dy * half);
+  for (const s of g.stops) {
+    line.addColorStop(s.offset, sceneCss(s.color));
+  }
+  ctx.fillStyle = line;
+  ctx.fill();
+  return true;
+}
+
+/** Paint with the shadow of Go's gfx.Shadow: the shape and its shadow, the shadow is y-up in scene space. */
+function withShadow(ctx: Canvas2D, sh: SceneShadow, paint: () => void): void {
+  ctx.save();
+  // The canvas offset is device space and y-down; blur and alpha are the quirks of drawable.setShadow.
+  ctx.shadowOffsetX = sh.dx * shadowScale.value;
+  ctx.shadowOffsetY = -sh.dy * shadowScale.value;
+  ctx.shadowBlur = sh.blur * shadowScale.value;
+  ctx.shadowColor = sceneCss({ ...sh.color, a: sh.blur > 0 ? sh.color.a ** canvasQuirks.shadowAlphaPower : sh.color.a });
+  paint();
+  ctx.restore();
+}
+
 function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color): void {
   const lines = textWrap(ti, w - 2 * ti.padX);
   const y0 = leafNode ? (h - lines.length * ti.lineH) / 2 : ti.padY;
@@ -2902,10 +3058,31 @@ export function buildTennScene(element: Element): TennScene {
             roundRectPath(ctx, 0, 0, w, h, look.radius);
             ctx.clip();
           }
+          // Go's picture(): the shadow goes under the fill; a gradient is painted over an opaque base, since
+          // a canvas gradient with a shadow casts it from the gradient's alpha; a border without a fill casts it.
+          let shadow = look.shadow;
           if (look.fill.a > 0) {
             roundRectPath(ctx, 0, 0, w, h, look.radius);
-            ctx.fillStyle = sceneCss(look.fill);
-            ctx.fill();
+            if (look.grad !== null) {
+              if (shadow !== null) {
+                const base = { ...look.fill, a: 1 };
+                withShadow(ctx, shadow, () => {
+                  ctx.fillStyle = sceneCss(base);
+                  ctx.fill();
+                });
+              }
+              if (!fillGradient(ctx, look.grad, w, h)) {
+                ctx.fillStyle = sceneCss(look.fill);
+                ctx.fill();
+              }
+            } else if (shadow !== null) {
+              ctx.fillStyle = sceneCss(look.fill);
+              withShadow(ctx, shadow, () => ctx.fill());
+            } else {
+              ctx.fillStyle = sceneCss(look.fill);
+              ctx.fill();
+            }
+            shadow = null;
           }
           if (look.lineW > 0 && look.border.a > 0) {
             const inset = look.lineW / 2;
@@ -2913,7 +3090,11 @@ export function buildTennScene(element: Element): TennScene {
             roundRectPath(ctx, inset, inset, w - look.lineW, h - look.lineW, radius);
             ctx.lineWidth = look.lineW;
             ctx.strokeStyle = sceneCss(look.border);
-            ctx.stroke();
+            if (shadow !== null) {
+              withShadow(ctx, shadow, () => ctx.stroke());
+            } else {
+              ctx.stroke();
+            }
           }
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {

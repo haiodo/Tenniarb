@@ -9,6 +9,7 @@ import { buildTennScene, isSceneElement } from "../src/scene-tenn.ts";
 import type { TennScene } from "../src/scene-tenn.ts";
 import type { Canvas2D } from "../src/canvas-types.ts";
 import { renderTenn } from "../src/node.ts";
+import { newCanvas } from "./helpers.ts";
 
 /** A Canvas2D that records what is painted: fills, strokes, text and the alpha in force. */
 function record(): { ctx: Canvas2D; fills: string[]; strokes: string[]; texts: { text: string; fill: string; font: string }[] } {
@@ -88,7 +89,7 @@ const paint = (s: TennScene): ReturnType<typeof record> => {
   return out;
 };
 
-const box = (s: TennScene, name: string): { width: number; height: number } => {
+const box = (s: TennScene, name: string): TennScene["boxes"][number] => {
   const b = s.boxes.find((it) => it.name === name);
   assert.ok(b !== undefined, `box ${name}: ${s.boxes.map((it) => it.name).join(", ")}`);
   return b;
@@ -352,4 +353,147 @@ test("an item above the origin is part of the picture", () => {
   const { scene: s } = scene(`element "Screen" { item A { pos 10 10; width 20; height 10; color #ff0000 } }`);
   // pos 10 10 is 10 up: the picture spans layout y -10..10, so the box reaches 10 above the origin.
   assert.deepEqual(s.bounds, { x: 0, y: 0, width: 30, height: 10 });
+});
+
+test("color linear: the angle and the stops go to the canvas gradient", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item A { width 100; height 50; auto-layout row; title ""; color linear 90 #ff0000 0 #00ff00 0.25 #0000ff 1 }
+}`);
+  const out = record();
+  const gradients: { from: number[]; stops: [number, string][] }[] = [];
+  out.ctx.createLinearGradient = (x0, y0, x1, y1) => {
+    const g = { from: [x0, y0, x1, y1], stops: [] as [number, string][] };
+    gradients.push(g);
+    return { addColorStop: (offset, color) => g.stops.push([offset, color]) };
+  };
+  s.draw(out.ctx);
+  // 90 degrees is to the right: the line goes corner to corner through the middle of the 100x50 box.
+  assert.deepEqual(gradients.map((g) => ({ from: g.from.map(round), stops: g.stops })), [
+    {
+      from: [0, 25, 100, 25],
+      stops: [
+        [0, "rgb(255,0,0)"],
+        [0.25, "rgb(0,255,0)"],
+        [1, "rgb(0,0,255)"],
+      ],
+    },
+  ]);
+});
+
+test("color linear 0 points up: the stops spread evenly from the bottom", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item A { width 100; height 50; auto-layout row; title ""; color linear 0 #ff0000 #0000ff }
+}`);
+  const out = record();
+  const gradients: { from: number[]; stops: [number, string][] }[] = [];
+  out.ctx.createLinearGradient = (x0, y0, x1, y1) => {
+    const g = { from: [x0, y0, x1, y1], stops: [] as [number, string][] };
+    gradients.push(g);
+    return { addColorStop: (offset, color) => g.stops.push([offset, color]) };
+  };
+  s.draw(out.ctx);
+  // draw() flips y, so y 0 is the bottom of the box: the first colour is there, the last at the top.
+  assert.deepEqual(gradients.map((g) => ({ from: g.from.map(round), stops: g.stops })), [
+    {
+      from: [50, 0, 50, 50],
+      stops: [
+        [0, "rgb(255,0,0)"],
+        [1, "rgb(0,0,255)"],
+      ],
+    },
+  ]);
+});
+
+test("a bad color linear warns and draws the default flat fill", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item A { width 10; height 10; color linear sideways #ff0000 #0000ff }
+    item B { width 10; height 10; color linear 0 #ff0000 0.5 #0000ff }
+    item C { width 10; height 10; color linear 0 #ff0000 0.5 #0000ff 0.2 }
+    item D { width 10; height 10; color linear 0 #ff0000 zz }
+    item E { width 10; height 10; color linear 0 #ff0000 }
+    item F { auto-layout row }
+}`);
+  const p = paint(s);
+  assert.deepEqual(
+    s.diagnostics.map((d) => d.message),
+    [
+      "color linear: the angle is not a number, the default is used",
+      "color linear: give a position to every stop or to none, the default is used",
+      "color linear: positions must grow within 0..1, the default is used",
+      'color linear: "zz" is not a color, the default is used',
+      "color linear: needs at least 2 stops, the default is used",
+    ],
+  );
+  // Go's fill() falls back to the default of the box, white here, not to a stop of the bad gradient.
+  assert.deepEqual(p.fills, ["rgb(255,255,255)", "rgb(255,255,255)", "rgb(255,255,255)", "rgb(255,255,255)", "rgb(255,255,255)"]);
+});
+
+const round = (v: number): number => Math.round(v * 1000) / 1000;
+
+/** Draws a scene on a real canvas, y-up like Go: the canvas flip of draw() turns layout y into up. */
+function pixels(src: string): { scene: TennScene; px: (x: number, y: number) => number[] } {
+  const { scene: s } = scene(src);
+  const { canvas2d, ctx } = newCanvas(200, 120);
+  canvas2d.fillStyle = "#ffffff";
+  canvas2d.fillRect(0, 0, 200, 120);
+  canvas2d.save();
+  canvas2d.translate(0, 100);
+  s.draw(canvas2d);
+  canvas2d.restore();
+  return { scene: s, px: (x, y) => Array.from(ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data) };
+}
+
+test("color linear paints a gradient, not the flat fill of one stop", () => {
+  const { scene: s, px } = pixels(`element "Screen" {
+    item A { pos 0 0; width 100; height 50; title ""; color linear 90 #ff0000 #0000ff }
+    item C { auto-layout row }
+}`);
+  const b = box(s, "A");
+  const y = 100 - (b.y + b.height / 2);
+  const left = px(b.x + 8, y);
+  const right = px(b.x + b.width - 8, y);
+  assert.ok(left[0]! > 220 && left[2]! < 40, `left end is red: ${left}`);
+  assert.ok(right[2]! > 220 && right[0]! < 40, `right end is blue: ${right}`);
+
+  // 0 degrees points up: the first colour is at the bottom of the box, the last at the top.
+  const up = pixels(`element "Screen" {
+    item A { pos 0 0; width 100; height 50; title ""; color linear 0 #ff0000 #0000ff }
+    item C { auto-layout row }
+}`);
+  const ub = box(up.scene, "A");
+  const top = up.px(ub.x + ub.width / 2, 100 - (ub.y + ub.height - 4));
+  const bottom = up.px(ub.x + ub.width / 2, 100 - (ub.y + 4));
+  assert.ok(top[2]! > 220 && top[0]! < 40, `top is blue: ${top}`);
+  assert.ok(bottom[0]! > 220 && bottom[2]! < 40, `bottom is red: ${bottom}`);
+});
+
+test("shadow is a drop shadow under the fill, offset up and to the right", () => {
+  const { scene: s, px } = pixels(`element "Screen" {
+    item A { pos 20 0; width 60; height 40; title ""; color #ffffff; shadow 12 8 6 }
+    item C { auto-layout row }
+}`);
+  const b = box(s, "A");
+  const mid = b.y + b.height / 2;
+  const inside = px(b.x + b.width / 2, 100 - mid);
+  const right = px(b.x + b.width + 6, 100 - mid);
+  const above = px(b.x + b.width / 2, 100 - (b.y + b.height + 6));
+  const far = px(b.x - 10, 100 - mid);
+  assert.deepEqual(inside.slice(0, 3), [255, 255, 255], "the fill covers the shadow");
+  assert.ok(right[0]! < 245, `grey shadow right of the box: ${right}`);
+  assert.ok(above[0]! < 245, `grey shadow above the box (y is up): ${above}`);
+  assert.deepEqual(far.slice(0, 3), [255, 255, 255], "nothing to the left");
+});
+
+test("an SVG export of a gradient and a shadow keeps the base fill and casts the shadow", async () => {
+  const svg = await renderTenn(
+    `element "Screen" {
+    item row { auto-layout row; gap 10
+        item A { width 40; height 20; title ""; color linear 90 #ff0000 #0000ff; shadow 4 4 }
+    }
+}`,
+    { format: "svg", element: "Screen" },
+  );
+  // The SVG writer has no gradient object: the box takes the base colour of the gradient.
+  assert.match(svg, /fill="rgb\(255,0,0\)"/);
+  assert.match(svg, /<feDropShadow /);
 });

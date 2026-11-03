@@ -21,6 +21,8 @@ export interface Canvas2D {
 
   fillStyle: string | object;
   strokeStyle: string | object;
+  /** CanvasRenderingContext2D.createLinearGradient; a backend without it (the SVG writer) must be filled flat. */
+  createLinearGradient?(x0: number, y0: number, x1: number, y1: number): { addColorStop(offset: number, color: string): void };
   lineWidth: number;
   lineDashOffset: number;
   lineCap?: string;
