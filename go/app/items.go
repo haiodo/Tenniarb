@@ -51,7 +51,8 @@ func (v *Viewer) itemsPane() g.Option {
 	return g.VBox(g.Ref(&l.box), g.Grow(), g.Padding(0), g.Gap(0),
 		g.HBox(g.GrowX(), g.Padding(4), g.Gap(g.Scaled(4)),
 			g.Label("Items", faint(), g.GrowX(), g.Place(g.AlignStart, g.AlignCenter)),
-			g.Button("+", g.Small(), g.ID("items-add"), g.Tooltip("Add an item"),
+			g.Button("+", g.Small(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
+				g.ID("items-add"), g.Tooltip("Add an item"),
 				g.Init(func(b *g.ButtonView) {
 					m := g.PopupMenu(b)
 					// The entries are made for the opening and gone when it closes, so the Add menu of

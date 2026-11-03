@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/qa/qatest"
 )
@@ -86,6 +87,11 @@ func TestItemsAdd(t *testing.T) {
 	file := restDoc(t, h, "Items.tenn", moveDoc)
 	tree := a.Find(qa.ID("items"))
 	before := h.text()
+
+	// The header "+" is square at the ControlHeight hint, like a toolbar icon button.
+	if b := a.Find(qa.ID("items-add")).Node().Bounds; b[2] != b[3] || b[2] > g.Spacing.ControlHeight+2 {
+		t.Fatalf("items-add bounds %v, want a square within ControlHeight %d", b, g.Spacing.ControlHeight)
+	}
 
 	a.State("select", "path", file, "element", []string{"Screen"}, "nodes", []string{})
 	restWait(a)
