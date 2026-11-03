@@ -66,6 +66,7 @@ type Viewer struct {
 	outlineAuto bool // code cleared the outline selection: the toolkit may select the first row itself
 	zoomSeen    float64
 	zoomText    *rx.State[string] // the toolbar zoom item, like Swift zoomLabel
+	exporting   exportProgress    // the pages export running in the background, a toolbar item until done
 	ind         indicators
 	agent       agentUI
 	marks       markUI
@@ -282,7 +283,16 @@ func (v *Viewer) toolbar() {
 		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector},
 	}
 	// The agent items sit next to the title, before the zoom controls.
-	look.SetToolbar(v.win, slices.Insert(items, 3, v.agentItems()...)...)
+	agents := v.agentItems()
+	items = slices.Insert(items, 3, agents...)
+	// A pages export long enough to show progress gets the button after the zoom controls.
+	if v.exporting.active {
+		items = slices.Insert(items, 5+len(agents), look.ToolbarItem{
+			Title: "Export pages in progress; click for what is left", Text: v.exporting.text, Small: true,
+			ID: "export-progress", OnClick: v.showExportProgress,
+		})
+	}
+	look.SetToolbar(v.win, items...)
 }
 
 func (v *Viewer) toggleSidebar() { look.SetSidebarVisible(v.win, !look.SidebarVisible(v.win)) }

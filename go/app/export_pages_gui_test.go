@@ -5,6 +5,7 @@ package app_test
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -139,7 +140,6 @@ func TestExportPages(t *testing.T) {
 	// PDF: one file, a page per element
 	pdf := filepath.Join(dir, "Book.pdf")
 	a.Answer(qa.Dialog{Kind: "file", Reply: pdf})
-	a.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
 	a.Find(qa.Text("PDF...").In(qa.Selector{Class: "MenuItem", Text: "Element"})).Click()
 	a.Settle()
 	data, err := os.ReadFile(pdf)
@@ -152,8 +152,8 @@ func TestExportPages(t *testing.T) {
 	if n := pdfPageCount(data); n != 4 {
 		t.Fatalf("pdf has %d pages, want 4", n)
 	}
-	if msg := lastMessage(a); !strings.Contains(msg, "4 pages written to "+pdf) {
-		t.Fatalf("report after the PDF: %q", msg)
+	if msgs := messageDialogs(a); len(msgs) != 0 {
+		t.Fatalf("message boxes after the PDF: %v", msgs)
 	}
 
 	// PNG: the same submenu in the context menu of the outline, a file per element in a folder
@@ -168,7 +168,6 @@ func TestExportPages(t *testing.T) {
 		t.Fatal("no Export Pages in the context menu of the outline")
 	}
 	a.Answer(qa.Dialog{Kind: "dir", Reply: out})
-	a.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
 	a.Find(qa.Text("PNG...").In(qa.ID("outline"))).Click()
 	a.Settle()
 	want := []string{"01-Chapter.png", "02-Section.png", "03-Part.png", "04-Aside.png"}
@@ -181,18 +180,81 @@ func TestExportPages(t *testing.T) {
 			t.Fatalf("%s: %d bytes, %v", n, len(img), err)
 		}
 	}
-	if msg := lastMessage(a); !strings.Contains(msg, "4 pages written to "+out) {
-		t.Fatalf("report after the PNG export: %q", msg)
+	if msgs := messageDialogs(a); len(msgs) != 0 {
+		t.Fatalf("message boxes after the PNG export: %v", msgs)
 	}
 }
 
-// lastMessage is the text of the last message box the app opened.
-func lastMessage(a *qatest.Client) string {
-	msg := ""
-	for _, d := range a.Dialogs() {
-		if d.Kind == "message" {
-			msg = d.Message
+// TestExportPagesQuiet is the pages export in the background: the progress item comes and goes with the
+// export, nothing is left open once it is done, and only a file that cannot be written is a box.
+func TestExportPagesQuiet(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	dir := t.TempDir()
+	file := filepath.Join(dir, "Book.tenn")
+	if err := os.WriteFile(file, []byte(pagesDoc), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		h.open(fixture)
+		a.State("command", "name", "close-others")
+	})
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Find(qa.Text("Chapter").In(qa.ID("outline"))).Click()
+	a.Settle()
+
+	pdf := filepath.Join(dir, "Book.pdf")
+	a.Answer(qa.Dialog{Kind: "file", Reply: pdf})
+	a.Find(qa.Text("PDF...").In(qa.Selector{Class: "MenuItem", Text: "Element"})).Click()
+	a.Settle()
+	if data, err := os.ReadFile(pdf); err != nil || !bytes.HasPrefix(data, []byte("%PDF")) {
+		t.Fatalf("pdf: %d bytes, %v", len(data), err)
+	}
+	if msgs := messageDialogs(a); len(msgs) != 0 {
+		t.Fatalf("message boxes after a good export: %v", msgs)
+	}
+	if a.Find(qa.ID("export-progress")).Exists() {
+		t.Fatal("the progress item is still in the toolbar")
+	}
+	var st struct {
+		Export struct {
+			Active      bool
+			Done, Total int
+			Dest        string
 		}
 	}
-	return msg
+	if err := json.Unmarshal(a.State("state"), &st); err != nil {
+		t.Fatal(err)
+	}
+	if st.Export.Active || st.Export.Done != 4 || st.Export.Total != 4 || st.Export.Dest != pdf {
+		t.Fatalf("export state %+v", st.Export)
+	}
+
+	// a file that cannot be written is the one message box, and the progress item goes with it
+	missing := filepath.Join(dir, "missing", "Book.pdf")
+	a.Answer(qa.Dialog{Kind: "file", Reply: missing})
+	a.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
+	a.Find(qa.Text("PDF...").In(qa.Selector{Class: "MenuItem", Text: "Element"})).Click()
+	a.Settle()
+	if msgs := messageDialogs(a); len(msgs) != 1 || msgs[0].Title != "Export failed" || !strings.Contains(msgs[0].Message, "missing") {
+		t.Fatalf("message boxes after the failed export: %v", msgs)
+	}
+	if a.Find(qa.ID("export-progress")).Exists() {
+		t.Fatal("the progress item is still in the toolbar after the failure")
+	}
+}
+
+// messageDialogs are the message boxes the app opened since App(t).
+func messageDialogs(a *qatest.Client) []qa.Dialog {
+	var out []qa.Dialog
+	for _, d := range a.Dialogs() {
+		if d.Kind == "message" {
+			out = append(out, d)
+		}
+	}
+	return out
 }

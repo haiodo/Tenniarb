@@ -217,6 +217,7 @@ func (sh *Shell) qaState() map[string]any {
 	b := v.win.Unwrap().GetBounds()
 	out["frame"] = []int{int(b.X), int(b.Y), int(b.Width), int(b.Height)}
 	out["scale"] = v.exportScale()
+	out["export"] = map[string]any{"active": v.exporting.active, "done": v.exporting.done, "total": v.exporting.total, "dest": v.exporting.dest}
 	out["autosavePending"] = v.autosave.Pending()
 	return out
 }
