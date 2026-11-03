@@ -46,7 +46,9 @@ func parseVersion(s string) ([3]int, bool) {
 	}
 	for i, p := range parts {
 		n, err := strconv.Atoi(p)
-		if err != nil || n < 0 {
+		// A leading zero is not a version: an all-digit commit hash such as 0548863 would otherwise
+		// read as 548863 and look newer than every release.
+		if err != nil || n < 0 || (len(p) > 1 && p[0] == '0') {
 			return v, false
 		}
 		v[i] = n

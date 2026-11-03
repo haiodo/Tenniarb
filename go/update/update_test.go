@@ -136,6 +136,7 @@ func TestCompare(t *testing.T) {
 		{"2.0.0", "2.1.0-beta", -1},
 		{"2.9.0", "2.10.0", -1},
 		{"1a2b3c4", "2.0.0", -1}, // a checkout names a commit, not a version
+		{"0548863", "2.0.0", -1}, // ...and that commit may be all digits
 		{"dev", "2.0.0", -1},
 		{"unknown", "2.0.0", -1},
 		{"2.0.0", "not-a-version", 0},
