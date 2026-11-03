@@ -32,7 +32,8 @@ const (
 type bodyRun struct {
 	text string
 	font gfx.Font
-	code bool // drawn over the code background
+	code bool   // drawn over the code background
+	link string // the target of the link the run is the label of, "" for plain text
 }
 
 // body blocks: a heading, a paragraph, a list of items, a quote, a fenced code block, the table of
@@ -64,14 +65,15 @@ type bodyTOCItem struct {
 
 // bodyLine is one laid out line of the body.
 type bodyLine struct {
-	x, w  float64 // x: indent of the line, w: width of its runs
-	asc   float64
-	desc  float64
-	h     float64 // line box height
-	gap   float64 // extra space before the line, between blocks
-	quote bool    // a bar on the left
-	code  bool    // a background across the width
-	runs  []bodyRun
+	x, w   float64 // x: indent of the line, w: width of its runs
+	asc    float64
+	desc   float64
+	h      float64 // line box height
+	gap    float64 // extra space before the line, between blocks
+	quote  bool    // a bar on the left
+	code   bool    // a background across the width
+	anchor string  // heading: the anchor of the heading, on its first line
+	runs   []bodyRun
 }
 
 // bodyText is the markdown body of an item, ready to be measured and drawn.
@@ -91,6 +93,7 @@ type bodyText struct {
 	widths  map[bodyWidthKey]float64
 	pos     Pos    // the body command, for a warning about its height
 	from    string // the markdown file the text was read from; "" for text written in the .tenn
+	base    string // the markdown file the text is resolved from: from, or the .tenn that writes it
 }
 
 type bodyWidthKey struct {
@@ -212,6 +215,7 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 			}
 		}
 	}
+	b.base = base
 	p.checkBodyLinks(pr.Pos, base, text)
 	return b
 }
@@ -482,21 +486,30 @@ func quoteLine(s string) (string, bool) {
 	return "", false
 }
 
-// inline turns one line of markdown into runs with go/markdown tokens. Before the lexer runs, the
-// forms it does not know are mapped to the ones it does: [label](url) becomes label (a link is
-// text in a scene), **bold** becomes *bold* and *italic* becomes _italic_. Code spans are copied
-// as they are, so their asterisks and brackets stay literal.
+// inline turns one line of markdown into runs with go/markdown tokens, the runs of a link label carrying
+// its target. Before the lexer runs, the forms it does not know are mapped to the ones it does: [label](url)
+// becomes label, **bold** becomes *bold* and *italic* becomes _italic_. Code spans are copied as they are,
+// so their asterisks and brackets stay literal.
 func (b *bodyText) inline(s string) []bodyRun {
+	var runs []bodyRun
+	for _, piece := range splitLinks(s) {
+		runs = append(runs, b.linkRuns(piece.text, piece.link)...)
+	}
+	return runs
+}
+
+// linkRuns is inline of text that is the label of a link, or plain text when link is "".
+func (b *bodyText) linkRuns(s, link string) []bodyRun {
 	var runs []bodyRun
 	add := func(text string, font gfx.Font, code bool) {
 		if text == "" {
 			return
 		}
-		if n := len(runs); n > 0 && runs[n-1].font == font && runs[n-1].code == code {
+		if n := len(runs); n > 0 && runs[n-1].font == font && runs[n-1].code == code && runs[n-1].link == link {
 			runs[n-1].text += text
 			return
 		}
-		runs = append(runs, bodyRun{text: text, font: font, code: code})
+		runs = append(runs, bodyRun{text: text, font: font, code: code, link: link})
 	}
 	for _, t := range markdown.GetTokens(normalizeInline(s)) {
 		switch t.Type {
@@ -522,6 +535,58 @@ func (b *bodyText) inline(s string) []bodyRun {
 		}
 	}
 	return runs
+}
+
+// inlinePiece is a piece of a line: plain text, or the label of a link and its target.
+type inlinePiece struct {
+	text string
+	link string // the text inside ( ), as bodyLinks reads it; "" for plain text
+}
+
+// splitLinks cuts a line at the explicit links [label](target), code spans left whole. An image is not a
+// link, as in bodyLinks.
+func splitLinks(s string) []inlinePiece {
+	var out []inlinePiece
+	plain := 0
+	flush := func(end int) {
+		if end > plain {
+			out = append(out, inlinePiece{text: s[plain:end]})
+		}
+	}
+	for i := 0; i < len(s); {
+		if s[i] == '`' {
+			if j := strings.IndexByte(s[i+1:], '`'); j >= 0 {
+				i += j + 2
+			} else {
+				i++
+			}
+			continue
+		}
+		if s[i] != '[' || i > 0 && s[i-1] == '!' {
+			i++
+			continue
+		}
+		mid := strings.Index(s[i:], "](")
+		if mid < 0 {
+			i++
+			continue
+		}
+		end := strings.IndexByte(s[i+mid+2:], ')')
+		if end < 0 {
+			i++
+			continue
+		}
+		target := strings.TrimSpace(s[i+mid+2 : i+mid+2+end])
+		if sp := strings.IndexAny(target, " \t"); sp >= 0 { // an optional title after the path
+			target = target[:sp]
+		}
+		flush(i)
+		out = append(out, inlinePiece{text: s[i+1 : i+mid], link: target})
+		i += mid + 2 + end + 1
+		plain = i
+	}
+	flush(len(s))
+	return out
 }
 
 // styled is a run font with a weight or italic. A face Name leaves both to the face (gfx and the
@@ -662,6 +727,9 @@ func (b *bodyText) lines(width float64) []bodyLine {
 				continue
 			}
 		}
+		if len(lines) > 0 && blk.kind == bodyHeading {
+			lines[0].anchor = blk.anchor
+		}
 		if len(out) > 0 && blk.kind != bodyList && len(lines) > 0 {
 			lines[0].gap = b.gap
 			if blk.kind == bodyHeading {
@@ -700,10 +768,10 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 			if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
 				flush()
 			}
-			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].code == run.code {
+			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link {
 				line.runs[n-1].text += tok
 			} else {
-				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, code: run.code})
+				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, code: run.code, link: run.link})
 			}
 			line.w += w
 			started = true

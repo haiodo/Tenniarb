@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
 
@@ -542,6 +543,13 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		if p.Button != 1 {
 			return
 		}
+		// A link of a body is followed by a plain click; a modified one selects and pans as before.
+		if p.Mods == (g.Mods{}) {
+			if l, ok := sv.bodyLinkAt(at); ok {
+				v.openBodyLink(l, at)
+				return
+			}
+		}
 		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
 		_, cur := v.selectedScene()
 		hit := sv.hitScene(at)
@@ -566,6 +574,12 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		}
 	case view.PointerMove:
 		if !v.press.active || !p.Drag {
+			// A hover: the hand says the text under it is a link, and the arrow says it is not.
+			if _, ok := sv.bodyLinkAt(at); ok {
+				v.view.SetCursor(view.CursorHand)
+			} else {
+				v.view.SetCursor(view.CursorArrow)
+			}
 			return
 		}
 		if v.press.pan {

@@ -283,6 +283,8 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
 	out["indicators"] = v.ind.dots
+	// bodyLinks: the links of the bodies on the canvas, in view points, for a test that clicks one
+	out["bodyLinks"] = v.qaBodyLinks()
 	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
 	out["marks"] = v.qaMarks()
 	out["compare"] = v.qaCompare()
@@ -363,6 +365,27 @@ type qaNode struct {
 	Box  []float64
 	Kind string
 	Kids int
+}
+
+// qaBodyLink is a link of a body in view points: where its label is and where it leads.
+type qaBodyLink struct {
+	Box    []float64
+	File   string
+	Anchor string
+}
+
+// qaBodyLinks are the links of the bodies of the scene element on the canvas, in view points.
+func (v *Viewer) qaBodyLinks() []qaBodyLink {
+	if !v.sceneMode() || v.sv.screen == nil {
+		return nil
+	}
+	cam := v.view.Compositor().Camera()
+	var out []qaBodyLink
+	for _, l := range v.sv.screen.BodyLinks() {
+		x, y := (l.X+v.sv.off.X-cam.Origin.X)*cam.Zoom, (l.Y+v.sv.off.Y-cam.Origin.Y)*cam.Zoom
+		out = append(out, qaBodyLink{[]float64{x, y, l.W * cam.Zoom, l.H * cam.Zoom}, l.File, l.Anchor})
+	}
+	return out
 }
 
 func (v *Viewer) qaScene() map[string]qaNode {

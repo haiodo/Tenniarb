@@ -92,21 +92,23 @@ func TestBodyInline(t *testing.T) {
 		weight int
 		italic bool
 		code   bool
+		link   string
 	}{
-		{"A ", 0, false, false},
-		{"bold", 700, false, false},
-		{" ", 0, false, false},
-		{"it", 0, true, false},
-		{" ", 0, false, false},
-		{"code", 0, false, true},
-		{" link", 0, false, false},
+		{"A ", 0, false, false, ""},
+		{"bold", 700, false, false, ""},
+		{" ", 0, false, false, ""},
+		{"it", 0, true, false, ""},
+		{" ", 0, false, false, ""},
+		{"code", 0, false, true, ""},
+		{" ", 0, false, false, ""},
+		{"link", 0, false, false, "http://x"},
 	}
 	if len(runs) != len(want) {
 		t.Fatalf("%d runs, want %d: %+v", len(runs), len(want), runs)
 	}
 	for i, w := range want {
 		got := runs[i]
-		if got.text != w.text || got.font.Weight != w.weight || got.font.Italic != w.italic || got.code != w.code {
+		if got.text != w.text || got.font.Weight != w.weight || got.font.Italic != w.italic || got.code != w.code || got.link != w.link {
 			t.Errorf("run %d = %+v, want %+v", i, got, w)
 		}
 	}

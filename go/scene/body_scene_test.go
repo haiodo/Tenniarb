@@ -108,7 +108,7 @@ func TestBodySVG(t *testing.T) {
     }
 }`)
 	for _, part := range []string{
-		">Doc<", ">Head<", ">bold<", ">code<", " link.",
+		">Doc<", ">Head<", ">bold<", ">code<", ">link<",
 		`font-size="22"`,          // heading: body 16 + 6
 		`font-family="Menlo"`,     // code
 		`fill="rgb(238,238,238)"`, // code background
