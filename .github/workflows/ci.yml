@@ -15,65 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
-    name: Build and Test (macOS / Xcode)
-    runs-on: macos-latest
-    timeout-minutes: 45
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: true
-      # No setup-swift here on purpose: xcodebuild and swift-format both come from the
-      # Xcode toolchain, and a toolchain on PATH shadows them with a different version.
-      - name: Show environment info
-        run: |
-          sw_vers
-          xcodebuild -version
-          swift --version
-          xcrun swift-format --version
-
-      - name: SwiftLint
-        run: |
-          set -euo pipefail
-          if ! command -v swiftlint >/dev/null 2>&1; then
-            echo "SwiftLint is not installed, installing via Homebrew..."
-            brew install swiftlint
-          fi
-          swiftlint version
-          swiftlint lint --config .swiftlint.yml --reporter github-actions-logging
-
-      - name: Format check
-        run: make format-check
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      - name: Build (Debug)
-        run: |
-          set -euo pipefail
-          make build | tee xcodebuild.log
-
-      - name: Run tests
-        run: |
-          set -euo pipefail
-          make test | tee xcodebuild-test.log
-
-      - name: Upload build & test logs
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xcodebuild-logs
-          path: |
-            xcodebuild.log
-            xcodebuild-test.log
-
   web:
     name: Web packages (Node)
     runs-on: ubuntu-latest

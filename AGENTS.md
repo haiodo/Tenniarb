@@ -42,7 +42,7 @@ make lint           # SwiftLint
 make lint-fix       # автокоррекции SwiftLint
 make format         # swift-format --in-place
 make format-check   # падает если код не отформатирован
-make ci             # lint + build + test, то же что в CI
+make ci             # SwiftLint + Xcode-сборка и тесты (локально, для Swift-истории)
 make clean
 make web            # сборка web/packages
 make web-test       # typecheck + тесты web/
@@ -98,7 +98,7 @@ Performance-тесты исключены из основного прогона
 
 ## CI и релизы
 
-- CI workflow (`.github/workflows/ci.yml`) запускает SwiftLint, затем собирает Debug и запускает tests на `macos-latest`.
+- CI workflow (`.github/workflows/ci.yml`) проверяет Go (vet + тесты на macOS, Linux и Windows), web-пакеты (typecheck + тесты) и гоняет GUI-тесты под Xvfb. Swift-приложение больше не собирается в CI: Xcode-проект остаётся в дереве как история.
 - Release workflow (`.github/workflows/release.yml`) запускается по тегу:
   - собирает Release
   - архивирует `Tenniarb.app` в zip

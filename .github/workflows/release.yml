@@ -1,7 +1,6 @@
 name: Release
 
-# The Swift app is no longer shipped: 2.0 is the Go application. The Xcode project stays in the tree
-# (the Swift tests still run in CI), but nothing here builds it.
+# 2.0 is the Go application; the Xcode project stays in the tree as history and nothing here builds it.
 
 on:
   push:
