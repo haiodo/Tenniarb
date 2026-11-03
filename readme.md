@@ -6,6 +6,8 @@ Tenniarb is a desktop app for models you draw by hand: mind maps and diagrams, U
 components, and the documentation that belongs next to them. A model is one `.tenn` file — plain text,
 readable and editable by hand, with JavaScript expressions inside.
 
+![One large blue sphere branching into a tree of smaller spheres, with a warm orange curve running through the branches](docs/Images/readme/hero.webp)
+
 ## The problem I'm solving
 
 A single model rarely stays in one tool:
@@ -18,9 +20,13 @@ A single model rarely stays in one tool:
 
 The picture is right in one place, the numbers in another, and nobody knows which copy is the current one.
 
+![Four separate clusters of blue spheres; thin rods reach toward each other between them and stop short](docs/Images/readme/problem.webp)
+
 ## What Tenniarb does
 
 One file, one app, four kinds of content:
+
+![A glass cube holding a blue sphere tree, an orange curve and a stack of pages](docs/Images/readme/one-file.webp)
 
 **Structure** — a tree of elements and items, drawn as a diagram: nodes, links, styles, their own
 positions and sizes.
