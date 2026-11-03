@@ -121,19 +121,27 @@ func (v *Viewer) animApply(sc *scene.Screen, now time.Duration, frac float64) {
 			// The editor previews every animation in a loop: a one-shot one would be over before the
 			// user looks at it.
 			rot, scale, opacity := animValues(a.Anim, at, true)
-			cx, cy := a.Box.X+a.Box.W/2, a.Box.Y+a.Box.H/2
-			m := gfx.TranslateBy(cx, cy)
-			if rot != 0 {
-				m = m.Mul(gfx.RotateBy(rot * math.Pi / 180))
-			}
-			if scale != 1 {
-				m = m.Mul(gfx.ScaleBy(scale, scale))
-			}
-			m = m.Mul(gfx.TranslateBy(-cx, -cy)).Mul(gfx.TranslateBy(a.Box.X, a.Box.Y))
-			tx.SetTransform(a.Node, m)
+			tx.SetTransform(a.Node, animMatrix(a, rot, scale))
 			tx.SetOpacity(a.Node, a.Opacity*opacity)
 		}
 	})
+}
+
+// animMatrix turns and scales the node about the center of what it draws, as the fill box of the
+// export does, then puts it where the layout has it.
+func animMatrix(a scene.Animated, rot, scale float64) gfx.Affine {
+	pc := gfx.Point{X: a.Box.W / 2, Y: a.Box.H / 2} // local: the box, for a node that draws nothing
+	if pic := a.Node.Picture(); pic != nil && !pic.Bounds.Empty() {
+		pc = pic.Bounds.Center() // a group draws only its own background, its children are not in it
+	}
+	m := gfx.TranslateBy(a.Box.X+pc.X, a.Box.Y+pc.Y)
+	if rot != 0 {
+		m = m.Mul(gfx.RotateBy(rot * math.Pi / 180))
+	}
+	if scale != 1 {
+		m = m.Mul(gfx.ScaleBy(scale, scale))
+	}
+	return m.Mul(gfx.TranslateBy(-pc.X, -pc.Y))
 }
 
 // animValues are the rotate in degrees, the scale and the opacity of the animation a at now, from its
