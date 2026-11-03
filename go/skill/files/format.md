@@ -143,6 +143,13 @@ Take the call nobody picked up and **bring it to payment**.
   `.tenn` file, as with `element --from-file`. A missing file or heading is an error with the list of
   headings the file has. Text edited in the `.md` comes back on Reload, so one section serves several
   screens.
+- A table of contents is a property of the item that has the body: `toc 2` (headings down to level 2,
+  `toc` alone is 3) draws the list above the text, indented by level, two points smaller than the body.
+  A `toc` on an item without its own `body` is a warning: it lists the body of that same item only.
+- Every heading gets an anchor from its text: lower case, spaces to `-`, only letters, digits and `-`
+  (Cyrillic kept), repeats get `-2`, `-3`. A link `[Goal](plan.md#Goal)` or `[Goal](#Goal)` draws its
+  label; `check` and `validate` report a link whose file or heading is not there, with the headings the
+  file has.
 - Markdown: `#`/`##`/`###` headings, paragraphs, `- `/`* `/`+ ` lists, fenced code, `> ` quotes, and
   inline `**bold**`, `*italic*`, code in backticks and `[label](url)` - a link draws its label, it
   does not navigate.
