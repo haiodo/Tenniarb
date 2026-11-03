@@ -345,7 +345,13 @@ func (l *textLine) descent() float64 { return math.Max(l.textDescent, l.endDesce
 
 // calculateSize is DrawableScene.calculateSize(attrStr:).
 func (e *textEnv) calculateSize(attr *AttributedString) Size {
-	lines := e.layoutLines(attr, nil)
+	return e.calculateSizeWidth(attr, nil)
+}
+
+// calculateSizeWidth is calculateSize over lines wrapped at wrap (nil: no wrapping), for a box that
+// has to grow by the lines the text is drawn into.
+func (e *textEnv) calculateSizeWidth(attr *AttributedString, wrap *float64) Size {
+	lines := e.layoutLines(attr, wrap)
 	var size Size
 	maxWidth := 0.0
 	frameHeight := 0.0

@@ -377,6 +377,15 @@ func (s *DrawableScene) buildItemDrawable(e *model.DiagramItem, elementDrawable 
 	textBounds := s.env.calculateSize(attr)
 
 	offx, offy := 4.0, 4.0
+	// The title wraps in the frame below; the body has to be measured in that width too, and the frame
+	// takes the whole width, so the box grows by the lines the body wraps into instead of one long line.
+	if bodyAttr != nil && style.Width != nil && *style.Width >= 1 {
+		if avail := *style.Width - 2*offx; avail > 0 {
+			textBounds = s.env.calculateSizeWidth(attr, &avail)
+			textBounds.Width = avail
+		}
+	}
+
 	wx, wy := offx*2, offy*2
 
 	width := textBounds.Width

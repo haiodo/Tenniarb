@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/haiodo/tenniarb/go/model"
@@ -263,6 +264,52 @@ func TestItemSizeAndTextSize(t *testing.T) {
 	ts := MeasureTextSize(testOpts(), "Hello", 18)
 	if ts.Width != math.Ceil(5*18*0.6) {
 		t.Errorf("text size %+v", ts)
+	}
+}
+
+func TestBodyWrapsAtItemWidth(t *testing.T) {
+	const long = "Это длинный текст тела, который должен переноситься по ширине двести пунктов, а не уходить вправо за край."
+	src := func(body, width string) string {
+		return "element Root {\n item Note {\n pos 0 0\n" + width + "\n body \"" + body + "\"\n }\n}"
+	}
+	diagram := func(body, width string) (*DrawableScene, Drawable, *TextBox, []*textLine) {
+		el := parseDiagram(t, src(body, width))
+		s := NewDrawableScene(el, testOpts())
+		d := s.Drawables[el.Items[0]]
+		tb := d.(*RoundBox).Children[0].(*TextBox)
+		w := tb.Bounds().Width
+		return s, d, tb, s.env.layoutLines(tb.Text(), &w)
+	}
+	s, d, tb, lines := diagram(long, "width 200")
+	body := lines[1:] // the first line is the title
+	if len(body) < 2 {
+		t.Fatalf("body is %d lines, want a wrap", len(body))
+	}
+	for _, l := range body {
+		// The spaces a line hangs past the wrap point do not count.
+		w := s.env.width(l.segments[0].run.Font, strings.TrimRight(lineTexts([]*textLine{l}), " \t"))
+		if w > tb.Bounds().Width+1e-3 {
+			t.Errorf("line %q is %v wide, frame is %v", lineTexts([]*textLine{l}), w, tb.Bounds().Width)
+		}
+	}
+	assertNear(t, "item width", d.Bounds().Width, 200, 1)
+	if tb.Bounds().Width > 200 {
+		t.Errorf("text frame %v wider than the item", tb.Bounds().Width)
+	}
+	_, short, _, shortLines := diagram("коротко", "width 200")
+	if n := len(shortLines) - 1; n != 1 {
+		t.Errorf("short body is %d lines", n)
+	}
+	if d.Bounds().Height <= short.Bounds().Height {
+		t.Errorf("wrapped body did not grow the item: %v <= %v", d.Bounds().Height, short.Bounds().Height)
+	}
+	// No width: the body keeps its single line and the item grows to the right, as before.
+	_, free, _, freeLines := diagram(long, "")
+	if n := len(freeLines) - 1; n != 1 {
+		t.Errorf("body without width is %d lines", n)
+	}
+	if free.Bounds().Width <= 200 {
+		t.Errorf("body without width did not widen the item: %v", free.Bounds().Width)
 	}
 }
 
