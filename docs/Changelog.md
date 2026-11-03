@@ -22,7 +22,7 @@ and the same calculation engine. The Swift app stays in the repository as histor
 + MCP for agents: `get_state` names the kind, parameters, styles, groups and use arguments of a node; `gen`
   prints the text a component template generates; `suggest` reports; a comment on a part a document shows from
   a mounted file belongs to that file.
-+ Builds: unsigned packages for macOS (universal dmg and app zip), Windows (zip) and Linux (tar.gz); macOS
++ Builds: unsigned packages for macOS on Apple silicon (dmg and app zip), Windows (zip) and Linux (tar.gz); macOS
   asks to allow the app in Security, Windows shows a SmartScreen warning.
 
 ### Cross-platform application

@@ -31,7 +31,7 @@ jobs:
         run: cd go && go vet ./... && go test ./...
 
   mac:
-    name: Package macOS (universal)
+    name: Package macOS (arm64)
     runs-on: macos-latest
     timeout-minutes: 30
     needs: test
@@ -60,7 +60,7 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build the app and the disk image
-        run: make go-pkg-mac-universal GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
+        run: make go-pkg-mac GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: mac
