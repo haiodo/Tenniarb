@@ -361,6 +361,7 @@
 		0C2375ED1ED838D900ECB516 /* Tenniarb */ = {
 			isa = PBXGroup;
 			children = (
+				0CD170B822D5BBCD00E217D4 /* readme.html */,
 				0CF0C34327490F1100E3F41D /* Preview Content */,
 				0C45B12722A397BE00640305 /* docs */,
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
@@ -460,7 +461,6 @@
 		0C45B12722A397BE00640305 /* docs */ = {
 			isa = PBXGroup;
 			children = (
-				0CD170B822D5BBCD00E217D4 /* readme.html */,
 				0C45B12822A397BE00640305 /* examples.md */,
 				0C45B12922A397BE00640305 /* Images */,
 				0C45B12B22A397BE00640305 /* readme.md */,
