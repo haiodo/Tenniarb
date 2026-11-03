@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install opencode-mcp skill-install install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install opencode-mcp skill-install kill-running install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -86,7 +86,7 @@ opencode-mcp: ## Register the tenniarb MCP in opencode (global config), if openc
 	@command -v opencode >/dev/null 2>&1 || { echo "opencode not on PATH: tenniarb MCP not registered"; exit 0; }
 	opencode mcp add --global tenniarb -- $(GO_PKG_BIN)/tenniarb-mcp
 
-install: app go-mcp-install go-cli-install opencode-mcp skill-install ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb MCP in opencode, the agent skill
+install: app go-mcp-install go-cli-install opencode-mcp skill-install kill-running ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb MCP in opencode, the agent skill
 ifeq ($(shell uname),Darwin)
 	rm -rf /Applications/Tenniarb.app
 	cp -R $(GOPKG)/app/Tenniarb.app /Applications/
@@ -95,6 +95,11 @@ endif
 
 skill-install: go-cli-install ## Write the tenniarb-design skill where Claude Code and opencode read it
 	$(GO_PKG_BIN)/tenniarb install
+
+kill-running: ## Stop the app, the MCP proxy and the service that keep the old binaries in memory
+	@pkill -x tenniarb || true
+	@pkill -x tenniarb-mcp || true
+	@pkill -x tenniarb-service || true
 
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
 GOPKG := build/go
