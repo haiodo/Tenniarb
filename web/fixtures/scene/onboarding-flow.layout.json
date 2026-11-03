@@ -1,0 +1,345 @@
+{
+  "element": "Onboarding",
+  "height": 160,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Onboarding",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 160,
+        "w": 770,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sign up",
+      "opacity": 1,
+      "path": "Sign_up",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 79,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#90caf9",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Sign_up.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 79,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": [
+        "Sign up"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Verify email",
+      "opacity": 1,
+      "path": "Verify_email",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 121,
+        "x": 200,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#90caf9",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Verify_email.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 121,
+        "x": 200,
+        "y": 0
+      },
+      "shadow": null,
+      "text": [
+        "Verify email"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Create workspace",
+      "opacity": 1,
+      "path": "Create_workspace",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 155,
+        "x": 413.345,
+        "y": -10.364
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#90caf9",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Create_workspace.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 155,
+        "x": 413.345,
+        "y": -10.364
+      },
+      "shadow": null,
+      "text": [
+        "Create workspace"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Invite team",
+      "opacity": 1,
+      "path": "Invite_team",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 113,
+        "x": 420,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#90caf9",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Invite_team.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 113,
+        "x": 420,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Invite team",
+        "optional"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "First project",
+      "opacity": 1,
+      "path": "First_project",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 130,
+        "x": 640,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#a5d6a7",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "First_project.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 130,
+        "x": 640,
+        "y": 0
+      },
+      "shadow": null,
+      "text": [
+        "First project"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Email not received",
+      "opacity": 1,
+      "path": "Email_not_received",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 172,
+        "x": 200,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ef9a9a",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Email_not_received.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 172,
+        "x": 200,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Email not received"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 770
+}

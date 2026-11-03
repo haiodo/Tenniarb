@@ -1,0 +1,84 @@
+{
+  "element": "Button",
+  "height": 28,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Button",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#2f6bff",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "Btn",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 14,
+        "y": 7
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    }
+  ],
+  "width": 75
+}

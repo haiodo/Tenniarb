@@ -1,0 +1,3580 @@
+{
+  "element": "Hero",
+  "height": 600,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Hero",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 600,
+        "w": 1200,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f8f9ff",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#f8f9ff",
+            "offset": 0
+          },
+          {
+            "color": "#e6ecfa",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Canvas",
+      "opacity": 1,
+      "path": "Canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 600,
+        "w": 1200,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Window",
+      "opacity": 1,
+      "path": "Canvas.Window",
+      "radius": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "rect": {
+        "h": 504,
+        "w": 1104,
+        "x": 48,
+        "y": 48
+      },
+      "shadow": {
+        "blur": 30,
+        "color": "#1725472e",
+        "dx": 0,
+        "dy": 12
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f8fc",
+      "gradient": null,
+      "name": "Sidebar",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 504,
+        "w": 206,
+        "x": 48,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Brand",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 174,
+        "x": 64,
+        "y": 64
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Mark",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand.Mark",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 64,
+        "y": 64
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 68,
+        "x": 96,
+        "y": 68.5
+      },
+      "shadow": null,
+      "text": [
+        "Tenniarb"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 28,
+        "x": 172,
+        "y": 76
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Ver",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand.Ver",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 13,
+        "w": 30,
+        "x": 208,
+        "y": 69.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Brand.Ver.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 18,
+        "x": 214,
+        "y": 70.5
+      },
+      "shadow": null,
+      "text": [
+        "2.0"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Gap",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Gap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 8,
+        "w": 0,
+        "x": 64,
+        "y": 94
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 37,
+        "x": 64,
+        "y": 108
+      },
+      "shadow": null,
+      "text": [
+        "ПРОЕКТ"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Nav1",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav1",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 25,
+        "w": 174,
+        "x": 64,
+        "y": 123
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav1.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 116,
+        "x": 73,
+        "y": 129
+      },
+      "shadow": null,
+      "text": [
+        "Экран оформления"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nav2",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 25,
+        "w": 174,
+        "x": 64,
+        "y": 154
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav2.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 72,
+        "x": 73,
+        "y": 160
+      },
+      "shadow": null,
+      "text": [
+        "Компоненты"
+      ],
+      "textColor": "#3d4759"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nav3",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 25,
+        "w": 174,
+        "x": 64,
+        "y": 185
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav3.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 73,
+        "y": 191
+      },
+      "shadow": null,
+      "text": [
+        "Токены"
+      ],
+      "textColor": "#3d4759"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nav4",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav4",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 25,
+        "w": 174,
+        "x": 64,
+        "y": 216
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Nav4.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 51,
+        "x": 73,
+        "y": 222
+      },
+      "shadow": null,
+      "text": [
+        "История"
+      ],
+      "textColor": "#3d4759"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e6e9f2",
+      "gradient": null,
+      "name": "Div",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Div",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 174,
+        "x": 64,
+        "y": 247
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap2",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Cap2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 31,
+        "x": 64,
+        "y": 254
+      },
+      "shadow": null,
+      "text": [
+        "ФАЙЛЫ"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "File1",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 22,
+        "w": 174,
+        "x": 64,
+        "y": 269
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "d",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File1.d",
+      "radius": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "rect": {
+        "h": 6,
+        "w": 6,
+        "x": 73,
+        "y": 277
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File1.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 99,
+        "x": 85,
+        "y": 274
+      },
+      "shadow": null,
+      "text": [
+        "design-kit.tenn"
+      ],
+      "textColor": "#3d4759"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "File2",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 22,
+        "w": 174,
+        "x": 64,
+        "y": 297
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "d",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File2.d",
+      "radius": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "rect": {
+        "h": 6,
+        "w": 6,
+        "x": 73,
+        "y": 305
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.File2.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 86,
+        "x": 85,
+        "y": 302
+      },
+      "shadow": null,
+      "text": [
+        "checkout.tenn"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 177,
+        "w": 0,
+        "x": 64,
+        "y": 325
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Mcp",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Mcp",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 174,
+        "x": 64,
+        "y": 508
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0f9d58",
+      "gradient": null,
+      "name": "d",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Mcp.d",
+      "radius": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "rect": {
+        "h": 6,
+        "w": 6,
+        "x": 64,
+        "y": 510.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Mcp.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 78,
+        "x": 76,
+        "y": 508
+      },
+      "shadow": null,
+      "text": [
+        "MCP подключён"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Foot",
+      "opacity": 1,
+      "path": "Canvas.Window.Sidebar.Foot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 72,
+        "x": 64,
+        "y": 525
+      },
+      "shadow": null,
+      "text": [
+        "v2.0 · macOS"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e6e9f2",
+      "gradient": null,
+      "name": "Div1",
+      "opacity": 1,
+      "path": "Canvas.Window.Div1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 504,
+        "w": 1,
+        "x": 254,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Main",
+      "opacity": 1,
+      "path": "Canvas.Window.Main",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 504,
+        "w": 616,
+        "x": 255,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 53,
+        "w": 616,
+        "x": 255,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 17,
+        "w": 96,
+        "x": 275,
+        "y": 66
+      },
+      "shadow": null,
+      "text": [
+        "Оформление"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f1f3f9",
+      "gradient": null,
+      "name": "Tag",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Tag",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 15,
+        "w": 130,
+        "x": 379,
+        "y": 67
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Tag.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 114,
+        "x": 387,
+        "y": 69
+      },
+      "shadow": null,
+      "text": [
+        "Screen · 1200 × 600"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 123,
+        "x": 517,
+        "y": 74.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Preview",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Preview",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 25,
+        "w": 82,
+        "x": 648,
+        "y": 62
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Preview.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 58,
+        "x": 660,
+        "y": 68
+      },
+      "shadow": null,
+      "text": [
+        "Просмотр"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 90,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Publish",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Publish",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 25,
+        "w": 113,
+        "x": 738,
+        "y": 62
+      },
+      "shadow": {
+        "blur": 12,
+        "color": "#cf13a24d",
+        "dx": 0,
+        "dy": 4
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Head.Publish.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 87,
+        "x": 751,
+        "y": 68
+      },
+      "shadow": null,
+      "text": [
+        "Опубликовать"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff6",
+      "gradient": null,
+      "name": "Div2",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Div2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 616,
+        "x": 255,
+        "y": 101
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Body",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 450,
+        "w": 616,
+        "x": 255,
+        "y": 102
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cards",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 269,
+        "w": 576,
+        "x": 275,
+        "y": 118
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "o1",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 118
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e6e9f2",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 118
+      },
+      "shadow": {
+        "blur": 10,
+        "color": "#17254714",
+        "dx": 0,
+        "dy": 3
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 544,
+        "x": 291,
+        "y": 130
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Head.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 291,
+        "y": 130.5
+      },
+      "shadow": null,
+      "text": [
+        "Заказ #2841"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Head.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 414,
+        "x": 385,
+        "y": 137.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e8f6ee",
+      "gradient": null,
+      "name": "Badge",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Head.Badge",
+      "radius": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "rect": {
+        "h": 15,
+        "w": 28,
+        "x": 807,
+        "y": 130
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Head.Badge.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 12,
+        "x": 815,
+        "y": 132
+      },
+      "shadow": null,
+      "text": [
+        "ok"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Meta",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Meta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 198,
+        "x": 291,
+        "y": 151
+      },
+      "shadow": null,
+      "text": [
+        "3 позиции · доставка 12 ноября"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sum",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o1.Card.Sum",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 80,
+        "x": 291,
+        "y": 169
+      },
+      "shadow": null,
+      "text": [
+        "$128.00"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "o2",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 211
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e6e9f2",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 211
+      },
+      "shadow": {
+        "blur": 10,
+        "color": "#17254714",
+        "dx": 0,
+        "dy": 3
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 544,
+        "x": 291,
+        "y": 223
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Head.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 291,
+        "y": 223.5
+      },
+      "shadow": null,
+      "text": [
+        "Заказ #2842"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Head.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 402,
+        "x": 385,
+        "y": 230.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#fff4e5",
+      "gradient": null,
+      "name": "Badge",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Head.Badge",
+      "radius": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "rect": {
+        "h": 15,
+        "w": 40,
+        "x": 795,
+        "y": 223
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Head.Badge.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 24,
+        "x": 803,
+        "y": 225
+      },
+      "shadow": null,
+      "text": [
+        "warn"
+      ],
+      "textColor": "#b45309"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Meta",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Meta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 152,
+        "x": 291,
+        "y": 244
+      },
+      "shadow": null,
+      "text": [
+        "1 позиция · ждёт оплаты"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sum",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o2.Card.Sum",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 69,
+        "x": 291,
+        "y": 262
+      },
+      "shadow": null,
+      "text": [
+        "$42.00"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "o3",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 304
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e6e9f2",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 83,
+        "w": 576,
+        "x": 275,
+        "y": 304
+      },
+      "shadow": {
+        "blur": 10,
+        "color": "#17254714",
+        "dx": 0,
+        "dy": 3
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 544,
+        "x": 291,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Head.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 291,
+        "y": 316.5
+      },
+      "shadow": null,
+      "text": [
+        "Заказ #2843"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Head.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 414,
+        "x": 385,
+        "y": 323.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e8f6ee",
+      "gradient": null,
+      "name": "Badge",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Head.Badge",
+      "radius": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "rect": {
+        "h": 15,
+        "w": 28,
+        "x": 807,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Head.Badge.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 12,
+        "x": 815,
+        "y": 318
+      },
+      "shadow": null,
+      "text": [
+        "ok"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Meta",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Meta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 198,
+        "x": 291,
+        "y": 337
+      },
+      "shadow": null,
+      "text": [
+        "2 позиции · доставлен 9 ноября"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sum",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Cards.o3.Card.Sum",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 69,
+        "x": 291,
+        "y": 355
+      },
+      "shadow": null,
+      "text": [
+        "$76.00"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Promo",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Promo",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 52,
+        "w": 576,
+        "x": 275,
+        "y": 397
+      },
+      "shadow": {
+        "blur": 16,
+        "color": "#cf13a238",
+        "dx": 0,
+        "dy": 6
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Promo.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 137,
+        "x": 291,
+        "y": 409
+      },
+      "shadow": null,
+      "text": [
+        "Готово к публикации"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "n",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Promo.n",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 264,
+        "x": 291,
+        "y": 426
+      },
+      "shadow": null,
+      "text": [
+        "0 ошибок · 2 предупреждения · 18 компонентов"
+      ],
+      "textColor": "#ffffffcc"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 42,
+        "w": 0,
+        "x": 275,
+        "y": 459
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Foot",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 25,
+        "w": 576,
+        "x": 275,
+        "y": 511
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Total",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.Total",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 102,
+        "x": 275,
+        "y": 516.5
+      },
+      "shadow": null,
+      "text": [
+        "Итого $170.00"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 300,
+        "x": 385,
+        "y": 523.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Later",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.Later",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 25,
+        "w": 68,
+        "x": 693,
+        "y": 511
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.Later.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 705,
+        "y": 517
+      },
+      "shadow": null,
+      "text": [
+        "Отмена"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Pay",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.Pay",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 25,
+        "w": 82,
+        "x": 769,
+        "y": 511
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Main.Body.Foot.Pay.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 58,
+        "x": 781,
+        "y": 517
+      },
+      "shadow": null,
+      "text": [
+        "Оплатить"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e6e9f2",
+      "gradient": null,
+      "name": "Div3",
+      "opacity": 1,
+      "path": "Canvas.Window.Div3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 504,
+        "w": 1,
+        "x": 871,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#fbfbfe",
+      "gradient": null,
+      "name": "Inspector",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 504,
+        "w": 280,
+        "x": 872,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 55,
+        "x": 888,
+        "y": 64
+      },
+      "shadow": null,
+      "text": [
+        "КОМПОНЕНТ"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Comp",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 248,
+        "x": 888,
+        "y": 83
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Mark",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Mark",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 26,
+        "w": 26,
+        "x": 888,
+        "y": 83.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Mark.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 12,
+        "x": 895,
+        "y": 91
+      },
+      "shadow": null,
+      "text": [
+        "OC"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Names",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Names",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 90,
+        "x": 922,
+        "y": 83
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "n",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Names.n",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 71,
+        "x": 922,
+        "y": 83
+      },
+      "shadow": null,
+      "text": [
+        "OrderCard"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "m",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Names.m",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 90,
+        "x": 922,
+        "y": 99
+      },
+      "shadow": null,
+      "text": [
+        "design-kit.tenn"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 58,
+        "x": 1020,
+        "y": 96.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Count",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Count",
+      "radius": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "rect": {
+        "h": 15,
+        "w": 50,
+        "x": 1086,
+        "y": 89
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Comp.Count.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 36,
+        "x": 1093,
+        "y": 91
+      },
+      "shadow": null,
+      "text": [
+        "3 экз."
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff6",
+      "gradient": null,
+      "name": "Div",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Div",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 248,
+        "x": 888,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap2",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Cap2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 55,
+        "x": 888,
+        "y": 131
+      },
+      "shadow": null,
+      "text": [
+        "ПАРАМЕТРЫ"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "P1",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 150
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P1.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 27,
+        "x": 888,
+        "y": 150
+      },
+      "shadow": null,
+      "text": [
+        "name"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P1.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 73,
+        "x": 1063,
+        "y": 150
+      },
+      "shadow": null,
+      "text": [
+        "Заказ #2841"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "P2",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 172
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P2.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 27,
+        "x": 888,
+        "y": 172
+      },
+      "shadow": null,
+      "text": [
+        "meta"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P2.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 60,
+        "x": 1076,
+        "y": 172
+      },
+      "shadow": null,
+      "text": [
+        "3 позиции"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "P3",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 194
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P3.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 33,
+        "x": 888,
+        "y": 194
+      },
+      "shadow": null,
+      "text": [
+        "total"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P3.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 47,
+        "x": 1089,
+        "y": 194
+      },
+      "shadow": null,
+      "text": [
+        "$128.00"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "P4",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P4",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 248,
+        "x": 888,
+        "y": 216
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P4.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 27,
+        "x": 888,
+        "y": 216.5
+      },
+      "shadow": null,
+      "text": [
+        "tone"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e8f6ee",
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P4.v",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 13,
+        "w": 26,
+        "x": 1110,
+        "y": 216
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.P4.v.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 12,
+        "x": 1117,
+        "y": 217
+      },
+      "shadow": null,
+      "text": [
+        "ok"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff6",
+      "gradient": null,
+      "name": "Div2",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Div2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 248,
+        "x": 888,
+        "y": 239
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap3",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Cap3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 80,
+        "x": 888,
+        "y": 250
+      },
+      "shadow": null,
+      "text": [
+        "ИСПОЛЬЗОВАНИЕ"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": "#e6e9f2",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#f4f6fb",
+      "gradient": null,
+      "name": "Code",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Code",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 59,
+        "w": 248,
+        "x": 888,
+        "y": 269
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "l1",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Code.l1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 144,
+        "x": 900,
+        "y": 279
+      },
+      "shadow": null,
+      "text": [
+        "use OrderCard as order {"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "l2",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Code.l2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 54,
+        "x": 900,
+        "y": 293
+      },
+      "shadow": null,
+      "text": [
+        "  tone ok"
+      ],
+      "textColor": "#3d4759"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "l3",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Code.l3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 6,
+        "x": 900,
+        "y": 307
+      },
+      "shadow": null,
+      "text": [
+        "}"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff6",
+      "gradient": null,
+      "name": "Div3",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Div3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 248,
+        "x": 888,
+        "y": 338
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cap4",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Cap4",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 9,
+        "w": 49,
+        "x": 888,
+        "y": 349
+      },
+      "shadow": null,
+      "text": [
+        "ПРОВЕРКА"
+      ],
+      "textColor": "#9aa4b5"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "V1",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 368
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V1.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 40,
+        "x": 888,
+        "y": 368
+      },
+      "shadow": null,
+      "text": [
+        "Ошибки"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V1.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 7,
+        "x": 1129,
+        "y": 368
+      },
+      "shadow": null,
+      "text": [
+        "0"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "V2",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 390
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V2.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 93,
+        "x": 888,
+        "y": 390
+      },
+      "shadow": null,
+      "text": [
+        "Предупреждения"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V2.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 7,
+        "x": 1129,
+        "y": 390
+      },
+      "shadow": null,
+      "text": [
+        "2"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "V3",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 248,
+        "x": 888,
+        "y": 412
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "k",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V3.k",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 73,
+        "x": 888,
+        "y": 412
+      },
+      "shadow": null,
+      "text": [
+        "Компонентов"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.V3.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 14,
+        "x": 1122,
+        "y": 412
+      },
+      "shadow": null,
+      "text": [
+        "18"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 49,
+        "w": 0,
+        "x": 888,
+        "y": 434
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Swatch",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Swatch",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 248,
+        "x": 888,
+        "y": 493
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 90,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "bar",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Swatch.bar",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 8,
+        "w": 222,
+        "x": 888,
+        "y": 494.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Swatch.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 11,
+        "w": 18,
+        "x": 1118,
+        "y": 493
+      },
+      "shadow": null,
+      "text": [
+        "90°"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Note",
+      "opacity": 1,
+      "path": "Canvas.Window.Inspector.Note",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 22,
+        "w": 248,
+        "x": 888,
+        "y": 514
+      },
+      "shadow": null,
+      "text": [
+        "Компонент описан один раз — экземпляры",
+        "отличаются параметрами"
+      ],
+      "textColor": "#8a94a6"
+    }
+  ],
+  "width": 1200
+}

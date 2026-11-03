@@ -1,0 +1,71 @@
+// A library file: it holds components only, no screen. Another file mounts it whole with
+// `element "kit" --from-file "design-kit.tenn"` and then writes `use kit.Button as …`.
+// Mount a library once, in the entry document; a mounted file never repeats the mount.
+element "Button" {
+    kind Component
+    export let label = "Button"
+    export let tone = primary
+
+    styles {
+        primary   { color #2f6bff; border-color #2f6bff; text-color #ffffff }
+        secondary { color #ffffff; border-color #d1d5de; text-color #0f121a }
+        quiet     { color none; border-color none; text-color #2f6bff }
+        tone one-of primary secondary quiet
+    }
+
+    item Btn {
+        auto-layout row
+        gap 6
+        align center
+        justify center
+        padding 7 14
+        corner-radius 7
+        use-style ${tone}
+        item Label { title ${label}; font-size 13; font-weight 600 }
+    }
+}
+
+item "Badge" {
+    kind Component
+    export let label = "New"
+    export let tone = info
+
+    styles {
+        info { color #eef2ff; text-color #2f6bff }
+        warn { color #fff4e5; text-color #b45309 }
+        ok   { color #e8f6ee; text-color #0f9d58 }
+        tone one-of info warn ok
+    }
+
+    item Box {
+        auto-layout row
+        padding 2 8
+        corner-radius 10
+        use-style ${tone}
+        item t { title ${label}; font-size 11; font-weight 600 }
+    }
+}
+
+// Card is a plain item: its places for the caller's own nodes are the slots header, the unnamed one
+// and actions. The unnamed slot has a fallback, the other two are empty until filled.
+item "Card" {
+    auto-layout column
+    gap 12
+    width 380
+    padding 16
+    corner-radius 12
+    color #ffffff
+    border-color #e4e7ee
+    line-width 1
+    slot header
+    slot {
+        item Empty { title "Nothing here yet"; font-size 13; text-color #9ca3af }
+    }
+    item Foot {
+        auto-layout row
+        width fill
+        gap 8
+        justify end
+        slot actions
+    }
+}

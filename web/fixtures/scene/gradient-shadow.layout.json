@@ -1,0 +1,973 @@
+{
+  "element": "Gradients",
+  "height": 523,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Gradients",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 523,
+        "w": 1000,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f4f5f9",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 523,
+        "w": 1000,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "canvas.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 278,
+        "x": 36,
+        "y": 36
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 23,
+        "w": 278,
+        "x": 36,
+        "y": 36
+      },
+      "shadow": null,
+      "text": [
+        "Gradients and shadows"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Note",
+      "opacity": 1,
+      "path": "canvas.Head.Note",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 188,
+        "x": 36,
+        "y": 63
+      },
+      "shadow": null,
+      "text": [
+        "Three angles, five shadows"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Tiles",
+      "opacity": 1,
+      "path": "canvas.Tiles",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 144,
+        "w": 700,
+        "x": 36,
+        "y": 100
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#cf13a2",
+            "offset": 0
+          },
+          {
+            "color": "#6b3ad3",
+            "offset": 0.55
+          },
+          {
+            "color": "#2f6bff",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Sunset",
+      "opacity": 1,
+      "path": "canvas.Tiles.Sunset",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 144,
+        "w": 220,
+        "x": 36,
+        "y": 100
+      },
+      "shadow": {
+        "blur": 26,
+        "color": "#6b3ad359",
+        "dx": 0,
+        "dy": 12
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Tiles.Sunset.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 99,
+        "x": 52,
+        "y": 200
+      },
+      "shadow": null,
+      "text": [
+        "135 degrees"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "n",
+      "opacity": 1,
+      "path": "canvas.Tiles.Sunset.n",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 185,
+        "x": 52,
+        "y": 216
+      },
+      "shadow": null,
+      "text": [
+        "three stops, positions given"
+      ],
+      "textColor": "#ffffffcc"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#0f9d58",
+      "gradient": {
+        "angle": 90,
+        "stops": [
+          {
+            "color": "#0f9d58",
+            "offset": 0
+          },
+          {
+            "color": "#34d39b",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Mint",
+      "opacity": 1,
+      "path": "canvas.Tiles.Mint",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 144,
+        "w": 220,
+        "x": 276,
+        "y": 100
+      },
+      "shadow": {
+        "blur": 10,
+        "color": "#0f9d5840",
+        "dx": 0,
+        "dy": 4
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Tiles.Mint.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 90,
+        "x": 292,
+        "y": 200
+      },
+      "shadow": null,
+      "text": [
+        "90 degrees"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "n",
+      "opacity": 1,
+      "path": "canvas.Tiles.Mint.n",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 152,
+        "x": 292,
+        "y": 216
+      },
+      "shadow": null,
+      "text": [
+        "two stops, no positions"
+      ],
+      "textColor": "#ffffffcc"
+    },
+    {
+      "border": "#dfe4ee",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": {
+        "angle": 0,
+        "stops": [
+          {
+            "color": "#ffffff",
+            "offset": 0
+          },
+          {
+            "color": "#eef1f7",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Paper",
+      "opacity": 1,
+      "path": "canvas.Tiles.Paper",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 144,
+        "w": 220,
+        "x": 516,
+        "y": 100
+      },
+      "shadow": {
+        "blur": 12,
+        "color": "#1725471f",
+        "dx": 0,
+        "dy": 3
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Tiles.Paper.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 81,
+        "x": 532,
+        "y": 200
+      },
+      "shadow": null,
+      "text": [
+        "0 degrees"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "n",
+      "opacity": 1,
+      "path": "canvas.Tiles.Paper.n",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 198,
+        "x": 532,
+        "y": 216
+      },
+      "shadow": null,
+      "text": [
+        "text colour does not follow it"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Shadows",
+      "opacity": 1,
+      "path": "canvas.Shadows",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 163,
+        "w": 928,
+        "x": 36,
+        "y": 268
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Lab",
+      "opacity": 1,
+      "path": "canvas.Shadows.Lab",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 236,
+        "x": 60,
+        "y": 292
+      },
+      "shadow": null,
+      "text": [
+        "Shadow: offset, blur, colour"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Row",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 84,
+        "w": 846,
+        "x": 60,
+        "y": 323
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Soft",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Soft",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 84,
+        "w": 150,
+        "x": 60,
+        "y": 323
+      },
+      "shadow": {
+        "blur": 4,
+        "color": "#17254726",
+        "dx": 0,
+        "dy": 2
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Soft.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 29,
+        "x": 72,
+        "y": 335
+      },
+      "shadow": null,
+      "text": [
+        "soft"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Deep",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Deep",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 84,
+        "w": 150,
+        "x": 234,
+        "y": 323
+      },
+      "shadow": {
+        "blur": 24,
+        "color": "#17254733",
+        "dx": 0,
+        "dy": 10
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Deep.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 65,
+        "x": 246,
+        "y": 335
+      },
+      "shadow": null,
+      "text": [
+        "deep blur"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Hard",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Hard",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 84,
+        "w": 150,
+        "x": 408,
+        "y": 323
+      },
+      "shadow": {
+        "blur": 0,
+        "color": "#17254726",
+        "dx": 6,
+        "dy": 6
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Hard.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 80,
+        "x": 420,
+        "y": 335
+      },
+      "shadow": null,
+      "text": [
+        "hard offset"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 135,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#2f6bff",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Tinted",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Tinted",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 84,
+        "w": 150,
+        "x": 582,
+        "y": 323
+      },
+      "shadow": {
+        "blur": 18,
+        "color": "#2f6bff59",
+        "dx": 0,
+        "dy": 8
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Tinted.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 58,
+        "x": 594,
+        "y": 335
+      },
+      "shadow": null,
+      "text": [
+        "coloured"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 2,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Outlined",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Outlined",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 84,
+        "w": 150,
+        "x": 756,
+        "y": 323
+      },
+      "shadow": {
+        "blur": 14,
+        "color": "#1725471f",
+        "dx": 0,
+        "dy": 6
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Shadows.Row.Outlined.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 80,
+        "x": 768,
+        "y": 335
+      },
+      "shadow": null,
+      "text": [
+        "border only"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Actions",
+      "opacity": 1,
+      "path": "canvas.Actions",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 194,
+        "x": 36,
+        "y": 455
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": {
+        "angle": 90,
+        "stops": [
+          {
+            "color": "#6b3ad3",
+            "offset": 0
+          },
+          {
+            "color": "#cf13a2",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "Primary",
+      "opacity": 1,
+      "path": "canvas.Actions.Primary",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 32,
+        "w": 91,
+        "x": 36,
+        "y": 455
+      },
+      "shadow": {
+        "blur": 12,
+        "color": "#cf13a24d",
+        "dx": 0,
+        "dy": 4
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Actions.Primary.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 54,
+        "y": 464
+      },
+      "shadow": null,
+      "text": [
+        "Publish"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Ghost",
+      "opacity": 1,
+      "path": "canvas.Actions.Ghost",
+      "radius": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "rect": {
+        "h": 32,
+        "w": 91,
+        "x": 139,
+        "y": 455
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Actions.Ghost.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 157,
+        "y": 464
+      },
+      "shadow": null,
+      "text": [
+        "Preview"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 1000
+}

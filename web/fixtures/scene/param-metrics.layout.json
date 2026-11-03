@@ -1,0 +1,685 @@
+{
+  "element": "Metrics",
+  "height": 230,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Metrics",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 230,
+        "w": 1054,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f6f7fb",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 230,
+        "w": 1054,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "canvas.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 38,
+        "w": 180,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 21,
+        "w": 108,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": [
+        "This week"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Note",
+      "opacity": 1,
+      "path": "canvas.Head.Note",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 180,
+        "x": 32,
+        "y": 57
+      },
+      "shadow": null,
+      "text": [
+        "Four cards, one component"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Row",
+      "opacity": 1,
+      "path": "canvas.Row",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 108,
+        "w": 990,
+        "x": 32,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "mrr",
+      "opacity": 1,
+      "path": "canvas.Row.mrr",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 32,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "canvas.Row.mrr.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 32,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "label",
+      "opacity": 1,
+      "path": "canvas.Row.mrr.Card.label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 22,
+        "x": 48,
+        "y": 106
+      },
+      "shadow": null,
+      "text": [
+        "MRR"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "canvas.Row.mrr.Card.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 94,
+        "x": 48,
+        "y": 129
+      },
+      "shadow": null,
+      "text": [
+        "$48.2k"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Delta",
+      "opacity": 1,
+      "path": "canvas.Row.mrr.Card.Delta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 48,
+        "y": 169
+      },
+      "shadow": null,
+      "text": [
+        "+12.4%"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "signups",
+      "opacity": 1,
+      "path": "canvas.Row.signups",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 280,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "canvas.Row.signups.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 280,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "label",
+      "opacity": 1,
+      "path": "canvas.Row.signups.Card.label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 58,
+        "x": 296,
+        "y": 106
+      },
+      "shadow": null,
+      "text": [
+        "Sign-ups"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "canvas.Row.signups.Card.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 78,
+        "x": 296,
+        "y": 129
+      },
+      "shadow": null,
+      "text": [
+        "1 284"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Delta",
+      "opacity": 1,
+      "path": "canvas.Row.signups.Card.Delta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 36,
+        "x": 296,
+        "y": 169
+      },
+      "shadow": null,
+      "text": [
+        "+3.1%"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "churn",
+      "opacity": 1,
+      "path": "canvas.Row.churn",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 528,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "canvas.Row.churn.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 528,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "label",
+      "opacity": 1,
+      "path": "canvas.Row.churn.Card.label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 36,
+        "x": 544,
+        "y": 106
+      },
+      "shadow": null,
+      "text": [
+        "Churn"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "canvas.Row.churn.Card.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 63,
+        "x": 544,
+        "y": 129
+      },
+      "shadow": null,
+      "text": [
+        "2.8%"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Delta",
+      "opacity": 1,
+      "path": "canvas.Row.churn.Card.Delta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 36,
+        "x": 544,
+        "y": 169
+      },
+      "shadow": null,
+      "text": [
+        "+0.6%"
+      ],
+      "textColor": "#cb4b42"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "nps",
+      "opacity": 1,
+      "path": "canvas.Row.nps",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 776,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "canvas.Row.nps.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 108,
+        "w": 232,
+        "x": 776,
+        "y": 90
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "label",
+      "opacity": 1,
+      "path": "canvas.Row.nps.Card.label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 22,
+        "x": 792,
+        "y": 106
+      },
+      "shadow": null,
+      "text": [
+        "NPS"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "canvas.Row.nps.Card.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 32,
+        "x": 792,
+        "y": 129
+      },
+      "shadow": null,
+      "text": [
+        "41"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Delta",
+      "opacity": 1,
+      "path": "canvas.Row.nps.Card.Delta",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 65,
+        "x": 792,
+        "y": 169
+      },
+      "shadow": null,
+      "text": [
+        "no change"
+      ],
+      "textColor": "#5a667e"
+    }
+  ],
+  "width": 1054
+}

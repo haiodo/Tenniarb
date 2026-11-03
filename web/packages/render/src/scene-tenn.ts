@@ -5,9 +5,9 @@
 // The input is the model (@tenniarb/core): an element keeps its commands, an item keeps its block, so the
 // scene tree is rebuilt here instead of in the editor, the viewer and the exporter separately.
 //
-// Not ported yet: element --from-file (a mounted library), template, transitions, CSS @keyframes of the
-// animations (the still picture is their first frame, as in Go).
-import { newCommand, newFloatNode } from "@tenniarb/core";
+// Not ported yet: transitions, CSS @keyframes of the animations (the still picture is their first frame, as
+// in Go). element --from-file and template are ported; the calling side supplies the files (SceneLoadOptions).
+import { TennParser, newCommand, newFloatNode, parseTenn } from "@tenniarb/core";
 import type { DiagramItem, Element, LinkItem, TennNode } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { parseColor } from "./color.ts";
@@ -186,6 +186,23 @@ export interface SceneParam {
   def: SceneProp | null;
 }
 
+/** The code an element generates (spec 5c): text with ${name} and <slot/> filled in by renderTemplate. */
+export interface SceneTemplate {
+  text: string;
+  line: number;
+  col: number;
+}
+
+/** What the calling side gives the renderer to follow `element --from-file` (spec 3a) and read templates. */
+export interface SceneLoadOptions {
+  /** The slash path of the file `element` was read from, relative to the workspace root; "" by default. */
+  file?: string;
+  /** Reads a file by slash path relative to the workspace root; null when it cannot be read. */
+  readFile?: (path: string) => string | null;
+  /** The text of the file `element` was read from, for the exact `template { ... }` and `%{ ... %}` text. */
+  source?: string;
+}
+
 export type Override =
   | { kind: "prop"; prop: SceneProp; line: number; col: number }
   | { kind: "node"; node: SceneNode; line: number; col: number }
@@ -211,6 +228,12 @@ export interface SceneNode {
   block: Override[]; // use
   from: string; // link
   to: string; // link
+  file: string; // the slash path of the file the node is written in
+  src: string | null; // the text of that file
+  model: Element | null; // the model element the node was read from
+  template: SceneTemplate | null; // element: the code it generates (spec 5c)
+  mount: SceneNode | null; // element with --from-file: the root of the file that holds its content
+  mountAt: SceneNode | null; // file root below a mount: the element that contains the mounting one
 }
 
 function newNode(kind: SceneKind, name: string, parent: SceneNode | null, at: TennNode | null): SceneNode {
@@ -232,6 +255,12 @@ function newNode(kind: SceneKind, name: string, parent: SceneNode | null, at: Te
     block: [],
     from: "",
     to: "",
+    file: parent?.file ?? "",
+    src: parent?.src ?? null,
+    model: null,
+    template: null,
+    mount: null,
+    mountAt: null,
   };
 }
 
@@ -264,10 +293,11 @@ function toProp(c: TennNode): SceneProp {
 const holdsContent = (n: SceneNode): boolean => n.kind === "file" || n.kind === "element" || n.kind === "item" || n.kind === "slot";
 const isContainer = (n: SceneNode): boolean => n.kind === "file" || n.kind === "element";
 
-/** What a path segment may pick under n: elements, items and uses. */
+/** What a path segment may pick under n: elements, items and uses. A mounted element is its file. */
 function named(n: SceneNode): SceneNode[] {
-  const out = [...n.elems];
-  for (const c of n.content) {
+  const src = n.mount ?? n;
+  const out = [...src.elems];
+  for (const c of src.content) {
     if (c.kind === "item" || c.kind === "use") {
       out.push(c);
     }
@@ -275,15 +305,21 @@ function named(n: SceneNode): SceneNode[] {
   return out;
 }
 
-class Diagnostics {
-  readonly list: { message: string; warn: boolean; line: number; col: number }[] = [];
+interface DiagPos {
+  line: number;
+  col: number;
+  file?: string;
+}
 
-  fail(at: { line: number; col: number }, message: string): void {
-    this.list.push({ message, warn: false, line: at.line, col: at.col });
+class Diagnostics {
+  readonly list: { message: string; warn: boolean; line: number; col: number; file: string }[] = [];
+
+  fail(at: DiagPos, message: string): void {
+    this.list.push({ message, warn: false, line: at.line, col: at.col, file: at.file ?? "" });
   }
 
-  warn(at: { line: number; col: number }, message: string): void {
-    this.list.push({ message, warn: true, line: at.line, col: at.col });
+  warn(at: DiagPos, message: string): void {
+    this.list.push({ message, warn: true, line: at.line, col: at.col, file: at.file ?? "" });
   }
 }
 
@@ -315,10 +351,6 @@ function fill(owner: SceneNode, commands: (TennNode | DiagramItem)[], diag: Diag
     if (name === "") {
       continue;
     }
-    if (name === "element" && isContainer(owner)) {
-      addElement(owner, c, diag);
-      continue;
-    }
     if (addContent(owner, c, name, diag)) {
       continue;
     }
@@ -333,6 +365,10 @@ function fill(owner: SceneNode, commands: (TennNode | DiagramItem)[], diag: Diag
     }
     if (name === "export" && (owner.kind === "element" || owner.kind === "item")) {
       addParam(owner, c, diag);
+      continue;
+    }
+    if (name === "template" && owner.kind === "element") {
+      addTemplate(owner, c, diag);
       continue;
     }
     owner.props.push(toProp(c));
@@ -357,11 +393,205 @@ function addModelContent(owner: SceneNode, item: DiagramItem, diag: Diagnostics)
   fill(node, itemCommands(item), diag);
 }
 
-function addElement(owner: SceneNode, c: TennNode, diag: Diagnostics): void {
-  const { block } = splitCommand(c);
-  const node = newNode("element", argText(c.children?.[1]), owner, c);
+/** The commands of an element as the file wrote them: items and properties mixed, in text order (spec 9.3). */
+function orderedEntries(el: Element): (TennNode | DiagramItem)[] {
+  const entries: (TennNode | DiagramItem)[] = [...el.properties, ...el.items];
+  const order = new Map<TennNode | DiagramItem, number>();
+  for (const e of entries) {
+    order.set(e, "token" in e ? ((e as TennNode).token?.pos ?? Number.MAX_SAFE_INTEGER) : ((e as DiagramItem).sourcePos ?? Number.MAX_SAFE_INTEGER));
+  }
+  entries.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+  return entries;
+}
+
+/** "element <name> --from-file <path>": the path as written, or null. */
+function fromFileOf(extraArgs: TennNode[]): string | null {
+  for (let i = 0; i < extraArgs.length; i += 1) {
+    if (argText(extraArgs[i]) === "--from-file" && i + 1 < extraArgs.length) {
+      return argText(extraArgs[i + 1]);
+    }
+  }
+  return null;
+}
+
+/** The position of the command that holds token c in its file, 1-based, as go/scene reports it. */
+function commandPos(file: string, src: string | null, c: TennNode): DiagPos {
+  const t = c.token;
+  const line = (t?.line ?? 0) + 1;
+  if (t === null || src === null) {
+    return { file, line, col: 1 };
+  }
+  // The model keeps no position for the element command: walk back to the start of its line instead.
+  let i = Math.min(t.pos, src.length);
+  while (i > 0 && src[i - 1] !== "\n") {
+    i -= 1;
+  }
+  let col = 1;
+  while (i < t.pos && (src[i] === " " || src[i] === "\t")) {
+    i += 1;
+    col += 1;
+  }
+  return { file, line, col };
+}
+
+const posText = (at: DiagPos): string => `${at.file !== undefined && at.file !== "" ? `${at.file}:` : ""}${at.line}:${at.col}`;
+
+/** Join a path relative to the file in dir; "../" beyond the workspace root gives null (go/scene inside). */
+function resolvePath(file: string, rel: string): string | null {
+  const parts = [...(file === "" ? [] : file.split("/").slice(0, -1)), ...rel.split("/")];
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === "..") {
+      if (out.length === 0) {
+        return null;
+      }
+      out.pop();
+      continue;
+    }
+    out.push(part);
+  }
+  return out.join("/");
+}
+
+interface LoadedFile {
+  path: string;
+  src: string;
+  model: Element;
+}
+
+/** Reads the files `element --from-file` names; a file mounted twice is read once, a cycle is an error. */
+class Loader {
+  readonly diag: Diagnostics;
+  readonly main: string;
+  private readonly reader: ((path: string) => string | null) | null;
+  private readonly files = new Map<string, LoadedFile>();
+  private readonly stack: { path: string; at: DiagPos }[] = [];
+
+  constructor(diag: Diagnostics, options: SceneLoadOptions) {
+    this.diag = diag;
+    this.main = options.file ?? "";
+    this.reader = options.readFile ?? null;
+    // The entry document is on the stack, so a cycle that comes back to it reports the whole way round.
+    this.stack.push({ path: this.main, at: { file: this.main, line: 1, col: 1 } });
+  }
+
+  /** Pushes the file being loaded; false when it is already loading, which is the cycle. */
+  enter(path: string, at: DiagPos): boolean {
+    const i = this.stack.findIndex((f) => f.path === path);
+    if (i < 0) {
+      this.stack.push({ path, at });
+      return true;
+    }
+    const hops: string[] = [];
+    for (let k = i + 1; k < this.stack.length; k += 1) {
+      hops.push(`${posText(this.stack[k]!.at)} imports ${this.stack[k]!.path}`);
+    }
+    hops.push(`${posText(at)} imports ${path}`);
+    this.diag.fail(at, `import cycle: ${hops.join(", ")}`);
+    return false;
+  }
+
+  leave(): void {
+    this.stack.pop();
+  }
+
+  /** The file at path, from the cache, the loader, or the parse; null when it cannot be read. */
+  read(path: string, at: DiagPos): LoadedFile | null {
+    const cached = this.files.get(path);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const raw = this.reader === null ? null : this.reader(path);
+    if (raw === null) {
+      this.diag.fail(at, `cannot read ${path}`);
+      return null;
+    }
+    const parser = new TennParser();
+    const tree = parser.parse(raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw);
+    for (const e of parser.errors.errors) {
+      this.diag.fail({ file: path, line: e.line + 1, col: e.col }, e.message);
+    }
+    const loaded: LoadedFile = { path, src: raw, model: parseTenn(tree) };
+    this.files.set(path, loaded);
+    return loaded;
+  }
+}
+
+function addElement(owner: SceneNode, el: Element, loader: Loader, diag: Diagnostics, seen: Set<Element>): void {
+  if (seen.has(el)) {
+    return;
+  }
+  seen.add(el);
+  const node = newNode("element", el.name, owner, null);
+  node.model = el;
   owner.elems.push(node);
-  fill(node, block, diag);
+  const rel = fromFileOf(el.extraArgs);
+  if (rel !== null) {
+    const at = commandPos(node.file, node.src, el.extraArgs[0]!);
+    if (el.properties.count > 0 || el.items.length > 0 || el.elements.length > 0) {
+      diag.fail(at, `element "${el.name}" takes its content from ${rel}: remove the block`);
+    }
+    const path = resolvePath(node.file, rel);
+    if (path === null) {
+      diag.fail(at, `element --from-file "${rel}" leaves the workspace root`);
+      return;
+    }
+    if (!loader.enter(path, at)) {
+      return;
+    }
+    const loaded = loader.read(path, at);
+    if (loaded === null) {
+      loader.leave();
+      return;
+    }
+    // mountFile: the content, the elements and the type of the file root, the scope inside it its own file.
+    const file = newNode("file", "", null, null);
+    file.file = loaded.path;
+    file.src = loaded.src;
+    file.mountAt = owner;
+    fillMounted(file, loaded.model, diag);
+    for (const child of loaded.model.elements) {
+      addElement(file, child, loader, diag, seen);
+    }
+    loader.leave();
+    node.mount = file;
+    if (node.type === "") {
+      node.type = file.type;
+    }
+    return;
+  }
+  fill(node, orderedEntries(el), diag);
+  for (const child of el.elements) {
+    addElement(node, child, loader, diag, seen);
+  }
+}
+
+/** The content of a mounted file root: what Go's mountFile copies into the mounting element. */
+function fillMounted(owner: SceneNode, el: Element, diag: Diagnostics): void {
+  for (const entry of orderedEntries(el)) {
+    if (isModelItem(entry)) {
+      addModelContent(owner, entry, diag);
+      continue;
+    }
+    const c = entry;
+    if (c.kind !== "Command") {
+      continue;
+    }
+    const name = cmdName(c);
+    if (name === "") {
+      continue;
+    }
+    if (name === "kind") {
+      owner.type = argText(splitCommand(c).args[0]).toLowerCase();
+      continue;
+    }
+    if (!addContent(owner, c, name, diag)) {
+      owner.props.push(toProp(c));
+    }
+  }
 }
 
 function addContent(owner: SceneNode, c: TennNode, name: string, diag: Diagnostics): SceneNode | null {
@@ -531,14 +761,101 @@ function addParam(owner: SceneNode, c: TennNode, diag: Diagnostics): void {
   owner.params.push({ name, def });
 }
 
+/** "template { ... }", "template %{ ... }" or "template \"...\"": the code the element generates (spec 5c). */
+function addTemplate(owner: SceneNode, c: TennNode, diag: Diagnostics): void {
+  if (owner.template !== null) {
+    diag.warn(pos(c), "the element has a second template: the first one is used");
+    return;
+  }
+  const { args } = splitCommand(c);
+  let text = "";
+  let form = false;
+  if (hasBlock(c)) {
+    form = true;
+    const block = c.children![c.children!.length - 1]!;
+    const src = owner.src;
+    // shortcut: without the text of the file a block template reads as empty; renderTenn passes source.
+    if (src !== null && block.token !== null) {
+      // The bytes between the braces, as Go's Range does; the block's own tokens end before the closing brace.
+      let end = block.token.pos + block.token.size;
+      for (const child of block.children ?? []) {
+        end = Math.max(end, nodeEnd(child));
+      }
+      let close = end;
+      while (close < src.length && (src[close] === " " || src[close] === "\t" || src[close] === "\n" || src[close] === "\r")) {
+        close += 1;
+      }
+      if (src[close] === "}") {
+        text = src.slice(block.token.pos + 1, close);
+      }
+    }
+  } else if (args.length > 0 && (args[0]!.kind === "MarkdownLit" || args[0]!.kind === "StringLit")) {
+    form = true;
+    const a = args[0]!;
+    text = argText(a);
+    // "%{ ... %}" is what a reader writes: the markdown literal closes at "}", so the percent of the
+    // closing marker lands in the text and is cut here (go/scene addTemplate).
+    if (text.endsWith("%")) {
+      // shortcut: without the file text the closing character cannot be read, so a trailing percent is
+      // taken for the marker; pass SceneLoadOptions.source for the exact Go check.
+      const src = owner.src;
+      if (a.token === null || src === null || src[a.token.pos + text.length] === "}") {
+        text = text.slice(0, -1);
+      }
+    }
+  }
+  if (!form) {
+    diag.fail(pos(c), "template needs text: template { ... } or template %{ ... }");
+    return;
+  }
+  const p = pos(c);
+  owner.template = { text: dedent(text), line: p.line, col: p.col };
+}
+
+/** The end of a command's text: its last token, blocks included. */
+function nodeEnd(n: TennNode): number {
+  let end = n.token === null ? 0 : n.token.pos + n.token.size;
+  for (const c of n.children ?? []) {
+    end = Math.max(end, nodeEnd(c));
+  }
+  return end;
+}
+
+/** Cut the blank lines around a template and the indentation its lines share, as go/scene dedent does. */
+function dedent(text: string): string {
+  const lines = text.replace(/^\n+|\n+$/g, "").split("\n");
+  let indent = -1;
+  for (const ln of lines) {
+    if (ln.trim() === "") {
+      continue;
+    }
+    const n = ln.length - ln.replace(/^[ \t]+/, "").length;
+    indent = indent < 0 || n < indent ? n : indent;
+  }
+  const cut = indent < 0 ? 0 : indent;
+  const out = lines.map((ln) => (ln.trim() === "" ? "" : ln.slice(cut)));
+  while (out.length > 0 && out[0] === "") {
+    out.shift();
+  }
+  while (out.length > 0 && out[out.length - 1] === "") {
+    out.pop();
+  }
+  return out.join("\n");
+}
+
 // MARK: - Resolving a path (spec 4.2/4.3, go/scene/resolve.go)
+
+/** The next scope above a: its parent, or from the root of a mounted file the place it is mounted at. */
+function outward(a: SceneNode): SceneNode | null {
+  return a.parent !== null ? a.parent : a.mountAt;
+}
 
 function lookup(scope: SceneNode | null, path: string): { node: SceneNode | null; message: string } {
   const segs = splitPath(path);
   if (segs === null) {
     return { node: null, message: `bad path "${path}"` };
   }
-  for (let a = scope; a !== null; a = a.parent) {
+  for (let a = scope; a !== null; a = outward(a)) {
     let cur = named(a).filter((n) => segMatches(segs[0]!, n));
     if (cur.length === 0) {
       continue;
@@ -631,7 +948,11 @@ class Expander {
       return null;
     }
     const r = rnode("item", n, n.name, this.vars);
-    r.kids = this.contents(n.content);
+    // A mounted element is its file: the file root's properties and content (go/scene container + mountFile).
+    if (n.mount !== null) {
+      r.props = n.mount.props.map(cloneProp);
+    }
+    r.kids = this.contents((n.mount ?? n).content);
     this.leave();
     return r;
   }
@@ -1302,7 +1623,7 @@ const parseDuration = (s: string): number | null => {
 };
 
 /** The frames of "animation <name> { <frame> { properties } ... }", sorted by offset. */
-function keyframes(p: SceneProp, diag: Diagnostics): Animation | null {
+function keyframes(rn: RNode, p: SceneProp, diag: Diagnostics): Animation | null {
   const name = propText(p, 0);
   if (name === "") {
     diag.warn(p as unknown as SceneNode, "animation: the block needs a name, as in animation spin { from { ... } to { ... } }");
@@ -1326,7 +1647,12 @@ function keyframes(p: SceneProp, diag: Diagnostics): Animation | null {
         continue;
       }
       if (animatedProps.has(pn)) {
-        f.props.push(toProp(pc));
+        const fp = toProp(pc);
+        // A frame property may be an expression, evaluated in the scope of the node the block is written on.
+        const evaluated = hasExpr(fp) ? evaluate(diag, rn, fp) : fp;
+        if (evaluated !== null) {
+          f.props.push(evaluated);
+        }
       } else if (layoutProps.has(pn)) {
         diag.warn(pos(pc), `animation ${name}: ${pn} is a layout property and is not animated, the frame is ignored`);
       } else {
@@ -1353,7 +1679,7 @@ function animations(rn: RNode, defs: Map<string, Animation>, diag: Diagnostics):
     if (p.name !== "animation" || p.block === null) {
       continue;
     }
-    const a = keyframes(p, diag);
+    const a = keyframes(rn, p, diag);
     if (a === null) {
       continue;
     }
@@ -2130,7 +2456,7 @@ export interface TennScene {
   height: number;
   /** y-up bounds, as DrawableScene.getBounds. */
   bounds: Rect;
-  diagnostics: { message: string; warn: boolean; line: number; col: number }[];
+  diagnostics: { message: string; warn: boolean; line: number; col: number; file: string }[];
   draw(ctx: Canvas2D, at?: Point): void;
   /** The laid out items in tree order, for tests and the inspector. */
   boxes: { name: string; path: string; x: number; y: number; width: number; height: number; depth: number }[];
@@ -2157,46 +2483,35 @@ export function isSceneElement(element: Element): boolean {
 }
 
 /** The file tree of the element: its own element, its ancestors and the elements beside them. */
-function fileTree(element: Element, diag: Diagnostics): SceneNode {
+function fileTree(element: Element, diag: Diagnostics, options: SceneLoadOptions = {}): SceneNode {
   let root: Element = element;
   while (root.parent !== null) {
     root = root.parent;
   }
+  const loader = new Loader(diag, options);
   const file = newNode("file", "", null, null);
+  file.file = loader.main;
+  file.src = options.source ?? null;
   const seen = new Set<Element>();
-  const addElement = (owner: SceneNode, el: Element): void => {
-    if (seen.has(el)) {
-      return;
-    }
-    seen.add(el);
-    const node = newNode("element", el.name, owner, null);
-    owner.elems.push(node);
-    const entries: (TennNode | DiagramItem)[] = [...el.properties, ...el.items];
-    // The model keeps items and properties apart; the file order is their positions (spec 9.3).
-    const order = new Map<TennNode | DiagramItem, number>();
-    for (const e of entries) {
-      order.set(e, "token" in e ? ((e as TennNode).token?.pos ?? Number.MAX_SAFE_INTEGER) : ((e as DiagramItem).sourcePos ?? Number.MAX_SAFE_INTEGER));
-    }
-    entries.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
-    fill(node, entries, diag);
-    // Nested elements come after the content, as persistence writes them; scope does not depend on order.
-    for (const child of el.elements) {
-      addElement(node, child);
-    }
-  };
-  addElement(file, root);
+  addElement(file, root, loader, diag, seen);
   return file;
 }
 
 function sceneNodeFor(file: SceneNode, element: Element): SceneNode | null {
   let found: SceneNode | null = null;
   const walk = (n: SceneNode): void => {
-    for (const e of n.elems) {
-      if (e.name === element.name && found === null) {
+    for (const e of named(n)) {
+      if (e.kind !== "element") {
+        continue;
+      }
+      if (e.model === element || (e.model === null && e.name === element.name)) {
         found = e;
         return;
       }
       walk(e);
+      if (found !== null) {
+        return;
+      }
     }
   };
   walk(file);
@@ -2985,11 +3300,11 @@ function pathOfNode(rn: RNode, path: string): string {
 
 /**
  * Lay out and paint a scene element (spec 4, 5b, 5c, 13). The result draws itself in y-up space, as
- * DrawableScene does, so renderElement's flip and offset work unchanged.
+ * DrawableScene does, so renderElement's flip and offset work unchanged. options gives the files it mounts.
  */
-export function buildTennScene(element: Element): TennScene {
+export function buildTennScene(element: Element, options: SceneLoadOptions = {}): TennScene {
   const diag = new Diagnostics();
-  const file = fileTree(element, diag);
+  const file = fileTree(element, diag, options);
   const source = sceneNodeFor(file, element);
   const boxes: TennScene["boxes"] = [];
   if (source === null) {
@@ -3209,4 +3524,240 @@ function edgePoint(center: Point, n: LayoutNode, other: Point): Point {
   }
   t = Math.min(t, 1);
   return { x: center.x + dx * t, y: center.y + dy * t };
+}
+
+// MARK: - Templates (spec 5c, go/scene/template.go)
+
+export interface RenderTemplateOptions extends SceneLoadOptions {
+  /** A path from the file root to the element or the use to render; the element itself by default. */
+  path?: string;
+  /** Values that override the block of a use and the defaults of the declaration (tenniarb gen -set). */
+  values?: Record<string, string>;
+}
+
+export interface TemplateError {
+  message: string;
+  line: number;
+  col: number;
+  file: string;
+}
+
+export interface TemplateResult {
+  text: string;
+  errors: TemplateError[];
+}
+
+/** The value the block of use gives a parameter: the last one written. */
+function useProp(use: SceneNode | null, name: string): SceneProp | null {
+  let found: SceneProp | null = null;
+  for (const ov of use?.block ?? []) {
+    if (ov.kind === "prop" && ov.prop.name === name) {
+      found = ov.prop;
+    }
+  }
+  return found;
+}
+
+/** The arguments of a property as words, each an expression evaluated without variables. */
+function wordsOf(p: SceneProp): { value: string; ok: boolean } {
+  const words: string[] = [];
+  for (const a of p.args) {
+    const v = evalArg(a, null);
+    if (v === null) {
+      return { value: words.join(" "), ok: false };
+    }
+    words.push(v);
+  }
+  return { value: words.join(" "), ok: true };
+}
+
+function templateError(errors: TemplateError[], n: SceneNode | null, message: string): void {
+  errors.push({ message, line: n?.line ?? 0, col: n?.col ?? 0, file: n?.file ?? "" });
+}
+
+/** The value of every parameter of target: values, the block of the use, the default (spec 5c). */
+function templateVars(target: SceneNode, use: SceneNode | null, values: Record<string, string>, errors: TemplateError[]): Record<string, string> {
+  const vars: Record<string, string> = {};
+  for (const prm of target.params) {
+    if (Object.hasOwn(values, prm.name)) {
+      vars[prm.name] = values[prm.name]!;
+      continue;
+    }
+    const p = useProp(use, prm.name) ?? prm.def;
+    if (p === null) {
+      templateError(errors, target, `element "${target.name}" needs "${prm.name}": set it in the block of the use or with -set`);
+      continue;
+    }
+    const { value, ok } = wordsOf(p);
+    if (!ok) {
+      templateError(errors, target, `parameter "${prm.name}": the expression is not evaluated`);
+    }
+    vars[prm.name] = value;
+  }
+  const unknown = Object.keys(values)
+    .filter((name) => !target.params.some((p) => p.name === name))
+    .sort();
+  for (const name of unknown) {
+    const declared = target.params.length === 0 ? "it declares no parameters" : `parameters: ${target.params.map((p) => `"${p.name}"`).join(", ")}`;
+    templateError(errors, target, `unknown parameter "${name}" (${declared})`);
+  }
+  return vars;
+}
+
+/** A node the use passes to a slot as code: the title it sets, and its name otherwise. */
+function nodeText(n: SceneNode, errors: TemplateError[]): string {
+  let title: SceneProp | null = null;
+  for (const p of n.props) {
+    if (p.name === "title") {
+      title = p;
+    }
+  }
+  if (title === null) {
+    return n.name;
+  }
+  const { value, ok } = wordsOf(title);
+  if (!ok) {
+    templateError(errors, n, "the title of the slot content is not evaluated");
+  }
+  return value;
+}
+
+/** The content of the slots, by normalized name ("" for the default one), with the fallback of the component. */
+function templateSlots(target: SceneNode, use: SceneNode | null, errors: TemplateError[]): Map<string, string> {
+  const slots = new Map<string, string>();
+  for (const ov of use?.block ?? []) {
+    if (ov.kind === "node") {
+      slots.set("", (slots.get("") ?? "") + nodeText(ov.node, errors));
+    } else if (ov.kind === "slot") {
+      const name = normalizeName(ov.name);
+      if (!slots.has(name)) {
+        slots.set(name, ""); // a slot filled with no node still counts as filled
+      }
+      for (const sub of ov.block) {
+        if (sub.kind === "node") {
+          slots.set(name, (slots.get(name) ?? "") + nodeText(sub.node, errors));
+        }
+      }
+    }
+  }
+  const walk = (n: SceneNode): void => {
+    for (const c of (n.mount ?? n).content) {
+      if (c.kind !== "slot") {
+        walk(c);
+        continue;
+      }
+      if (!slots.has(c.key)) {
+        let fill = "";
+        for (const sub of c.content) {
+          if (sub.kind === "item") {
+            fill += nodeText(sub, errors);
+          }
+        }
+        if (fill !== "") { // an empty fallback leaves the slot unfilled, and that is an error
+          slots.set(c.key, fill);
+        }
+      }
+    }
+  };
+  walk(target);
+  return slots;
+}
+
+/** "<slot/>" or "<slot name/>" at the start of s: the normalized name, "" for the default slot, and its length. */
+function slotTag(s: string): { name: string; length: number } | null {
+  if (!s.startsWith("<slot")) {
+    return null;
+  }
+  const end = s.indexOf(">");
+  if (end < 0) {
+    return null;
+  }
+  const raw = s.slice(5, end);
+  const name = (raw.endsWith("/") ? raw.slice(0, -1) : raw).trim();
+  if (!/^[A-Za-z0-9_-]*$/.test(name)) {
+    return null; // a self-closing slot of another form: the text stays
+  }
+  return { name: normalizeName(name), length: end + 1 };
+}
+
+/** The text of a template: ${name} is a value, <slot/> and <slot name/> the content the use passes. */
+function templateText(tpl: SceneTemplate, vars: Record<string, string>, slots: Map<string, string>, file: string, errors: TemplateError[]): string {
+  let out = "";
+  for (let i = 0; i < tpl.text.length; ) {
+    if (tpl.text.startsWith("${", i)) {
+      const j = tpl.text.indexOf("}", i + 2);
+      if (j >= 0) {
+        const code = tpl.text.slice(i + 2, j);
+        const v = evalCode(code, vars);
+        if (v === null) {
+          errors.push({ message: `\${${code}}: the expression is not evaluated`, line: tpl.line, col: tpl.col, file });
+        } else {
+          out += v;
+        }
+        i = j + 1;
+        continue;
+      }
+    }
+    const tag = slotTag(tpl.text.slice(i));
+    if (tag !== null) {
+      const s = slots.get(tag.name);
+      if (s !== undefined) {
+        out += s;
+      } else if (tag.name === "") {
+        errors.push({ message: "the default slot has no content: pass nodes in the block of the use", line: tpl.line, col: tpl.col, file });
+      } else {
+        errors.push({ message: `slot "${tag.name}" has no content: pass nodes in the block of the use`, line: tpl.line, col: tpl.col, file });
+      }
+      i += tag.length;
+      continue;
+    }
+    out += tpl.text[i];
+    i += 1;
+  }
+  return out;
+}
+
+/**
+ * The code the element generates (spec 5c): an element or, with `path`, a use of one. The values override
+ * the block of the use, and that the defaults; the slots take the nodes of the block. Diagnostics of the
+ * file tree (a mounted file that does not read) are not part of the errors, as in go/scene.
+ */
+export function renderTemplate(element: Element, options: RenderTemplateOptions = {}): TemplateResult {
+  const diag = new Diagnostics();
+  const file = fileTree(element, diag, options);
+  const errors: TemplateError[] = [];
+  let use: SceneNode | null = null;
+  let target: SceneNode | null;
+  if (options.path !== undefined && options.path !== "") {
+    // The model's file root is an element ("Root"); go/scene's file node holds the top-level elements.
+    const found = lookup(file.elems[0] ?? file, options.path);
+    if (found.node === null) {
+      errors.push({ message: found.message, line: 0, col: 0, file: file.file });
+      return { text: "", errors };
+    }
+    target = found.node;
+  } else {
+    target = sceneNodeFor(file, element);
+  }
+  if (target === null) {
+    errors.push({ message: `element "${element.name}" is not in the file tree`, line: 0, col: 0, file: file.file });
+    return { text: "", errors };
+  }
+  if (target.kind === "use") {
+    use = target;
+    const found = lookup(target.parent, target.path);
+    if (found.node === null) {
+      templateError(errors, target, found.message);
+      return { text: "", errors };
+    }
+    target = found.node;
+  }
+  if (target.template === null) {
+    templateError(errors, target, `the ${target.kind} "${target.name}" has no template`);
+    return { text: "", errors };
+  }
+  const vars = templateVars(target, use, options.values ?? {}, errors);
+  const slots = templateSlots(target, use, errors);
+  const text = templateText(target.template, vars, slots, target.file, errors);
+  return errors.length > 0 ? { text: "", errors } : { text, errors };
 }

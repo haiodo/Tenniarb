@@ -1,0 +1,5689 @@
+{
+  "element": "Screen",
+  "height": 616,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Screen",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 616,
+        "w": 890,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 616,
+        "w": 890,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row primary",
+      "opacity": 1,
+      "path": "canvas.row_primary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_primary.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 48
+      },
+      "shadow": null,
+      "text": [
+        "primary"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/large",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 48
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/medium",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 36
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 36
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 48
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/small",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 48
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 44
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 44
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 48
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 36
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 36
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 44
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 44
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_primary.primary_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row secondary",
+      "opacity": 1,
+      "path": "canvas.row_secondary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 104
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_secondary.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "secondary"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/large",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 104
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 104
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/medium",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 108
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 108
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/small",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 112
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 112
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 116
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 116
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 120
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 104
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 104
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 108
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 108
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 112
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 112
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "secondary/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 116
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 116
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_secondary.secondary_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 120
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row tertiary",
+      "opacity": 1,
+      "path": "canvas.row_tertiary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 176
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 192
+      },
+      "shadow": null,
+      "text": [
+        "tertiary"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/large",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 176
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 176
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 192
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/medium",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 192
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/small",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 184
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 184
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 192
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 188
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 188
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 192
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#6b3ad3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 176
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 176
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 184
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 184
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "tertiary/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 188
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 188
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_tertiary.tertiary_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 192
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row ghost",
+      "opacity": 1,
+      "path": "canvas.row_ghost",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 248
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_ghost.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 264
+      },
+      "shadow": null,
+      "text": [
+        "ghost"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/large",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 248
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 248
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 264
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/medium",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 252
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 252
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 264
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/small",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 256
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 256
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 264
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 260
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 260
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 264
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 248
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 248
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 252
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 252
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 256
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 256
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ghost/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 260
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 260
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#5a667e",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_ghost.ghost_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row negative",
+      "opacity": 1,
+      "path": "canvas.row_negative",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 320
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_negative.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 336
+      },
+      "shadow": null,
+      "text": [
+        "negative"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/large",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 320
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 320
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 336
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/medium",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 324
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 324
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 336
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/small",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 328
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 328
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 336
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 332
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 332
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 336
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 320
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 320
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 324
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 324
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 328
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 328
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "negative/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 332
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de26",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 332
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_negative.negative_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 336
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row brand",
+      "opacity": 1,
+      "path": "canvas.row_brand",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 748,
+        "x": 32,
+        "y": 392
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_brand.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 408
+      },
+      "shadow": null,
+      "text": [
+        "brand"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/large",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 392
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 392
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 408
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/medium",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 396
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 107,
+        "x": 259,
+        "y": 396
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 408
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/small",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 400
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 87,
+        "x": 382,
+        "y": 400
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 390,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 410,
+        "y": 408
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/extra-small",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 404
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 87,
+        "x": 485,
+        "y": 404
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 493,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 513,
+        "y": 408
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/large/icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 392
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 588,
+        "y": 392
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_large_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 604,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/medium/icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 396
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 652,
+        "y": 396
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_medium_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 664,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/small/icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 400
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small_icon.Btn",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 708,
+        "y": 400
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 716,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "brand/extra-small/icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 404
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small_icon.Btn",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 756,
+        "y": 404
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_brand.brand_extra_small_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 760,
+        "y": 408
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row shape",
+      "opacity": 1,
+      "path": "canvas.row_shape",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 480,
+        "x": 32,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_shape.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 480
+      },
+      "shadow": null,
+      "text": [
+        "shape"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "shape/with icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_with_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_with_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_with_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 480
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_with_icon.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 480
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "shape/icon only",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_icon_only",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 259,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_icon_only.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 48,
+        "x": 259,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_icon_only.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 480
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "shape/no icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_no_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 83,
+        "x": 323,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_no_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 83,
+        "x": 323,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_no_icon.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 339,
+        "y": 480
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "shape/other icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_other_icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 90,
+        "x": 422,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_other_icon.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 90,
+        "x": 422,
+        "y": 464
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_other_icon.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 438,
+        "y": 480
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_shape.shape_other_icon.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 34,
+        "x": 462,
+        "y": 480
+      },
+      "shadow": null,
+      "text": [
+        "More"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row disabled",
+      "opacity": 1,
+      "path": "canvas.row_disabled",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 826,
+        "x": 32,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_disabled.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 88,
+        "x": 32,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "disabled"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/primary",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_primary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_primary.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 136,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_primary.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 152,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_primary.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 176,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/secondary",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_secondary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 259,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_secondary.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 259,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_secondary.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 275,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_secondary.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 299,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/tertiary",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_tertiary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 382,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_tertiary.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 382,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_tertiary.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_tertiary.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 422,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/ghost",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_ghost",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 505,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_ghost.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 505,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_ghost.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 521,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_ghost.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 545,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/negative",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_negative",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 628,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_negative.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 628,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_negative.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 644,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_negative.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 668,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "disabled/brand",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_brand",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 751,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#0000000f",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#f0f0f2",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_brand.Btn",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 48,
+        "w": 107,
+        "x": 751,
+        "y": 536
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#00000066",
+      "borderWidth": 1.3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_brand.Btn.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 767,
+        "y": 552
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_disabled.disabled_brand.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 51,
+        "x": 791,
+        "y": 552
+      },
+      "shadow": null,
+      "text": [
+        "Button"
+      ],
+      "textColor": "#00000066"
+    }
+  ],
+  "width": 890
+}

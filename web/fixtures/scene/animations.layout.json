@@ -1,0 +1,825 @@
+{
+  "element": "Animations",
+  "height": 386,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Animations",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 386,
+        "w": 605,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 386,
+        "w": 605,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row spinner",
+      "opacity": 1,
+      "path": "canvas.row_spinner",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 332,
+        "x": 40,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_spinner.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 47.5
+      },
+      "shadow": null,
+      "text": [
+        "rotate 0 → 360°, linear, forever"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": "#6b3ad3",
+      "borderWidth": 3,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Spinner",
+      "opacity": 1,
+      "path": "canvas.row_spinner.Spinner",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 28,
+        "x": 304,
+        "y": 40
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Square",
+      "opacity": 1,
+      "path": "canvas.row_spinner.Square",
+      "radius": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 356,
+        "y": 46
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row pulse",
+      "opacity": 1,
+      "path": "canvas.row_pulse",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 336,
+        "x": 40,
+        "y": 96
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_pulse.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 101.5
+      },
+      "shadow": null,
+      "text": [
+        "opacity 1 → 0.25, ease-in-out"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Dot",
+      "opacity": 1,
+      "path": "canvas.row_pulse.Dot",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 304,
+        "y": 96
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#cf13a2",
+      "borderWidth": 2,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Ring",
+      "opacity": 1,
+      "path": "canvas.row_pulse.Ring",
+      "radius": [
+        11,
+        11,
+        11,
+        11
+      ],
+      "rect": {
+        "h": 24,
+        "w": 24,
+        "x": 352,
+        "y": 96
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row breathe",
+      "opacity": 1,
+      "path": "canvas.row_breathe",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 344,
+        "x": 40,
+        "y": 148
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_breathe.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 155.5
+      },
+      "shadow": null,
+      "text": [
+        "scale 1 → 1.4, twice"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Heart",
+      "opacity": 1,
+      "path": "canvas.row_breathe.Heart",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 28,
+        "x": 304,
+        "y": 148
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#cb4b42",
+      "borderWidth": 2,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Heart2",
+      "opacity": 1,
+      "path": "canvas.row_breathe.Heart2",
+      "radius": [
+        13,
+        13,
+        13,
+        13
+      ],
+      "rect": {
+        "h": 28,
+        "w": 28,
+        "x": 356,
+        "y": 148
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row fade in",
+      "opacity": 1,
+      "path": "canvas.row_fade_in",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 448,
+        "x": 40,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_fade_in.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 213.5
+      },
+      "shadow": null,
+      "text": [
+        "opacity 0 → 1: 600ms and 2s"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#172547",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 0,
+      "path": "canvas.row_fade_in.Card",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 32,
+        "w": 80,
+        "x": 304,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Card2",
+      "opacity": 0,
+      "path": "canvas.row_fade_in.Card2",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 32,
+        "w": 80,
+        "x": 408,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row colour",
+      "opacity": 1,
+      "path": "canvas.row_colour",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 24,
+        "w": 312,
+        "x": 40,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_colour.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 269.5
+      },
+      "shadow": null,
+      "text": [
+        "colour #cf13a2 → #2f6bff"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "Chip",
+      "opacity": 1,
+      "path": "canvas.row_colour.Chip",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 24,
+        "w": 48,
+        "x": 304,
+        "y": 264
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "row component",
+      "opacity": 1,
+      "path": "canvas.row_component",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 525,
+        "x": 40,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "cap",
+      "opacity": 1,
+      "path": "canvas.row_component.cap",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 240,
+        "x": 40,
+        "y": 324.5
+      },
+      "shadow": null,
+      "text": [
+        "the animation is in the style"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "syncing",
+      "opacity": 1,
+      "path": "canvas.row_component.syncing",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 79,
+        "x": 304,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#c7d2fe",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Frame",
+      "opacity": 1,
+      "path": "canvas.row_component.syncing.Frame",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 79,
+        "x": 304,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_component.syncing.Frame.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 316,
+        "y": 324
+      },
+      "shadow": null,
+      "text": [
+        "Syncing"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "ready",
+      "opacity": 1,
+      "path": "canvas.row_component.ready",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 63,
+        "x": 407,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#c7d2fe",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Frame",
+      "opacity": 1,
+      "path": "canvas.row_component.ready.Frame",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 63,
+        "x": 407,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_component.ready.Frame.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 39,
+        "x": 419,
+        "y": 324
+      },
+      "shadow": null,
+      "text": [
+        "Ready"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "failed",
+      "opacity": 1,
+      "path": "canvas.row_component.failed",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 71,
+        "x": 494,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#fca5a5",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#fee2e2",
+      "gradient": null,
+      "name": "Frame",
+      "opacity": 1,
+      "path": "canvas.row_component.failed.Frame",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 71,
+        "x": 494,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.row_component.failed.Frame.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 506,
+        "y": 324
+      },
+      "shadow": null,
+      "text": [
+        "Failed"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 605
+}

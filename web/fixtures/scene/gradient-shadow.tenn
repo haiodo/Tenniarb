@@ -1,0 +1,109 @@
+// Gradients and shadows: `color linear <angle> <color> [pos] <color> …` is a CSS linear gradient - the
+// angle runs 0 up, 90 right, 180 down, 135 to the bottom-right corner - and stops take positions on
+// every stop or on none. `shadow dx dy [blur [color]]` drops a shadow of the fill, or of the border for
+// a box without a fill; Y points up, so a shadow that falls down has a negative dy.
+element "Gradients" {
+    item canvas {
+        auto-layout column
+        gap 24
+        padding 36
+        width 1000
+        color #f4f5f9
+
+        item Head {
+            auto-layout column
+            gap 4
+            item Title { title "Gradients and shadows"; font-size 22; font-weight 700 }
+            item Note { title "Three angles, five shadows"; font-size 12; text-color #5a667e }
+        }
+
+        item Tiles {
+            auto-layout row
+            gap 20
+            align start
+            item Sunset {
+                auto-layout column; justify end; width 220; height 144; padding 16; corner-radius 14; clip yes
+                color linear 135 #cf13a2 0 #6b3ad3 0.55 #2f6bff 1
+                shadow 0 -12 26 #6b3ad359
+                item t { title "135 degrees"; font-size 15; font-weight 700; text-color #ffffff }
+                item n { title "three stops, positions given"; font-size 11; text-color #ffffffcc }
+            }
+            item Mint {
+                auto-layout column; justify end; width 220; height 144; padding 16; corner-radius 14; clip yes
+                // no positions: the two stops spread evenly over the whole line
+                color linear 90 #0f9d58 #34d39b
+                shadow 0 -4 10 #0f9d5840
+                item t { title "90 degrees"; font-size 15; font-weight 700; text-color #ffffff }
+                item n { title "two stops, no positions"; font-size 11; text-color #ffffffcc }
+            }
+            item Paper {
+                auto-layout column; justify end; width 220; height 144; padding 16; corner-radius 14; clip yes
+                color linear 0 #ffffff #eef1f7
+                border-color #dfe4ee; line-width 1
+                // a fill is not needed: the border casts the shadow on its own
+                shadow 0 -3 12 #1725471f
+                item t { title "0 degrees"; font-size 15; font-weight 700; text-color #0f121a }
+                item n { title "text colour does not follow it"; font-size 11; text-color #5a667e }
+            }
+        }
+
+        item Shadows {
+            auto-layout column
+            gap 16
+            padding 24
+            width fill
+            corner-radius 14
+            color #ffffff
+            item Lab { title "Shadow: offset, blur, colour"; font-size 14; font-weight 700 }
+            item Row {
+                auto-layout row
+                gap 24
+                align start
+                item Soft {
+                    auto-layout row; width 150; height 84; padding 12; corner-radius 10; color #ffffff
+                    shadow 0 -2 4 #17254726
+                    item t { title soft; font-size 12; text-color #5a667e }
+                }
+                item Deep {
+                    auto-layout row; width 150; height 84; padding 12; corner-radius 10; color #ffffff
+                    shadow 0 -10 24 #17254733
+                    item t { title "deep blur"; font-size 12; text-color #5a667e }
+                }
+                item Hard {
+                    auto-layout row; width 150; height 84; padding 12; corner-radius 10; color #ffffff
+                    // blur 0: a flat offset, the hard shadow of the old web
+                    shadow 6 -6 0 #17254726
+                    item t { title "hard offset"; font-size 12; text-color #5a667e }
+                }
+                item Tinted {
+                    auto-layout row; width 150; height 84; padding 12; corner-radius 10
+                    color linear 135 #6b3ad3 #2f6bff
+                    shadow 0 -8 18 #2f6bff59
+                    item t { title coloured; font-size 12; text-color #ffffff }
+                }
+                item Outlined {
+                    auto-layout row; width 150; height 84; padding 12; corner-radius 10; color #ffffff
+                    border-color #6b3ad3; line-width 2
+                    shadow 0 -6 14 #1725471f
+                    item t { title "border only"; font-size 12; text-color #5a667e }
+                }
+            }
+        }
+
+        item Actions {
+            auto-layout row
+            gap 12
+            align center
+            item Primary {
+                auto-layout row; padding 9 18; corner-radius 8
+                color linear 90 #6b3ad3 #cf13a2
+                shadow 0 -4 12 #cf13a24d
+                item t { title Publish; font-size 13; font-weight 600; text-color #ffffff }
+            }
+            item Ghost {
+                auto-layout row; padding 9 18; corner-radius 8; border-color #d1d5de; line-width 1
+                item t { title Preview; font-size 13 }
+            }
+        }
+    }
+}

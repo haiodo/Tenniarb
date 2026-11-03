@@ -1,0 +1,107 @@
+// Slots (spec 4.7a): one Dialog keeps three places for the caller - the unnamed body slot, the named
+// actions slot, and a fallback for each - and every instance fills them on its own. The third dialog
+// also uses `replace`: it swaps the body for a split view that declares a slot `fields`, which the same
+// `use` block fills, so a replaced part keeps its slot open to the caller.
+element "Dialog" {
+    kind Component
+    export let title = "Dialog"
+    export let confirm = "Save"
+
+    item Box {
+        auto-layout column
+        width 440
+        corner-radius 14
+        color #ffffff
+        border-color #e4e7ee
+        line-width 1
+        clip yes
+
+        item Header {
+            auto-layout row; width fill; padding 18 20; align center; justify space-between
+            item Title { title ${title}; font-size 16; font-weight 700 }
+            item Close { width 14; height 14; view-box 0 0 14 14; path "M2 2L12 12M12 2L2 12"; border-color #8a94a6; line-width 1.4 }
+        }
+        item Divider { width fill; height 1; color #eceff4 }
+
+        item Content {
+            auto-layout column
+            width fill
+            gap 10
+            // the unnamed slot: nodes written straight into the use block land here
+            slot {
+                item Fallback { auto-layout row; width fill; padding 20; item t { title "Nothing to confirm."; font-size 13; text-color #5a667e } }
+            }
+        }
+
+        item Actions {
+            auto-layout row; width fill; padding 16 20; gap 8; justify end
+            slot actions {
+                item Cancel { auto-layout row; padding 7 14; corner-radius 7; border-color #d1d5de; line-width 1; item t { title Cancel; font-size 13 } }
+                item Confirm { auto-layout row; padding 7 14; corner-radius 7; color #2f6bff; item t { title ${confirm}; font-size 13; text-color #ffffff } }
+            }
+        }
+    }
+}
+
+element "Dialogs" {
+    item canvas {
+        auto-layout row
+        gap 20
+        padding 32
+        wrap yes
+        align start
+        width 980
+        color #f6f7fb
+
+        // body slot and actions slot both filled
+        use Dialog as rename {
+            title "Rename workspace"
+            width 460
+            slot {
+                item Field {
+                    auto-layout column
+                    gap 6
+                    width fill
+                    padding 20
+                    item Label { title "Workspace name"; font-size 12; text-color #5a667e }
+                    item Input { auto-layout row; width fill; padding 7 10; corner-radius 6; border-color #2f6bff; line-width 1; item v { title Acme; font-size 14 } }
+                }
+            }
+            slot actions {
+                item Later { auto-layout row; padding 7 14; corner-radius 7; border-color #d1d5de; line-width 1; item t { title Cancel; font-size 13 } }
+                item Rename { auto-layout row; padding 7 14; corner-radius 7; color #2f6bff; item t { title Rename; font-size 13; text-color #ffffff } }
+            }
+        }
+
+        // nothing passed: both slots show their fallback
+        use Dialog as plain {
+            title "Delete invite"
+            confirm Delete
+            width 460
+        }
+
+        // body replaced: the replacement declares slot `fields`, filled from this same block
+        use Dialog as preview {
+            title "Preview campaign"
+            width 460
+            replace Box.Content {
+                item Split {
+                    auto-layout row; width fill; gap 14; padding 20
+                    item Shot { auto-layout row; align center; padding 12; width 140; height 92; corner-radius 8; color #c7d2fe; item t { title Spring; font-size 13; text-color #3730a3 } }
+                    item Fields {
+                        auto-layout column
+                        gap 8
+                        width fill
+                        slot fields {
+                            item Note { title "No fields"; font-size 12; text-color #8a94a6 }
+                        }
+                    }
+                }
+            }
+            slot fields {
+                item Name { auto-layout row; width fill; padding 6 9; corner-radius 6; border-color #d1d5de; line-width 1; item v { title "Spring launch"; font-size 13 } }
+                item Hint { title "1 284 recipients"; font-size 12; text-color #5a667e }
+            }
+        }
+    }
+}

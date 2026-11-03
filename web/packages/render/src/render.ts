@@ -8,7 +8,7 @@ import type { Rect, Size } from "./geometry.ts";
 import type { ImageDecoder } from "./images.ts";
 import { DrawableScene } from "./scene.ts";
 import { buildTennScene, isSceneElement } from "./scene-tenn.ts";
-import type { TennScene } from "./scene-tenn.ts";
+import type { SceneLoadOptions, TennScene } from "./scene-tenn.ts";
 import { AttributedString, layoutLines, setMeasureContext, systemFont } from "./text.ts";
 
 export interface RenderOptions {
@@ -26,6 +26,8 @@ export interface RenderOptions {
   decodeImage?: ImageDecoder;
   /** Context used to measure text when no earlier call has set one (buildScene/getSceneSize); renderElement uses its own. */
   measureContext?: Pick<Canvas2D, "font" | "measureText">;
+  /** The file the element was read from and how to read the files it mounts with `element --from-file`. */
+  files?: SceneLoadOptions;
 }
 
 /** utils.textSize: a frame of at most 1000 wide in the default font (CTFramesetterSuggestFrameSizeWithConstraints). */
@@ -70,7 +72,7 @@ class SceneView extends DrawableScene {
 
   constructor(element: Element, options: RenderOptions) {
     super(element, options.darkMode ?? false, null, {});
-    this.tenn = buildTennScene(element);
+    this.tenn = buildTennScene(element, options.files);
   }
 
   /** The classic item renderer has nothing to build: this scene draws its own nodes. */

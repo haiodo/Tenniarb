@@ -1,0 +1,548 @@
+{
+  "element": "Palette",
+  "height": 290,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Palette",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 290,
+        "w": 520,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f8fb",
+      "gradient": null,
+      "name": "sheet",
+      "opacity": 1,
+      "path": "sheet",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 290,
+        "w": 520,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "sheet.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 42,
+        "w": 353,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "sheet.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 25,
+        "w": 159,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": [
+        "Theme sheet"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Note",
+      "opacity": 1,
+      "path": "sheet.Head.Note",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 353,
+        "x": 32,
+        "y": 61
+      },
+      "shadow": null,
+      "text": [
+        "Every look below is a named style of this element"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "sheet.Card",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 164,
+        "w": 366,
+        "x": 32,
+        "y": 94
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Row",
+      "opacity": 1,
+      "path": "sheet.Card.Row",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 21,
+        "w": 207,
+        "x": 48,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "primary",
+      "opacity": 1,
+      "path": "sheet.Card.Row.primary",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 21,
+        "w": 71,
+        "x": 48,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b3ad3",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "sheet.Card.Row.primary.Box",
+      "radius": [
+        10.5,
+        10.5,
+        10.5,
+        10.5
+      ],
+      "rect": {
+        "h": 21,
+        "w": 71,
+        "x": 48,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "sheet.Card.Row.primary.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 51,
+        "x": 58,
+        "y": 114
+      },
+      "shadow": null,
+      "text": [
+        "Primary"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "quiet",
+      "opacity": 1,
+      "path": "sheet.Card.Row.quiet",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 21,
+        "w": 56,
+        "x": 127,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "sheet.Card.Row.quiet.Box",
+      "radius": [
+        10.5,
+        10.5,
+        10.5,
+        10.5
+      ],
+      "rect": {
+        "h": 21,
+        "w": 56,
+        "x": 127,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "sheet.Card.Row.quiet.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 36,
+        "x": 137,
+        "y": 114
+      },
+      "shadow": null,
+      "text": [
+        "Quiet"
+      ],
+      "textColor": "#0f121a"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "danger",
+      "opacity": 1,
+      "path": "sheet.Card.Row.danger",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 21,
+        "w": 64,
+        "x": 191,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "sheet.Card.Row.danger.Box",
+      "radius": [
+        10.5,
+        10.5,
+        10.5,
+        10.5
+      ],
+      "rect": {
+        "h": 21,
+        "w": 64,
+        "x": 191,
+        "y": 110
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "sheet.Card.Row.danger.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 201,
+        "y": 114
+      },
+      "shadow": null,
+      "text": [
+        "Danger"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef1f7",
+      "gradient": null,
+      "name": "Well",
+      "opacity": 1,
+      "path": "sheet.Card.Well",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 57,
+        "w": 334,
+        "x": 48,
+        "y": 143
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "WellTitle",
+      "opacity": 1,
+      "path": "sheet.Card.Well.WellTitle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 60,
+        "y": 155
+      },
+      "shadow": null,
+      "text": [
+        "Sunken well"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "WellNote",
+      "opacity": 1,
+      "path": "sheet.Card.Well.WellNote",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 310,
+        "x": 60,
+        "y": 175
+      },
+      "shadow": null,
+      "text": [
+        "One style, two nodes, no copy of the colour"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cb4b42",
+      "gradient": null,
+      "name": "Banner",
+      "opacity": 1,
+      "path": "sheet.Card.Banner",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 30,
+        "w": 334,
+        "x": 48,
+        "y": 212
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "sheet.Card.Banner.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 258,
+        "x": 60,
+        "y": 220
+      },
+      "shadow": null,
+      "text": [
+        "Payment failed - retry the charge"
+      ],
+      "textColor": "#ffffff"
+    }
+  ],
+  "width": 520
+}

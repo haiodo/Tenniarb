@@ -1,0 +1,934 @@
+{
+  "element": "Inbox",
+  "height": 453,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Inbox",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 453,
+        "w": 640,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f6f7fb",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 453,
+        "w": 640,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "canvas.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 23,
+        "w": 576,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 23,
+        "w": 93,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": [
+        "Invites"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "pending",
+      "opacity": 1,
+      "path": "canvas.Head.pending",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 49,
+        "x": 559,
+        "y": 35.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.Head.pending.Box",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 16,
+        "w": 49,
+        "x": 559,
+        "y": 35.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Head.pending.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 33,
+        "x": 567,
+        "y": 37.5
+      },
+      "shadow": null,
+      "text": [
+        "3 new"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "invite",
+      "opacity": 1,
+      "path": "canvas.invite",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 132,
+        "w": 576,
+        "x": 32,
+        "y": 71
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "canvas.invite.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 156,
+        "x": 48,
+        "y": 87
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.invite.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 99,
+        "x": 48,
+        "y": 87
+      },
+      "shadow": null,
+      "text": [
+        "Design team"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "role",
+      "opacity": 1,
+      "path": "canvas.invite.Head.role",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 49,
+        "x": 155,
+        "y": 87
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e8f6ee",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.invite.Head.role.Box",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 16,
+        "w": 49,
+        "x": 155,
+        "y": 87
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.invite.Head.role.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 33,
+        "x": 163,
+        "y": 89
+      },
+      "shadow": null,
+      "text": [
+        "Admin"
+      ],
+      "textColor": "#0f9d58"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Person",
+      "opacity": 1,
+      "path": "canvas.invite.Person",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 32,
+        "w": 544,
+        "x": 48,
+        "y": 115
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#c7d2fe",
+      "gradient": null,
+      "name": "Avatar",
+      "opacity": 1,
+      "path": "canvas.invite.Person.Avatar",
+      "radius": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 48,
+        "y": 115
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Initials",
+      "opacity": 1,
+      "path": "canvas.invite.Person.Avatar.Initials",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 15,
+        "x": 56.5,
+        "y": 124.5
+      },
+      "shadow": null,
+      "text": [
+        "AL"
+      ],
+      "textColor": "#3730a3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Who",
+      "opacity": 1,
+      "path": "canvas.invite.Person.Who",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 108,
+        "x": 90,
+        "y": 116
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "canvas.invite.Person.Who.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 101,
+        "x": 90,
+        "y": 116
+      },
+      "shadow": null,
+      "text": [
+        "Ada Lovelace"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Mail",
+      "opacity": 1,
+      "path": "canvas.invite.Person.Who.Mail",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 108,
+        "x": 90,
+        "y": 133
+      },
+      "shadow": null,
+      "text": [
+        "ada@example.com"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Foot",
+      "opacity": 1,
+      "path": "canvas.invite.Foot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 544,
+        "x": 48,
+        "y": 159
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "later",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.later",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 67,
+        "x": 442,
+        "y": 159
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.later.Btn",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 67,
+        "x": 442,
+        "y": 159
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.later.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 39,
+        "x": 456,
+        "y": 166
+      },
+      "shadow": null,
+      "text": [
+        "Later"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "accept",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.accept",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 517,
+        "y": 159
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#2f6bff",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.accept.Btn",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 517,
+        "y": 159
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.invite.Foot.accept.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 531,
+        "y": 166
+      },
+      "shadow": null,
+      "text": [
+        "Accept"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "expired",
+      "opacity": 1,
+      "path": "canvas.expired",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 128,
+        "w": 576,
+        "x": 32,
+        "y": 219
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.expired.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 63,
+        "x": 48,
+        "y": 235
+      },
+      "shadow": null,
+      "text": [
+        "Billing"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Note",
+      "opacity": 1,
+      "path": "canvas.expired.Note",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 300,
+        "x": 48,
+        "y": 263
+      },
+      "shadow": null,
+      "text": [
+        "Your card expired on 12 October.",
+        "Update it to keep the workspace."
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Foot",
+      "opacity": 1,
+      "path": "canvas.expired.Foot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 544,
+        "x": 48,
+        "y": 303
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "update",
+      "opacity": 1,
+      "path": "canvas.expired.Foot.update",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 114,
+        "x": 48,
+        "y": 303
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#2f6bff",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Btn",
+      "opacity": 1,
+      "path": "canvas.expired.Foot.update.Btn",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 114,
+        "x": 48,
+        "y": 303
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.expired.Foot.update.Btn.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 62,
+        "y": 310
+      },
+      "shadow": null,
+      "text": [
+        "Update card"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "empty",
+      "opacity": 1,
+      "path": "canvas.empty",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 58,
+        "w": 576,
+        "x": 32,
+        "y": 363
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Empty",
+      "opacity": 1,
+      "path": "canvas.empty.Empty",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 125,
+        "x": 48,
+        "y": 379
+      },
+      "shadow": null,
+      "text": [
+        "Nothing here yet"
+      ],
+      "textColor": "#9ca3af"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Foot",
+      "opacity": 1,
+      "path": "canvas.empty.Foot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 544,
+        "x": 48,
+        "y": 405
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    }
+  ],
+  "width": 640
+}

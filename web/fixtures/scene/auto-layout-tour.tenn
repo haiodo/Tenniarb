@@ -1,0 +1,100 @@
+// Auto-layout end to end: a fixed sidebar and a filling content column in one row, a header that hugs
+// its text, rows that fill the width, a tag line that wraps inside 320, and a spacer that pushes the
+// footer down. A size is `hug` (the default), a number or `fill`; `fill` needs a parent that knows its
+// size, which is why the window has a fixed width and height.
+element "Settings" {
+    item Window {
+        auto-layout row
+        width 780
+        height 520
+        corner-radius 12
+        color #ffffff
+        border-color #d1d5de
+        line-width 1
+        clip yes
+
+        item Sidebar {
+            auto-layout column
+            width 208
+            height fill
+            padding 14
+            gap 2
+            color #f7f8fb
+            item Brand { title Acme; font-size 15; font-weight 700 }
+            item Nav1 { auto-layout row; width fill; padding 7 10; corner-radius 6; color #e7ebf5; item t { title General; font-size 13; font-weight 600 } }
+            item Nav2 { auto-layout row; width fill; padding 7 10; corner-radius 6; item t { title Members; font-size 13 } }
+            item Nav3 { auto-layout row; width fill; padding 7 10; corner-radius 6; item t { title Billing; font-size 13 } }
+            // fill on the main axis of a column: the spacer takes the rest, the version goes down
+            item Grow { height fill }
+            item Version { title "v2.0.1"; font-size 11; text-color #8a94a6 }
+        }
+
+        item Main {
+            auto-layout column
+            width fill
+            height fill
+
+            item Head {
+                auto-layout row; width fill; padding 18 22; align center; justify space-between
+                item Title { title General; font-size 18; font-weight 700 }
+                item Save {
+                    auto-layout row; padding 6 12; corner-radius 6; color #2f6bff
+                    item t { title "Save changes"; font-size 13; text-color #ffffff }
+                }
+            }
+            item Divider { width fill; height 1; color #eceff4 }
+
+            item Body {
+                auto-layout column
+                width fill
+                height fill
+                padding 22
+                gap 16
+
+                // label at a fixed width, the field takes the rest of the row
+                item NameRow {
+                    auto-layout row; width fill; gap 12; align center
+                    item Label { title "Workspace name"; width 140; font-size 13; text-color #5a667e }
+                    item Field {
+                        auto-layout row; width fill; padding 7 10; corner-radius 6; border-color #d1d5de; line-width 1
+                        item v { title "Acme design"; font-size 13 }
+                    }
+                }
+                item MailRow {
+                    auto-layout row; width fill; gap 12; align center
+                    item Label { title "Billing email"; width 140; font-size 13; text-color #5a667e }
+                    item Field {
+                        auto-layout row; width fill; padding 7 10; corner-radius 6; border-color #d1d5de; line-width 1
+                        item v { title "billing@acme.test"; font-size 13 }
+                    }
+                }
+
+                item TagsBlock {
+                    auto-layout column
+                    gap 8
+                    width fill
+                    item Label { title Labels; font-size 13; font-weight 600 }
+                    // a row that wraps: its width is known, so the fifth tag drops to the next line
+                    item Tags {
+                        auto-layout row; width 320; wrap yes; gap 8; line-gap 8
+                        item Tag1 { auto-layout row; padding 3 8; corner-radius 12; color #eef2ff; item t { title design; font-size 12; text-color #2f6bff } }
+                        item Tag2 { auto-layout row; padding 3 8; corner-radius 12; color #eef2ff; item t { title research; font-size 12; text-color #2f6bff } }
+                        item Tag3 { auto-layout row; padding 3 8; corner-radius 12; color #eef2ff; item t { title billing; font-size 12; text-color #2f6bff } }
+                        item Tag4 { auto-layout row; padding 3 8; corner-radius 12; color #eef2ff; item t { title launch; font-size 12; text-color #2f6bff } }
+                        item Tag5 { auto-layout row; padding 3 8; corner-radius 12; color #eef2ff; item t { title archive; font-size 12; text-color #2f6bff } }
+                    }
+                }
+
+                item Grow { height fill }
+                item Footer {
+                    auto-layout row; width fill; align center; justify space-between
+                    item Hint { title "Changes are saved automatically"; font-size 12; text-color #8a94a6 }
+                    item Delete {
+                        auto-layout row; padding 6 12; corner-radius 6; border-color #f0c4c1; line-width 1
+                        item t { title "Delete workspace"; font-size 13; text-color #cb4b42 }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,1287 @@
+{
+  "element": "Dialogs",
+  "height": 680,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Dialogs",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 680,
+        "w": 980,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f6f7fb",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 680,
+        "w": 980,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "rename",
+      "opacity": 1,
+      "path": "canvas.rename",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 202,
+        "w": 460,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.rename.Box",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 202,
+        "w": 440,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Header",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Header",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 53,
+        "w": 440,
+        "x": 32,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Header.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 17,
+        "w": 154,
+        "x": 52,
+        "y": 50
+      },
+      "shadow": null,
+      "text": [
+        "Rename workspace"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#8a94a6",
+      "borderWidth": 1.4,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Close",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Header.Close",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 14,
+        "x": 438,
+        "y": 51.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff4",
+      "gradient": null,
+      "name": "Divider",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 440,
+        "x": 32,
+        "y": 85
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Content",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Content",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 88,
+        "w": 440,
+        "x": 32,
+        "y": 86
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Field",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Content.Field",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 88,
+        "w": 440,
+        "x": 32,
+        "y": 86
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Content.Field.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 101,
+        "x": 52,
+        "y": 106
+      },
+      "shadow": null,
+      "text": [
+        "Workspace name"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": "#2f6bff",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Input",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Content.Field.Input",
+      "radius": [
+        5.5,
+        5.5,
+        5.5,
+        5.5
+      ],
+      "rect": {
+        "h": 29,
+        "w": 400,
+        "x": 52,
+        "y": 125
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Content.Field.Input.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 15,
+        "w": 34,
+        "x": 62,
+        "y": 132
+      },
+      "shadow": null,
+      "text": [
+        "Acme"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Actions",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Actions",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 440,
+        "x": 32,
+        "y": 174
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Later",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Actions.Later",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 294,
+        "y": 190
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Actions.Later.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 308,
+        "y": 197
+      },
+      "shadow": null,
+      "text": [
+        "Cancel"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Rename",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Actions.Rename",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 377,
+        "y": 190
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.rename.Box.Actions.Rename.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 391,
+        "y": 197
+      },
+      "shadow": null,
+      "text": [
+        "Rename"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "plain",
+      "opacity": 1,
+      "path": "canvas.plain",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 168,
+        "w": 460,
+        "x": 32,
+        "y": 234
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.plain.Box",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 168,
+        "w": 440,
+        "x": 32,
+        "y": 234
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Header",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Header",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 53,
+        "w": 440,
+        "x": 32,
+        "y": 234
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Header.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 17,
+        "w": 125,
+        "x": 52,
+        "y": 252
+      },
+      "shadow": null,
+      "text": [
+        "Delete invite"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#8a94a6",
+      "borderWidth": 1.4,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Close",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Header.Close",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 14,
+        "x": 438,
+        "y": 253.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff4",
+      "gradient": null,
+      "name": "Divider",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 440,
+        "x": 32,
+        "y": 287
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Content",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Content",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 54,
+        "w": 440,
+        "x": 32,
+        "y": 288
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Fallback",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Content.Fallback",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 54,
+        "w": 440,
+        "x": 32,
+        "y": 288
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Content.Fallback.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 149,
+        "x": 52,
+        "y": 308
+      },
+      "shadow": null,
+      "text": [
+        "Nothing to confirm."
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Actions",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Actions",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 440,
+        "x": 32,
+        "y": 342
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cancel",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Actions.Cancel",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 294,
+        "y": 358
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Actions.Cancel.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 308,
+        "y": 365
+      },
+      "shadow": null,
+      "text": [
+        "Cancel"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Confirm",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Actions.Confirm",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 377,
+        "y": 358
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.plain.Box.Actions.Confirm.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 391,
+        "y": 365
+      },
+      "shadow": null,
+      "text": [
+        "Delete"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "preview",
+      "opacity": 1,
+      "path": "canvas.preview",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 246,
+        "w": 460,
+        "x": 32,
+        "y": 402
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.preview.Box",
+      "radius": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "rect": {
+        "h": 246,
+        "w": 440,
+        "x": 32,
+        "y": 402
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Header",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Header",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 53,
+        "w": 440,
+        "x": 32,
+        "y": 402
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Header.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 17,
+        "w": 154,
+        "x": 52,
+        "y": 420
+      },
+      "shadow": null,
+      "text": [
+        "Preview campaign"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#8a94a6",
+      "borderWidth": 1.4,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Close",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Header.Close",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 14,
+        "x": 438,
+        "y": 421.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff4",
+      "gradient": null,
+      "name": "Divider",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 440,
+        "x": 32,
+        "y": 455
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Split",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 132,
+        "w": 440,
+        "x": 32,
+        "y": 456
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#c7d2fe",
+      "gradient": null,
+      "name": "Shot",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Shot",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 92,
+        "w": 140,
+        "x": 52,
+        "y": 476
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Shot.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 64,
+        "y": 515
+      },
+      "shadow": null,
+      "text": [
+        "Spring"
+      ],
+      "textColor": "#3730a3"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Fields",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Fields",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 47,
+        "w": 246,
+        "x": 206,
+        "y": 476
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Fields.Name",
+      "radius": [
+        5.5,
+        5.5,
+        5.5,
+        5.5
+      ],
+      "rect": {
+        "h": 26,
+        "w": 246,
+        "x": 206,
+        "y": 476
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Fields.Name.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 102,
+        "x": 215,
+        "y": 482
+      },
+      "shadow": null,
+      "text": [
+        "Spring launch"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Hint",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Split.Fields.Hint",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 116,
+        "x": 206,
+        "y": 510
+      },
+      "shadow": null,
+      "text": [
+        "1 284 recipients"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Actions",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Actions",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 440,
+        "x": 32,
+        "y": 588
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Cancel",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Actions.Cancel",
+      "radius": [
+        6.5,
+        6.5,
+        6.5,
+        6.5
+      ],
+      "rect": {
+        "h": 28,
+        "w": 75,
+        "x": 309,
+        "y": 604
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Actions.Cancel.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 323,
+        "y": 611
+      },
+      "shadow": null,
+      "text": [
+        "Cancel"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Confirm",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Actions.Confirm",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 28,
+        "w": 60,
+        "x": 392,
+        "y": 604
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.preview.Box.Actions.Confirm.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 32,
+        "x": 406,
+        "y": 611
+      },
+      "shadow": null,
+      "text": [
+        "Save"
+      ],
+      "textColor": "#ffffff"
+    }
+  ],
+  "width": 980
+}

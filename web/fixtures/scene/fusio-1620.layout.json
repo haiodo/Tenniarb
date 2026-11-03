@@ -1,0 +1,2442 @@
+{
+  "element": "4 Профиль",
+  "height": 1080,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "4 Профиль",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Screen",
+      "opacity": 1,
+      "path": "Screen",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#f1f1f4",
+      "gradient": null,
+      "name": "Page",
+      "opacity": 1,
+      "path": "Screen.Page",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Login background",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0b0123",
+      "gradient": {
+        "angle": 180,
+        "stops": [
+          {
+            "color": "#0b0123",
+            "offset": 0
+          },
+          {
+            "color": "#170134",
+            "offset": 0.33
+          },
+          {
+            "color": "#250932",
+            "offset": 0.66
+          },
+          {
+            "color": "#100118",
+            "offset": 1
+          }
+        ]
+      },
+      "name": "sky",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.sky",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2e0f52",
+      "gradient": null,
+      "name": "ball top",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.ball_top",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#4a2070",
+      "gradient": null,
+      "name": "ball small",
+      "opacity": 0.5,
+      "path": "Screen.Page.Login_background.ball_small",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#431870",
+      "gradient": null,
+      "name": "ball big",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.ball_big",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f5f4f5",
+      "gradient": null,
+      "name": "oval",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.oval",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#6b1f8a",
+      "gradient": null,
+      "name": "ball left",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.ball_left",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#3c1250",
+      "gradient": null,
+      "name": "pin shadow",
+      "opacity": 0.5,
+      "path": "Screen.Page.Login_background.pin_shadow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f760d3",
+      "gradient": null,
+      "name": "pin body",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.pin_body",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#d43cb0",
+      "gradient": null,
+      "name": "pin rim",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.pin_rim",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#c0289c",
+      "gradient": null,
+      "name": "pin base",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.pin_base",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f760d3",
+      "gradient": null,
+      "name": "pin head",
+      "opacity": 1,
+      "path": "Screen.Page.Login_background.pin_head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Logo",
+      "opacity": 1,
+      "path": "Screen.Page.Logo",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "path 1",
+      "opacity": 1,
+      "path": "Screen.Page.Logo.path_1",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "path 2",
+      "opacity": 1,
+      "path": "Screen.Page.Logo.path_2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#cf13a2",
+      "gradient": null,
+      "name": "path 3",
+      "opacity": 1,
+      "path": "Screen.Page.Logo.path_3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "path 4",
+      "opacity": 1,
+      "path": "Screen.Page.Logo.path_4",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "path 5",
+      "opacity": 1,
+      "path": "Screen.Page.Logo.path_5",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 235,
+        "x": 44,
+        "y": 48
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": null,
+      "gradient": null,
+      "name": "Copyright",
+      "opacity": 1,
+      "path": "Screen.Page.Copyright",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 181,
+        "x": 28,
+        "y": 1045.5
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "© 2026,",
+      "opacity": 1,
+      "path": "Screen.Page.Copyright.__2026_",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 59,
+        "x": 28,
+        "y": 1045.5
+      },
+      "shadow": null,
+      "text": [
+        "© 2026,"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Intabia Fusion",
+      "opacity": 1,
+      "path": "Screen.Page.Copyright.Intabia_Fusion",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 118,
+        "x": 91,
+        "y": 1045.5
+      },
+      "shadow": null,
+      "text": [
+        "Intabia Fusion"
+      ],
+      "textColor": "#333333"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Top bar",
+      "opacity": 1,
+      "path": "Screen.Page.Top_bar",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 36,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Novosibirsk",
+      "opacity": 1,
+      "path": "Screen.Page.Top_bar.Novosibirsk",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 86,
+        "x": 1743,
+        "y": 9
+      },
+      "shadow": null,
+      "text": [
+        "Novosibirsk"
+      ],
+      "textColor": "#000000cc"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "_16:56",
+      "opacity": 1,
+      "path": "Screen.Page.Top_bar._16_56",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 39,
+        "x": 1817,
+        "y": 9
+      },
+      "shadow": null,
+      "text": [
+        "16:56"
+      ],
+      "textColor": "#000000cc"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#05a05c",
+      "gradient": null,
+      "name": "icon/kit/Wifi",
+      "opacity": 1,
+      "path": "Screen.Page.Top_bar.icon_kit_Wifi",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 1868,
+        "y": 10
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#00000099",
+      "gradient": null,
+      "name": "icon/kit/Gear",
+      "opacity": 1,
+      "path": "Screen.Page.Top_bar.icon_kit_Gear",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 1898,
+        "y": 10
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Cabinet",
+      "opacity": 1,
+      "path": "Screen.Cabinet",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 720,
+        "w": 1180,
+        "x": 370,
+        "y": 180
+      },
+      "shadow": {
+        "blur": 40,
+        "color": "#00000026",
+        "dx": 0,
+        "dy": -12
+      },
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f7fa",
+      "gradient": null,
+      "name": "Sidebar",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 720,
+        "w": 248,
+        "x": 370,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Account",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 56,
+        "w": 216,
+        "x": 386,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#6b3ad31a",
+      "gradient": null,
+      "name": "Avatar",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Avatar",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 394,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "initials",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Avatar.initials",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 10,
+        "w": 17,
+        "x": 399.5,
+        "y": 219
+      },
+      "shadow": null,
+      "text": [
+        "АС"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#00000099",
+      "gradient": null,
+      "name": "icon/kit/PersonCircle",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Avatar.icon_kit_PersonCircle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 12,
+        "x": 416.5,
+        "y": 218
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Account_text",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Account_text",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 36,
+        "w": 116,
+        "x": 446,
+        "y": 206
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Account_text.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 110,
+        "x": 446,
+        "y": 206
+      },
+      "shadow": null,
+      "text": [
+        "Алекс Смирнов"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Email",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Account.Account_text.Email",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 116,
+        "x": 446,
+        "y": 226
+      },
+      "shadow": null,
+      "text": [
+        "alex@example.com"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#efdcf2",
+      "gradient": null,
+      "name": "Profile",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Profile",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 40,
+        "w": 216,
+        "x": 386,
+        "y": 268
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#5c6470",
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Profile.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 280
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Profile.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 59,
+        "x": 426,
+        "y": 278
+      },
+      "shadow": null,
+      "text": [
+        "Профиль"
+      ],
+      "textColor": "#7d1f70"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Workspaces",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Workspaces",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 216,
+        "x": 386,
+        "y": 316
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#5c6470",
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Workspaces.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 328
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Workspaces.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 101,
+        "x": 426,
+        "y": 326
+      },
+      "shadow": null,
+      "text": [
+        "Пространства"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Subscriptions",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Subscriptions",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 216,
+        "x": 386,
+        "y": 364
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#5c6470",
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Subscriptions.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 376
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Subscriptions.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 68,
+        "x": 426,
+        "y": 374
+      },
+      "shadow": null,
+      "text": [
+        "Подписки"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Security",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Security",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 216,
+        "x": 386,
+        "y": 412
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#5c6470",
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Security.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 424
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Security.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 101,
+        "x": 426,
+        "y": 422
+      },
+      "shadow": null,
+      "text": [
+        "Безопасность"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 372,
+        "w": 0,
+        "x": 386,
+        "y": 460
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sign_out",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Sign_out",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 216,
+        "x": 386,
+        "y": 840
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#5c6470",
+      "gradient": null,
+      "name": "Icon",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Sign_out.Icon",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 16,
+        "x": 398,
+        "y": 852
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Sidebar.Sign_out.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 42,
+        "x": 426,
+        "y": 850
+      },
+      "shadow": null,
+      "text": [
+        "Выйти"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Main",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 720,
+        "w": 932,
+        "x": 618,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Header",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 88,
+        "w": 932,
+        "x": 618,
+        "y": 180
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Header_text",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.Header_text",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 52,
+        "w": 336,
+        "x": 650,
+        "y": 198
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.Header_text.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 101,
+        "x": 650,
+        "y": 198
+      },
+      "shadow": null,
+      "text": [
+        "Профиль"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Subtitle",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.Header_text.Subtitle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 336,
+        "x": 650,
+        "y": 232
+      },
+      "shadow": null,
+      "text": [
+        "Так вас видят другие пользователи платформы"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "grow",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 0,
+        "w": 358,
+        "x": 1002,
+        "y": 224
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#1725471a",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#1725470d",
+      "gradient": null,
+      "name": "Edit",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.Edit",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 142,
+        "x": 1376,
+        "y": 204
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Button",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Header.Edit.Button",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 110,
+        "x": 1392,
+        "y": 216
+      },
+      "shadow": null,
+      "text": [
+        "Редактировать"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#00000012",
+      "gradient": null,
+      "name": "divider",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 932,
+        "x": 618,
+        "y": 268
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Content",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 631,
+        "w": 932,
+        "x": 618,
+        "y": 269
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f8f5fa",
+      "gradient": null,
+      "name": "Public_card",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 126,
+        "w": 868,
+        "x": 650,
+        "y": 297
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": true,
+      "fill": "#6b3ad31a",
+      "gradient": null,
+      "name": "Avatar",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Avatar",
+      "radius": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "rect": {
+        "h": 72,
+        "w": 72,
+        "x": 674,
+        "y": 324
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "initials",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Avatar.initials",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 10,
+        "w": 29,
+        "x": 689.5,
+        "y": 355
+      },
+      "shadow": null,
+      "text": [
+        "АС"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#00000099",
+      "gradient": null,
+      "name": "icon/kit/PersonCircle",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Avatar.icon_kit_PersonCircle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 12,
+        "x": 718.5,
+        "y": 354
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Public_text",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_text",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 78,
+        "w": 623,
+        "x": 766,
+        "y": 321
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_text.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 172,
+        "x": 766,
+        "y": 321
+      },
+      "shadow": null,
+      "text": [
+        "Алекс Смирнов"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Bio",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_text.Bio",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 572,
+        "x": 766,
+        "y": 355
+      },
+      "shadow": null,
+      "text": [
+        "Продуктовый дизайнер. Интерфейсы, дизайн-системы и прототипирование."
+      ],
+      "textColor": "#5c6470"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Place",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_text.Place",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 149,
+        "x": 766,
+        "y": 381
+      },
+      "shadow": null,
+      "text": [
+        "Новосибирск, Россия"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e7f4ed",
+      "gradient": null,
+      "name": "Public_badge",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_badge",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 26,
+        "w": 85,
+        "x": 1409,
+        "y": 347
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Public_card.Public_badge.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 65,
+        "x": 1419,
+        "y": 352
+      },
+      "shadow": null,
+      "text": [
+        "Публичный"
+      ],
+      "textColor": "#26815c"
+    },
+    {
+      "border": "#00000014",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Fields",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields",
+      "radius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "rect": {
+        "h": 232,
+        "w": 868,
+        "x": 650,
+        "y": 447
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Name",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Name",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 44,
+        "w": 828,
+        "x": 670,
+        "y": 451
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Name.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 160,
+        "x": 670,
+        "y": 464
+      },
+      "shadow": null,
+      "text": [
+        "Имя"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Name.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 644,
+        "x": 854,
+        "y": 463
+      },
+      "shadow": null,
+      "text": [
+        "Алекс Смирнов"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0000000f",
+      "gradient": null,
+      "name": "divider",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 828,
+        "x": 670,
+        "y": 495
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Username",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Username",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 44,
+        "w": 828,
+        "x": 670,
+        "y": 496
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Username.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 160,
+        "x": 670,
+        "y": 509
+      },
+      "shadow": null,
+      "text": [
+        "Имя пользователя"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Username.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 644,
+        "x": 854,
+        "y": 508
+      },
+      "shadow": null,
+      "text": [
+        "@alex"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0000000f",
+      "gradient": null,
+      "name": "divider_2",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.divider_2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 828,
+        "x": 670,
+        "y": 540
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Email",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Email",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 44,
+        "w": 828,
+        "x": 670,
+        "y": 541
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Email.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 160,
+        "x": 670,
+        "y": 554
+      },
+      "shadow": null,
+      "text": [
+        "Email"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Email.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 644,
+        "x": 854,
+        "y": 553
+      },
+      "shadow": null,
+      "text": [
+        "alex@example.com"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0000000f",
+      "gradient": null,
+      "name": "divider_3",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.divider_3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 828,
+        "x": 670,
+        "y": 585
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "City",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.City",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 44,
+        "w": 828,
+        "x": 670,
+        "y": 586
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.City.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 160,
+        "x": 670,
+        "y": 599
+      },
+      "shadow": null,
+      "text": [
+        "Город"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.City.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 644,
+        "x": 854,
+        "y": 598
+      },
+      "shadow": null,
+      "text": [
+        "Новосибирск"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0000000f",
+      "gradient": null,
+      "name": "divider_4",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.divider_4",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 828,
+        "x": 670,
+        "y": 630
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Country",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Country",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 44,
+        "w": 828,
+        "x": 670,
+        "y": 631
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Country.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 160,
+        "x": 670,
+        "y": 644
+      },
+      "shadow": null,
+      "text": [
+        "Страна"
+      ],
+      "textColor": "#7f7f7f"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Value",
+      "opacity": 1,
+      "path": "Screen.Cabinet.Main.Content.Fields.Country.Value",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 644,
+        "x": 854,
+        "y": 643
+      },
+      "shadow": null,
+      "text": [
+        "Россия"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 1920
+}

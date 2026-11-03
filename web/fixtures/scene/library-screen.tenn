@@ -1,0 +1,85 @@
+// A screen that mounts a library file next to it: `element "kit" --from-file "design-kit.tenn"`
+// puts every component of that file under the name `kit`, so the screen below writes
+// `use kit.Card as …` and fills its slots. The library text lives in design-kit.tenn only.
+element "kit" --from-file "design-kit.tenn"
+
+element "Inbox" {
+    item canvas {
+        auto-layout column
+        gap 16
+        padding 32
+        width 640
+        color #f6f7fb
+
+        item Head {
+            auto-layout row
+            width fill
+            align center
+            justify space-between
+            item Title { title "Invites"; font-size 22; font-weight 700 }
+            use kit.Badge as pending { label "3 new"; tone info }
+        }
+
+        use kit.Card as invite {
+            width fill
+            slot header {
+                item Head {
+                    auto-layout row
+                    gap 8
+                    align center
+                    item Title { title "Design team"; font-size 15; font-weight 600 }
+                    use kit.Badge as role { label "Admin"; tone ok }
+                }
+            }
+            item Person {
+                auto-layout row
+                width fill
+                gap 10
+                align center
+                item Avatar {
+                    auto-layout row
+                    align center
+                    justify center
+                    width 32
+                    height 32
+                    corner-radius 16
+                    color #c7d2fe
+                    item Initials { title "AL"; font-size 12; font-weight 700; text-color #3730a3 }
+                }
+                item Who {
+                    auto-layout column
+                    gap 2
+                    item Name { title "Ada Lovelace"; font-size 14; font-weight 600 }
+                    item Mail { title "ada@example.com"; font-size 12; text-color #5a667e }
+                }
+            }
+            slot actions {
+                use kit.Button as later { label "Later"; tone quiet }
+                use kit.Button as accept { label "Accept" }
+            }
+        }
+
+        use kit.Card as expired {
+            width fill
+            slot header {
+                item Title { title "Billing"; font-size 15; font-weight 600 }
+            }
+            at Foot { justify start }
+            item Note {
+                title "Your card expired on 12 October. Update it to keep the workspace.";
+                width 300
+                font-size 13
+                layout left
+                text-color #5a667e
+            }
+            slot actions {
+                use kit.Button as update { label "Update card" }
+            }
+        }
+
+        // no slots filled: the unnamed slot shows its fallback and the action row stays empty
+        use kit.Card as empty {
+            width fill
+        }
+    }
+}

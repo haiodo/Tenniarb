@@ -20,6 +20,10 @@ export interface RenderTennOptions {
   scale?: number;
   background?: string;
   darkMode?: boolean;
+  /** The file the text was read from, a slash path relative to the workspace root; "" by default. */
+  file?: string;
+  /** Reads a file mounted by `element --from-file`; null when it cannot be read. */
+  readFile?: (path: string) => string | null;
 }
 
 export class TennParseError extends Error {
@@ -86,7 +90,13 @@ export async function renderTenn(text: string, options: RenderTennOptions): Prom
       }
       return { image: img, width: img.width, height: img.height };
     });
-    const opts: RenderOptions = { decodeImage, background: options.background, darkMode: options.darkMode, measureContext: measureCtx as Canvas2D };
+    const opts: RenderOptions = {
+      decodeImage,
+      background: options.background,
+      darkMode: options.darkMode,
+      measureContext: measureCtx as Canvas2D,
+      files: { file: options.file, readFile: options.readFile, source: text },
+    };
     const size = getSceneSize(el, opts);
     const w = Math.ceil(size.width - 30 + EXTRA);
     const h = Math.ceil(size.height - 30 + EXTRA);

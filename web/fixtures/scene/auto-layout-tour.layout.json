@@ -1,0 +1,1170 @@
+{
+  "element": "Settings",
+  "height": 520,
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Settings",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 520,
+        "w": 780,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": true,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Window",
+      "opacity": 1,
+      "path": "Window",
+      "radius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "rect": {
+        "h": 520,
+        "w": 780,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f8fb",
+      "gradient": null,
+      "name": "Sidebar",
+      "opacity": 1,
+      "path": "Window.Sidebar",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 520,
+        "w": 208,
+        "x": 0,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Brand",
+      "opacity": 1,
+      "path": "Window.Sidebar.Brand",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 16,
+        "w": 36,
+        "x": 14,
+        "y": 14
+      },
+      "shadow": null,
+      "text": [
+        "Acme"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#e7ebf5",
+      "gradient": null,
+      "name": "Nav1",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav1",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 28,
+        "w": 180,
+        "x": 14,
+        "y": 32
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav1.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 24,
+        "y": 39
+      },
+      "shadow": null,
+      "text": [
+        "General"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nav2",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav2",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 180,
+        "x": 14,
+        "y": 62
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav2.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 24,
+        "y": 69
+      },
+      "shadow": null,
+      "text": [
+        "Members"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nav3",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav3",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 180,
+        "x": 14,
+        "y": 92
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Sidebar.Nav3.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 55,
+        "x": 24,
+        "y": 99
+      },
+      "shadow": null,
+      "text": [
+        "Billing"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Grow",
+      "opacity": 1,
+      "path": "Window.Sidebar.Grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 370,
+        "w": 0,
+        "x": 14,
+        "y": 122
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Version",
+      "opacity": 1,
+      "path": "Window.Sidebar.Version",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 12,
+        "w": 40,
+        "x": 14,
+        "y": 494
+      },
+      "shadow": null,
+      "text": [
+        "v2.0.1"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Main",
+      "opacity": 1,
+      "path": "Window.Main",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 520,
+        "w": 572,
+        "x": 208,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Head",
+      "opacity": 1,
+      "path": "Window.Main.Head",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 62,
+        "w": 572,
+        "x": 208,
+        "y": 0
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Title",
+      "opacity": 1,
+      "path": "Window.Main.Head.Title",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 19,
+        "w": 76,
+        "x": 230,
+        "y": 21.5
+      },
+      "shadow": null,
+      "text": [
+        "General"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#2f6bff",
+      "gradient": null,
+      "name": "Save",
+      "opacity": 1,
+      "path": "Window.Main.Head.Save",
+      "radius": [
+        6,
+        6,
+        6,
+        6
+      ],
+      "rect": {
+        "h": 26,
+        "w": 118,
+        "x": 640,
+        "y": 18
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Head.Save.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 94,
+        "x": 652,
+        "y": 24
+      },
+      "shadow": null,
+      "text": [
+        "Save changes"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eceff4",
+      "gradient": null,
+      "name": "Divider",
+      "opacity": 1,
+      "path": "Window.Main.Divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 572,
+        "x": 208,
+        "y": 62
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Body",
+      "opacity": 1,
+      "path": "Window.Main.Body",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 457,
+        "w": 572,
+        "x": 208,
+        "y": 63
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "NameRow",
+      "opacity": 1,
+      "path": "Window.Main.Body.NameRow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 528,
+        "x": 230,
+        "y": 85
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Window.Main.Body.NameRow.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 140,
+        "x": 230,
+        "y": 92
+      },
+      "shadow": null,
+      "text": [
+        "Workspace name"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Field",
+      "opacity": 1,
+      "path": "Window.Main.Body.NameRow.Field",
+      "radius": [
+        5.5,
+        5.5,
+        5.5,
+        5.5
+      ],
+      "rect": {
+        "h": 28,
+        "w": 376,
+        "x": 382,
+        "y": 85
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Window.Main.Body.NameRow.Field.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 86,
+        "x": 392,
+        "y": 92
+      },
+      "shadow": null,
+      "text": [
+        "Acme design"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "MailRow",
+      "opacity": 1,
+      "path": "Window.Main.Body.MailRow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 28,
+        "w": 528,
+        "x": 230,
+        "y": 129
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Window.Main.Body.MailRow.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 140,
+        "x": 230,
+        "y": 136
+      },
+      "shadow": null,
+      "text": [
+        "Billing email"
+      ],
+      "textColor": "#5a667e"
+    },
+    {
+      "border": "#d1d5de",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Field",
+      "opacity": 1,
+      "path": "Window.Main.Body.MailRow.Field",
+      "radius": [
+        5.5,
+        5.5,
+        5.5,
+        5.5
+      ],
+      "rect": {
+        "h": 28,
+        "w": 376,
+        "x": 382,
+        "y": 129
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "v",
+      "opacity": 1,
+      "path": "Window.Main.Body.MailRow.Field.v",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 133,
+        "x": 392,
+        "y": 136
+      },
+      "shadow": null,
+      "text": [
+        "billing@acme.test"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "TagsBlock",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 68,
+        "w": 528,
+        "x": 230,
+        "y": 173
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 47,
+        "x": 230,
+        "y": 173
+      },
+      "shadow": null,
+      "text": [
+        "Labels"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Tags",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 46,
+        "w": 320,
+        "x": 230,
+        "y": 195
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Tag1",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag1",
+      "radius": [
+        9.5,
+        9.5,
+        9.5,
+        9.5
+      ],
+      "rect": {
+        "h": 19,
+        "w": 60,
+        "x": 230,
+        "y": 195
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag1.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 238,
+        "y": 198
+      },
+      "shadow": null,
+      "text": [
+        "design"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Tag2",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag2",
+      "radius": [
+        9.5,
+        9.5,
+        9.5,
+        9.5
+      ],
+      "rect": {
+        "h": 19,
+        "w": 74,
+        "x": 298,
+        "y": 195
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag2.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 58,
+        "x": 306,
+        "y": 198
+      },
+      "shadow": null,
+      "text": [
+        "research"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Tag3",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag3",
+      "radius": [
+        9.5,
+        9.5,
+        9.5,
+        9.5
+      ],
+      "rect": {
+        "h": 19,
+        "w": 67,
+        "x": 380,
+        "y": 195
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag3.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 51,
+        "x": 388,
+        "y": 198
+      },
+      "shadow": null,
+      "text": [
+        "billing"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Tag4",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag4",
+      "radius": [
+        9.5,
+        9.5,
+        9.5,
+        9.5
+      ],
+      "rect": {
+        "h": 19,
+        "w": 60,
+        "x": 455,
+        "y": 195
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag4.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 44,
+        "x": 463,
+        "y": 198
+      },
+      "shadow": null,
+      "text": [
+        "launch"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eef2ff",
+      "gradient": null,
+      "name": "Tag5",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag5",
+      "radius": [
+        9.5,
+        9.5,
+        9.5,
+        9.5
+      ],
+      "rect": {
+        "h": 19,
+        "w": 67,
+        "x": 230,
+        "y": 222
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.TagsBlock.Tags.Tag5.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 51,
+        "x": 238,
+        "y": 225
+      },
+      "shadow": null,
+      "text": [
+        "archive"
+      ],
+      "textColor": "#2f6bff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Grow",
+      "opacity": 1,
+      "path": "Window.Main.Body.Grow",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 199,
+        "w": 0,
+        "x": 230,
+        "y": 257
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Footer",
+      "opacity": 1,
+      "path": "Window.Main.Body.Footer",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 26,
+        "w": 528,
+        "x": 230,
+        "y": 472
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Hint",
+      "opacity": 1,
+      "path": "Window.Main.Body.Footer.Hint",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 13,
+        "w": 224,
+        "x": 230,
+        "y": 478.5
+      },
+      "shadow": null,
+      "text": [
+        "Changes are saved automatically"
+      ],
+      "textColor": "#8a94a6"
+    },
+    {
+      "border": "#f0c4c1",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Delete",
+      "opacity": 1,
+      "path": "Window.Main.Body.Footer.Delete",
+      "radius": [
+        5.5,
+        5.5,
+        5.5,
+        5.5
+      ],
+      "rect": {
+        "h": 26,
+        "w": 149,
+        "x": 609,
+        "y": 472
+      },
+      "shadow": null,
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "Window.Main.Body.Footer.Delete.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 125,
+        "x": 621,
+        "y": 478
+      },
+      "shadow": null,
+      "text": [
+        "Delete workspace"
+      ],
+      "textColor": "#cb4b42"
+    }
+  ],
+  "width": 780
+}
