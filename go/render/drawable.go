@@ -233,6 +233,11 @@ func (b *RoundBox) SetPath(rect Rect) {
 	}
 	radius := [4]float64{base, base, base, base}
 	copy(radius[:], b.Style.CornerRadius)
+	// A hairline is a line, not a pill: a divider written as width 1160 height 1 would otherwise draw
+	// rounded ends, because every item rounds by 8 points unless told otherwise.
+	if rect.Width < 2 || rect.Height < 2 {
+		radius = [4]float64{}
+	}
 	b.radius = radius
 
 	b.bounds = rect

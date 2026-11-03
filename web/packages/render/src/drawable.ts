@@ -34,7 +34,8 @@ function setShadow(context: Canvas2D, offset: Size, blur: number, color: Color |
 
 /** CGMutablePath: recorded so it can be replayed into the context and measured. */
 export class Path {
-  private ops: (readonly ["M" | "L", number, number] | readonly ["A", number, number, number, number, number] | readonly ["Q", number, number, number, number] | readonly ["Z"])[] = [];
+  /** The commands of the path; read for tests and debugging, write through move/line/arc/quad/close. */
+  readonly ops: (readonly ["M" | "L", number, number] | readonly ["A", number, number, number, number, number] | readonly ["Q", number, number, number, number] | readonly ["Z"])[] = [];
 
   move(to: Point): void {
     this.ops.push(["M", to.x, to.y]);
@@ -292,6 +293,11 @@ export class RoundBox extends DrawableContainer {
     const baseRadius = radius.length > 0 ? radius[0]! : 8;
     while (radius.length < 4) {
       radius.push(baseRadius);
+    }
+    // A hairline is a line, not a pill: a divider written as width 1160 height 1 would otherwise draw
+    // rounded ends, because every item rounds by 8 points unless told otherwise (go/render, same rule).
+    if (rect.width < 2 || rect.height < 2) {
+      radius.fill(0);
     }
 
     this.bounds = rect;

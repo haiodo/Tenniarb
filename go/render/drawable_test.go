@@ -262,3 +262,21 @@ func TestArcToPathShapes(t *testing.T) {
 		t.Errorf("path bounds %+v", b)
 	}
 }
+
+// TestHairlineHasNoRadius: a box thinner than two points is a line, whatever the style rounds.
+func TestHairlineHasNoRadius(t *testing.T) {
+	for _, r := range []Rect{{X: 0, Y: 0, Width: 1160, Height: 1}, {X: 0, Y: 0, Width: 1, Height: 400}} {
+		b := &RoundBox{Style: NewDrawableItemStyle(false)}
+		b.SetPath(r)
+		if b.radius != [4]float64{} {
+			t.Errorf("%v: radius %v, want none", r, b.radius)
+		}
+	}
+	round := NewDrawableItemStyle(false)
+	round.CornerRadius = []float64{8}
+	b := &RoundBox{Style: round}
+	b.SetPath(Rect{X: 0, Y: 0, Width: 200, Height: 100})
+	if b.radius[0] != 8 {
+		t.Fatalf("a box rounds: %v", b.radius)
+	}
+}

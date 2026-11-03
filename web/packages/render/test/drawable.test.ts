@@ -190,6 +190,19 @@ test("round box path starts at the top middle and honours corner radii", () => {
   assert.deepEqual(box.path!.boundingBox, { x: 0, y: 0, width: 50, height: 50 });
 });
 
+test("a hairline has no rounding: a 1 point divider stays a line", () => {
+  const style = new DrawableItemStyle(false);
+  const rounded = (b: RoundBox): number => b.path!.ops.filter((op) => op[0] === "A" && op[5] !== 0).length;
+  const line = new RoundBox({ x: 0, y: 0, width: 1160, height: 1 }, style, true);
+  // No rounded corner: the four of them would turn the line into a pill.
+  assert.equal(rounded(line), 0);
+  const tall = new RoundBox({ x: 0, y: 0, width: 1, height: 400 }, style, true);
+  assert.equal(rounded(tall), 0);
+  // a box of a real size still rounds
+  const box = new RoundBox({ x: 0, y: 0, width: 50, height: 50 }, style, true);
+  assert.ok(rounded(box) > 0);
+});
+
 test("shadow grows the bounds on the shadow side", () => {
   const style = new DrawableItemStyle(false);
   style.parseStyle(parse("shadow 3 -3 4").tree, new Map());
