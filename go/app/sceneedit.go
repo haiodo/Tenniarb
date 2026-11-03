@@ -501,6 +501,9 @@ func kidHead(text string, k *scene.Node) string {
 // line, so the Code section holds what n itself writes, not the thousands of lines below it. A kid
 // without kids of its own is written in full: there is no subtree to hide behind a link.
 func OwnText(text string, n *scene.Node) string {
+	if n == nil || text == "" || n.Range.End > len(text) {
+		return "" // a node of a file whose text is not here: better empty than a slice of another file
+	}
 	var b strings.Builder
 	at := n.Range.Start
 	for _, k := range sceneKids(n) {

@@ -214,6 +214,15 @@ func (d *docCore) fileOf(n *scene.Node) string {
 	return n.Pos.File
 }
 
+// ownFileOf is the file n is written in, not the file a mount brings in: the Code section shows the line
+// of the mount itself, and its offsets belong to the file that declares it.
+func (d *docCore) ownFileOf(n *scene.Node) string {
+	if n == nil || n.Pos.File == "" {
+		return d.rel()
+	}
+	return n.Pos.File
+}
+
 // fileText is the text of a file of this document: the document's own, or a mounted one.
 func (d *docCore) fileText(file string) string {
 	if file == d.rel() {

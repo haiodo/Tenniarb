@@ -812,7 +812,7 @@ func (v *Viewer) refreshSceneCode() {
 	want := ""
 	switch {
 	case n != nil:
-		want = OwnText(v.fileText(v.fileOf(n)), n)
+		want = OwnText(v.fileText(v.ownFileOf(n)), n)
 	case pl != nil:
 		want = EffectiveText(pl)
 	}
@@ -846,7 +846,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 		}
 		return
 	}
-	src := v.fileText(v.fileOf(n))
+	src := v.fileText(v.ownFileOf(n))
 	if n == nil || OwnText(src, n) == text {
 		return
 	}
@@ -881,7 +881,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 			v.setPropsText(text, editor.Target{})
 			v.props.text.SetSelection(at, length)
 		}
-		v.props.want = OwnText(v.fileText(v.fileOf(m)), m)
+		v.props.want = OwnText(v.fileText(v.ownFileOf(m)), m)
 	}
 }
 
