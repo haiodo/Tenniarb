@@ -212,6 +212,22 @@ test("the values of a use override export let, expressions are evaluated", () =>
   );
 });
 
+test("an item with parameters drawn in place sees its defaults", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Card {
+        export let state = default
+        auto-layout column; width 120
+        item spin { width 10; height 10; color #ff0000; hidden \${state !== "loading"} }
+    }
+    item next { auto-layout column; width 120
+        use Card as loaded { state loading }
+    }
+}`);
+  assert.deepEqual(s.diagnostics, []);
+  // the spinner of the item drawn in place is hidden by its default; the loaded use draws one
+  assert.equal(s.boxes.filter((b) => b.name === "spin").length, 1);
+});
+
 test("quoted path segments name nodes with spaces and punctuation", () => {
   const { scene: s } = scene(`element "2 Пространства - пусто" {
     item "My Button" { width 20; height 10; color #ff0000 }

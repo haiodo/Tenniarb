@@ -999,9 +999,20 @@ class Expander {
     if (!this.enter(n)) {
       return null;
     }
+    const caller = this.vars;
+    // An item with parameters drawn in place is an instance that overrides nothing (spec 5c).
+    if (n.params.length > 0) {
+      this.vars = this.defaults(n);
+    }
+    const r = this.itemBody(n);
+    this.vars = caller;
+    this.leave();
+    return r;
+  }
+
+  private itemBody(n: SceneNode): RNode {
     const r = rnode("item", n, n.name, this.vars);
     r.kids = this.contents(n.content);
-    this.leave();
     return r;
   }
 
@@ -1040,7 +1051,15 @@ class Expander {
 
   private instance(target: SceneNode, use: SceneNode): RNode | null {
     switch (target.kind) {
-      case "item":
+      case "item": {
+        // not item(): the values of the use stay, the defaults of the declaration are not re-applied
+        if (!this.enter(target)) {
+          return null;
+        }
+        const r = this.itemBody(target);
+        this.leave();
+        return r;
+      }
       case "link":
         return this.content(target);
       case "use":
