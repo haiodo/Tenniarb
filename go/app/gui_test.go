@@ -759,6 +759,9 @@ func TestPanels(t *testing.T) {
 }
 
 func TestPropsContextMenu(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
 	app := qatest.App(t)
 	props := app.Find(qa.ID("props"))
 	const text = "name \"Root\""
