@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Builds Tenniarb.app from the gowt bundle script, then aligns the plist with the Swift app's Info.plist
-# so Finder associations match. Usage: macos.sh <binary> <out-dir> <gowt-dir> <short-version> <build> <embed-js>
+# so Finder associations match. Usage: macos.sh <binary> <out-dir> <gowt-dir> <short-version> <build> <embed-js> [mcp-proxy]
 set -euo pipefail
-bin=$1; out=$2; gowt=$3; ver=$4; build=$5; embed=$6
+bin=$1; out=$2; gowt=$3; ver=$4; build=$5; embed=$6; mcp=${7:-}
 root=$(cd "$(dirname "$0")/../.." && pwd)
 # The source .icns carries a resource fork and Finder info, which codesign refuses; cat drops them.
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
@@ -37,6 +37,13 @@ pb "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string tenniarb"
 plutil -lint "$plist" >/dev/null
 mkdir -p "$app/Contents/Resources"
 cp "$embed" "$app/Contents/Resources/"
+# The MCP proxy ships inside the app: Help > Install MCP for Agents registers this path, and an app
+# update replaces it with the app.
+if [ -n "$mcp" ]; then
+	cp "$mcp" "$app/Contents/MacOS/tenniarb-mcp"
+	chmod +x "$app/Contents/MacOS/tenniarb-mcp"
+	codesign --force --sign - "$app/Contents/MacOS/tenniarb-mcp" >/dev/null 2>&1
+fi
 # Ad hoc again: the plist and Resources changed after mkapp.sh signed. No Developer ID, no notarization.
 codesign --force --sign - "$app" >/dev/null 2>&1
 echo "$app"

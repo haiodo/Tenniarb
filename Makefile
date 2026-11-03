@@ -119,7 +119,8 @@ endif
 go-pkg-mac: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-<arch>.{app.zip,dmg} (unsigned)
 	rm -rf $(GOPKG)/mac && mkdir -p $(GOPKG)/mac/dmg
 	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=$(GOARCH_HOST) go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb ./cmd/tenniarb
-	go/packaging/macos.sh $(GOPKG)/mac/tenniarb $(GOPKG)/mac/dmg $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED)
+	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=$(GOARCH_HOST) go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-mcp ./cmd/tenniarb-mcp
+	go/packaging/macos.sh $(GOPKG)/mac/tenniarb $(GOPKG)/mac/dmg $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED) $(GOPKG)/mac/tenniarb-mcp
 	ditto -c -k --keepParent $(GOPKG)/mac/dmg/Tenniarb.app $(GOPKG)/Tenniarb-$(GO_VERSION)-$(GOARCH_HOST).app.zip
 	ln -sfn /Applications $(GOPKG)/mac/dmg/Applications
 	rm -f $(GOPKG)/Tenniarb-$(GO_VERSION)-$(GOARCH_HOST).dmg
@@ -130,7 +131,10 @@ go-pkg-mac-universal: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-universal.{app
 	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-arm64 ./cmd/tenniarb
 	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-amd64 ./cmd/tenniarb
 	lipo -create -output $(GOPKG)/mac/tenniarb $(GOPKG)/mac/tenniarb-arm64 $(GOPKG)/mac/tenniarb-amd64
-	go/packaging/macos.sh $(GOPKG)/mac/tenniarb $(GOPKG)/mac/dmg $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED)
+	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-mcp-arm64 ./cmd/tenniarb-mcp
+	cd go && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/mac/tenniarb-mcp-amd64 ./cmd/tenniarb-mcp
+	lipo -create -output $(GOPKG)/mac/tenniarb-mcp $(GOPKG)/mac/tenniarb-mcp-arm64 $(GOPKG)/mac/tenniarb-mcp-amd64
+	go/packaging/macos.sh $(GOPKG)/mac/tenniarb $(GOPKG)/mac/dmg $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED) $(GOPKG)/mac/tenniarb-mcp
 	ditto -c -k --keepParent $(GOPKG)/mac/dmg/Tenniarb.app $(GOPKG)/Tenniarb-$(GO_VERSION)-universal.app.zip
 	ln -sfn /Applications $(GOPKG)/mac/dmg/Applications
 	rm -f $(GOPKG)/Tenniarb-$(GO_VERSION)-universal.dmg
@@ -139,6 +143,7 @@ go-pkg-mac-universal: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-universal.{app
 go-pkg-win: $(EMBED) ## Go app: build/go/tenniarb-<ver>-windows-amd64.zip (cross-built, no icon resource yet)
 	rm -rf $(GOPKG)/win && mkdir -p $(GOPKG)/win
 	cd go && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS) -H=windowsgui' -o ../$(GOPKG)/win/tenniarb.exe ./cmd/tenniarb
+	cd go && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/win/tenniarb-mcp.exe ./cmd/tenniarb-mcp
 	cp $(EMBED) $(GOPKG)/win/
 	rm -f $(GOPKG)/tenniarb-$(GO_VERSION)-windows-amd64.zip
 	cd $(GOPKG)/win && zip -q -r ../tenniarb-$(GO_VERSION)-windows-amd64.zip .
@@ -146,7 +151,9 @@ go-pkg-win: $(EMBED) ## Go app: build/go/tenniarb-<ver>-windows-amd64.zip (cross
 go-pkg-linux: $(EMBED) ## Go app: build/go/tenniarb-<ver>-linux-amd64.tar.gz (binary, .desktop, mime xml, install.sh)
 	rm -rf $(GOPKG)/linux && mkdir -p $(GOPKG)/linux
 	cd go && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/linux/tenniarb ./cmd/tenniarb
+	cd go && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/linux/tenniarb-mcp ./cmd/tenniarb-mcp
 	go/packaging/linux.sh $(GOPKG)/linux/tenniarb $(GOPKG)/linux/tenniarb-$(GO_VERSION) $(GOWT_DIR) $(EMBED)
+	cp $(GOPKG)/linux/tenniarb-mcp $(GOPKG)/linux/tenniarb-$(GO_VERSION)/
 	tar -C $(GOPKG)/linux -czf $(GOPKG)/tenniarb-$(GO_VERSION)-linux-amd64.tar.gz tenniarb-$(GO_VERSION)
 
 go-pkg: go-pkg-mac go-pkg-win go-pkg-linux ## Go app: all packages

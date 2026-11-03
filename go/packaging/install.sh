@@ -1,12 +1,13 @@
 #!/bin/sh
 # Per-user install: ./install.sh [prefix], default ~/.local/opt/tenniarb. Needs GTK 3 at run time.
+# tenniarb-mcp is the MCP proxy the app registers for agents; it lives next to the app.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 dest=${1:-$HOME/.local/opt/tenniarb}
 share=${XDG_DATA_HOME:-$HOME/.local/share}
 id=io.github.haiodo.Tenniarb
 mkdir -p "$dest" "$share/applications" "$share/mime/packages" "$share/icons/hicolor/512x512/apps"
-cp "$here/tenniarb" "$here/tenniarb-embed.min.js" "$dest/"
+cp "$here/tenniarb" "$here/tenniarb-mcp" "$here/tenniarb-embed.min.js" "$dest/"
 sed "s|^Exec=.*|Exec=$dest/tenniarb %U|" "$here/$id.desktop" >"$share/applications/$id.desktop"
 cp "$here/tenniarb-mime.xml" "$share/mime/packages/tenniarb.xml"
 cp "$here/tenniarb.png" "$share/icons/hicolor/512x512/apps/tenniarb.png"
