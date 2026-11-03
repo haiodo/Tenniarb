@@ -129,6 +129,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	}
 	lay.Layout()
 	p.warnOutside(rn)
+	p.warnBodyFit(rn)
 	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p}
 	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
@@ -205,6 +206,7 @@ func (t *Tree) validate() {
 			p := newPrep(t, Options{noExprWarn: true})
 			p.root(rn).Layout()
 			p.warnOutside(rn)
+			p.warnBodyFit(rn)
 		}
 		if n.Mount != nil {
 			c = c.push(n)

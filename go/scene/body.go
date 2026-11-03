@@ -76,6 +76,8 @@ type bodyText struct {
 	blocks  []bodyBlock
 	metrics map[gfx.Font]gfx.TextMetrics
 	widths  map[bodyWidthKey]float64
+	pos     Pos    // the body command, for a warning about its height
+	from    string // the markdown file the text was read from; "" for text written in the .tenn
 }
 
 type bodyWidthKey struct {
@@ -84,8 +86,9 @@ type bodyWidthKey struct {
 }
 
 // bodyInfo reads the body command of rn and parses its markdown; nil when rn has no body or an
-// empty one. The command has the forms of the classic renderer: body "text", body %{ ... } and
-// body { text "..."; font-size 14; ... }.
+// empty one. The command has the forms of the classic renderer: body "text", body %{ ... },
+// body { text "..."; font-size 14; ... } and body --from-file "page.md", which reads the text from a
+// markdown file so a page layout and the text it shows live apart.
 func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	pr := p.prop(rn, "body")
 	if pr == nil {
@@ -94,7 +97,7 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	size, lineH, gap := 0.0, 0.0, bodyBlockGap
 	family, mono := "", bodyMonoFace
 	color := st.text
-	text := ""
+	text, from := "", ""
 	textArg := func(i int) string {
 		switch {
 		case pr.Val != nil:
@@ -147,7 +150,14 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 				}
 			}
 		}
-	} else {
+	}
+	if file, ok := bodyFileArg(pr.Args); ok {
+		var read bool
+		if text, read = p.bodyFileText(pr, file); !read {
+			return nil
+		}
+		from = file
+	} else if pr.Block == nil {
 		text = textArg(0)
 	}
 	if strings.TrimSpace(text) == "" {
@@ -162,7 +172,7 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 		size = 1
 	}
 	b := &bodyText{m: p.opts.Measurer, font: p.fontOf(rn, size), color: color, lineH: lineH, gap: gap,
-		metrics: map[gfx.Font]gfx.TextMetrics{}, widths: map[bodyWidthKey]float64{}}
+		metrics: map[gfx.Font]gfx.TextMetrics{}, widths: map[bodyWidthKey]float64{}, pos: pr.Pos, from: from}
 	if family != "" {
 		b.font.Family, b.font.Name = family, ""
 	}
@@ -203,6 +213,111 @@ func (p *prep) markdownArg(file string, a *tenn.Node) string {
 		}
 	}
 	return text
+}
+
+// bodyFileArg is the path after --from-file among the arguments of a body command; ok is false when the
+// command has no such flag, and the path is "" when the flag has none.
+func bodyFileArg(args []*tenn.Node) (string, bool) {
+	for i, a := range args {
+		if s, _ := a.GetIdentText(); s == FromFileFlag {
+			return argText(args, i+1), true
+		}
+	}
+	return "", false
+}
+
+// bodyFileText is the text of "body --from-file <path>": the whole markdown file, or the section named
+// after "#". The path is relative to the file that writes the body and may not leave the workspace
+// root, as for element --from-file. Every problem is reported here, and ok is false then.
+func (p *prep) bodyFileText(pr *Prop, ref string) (string, bool) {
+	file, section, hasSection := strings.Cut(ref, "#")
+	if file == "" {
+		p.t.fail(pr.Pos, "body %s needs a file: body %s \"docs/plan.md\"", FromFileFlag, FromFileFlag)
+		return "", false
+	}
+	abs, rel, ok := p.t.resolveIn(pr.Pos.File, file)
+	if !ok {
+		p.t.fail(pr.Pos, "body %s %q leaves the workspace root", FromFileFlag, file)
+		return "", false
+	}
+	// shortcut: the file is read on every load and build, no cache by modification time; add one if a
+	// large page is rebuilt in a loop.
+	text, err := p.t.read(abs, rel)
+	if err != nil {
+		p.t.fail(pr.Pos, "body %s %q: %v", FromFileFlag, file, err)
+		return "", false
+	}
+	if !hasSection {
+		return text, true
+	}
+	if s, found := bodySection(text, section); found {
+		return s, true
+	}
+	if all := bodyHeadings(text); len(all) > 0 {
+		p.t.fail(pr.Pos, "body %s %q: %s has no heading %q; headings: %s", FromFileFlag, ref, rel, section, strings.Join(all, ", "))
+	} else {
+		p.t.fail(pr.Pos, "body %s %q: %s has no heading %q and no headings at all", FromFileFlag, ref, rel, section)
+	}
+	return "", false
+}
+
+// bodySection cuts the section under the heading name: the heading line and everything below it up to
+// the next heading of the same or a higher level, as a reader of the markdown file sees it.
+func bodySection(text, name string) (string, bool) {
+	want := headingKey(name)
+	lines := strings.Split(text, "\n")
+	start, level := -1, 0
+	for i, line := range lines {
+		n, title, ok := headingAt(line)
+		if !ok {
+			continue
+		}
+		if start < 0 {
+			if headingKey(title) == want {
+				start, level = i, n
+			}
+			continue
+		}
+		if n <= level {
+			return strings.Join(lines[start:i], "\n"), true
+		}
+	}
+	if start < 0 {
+		return "", false
+	}
+	return strings.Join(lines[start:], "\n"), true
+}
+
+// headingAt reads an ATX heading: one to six hashes and a space.
+func headingAt(line string) (int, string, bool) {
+	s := strings.TrimSpace(line)
+	n := 0
+	for n < len(s) && s[n] == '#' {
+		n++
+	}
+	if n == 0 || n > 6 || n == len(s) || s[n] != ' ' {
+		return 0, "", false
+	}
+	return n, s[n+1:], true
+}
+
+// headingKey is a heading name as sections compare it: spaces collapsed, the closing hashes of an ATX
+// heading ("## Цель ##") dropped.
+func headingKey(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.TrimRight(s, "#")
+	return strings.Join(strings.Fields(s), " ")
+}
+
+// bodyHeadings lists the headings of a markdown file, for the message about a section that is not there.
+func bodyHeadings(text string) []string {
+	var out []string
+	for _, line := range strings.Split(text, "\n") {
+		if _, title, ok := headingAt(line); ok {
+			out = append(out, headingKey(title))
+		}
+	}
+	return out
 }
 
 // argNum is the number of argument i of a command read outside a Prop.
@@ -620,6 +735,31 @@ func (b *bodyText) height(width float64) float64 {
 		h += l.gap + l.h
 	}
 	return h
+}
+
+// warnBodyFit warns when a body read from a file needs more room than the item gives it: the page in
+// the .tenn has a fixed height, and the file is what grows on the next edit.
+func (p *prep) warnBodyFit(rn *RNode) {
+	if body := p.bodies[rn]; body != nil && body.from != "" {
+		if ln := p.frames[rn]; ln != nil {
+			width, top, have := ln.RW-2*body.padX, body.padY, ln.RH
+			if bn := p.bodyAt[rn]; bn != nil {
+				width, top = bn.RW, 0
+			} else if ti := p.texts[rn]; ti != nil {
+				top = ti.padY + float64(len(ti.wrap(ln.RW-2*ti.padX)))*ti.lineH
+			}
+			room := have - top - body.padY
+			if need := body.height(width); need > room+0.5 {
+				p.t.warn(body.pos, "body %s %q needs %g points of height, the item leaves %g: raise height or shorten the text",
+					FromFileFlag, body.from, need, room)
+			}
+		}
+	}
+	for _, k := range rn.Kids {
+		if k.Kind == RItem {
+			p.warnBodyFit(k)
+		}
+	}
 }
 
 // draw draws the body with its top left corner at x, y.

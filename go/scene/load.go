@@ -587,12 +587,19 @@ func (l *loader) mountFile(n *Node, rel string) {
 
 // resolveFile finds rel relative to the file being read; it fails when the path leaves the workspace root.
 func (l *loader) resolveFile(rel string, pos Pos, what string) (string, bool) {
-	target := filepath.Join(l.t.root, filepath.FromSlash(filepath.Dir(l.file)), filepath.FromSlash(rel))
-	abs, in := l.t.inside(target)
+	abs, _, in := l.t.resolveIn(l.file, rel)
 	if !in {
 		l.t.fail(pos, "%s %q leaves the workspace root", what, rel)
 	}
 	return abs, in
+}
+
+// resolveIn finds rel relative to file at, a slash path in the tree; ok is false when the result
+// leaves the workspace root. Every path a file names is checked here, mounted or read for its text.
+func (t *Tree) resolveIn(at, rel string) (abs, srel string, ok bool) {
+	target := filepath.Join(t.root, filepath.FromSlash(filepath.Dir(at)), filepath.FromSlash(rel))
+	abs, ok = t.inside(target)
+	return abs, t.rel(abs), ok
 }
 
 // addStyles reads "styles { name { properties } ... }": the named styles an element gives its nodes.
