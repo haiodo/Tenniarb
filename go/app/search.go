@@ -33,9 +33,8 @@ func (v *Viewer) showSearch() {
 	}
 }
 
-// openSearch is the Goto Item field over the canvas: Windows and Linux draw the inspector toolbar
-// items at the top of the panel, where a field of its own width made the panel wider than its
-// buttons ask for and hung over the window edge.
+// openSearch is the Goto Item field over the canvas: Windows and Linux draw the toolbar items at the
+// top of the panel, where a field made the panel wider than its buttons and hung off the edge.
 func (v *Viewer) openSearch() {
 	v.closePopover()
 	p := v.win.Popover(g.Gap(6), g.Padding(8))

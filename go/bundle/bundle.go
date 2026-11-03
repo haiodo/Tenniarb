@@ -19,10 +19,8 @@ func Text(root, abs, text string) (string, error) { return expand(root, abs, tex
 // File is the text of abs, a file on disk, with its mounts expanded.
 func File(root, abs string) (string, error) { return file(root, abs, nil) }
 
-// bundleFile is the text of abs with the mounts of the file expanded. stack is the chain of files
-// being expanded above it, for the message of a cycle.
-// file is the text of abs, a file on disk, with its mounts expanded. stack is the chain of files
-// being expanded above it, for the message of a cycle.
+// file is the text of abs, a file on disk, with its mounts expanded. stack is the chain of files above
+// it, for the message of a cycle.
 func file(root, abs string, stack []string) (string, error) {
 	src, err := os.ReadFile(abs)
 	if err != nil {

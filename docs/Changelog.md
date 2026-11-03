@@ -15,8 +15,8 @@ and the same calculation engine. The Swift app stays in the repository as histor
 + Path segments in double quotes, so a name with punctuation is addressed as written: `at "2 Пространства - пусто"`.
 + `width`/`height` accept an expression that gives a number or `hug`/`fill`; animation frames accept expressions.
 + Export pages: every element of a file as a PNG file, or as a page of one PDF.
-+ Interactive HTML export inlines the files a document mounts with `--from-file`, so the page draws outside
-  its workspace; the browser bundle draws an element whose content is a `use`.
++ Interactive HTML export inlines the files a document mounts with `--from-file`: the page draws anywhere,
+  not only next to the files it mounts. The browser bundle draws an element whose content is a `use`.
 + Compare with Git: a tree of changed nodes (added, removed, changed, moved) with the old and the new value,
   and Revert to HEAD as a single undo step.
 + `suggest` reports what could be tidied (components from repeats, named styles, dead commands) and applies a
