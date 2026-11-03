@@ -1,6 +1,9 @@
 package scene
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"math"
 	"strings"
 
@@ -269,6 +272,10 @@ func (p *prep) bodyFileText(pr *Prop, ref string) (string, bool) {
 	// large page is rebuilt in a loop.
 	text, err := p.t.read(abs, rel)
 	if err != nil {
+		// The OS words a missing file differently on every platform; the message is the interface here.
+		if errors.Is(err, fs.ErrNotExist) {
+			err = fmt.Errorf("no such file")
+		}
 		p.t.fail(pr.Pos, "body %s %q: %v", FromFileFlag, file, err)
 		return "", false
 	}

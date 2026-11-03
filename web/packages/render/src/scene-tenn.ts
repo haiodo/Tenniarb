@@ -2872,7 +2872,7 @@ function bodyFileText(prep: Prep, rn: RNode, ref: string, at: DiagPos): string |
   }
   const text = prep.readFile === null ? null : prep.readFile(rel);
   if (text === null) {
-    prep.diag.fail(at, `body --from-file "${file}": cannot read ${rel}`);
+    prep.diag.fail(at, `body --from-file "${file}": no such file`);
     return null;
   }
   if (cut < 0) {

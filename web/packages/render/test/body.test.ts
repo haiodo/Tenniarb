@@ -333,7 +333,7 @@ test("body --from-file: a missing file is an error with the path", () => {
   const s = scene(`element "E" { item "Doc" { auto-layout column; body --from-file "nope.md" } }`, "E", readPlan({}));
   assert.deepEqual(
     s.diagnostics.map((d) => [d.message, d.warn, d.file, d.line]),
-    [["body --from-file \"nope.md\": cannot read nope.md", false, "a.tenn", 1]],
+    [["body --from-file \"nope.md\": no such file", false, "a.tenn", 1]],
   );
 });
 
