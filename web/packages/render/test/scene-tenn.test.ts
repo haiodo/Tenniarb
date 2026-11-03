@@ -392,10 +392,11 @@ test("color linear 0 points up: the stops spread evenly from the bottom", () => 
     return { addColorStop: (offset, color) => g.stops.push([offset, color]) };
   };
   s.draw(out.ctx);
-  // draw() flips y, so y 0 is the bottom of the box: the first colour is there, the last at the top.
+  // Go's gradient.at in the box's y-down frame: the line starts at the bottom (y 50) and runs up to 0,
+  // so the first colour is at the bottom of the box, the last at its top.
   assert.deepEqual(gradients.map((g) => ({ from: g.from.map(round), stops: g.stops })), [
     {
-      from: [50, 0, 50, 50],
+      from: [50, 50, 50, 0],
       stops: [
         [0, "rgb(255,0,0)"],
         [1, "rgb(0,0,255)"],
@@ -430,17 +431,22 @@ test("a bad color linear warns and draws the default flat fill", () => {
 
 const round = (v: number): number => Math.round(v * 1000) / 1000;
 
-/** Draws a scene on a real canvas, y-up like Go: the canvas flip of draw() turns layout y into up. */
+/**
+ * Draws a scene on a real canvas the way drawScene does: the canvas is flipped once and draw() fills
+ * the y-up world. px() then takes the scene's own coordinates, y down from the top of the picture.
+ */
 function pixels(src: string): { scene: TennScene; px: (x: number, y: number) => number[] } {
   const { scene: s } = scene(src);
   const { canvas2d, ctx } = newCanvas(200, 120);
+  const margin = 20;
   canvas2d.fillStyle = "#ffffff";
   canvas2d.fillRect(0, 0, 200, 120);
   canvas2d.save();
-  canvas2d.translate(0, 100);
-  s.draw(canvas2d);
+  canvas2d.translate(0, 120);
+  canvas2d.scale(1, -1);
+  s.draw(canvas2d, { x: 0, y: 120 - margin - s.height });
   canvas2d.restore();
-  return { scene: s, px: (x, y) => Array.from(ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data) };
+  return { scene: s, px: (x, y) => Array.from(ctx.getImageData(Math.round(x), Math.round(y + margin), 1, 1).data) };
 }
 
 test("color linear paints a gradient, not the flat fill of one stop", () => {
@@ -449,7 +455,7 @@ test("color linear paints a gradient, not the flat fill of one stop", () => {
     item C { auto-layout row }
 }`);
   const b = box(s, "A");
-  const y = 100 - (b.y + b.height / 2);
+  const y = b.y + b.height / 2;
   const left = px(b.x + 8, y);
   const right = px(b.x + b.width - 8, y);
   assert.ok(left[0]! > 220 && left[2]! < 40, `left end is red: ${left}`);
@@ -461,8 +467,8 @@ test("color linear paints a gradient, not the flat fill of one stop", () => {
     item C { auto-layout row }
 }`);
   const ub = box(up.scene, "A");
-  const top = up.px(ub.x + ub.width / 2, 100 - (ub.y + ub.height - 4));
-  const bottom = up.px(ub.x + ub.width / 2, 100 - (ub.y + 4));
+  const top = up.px(ub.x + ub.width / 2, ub.y + 4);
+  const bottom = up.px(ub.x + ub.width / 2, ub.y + ub.height - 4);
   assert.ok(top[2]! > 220 && top[0]! < 40, `top is blue: ${top}`);
   assert.ok(bottom[0]! > 220 && bottom[2]! < 40, `bottom is red: ${bottom}`);
 });
@@ -474,10 +480,10 @@ test("shadow is a drop shadow under the fill, offset up and to the right", () =>
 }`);
   const b = box(s, "A");
   const mid = b.y + b.height / 2;
-  const inside = px(b.x + b.width / 2, 100 - mid);
-  const right = px(b.x + b.width + 6, 100 - mid);
-  const above = px(b.x + b.width / 2, 100 - (b.y + b.height + 6));
-  const far = px(b.x - 10, 100 - mid);
+  const inside = px(b.x + b.width / 2, mid);
+  const right = px(b.x + b.width + 6, mid);
+  const above = px(b.x + b.width / 2, b.y - 6);
+  const far = px(b.x - 10, mid);
   assert.deepEqual(inside.slice(0, 3), [255, 255, 255], "the fill covers the shadow");
   assert.ok(right[0]! < 245, `grey shadow right of the box: ${right}`);
   assert.ok(above[0]! < 245, `grey shadow above the box (y is up): ${above}`);

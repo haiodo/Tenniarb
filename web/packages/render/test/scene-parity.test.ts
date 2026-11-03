@@ -283,7 +283,8 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     createLinearGradient(x0, y0, x1, y1) {
       const g = {
         __gradient: true,
-        angle: (Math.atan2(x1 - x0, y1 - y0) * 180) / Math.PI,
+        // tennlayout reads the angle of the line as atan2(dx, -dy); the minus puts 0 up, as in .tenn.
+        angle: (Math.atan2(x1 - x0, -(y1 - y0)) * 180) / Math.PI,
         stops: [] as { offset: number; color: string }[],
         addColorStop(offset: number, color: string) {
           g.stops.push({ offset, color: cssHex(color) });
@@ -467,11 +468,6 @@ const names = readdirSync(fixtures)
 for (const name of names) {
   test(`scene parity: ${name}`, (t) => {
     const { source, golden } = load(name);
-    // The body text of an item (spec 5d, go/scene/body.go) is not laid out by the web scene renderer yet.
-    if (/(^|[;{]\s*)body\s/.test(source)) {
-      t.skip("web scene-tenn.ts does not lay out the body of an item yet (spec 5d)");
-      return;
-    }
     const model = readTenn(source);
     assert.ok(model !== null, "the fixture parses");
     const element: Element | null = findElement(model, golden.element);

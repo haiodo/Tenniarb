@@ -9,6 +9,7 @@
 // in Go). element --from-file and template are ported; the calling side supplies the files (SceneLoadOptions).
 import { TennParser, newCommand, newFloatNode, parseTenn } from "@tenniarb/core";
 import type { DiagramItem, Element, LinkItem, TennNode } from "@tenniarb/core";
+import { MarkdownLexer } from "@tenniarb/markdown";
 import type { Canvas2D } from "./canvas-types.ts";
 import { parseColor } from "./color.ts";
 import type { Color } from "./color.ts";
@@ -1428,6 +1429,10 @@ function propNum(p: SceneProp, i: number): number | null {
   return v === null || !numberRe.test(v) ? null : Number(v);
 }
 
+/** The number of argument i of a command read outside a prop. */
+const argNum = (args: TennNode[], i: number): number | null =>
+  args[i] === undefined ? null : propNum({ name: "", args, block: null }, i);
+
 /** The arguments of a property as words, each an expression evaluated in vars. */
 function evalWords(p: SceneProp, vars: Record<string, string> | null, diag: Diagnostics): string {
   const words: string[] = [];
@@ -2256,6 +2261,653 @@ function textWrap(ti: TextInfo, w: number): string[] {
   return out;
 }
 
+// MARK: - Body: the markdown under the title (spec 5d, go/scene/body.go)
+
+const bodyFontDrop = 2;
+const bodyBlockGap = 5;
+const bodyMonoFace = "Menlo";
+const bodyListIndent = 16;
+const bodyQuoteIndent = 12;
+const bodyCodePad = 8;
+const bodyBarW = 3;
+const bodyHeadSize1 = 6; // above the body, h2 +4, h3 +2
+const bodyHeadGap1 = 10;
+const bodyHeadGap2 = 6;
+
+/** One span of a line in one look: a markdown token after its glyphs are decided. */
+interface BodyRun {
+  text: string;
+  font: Font;
+  code: boolean; // drawn over the code background
+}
+
+type BodyBlock =
+  | { kind: "h"; level: number; runs: BodyRun[] }
+  | { kind: "p" | "q"; runs: BodyRun[] }
+  | { kind: "l"; items: BodyRun[][] }
+  | { kind: "c"; code: string[] };
+
+/** One laid out line of the body. */
+interface BodyLine {
+  x: number; // indent of the line
+  w: number; // width of its runs
+  asc: number;
+  desc: number;
+  h: number; // line box height
+  gap: number; // extra space before the line, between blocks
+  quote: boolean; // a bar on the left
+  code: boolean; // a background across the width
+  runs: BodyRun[];
+}
+
+/** The markdown body of an item, ready to be measured and drawn. */
+interface BodyText {
+  font: Font; // body text, already 2 points below the title
+  mono: Font; // code
+  color: Color;
+  codeBg: Color;
+  bar: Color; // the bar of a quote
+  lineH: number; // 0: the font's rounded line box
+  gap: number; // between blocks
+  padX: number;
+  padY: number;
+  blocks: BodyBlock[];
+}
+
+/** gfx's estimate for one run: 0.6 em a rune plus its spacing, as textWidth. */
+const bodyWidth = (s: string, f: Font): number => [...s].length * (f.size * 0.6 + f.spacing);
+
+/** Two runs share a font when Go's gfx.Font values are equal. */
+const bodyFontKey = (f: Font): string => `${f.name}\u0000${f.family}\u0000${f.weight}\u0000${f.italic}\u0000${f.size}\u0000${f.spacing}`;
+
+/** A face Name leaves weight and style to the face, so the family takes over, as in Go. */
+function bodyStyled(f: Font, weight: number, italic: boolean): Font {
+  const out = { ...f };
+  if (out.name !== "") {
+    out.family = out.name.split(",")[0]!.trim();
+    out.name = "";
+  }
+  if (weight !== 0) {
+    out.weight = weight;
+  }
+  if (italic) {
+    out.italic = true;
+  }
+  return out;
+}
+
+/** **bold**, *italic* and [label](url) mapped to the forms the markdown lexer reads. */
+function normalizeInline(s: string): string {
+  const boundary = (i: number): boolean => i === 0 || s[i - 1] === " " || s[i - 1] === "\t";
+  let out = "";
+  for (let i = 0; i < s.length; ) {
+    switch (true) {
+      case s[i] === "`": {
+        const j = s.slice(i + 1).indexOf("`");
+        if (j >= 0) {
+          out += s.slice(i, i + j + 2);
+          i += j + 2;
+        } else {
+          out += s[i];
+          i += 1;
+        }
+        break;
+      }
+      case s.startsWith("**", i) && boundary(i): {
+        const j = s.slice(i + 2).indexOf("**");
+        if (j > 0) {
+          out += `*${s.slice(i + 2, i + 2 + j)}*`;
+          i += j + 4;
+        } else {
+          out += s[i];
+          i += 1;
+        }
+        break;
+      }
+      case s[i] === "*" && boundary(i): {
+        const j = s.slice(i + 1).indexOf("*");
+        if (j > 0) {
+          out += `_${s.slice(i + 1, i + 1 + j)}_`;
+          i += j + 2;
+        } else {
+          out += s[i];
+          i += 1;
+        }
+        break;
+      }
+      case s[i] === "[": {
+        const mid = s.slice(i).indexOf("](");
+        const end = mid >= 0 ? s.slice(i + mid + 2).indexOf(")") : -1;
+        if (mid >= 0 && end >= 0) {
+          out += s.slice(i + 1, i + mid);
+          i += mid + 2 + end + 1;
+        } else {
+          out += s[i];
+          i += 1;
+        }
+        break;
+      }
+      default:
+        out += s[i];
+        i += 1;
+    }
+  }
+  return out;
+}
+
+/** One line of markdown as runs: the lexer's tokens, code spans kept literal by normalizeInline. */
+function bodyInline(b: BodyText, s: string): BodyRun[] {
+  const runs: BodyRun[] = [];
+  const add = (text: string, font: Font, code: boolean): void => {
+    if (text === "") {
+      return;
+    }
+    const last = runs[runs.length - 1];
+    if (last !== undefined && bodyFontKey(last.font) === bodyFontKey(font) && last.code === code) {
+      last.text += text;
+      return;
+    }
+    runs.push({ text, font, code });
+  };
+  const lexer = new MarkdownLexer(normalizeInline(s));
+  for (let t = lexer.getToken(); t !== null; t = lexer.getToken()) {
+    switch (t.type) {
+      case "bold":
+        add(t.literal, bodyStyled(b.font, 700, false), false);
+        break;
+      case "italic":
+        add(t.literal, bodyStyled(b.font, 0, true), false);
+        break;
+      case "code":
+        add(t.literal, b.mono, true);
+        break;
+      case "image":
+        add(`@(${t.literal})`, b.font, false);
+        break;
+      case "color":
+        add(`!(${t.literal})`, b.font, false);
+        break;
+      case "font":
+        add(`&(${t.literal})`, b.font, false);
+        break;
+      case "underline":
+        add(`<${t.literal}>`, b.font, false);
+        break;
+      case "scratch":
+        add(`~${t.literal}~`, b.font, false);
+        break;
+      case "eof":
+        break;
+      default:
+        add(t.literal, b.font, false);
+    }
+  }
+  return runs;
+}
+
+/** "# ", "## " or "### "; more hashes are an ordinary paragraph. */
+function headingLine(s: string): { level: number; rest: string } | null {
+  let n = 0;
+  while (n < s.length && s[n] === "#") {
+    n += 1;
+  }
+  if (n === 0 || n > 3 || n === s.length || s[n] !== " ") {
+    return null;
+  }
+  return { level: n, rest: s.slice(n).trim() };
+}
+
+function bulletLine(s: string): string | null {
+  return s.length > 2 && "-*+".includes(s[0]!) && s[1] === " " ? s.slice(2).trim() : null;
+}
+
+/** "> text": one level of quote, the bar is drawn by the layout. */
+function quoteLine(s: string): string | null {
+  if (s === ">") {
+    return "";
+  }
+  return s.length > 1 && s[0] === ">" && s[1] === " " ? s.slice(2).trim() : null;
+}
+
+/** Splits markdown into blocks and their inline runs. */
+function bodyParse(b: BodyText, text: string): BodyBlock[] {
+  const blocks: BodyBlock[] = [];
+  let para: string[] = [];
+  let quote: string[] = [];
+  let list: BodyRun[][] | null = null;
+  let code: string[] | null = null;
+  const flushPara = (): void => {
+    if (para.length > 0) {
+      blocks.push({ kind: "p", runs: bodyInline(b, para.join(" ")) });
+      para = [];
+    }
+  };
+  const flushQuote = (): void => {
+    if (quote.length > 0) {
+      blocks.push({ kind: "q", runs: bodyInline(b, quote.join(" ")) });
+      quote = [];
+    }
+  };
+  const flushList = (): void => {
+    if (list !== null) {
+      blocks.push({ kind: "l", items: list });
+      list = null;
+    }
+  };
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (code !== null) {
+      if (trimmed.startsWith("```")) {
+        blocks.push({ kind: "c", code });
+        code = null;
+      } else {
+        code.push(line);
+      }
+      continue;
+    }
+    if (trimmed.startsWith("```")) {
+      flushPara();
+      flushQuote();
+      flushList();
+      code = [];
+      continue;
+    }
+    if (trimmed === "") {
+      flushPara();
+      flushQuote();
+      flushList();
+      continue;
+    }
+    const q = quoteLine(trimmed);
+    if (q !== null) {
+      flushPara();
+      flushList();
+      quote.push(q);
+      continue;
+    }
+    const h = headingLine(trimmed);
+    if (h !== null) {
+      flushPara();
+      flushQuote();
+      flushList();
+      const size = b.font.size + bodyHeadSize1 - 2 * (h.level - 1);
+      const runs = bodyInline(b, h.rest).map((r) => ({ ...r, font: { ...bodyStyled(r.font, 700, false), size } }));
+      blocks.push({ kind: "h", level: h.level, runs });
+      continue;
+    }
+    const item = bulletLine(trimmed);
+    if (item !== null) {
+      flushPara();
+      flushQuote();
+      if (list === null) {
+        list = [];
+      }
+      list.push(bodyInline(b, item));
+      continue;
+    }
+    flushList();
+    flushQuote();
+    para.push(trimmed);
+  }
+  flushPara();
+  flushQuote();
+  flushList();
+  if (code !== null && code.length > 0) {
+    // an unclosed fence is still code: the scene must not lose it
+    blocks.push({ kind: "c", code });
+  }
+  return blocks;
+}
+
+/** Runs of spaces and runs of other characters, as the renderer wraps. */
+function splitSpaces(s: string): string[] {
+  const out: string[] = [];
+  let i = 0;
+  while (i < s.length) {
+    const sp = s[i] === " " || s[i] === "\t";
+    let end = i + 1;
+    while (end < s.length && (s[end] === " " || s[end] === "\t") === sp) {
+      end += 1;
+    }
+    out.push(s.slice(i, end));
+    i = end;
+  }
+  return out;
+}
+
+function bodyFinish(b: BodyText, l: BodyLine): void {
+  for (const run of l.runs) {
+    l.asc = Math.max(l.asc, run.font.size * 0.8);
+    l.desc = Math.max(l.desc, run.font.size * 0.25);
+  }
+  l.h = Math.round(l.asc + l.desc);
+  if (b.lineH > 0) {
+    l.h = b.lineH;
+  }
+}
+
+/**
+ * Greedy wrap at spaces; text wider than the width stays on its line. first is the indent of the
+ * first line, cont the indent of the continuation lines.
+ */
+function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, cont: number): BodyLine[] {
+  const lines: BodyLine[] = [];
+  const empty = (x: number): BodyLine => ({ x, w: 0, asc: 0, desc: 0, h: 0, gap: 0, quote: false, code: false, runs: [] });
+  let line = empty(first);
+  let started = false;
+  const flush = (): void => {
+    bodyFinish(b, line);
+    lines.push(line);
+    line = empty(cont);
+    started = false;
+  };
+  for (const run of runs) {
+    for (const tok of splitSpaces(run.text)) {
+      const space = tok.trim() === "";
+      const w = bodyWidth(tok, run.font);
+      if (space && !started) {
+        continue; // leading spaces of a line are not drawn
+      }
+      if (!space && started && width > 0 && line.x + line.w + w > width + 1e-9) {
+        flush();
+      }
+      const last = line.runs[line.runs.length - 1];
+      if (last !== undefined && bodyFontKey(last.font) === bodyFontKey(run.font) && last.code === run.code) {
+        last.text += tok;
+      } else {
+        line.runs.push({ text: tok, font: run.font, code: run.code });
+      }
+      line.w += w;
+      started = true;
+    }
+  }
+  if (started || lines.length === 0) {
+    flush();
+  }
+  return lines;
+}
+
+/** Breaks a code line at the width by characters: code has no spaces to break at. */
+function bodyCodeLines(b: BodyText, src: string, width: number): string[] {
+  if (width <= 0 || bodyWidth(src, b.mono) <= width + 1e-9) {
+    return [src];
+  }
+  const out: string[] = [];
+  let line = "";
+  for (const g of [...src]) {
+    if (line !== "" && bodyWidth(line + g, b.mono) > width + 1e-9) {
+      out.push(line);
+      line = g;
+      continue;
+    }
+    line += g;
+  }
+  return [...out, line];
+}
+
+/** Lays the body out at width. A width of 0 or less does not wrap. */
+function bodyLines(b: BodyText, width: number): BodyLine[] {
+  const out: BodyLine[] = [];
+  for (const blk of b.blocks) {
+    let lines: BodyLine[] = [];
+    switch (blk.kind) {
+      case "h":
+      case "p":
+        lines = bodyWrap(b, blk.runs, width, 0, 0);
+        break;
+      case "q":
+        lines = bodyWrap(b, blk.runs, width, bodyQuoteIndent, bodyQuoteIndent);
+        for (const l of lines) {
+          l.quote = true;
+        }
+        break;
+      case "l": {
+        const bulletW = bodyWidth("• ", b.font);
+        blk.items.forEach((item, j) => {
+          const runs = [{ text: "• ", font: b.font, code: false }, ...item];
+          const ls = bodyWrap(b, runs, width, bodyListIndent, bodyListIndent + bulletW);
+          if (j === 0 && out.length > 0 && ls.length > 0) {
+            ls[0]!.gap = b.gap;
+          }
+          lines.push(...ls);
+        });
+        if (lines.length === 0) {
+          continue;
+        }
+        break;
+      }
+      case "c": {
+        const inner = width - 2 * bodyCodePad;
+        for (const src of blk.code) {
+          for (const part of bodyCodeLines(b, src, inner)) {
+            const line: BodyLine = {
+              x: bodyCodePad,
+              w: 0,
+              asc: 0,
+              desc: 0,
+              h: 0,
+              gap: 0,
+              quote: false,
+              code: true,
+              runs: [{ text: part, font: b.mono, code: true }],
+            };
+            bodyFinish(b, line);
+            lines.push(line);
+          }
+        }
+        if (lines.length === 0) {
+          continue;
+        }
+        break;
+      }
+    }
+    if (out.length > 0 && blk.kind !== "l" && lines.length > 0) {
+      lines[0]!.gap = b.gap;
+      if (blk.kind === "h") {
+        switch (blk.level) {
+          case 1:
+            lines[0]!.gap += bodyHeadGap1;
+            break;
+          case 2:
+            lines[0]!.gap += bodyHeadGap2;
+            break;
+        }
+      }
+    }
+    out.push(...lines);
+  }
+  return out;
+}
+
+/** The width of the widest line when nothing wraps. */
+function bodyNatural(b: BodyText): number {
+  let w = 0;
+  for (const l of bodyLines(b, Infinity)) {
+    w = Math.max(w, l.x + l.w);
+  }
+  return w;
+}
+
+/** The height of the body at width, its block gaps included. */
+function bodyHeight(b: BodyText, width: number): number {
+  let h = 0;
+  for (const l of bodyLines(b, width)) {
+    h += l.gap + l.h;
+  }
+  return h;
+}
+
+/** The text of a string or markdown literal; a closing "%}" leaves no percent in it. */
+function markdownArg(src: string | null, a: TennNode | undefined): string {
+  if (a === undefined) {
+    return "";
+  }
+  let text = argText(a);
+  if (text.endsWith("%") && (a.token === null || src === null || src[a.token.pos + text.length] === "}")) {
+    text = text.slice(0, -1);
+  }
+  return text;
+}
+
+/** font-size of the item, the size the title is drawn with and the body is based on. */
+function titleSize(prep: Prep, rn: RNode): number {
+  const fs = propOf(prep, rn, "font-size");
+  if (fs !== null) {
+    const v = propNum(fs, 0);
+    if (v !== null && v > 0) {
+      return v;
+    }
+  }
+  return defaultFontSize;
+}
+
+/**
+ * Reads the body command of rn and parses its markdown; null when rn has no body or an empty one.
+ * The forms are the classic renderer's: body "text", body %{ ... } and body { text "..."; ... }.
+ */
+function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyText | null {
+  const pr = propOf(prep, rn, "body");
+  if (pr === null) {
+    return null;
+  }
+  const at = rn.src ?? { line: 0, col: 0 };
+  let size = 0;
+  let lineH = 0;
+  let gap = bodyBlockGap;
+  let family = "";
+  let mono = bodyMonoFace;
+  let color = styleColor;
+  let text = "";
+  const textArg = (i: number): string =>
+    pr.val !== undefined ? (pr.val[i] ?? "") : i < pr.args.length ? markdownArg(rn.src?.src ?? null, pr.args[i]) : "";
+  if (pr.block !== null) {
+    for (const c of pr.block.children ?? []) {
+      const name = cmdName(c);
+      const { args } = splitCommand(c);
+      switch (name) {
+        case "text":
+          if (args.length > 0) {
+            text = markdownArg(rn.src?.src ?? null, args[0]);
+          }
+          break;
+        case "font-size": {
+          const v = argNum(args, 0);
+          if (v !== null && v > 0) {
+            size = v;
+          } else {
+            prep.diag.warn(at, "body font-size: not a number above 0, ignored");
+          }
+          break;
+        }
+        case "font-family":
+          family = argText(args[0]);
+          break;
+        case "mono": {
+          const s = argText(args[0]);
+          if (s !== "") {
+            mono = s;
+          }
+          break;
+        }
+        case "text-color": {
+          const c2 = sceneColor(argText(args[0]));
+          if (c2 !== null) {
+            color = c2;
+          } else {
+            prep.diag.warn(at, `body text-color: "${argText(args[0])}" is not a color`);
+          }
+          break;
+        }
+        case "line-height": {
+          const v = argNum(args, 0);
+          if (v !== null && v > 0) {
+            lineH = v;
+          } else {
+            prep.diag.warn(at, "body line-height: not a number above 0, ignored");
+          }
+          break;
+        }
+        case "gap": {
+          const v = argNum(args, 0);
+          if (v !== null && v >= 0) {
+            gap = v;
+          } else {
+            prep.diag.warn(at, "body gap: not a number from 0, ignored");
+          }
+          break;
+        }
+      }
+    }
+  } else {
+    text = textArg(0);
+  }
+  if (text.trim() === "") {
+    return null;
+  }
+  text = dedent(text).replaceAll("\t", "    ");
+
+  if (size === 0) {
+    size = titleSize(prep, rn) - bodyFontDrop;
+  }
+  if (size <= 0) {
+    size = 1;
+  }
+  const font = fontOf(prep, rn, size);
+  if (family !== "") {
+    font.family = family;
+    font.name = "";
+  }
+  const b: BodyText = {
+    font,
+    mono: { family: mono, weight: 0, italic: false, size, spacing: 0, name: "" },
+    color,
+    codeBg: sceneColor("grey-200") ?? noColor,
+    bar: sceneColor("grey-400") ?? noColor,
+    lineH,
+    gap,
+    padX: inCtx ? 0 : textPadX,
+    padY: inCtx ? 0 : textPadY,
+    blocks: [],
+  };
+  b.blocks = bodyParse(b, text);
+  return b;
+}
+
+/** Draws the body with its top left corner at x, y. */
+function drawBody(ctx: Canvas2D, b: BodyText, x: number, y: number, width: number): void {
+  ctx.save();
+  ctx.textBaseline = "alphabetic";
+  let yy = y;
+  for (const l of bodyLines(b, width)) {
+    yy += l.gap;
+    if (l.code && width > 0) {
+      ctx.fillStyle = sceneCss(b.codeBg);
+      ctx.fillRect(x, yy, width, l.h);
+    }
+    if (l.quote) {
+      ctx.fillStyle = sceneCss(b.bar);
+      ctx.fillRect(x, yy, bodyBarW, l.h);
+    }
+    let xx = x + l.x;
+    const base = yy + (l.h - (l.asc + l.desc)) / 2 + l.asc;
+    for (const run of l.runs) {
+      const w = bodyWidth(run.text, run.font);
+      if (run.code && !l.code && w > 0) {
+        ctx.fillStyle = sceneCss(b.codeBg);
+        ctx.fillRect(xx, yy, w, l.h);
+      }
+      if (run.text !== "") {
+        ctx.font = fontCss(run.font);
+        ctx.fillStyle = sceneCss(b.color);
+        ctx.fillText(run.text, xx, base);
+      }
+      xx += w;
+    }
+    yy += l.h;
+  }
+  ctx.restore();
+}
+
 // MARK: - Paint
 
 interface Look {
@@ -2440,6 +3092,9 @@ interface Prep {
   texts: Map<RNode, TextInfo>;
   looks: Map<RNode, Look>;
   icons: Map<RNode, Icon>;
+  bodies: Map<RNode, BodyText>;
+  /** The text block a body takes in the flow of an auto-layout item, after its children. */
+  bodyAt: Map<RNode, LayoutNode>;
 }
 
 const defaultFontSize = 18;
@@ -2457,6 +3112,7 @@ export interface TennScene {
   /** y-up bounds, as DrawableScene.getBounds. */
   bounds: Rect;
   diagnostics: { message: string; warn: boolean; line: number; col: number; file: string }[];
+  /** Draws into a y-up canvas (the caller flips it once, as drawScene does); `at` is where its bottom edge goes. */
   draw(ctx: Canvas2D, at?: Point): void;
   /** The laid out items in tree order, for tests and the inspector. */
   boxes: { name: string; path: string; x: number; y: number; width: number; height: number; depth: number }[];
@@ -2520,7 +3176,15 @@ function sceneNodeFor(file: SceneNode, element: Element): SceneNode | null {
 
 /** The prep of a screen: sizes, styles and text of every node, then the layout. */
 function prepare(expanded: RNode, diag: Diagnostics): { prep: Prep; root: LayoutNode } {
-  const prep: Prep = { diag, frames: new Map(), texts: new Map(), looks: new Map(), icons: new Map() };
+  const prep: Prep = {
+    diag,
+    frames: new Map(),
+    texts: new Map(),
+    looks: new Map(),
+    icons: new Map(),
+    bodies: new Map(),
+    bodyAt: new Map(),
+  };
   animations(expanded, new Map(), diag);
   const root = newLayout(expanded);
   root.dir = "abs";
@@ -2852,11 +3516,27 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
   // The root of an instance that holds items is a container, not a box of its own.
   const look = lookOf(prep, rn, inCtx || (rn.inst && holdsItems(rn)), up);
   prep.looks.set(rn, look);
+  const body = bodyOf(prep, rn, look.text, inCtx);
+  if (body !== null) {
+    prep.bodies.set(rn, body);
+  }
   for (const k of rn.kids) {
     if (k.kind !== "item" || flag(prep, k, "hidden")) {
       continue;
     }
     n.kids.push(itemNode(prep, k, auto, look.text));
+  }
+  // The body of an auto-layout item is a text block of its own after the children, so the flow
+  // puts it below them and the item grows with it; a leaf paints it under its title instead.
+  if (body !== null && auto && n.kids.length > 0) {
+    const bn = newLayout(null);
+    bn.w = FILL;
+    bn.leafW = () => bodyNatural(body);
+    bn.leafH = (w: number) => bodyHeight(body, w);
+    body.padX = 0;
+    body.padY = 0;
+    n.kids.push(bn);
+    prep.bodyAt.set(rn, bn);
   }
   if (n.kids.length === 0) {
     leaf(prep, rn, n, inCtx);
@@ -2869,7 +3549,7 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
   return n;
 }
 
-/** An item without children takes the size of its title, or of its icon. */
+/** An item without children takes the size of its title and body, or of its icon. */
 function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
   const icon = iconOf(prep, rn);
   if (icon !== null) {
@@ -2878,17 +3558,38 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
     n.leafH = () => icon.vh;
   }
   const ti = textOf(prep, rn, inCtx || icon !== null);
-  if (ti === null) {
+  // An icon has no text body: the path is the content.
+  const body = icon === null ? (prep.bodies.get(rn) ?? null) : null;
+  if (ti === null && body === null) {
     return;
   }
-  prep.texts.set(rn, ti);
-  const pad = propOf(prep, rn, "padding");
-  if (pad !== null && propOf(prep, rn, "auto-layout") !== null) {
-    ti.padY = n.pad[0];
-    ti.padX = n.pad[3];
+  if (ti !== null) {
+    prep.texts.set(rn, ti);
   }
-  n.leafW = () => Math.ceil(textNatural(ti)) + 2 * ti.padX;
-  n.leafH = (w: number) => textWrap(ti, w - 2 * ti.padX).length * ti.lineH + 2 * ti.padY;
+  const pad = propOf(prep, rn, "padding");
+  let padX = ti?.padX ?? (inCtx ? 0 : textPadX);
+  let padY = ti?.padY ?? (inCtx ? 0 : textPadY);
+  if (pad !== null && propOf(prep, rn, "auto-layout") !== null) {
+    padX = n.pad[3];
+    padY = n.pad[0];
+  }
+  if (ti !== null) {
+    ti.padX = padX;
+    ti.padY = padY;
+  }
+  if (body !== null) {
+    body.padX = padX;
+    body.padY = padY;
+  }
+  n.leafW = () => Math.ceil(Math.max(ti === null ? 0 : textNatural(ti), body === null ? 0 : bodyNatural(body))) + 2 * padX;
+  n.leafH = (w: number) => {
+    const inner = w - 2 * padX;
+    let h = ti === null ? 0 : textWrap(ti, inner).length * ti.lineH;
+    if (body !== null) {
+      h += bodyHeight(body, inner);
+    }
+    return h + 2 * padY;
+  };
 }
 
 /** path and view-box of a leaf: a vector icon drawn in place of the box (5a.16). */
@@ -3209,9 +3910,10 @@ function fillGradient(ctx: Canvas2D, g: SceneGradient, w: number, h: number): bo
     return false;
   }
   const a = (g.angle * Math.PI) / 180;
-  // draw() flips the canvas once, so y is up here and 0 degrees points up as it does on screen in Go.
+  // Go's gradient.at in the box's y-down local frame: 0 degrees runs from the bottom of the box (the
+  // first stop) up to its top (the last), as on screen.
   const dx = Math.sin(a);
-  const dy = Math.cos(a);
+  const dy = -Math.cos(a);
   const half = (Math.abs(w * dx) + Math.abs(h * dy)) / 2;
   const line = ctx.createLinearGradient(w / 2 - dx * half, h / 2 - dy * half, w / 2 + dx * half, h / 2 + dy * half);
   for (const s of g.stops) {
@@ -3413,7 +4115,16 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
           }
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {
-            drawText(ctx, ti, w, h, ln.kids.length === 0, look.text);
+            // With a body the title goes to the top left and the body follows it.
+            drawText(ctx, ti, w, h, ln.kids.length === 0 && prep.bodies.get(rn) === undefined, look.text);
+          }
+          const body = prep.bodies.get(rn);
+          if (body !== undefined && prep.bodyAt.get(rn) === undefined) {
+            let y = body.padY;
+            if (ti !== undefined) {
+              y = ti.padY + textWrap(ti, w - 2 * ti.padX).length * ti.lineH;
+            }
+            drawBody(ctx, body, body.padX, y, w - 2 * body.padX);
           }
         }
       }
@@ -3426,18 +4137,27 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
         drawLink(ctx, prep, k, rn);
       }
     }
+    const bodyAt = prep.bodyAt.get(rn);
+    const flowBody = prep.bodies.get(rn);
+    if (bodyAt !== undefined && flowBody !== undefined) {
+      drawBody(ctx, flowBody, bodyAt.rx, bodyAt.ry, bodyAt.rw);
+    }
     ctx.restore();
   };
 
   return {
     width,
     height,
-    bounds: { x: minX, y: 0 - maxY, width: maxX - minX, height: maxY - minY },
+    // y-up, which the boxes are not: the boxes are go/scene's screen y, counted down from the top, and
+    // draw() flips them up, so the content sits above the origin instead of below it.
+    bounds: { x: minX, y: 0, width: maxX - minX, height: maxY - minY },
     diagnostics: diag.list,
     boxes,
     draw(ctx: Canvas2D, at: Point = { x: 0, y: 0 }): void {
       ctx.save();
-      ctx.translate(at.x, at.y);
+      // The caller draws in a y-up world (drawScene flips the canvas once); the boxes are y-down, so the
+      // picture is flipped around its bottom edge, where `at` puts it.
+      ctx.translate(at.x, at.y + maxY);
       ctx.scale(1, -1);
       drawNode(ctx, expanded, root, true);
       ctx.restore();
