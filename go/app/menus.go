@@ -28,6 +28,7 @@ func (v *Viewer) menus() {
 	v.recentMenu = file.Submenu("Open &Recent")
 	v.fillRecent()
 	file.Item("Open Lin&k...", v.showOpenLink, g.Shortcut("Cmd+Shift+O"))
+	file.Item("Import Pen &File...", v.importPenDialog)
 	file.Item("&Reload", v.reloadCommand, g.Shortcut("Cmd+R"))
 	file.Separator()
 	file.Item("&Save", func() { v.save() }, g.Shortcut("Cmd+S"))
