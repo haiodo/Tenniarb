@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go/go.mod
           cache-dependency-path: go/go.sum
@@ -36,14 +36,14 @@ jobs:
     timeout-minutes: 30
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # git describe and the commit count for the build number
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go/go.mod
           cache-dependency-path: go/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -61,7 +61,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build the app and the disk image
         run: make go-pkg-mac GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: mac
           path: |
@@ -75,14 +75,14 @@ jobs:
     timeout-minutes: 30
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go/go.mod
           cache-dependency-path: go/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -96,7 +96,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build the packages
         run: make go-pkg-win go-pkg-linux GO_SHORT=${{ steps.version.outputs.version }} GO_VERSION=${{ steps.version.outputs.version }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-linux
           path: |
@@ -110,7 +110,7 @@ jobs:
     timeout-minutes: 10
     needs: [mac, windows-linux]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Version and notes
         id: version
         run: |
@@ -130,7 +130,7 @@ jobs:
             printf 'Tenniarb %s.\n\nAssets are unsigned: macOS asks you to allow the app in Security, Windows shows a SmartScreen warning.\n' "$VERSION" > "$NOTES"
           fi
           echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
