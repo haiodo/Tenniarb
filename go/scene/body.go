@@ -32,21 +32,31 @@ type bodyRun struct {
 	code bool // drawn over the code background
 }
 
-// body blocks: a heading, a paragraph, a list of items, a quote, a fenced code block.
+// body blocks: a heading, a paragraph, a list of items, a quote, a fenced code block, the table of
+// contents of the headings.
 const (
 	bodyHeading   = 'h'
 	bodyParagraph = 'p'
 	bodyList      = 'l'
 	bodyQuote     = 'q'
 	bodyCode      = 'c'
+	bodyTOC       = 't'
 )
 
 type bodyBlock struct {
-	kind  byte
-	level int         // heading level 1..3
-	runs  []bodyRun   // heading, paragraph, quote
-	items [][]bodyRun // list: one run list per bullet
-	code  []string    // code: source lines, wrapped at the width
+	kind   byte
+	level  int           // heading level 1..3
+	anchor string        // heading: the link target of the heading, see anchorOf
+	runs   []bodyRun     // heading, paragraph, quote
+	items  [][]bodyRun   // list: one run list per bullet
+	code   []string      // code: source lines, wrapped at the width
+	toc    []bodyTOCItem // the table of contents, built by toc
+}
+
+// bodyTOCItem is one line of the table of contents: a heading level and its text.
+type bodyTOCItem struct {
+	level int
+	runs  []bodyRun
 }
 
 // bodyLine is one laid out line of the body.
@@ -92,6 +102,9 @@ type bodyWidthKey struct {
 func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	pr := p.prop(rn, "body")
 	if pr == nil {
+		if toc := p.prop(rn, "toc"); toc != nil {
+			p.t.warn(toc.Pos, "toc needs a body: it lists the headings of the body of the same item")
+		}
 		return nil
 	}
 	size, lineH, gap := 0.0, 0.0, bodyBlockGap
@@ -185,6 +198,18 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 		b.padX, b.padY = textPadX, textPadY
 	}
 	b.parse(text)
+	if toc := p.prop(rn, "toc"); toc != nil {
+		b.toc(p.tocDepth(toc))
+	}
+	base := pr.Pos.File
+	if from != "" {
+		if f, _, _ := strings.Cut(from, "#"); f != "" {
+			if _, rel, ok := p.t.resolveIn(pr.Pos.File, f); ok {
+				base = rel
+			}
+		}
+	}
+	p.checkBodyLinks(pr.Pos, base, text)
 	return b
 }
 
@@ -335,6 +360,7 @@ func (b *bodyText) parse(text string) {
 	var list *bodyBlock
 	var code []string
 	inCode := false
+	anchors := map[string]int{} // heading anchors seen, for the -2, -3 of a repeat
 	flushPara := func() {
 		if len(para) > 0 {
 			blocks = append(blocks, bodyBlock{kind: bodyParagraph, runs: b.inline(strings.Join(para, " "))})
@@ -392,7 +418,8 @@ func (b *bodyText) parse(text string) {
 			for i := range runs {
 				runs[i].font = b.weighted(runs[i].font, size)
 			}
-			blocks = append(blocks, bodyBlock{kind: bodyHeading, level: level, runs: runs})
+			anchor := uniqueAnchor(anchors, anchorOf(runsString(runs)))
+			blocks = append(blocks, bodyBlock{kind: bodyHeading, level: level, anchor: anchor, runs: runs})
 			continue
 		}
 		if item, ok := bulletLine(trimmed); ok {
@@ -603,6 +630,14 @@ func (b *bodyText) lines(width float64) []bodyLine {
 					ls[0].gap = b.gap
 				}
 				lines = append(lines, ls...)
+			}
+			if len(lines) == 0 {
+				continue
+			}
+		case bodyTOC:
+			for _, item := range blk.toc {
+				x := float64(item.level-1) * bodyListIndent
+				lines = append(lines, b.wrap(item.runs, width, x, x)...)
 			}
 			if len(lines) == 0 {
 				continue
