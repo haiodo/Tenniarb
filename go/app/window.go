@@ -248,7 +248,7 @@ func (v *Viewer) build() {
 		v.inspectorPane())
 	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
 	look.SetBottomPanel(v.win, content, codePane, g.Scaled(200))
-	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.InspectorWidth)
+	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.SidebarWidth)
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)
@@ -270,6 +270,7 @@ func (v *Viewer) toolbar() {
 		}},
 		look.ToolbarItem{Title: "Items", Symbol: "list.bullet", Sidebar: true, Small: true, OnClick: v.toggleItems},
 		look.ToolbarItem{Title: "Hide Sidebar", Symbol: "sidebar.left", Sidebar: true, Small: true, OnClick: v.toggleSidebar},
+		look.ToolbarItem{Space: true},
 		look.ToolbarItem{Title: "Zoom", Small: true, Group: []look.ToolbarItem{
 			{Title: "Zoom Out", Symbol: "minus.magnifyingglass", OnClick: func() { v.zoomBy(1 / ZoomStep) }},
 			{Title: "Zoom In", Symbol: "plus.magnifyingglass", OnClick: func() { v.zoomBy(ZoomStep) }},
@@ -277,7 +278,6 @@ func (v *Viewer) toolbar() {
 		}},
 		look.ToolbarItem{Title: "Reset Zoom", Text: v.zoomText, Small: true, OnClick: v.resetZoom},
 		look.ToolbarItem{Title: "Comment Mode (C)", Symbol: "text.bubble", Small: true, ID: "comment-mode", OnClick: v.toggleCommentMode},
-		look.ToolbarItem{Space: true},
 		look.ToolbarItem{Title: "Item", Inspector: true, Small: true, Group: []look.ToolbarItem{
 			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
 			{Title: "Delete Item", Symbol: "minus", OnClick: v.deleteItems},
@@ -291,7 +291,7 @@ func (v *Viewer) toolbar() {
 	items = slices.Insert(items, 3, agents...)
 	// A pages export long enough to show progress gets the button after the zoom controls.
 	if v.exporting.active {
-		items = slices.Insert(items, 5+len(agents), look.ToolbarItem{
+		items = slices.Insert(items, 6+len(agents), look.ToolbarItem{
 			Title: "Export pages in progress; click for what is left", Text: v.exporting.text, Small: true,
 			ID: "export-progress", OnClick: v.showExportProgress,
 		})
