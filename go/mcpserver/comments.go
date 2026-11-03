@@ -233,7 +233,9 @@ type commentJSON struct {
 	Text     string      `json:"text"`
 	Anchor   anchorJSON  `json:"anchor"`
 	LinkText string      `json:"link_text,omitempty"`
-	Replies  []replyJSON `json:"replies,omitempty"`
+	// File is set when the comment belongs to a file this document mounts, not to the document itself.
+	File    string      `json:"file,omitempty"`
+	Replies []replyJSON `json:"replies,omitempty"`
 }
 
 type eventJSON struct {
@@ -253,8 +255,14 @@ func commentLink(abs string, a comments.Anchor) string {
 }
 
 func toJSON(abs string, c comments.Comment) commentJSON {
+	return toJSONOf(abs, "", c)
+}
+
+// toJSONOf is toJSON for a comment of file, a document this one mounts: file stays in the answer, so the
+// agent knows where the anchor is.
+func toJSONOf(abs, file string, c comments.Comment) commentJSON {
 	out := commentJSON{ID: c.ID, State: c.State, Author: c.Author, Created: c.Created.Format(time.RFC3339), Text: c.Text,
-		Anchor: anchorJSON{Element: strings.Join(c.Anchor.Element, "."), Node: c.Anchor.Node, Point: c.Anchor.Point}, LinkText: commentLink(abs, c.Anchor)}
+		Anchor: anchorJSON{Element: strings.Join(c.Anchor.Element, "."), Node: c.Anchor.Node, Point: c.Anchor.Point}, LinkText: commentLink(abs, c.Anchor), File: file}
 	for _, r := range c.Replies {
 		out.Replies = append(out.Replies, replyJSON{Author: r.Author, Text: r.Text, Created: r.Created.Format(time.RFC3339)})
 	}
@@ -343,7 +351,44 @@ func (s *Server) listComments(in commentsIn) (string, error) {
 			}
 		}
 	}
+	// The other way round: a comment on a part this document shows belongs to that part's file, and an agent
+	// working from the entry would never see it otherwise.
+	for _, f := range s.mountedFiles(rel) {
+		fabs := filepath.Join(s.root, filepath.FromSlash(f))
+		md, err := s.host.comments.store.Load(docKey(fabs))
+		if err != nil {
+			continue
+		}
+		for _, c := range md.Comments {
+			if seen[c.ID] || (in.State != "all" && c.State != comments.Open) {
+				continue
+			}
+			seen[c.ID] = true
+			out = append(out, toJSONOf(fabs, f, c))
+		}
+	}
 	return marshal(out)
+}
+
+// mountedFiles lists the files rel shows as mounted elements, in tree order, rel itself excluded.
+func (s *Server) mountedFiles(rel string) []string {
+	_, tree, err := s.diagnose(rel)
+	if err != nil || tree == nil {
+		return nil
+	}
+	root := tree.File(rel)
+	if root == nil {
+		return nil
+	}
+	var out []string
+	seen := map[string]bool{rel: true}
+	s.eachMount(root, nil, func(_ []string, file string) {
+		if file != "" && !seen[file] {
+			seen[file] = true
+			out = append(out, file)
+		}
+	})
+	return out
 }
 
 // mountRef is a document that shows a file as a mounted element: the document's path and the element

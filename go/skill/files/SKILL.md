@@ -76,3 +76,7 @@ open comment has an `id`, the `text`, the anchor (`link_text` goes to `select`) 
 then `reply {file, id, text}` or `resolve {file, id, text}`; the user sees it in the thread at once. To stay on
 duty loop `wait_comment {timeout_s}`: it returns the new comments and replies, or `[]` after the timeout, and you
 call it again.
+
+A comment with a `file` field is not on this document but on a file it mounts (`element X --from-file`): answer it
+with `reply {file: <that file>, id, text}`, and edit that file, not this one. Comments live in the app, not in the
+`.tenn` text: a `//` line is a code comment, not a note from the user.

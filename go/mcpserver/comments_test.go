@@ -165,6 +165,56 @@ func TestCommentsOfAMissingFileFail(t *testing.T) {
 	mustFail(t, e.agent, "comments", map[string]any{"file": "no-such-file.tenn"}, "no such file")
 }
 
+// TestCommentsOfMountedFilesInTheEntry: a comment on a part belongs to the part's file, and the document
+// that shows it lists the comment too, with the file in the answer - an agent working from the entry would
+// never learn about it otherwise.
+func TestCommentsOfMountedFilesInTheEntry(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv(comments.EnvConfigDir, t.TempDir())
+	files := map[string]string{
+		"lib.tenn":  "element \"Panel\" {\n  item Box\n}\n",
+		"main.tenn": "element Lib --from-file \"lib.tenn\"\n",
+	}
+	for name, text := range files {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	srv, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	libAbs := filepath.Join(srv.root, "lib.tenn")
+	if _, err := srv.host.comments.store.Update(docKey(libAbs), func(d *comments.Doc) error {
+		_, err := d.Add(comments.User, "round the box", comments.Anchor{Element: []string{"Panel"}, Node: "Box"}, time.Now())
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	out, err := srv.listComments(commentsIn{File: "main.tenn", State: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := parseComments(t, out)
+	if len(got) != 1 || got[0].File != "lib.tenn" || got[0].Text != "round the box" {
+		t.Fatalf("comments of the entry: %s", out)
+	}
+	// the entry's own comments carry no file: the path the caller asked for is the answer
+	if _, err := srv.host.comments.store.Update(docKey(filepath.Join(srv.root, "main.tenn")), func(d *comments.Doc) error {
+		_, err := d.Add(comments.User, "entry note", comments.Anchor{Element: []string{"Lib"}, Node: ""}, time.Now())
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	out, err = srv.listComments(commentsIn{File: "main.tenn", State: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got = parseComments(t, out); len(got) != 2 || got[0].File != "" || got[1].File != "lib.tenn" {
+		t.Fatalf("own and mounted comments: %s", out)
+	}
+}
+
 func TestWaitCommentTimeout(t *testing.T) {
 	e := newCommentEnv(t)
 	start := time.Now()
