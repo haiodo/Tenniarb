@@ -47,6 +47,8 @@ type prep struct {
 	opts   Options
 	frames map[*RNode]*layout.Node
 	texts  map[*RNode]*textInfo
+	bodies map[*RNode]*bodyText
+	bodyAt map[*RNode]*layout.Node // a body laid out as a child of its item
 	styles map[*RNode]style
 	ends   map[*RNode][2]*RNode // link -> its two items
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
@@ -85,7 +87,7 @@ func newPrep(t *Tree, o Options) *prep {
 		o.FirstID = 1
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
-		styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
+		bodies: map[*RNode]*bodyText{}, bodyAt: map[*RNode]*layout.Node{}, styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
 		anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
 
@@ -276,10 +278,21 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 	// The root of an instance that holds items is a container for what the element draws, not a box of
 	// its own: a white fill there would cover the screen behind it.
 	p.styles[rn] = p.style(rn, inCtx || (rn.Inst && holdsItems(rn)), up)
+	p.bodies[rn] = p.bodyInfo(rn, p.styles[rn], inCtx)
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
 			n.Kids = append(n.Kids, p.item(k, auto, p.styles[rn].text))
 		}
+	}
+	// The body of an auto-layout item is a text block of its own after the children, so the flow
+	// puts it below them and the item grows with it; a leaf paints it under its title instead.
+	if body := p.bodies[rn]; body != nil && auto && len(n.Kids) > 0 {
+		bn := &layout.Node{W: layout.Fill}
+		bn.LeafW = func() float64 { return body.natural() }
+		bn.LeafH = func(w float64) float64 { return body.height(w) }
+		body.padX, body.padY = 0, 0
+		n.Kids = append(n.Kids, bn)
+		p.bodyAt[rn] = bn
 	}
 	if len(n.Kids) == 0 {
 		p.leaf(rn, n, inCtx)
@@ -449,20 +462,55 @@ func (p *prep) sizeWord(pr *Prop, word string, inCtx, parentAuto bool) layout.Si
 	return layout.Size{}
 }
 
-// leaf gives an item without children the size of its title.
+// leaf gives an item without children the size of its title and body.
 func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	p.icon(rn, n)
 	// An icon draws no name as text, as in a layout context.
 	ti := p.textOf(rn, inCtx || p.icons[rn] != nil)
-	if ti == nil {
+	body := p.bodies[rn]
+	if p.icons[rn] != nil {
+		body = nil // an icon has no text body: the path is the content
+	}
+	if ti == nil && body == nil {
 		return
 	}
-	p.texts[rn] = ti
-	if pr := p.prop(rn, "padding"); pr != nil && p.prop(rn, "auto-layout") != nil {
-		ti.padY, ti.padX = n.Pad[0], n.Pad[3]
+	if ti != nil {
+		p.texts[rn] = ti
 	}
-	n.LeafW = func() float64 { return math.Ceil(ti.natural()) + 2*ti.padX }
-	n.LeafH = func(w float64) float64 { return float64(len(ti.wrap(w-2*ti.padX)))*ti.lineH + 2*ti.padY }
+	padX, padY := textPadX, textPadY
+	if inCtx {
+		padX, padY = 0, 0
+	}
+	if pr := p.prop(rn, "padding"); pr != nil && p.prop(rn, "auto-layout") != nil {
+		padX, padY = n.Pad[3], n.Pad[0]
+	}
+	if ti != nil {
+		ti.padX, ti.padY = padX, padY
+	}
+	if body != nil {
+		body.padX, body.padY = padX, padY
+	}
+	n.LeafW = func() float64 {
+		w := 0.0
+		if ti != nil {
+			w = math.Max(w, ti.natural())
+		}
+		if body != nil {
+			w = math.Max(w, body.natural())
+		}
+		return math.Ceil(w) + 2*padX
+	}
+	n.LeafH = func(w float64) float64 {
+		inner := w - 2*padX
+		h := 0.0
+		if ti != nil {
+			h += float64(len(ti.wrap(inner))) * ti.lineH
+		}
+		if body != nil {
+			h += body.height(inner)
+		}
+		return h + 2*padY
+	}
 }
 
 func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {

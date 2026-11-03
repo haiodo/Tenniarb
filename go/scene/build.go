@@ -258,6 +258,14 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 			b.link(k, node)
 		}
 	}
+	if bn := b.p.bodyAt[rn]; bn != nil {
+		body := b.node()
+		b.tx.Add(node, body)
+		b.tx.Move(body, bn.RX, bn.RY)
+		r := gfx.NewRecorderWith(b.p.opts.Measurer)
+		b.p.bodies[rn].draw(r, 0, 0, bn.RW)
+		b.tx.SetPicture(body, r.Finish())
+	}
 	return node
 }
 
@@ -325,8 +333,16 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 		}
 	}
 	if ti := b.p.texts[rn]; ti != nil {
-		leaf := len(ln.Kids) == 0
+		// With a body the title goes to the top left and the body follows it, as in classic diagrams.
+		leaf := len(ln.Kids) == 0 && b.p.bodies[rn] == nil
 		ti.draw(r, w, h, leaf, st.text)
+	}
+	if body := b.p.bodies[rn]; body != nil && b.p.bodyAt[rn] == nil {
+		y := body.padY
+		if ti := b.p.texts[rn]; ti != nil {
+			y = ti.padY + float64(len(ti.wrap(w-2*ti.padX)))*ti.lineH
+		}
+		body.draw(r, body.padX, y, w-2*body.padX)
 	}
 	return r.Finish()
 }
