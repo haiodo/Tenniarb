@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/qa/qatest"
@@ -246,6 +247,70 @@ func TestExportPagesQuiet(t *testing.T) {
 	if a.Find(qa.ID("export-progress")).Exists() {
 		t.Fatal("the progress item is still in the toolbar after the failure")
 	}
+}
+
+// TestExportNoteGoesAway pins that a finished export says what it did for a few seconds, not forever:
+// the note takes the banner, and the banner is the user's again after it.
+func TestExportNoteGoesAway(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	dir := t.TempDir()
+	// "Empty" has nothing to draw, so it is the page the export skips and the banner has to name.
+	doc := strings.Replace(pagesDoc, `    element "Appendix" { item "E" { pos 0 0; width 40; height 20 } }`,
+		"    element \"Appendix\" { item \"E\" { pos 0 0; width 40; height 20 } }\n    element \"Empty\" {}", 1)
+	file := filepath.Join(dir, "Book.tenn")
+	if err := os.WriteFile(file, []byte(doc), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		h.open(fixture)
+		a.State("command", "name", "close-others")
+	})
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Find(qa.Text("Book").In(qa.ID("outline"))).Click()
+	a.Settle()
+
+	pdf := filepath.Join(dir, "Book.pdf")
+	a.Answer(qa.Dialog{Kind: "file", Reply: pdf})
+	a.Find(qa.Text("PDF...").In(qa.Selector{Class: "MenuItem", Text: "Element"})).Click()
+	a.Settle()
+	if !bannerHas(a, "pages written") {
+		t.Fatalf("no note about the export in the banner: %v", bannerTexts(a))
+	}
+	a.Eventually(9*time.Second, func() (any, bool) {
+		a.Settle()
+		return bannerTexts(a), !bannerHas(a, "pages written")
+	})
+}
+
+// bannerTexts is every label text of the window, for the banner assertions: the note lives in a label.
+func bannerTexts(a *qatest.Client) []string {
+	var out []string
+	var walk func([]qa.Node)
+	walk = func(list []qa.Node) {
+		for _, n := range list {
+			if n.Text != "" {
+				out = append(out, n.Text)
+			}
+			walk(n.Children)
+		}
+	}
+	walk(a.Dump())
+	return out
+}
+
+// bannerHas reports whether some label shows text with the part in it.
+func bannerHas(a *qatest.Client, part string) bool {
+	for _, s := range bannerTexts(a) {
+		if strings.Contains(s, part) {
+			return true
+		}
+	}
+	return false
 }
 
 // messageDialogs are the message boxes the app opened since App(t).

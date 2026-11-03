@@ -242,6 +242,6 @@ func (v *Viewer) reportPages(title, dest string, written, total int, skipped []s
 		return
 	}
 	if len(skipped) > 0 {
-		v.setNote(fmt.Sprintf("%d of %d pages written to %s, skipped: %s", written, total, dest, strings.Join(skipped, ", ")))
+		v.noteFor(fmt.Sprintf("%d of %d pages written to %s, skipped: %s", written, total, dest, strings.Join(skipped, ", ")))
 	}
 }

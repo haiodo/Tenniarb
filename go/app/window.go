@@ -33,6 +33,7 @@ type Viewer struct {
 	win    *g.Window
 	tree   *g.TreeView
 	banner *g.LabelView
+	note   string // the note in the banner, cleared by the next action
 	view   *view.View
 	scene  *gfx.Scene
 
@@ -221,6 +222,9 @@ func (v *Viewer) build() {
 	light, dark := canvasColors(v.sh.prefs)
 	v.autoQuick = v.sh.prefs.QuickPanel
 	v.win = v.app.Window("Tenniarb", g.Padding(0), g.Gap(0))
+	if runtime.GOOS == "windows" {
+		look.SetBackdrop(v.win, look.BackdropGlass)
+	}
 	var sidebar, content, codePane *g.Panel
 	v.win.Add(
 		g.VBox(g.Ref(&sidebar), g.Padding(0), g.Gap(0),
@@ -511,6 +515,7 @@ func (v *Viewer) reloadCommand() {
 
 // setBanner shows text in the banner in the colour of an error.
 func (v *Viewer) setBanner(text string) {
+	v.note = "" // an error takes the banner over from a note and stays
 	v.banner.SetText(text)
 	v.banner.SetVisible(text != "")
 	if text != "" {
@@ -519,8 +524,12 @@ func (v *Viewer) setBanner(text string) {
 	v.win.Unwrap().Layout()
 }
 
-// setNote shows a line of information in the banner, in the text colour.
+// noteTime is how long a note about a finished action stays in the banner.
+const noteTime = 6 * time.Second
+
+// setNote shows a line of information in the banner, in the text colour, until something else replaces it.
 func (v *Viewer) setNote(text string) {
+	v.note = text
 	c := g.RGB{R: 80, G: 80, B: 80}
 	if v.app.Dark() {
 		c = g.RGB{R: 200, G: 200, B: 200}
@@ -531,6 +540,17 @@ func (v *Viewer) setNote(text string) {
 		v.banner.SetForeground(c)
 	}
 	v.win.Unwrap().Layout()
+}
+
+// noteFor shows a note that goes away by itself: what a finished action did stays long enough to read.
+func (v *Viewer) noteFor(text string) {
+	v.setNote(text)
+	v.app.After(noteTime, func() {
+		if v.win.Unwrap().IsDisposed() || v.note != text {
+			return
+		}
+		v.setBanner(v.bannerText())
+	})
 }
 
 // startSession makes a new editing session on the current element of the document, with its own undo history.
