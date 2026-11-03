@@ -2,6 +2,8 @@ package scene_test
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -207,6 +209,69 @@ func TestComponentOnItsOwn(t *testing.T) {
 	}
 	if len(screen.Warnings) != 0 {
 		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}
+
+// TestItemInPlace: an item component written inside an element, not through a use, is an instance that sets
+// nothing: its body sees the defaults, so width ${...}, use-style ${kind}, hidden ${...} and title ${...}
+// evaluate there, and the same item through a use still takes the values of that use (spec 5c).
+func TestItemInPlace(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "inplace.tenn", `element "Host" {
+  item spot {
+    auto-layout column
+    item Card {
+      export let kind = primary
+      export let state = default
+      export let label = "Button"
+      styles {
+        primary { width 200 }
+        loading { border-color #ff0000 }
+      }
+      use-style ${kind} ${state}
+      item body { title ${label}; font-size 12 }
+      item spin { width 10; height 10; hidden ${state !== "loading"} }
+    }
+    use Card as busy { state loading }
+  }
+}`), "Host")
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	if w := m["spot.Card"].W; w != 200 {
+		t.Errorf("width %v, want 200 from the default kind style", w)
+	}
+	if l := m["spot.Card.body"].Lines; len(l) != 1 || l[0] != "Button" {
+		t.Errorf("label %v, want the default Button", l)
+	}
+	if _, ok := m["spot.Card.spin"]; ok {
+		t.Error("the spinner of the default state is drawn, want the default value of hidden")
+	}
+	if _, ok := m["spot.busy.spin"]; !ok {
+		t.Error("the spinner is not drawn, want the loading state of the use")
+	}
+}
+
+// TestDesignActions: the button of the design workspace is an item of its own file, drawn as it is written:
+// every expression of it and of its spinner evaluates with the defaults, so nothing is left "not evaluated".
+// Skipped outside a machine that has the design workspace.
+func TestDesignActions(t *testing.T) {
+	root := filepath.Join(os.Getenv("HOME"), "Develop/private/foundation")
+	if _, err := os.Stat(filepath.Join(root, "PlatformDesign.tenn")); err != nil {
+		t.Skip("no design workspace")
+	}
+	tree, err := scene.Load(root, "PlatformDesign.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen, _ := paramsBuild(t, tree, "Libraries.ui_kit.Actions")
+	for _, w := range screen.Warnings {
+		if strings.Contains(w.Msg, "not evaluated") {
+			t.Errorf("warning: %v", w)
+		}
 	}
 }
 

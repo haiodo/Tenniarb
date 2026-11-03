@@ -144,7 +144,20 @@ func (x *expander) content(n *Node) *RNode {
 	return nil
 }
 
+// item expands an item written in place: a component opened by itself is an instance that sets nothing, so
+// its body sees the defaults of its parameters (spec 5c).
 func (x *expander) item(n *Node) *RNode {
+	if len(n.Params) > 0 {
+		caller := x.vars
+		x.vars = x.defaults(n)
+		defer func() { x.vars = caller }()
+	}
+	return x.itemBody(n)
+}
+
+// itemBody expands the content of an item in the scope x.vars already holds: the use of a component item
+// has set the values there, and they must not fall back to the defaults.
+func (x *expander) itemBody(n *Node) *RNode {
 	if !x.enter(n, n.Pos) {
 		return nil
 	}
@@ -195,7 +208,9 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 
 func (x *expander) instance(target, use *Node) *RNode {
 	switch target.Kind {
-	case KItem, KLink:
+	case KItem:
+		return x.itemBody(target)
+	case KLink:
 		return x.content(target)
 	case KUse:
 		return x.use(target, true)

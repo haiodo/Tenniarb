@@ -24,6 +24,9 @@ type Screen struct {
 	// animated is Animations with what playing one needs: the box of the node in its parent and the
 	// opacity the style gives it.
 	animated []Animated
+	// links and anchors are the links and the headings of the bodies, where they are drawn.
+	links   []BodyLink
+	anchors []BodyAnchor
 
 	tree *RNode
 	p    *prep
@@ -131,6 +134,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	p.warnOutside(rn)
 	p.warnBodyFit(rn)
 	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p}
+	sc.collectBodies()
 	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
 	sc.gfx, sc.NextID = b.made, b.next
@@ -170,15 +174,12 @@ func (t *Tree) element(path string, eval evalFunc) *RNode {
 		}
 	}
 	if !target.isContainer() {
-		// An item is drawn on its own with the defaults of its parameters: a component may be an item,
-		// and a render of it must not need an element around it (spec 5c).
+		// An item is drawn on its own with the defaults of its parameters, which item takes (spec 5c).
 		if target.Kind != KItem {
 			t.fail(t.main.Pos, "path %s names a %s, not an element or an item", path, target.Kind)
 			return nil
 		}
-		x := &expander{t: t, ctx: ctx, eval: eval}
-		x.vars = x.defaults(target)
-		return x.item(target)
+		return (&expander{t: t, ctx: ctx, eval: eval}).item(target)
 	}
 	return t.expandElement(target, ctx, eval)
 }
