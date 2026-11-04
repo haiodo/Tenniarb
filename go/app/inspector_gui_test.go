@@ -137,10 +137,20 @@ func TestInspector(t *testing.T) {
 	app.Key("Mod+Z")
 	app.Settle()
 
-	// the body of an item, as text of its own
-	canvas.ClickAt(5, 5)
-	canvas.ClickAt(x, y)
+	// the body of an item, as text of its own; a click on an item of the whole selection keeps all of
+	// them, so the selection is dropped where no item lies first
+	ex, ey := emptyPoint(t, app)
+	canvas.ClickAt(ex, ey)
 	app.Settle()
+	if s := insp(t, app); len(s.Selection) != 0 {
+		t.Fatalf("the click on an empty place left %d selected", len(s.Selection))
+	}
+	e := editor(t, app)
+	canvas.ClickAt(center(e.Screen["Item"]))
+	app.Settle()
+	if s := insp(t, app); len(s.Selection) != 1 {
+		t.Fatalf("body: selection %v", s.Selection)
+	}
 	field("insp-body").Type("hello body")
 	time.Sleep(900 * time.Millisecond)
 	app.Settle()
@@ -158,7 +168,8 @@ func TestInspector(t *testing.T) {
 	}
 
 	// the element's own defaults, edited with nothing selected
-	canvas.ClickAt(5, 5)
+	ex, ey = emptyPoint(t, app)
+	canvas.ClickAt(ex, ey)
 	app.Settle()
 	if !visible("insp-def-color") {
 		t.Fatal("element section missing after the selection was cleared")

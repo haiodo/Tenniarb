@@ -84,6 +84,35 @@ type viewerState struct {
 	Canvas  []int
 }
 
+// emptyPoint is a canvas point no item covers: a click there clears the selection, a right click opens
+// the menu of the canvas. The view keeps the zoom when elements are switched, so a corner is not always
+// empty.
+func emptyPoint(t *testing.T, app *qatest.Client) (x, y float64) {
+	t.Helper()
+	var s struct {
+		Canvas []int
+		Screen map[string][]float64
+	}
+	if err := json.Unmarshal(app.State("state"), &s); err != nil {
+		t.Fatal(err)
+	}
+	for yy := 10.0; yy < float64(s.Canvas[1]); yy += 40 {
+		for xx := 10.0; xx < float64(s.Canvas[0]); xx += 40 {
+			free := true
+			for _, r := range s.Screen {
+				if xx >= r[0] && xx <= r[0]+r[2] && yy >= r[1] && yy <= r[1]+r[3] {
+					free = false
+					break
+				}
+			}
+			if free {
+				return xx, yy
+			}
+		}
+	}
+	return 10, 10
+}
+
 func state(t *testing.T, app *qatest.Client) viewerState {
 	t.Helper()
 	var s viewerState
@@ -292,7 +321,11 @@ func TestEditor(t *testing.T) {
 		t.Fatalf("open: %+v", s)
 	}
 	shot("01-open")
-	opened := s
+	// A switch keeps the zoom of the element left (TestSwitchKeepsCamera), so the element's own view is
+	// the one fit gives, not the one the switch left.
+	app.State("fit")
+	app.Settle()
+	opened := editor(t, app)
 
 	// gestures reach the camera through the view's router
 	z0 := state(t, app)

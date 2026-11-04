@@ -101,7 +101,8 @@ func TestSceneStyles(t *testing.T) {
 	}
 
 	// a group any-of: a check box, one click, one edit
-	canvas.ClickAt(5, 5)
+	ex, ey := emptyPoint(t, a)
+	canvas.ClickAt(ex, ey)
 	a.State("select", "path", file, "element", []string{"Button"}, "nodes", []string{"Btn"})
 	wait()
 	a.Find(qa.ID("scene-style-extras-outlined")).Click()
