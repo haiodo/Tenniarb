@@ -95,7 +95,7 @@ type (
 // MCP returns the MCP server with all tools registered.
 func (s *Server) MCP() *mcp.Server {
 	srv := mcp.NewServer(&mcp.Implementation{Name: "tenniarb-mcp", Version: "0.1.0"}, &mcp.ServerOptions{
-		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Files open in the Tenniarb app are read and edited live, through its undo. The user may leave comments on a design: after a task call comments, answer with reply or resolve, and loop wait_comment to stay on duty.",
+		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Change a file only through edit, never with your own Write/Edit tools: the app holds the document and the user follows the edits in its window. Files open in the Tenniarb app are read and edited live, through its undo. The user may leave comments on a design: after a task call comments, answer with reply or resolve, and loop wait_comment to stay on duty.",
 	})
 	srv.AddReceivingMiddleware(s.learnClient)
 	add(srv, "guide", "Return short examples and a reference of the .tenn commands the scene engine runs: elements, kinds and --from-file, items and auto-layout, pos and the Y axis, use with at/replace/slot, parameters, styles and use-style, colors and text, traps, and what is not supported. topic narrows it to one section by number (3) or heading word (styles); 'examples' returns the examples only.",

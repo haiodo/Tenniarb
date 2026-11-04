@@ -31,8 +31,9 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
    you know.
 4. Read the result of `edit`: it refuses any change that adds an error and lists the warnings left.
    No separate `validate` is needed after an edit.
-   Without MCP (you edit the file directly) run `tenniarb check FILE` after every edit instead: it
-   prints `path:line:col: error|warning: message` and exits 1 on errors; fix them before you render.
+   Without any MCP server (the CLI alone) you have to write the file directly: run `tenniarb check FILE`
+   after every edit then: it prints `path:line:col: error|warning: message` and exits 1 on errors; fix
+   them before you render.
 5. `render {file, element}` and look at the image with `review.md` in mind.
 6. Fix with small edits: `find` is one unique line or a few words, `replace` the new text. Render again.
    Stop when the render matches the request; two or three rounds are normal.
@@ -62,12 +63,17 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 
 ## When the app is open
 
-If the user has the file open in Tenniarb, `edit` changes the document in the app as one undo step
-and the file on disk stays untouched until the user saves. If the user typed since you read, the edit
-fails: read the lines again and repeat. `selection` shows what the user selected (dotted paths);
-`select {file, nodes, reveal: true}` points at nodes you are talking about. The user sees that an agent
-works on the file and can follow your reads, edits and selects in the window, so `select` also shows what you
-work on.
+Never write the file with your own tools - Write, Edit, apply_patch, a shell command. The app keeps the
+document in memory: a change made behind it lands in no undo step and no follow, and a window with
+unsaved edits asks the user to throw them away. Every change, a new file included, goes through `edit`:
+it validates the result and writes the file itself when the app has it closed.
+
+If the user has the file open in Tenniarb, `edit` changes the document in the app as one undo step and
+the file on disk stays untouched until the user saves, so an edit there does not overwrite the user's
+unsaved work. If the user typed since you read, the edit fails: read the lines again and repeat.
+`selection` shows what the user selected (dotted paths); `select {file, nodes, reveal: true}` points at
+nodes you are talking about. The user sees that an agent works on the file and can follow your reads,
+edits and selects in the window, so `select` also shows what you work on.
 
 ## Comments from the user
 
