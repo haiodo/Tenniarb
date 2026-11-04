@@ -62,6 +62,9 @@ type Prefs struct {
 	ExportSelScale int `json:"exportSelectionScale"`
 	// Appearance forces the colour scheme: "system" (follow the OS), "light" or "dark".
 	Appearance string `json:"appearance"`
+	// OpenAgentEdits opens the file an agent edits when no window shows it, with Follow on: an agent works
+	// where the user can see it, not only in the files that happen to be open.
+	OpenAgentEdits bool `json:"openAgentEdits"`
 }
 
 // DefaultPrefs are the defaults of Swift's checkDefaults.
@@ -70,7 +73,7 @@ func DefaultPrefs() Prefs {
 		AutoExpand: true, ExpandLevel: 2,
 		Background: "#e7e9ebff", BackgroundDark: "#2e2e2eff",
 		QuickPanel: true, CheckUpdates: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
-		Appearance: AppearanceSystem,
+		Appearance: AppearanceSystem, OpenAgentEdits: true,
 	}
 }
 

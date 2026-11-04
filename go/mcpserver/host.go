@@ -37,14 +37,22 @@ func NewHostIn(config string) *Host {
 	return h
 }
 
-// sendPresence tells the app that holds abs; an app that moved to a newer service is not ours to tell.
+// sendPresence tells the app that holds abs; a file no app holds goes to every app, so the one that
+// opens such a file (the user's setting) learns of the edit. An app that moved to a newer service is
+// not ours to tell.
 func (h *Host) sendPresence(abs string, p servicewire.Presence) {
-	d := h.live.lookup(abs)
-	if d == nil || d.moved {
+	if d := h.live.lookup(abs); d != nil {
+		if d.moved {
+			return
+		}
+		p.Path = d.path
+		d.prov.peer.Notify(servicewire.MethodPresence, p)
 		return
 	}
-	p.Path = d.path
-	d.prov.peer.Notify(servicewire.MethodPresence, p)
+	p.Path = abs
+	for _, prov := range h.live.all() {
+		prov.peer.Notify(servicewire.MethodPresence, p)
+	}
 }
 
 // Session opens the workspace at root for one client.

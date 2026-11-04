@@ -199,3 +199,31 @@ func TestSelectQuotedPath(t *testing.T) {
 		t.Fatalf("a quoted path reached the app as %+v", sel)
 	}
 }
+
+// TestDiskEditPresence: an edit of a file no app shows still reaches the apps, so the one that opens
+// such a file can show the edit; a read of it stays silent.
+func TestDiskEditPresence(t *testing.T) {
+	dir := serviceDir(t)
+	startService(t, dir, "v1", nil, 0)
+	root := tempRoot(t, map[string]string{"a.tenn": liveDisk})
+	cs := session(t, dir, root, "v1", nil)
+	fake, _ := connectFake(t, dir) // an app with no document open
+	abs := filepath.Join(root, "a.tenn")
+
+	mustOK(t, cs, "read", map[string]any{"file": "a.tenn"})
+	if got := fake.Presences(); len(got) != 0 {
+		t.Fatalf("a read of a closed file sent presence: %+v", got)
+	}
+	mustOK(t, cs, "edit", withFile(edits(`item "x"`, `item "y"`), "a.tenn"))
+	var got []servicewire.Presence
+	for i := 0; i < 100 && len(got) == 0; i++ {
+		got = fake.Presences()
+		time.Sleep(20 * time.Millisecond)
+	}
+	if len(got) == 0 {
+		t.Fatal("the edit of a closed file sent no presence")
+	}
+	if p := got[0]; p.Action != "edit" || p.Path != realPath(abs) || p.Node != "A.y" || p.Agents != 1 {
+		t.Fatalf("presence of a closed file: %+v", p)
+	}
+}

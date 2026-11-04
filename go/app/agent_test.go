@@ -138,3 +138,22 @@ func TestPresenceForAMountedFile(t *testing.T) {
 		t.Fatalf("follow jumped to a path of the mounted file: %v pending %v", v.selNodes, v.agent.pending)
 	}
 }
+
+// TestOpenAgentFile: only an edit opens a file no window shows, and only with the setting on.
+func TestOpenAgentFile(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		p    Prefs
+		pr   servicewire.Presence
+	}{
+		{"the setting is off", Prefs{}, servicewire.Presence{Agents: 1, Action: "edit", Path: "/tmp/a.tenn", At: 1}},
+		{"a read", Prefs{OpenAgentEdits: true}, servicewire.Presence{Agents: 1, Action: "read", Path: "/tmp/a.tenn", At: 1}},
+		{"the agent left", Prefs{OpenAgentEdits: true}, servicewire.Presence{Action: "edit", Path: "/tmp/a.tenn", At: 1}},
+		{"not a .tenn file", Prefs{OpenAgentEdits: true}, servicewire.Presence{Agents: 1, Action: "edit", Path: "/tmp/a.txt", At: 1}},
+	} {
+		sh := &Shell{prefs: c.p}
+		if v := sh.openAgentFile(c.pr); v != nil {
+			t.Errorf("%s: opened a window", c.name)
+		}
+	}
+}

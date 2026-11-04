@@ -190,6 +190,29 @@ func TestServiceProvider(t *testing.T) {
 		t.Fatalf("follow off moved the selection: %+v", d)
 	}
 
+	// an edit of a file no window shows opens that file with Follow on and the edited node in view
+	hidden := filepath.Join(root, "hidden.tenn")
+	os.WriteFile(hidden, []byte("element \"Hidden\" {\n    item \"note\" {\n        pos 0 0\n    }\n}\n"), 0o644)
+	hiddenReal, err := filepath.EvalSymlinks(hidden)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out, failed := call("edit", map[string]any{"file": "hidden.tenn", "edits": []map[string]any{{"find": "pos 0 0", "replace": "pos 10 20"}}}); failed {
+		t.Fatalf("edit of a closed file: %s", out)
+	}
+	app.Eventually(15*time.Second, func() (any, bool) {
+		s := editor(t, app)
+		return s, s.Path == hiddenReal && slices.Equal(s.Selection, []string{"note"})
+	})
+	if d := docOf(t, app, hidden); !d.Follow {
+		t.Fatalf("the window opened without Follow: %+v", d)
+	}
+	var shown struct{ Path string }
+	json.Unmarshal(app.State("state"), &shown)
+	if shown.Path != hiddenReal {
+		t.Fatalf("the window of the edited file is not the front one: %s", shown.Path)
+	}
+
 	// while the user types in the window an agent edit is refused; after the commit it goes through
 	app.State("command", "name", "open-document", "path", diagram)
 	app.State("command", "name", "close-others")

@@ -76,7 +76,8 @@ func (sh *Shell) showPrefs() {
 			check("export-native", "Use native resolution", p.ExportNativeScale, func(p *Prefs, v bool) { p.ExportNativeScale = v })),
 		g.Group("UI", g.Gap(6),
 			check("quick-panel", "Show popup quick panel", p.QuickPanel, func(p *Prefs, v bool) { p.QuickPanel = v }),
-			check("check-updates", "Check for updates", p.CheckUpdates, func(p *Prefs, v bool) { p.CheckUpdates = v })))
+			check("check-updates", "Check for updates", p.CheckUpdates, func(p *Prefs, v bool) { p.CheckUpdates = v }),
+			check("open-agent-edits", "Open files an agent edits", p.OpenAgentEdits, func(p *Prefs, v bool) { p.OpenAgentEdits = v })))
 	pw.win.Unwrap().AddListener(swt.Dispose, listenerFunc(func(*swt.Event) { sh.prefsWin = nil }))
 	pw.win.Show()
 }

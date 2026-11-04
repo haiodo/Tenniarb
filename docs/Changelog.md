@@ -10,6 +10,8 @@ browser editor zooms with two fingers on a touch screen.
   the file on disk is written by Save (or by closing the window with the edits kept), never by the autosave.
 + The outline keeps the zoom as it switches elements, and each element returns to the viewport it was left in;
   only the first element of a document is fitted to the window.
++ A file an agent edits opens in the window: an edit of a file no window shows opens it with Follow on, so
+  the work is never out of sight. Settings turns this off with "Open files an agent edits".
 + The design skill tells an agent to change a file with `edit`, not with its own file tools: a change made
   behind the app has no undo step and the window cannot show it to you.
 * The browser editor, the live demo of the site, zooms with a pinch: two fingers over the canvas, one finger

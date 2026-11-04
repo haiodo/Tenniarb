@@ -57,7 +57,8 @@ Multi-level system models with live calculations for scenario analysis.
 Documentation as a graph of pages, headings and cross-links — in the same repository as the design.
 
 ### Agents
-The same files are read, edited and rendered by MCP tools, so an agent works on a model you can see.
+The same files are read, edited and rendered by MCP tools, so an agent works on a model you can see: the
+file it edits opens in the window with Follow on.
 
 ## Key features
 

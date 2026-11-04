@@ -97,7 +97,15 @@ func (s *Server) edit(file string, edits []EditOp) (string, error) {
 			return "", err
 		}
 	}
-	return s.commit(abs, rel, text, before)
+	res, tree, err := s.commit(abs, rel, text, before)
+	if err != nil {
+		return "", err
+	}
+	if !creating {
+		// A file no app shows still tells the apps: one of them may open it and show the edit.
+		s.noteEdit(abs, rel, tree, string(old), text)
+	}
+	return res, nil
 }
 
 // editLive changes a document open in the app: the app applies the new text as one undo step, if
@@ -147,16 +155,16 @@ func (s *Server) check(rel, text string, before scene.Errors) (scene.Errors, *sc
 }
 
 // commit validates text as the content of rel and, when it adds no error, stages it next to the
-// target and renames it over the target.
-func (s *Server) commit(abs, rel, text string, before scene.Errors) (string, error) {
-	after, _, err := s.check(rel, text, before)
+// target and renames it over the target. The tree of the written text comes back for the presence.
+func (s *Server) commit(abs, rel, text string, before scene.Errors) (string, *scene.Tree, error) {
+	after, tree, err := s.check(rel, text, before)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if err := writeAtomic(abs, text); err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return fmt.Sprintf("ok: %s written (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true, rel)), nil
+	return fmt.Sprintf("ok: %s written (%d lines)\n%s", rel, strings.Count(text, "\n")+1, summary(after, true, rel)), tree, nil
 }
 
 func writeAtomic(abs, text string) error {

@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/haiodo/gowt/look"
@@ -83,12 +84,49 @@ func followTarget(p servicewire.Presence) []string {
 
 // Presence is called by the service client on one of its goroutines.
 func (p provider) Presence(pr servicewire.Presence) {
-	p.sh.ui(func() {
-		v, direct, err := p.sh.viewerShowing(pr.Path)
-		if err == nil {
-			v.onPresence(pr, direct)
+	p.sh.ui(func() { p.sh.agentPresence(pr) })
+}
+
+// agentPresence shows a message from the service in the window of its document. A file no window shows
+// is opened and followed when the setting says so: an agent then works where the user can see it.
+func (sh *Shell) agentPresence(pr servicewire.Presence) {
+	// The service reports a file again when the app registers it: one action comes as two messages, with
+	// a new Seq each. A window the user closed must not come back for the same action, so the time of the
+	// action is what counts.
+	key := realPath(pr.Path)
+	fresh := pr.At > sh.agentAt[key]
+	if fresh {
+		if sh.agentAt == nil {
+			sh.agentAt = map[string]int64{}
 		}
-	})
+		sh.agentAt[key] = pr.At
+	}
+	v, direct, err := sh.viewerShowing(pr.Path)
+	if err != nil {
+		if !fresh {
+			return
+		}
+		if v = sh.openAgentFile(pr); v == nil {
+			return
+		}
+		direct = true
+	}
+	v.onPresence(pr, direct)
+}
+
+// openAgentFile opens the document an agent edits when no window shows it, with Follow on. An edit of a
+// file the user closed, or never opened, then comes into view instead of happening unseen.
+func (sh *Shell) openAgentFile(pr servicewire.Presence) *Viewer {
+	if !sh.prefs.OpenAgentEdits || pr.Agents == 0 || pr.Action != "edit" || !strings.HasSuffix(pr.Path, ".tenn") {
+		return nil
+	}
+	sh.openPath(pr.Path)
+	v, err := sh.viewer(pr.Path)
+	if err != nil {
+		return nil
+	}
+	v.followAgent()
+	return v
 }
 
 // onPresence takes a message from the service. Messages are handled concurrently, so an older one
@@ -154,6 +192,14 @@ func (v *Viewer) followFlush() {
 		// A node the agent removed since is no reason to complain.
 		_ = v.followPaths(paths)
 	}
+}
+
+// followAgent turns Follow on in a window that was opened for an agent's edit.
+func (v *Viewer) followAgent() {
+	a := &v.agent
+	a.ensure()
+	a.follow = true
+	a.followText.Set("Following")
 }
 
 func (v *Viewer) toggleFollow() {

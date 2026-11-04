@@ -26,12 +26,14 @@ const PollInterval = 500 * time.Millisecond
 // Shell is the application: the documents, one window each, and what they share (settings, the
 // recent list, the window frames in the config directory).
 type Shell struct {
-	app    *g.App
-	dir    string
-	exe    string
-	prefs  Prefs
-	recent []string
-	repos  link.Repos // the git remotes of the clones a link may name
+	app   *g.App
+	dir   string
+	exe   string
+	prefs Prefs
+	// agentAt is the time of the last agent action handled per file: one action opens a window only once.
+	agentAt map[string]int64
+	recent  []string
+	repos   link.Repos // the git remotes of the clones a link may name
 
 	viewers []*Viewer
 	active  *Viewer
