@@ -168,10 +168,31 @@ export function attachCanvas(box: HTMLElement, canvas: HTMLCanvasElement, sessio
 
   let last: { x: number; y: number } | null = null; // set while panning
   let active = false; // a press is owned by the session
+  // Touch, as the canvas has touch-action: none: one finger pans, two fingers pinch; a wheel is no help there.
+  const touches = new Map<number, { x: number; y: number }>();
+  let pinch = 0; // the distance between the two fingers at the last frame, 0 with fewer than two
+  const spread = (pts: { x: number; y: number }[]): number => (pts.length === 2 ? Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y) : 0);
+  const zoomBetween = (pts: { x: number; y: number }[]): void => {
+    const r = canvas.getBoundingClientRect();
+    const d = spread(pts);
+    zoomAt(d / pinch, (pts[0]!.x + pts[1]!.x) / 2 - r.left, (pts[0]!.y + pts[1]!.y) / 2 - r.top);
+    pinch = d;
+  };
+
   canvas.addEventListener("pointerdown", (ev) => {
     box.focus();
     if (ev.button !== 0) return;
     canvas.setPointerCapture(ev.pointerId);
+    if (ev.pointerType === "touch") {
+      touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (touches.size === 2) {
+        if (active) session.up(toScene(ev), true); // the drag was of one finger
+        active = false;
+        last = null;
+        pinch = spread([...touches.values()]);
+        return; // a pinch is no press on an item
+      }
+    }
     // Mac as Swift: Cmd toggles, Ctrl draws a link, Option drags with children. Elsewhere Ctrl toggles, Ctrl+Alt draws, Alt drags.
     const [toggle, line, alt] = isMac ? [ev.metaKey, ev.ctrlKey, ev.altKey] : [ev.ctrlKey && !ev.altKey, ev.ctrlKey && ev.altKey, ev.altKey && !ev.ctrlKey];
     active = session.down(toScene(ev), { toggle, band: ev.shiftKey, line, alt });
@@ -179,6 +200,13 @@ export function attachCanvas(box: HTMLElement, canvas: HTMLCanvasElement, sessio
     redraw();
   });
   canvas.addEventListener("pointermove", (ev) => {
+    if (touches.has(ev.pointerId)) {
+      touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (pinch > 0 && touches.size === 2) {
+        zoomBetween([...touches.values()]);
+        return;
+      }
+    }
     if (active) return session.move(toScene(ev));
     if (last === null) return;
     view.x += ev.clientX - last.x;
@@ -187,9 +215,15 @@ export function attachCanvas(box: HTMLElement, canvas: HTMLCanvasElement, sessio
     redraw();
   });
   const release = (ev: PointerEvent): void => {
+    if (touches.delete(ev.pointerId)) {
+      pinch = 0;
+      // The finger left on the glass goes on panning.
+      const left = [...touches.values()][0];
+      last = left === undefined ? null : { x: left.x, y: left.y };
+    }
     if (active) session.up(toScene(ev), ev.type === "pointercancel");
     active = false;
-    last = null;
+    if (touches.size === 0) last = null;
     redraw();
   };
   canvas.addEventListener("pointerup", release);

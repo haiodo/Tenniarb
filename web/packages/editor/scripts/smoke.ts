@@ -428,6 +428,31 @@ await p.click('.tn-bar button[title="Zoom out"]');
 await p.waitForTimeout(100);
 check((await lab()) === "75%", `zoom out twice: ${await lab()} (0.75 per step)`);
 await p.screenshot({ path: `${out}/22-toolbar.png` });
+
+// Touch pinch: a phone has no wheel, so two fingers over the canvas zoom it (and the finger that stays pans).
+{
+  const cdp = await p.context().newCDPSession(p);
+  const box = (await p.locator("canvas").first().boundingBox())!;
+  const cx = Math.round(box.x + box.width / 2);
+  const cy = Math.round(box.y + box.height / 2);
+  const touch = (type: string, d: number) =>
+    cdp.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints:
+        type === "touchEnd"
+          ? []
+          : [1, 2].map((id) => ({ x: cx + (id === 1 ? -d : d), y: cy, id, radiusX: 5, radiusY: 5, force: 1 })),
+    });
+  const before = await lab();
+  await touch("touchStart", 40);
+  for (let d = 55; d <= 160; d += 15) await touch("touchMove", d);
+  await touch("touchEnd", 0);
+  await p.waitForTimeout(100);
+  const after = await lab();
+  check(parseInt(after!, 10) > parseInt(before!, 10), `pinch zooms: ${before} -> ${after}`);
+  await p.click('.tn-bar button[title="Reset zoom"]');
+  await cdp.detach();
+}
 const n0 = await p.evaluate(() => (window as any).editor.session.element.items.length as number);
 await p.click('.tn-bar .tn-seg button[title="New item"]');
 check((await p.evaluate(() => (window as any).editor.session.element.items.length as number)) === n0 + 1, "toolbar + adds an item");
