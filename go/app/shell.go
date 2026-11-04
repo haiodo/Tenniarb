@@ -247,17 +247,30 @@ func (h *helpWindow) window() *g.Window {
 // Version is set by the packaging targets: -ldflags "-X github.com/haiodo/tenniarb/go/app.Version=...".
 var Version string
 
-// buildVersion is the module version, or the commit of a build from a checkout.
-func buildVersion() string {
+// releaseVersion is the version of a packaged build, "" for a build from a checkout: a commit has no
+// order against release tags, and a short hash may be all digits and read as a huge number.
+func releaseVersion() string {
 	if Version != "" {
 		return Version
 	}
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return "unknown"
+		return ""
 	}
 	if v := info.Main.Version; v != "" && v != "(devel)" {
 		return v
+	}
+	return ""
+}
+
+// buildVersion is what the About panel says: the release, the commit of a build from a checkout, or dev.
+func buildVersion() string {
+	if v := releaseVersion(); v != "" {
+		return v
+	}
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
 	}
 	for _, s := range info.Settings {
 		if s.Key == "vcs.revision" && len(s.Value) >= 7 {

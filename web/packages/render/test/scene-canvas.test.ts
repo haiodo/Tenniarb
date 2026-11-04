@@ -40,6 +40,7 @@ function render(): Pixels {
   const scene = buildTennScene(element, { source });
   const width = Math.ceil(scene.width);
   const height = Math.ceil(scene.height);
+  assert.ok(Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0, `the scene has a size: ${scene.width}x${scene.height}`);
   const { ctx } = newCanvas(width, height);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
@@ -86,7 +87,7 @@ const rows = (p: Pixels, match: (row: number) => boolean): number[] => {
 test("scene draw: a title above the body, upright glyphs, the code block below", () => {
   const p = render();
   const inked = rows(p, (y) => ink(p, y) > 0);
-  assert.ok(inked.length > 0, "the picture has text at all: draw() wrote inside the canvas");
+  assert.ok(inked.length > 0, `the picture has text at all: draw() wrote inside the canvas (${p.width}x${p.height})`);
 
   // The title "L" is the first band of ink: a stem, and its foot along the bottom.
   const titleTop = inked[0]!;

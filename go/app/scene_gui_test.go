@@ -182,6 +182,10 @@ func TestScene(t *testing.T) {
 	a.Settle()
 	time.Sleep(300 * time.Millisecond)
 	a.ShotTitle("06-screen-after-library", qa.title(screen))
+	// The "- Edited" of the title follows the edit after a redraw, and a loaded runner reports it late.
+	for i := 0; i < 60 && qa.doc(lib).Title != app.Title(lib, true); i++ {
+		time.Sleep(50 * time.Millisecond)
+	}
 	a.ShotTitle("06-library-edited", qa.title(lib))
 
 	// New Screen and Insert Component in the screen window

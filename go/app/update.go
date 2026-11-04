@@ -74,7 +74,7 @@ func (v *Viewer) showUpdate(r update.Release, err error) {
 		return
 	}
 	current := buildVersion()
-	if update.Compare(current, r.Version) >= 0 {
+	if update.Compare(releaseVersion(), r.Version) >= 0 {
 		v.win.MessageBox(g.Message{Title: "Check for Updates",
 			Text: fmt.Sprintf("You have the latest version (%s).", current), Icon: g.IconInfo, Buttons: g.ButtonsOK})
 		return
@@ -141,7 +141,7 @@ func (sh *Shell) checkUpdatesOnStart() {
 	}
 	go func() {
 		r, err := update.Latest(sh.ctx, sh.updOptions())
-		if err != nil || update.Compare(buildVersion(), r.Version) >= 0 {
+		if err != nil || update.Compare(releaseVersion(), r.Version) >= 0 {
 			return
 		}
 		note := fmt.Sprintf("Tenniarb %s is available — Help > Check for Updates…", r.Version)
