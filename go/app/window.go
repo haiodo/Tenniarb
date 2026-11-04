@@ -650,9 +650,15 @@ func (v *Viewer) onOutlineSelect(n *g.Node) {
 }
 
 // applyInitialCamera places the view for the element on the canvas once the canvas has a size.
-func (v *Viewer) applyInitialCamera() {
+func (v *Viewer) applyInitialCamera() { v.placeCamera(v.pendingFit) }
+
+// placeCamera puts the element on the canvas: the viewport it had when the outline switched away from
+// it, else its fit for the first element of a document, else the element centred at the zoom of the one
+// left — a switch then moves the canvas without jumping in scale between elements of different size.
+func (v *Viewer) placeCamera(fit bool) {
 	w, h := v.view.Canvas().Size()
-	if _, _, ok := v.contentSize(); !ok {
+	cw, ch, ok := v.contentSize()
+	if !ok {
 		v.pendingFit = false
 		return
 	}
@@ -664,7 +670,11 @@ func (v *Viewer) applyInitialCamera() {
 	if w <= 0 || h <= 0 {
 		return
 	}
-	v.fitView()
+	if fit {
+		v.setCamera(FitCamera(cw, ch, float64(w), float64(h)))
+	} else {
+		v.setCamera(CenterCamera(v.view.Compositor().Camera().Zoom, cw, ch, float64(w), float64(h)))
+	}
 	v.pendingFit = false
 }
 

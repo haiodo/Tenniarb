@@ -64,9 +64,10 @@ func (v *Viewer) realize() {
 	}
 
 	if !stays {
+		first := v.shownElem == nil // only the first element of a document is fit to the window
 		v.shownElem = v.state.Current
-		v.pendingFit = true
-		v.applyInitialCamera()
+		v.pendingFit = first
+		v.placeCamera(first)
 		v.syncOutline()
 	}
 	v.moveInline()

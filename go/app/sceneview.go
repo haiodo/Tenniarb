@@ -152,9 +152,10 @@ func (v *Viewer) realizeScene() {
 	v.setTitle()
 	v.dropStaleSelection()
 	if v.shownElem != el || oldSV == nil && oldRendered == nil {
+		first := v.shownElem == nil // the first element of the document is the one to fit
 		v.shownElem = el
-		v.pendingFit = true
-		v.applyInitialCamera()
+		v.pendingFit = first
+		v.placeCamera(first)
 		v.syncOutline()
 	} else if !v.pendingFit && oldSV != nil {
 		comp := v.view.Compositor()

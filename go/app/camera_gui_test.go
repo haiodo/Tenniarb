@@ -64,8 +64,8 @@ func TestWheelShiftPansSideways(t *testing.T) {
 	}
 }
 
-// TestSwitchKeepsCamera: an element keeps the viewport it had when the outline switched away from it,
-// and the element switched to gets its own.
+// TestSwitchKeepsCamera: an element the outline switched away from keeps its viewport, and an element it
+// switches to for the first time is shown at the zoom left behind, not at its own fit.
 func TestSwitchKeepsCamera(t *testing.T) {
 	if os.Getenv("GOWT_GUI_TEST") == "" {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")
@@ -76,11 +76,22 @@ func TestSwitchKeepsCamera(t *testing.T) {
 	h.open(fixture)
 	a.State("command", "name", "close-others")
 	a.Settle()
+	// The tests share one window: leave it on the root element, as they find it.
+	defer func() {
+		a.State("select", "path", fixture, "nodes", []string{})
+		a.Settle()
+	}()
 	a.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
+	a.Settle()
+	a.State("zoom", "factor", 1.5)
 	a.Settle()
 	first := editor(t, a)
 	a.Find(qa.Text("General info").In(qa.ID("outline"))).Click()
 	a.Settle()
+	elsewhere := editor(t, a)
+	if elsewhere.Zoom != first.Zoom {
+		t.Fatalf("the switch changed the zoom: %v -> %v", first.Zoom, elsewhere.Zoom)
+	}
 	a.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
 	a.Settle()
 	back := editor(t, a)
