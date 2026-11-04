@@ -1,5 +1,22 @@
 #  Changelog
 
+## Version 2.1.0
+
+An agent's edit waits for the human now: the window shows it as edited and the file is written only when you
+save, so nothing changes on disk behind your back. Switching elements in the outline keeps the zoom, and the
+browser editor zooms with two fingers on a touch screen.
+
++ An edit an agent makes through MCP stays unsaved: one undo step in the window, the title says "Edited", and
+  the file on disk is written by Save (or by closing the window with the edits kept), never by the autosave.
++ The outline keeps the zoom as it switches elements, and each element returns to the viewport it was left in;
+  only the first element of a document is fitted to the window.
++ The design skill tells an agent to change a file with `edit`, not with its own file tools: a change made
+  behind the app has no undo step and the window cannot show it to you.
+* The browser editor, the live demo of the site, zooms with a pinch: two fingers over the canvas, one finger
+  still pans it.
+* Check for Updates: a build from a source checkout no longer compares as a version older than a release, and
+  a tag of digits only is not taken for a version.
+
 ## Version 2.0.0
 
 The application is written in Go now: one binary for macOS, Windows and Linux, with the same `.tenn` format

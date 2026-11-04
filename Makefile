@@ -104,7 +104,7 @@ kill-running: ## Stop the app, the MCP proxy and the service that keep the old b
 # Go app packaging (go/packaging). Unsigned: no codesign identity, no notarization.
 GOPKG := build/go
 # The Go app is versioned here, apart from the Swift release tags (v1.x) that trigger release.yml.
-GO_SHORT := 2.0.0
+GO_SHORT := 2.1.0
 GO_VERSION = $(GO_SHORT)-$(shell git describe --always --dirty --exclude '*')
 GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
