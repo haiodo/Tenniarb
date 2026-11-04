@@ -152,6 +152,7 @@ func (p provider) Apply(path string, base int64, text string) (ver int64, err er
 				return err
 			}
 			v.markEdited(a)
+			v.keepAgentEdit()
 		}
 		ver = int64(v.version)
 		return nil

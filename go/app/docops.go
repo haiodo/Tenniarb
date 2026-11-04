@@ -76,6 +76,7 @@ func (v *Viewer) writeFile(path string) error {
 	}
 	v.tracker.Saved(text)
 	v.conflict = false
+	v.agentEdits = false
 	v.autosave.Cancel()
 	if v.id != "" {
 		DropUntitled(v.sh.dir, v.id)
@@ -87,8 +88,18 @@ func (v *Viewer) writeFile(path string) error {
 	return nil
 }
 
+// keepAgentEdit marks the change as an agent's: it waits for the human, who sees "- Edited" and saves it.
+func (v *Viewer) keepAgentEdit() {
+	v.agentEdits = true
+	v.autosave.Cancel() // a pending autosave is of the text before the edit
+}
+
 // scheduleAutosave runs after a change: the edits are written 2 s after the last one.
 func (v *Viewer) scheduleAutosave() {
+	if v.agentEdits {
+		v.autosave.Cancel()
+		return
+	}
 	if v.isDirty() || v.libsDirty() {
 		v.autosave.Touch()
 		return

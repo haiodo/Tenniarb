@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/haiodo/gowt/gfx"
 
@@ -225,6 +226,7 @@ func newDoc(t *testing.T, sh *Shell, path, text string) *Viewer {
 		t.Fatal(err)
 	}
 	v.session = s
+	v.autosave = &Debounce{Delay: AutosaveDelay, After: func(time.Duration, func()) func() { return func() {} }, Fn: v.autosaveNow}
 	v.adopt(doc.Text)
 	sh.viewers = append(sh.viewers, v)
 	sh.active = v
@@ -423,5 +425,31 @@ func TestSceneErrorCountSeesInsertIntoInstance(t *testing.T) {
 	bad := strings.Replace(text, "  pos 0 0\n", "  pos 0 0\n  use kit.Card as D\n", 1)
 	if n := v.sceneErrorCount(v.rel(), bad); n < 1 {
 		t.Fatalf("errors after insert into the instance: %d, want at least 1", n)
+	}
+}
+
+// An edit an agent made is shown as Edited and waits for the human: the autosave does not write it.
+func TestAgentEditWaitsForSave(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "main.tenn")
+	sh := &Shell{}
+	v := newDoc(t, sh, path, mixedDoc)
+	v.autosave.Touch() // the autosave of the text before the edit is on its way
+	at := strings.Index(mixedDoc, "title Hi") + len("title ")
+	if _, _, err := sh.ApplyEdit(path, 0, TextEdit{at, at + 2, "Hello"}); err != nil {
+		t.Fatal(err)
+	}
+	if !v.agentEdits || v.autosave.Pending() {
+		t.Fatalf("agent edit: flag %v, autosave pending %v", v.agentEdits, v.autosave.Pending())
+	}
+	v.scheduleAutosave() // a change of the human's would schedule it too
+	if v.autosave.Pending() {
+		t.Fatal("a change after an agent edit armed the autosave")
+	}
+	if b, _ := os.ReadFile(path); string(b) != mixedDoc {
+		t.Fatal("the file was written without a save")
+	}
+	if !v.isDirty() {
+		t.Fatal("the document does not show the agent edit as unsaved")
 	}
 }

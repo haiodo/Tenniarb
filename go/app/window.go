@@ -106,10 +106,11 @@ type Viewer struct {
 	recentMenu         *g.Menu
 	autoQuick          bool // show the quick style panel after a click on an item
 
-	id        string // names the stash of an untitled document
-	autosave  *Debounce
-	frameSave *Debounce
-	force     bool // the window closes without questions (QA)
+	id         string // names the stash of an untitled document
+	autosave   *Debounce
+	agentEdits bool // the last change came from an agent: the human saves it, not the autosave
+	frameSave  *Debounce
+	force      bool // the window closes without questions (QA)
 }
 
 // viewerInit says what a new window shows: a file, or an untitled document with the text.
@@ -578,6 +579,7 @@ func (v *Viewer) startSession() {
 	v.endInline(false)
 	v.session, v.tracker, v.shownElem, v.docElem = nil, nil, nil, nil
 	v.cmp = nil // the comparison was of the document that was open
+	v.agentEdits = false
 	if v.state.Doc.Model == nil || v.state.Current == nil {
 		v.clearCanvas()
 		v.updateTitle()

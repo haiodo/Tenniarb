@@ -249,6 +249,7 @@ func (sh *Shell) ApplyEdit(path string, version int, e TextEdit) (text string, v
 		if err = v.applyText(e.Start, e.End, e.New); err == nil {
 			text, ver = v.text, v.version
 			v.markEdited(e.Start)
+			v.keepAgentEdit()
 		}
 	})
 	return
