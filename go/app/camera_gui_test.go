@@ -63,3 +63,29 @@ func TestWheelShiftPansSideways(t *testing.T) {
 		t.Fatalf("Shift+wheel panned to %v,%v, from %v,%v", after.OriginX, after.OriginY, before.OriginX, before.OriginY)
 	}
 }
+
+// TestSwitchKeepsCamera: an element keeps the viewport it had when the outline switched away from it,
+// and the element switched to gets its own.
+func TestSwitchKeepsCamera(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	defer h.open(fixture)
+	h.open(fixture)
+	a.State("command", "name", "close-others")
+	a.Settle()
+	a.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
+	a.Settle()
+	first := editor(t, a)
+	a.Find(qa.Text("General info").In(qa.ID("outline"))).Click()
+	a.Settle()
+	a.Find(qa.Text("Basic steps").In(qa.ID("outline"))).Click()
+	a.Settle()
+	back := editor(t, a)
+	if back.Zoom != first.Zoom || back.OriginX != first.OriginX || back.OriginY != first.OriginY {
+		t.Fatalf("the viewport of the element left changed: %v,%v@%v -> %v,%v@%v",
+			first.OriginX, first.OriginY, first.Zoom, back.OriginX, back.OriginY, back.Zoom)
+	}
+}
