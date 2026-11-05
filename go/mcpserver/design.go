@@ -44,7 +44,7 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	s.host.editMu.Lock()
 	defer s.host.editMu.Unlock()
 
-	d := s.host.live.lookup(abs)
+	d := s.openForEdit(abs)
 	live := d != nil
 	var text string
 	if live {

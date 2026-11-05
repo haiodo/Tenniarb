@@ -196,6 +196,22 @@ func (p provider) Select(path string, nodes []string, reveal bool) error {
 	return p.on(path, func(v *Viewer) error { return v.selectPaths(nodes, reveal) })
 }
 
+// OpenFile gives a file that a board mounts a window of its own: the edit that follows belongs to that
+// document, so it has an undo and a save, and every board that mounts the file shows the same text.
+func (p provider) OpenFile(path string) (opened bool, err error) {
+	err = errQuit
+	p.sh.ui(func() {
+		err = nil
+		if _, e := p.sh.viewer(path); e == nil {
+			opened = true // a window already shows it
+			return
+		}
+		p.sh.openPath(path)
+		opened = true
+	})
+	return opened, err
+}
+
 func (p provider) Render(path string, scale float64) ([]byte, error) {
 	if path == "" {
 		return nil, ErrNoDocument

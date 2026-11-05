@@ -19,6 +19,7 @@ const (
 	MethodSelection = "selection"
 	MethodSelect    = "select"
 	MethodRender    = "render"
+	MethodOpenFile  = "openfile"
 	MethodReconnect = "reconnect"
 	MethodPresence  = "presence"
 )
@@ -43,6 +44,17 @@ type Doc struct {
 // Documents is the full set of open documents; each MethodDocuments replaces the previous set.
 type Documents struct {
 	Docs []Doc `json:"docs"`
+}
+
+// OpenFileArgs asks the app to open a file in a window: a change to a library has an owner to undo and
+// save it only when some window holds it.
+type OpenFileArgs struct {
+	Path string `json:"path"` // absolute
+}
+
+// OpenFileResult says whether the app has a window on the file now.
+type OpenFileResult struct {
+	Opened bool `json:"opened"`
 }
 
 // Presence says which agents work on one open document through MCP. The service sends the current
@@ -134,6 +146,8 @@ type Provider interface {
 	Select(path string, nodes []string, reveal bool) error
 	// Render draws what the window of the document shows.
 	Render(path string, scale float64) ([]byte, error)
+	// OpenFile opens the file in a window, or confirms the one that already shows it.
+	OpenFile(path string) (bool, error)
 }
 
 // ProviderClient keeps the app connected to the service: it dials, sends the open documents and
@@ -276,6 +290,13 @@ func (c *ProviderClient) handle(_ context.Context, method string, params json.Ra
 			return nil, err
 		}
 		return struct{}{}, c.p.Select(a.Path, a.Nodes, a.Reveal)
+	case MethodOpenFile:
+		var a OpenFileArgs
+		if err := json.Unmarshal(params, &a); err != nil {
+			return nil, err
+		}
+		opened, err := c.p.OpenFile(a.Path)
+		return OpenFileResult{Opened: opened}, err
 	case MethodRender:
 		var a RenderArgs
 		if err := json.Unmarshal(params, &a); err != nil {

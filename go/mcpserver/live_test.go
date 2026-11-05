@@ -3,6 +3,7 @@ package mcpserver
 import (
 	"bytes"
 	"context"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -225,5 +226,34 @@ func TestDiskEditPresence(t *testing.T) {
 	}
 	if p := got[0]; p.Action != "edit" || p.Path != realPath(abs) || p.Node != "A.y" || p.Agents != 1 {
 		t.Fatalf("presence of a closed file: %+v", p)
+	}
+}
+
+// TestEditOpensMountedLibrary: a library that an open board mounts gets a window of its own before the
+// agent's edit lands, so the change has an undo and a save there and the board shows the same text.
+func TestEditOpensMountedLibrary(t *testing.T) {
+	dir := serviceDir(t)
+	startService(t, dir, "v1", nil, 0)
+	const lib = "item Button { width 40; height 20 }\n"
+	root := tempRoot(t, map[string]string{
+		"main.tenn": "element ui --from-file \"lib.tenn\"\n",
+		"lib.tenn":  lib,
+	})
+	cs := session(t, dir, root, "v1", nil)
+	fake, _ := connectFake(t, dir)
+	mainAbs := filepath.Join(root, "main.tenn")
+	if err := fake.Open(mainAbs, "element ui --from-file \"lib.tenn\"\n"); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := mustOK(t, cs, "edit", withFile(edits("width 40", "width 80"), "lib.tenn")); !strings.Contains(got, "undo step") {
+		t.Fatalf("edit of a mounted library:\n%s", got)
+	}
+	libAbs := filepath.Join(root, "lib.tenn")
+	if txt, _ := fake.TextOf(realPath(libAbs)); !strings.Contains(txt, "width 80") {
+		t.Fatalf("the library window did not take the edit: %q", txt)
+	}
+	if b, _ := os.ReadFile(libAbs); string(b) != lib {
+		t.Fatalf("the file on disk was written:\n%s", b)
 	}
 }

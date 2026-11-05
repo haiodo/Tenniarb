@@ -5,6 +5,7 @@ package wiretest
 import (
 	"errors"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/haiodo/tenniarb/go/servicewire"
@@ -47,6 +48,20 @@ func (f *Fake) Close(path string) error {
 	delete(f.docs, path)
 	f.mu.Unlock()
 	return f.report()
+}
+
+// OpenFile opens path as a window the agent asked for: a file this fake does not have is read from disk.
+func (f *Fake) OpenFile(path string) (bool, error) {
+	f.mu.Lock()
+	if d := f.docs[path]; d == nil {
+		nd := &doc{version: 1}
+		if b, err := os.ReadFile(path); err == nil {
+			nd.text = string(b)
+		}
+		f.docs[path] = nd
+	}
+	f.mu.Unlock()
+	return true, f.report()
 }
 
 // Type changes the text as the user would, unsaved.

@@ -70,7 +70,7 @@ func (s *Server) edit(file string, edits []EditOp) (string, error) {
 	s.host.editMu.Lock()
 	defer s.host.editMu.Unlock()
 
-	if d := s.host.live.lookup(abs); d != nil {
+	if d := s.openForEdit(abs); d != nil {
 		return s.editLive(abs, rel, d, edits)
 	}
 	old, err := os.ReadFile(abs)

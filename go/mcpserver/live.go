@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -178,4 +179,58 @@ func (r *registry) text(abs string, fresh bool) (servicewire.TextResult, error) 
 	}
 	r.mu.Unlock()
 	return res, nil
+}
+
+// askOpen asks a connected app to open abs; true when one did.
+func (r *registry) askOpen(abs string) bool {
+	for _, p := range r.all() {
+		var res servicewire.OpenFileResult
+		if err := p.call(servicewire.MethodOpenFile, servicewire.OpenFileArgs{Path: abs}, &res); err == nil && res.Opened {
+			return true
+		}
+	}
+	return false
+}
+
+// openForEdit is the document that owns abs, opening a window when an open document mounts the file: a
+// change to a library belongs to a document, so its undo and its save cover it and every board that
+// mounts the file shows the same text. nil when no app holds or mounts abs: the file is nobody's draft.
+func (s *Server) openForEdit(abs string) *liveDoc {
+	if d := s.host.live.lookup(abs); d != nil {
+		return d
+	}
+	if !s.mountedByOpen(abs) || !s.host.live.askOpen(abs) {
+		return nil
+	}
+	for i := 0; i < 300; i++ { // the app opens the window on its UI thread and sends the documents after
+		if d := s.host.live.lookup(abs); d != nil {
+			return d
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	return nil
+}
+
+// mountedByOpen reports whether an open document reads abs: a mounted library, a part or an entry.
+func (s *Server) mountedByOpen(abs string) bool {
+	want := realPath(abs)
+	for docAbs := range s.host.live.within(s.root) {
+		if realPath(docAbs) == want {
+			continue
+		}
+		rel, err := filepath.Rel(s.root, docAbs)
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			continue
+		}
+		_, tree, err := s.diagnose(filepath.ToSlash(rel))
+		if err != nil || tree == nil {
+			continue
+		}
+		for _, f := range tree.Files() {
+			if realPath(filepath.Join(s.root, filepath.FromSlash(f))) == want {
+				return true
+			}
+		}
+	}
+	return false
 }

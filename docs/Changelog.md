@@ -22,6 +22,9 @@ browser editor zooms with two fingers on a touch screen.
   `get_state {file}` and `find`, instead of listing every node of the workspace (107 KB on this tree).
 + Every tool call is logged to a file in the temporary directory (1 MB, then rolled to `.1`;
   `TENNIARB_MCP_LOG` picks another path, `off` silences it), so a run can be measured after the fact.
++ An edit of a library a board mounts opens that library in a window first, so the change belongs to a
+  document: it has an undo and a save there, and every board that mounts the file shows the same text.
+  Before, an agent edit of a library nobody had open went straight to disk, with no draft and no undo.
 + Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
   `replace_all`, addresses nodes by the paths `get_state` prints, and applies the whole call as one change
   (one undo step in the window), with nothing written if the result adds an error.
