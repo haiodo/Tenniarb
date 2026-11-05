@@ -10,6 +10,9 @@ browser editor zooms with two fingers on a touch screen.
   the file on disk is written by Save (or by closing the window with the edits kept), never by the autosave.
 + The outline keeps the zoom as it switches elements, and each element returns to the viewport it was left in;
   only the first element of a document is fitted to the window.
++ Group and ungroup in a screen: the selected items become one item, which the canvas moves, copies and
+  deletes as a whole; Ungroup puts them back where they were. Edit > Group (Cmd+G) and Ungroup
+  (Cmd+Shift+G), and the canvas menu. One undo step each.
 + A file an agent edits opens in the window: an edit of a file no window shows opens it with Follow on, so
   the work is never out of sight. Settings turns this off with "Open files an agent edits".
 + The design skill tells an agent to change a file with `edit`, not with its own file tools: a change made

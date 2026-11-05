@@ -52,6 +52,8 @@ func (v *Viewer) menus() {
 	edit.Item("&Paste", v.cmdPaste, g.Shortcut("Cmd+V"))
 	edit.Item("&Delete", v.cmdDelete, g.Shortcut("Cmd+Backspace"))
 	edit.Item("D&uplicate", v.cmdDuplicate, g.Shortcut("Cmd+D"))
+	edit.Item("&Group", v.groupSelection, g.Shortcut("Cmd+G"))
+	edit.Item("&Ungroup", v.ungroupSelection, g.Shortcut("Cmd+Shift+G"))
 	edit.Item("Copy Lin&k", v.copyLink, g.Shortcut("Cmd+Alt+C"))
 	edit.Separator()
 	edit.Item("Select &All", v.cmdSelectAll, g.Shortcut("Cmd+A"))
@@ -447,6 +449,8 @@ func (v *Viewer) sceneEntries() []editor.Entry {
 	if len(v.selNodes) > 0 {
 		out = append(out,
 			editor.Entry{Label: "Duplicate", Run: v.duplicateScene},
+			editor.Entry{Label: "Group", Run: v.groupSelection},
+			editor.Entry{Label: "Ungroup", Run: v.ungroupSelection},
 			editor.Entry{Label: "Move Up", Run: func() { v.moveNodeBy(-1) }},
 			editor.Entry{Label: "Move Down", Run: func() { v.moveNodeBy(1) }},
 			editor.Entry{Label: "Move into Previous", Run: func() { v.moveNodeInto(-1) }},
