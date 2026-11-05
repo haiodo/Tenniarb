@@ -18,6 +18,8 @@ browser editor zooms with two fingers on a touch screen.
 + `get_state` follows `.gitignore` instead of a hard-coded list: the files from the file system root
   down to the workspace say what the walk leaves out, so a project root that also builds a front-end
   still gives its design files, and a `packages/` directory is still searched.
++ `layout` says `ok: nothing leaves its parent or its plate` when it finds nothing: an empty report read
+  as "not checked" and cost a run a dozen extra calls.
 + A file of zero length takes the body in one `edit` with an empty `find`, as a new file does: the
   recipe for a board creates the file, mounts it, then adds the `entry` line.
 + `guide` without a topic returns the examples and the list of sections, not the whole 16 KB reference:

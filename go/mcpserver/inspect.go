@@ -79,8 +79,14 @@ func inspectScene(screen *scene.Screen, levels int) string {
 		}
 		fmt.Fprintf(&b, "! %s\n", key)
 	}
-	for _, line := range sticksOut(root) {
+	out := sticksOut(root)
+	for _, line := range out {
 		b.WriteString(line + "\n")
+	}
+	// A report with no problem line is the answer to "is anything wrong here?", and it should say so:
+	// silence reads as "not checked" and costs another call.
+	if len(order) == 0 && len(out) == 0 {
+		b.WriteString("ok: nothing leaves its parent or its plate\n")
 	}
 	for _, pair := range overlaps(root.Kids) {
 		fmt.Fprintf(&b, "overlap: %s and %s share %.0fx%.0f\n", pair[0], pair[1], pair[2], pair[3])

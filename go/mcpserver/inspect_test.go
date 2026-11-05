@@ -41,6 +41,9 @@ func TestInspectScene(t *testing.T) {
 		}
 	}
 	// The summary keeps the scene, the top level and the problems, and counts what it does not list.
+	if clean := inspectScene(screen, 0); strings.Contains(clean, "ok: nothing leaves") {
+		t.Errorf("a scene with problems says it is clean:\n%s", clean)
+	}
 	short := inspectScene(screen, 0)
 	if len(short) >= len(got) || !strings.Contains(short, "… 1 below") || !strings.Contains(short, "leaves its parent") {
 		t.Errorf("summary of %d bytes is not shorter than %d, or lost the problems:\n%s", len(short), len(got), short)
@@ -54,11 +57,16 @@ func TestLayoutTool(t *testing.T) {
 			"\titem Plate { pos 0 0; width 100; height 50; auto-layout abs\n" +
 			"\t\titem Big { pos 10 10; width 120; height 20 }\n\t}\n}\n",
 		"t.tenn": "element T {\n\titem A { pos 0 0; width 10; height 10 }\n\titem B { pos 20 0; width 10; height 10 }\n}\n",
+		"u.tenn": "element U {\n\titem Box { auto-layout column; width 100; height 50\n\t\titem A { width 10; height 10 }\n\t}\n}\n",
 	})
 	cs := memSession(t, root)
 	got := mustOK(t, cs, "layout", map[string]any{"file": "s.tenn", "element": "S"})
 	if !strings.Contains(got, "leaves its parent: right") {
 		t.Fatalf("layout:\n%s", got)
+	}
+	clean := mustOK(t, cs, "layout", map[string]any{"file": "u.tenn", "element": "U"})
+	if !strings.Contains(clean, "ok: nothing leaves") {
+		t.Fatalf("a clean scene does not say so:\n%s", clean)
 	}
 	got = mustOK(t, cs, "read", map[string]any{"file": "t.tenn", "paths": []string{"T.A", "T.B"}})
 	if !strings.Contains(got, "item A") || !strings.Contains(got, "item B") {
