@@ -4,6 +4,7 @@ package mcpserver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -164,6 +166,7 @@ func (s *Server) MCP() *mcp.Server {
 		Name:        "render",
 		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text). Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead. inspect adds the geometry: sizes, boxes, items leaving their parent, overlaps — read the numbers instead of measuring the image.",
 	}, func(_ context.Context, _ *mcp.CallToolRequest, in renderIn) (*mcp.CallToolResult, any, error) {
+		started := time.Now()
 		s.noteNode("render", in.File, in.Element)
 		r, err := s.render(in.File, in.Element, in.Scale, in.View)
 		if err == nil && in.Inspect && r.screen != nil {
@@ -172,8 +175,10 @@ func (s *Server) MCP() *mcp.Server {
 			}
 		}
 		if err != nil {
+			recordCall("render", in, len(err.Error()), started)
 			return failure(err), nil, nil
 		}
+		recordCall("render", in, len(r.text)+len(r.png), started)
 		return &mcp.CallToolResult{Content: []mcp.Content{
 			&mcp.ImageContent{Data: r.png, MIMEType: "image/png"},
 			&mcp.TextContent{Text: r.text},
@@ -217,12 +222,34 @@ func (s *Server) learnClient(next mcp.MethodHandler) mcp.MethodHandler {
 func add[In any](srv *mcp.Server, name, desc string, fn func(In) (string, error)) {
 	mcp.AddTool(srv, &mcp.Tool{Name: name, Description: desc},
 		func(_ context.Context, _ *mcp.CallToolRequest, in In) (*mcp.CallToolResult, any, error) {
+			started := time.Now()
 			text, err := fn(in)
 			if err != nil {
+				recordCall(name, in, len(err.Error())+6, started)
 				return failure(err), nil, nil
 			}
+			recordCall(name, in, len(text), started)
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 		})
+}
+
+// recordCall appends one line per tool call to TENNIARB_MCP_LOG, so a run can be measured: the size of
+// what the agent sent and got back is what costs tokens, and the time is what costs waiting.
+func recordCall(name string, in any, out int, started time.Time) {
+	path := os.Getenv("TENNIARB_MCP_LOG")
+	if path == "" {
+		return
+	}
+	args, _ := json.Marshal(in)
+	line, _ := json.Marshal(map[string]any{
+		"tool": name, "in": len(args), "out": out, "ms": time.Since(started).Milliseconds(),
+	})
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	f.Write(append(line, '\n'))
 }
 
 func failure(err error) *mcp.CallToolResult {
