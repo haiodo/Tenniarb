@@ -2,13 +2,13 @@
 
 ## О проекте
 
-Tenniarb - нативное macOS-приложение (AppKit) для моделирования диаграмм с вычислениями.
-Ключевая идея: структура + вычисления в формате `.tenn`.
+Tenniarb - редактор диаграмм и экранов в формате `.tenn`: структура плюс вычисления, всё текстом.
+Живая версия - Go (`go/`, окна на `gowt`). Swift-версия (`Tenniarb/`, `TenniarbTests/`,
+`Tenniarb.xcodeproj`) остаётся в дереве как история: CI её не собирает, новые фичи идут в Go.
 
-- Язык/платформа: Swift, Xcode project (`Tenniarb.xcodeproj`)
-- UI: программно (без storyboard/xib)
-- Вычисления: `JavaScriptCore` (`ExecutionContext`)
-- Markdown: пакет `cmkdown` (SwiftPM, см. `Package.resolved`)
+- Язык/платформа: Go, модуль `github.com/haiodo/tenniarb/go`; UI - `gowt` (AppKit под капотом)
+- Вычисления: `goja`; рендер - `go/scene` + `go/render`
+- Формат: `go/tenn` (lexer, parser, printer), спецификация - `docs/spec/tenn-scene.md`
 
 ## Структура репозитория
 
@@ -18,8 +18,13 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
-- `go/` - Go-версия (план в `../my-tasks/tenniarb/roadmap.md`), модуль `github.com/haiodo/tenniarb/go`. `go/tenn` - lexer,
-  parser, printer; golden-тест на общих `web/fixtures`. Спецификация расширенного формата - `docs/spec/tenn-scene.md`.
+- `go/` - живое приложение. `go/tenn` - lexer, parser, printer; golden-тест на общих `web/fixtures`.
+- `go/app` - окна, контур, сцены, правки агента в живом документе
+- `go/mcpserver` - MCP-инструменты и сервис, который их держит
+- `go/cmd/tenniarb` - приложение и CLI (`check`, `suggest`, `bundle`, `gen`, `install`);
+  `go/cmd/tenniarb-mcp` - прокси MCP, `go/cmd/tenniarb-service` - сервис
+- `go/skill/files/` - скилл агента, встраивается в бинарь
+- `docs/mcp-bench.md` - задачи и методика замера прогонов агента
 - `web/` - TypeScript-версия (план в `../my-tasks/tenniarb/plan.md`, раздел 3). npm workspaces `packages/*`,
   тесты `node:test` на `.ts` без компиляции. `web/bench/` - бенчмарки рендера, вне workspaces.
   `web/packages/mindmap` - встраиваемый mind map без вычислений (план, раздел 6): текстовый протокол блока, бандл `dist/mindmap.js`.
@@ -34,8 +39,16 @@ Tenniarb - нативное macOS-приложение (AppKit) для моде�
 Все команды собраны в `Makefile`, `make help` показывает список:
 
 ```bash
-make build          # сборка Debug
-make test           # unit-тесты (без performance)
+make install        # Go-приложение в /Applications, CLI и MCP в GOBIN, скилл, конфиг opencode,
+                    # последним шагом kill-running: приложение, прокси и сервис
+make app            # только .app (build/go/app)
+make go-mcp         # build/go/bin: tenniarb-mcp и tenniarb-service
+make go-mcp-install # оба бинаря в GOBIN
+make go-cli-install # tenniarb CLI в GOBIN
+make skill-install  # скилл в ~/.config/opencode/skill и ~/.agents/skills
+make kill-running   # остановить приложение, прокси и сервис
+make build          # Xcode-сборка Swift-версии (история, не живая версия)
+make test           # Swift-тесты (история)
 make test-only T=TenniarbTests/LexerTests
 make perf           # только performance-тесты (схема Tenniarb-Performance)
 make lint           # SwiftLint
@@ -58,6 +71,30 @@ Performance-тесты исключены из основного прогона
 схема `Tenniarb-Performance`, а не флаг.
 
 Если `xcodebuild` падает из-за plugin/runtime окружения Xcode, сначала привести локальный Xcode в рабочее состояние (`xcodebuild -runFirstLaunch`) и повторить.
+
+## Приложение, сервис и MCP
+
+- `tenniarb-mcp` - тонкий прокси; инструменты живут в `tenniarb-service`, один на пользователя.
+  После правок Go-кода нужен `make install` (или `go install ./cmd/tenniarb-mcp ./cmd/tenniarb-service`)
+  и переподключение MCP: opencode не поднимает умерший сервер сам.
+- Скилл (`go/skill/files/*.md`) встроен в бинарь: `read_skill` отдаёт копию из сервиса, а
+  `tenniarb install` кладёт те же файлы в `~/.config/opencode/skill/tenniarb-design` и
+  `~/.agents/skills`. После правки скилла нужен и реинсталл, и пересборка сервиса, иначе агент
+  получит старый текст.
+- Каждый вызов инструмента пишется в `$TMPDIR/tenniarb-mcp-calls.log` (1 МБ, потом в `.1`);
+  `TENNIARB_MCP_LOG` задаёт другой путь, `off` выключает. Методика и задачи - `docs/mcp-bench.md`.
+- `make install` убивает приложение по SIGTERM: несохранённые документы уходят в
+  `~/Library/Application Support/Tenniarb/recovery/<дата-время>/` и предлагаются при следующем старте.
+  Сохранять окна перед установкой всё равно дешевле, чем разбирать восстановление.
+
+## Правки `.tenn` агентом
+
+- Только через MCP `edit` / `design`, не через Write/Edit и не через shell: файл, открытый в
+  приложении, получает правку как undo-шаг и остаётся несохранённым, пока человек не сохранит.
+- Правка библиотеки, которую монтирует открытая доска, сначала открывает окно этой библиотеки: у
+  драфта есть undo и хозяин, а все доски показывают один и тот же текст.
+- Новый файл доски: минимальное `element X { }`, затем строка `--from-file` в мастере, затем тело с
+  `entry`. И `entry`, и имена `Libraries.*` резолвятся только через смонтированный мастер.
 
 ## Правила внесения изменений
 
