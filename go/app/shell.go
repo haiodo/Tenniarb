@@ -78,6 +78,8 @@ func RunIn(dir string, args []string) error {
 		exe, _ := os.Executable()
 		sh := &Shell{app: app, dir: dir, exe: exe, prefs: prefs, recent: LoadRecent(dir), ctx: ctx}
 		sh.start(args)
+		sh.offerRecovery()
+		go sh.watchTerminate()
 	})
 }
 

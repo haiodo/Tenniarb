@@ -22,6 +22,10 @@ browser editor zooms with two fingers on a touch screen.
   `get_state {file}` and `find`, instead of listing every node of the workspace (107 KB on this tree).
 + Every tool call is logged to a file in the temporary directory (1 MB, then rolled to `.1`;
   `TENNIARB_MCP_LOG` picks another path, `off` silences it), so a run can be measured after the fact.
++ Stopping the app with a signal (a `make install`, a restart, a kill) keeps the unsaved work: every
+  window with changes, and every file it mounts that it holds unsaved, goes to
+  `~/Library/Application Support/Tenniarb/recovery/<run>/` with a manifest. The next start offers it
+  back once and opens each file with the kept text as unsaved changes.
 + An edit of a library a board mounts opens that library in a window first, so the change belongs to a
   document: it has an undo and a save there, and every board that mounts the file shows the same text.
   Before, an agent edit of a library nobody had open went straight to disk, with no draft and no undo.
