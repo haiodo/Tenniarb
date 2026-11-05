@@ -20,6 +20,9 @@ browser editor zooms with two fingers on a touch screen.
   still gives its design files, and a `packages/` directory is still searched.
 + `layout` says `ok: nothing leaves its parent or its plate` when it finds nothing: an empty report read
   as "not checked" and cost a run a dozen extra calls.
++ The skill's recipe for a new board is the one that passes on the first try: a minimal file with no
+  library names, the mount in the entry file, then the body with `entry` and the library names - both
+  of those resolve only through a mount that exists.
 + A file of zero length takes the body in one `edit` with an empty `find`, as a new file does: the
   recipe for a board creates the file, mounts it, then adds the `entry` line.
 + `guide` without a topic returns the examples and the list of sections, not the whole 16 KB reference:

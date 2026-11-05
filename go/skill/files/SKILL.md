@@ -92,12 +92,15 @@ fills a hole. A file that uses a library does not mount it: libraries are mounte
 document (`PlatformDesign.tenn`), and a file opened alone finds its entry by itself or by a first line
 `entry "../../PlatformDesign.tenn"`.
 
-**New file in a library workspace.** The `entry` line is an assertion that the entry document mounts
-this file, and a mount needs the file to exist. So in this order: write the body in one `edit` without
-the `entry` line (a new file is one edit with an empty `find`), add
-`element "Board" --from-file "dev/design/tenn/apps/board.tenn"` to the entry file, then add the
-`entry "../../../PlatformDesign.tenn"` line as the first line. Anything else costs a round on
-`no such file` or `does not mount`.
+**New file in a library workspace.** Two names in a board need the entry: `entry` itself, and every
+`Libraries.…` it uses. A file that nothing mounts can have neither. So, in this order:
+
+1. create the file with a minimal body and no library names: `element "Board" { }`;
+2. add `element "Board" --from-file "dev/design/tenn/apps/board.tenn"` to the entry file;
+3. write the real body, its first line `entry "../../../PlatformDesign.tenn"`.
+
+Anything else costs a round on `does not mount`, on `"Libraries" is not defined here or above`, or on
+`no such file`.
 
 **Styles.** `styles { primary { color #6b3ad3 } kind one-of primary secondary }` inside an element,
 then `use-style primary` on a node, or `use-style ${kind}` with a parameter. Any property goes in a
