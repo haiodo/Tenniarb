@@ -39,6 +39,10 @@ All four are on the platform design, and each has a check that needs no judgemen
 same job twice on a copy of the workspace: reading the files whole and looking at pictures, and the node
 tools (`layout`, `design`). It prints the calls and the bytes of each way.
 
+The first number to watch is the first call: `get_state` with no file is what a run pays to see the
+workspace at all. On this tree it was 107 317 bytes (≈27 000 tokens) before the cap and 12 038 (≈3 000)
+after, for the same next step, because the cut names `get_state {file}` and `find`.
+
 Numbers of 2026-11-05 on the platform design: the files-and-pictures way took 4 calls and 138 735 bytes
 (≈34 700 tokens), the node way 4 calls and 13 985 bytes (≈3 500 tokens) for the same answer and the same
 change.

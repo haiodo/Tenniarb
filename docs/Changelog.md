@@ -15,6 +15,8 @@ browser editor zooms with two fingers on a touch screen.
   (Cmd+Shift+G), and the canvas menu. One undo step each.
 + A file an agent edits opens in the window: an edit of a file no window shows opens it with Follow on, so
   the work is never out of sight. Settings turns this off with "Open files an agent edits".
++ The first call of a run is cheap: `get_state` without a file stops after about 12 KB and points at
+  `get_state {file}` and `find`, instead of listing every node of the workspace (107 KB on this tree).
 + Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
   `replace_all`, addresses nodes by the paths `get_state` prints, and applies the whole call as one change
   (one undo step in the window), with nothing written if the result adds an error.

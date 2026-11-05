@@ -59,6 +59,10 @@ func TestBenchWorkflows(t *testing.T) {
 	const actions = "dev/design/tenn/lib/actions.tenn"
 	const forms = "dev/design/tenn/lib/forms.tenn"
 
+	measure("state", func() {
+		call(t, cs, "get_state", map[string]any{})
+	})
+
 	measure("files", func() {
 		for _, f := range []string{actions, forms} {
 			call(t, cs, "read", map[string]any{"file": f})

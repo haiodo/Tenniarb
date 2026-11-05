@@ -260,7 +260,21 @@ const (
 	defaultDepth = 2
 	maxFound     = 100
 	maxDiags     = 10
+	// maxState bounds the whole-workspace listing: the overview an agent starts from, not every node there is.
+	maxState = 12000
 )
+
+// cutState keeps the head of the workspace listing, at a line boundary, and says how to see the rest.
+func cutState(s string) string {
+	if len(s) <= maxState {
+		return s
+	}
+	at := strings.LastIndexByte(s[:maxState], '\n') + 1
+	if at <= 0 {
+		at = maxState
+	}
+	return s[:at] + "… cut: get_state {file} lists one file in full, find searches every file\n"
+}
 
 // stateHead explains the node lines of get_state.
 const stateHead = "node lines: path kind line [renderer] [kind=TYPE] [params=a,b] [styles=a,b] [groups=name:one-of(a b)] [args=a=v,b=v] [+N nodes below, cut by depth]\n"
@@ -537,6 +551,9 @@ func (s *Server) state(in getStateIn) (string, error) {
 		} else if fd.count == 0 {
 			fmt.Fprintf(&b, "  nothing named like %q\n", in.Find)
 		}
+	}
+	if in.File == "" {
+		return cutState(b.String()), nil
 	}
 	return b.String(), nil
 }

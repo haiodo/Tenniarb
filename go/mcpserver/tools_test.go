@@ -119,3 +119,28 @@ func TestSuggest(t *testing.T) {
 		t.Errorf("suggest found nothing about the two items:\n%s", out)
 	}
 }
+
+// TestStateCapped: the whole-workspace listing stops at maxState and points at file and find; one file stays whole.
+func TestStateCapped(t *testing.T) {
+	files := map[string]string{}
+	for i := 0; i < 40; i++ {
+		var b strings.Builder
+		b.WriteString("element Board {\n")
+		for j := 0; j < 20; j++ {
+			b.WriteString("\titem Card { width 10; height 10 }\n")
+		}
+		b.WriteString("}\n")
+		files["board"+string(rune('A'+i/26))+string(rune('A'+i%26))+".tenn"] = b.String()
+	}
+	cs := memSession(t, tempRoot(t, files))
+	got := mustOK(t, cs, "get_state", map[string]any{})
+	if len(got) > maxState+200 {
+		t.Fatalf("whole workspace is %d bytes", len(got))
+	}
+	if !strings.Contains(got, "cut: get_state {file}") {
+		t.Fatalf("no hint where to go on:\n%s", got[len(got)-200:])
+	}
+	if one := mustOK(t, cs, "get_state", map[string]any{"file": "boardAA.tenn"}); !strings.Contains(one, "Card") || strings.Contains(one, "cut:") {
+		t.Fatalf("one file:\n%s", one)
+	}
+}
