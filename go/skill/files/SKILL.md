@@ -55,6 +55,9 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 
 ## Facts that cost a round
 
+- `design {file, ops: [...]}` changes nodes by path: `{op: "set", node: "S.Button", name: "color", value: "#1f2129"}`,
+  `{op: "move", node, dx, dy}`, `{op: "insert", parent, text}`, `{op: "delete", node}`, `{op: "replace_all", find, replace}`.
+  One call is one undo step; an edit and a delete of the same node in one call is refused — split it.
 - `read {file, path: "Lib.Forms"}` follows `--from-file`: a path that ends on a mounting element gives the
   content of the mounted file, not its one-line declaration.
 - `render {file, element, inspect: true}` adds the geometry the engine computed: sizes, the box of every

@@ -77,6 +77,10 @@ type (
 		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
 		Edits []EditOp `json:"edits" jsonschema:"find/replace operations applied in order; to create a missing file send one edit with empty find"`
 	}
+	designIn struct {
+		File string     `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Ops  []DesignOp `json:"ops" jsonschema:"operations in order; each addresses a node by its dotted path"`
+	}
 	layoutIn struct {
 		File    string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
 		Element string `json:"element,omitempty" jsonschema:"dotted path of a scene element; empty for the content of the file itself"`
@@ -114,6 +118,10 @@ func (s *Server) MCP() *mcp.Server {
 				s.noteNode("get_state", in.File, in.Path)
 			}
 			return s.state(in)
+		})
+	add(srv, "design", "Change a .tenn file by operations on nodes: set a property, move a node by dx dy, insert commands into a parent, delete a node, replace text everywhere. Paths are the dotted ones of get_state, so nothing has to match as text. All operations of one call go as one change: nothing is written if the result has a parse error or adds a validation error, and a file open in Tenniarb takes it as one undo step, unsaved.",
+		func(in designIn) (string, error) {
+			return s.design(in.File, in.Ops)
 		})
 	add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
 		func(in layoutIn) (string, error) {

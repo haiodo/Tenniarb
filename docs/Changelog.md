@@ -15,6 +15,9 @@ browser editor zooms with two fingers on a touch screen.
   (Cmd+Shift+G), and the canvas menu. One undo step each.
 + A file an agent edits opens in the window: an edit of a file no window shows opens it with Follow on, so
   the work is never out of sight. Settings turns this off with "Open files an agent edits".
++ Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
+  `replace_all`, addresses nodes by the paths `get_state` prints, and applies the whole call as one change
+  (one undo step in the window), with nothing written if the result adds an error.
 + Agents get numbers instead of guesses: `read` of an element with `--from-file` returns the content of the
   mounted file (a path into it returns the node), and `render {inspect: true}` adds the geometry — sizes,
   boxes, the items that leave the plate they sit on, overlapping siblings. `layout` gives the same numbers
