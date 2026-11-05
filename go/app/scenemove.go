@@ -9,8 +9,8 @@ func (v *Viewer) moveNodeBy(delta int) {
 	if n == nil || n.Parent == nil {
 		return
 	}
-	e, at, ok := MoveNodeEdit(v.fileText(v.fileOf(n)), n, delta)
-	if !ok || !v.sceneEdit(n, e) {
+	e, at, ok := MoveNodeEdit(v.fileText(v.ownFileOf(n)), n, delta)
+	if !ok || !v.sceneEditIn(v.ownFileOf(n), n, e) {
 		return
 	}
 	v.selectMoved(at)
@@ -23,8 +23,8 @@ func (v *Viewer) moveNodeInto(delta int) {
 	if n == nil || n.Parent == nil {
 		return
 	}
-	e, at, ok := MoveNodeIntoEdit(v.fileText(v.fileOf(n)), n, delta)
-	if !ok || !v.sceneEdit(n, e) {
+	e, at, ok := MoveNodeIntoEdit(v.fileText(v.ownFileOf(n)), n, delta)
+	if !ok || !v.sceneEditIn(v.ownFileOf(n), n, e) {
 		return
 	}
 	v.selectMoved(at)

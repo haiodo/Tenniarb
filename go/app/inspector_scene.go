@@ -50,8 +50,8 @@ func (v *Viewer) sceneSrc() propSrc {
 		if n == nil {
 			return false
 		}
-		e, ok := SetPropEdit(v.fileText(v.fileOf(n)), n, name, args...)
-		return ok && v.sceneEdit(n, e)
+		e, ok := SetPropEdit(v.fileText(v.ownFileOf(n)), n, name, args...)
+		return ok && v.sceneEditIn(v.ownFileOf(n), n, e)
 	}
 	return propSrc{
 		get: func(name string) editor.Prop {
@@ -563,8 +563,8 @@ func (v *Viewer) setParam(prm scene.Param, values ...string) bool {
 	if use == nil {
 		return false
 	}
-	e, ok := ParamEdit(v.fileText(v.fileOf(use)), use, prm, values...)
-	return ok && v.sceneEdit(use, e)
+	e, ok := ParamEdit(v.fileText(v.ownFileOf(use)), use, prm, values...)
+	return ok && v.sceneEditIn(v.ownFileOf(use), use, e)
 }
 
 // removeParam deletes the value of parameter prm of the selected use, so the default of the declaration
@@ -574,8 +574,8 @@ func (v *Viewer) removeParam(prm scene.Param) bool {
 	if use == nil {
 		return false
 	}
-	e, ok := RemoveParamEdit(v.fileText(v.fileOf(use)), use, prm)
-	return ok && v.sceneEdit(use, e)
+	e, ok := RemoveParamEdit(v.fileText(v.ownFileOf(use)), use, prm)
+	return ok && v.sceneEditIn(v.ownFileOf(use), use, e)
 }
 
 // toggleParam adds s to the values of an any-of parameter, or drops it.

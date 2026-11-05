@@ -238,6 +238,11 @@ func (v *Viewer) onKey(k *view.Key) {
 		return
 	}
 	if v.sceneMode() {
+		// Tab adds an item, as in a diagram: the frame is the container of a screen.
+		if name == "Tab" {
+			v.addSceneItem("Frame")
+			return
+		}
 		v.sceneKey(name)
 		return
 	}

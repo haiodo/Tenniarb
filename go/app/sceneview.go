@@ -673,8 +673,8 @@ func (v *Viewer) moveSceneNode(pl *scene.Placed, dx, dy float64) {
 		v.setInstProp(ref, "pos", numText(nx), numText(ny))
 		return
 	}
-	if e, ok := SetPropEdit(v.fileText(v.fileOf(pl.Src)), pl.Src, "pos", numText(nx), numText(ny)); ok {
-		v.sceneEdit(pl.Src, e)
+	if e, ok := SetPropEdit(v.fileText(v.ownFileOf(pl.Src)), pl.Src, "pos", numText(nx), numText(ny)); ok {
+		v.sceneEditIn(v.ownFileOf(pl.Src), pl.Src, e)
 	}
 }
 
@@ -685,13 +685,16 @@ func (v *Viewer) setInstProp(ref instRef, name string, args ...string) bool {
 		v.setBanner("Not applied: the item has no unique name inside the instance, edit it in the use")
 		return false
 	}
-	e, ok := AtPropEdit(v.fileText(v.fileOf(ref.use)), ref.use, ref.at, name, args...)
-	return ok && v.sceneEdit(ref.use, e)
+	e, ok := AtPropEdit(v.fileText(v.ownFileOf(ref.use)), ref.use, ref.at, name, args...)
+	return ok && v.sceneEditIn(v.ownFileOf(ref.use), ref.use, e)
 }
 
 // sceneEdit applies a text edit of the file of n, made by the window; a refused one shows in the banner.
-func (v *Viewer) sceneEdit(n *scene.Node, e TextEdit) bool {
-	file := v.fileOf(n)
+func (v *Viewer) sceneEdit(n *scene.Node, e TextEdit) bool { return v.sceneEditIn(v.fileOf(n), n, e) }
+
+// sceneEditIn applies an edit of file, about n: the file of a node's own block may differ from the file
+// of what it shows (an element with --from-file).
+func (v *Viewer) sceneEditIn(file string, n *scene.Node, e TextEdit) bool {
 	text := v.fileText(file)
 	if v.editAddsErrors(file, text, e) {
 		v.setBanner("Not applied: the change adds scene errors")
@@ -726,7 +729,7 @@ func (v *Viewer) deleteSceneNode() {
 		return
 	}
 	v.selNodes = nil
-	v.sceneEdit(n, DeleteEdit(v.fileText(v.fileOf(n)), n))
+	v.sceneEditIn(v.ownFileOf(n), n, DeleteEdit(v.fileText(v.ownFileOf(n)), n))
 }
 
 // freeSpot is a place right of the content of the element for a new top level node, as pos x y.
@@ -813,9 +816,15 @@ func (v *Viewer) newScreen(w, h int) {
 
 // insertAndSelect writes cmd at the end of target and selects the node that starts with head in it.
 func (v *Viewer) insertAndSelect(target *scene.Node, cmd, head string) {
-	e := InsertEdit(v.fileText(v.fileOf(target)), target, cmd)
+	owner := target
+	if target.Mount != nil { // the content of an element with --from-file is written in that file
+		if f := v.stree.File(v.fileOf(target)); f != nil {
+			owner = f
+		}
+	}
+	e := InsertEdit(v.fileText(v.fileOf(owner)), owner, cmd)
 	at := strings.Index(e.New, head)
-	if at < 0 || !v.sceneEdit(target, e) {
+	if at < 0 || !v.sceneEdit(owner, e) {
 		return
 	}
 	if n := nodeStartingAt(v.sv.node, e.Start+at); n != nil {

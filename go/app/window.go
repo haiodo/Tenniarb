@@ -732,7 +732,11 @@ func (v *Viewer) outlineKeys(t *g.TreeView) {
 			return
 		}
 		e.Doit = false
-		v.session.AddTopItem()
+		if v.sceneMode() {
+			v.addSceneItem("Frame")
+		} else {
+			v.session.AddTopItem()
+		}
 		v.view.Canvas().Unwrap().SetFocus()
 	}))
 }
