@@ -559,7 +559,12 @@ func (s *Server) read(file, path string) (string, error) {
 		if live != nil && live.doc.Dirty {
 			note = ", open in Tenniarb with unsaved changes"
 		}
-		return fmt.Sprintf("%s (%d lines%s)\n%s", rel, total, note, numbered(text, 1, total)), nil
+		show := min(total, mountedReadLines)
+		head := fmt.Sprintf("%s (%d lines%s)\n", rel, total, note)
+		if show < total {
+			head += "… the first " + fmt.Sprint(show) + " lines; get_state lists the nodes, read one by path (or several with paths) to see the rest\n"
+		}
+		return head + numbered(text, 1, show), nil
 	}
 	if e, bad := parseError(text); bad {
 		return "", fmt.Errorf("%s has a parse error at %d:%d: %s", rel, e.Line+1, e.Col, e.Message)

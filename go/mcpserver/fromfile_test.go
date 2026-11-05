@@ -1,6 +1,7 @@
 package mcpserver
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,5 +77,27 @@ func TestReadMounted(t *testing.T) {
 	got = mustOK(t, cs, "read", map[string]any{"file": "main.tenn", "path": "ui.Forms.Input.Label"})
 	if !strings.Contains(got, `title Label`) || strings.Contains(got, "item Input") {
 		t.Fatalf("read of a node inside the mounted file:\n%s", got)
+	}
+}
+
+// TestReadBigFile: a whole-file read stops at the cap and says how to see the rest.
+func TestReadBigFile(t *testing.T) {
+	var b strings.Builder
+	b.WriteString("element Big {\n")
+	for i := 0; i < mountedReadLines+50; i++ {
+		fmt.Fprintf(&b, "\titem N%d { width 10; height 10 }\n", i)
+	}
+	b.WriteString("}\n")
+	root := tempRoot(t, map[string]string{"big.tenn": b.String()})
+	cs := memSession(t, root)
+	got := mustOK(t, cs, "read", map[string]any{"file": "big.tenn"})
+	if !strings.Contains(got, "read one by path") {
+		t.Fatalf("no hint to read a node:\n%s", got[:200])
+	}
+	if strings.Contains(got, "item N400 {") {
+		t.Fatal("the whole file came back")
+	}
+	if small := mustOK(t, cs, "read", map[string]any{"file": "big.tenn", "paths": []string{"Big.N0", "Big.N1"}}); !strings.Contains(small, "N0") || !strings.Contains(small, "N1") {
+		t.Fatalf("paths read:\n%s", small)
 	}
 }
