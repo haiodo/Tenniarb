@@ -50,6 +50,40 @@ func TestInspectScene(t *testing.T) {
 	}
 }
 
+// TestInspectPlates: a component on its plate is not an overlap, a marker hanging over the icon it
+// sits on is not a problem, and a component leaving its plate still is one.
+func TestInspectPlates(t *testing.T) {
+	const text = "element S {\n" +
+		"\titem \"§ Card\" { pos 0 0; width 100; height 50 }\n" +
+		"\titem Inner { pos 10 -10; width 40; height 20 }\n" +
+		"\titem Wide { pos 70 -10; width 40; height 20 }\n" +
+		"\titem Icon { pos 200 0; width 8; height 8 }\n" +
+		"\titem Dot { pos 200 0; width 10; height 10 }\n" +
+		"}\n"
+	tree, err := scene.LoadSource(t.TempDir(), "s.tenn", text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sc := gfx.NewScene()
+	var screen *scene.Screen
+	sc.Update(func(tx *gfx.Tx) {
+		screen, err = tree.Build(tx, nil, "S", scene.Options{Measurer: gfx.EstimateText{}, EvalVars: exec.SceneEvalVars})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := inspectScene(screen, 0)
+	if !strings.Contains(got, "Wide sits on __Card and leaves it: right 10") {
+		t.Errorf("a component leaving its plate is not reported:\n%s", got)
+	}
+	if strings.Contains(got, "Dot sits on") {
+		t.Errorf("a marker on an icon is reported:\n%s", got)
+	}
+	if strings.Contains(got, "overlap: __Card") {
+		t.Errorf("a component on its plate is an overlap:\n%s", got)
+	}
+}
+
 // TestLayoutTool: layout reports the geometry without a renderer, and read takes several paths at once.
 func TestLayoutTool(t *testing.T) {
 	root := tempRoot(t, map[string]string{

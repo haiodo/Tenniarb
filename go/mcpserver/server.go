@@ -516,22 +516,30 @@ func (s *Server) state(in getStateIn) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		// A search of the whole workspace walks every document's mounts, so a mounted file would list
+		// each match a second time; a file without a match would answer with its own errors, which are
+		// no part of the question. Both are left out unless the file was named.
+		search := in.Find != "" && in.File == ""
+		if search && tree != nil && tree.Entry() != "" {
+			continue
+		}
 		f := fileRoot(tree, rel)
 		var rend *renderers
 		if f != nil {
 			rend = newRenderers(tree)
 		}
-		b.WriteString(rel)
+		var sec strings.Builder
+		sec.WriteString(rel)
 		if tree != nil && tree.Entry() != "" {
-			b.WriteString(" (in " + tree.Entry() + ")")
+			sec.WriteString(" (in " + tree.Entry() + ")")
 		}
 		if f != nil && in.Path == "" && hasContent(f) {
-			b.WriteString(" " + rend.of(f))
+			sec.WriteString(" " + rend.of(f))
 		}
 		if d := s.host.live.lookup(filepath.Join(s.root, filepath.FromSlash(rel))); d != nil {
-			b.WriteString(", open in Tenniarb")
+			sec.WriteString(", open in Tenniarb")
 			if d.doc.Dirty {
-				b.WriteString(", unsaved")
+				sec.WriteString(", unsaved")
 			}
 		}
 		nerr, nwarn := 0, 0
@@ -544,11 +552,14 @@ func (s *Server) state(in getStateIn) (string, error) {
 				nerr++
 			}
 		}
-		fmt.Fprintf(&b, ": %d errors, %d warnings\n", nerr, nwarn)
+		fmt.Fprintf(&sec, ": %d errors, %d warnings\n", nerr, nwarn)
 		if in.Path == "" && in.Find == "" {
-			writeDiags(&b, es, rel)
+			writeDiags(&sec, es, rel)
 		}
 		if f == nil {
+			if !search {
+				b.WriteString(sec.String())
+			}
 			continue
 		}
 		from, prefix := f, ""
@@ -560,19 +571,26 @@ func (s *Server) state(in getStateIn) (string, error) {
 		}
 		if in.Find == "" && in.Path != "" {
 			// Relative paths are what at and replace take in an instance of the node.
-			fmt.Fprintf(&b, "  paths below %s, as at and replace address them in its instance:\n", in.Path)
+			fmt.Fprintf(&sec, "  paths below %s, as at and replace address them in its instance:\n", in.Path)
 			prefix = ""
 		}
 		if in.Find == "" {
-			writeTree(&b, from, prefix, 1, depth, rend)
+			writeTree(&sec, from, prefix, 1, depth, rend)
+			b.WriteString(sec.String())
 			continue
 		}
-		fd := finder{b: &b, q: strings.ToLower(in.Find), depth: in.Depth, rend: rend}
-		if fd.walk(from, prefix); fd.count > maxFound {
-			fmt.Fprintf(&b, "  ... %d matches, %d listed: make find longer or list from a path\n", fd.count, maxFound)
-		} else if fd.count == 0 {
-			fmt.Fprintf(&b, "  nothing named like %q\n", in.Find)
+		fd := finder{b: &sec, q: strings.ToLower(in.Find), depth: in.Depth, rend: rend}
+		fd.walk(from, prefix)
+		switch {
+		case fd.count > maxFound:
+			fmt.Fprintf(&sec, "  ... %d matches, %d listed: make find longer or list from a path\n", fd.count, maxFound)
+		case fd.count == 0 && !search:
+			fmt.Fprintf(&sec, "  nothing named like %q\n", in.Find)
 		}
+		if fd.count == 0 && search {
+			continue
+		}
+		b.WriteString(sec.String())
 	}
 	if in.File == "" {
 		if in.Find != "" {

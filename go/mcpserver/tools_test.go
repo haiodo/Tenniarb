@@ -146,6 +146,26 @@ func TestStateCapped(t *testing.T) {
 	}
 }
 
+// TestFindOnceAndQuiet: a search lists a mounted file through the document that mounts it, once, and
+// says nothing about a file without a match; a file named in the call still says there is none.
+func TestFindOnceAndQuiet(t *testing.T) {
+	cs := memSession(t, tempRoot(t, map[string]string{
+		"entry.tenn": "element Lib --from-file \"lib.tenn\"\n",
+		"lib.tenn":   "entry \"entry.tenn\"\nelement Kit {\n\titem Button { width 10; height 10 }\n}\n",
+		"other.tenn": "element Other {\n\titem Nothing { width 1; height 1 }\n}\n",
+	}))
+	got := mustOK(t, cs, "get_state", map[string]any{"find": "Button"})
+	if strings.Count(got, "Button") != 1 {
+		t.Fatalf("Button listed %d times:\n%s", strings.Count(got, "Button"), got)
+	}
+	if strings.Contains(got, "other.tenn") || strings.Contains(got, "nothing named") {
+		t.Fatalf("a file without a match is in the answer:\n%s", got)
+	}
+	if one := mustOK(t, cs, "get_state", map[string]any{"file": "other.tenn", "find": "Button"}); !strings.Contains(one, "nothing named") {
+		t.Fatalf("a named file without a match says nothing:\n%s", one)
+	}
+}
+
 // TestCallLog: a call is logged where TENNIARB_MCP_LOG says, and "off" writes nothing.
 func TestCallLog(t *testing.T) {
 	dir := t.TempDir()

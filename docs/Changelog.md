@@ -27,6 +27,11 @@ browser editor zooms with two fingers on a touch screen.
   recipe for a board creates the file, mounts it, then adds the `entry` line.
 + A search across the workspace (`get_state {find}` without a file) stops at 6 KB with the hint to make
   the word longer or to name one file: a word as common as "Button" found a hundred nodes in eight files.
++ A search of the whole workspace lists a mounted file once, in the document that mounts it, and leaves
+  out the files that have no match: 27 lines of "nothing named like" and every duplicate went away.
++ `layout` and `render {inspect}` no longer report a plate as an overlap with what is drawn on it, nor a
+  status marker hanging 2 units over the icon it sits on as a problem: both are on purpose, and a run
+  spent its calls on them. A component leaving its "§ ..." plate is still reported.
 + `guide` without a topic returns the examples and the list of sections, not the whole 16 KB reference:
   a run asks for the section it needs by number or heading word.
 + `read` stops at 12 KB as well as at 400 lines: a board file can be 700 KB with long lines, and a

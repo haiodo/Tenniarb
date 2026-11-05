@@ -128,8 +128,15 @@ func overflow(p *scene.Placed) (string, bool) {
 	return strings.Join(out, ", "), len(out) > 0
 }
 
-// sticksOut finds the items that sit on a bigger sibling and leave it, as a card on its plate: the
-// smaller box overlapping the bigger one by most of its area, and not inside it.
+// isPlate: the thing a component is laid on is named "§ ..." in the libraries, and a component
+// covering its plate is the point, not a problem. A card on some other box is not checked, which is
+// the price of not reporting a status marker that hangs 2 units over the avatar it sits on.
+func isPlate(p *scene.Placed) bool {
+	return p.Src != nil && strings.HasPrefix(p.Src.Name, "§")
+}
+
+// sticksOut finds the items that sit on a plate and leave it, as a card on its plate: the smaller box
+// overlapping the bigger one by most of its area, and not inside it.
 func sticksOut(root *scene.Placed) []string {
 	var out []string
 	var walk func(p *scene.Placed)
@@ -137,7 +144,7 @@ func sticksOut(root *scene.Placed) []string {
 		kids := p.Kids
 		for _, a := range kids {
 			for _, b := range kids {
-				if a == b || a.W*a.H >= b.W*b.H {
+				if a == b || a.W*a.H >= b.W*b.H || !isPlate(b) {
 					continue
 				}
 				iw := min(a.X+a.W, b.X+b.W) - max(a.X, b.X)
@@ -181,11 +188,15 @@ func leaves(a, b *scene.Placed) (string, bool) {
 	return strings.Join(parts, ", "), len(parts) > 0
 }
 
-// overlaps lists the pairs of siblings whose boxes share an area, with the size of that area.
+// overlaps lists the pairs of siblings whose boxes share an area, with the size of that area. A plate
+// and what is drawn on it are one of those pairs by design, so a pair with a plate is left out.
 func overlaps(kids []*scene.Placed) [][4]any {
 	var out [][4]any
 	for i, a := range kids {
 		for _, b := range kids[i+1:] {
+			if isPlate(a) || isPlate(b) {
+				continue
+			}
 			w := min(a.X+a.W, b.X+b.W) - max(a.X, b.X)
 			h := min(a.Y+a.H, b.Y+b.H) - max(a.Y, b.Y)
 			if w > 0.5 && h > 0.5 {
