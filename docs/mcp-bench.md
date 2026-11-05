@@ -33,6 +33,20 @@ All four are on the platform design, and each has a check that needs no judgemen
 | `rename` | rename a component and keep every `use` valid | `validate` 0 errors, `get_state {find}` lists the same uses |
 | `build` | a screen of 1200x760 from three components of the library, no warnings | `render` gives that size and 0 warnings |
 
+## Rebuilding a page from the storybook
+
+The platform storybook (`foundation/dev/storybook`) shows 18 recorded pages; four of them have no board in
+`foundation/dev/design/tenn`: `Tracker new issue`, `Tracker my issues`, `Task board card states`,
+`Tracker create project`. The reference is the running storybook, not the tenn text:
+
+```bash
+cd foundation/dev/storybook/storybook-static && python3 -m http.server 6006
+# http://localhost:6006/iframe.html?id=tracker-new-issue--frame-1&viewMode=story
+```
+
+A run is one page: give the agent the screenshot, the workspace and the house style, ask for a new
+`dev/design/tenn/apps/<page>.tenn`, and check the numbers in the call log rather than the agent's report.
+
 ## This repository's own comparison
 
 `BENCHDST=<workspace with PlatformDesign.tenn> go test ./mcpserver -run TestBenchWorkflows -v` runs the
