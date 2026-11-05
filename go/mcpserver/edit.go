@@ -85,6 +85,10 @@ func (s *Server) edit(file string, edits []EditOp) (string, error) {
 			return "", fmt.Errorf("%s does not exist: to create it send one edit with empty find", rel)
 		}
 		text = edits[0].Replace
+	} else if len(old) == 0 && len(edits) == 1 && edits[0].Find == "" {
+		// An empty file takes one edit with an empty find, as a new one does: the recipe for a board
+		// creates the file first, then mounts it, then writes it.
+		text = edits[0].Replace
 	} else if text, err = applyEdits(string(old), edits); err != nil {
 		return "", err
 	}

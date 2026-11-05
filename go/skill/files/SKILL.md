@@ -27,9 +27,9 @@ whole thing.
 1. `get_state` with no arguments: the files, their top two levels, the renderer of each element,
    errors. Lines end with `+N` when N nodes are cut off below.
 2. Library, if there is one (a file with components, often `lib/*.tenn`):
-   - `get_state {file, find: "FormRow", depth: 3}` - every node whose name has the word, with its full
-     path for `use` and, below it, its parts as `at`/`replace` take them and its slots. One call per
-     component you need; `find` without `depth` only lists the paths.
+   - `get_state {find: "Avatar", depth: 3}` without a file searches every file of the workspace: one
+     call finds the component wherever it lives. With a file it searches that file only; without
+     `depth` it lists just the paths.
    - `read {file, path: <component>}` - its text, only when you need its size, colors or a layout
      that is not obvious from the parts.
 3. Write the screen in one `edit` (the syntax below): a new file is one edit with empty `find` and the
@@ -93,9 +93,11 @@ document (`PlatformDesign.tenn`), and a file opened alone finds its entry by its
 `entry "../../PlatformDesign.tenn"`.
 
 **New file in a library workspace.** The `entry` line is an assertion that the entry document mounts
-this file. Add the mount first - `element "Board" --from-file "dev/design/tenn/apps/board.tenn"` in the
-entry file through `edit` - and only then create the file with its `entry` line. A file that is not
-mounted yet cannot carry an `entry` line.
+this file, and a mount needs the file to exist. So in this order: write the body in one `edit` without
+the `entry` line (a new file is one edit with an empty `find`), add
+`element "Board" --from-file "dev/design/tenn/apps/board.tenn"` to the entry file, then add the
+`entry "../../../PlatformDesign.tenn"` line as the first line. Anything else costs a round on
+`no such file` or `does not mount`.
 
 **Styles.** `styles { primary { color #6b3ad3 } kind one-of primary secondary }` inside an element,
 then `use-style primary` on a node, or `use-style ${kind}` with a parameter. Any property goes in a
@@ -129,6 +131,8 @@ footer row (`justify end`, `gap 8`).
 - One `edit` call can carry several find/replace pairs for one file.
 - `find` must match exactly once: take the shortest unique text, a name in quotes with its line.
 - After a successful edit do not read the file again: the edit result says what you need.
+- A file that the app has open is rewritten when it opens (indent, quotes, one command per line), so
+  text you wrote may no longer match: take `find` from `read`, not from your own edit.
 - The same override on many instances: one edit with `all: true` (`find` a text all of them share).
 - Render one element. A desktop screen of 1920x1080 reads well at `scale 0.5`, which costs a quarter
   of the pixels. Ask for `layout` before the first render: it finds the overflow that the image would

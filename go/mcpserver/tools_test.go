@@ -161,3 +161,15 @@ func TestCallLog(t *testing.T) {
 		t.Fatalf("off wrote a line: %q", b)
 	}
 }
+
+// TestEditEmptyFile: a file of zero length takes the body in one edit, as a new one does.
+func TestEditEmptyFile(t *testing.T) {
+	root := tempRoot(t, map[string]string{"e.tenn": ""})
+	cs := memSession(t, root)
+	if got := mustOK(t, cs, "edit", map[string]any{"file": "e.tenn", "edits": []map[string]any{{"find": "", "replace": "element E { item A { width 1; height 1 } }\n"}}}); !strings.Contains(got, "written") {
+		t.Fatalf("edit of an empty file: %s", got)
+	}
+	if got := mustOK(t, cs, "read", map[string]any{"file": "e.tenn"}); !strings.Contains(got, "element E") {
+		t.Fatalf("file after the edit: %s", got)
+	}
+}
