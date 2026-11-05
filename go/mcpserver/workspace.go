@@ -78,11 +78,12 @@ const maxWalk = 50000
 
 var errTooLarge = fmt.Errorf("the workspace has more than %d entries: start tenniarb-mcp with -root at the project folder", maxWalk)
 
-// files lists the .tenn files of the workspace, relative with slashes. Hidden entries and node_modules
-// are skipped: a design lives beside its sources, not in the packages.
+// files lists the .tenn files of the workspace, relative with slashes. Hidden entries and directories
+// a .gitignore names are skipped: a design lives beside its sources, not in the packages.
 func (s *Server) files() ([]string, error) {
 	var out []string
 	n := 0
+	ig := loadIgnores(s.root)
 	err := filepath.WalkDir(s.root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -90,8 +91,17 @@ func (s *Server) files() ([]string, error) {
 		if n++; n > maxWalk {
 			return errTooLarge
 		}
-		if p != s.root && d.IsDir() && (strings.HasPrefix(d.Name(), ".") || d.Name() == "node_modules") {
-			return filepath.SkipDir
+		rel, _ := filepath.Rel(s.root, p)
+		rel = filepath.ToSlash(rel)
+		if p != s.root && d.IsDir() {
+			if strings.HasPrefix(d.Name(), ".") {
+				return filepath.SkipDir
+			}
+			if ig.match(rel) {
+				return filepath.SkipDir
+			}
+			ig.read(p, rel)
+			return nil
 		}
 		if p != s.root && strings.HasPrefix(d.Name(), ".") {
 			return nil
@@ -99,8 +109,7 @@ func (s *Server) files() ([]string, error) {
 		if d.IsDir() || filepath.Ext(p) != tennExt {
 			return nil
 		}
-		rel, _ := filepath.Rel(s.root, p)
-		if _, r, err := s.resolve(filepath.ToSlash(rel)); err == nil {
+		if _, r, err := s.resolve(rel); err == nil {
 			out = append(out, r)
 		}
 		return nil

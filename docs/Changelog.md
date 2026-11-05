@@ -15,8 +15,9 @@ browser editor zooms with two fingers on a touch screen.
   (Cmd+Shift+G), and the canvas menu. One undo step each.
 + A file an agent edits opens in the window: an edit of a file no window shows opens it with Follow on, so
   the work is never out of sight. Settings turns this off with "Open files an agent edits".
-+ `get_state` no longer fails on a workspace with `node_modules`: the listing skips packages, so a
-  project root that also builds a front-end still gives its design files.
++ `get_state` follows `.gitignore` instead of a hard-coded list: the files from the file system root
+  down to the workspace say what the walk leaves out, so a project root that also builds a front-end
+  still gives its design files, and a `packages/` directory is still searched.
 + The first call of a run is cheap: `get_state` without a file stops after about 12 KB and points at
   `get_state {file}` and `find`, instead of listing every node of the workspace (107 KB on this tree).
 + Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
