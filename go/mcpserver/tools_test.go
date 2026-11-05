@@ -144,3 +144,15 @@ func TestStateCapped(t *testing.T) {
 		t.Fatalf("one file:\n%s", one)
 	}
 }
+
+// TestStateSkipsPackages: node_modules is not searched for designs, so a big workspace still lists.
+func TestStateSkipsPackages(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"design.tenn":                    "element Screen { item Btn { title Hi } }\n",
+		"node_modules/@x/pkg/other.tenn": "element Lib { item A { title no } }\n",
+	})
+	got := mustOK(t, memSession(t, root), "get_state", map[string]any{})
+	if !strings.Contains(got, "design.tenn") || strings.Contains(got, "node_modules") {
+		t.Fatalf("listing:\n%s", got)
+	}
+}

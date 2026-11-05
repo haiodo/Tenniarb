@@ -94,7 +94,7 @@ func benchCopy(src, dst string) error {
 			return err
 		}
 		if info.IsDir() {
-			if info.Name() == ".git" {
+			if info.Name() == ".git" || info.Name() == "node_modules" || strings.HasPrefix(info.Name(), ".") {
 				return filepath.SkipDir
 			}
 			return os.MkdirAll(filepath.Join(dst, rel), 0o755)

@@ -78,7 +78,8 @@ const maxWalk = 50000
 
 var errTooLarge = fmt.Errorf("the workspace has more than %d entries: start tenniarb-mcp with -root at the project folder", maxWalk)
 
-// files lists the .tenn files of the workspace, relative with slashes. Hidden entries are skipped.
+// files lists the .tenn files of the workspace, relative with slashes. Hidden entries and node_modules
+// are skipped: a design lives beside its sources, not in the packages.
 func (s *Server) files() ([]string, error) {
 	var out []string
 	n := 0
@@ -89,10 +90,10 @@ func (s *Server) files() ([]string, error) {
 		if n++; n > maxWalk {
 			return errTooLarge
 		}
+		if p != s.root && d.IsDir() && (strings.HasPrefix(d.Name(), ".") || d.Name() == "node_modules") {
+			return filepath.SkipDir
+		}
 		if p != s.root && strings.HasPrefix(d.Name(), ".") {
-			if d.IsDir() {
-				return filepath.SkipDir
-			}
 			return nil
 		}
 		if d.IsDir() || filepath.Ext(p) != tennExt {
