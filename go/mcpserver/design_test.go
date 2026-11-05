@@ -60,3 +60,25 @@ func TestDesignRefuses(t *testing.T) {
 		t.Fatal("a refused call wrote the file")
 	}
 }
+
+// TestDesignOtherFile: a node of a mounted file is refused with the file that holds it.
+func TestDesignOtherFile(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"main.tenn": "element ui --from-file \"lib.tenn\"\n",
+		"lib.tenn":  "item Button { pos 0 0; width 40; height 20 }\n",
+	})
+	cs := memSession(t, root)
+	_, out := call(t, cs, "design", map[string]any{
+		"file": "main.tenn",
+		"ops":  []map[string]any{{"op": "set", "node": "ui.Button", "name": "width", "value": "80"}},
+	})
+	if !strings.Contains(out, "lib.tenn") || !strings.Contains(out, "run design on that file") {
+		t.Fatalf("a node of a mounted file was not refused with its file: %s", out)
+	}
+	if got := mustOK(t, cs, "design", map[string]any{
+		"file": "lib.tenn",
+		"ops":  []map[string]any{{"op": "set", "node": "Button", "name": "width", "value": "80"}},
+	}); !strings.Contains(got, "width of Button") {
+		t.Fatalf("design on the mounted file itself: %s", got)
+	}
+}

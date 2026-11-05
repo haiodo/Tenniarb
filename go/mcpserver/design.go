@@ -108,6 +108,14 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	return head + "written\n" + summary(after, true, rel), nil
 }
 
+// inFile refuses a node written in another file: its offsets belong to the text of that file.
+func inFile(n *scene.Node, rel string) error {
+	if n != nil && n.Kind != scene.KFile && n.Pos.File != "" && n.Pos.File != rel {
+		return fmt.Errorf("%q is written in %s: run design on that file", n.Key, n.Pos.File)
+	}
+	return nil
+}
+
 // designSpan is the replacement one op makes, and the line the result shows.
 func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, error) {
 	switch op.Op {
@@ -116,6 +124,9 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 		if op.Parent != "" {
 			n, err := nodeAt(tree, rel, op.Parent)
 			if err != nil {
+				return span{}, "", err
+			}
+			if err := inFile(n, rel); err != nil {
 				return span{}, "", err
 			}
 			if n.Kind != scene.KItem && n.Kind != scene.KElement && n.Kind != scene.KFile {
@@ -140,6 +151,9 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 	case "set", "move":
 		n, err := nodeAt(tree, rel, op.Node)
 		if err != nil {
+			return span{}, "", err
+		}
+		if err := inFile(n, rel); err != nil {
 			return span{}, "", err
 		}
 		name, value := op.Name, op.Value
@@ -173,6 +187,9 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 	case "delete":
 		n, err := nodeAt(tree, rel, op.Node)
 		if err != nil {
+			return span{}, "", err
+		}
+		if err := inFile(n, rel); err != nil {
 			return span{}, "", err
 		}
 		if n.Kind == scene.KFile || n.Kind == scene.KElement && n.Parent == nil {
