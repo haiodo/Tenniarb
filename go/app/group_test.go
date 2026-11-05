@@ -114,3 +114,33 @@ func TestGroupEditRefuses(t *testing.T) {
 		t.Fatal("grouped one item")
 	}
 }
+
+// TestGroupEditUses: an instance written in the place may join a group, and the group holds its picture.
+func TestGroupEditUses(t *testing.T) {
+	text := "element Kit {\n\titem Box { width 20; height 20 }\n}\n" +
+		"element S {\n\tuse Kit.Box as one { pos 0 0 }\n\titem A { pos 40 0; width 60; height 40 }\n}\n"
+	tree, err := scene.LoadSource(t.TempDir(), "s.tenn", text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := tree.File("s.tenn").Elems[1]
+	one, a := NodeAt(s, "one"), NodeAt(s, "A")
+	if one == nil || a == nil {
+		t.Fatal("no nodes")
+	}
+	e, _, ok := GroupEdit(text, []GroupItem{
+		{Node: one, X: 0, Y: 0, W: 20, H: 20},
+		{Node: a, X: 40, Y: 0, W: 60, H: 40},
+	}, "Group")
+	if !ok {
+		t.Fatal("refused a use")
+	}
+	got := text[:e.Start] + e.New + text[e.End:]
+	tree2, err := scene.LoadSource(t.TempDir(), "s.tenn", got)
+	if err != nil {
+		t.Fatalf("%v\n%s", err, got)
+	}
+	if g := NodeAt(tree2.File("s.tenn").Elems[1], "Group"); g == nil {
+		t.Fatalf("no group:\n%s", got)
+	}
+}

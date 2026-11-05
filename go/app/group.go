@@ -24,7 +24,7 @@ func GroupEdit(text string, items []GroupItem, name string) (e TextEdit, at int,
 	sort.Slice(items, func(i, j int) bool { return items[i].Node.Range.Start < items[j].Node.Range.Start })
 	parent := items[0].Node.Parent
 	for _, it := range items {
-		if it.Node.Parent != parent || it.Node.Kind != scene.KItem {
+		if it.Node.Parent != parent || it.Node.Kind != scene.KItem && it.Node.Kind != scene.KUse {
 			return TextEdit{}, 0, false
 		}
 	}
