@@ -17,7 +17,8 @@ browser editor zooms with two fingers on a touch screen.
   the work is never out of sight. Settings turns this off with "Open files an agent edits".
 + Agents get numbers instead of guesses: `read` of an element with `--from-file` returns the content of the
   mounted file (a path into it returns the node), and `render {inspect: true}` adds the geometry — sizes,
-  boxes, the items that leave the plate they sit on, overlapping siblings.
+  boxes, the items that leave the plate they sit on, overlapping siblings. `layout` gives the same numbers
+  without drawing a picture, and `read` takes several paths in one call.
 + The design skill tells an agent to change a file with `edit`, not with its own file tools: a change made
   behind the app has no undo step and the window cannot show it to you.
 * The browser editor, the live demo of the site, zooms with a pinch: two fingers over the canvas, one finger

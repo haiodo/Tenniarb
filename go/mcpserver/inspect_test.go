@@ -41,3 +41,22 @@ func TestInspectScene(t *testing.T) {
 		}
 	}
 }
+
+// TestLayoutTool: layout reports the geometry without a renderer, and read takes several paths at once.
+func TestLayoutTool(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"s.tenn": "element S {\n" +
+			"\titem Plate { pos 0 0; width 100; height 50; auto-layout abs\n" +
+			"\t\titem Big { pos 10 10; width 120; height 20 }\n\t}\n}\n",
+		"t.tenn": "element T {\n\titem A { pos 0 0; width 10; height 10 }\n\titem B { pos 20 0; width 10; height 10 }\n}\n",
+	})
+	cs := memSession(t, root)
+	got := mustOK(t, cs, "layout", map[string]any{"file": "s.tenn", "element": "S"})
+	if !strings.Contains(got, "leaves its parent: right") {
+		t.Fatalf("layout:\n%s", got)
+	}
+	got = mustOK(t, cs, "read", map[string]any{"file": "t.tenn", "paths": []string{"T.A", "T.B"}})
+	if !strings.Contains(got, "item A") || !strings.Contains(got, "item B") {
+		t.Fatalf("read of two paths:\n%s", got)
+	}
+}

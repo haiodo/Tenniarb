@@ -69,12 +69,17 @@ type (
 		Find  string `json:"find,omitempty" jsonschema:"instead of the tree, every node at any depth whose name contains this text (case-insensitive), at most 100"`
 	}
 	readIn struct {
-		File string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Path string `json:"path,omitempty" jsonschema:"dotted node path inside the file, a name with punctuation in double quotes (S.\"2 Пространства - пусто\"); empty for the whole file"`
+		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Path  string   `json:"path,omitempty" jsonschema:"dotted node path inside the file, a name with punctuation in double quotes (S.\"2 Пространства - пусто\"); empty for the whole file"`
+		Paths []string `json:"paths,omitempty" jsonschema:"several nodes of the file in one call, printed one after another"`
 	}
 	editIn struct {
 		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
 		Edits []EditOp `json:"edits" jsonschema:"find/replace operations applied in order; to create a missing file send one edit with empty find"`
+	}
+	layoutIn struct {
+		File    string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Element string `json:"element,omitempty" jsonschema:"dotted path of a scene element; empty for the content of the file itself"`
 	}
 	renderIn struct {
 		File    string  `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
@@ -110,10 +115,29 @@ func (s *Server) MCP() *mcp.Server {
 			}
 			return s.state(in)
 		})
+	add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
+		func(in layoutIn) (string, error) {
+			s.noteNode("layout", in.File, in.Element)
+			return s.layoutOf(in.File, in.Element)
+		})
 	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against. A path that names an element with --from-file or a library of them gives the content of the mounted file, not the one-line declaration.",
 		func(in readIn) (string, error) {
 			s.noteNode("read", in.File, in.Path)
-			return s.read(in.File, in.Path)
+			if len(in.Paths) == 0 {
+				return s.read(in.File, in.Path)
+			}
+			var b strings.Builder
+			for i, p := range in.Paths {
+				got, err := s.read(in.File, p)
+				if err != nil {
+					return "", err
+				}
+				if i > 0 {
+					b.WriteString("\n")
+				}
+				b.WriteString(got)
+			}
+			return b.String(), nil
 		})
 	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
