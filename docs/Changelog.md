@@ -18,6 +18,8 @@ browser editor zooms with two fingers on a touch screen.
 + `get_state` follows `.gitignore` instead of a hard-coded list: the files from the file system root
   down to the workspace say what the walk leaves out, so a project root that also builds a front-end
   still gives its design files, and a `packages/` directory is still searched.
++ `guide` without a topic returns the examples and the list of sections, not the whole 16 KB reference:
+  a run asks for the section it needs by number or heading word.
 + `read` stops at 12 KB as well as at 400 lines: a board file can be 700 KB with long lines, and a
   whole-file read of it used to come back as 50 KB of text. Node and mounted-element reads are cut the
   same way, with the hint to read one node.

@@ -95,7 +95,14 @@ func guide(topic string) string {
 	topic = strings.TrimSpace(topic)
 	switch strings.ToLower(topic) {
 	case "":
-		return examples + "\n# Reference\n\n" + refText
+		// The whole reference is 16 KB: a run that asks for it before drawing pays for sections it never
+		// reads. The headings are enough to ask for the one that matters.
+		var hs []string
+		for _, sec := range refSections() {
+			hs = append(hs, "  "+sec.title)
+		}
+		return examples + "\n# Reference sections\n\nAsk for one by its number or a word of its heading, " +
+			"for example guide {topic: \"styles\"}:\n" + strings.Join(hs, "\n")
 	case "examples":
 		return examples
 	}

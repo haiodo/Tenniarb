@@ -131,8 +131,13 @@ var tennBlock = regexp.MustCompile("(?s)```tenn\n(.*?)```")
 
 func TestGuide(t *testing.T) {
 	cs, root := workspace(t)
-	if all := mustOK(t, cs, "guide", nil); !strings.Contains(all, "## 1. Commands") || !strings.Contains(all, "Y axis points up") {
-		t.Errorf("guide without topic lacks the reference or the examples")
+	// Without a topic: the examples and the headings, not the 16 KB of reference a run would pay for.
+	all := mustOK(t, cs, "guide", nil)
+	if !strings.Contains(all, "Y axis points up") || !strings.Contains(all, "1. Commands") || strings.Contains(all, "## 1. Commands\n\n- ") {
+		t.Errorf("guide without topic is not the examples plus the section list:\n%s", all[:min(len(all), 300)])
+	}
+	if len(all) > 4000 {
+		t.Errorf("guide without topic is %d bytes", len(all))
 	}
 	sec := mustOK(t, cs, "guide", map[string]any{"topic": "5"})
 	if !strings.Contains(sec, "replace <path>") || strings.Contains(sec, "Not supported") {
