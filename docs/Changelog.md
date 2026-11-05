@@ -25,6 +25,9 @@ browser editor zooms with two fingers on a touch screen.
 + Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
   `replace_all`, addresses nodes by the paths `get_state` prints, and applies the whole call as one change
   (one undo step in the window), with nothing written if the result adds an error.
++ `layout` answers with a summary by default: the scene, one line per top-level item and the problems
+  (`left its parent`, sits on a plate and leaves it, overlaps), each once with a count; `depth 3` asks
+  for the box of every item. A 1920×1080 board went from 5 862 bytes to 682.
 + Agents get numbers instead of guesses: `read` of an element with `--from-file` returns the content of the
   mounted file (a path into it returns the node), and `render {inspect: true}` adds the geometry — sizes,
   boxes, the items that leave the plate they sit on, overlapping siblings. `layout` gives the same numbers

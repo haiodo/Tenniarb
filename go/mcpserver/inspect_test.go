@@ -31,7 +31,7 @@ func TestInspectScene(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := inspectScene(screen)
+	got := inspectScene(screen, inspectDepth)
 	for _, want := range []string{
 		"geometry:", "Plate", "Big", "leaves its parent: right",
 		"overlap: A and B share 20x20",
@@ -39,6 +39,11 @@ func TestInspectScene(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("report lacks %q:\n%s", want, got)
 		}
+	}
+	// The summary keeps the scene, the top level and the problems, and counts what it does not list.
+	short := inspectScene(screen, 0)
+	if len(short) >= len(got) || !strings.Contains(short, "… 1 below") || !strings.Contains(short, "leaves its parent") {
+		t.Errorf("summary of %d bytes is not shorter than %d, or lost the problems:\n%s", len(short), len(got), short)
 	}
 }
 

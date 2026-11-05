@@ -11,12 +11,15 @@ import (
 const (
 	inspectDepth = 3
 	inspectLines = 220
+	// inspectProblems bounds the problem lines of a summary; the full list is one depth 3 away.
+	inspectProblems = 12
 )
 
-// inspectScene reports the geometry the engine computed for a rendered scene: the size of the scene, the
-// box of every item a few levels deep, the items that leave the box of their parent, and the pairs of
-// siblings that overlap. Numbers are scene units, the origin at the top left of the scene.
-func inspectScene(screen *scene.Screen) string {
+// inspectScene reports the geometry a rendered scene computed, levels deep: the size of the scene, the
+// box of the items, the items that leave the box of their parent, and the overlapping siblings. Numbers
+// are scene units, the origin at the top left of the scene. Zero levels is the summary: one line per
+// top-level item, then only what is wrong.
+func inspectScene(screen *scene.Screen, levels int) string {
 	root := screen.Placed()
 	if root == nil {
 		return "geometry: nothing drawn"
@@ -35,11 +38,9 @@ func inspectScene(screen *scene.Screen) string {
 		}
 		fmt.Fprintf(&b, "%s%s  %.0f %.0f %.0fx%.0f\n", strings.Repeat("  ", depth), name, p.X, p.Y, p.W, p.H)
 		lines++
-		if over, ok := overflow(p); ok {
-			fmt.Fprintf(&b, "%s! %s leaves its parent: %s\n", strings.Repeat("  ", depth), name, over)
+		if depth == levels && len(p.Kids) > 0 {
+			fmt.Fprintf(&b, "%s  … %d below\n", strings.Repeat("  ", depth), descendants(p))
 			lines++
-		}
-		if depth >= inspectDepth {
 			return
 		}
 		for _, k := range p.Kids {
@@ -48,6 +49,35 @@ func inspectScene(screen *scene.Screen) string {
 	}
 	for _, k := range root.Kids {
 		walk(k, 0, k.Src.Key)
+	}
+	// The items that leave a parent are why the numbers are asked for at all, so they are reported for
+	// the whole tree even in the summary, once per kind: a repeated 1-unit overshoot is one line.
+	seen := map[string]int{}
+	var order []string
+	var scan func(p *scene.Placed)
+	scan = func(p *scene.Placed) {
+		for _, k := range p.Kids {
+			if over, ok := overflow(k); ok {
+				key := k.Src.Key + " leaves its parent: " + over
+				if seen[key] == 0 {
+					order = append(order, key)
+				}
+				seen[key]++
+			}
+			scan(k)
+		}
+	}
+	scan(root)
+	for i, key := range order {
+		if i == inspectProblems {
+			fmt.Fprintf(&b, "… %d more problems, ask for depth 3\n", len(order)-i)
+			break
+		}
+		if seen[key] > 1 {
+			fmt.Fprintf(&b, "! %s (%d items)\n", key, seen[key])
+			continue
+		}
+		fmt.Fprintf(&b, "! %s\n", key)
 	}
 	for _, line := range sticksOut(root) {
 		b.WriteString(line + "\n")
@@ -59,6 +89,15 @@ func inspectScene(screen *scene.Screen) string {
 		b.WriteString("… more items left out\n")
 	}
 	return b.String()
+}
+
+// descendants counts the items below p.
+func descendants(p *scene.Placed) int {
+	n := 0
+	for _, k := range p.Kids {
+		n += 1 + descendants(k)
+	}
+	return n
 }
 
 // overflow is how far p leaves the box of its parent: right, bottom, left and top, the ones above 0.

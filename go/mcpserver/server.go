@@ -86,6 +86,7 @@ type (
 	layoutIn struct {
 		File    string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
 		Element string `json:"element,omitempty" jsonschema:"dotted path of a scene element; empty for the content of the file itself"`
+		Depth   int    `json:"depth,omitempty" jsonschema:"levels of items to list, default 0: one line per top-level item, then only the problems; 3 lists the box of every item"` //nolint:lll
 	}
 	renderIn struct {
 		File    string  `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
@@ -128,7 +129,7 @@ func (s *Server) MCP() *mcp.Server {
 	add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
 		func(in layoutIn) (string, error) {
 			s.noteNode("layout", in.File, in.Element)
-			return s.layoutOf(in.File, in.Element)
+			return s.layoutOf(in.File, in.Element, in.Depth)
 		})
 	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against. A path that names an element with --from-file or a library of them gives the content of the mounted file, not the one-line declaration.",
 		func(in readIn) (string, error) {
@@ -170,7 +171,7 @@ func (s *Server) MCP() *mcp.Server {
 		s.noteNode("render", in.File, in.Element)
 		r, err := s.render(in.File, in.Element, in.Scale, in.View)
 		if err == nil && in.Inspect && r.screen != nil {
-			if g := inspectScene(r.screen); g != "" {
+			if g := inspectScene(r.screen, inspectDepth); g != "" {
 				r.text += "\n" + g
 			}
 		}

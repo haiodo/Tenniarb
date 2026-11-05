@@ -37,7 +37,7 @@ func (s *Server) buildScene(tree *scene.Tree, element string, measurer gfx.TextM
 }
 
 // layoutOf builds an element and reports its geometry, without rasterizing anything.
-func (s *Server) layoutOf(file, element string) (string, error) {
+func (s *Server) layoutOf(file, element string, levels int) (string, error) {
 	abs, rel, err := s.resolve(file)
 	if err != nil {
 		return "", err
@@ -71,7 +71,7 @@ func (s *Server) layoutOf(file, element string) (string, error) {
 		return "", err
 	}
 	sc.Commit()
-	return fmt.Sprintf("%s %q\n%s", rel, element, inspectScene(screen)), nil
+	return fmt.Sprintf("%s %q\n%s", rel, element, inspectScene(screen, levels)), nil
 }
 
 type rendered struct {
