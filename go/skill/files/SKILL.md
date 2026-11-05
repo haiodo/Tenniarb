@@ -53,6 +53,16 @@ paths relative to the workspace root. More files of this skill, `read_skill {pat
 - Compact form: two-space indent, short blocks on one line `item a { title Hi; font-size 14 }`,
   bare words without quotes.
 
+## Facts that cost a round
+
+- `read {file, path: "Lib.Forms"}` follows `--from-file`: a path that ends on a mounting element gives the
+  content of the mounted file, not its one-line declaration.
+- `render {file, element, inspect: true}` adds the geometry the engine computed: sizes, the box of every
+  item, the items that leave the plate they sit on, overlapping siblings. Read those numbers instead of
+  measuring the image.
+- A nested element is a screen of its own: an element inside an element is not drawn into the parent.
+- `color linear 90 #ffffff #000000` — the angle is CSS (0 up, 90 right), positions are 0..1 on the stops.
+
 ## Two things to remember
 
 - **Y axis points up.** `pos 0 -700` is 700 units *below* `pos 0 0`. Screens side by side: `pos 0 0`,
