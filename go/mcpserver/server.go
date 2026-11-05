@@ -279,20 +279,23 @@ const (
 	maxDiags     = 10
 	// maxState bounds the whole-workspace listing: the overview an agent starts from, not every node there is.
 	maxState = 12000
+	// maxFoundBytes bounds a search across the workspace: a word as common as "Button" finds a hundred
+	// nodes in eight files, and the names and parameters of the first ones are what a run acts on.
+	maxFoundBytes = 6000
 	// maxCallLog bounds the call log; it is rolled to .1 and started again.
 	maxCallLog = 1 << 20
 )
 
 // cutState keeps the head of the workspace listing, at a line boundary, and says how to see the rest.
-func cutState(s string) string {
-	if len(s) <= maxState {
+func cutState(s string, limit int, hint string) string {
+	if len(s) <= limit {
 		return s
 	}
-	at := strings.LastIndexByte(s[:maxState], '\n') + 1
+	at := strings.LastIndexByte(s[:limit], '\n') + 1
 	if at <= 0 {
-		at = maxState
+		at = limit
 	}
-	return s[:at] + "… cut: get_state {file} lists one file in full, find searches every file\n"
+	return s[:at] + hint
 }
 
 // stateHead explains the node lines of get_state.
@@ -572,7 +575,11 @@ func (s *Server) state(in getStateIn) (string, error) {
 		}
 	}
 	if in.File == "" {
-		return cutState(b.String()), nil
+		if in.Find != "" {
+			return cutState(b.String(), maxFoundBytes,
+				"… cut: make the word longer, or pass file to search one file\n"), nil
+		}
+		return cutState(b.String(), maxState, "… cut: get_state {file} lists one file in full, find searches every file\n"), nil
 	}
 	return b.String(), nil
 }

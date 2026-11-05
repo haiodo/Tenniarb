@@ -2,6 +2,7 @@ package mcpserver
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -171,5 +172,28 @@ func TestEditEmptyFile(t *testing.T) {
 	}
 	if got := mustOK(t, cs, "read", map[string]any{"file": "e.tenn"}); !strings.Contains(got, "element E") {
 		t.Fatalf("file after the edit: %s", got)
+	}
+}
+
+// TestFindCapped: a search across the workspace stops at maxFoundBytes with a hint, not at the
+// workspace listing limit.
+func TestFindCapped(t *testing.T) {
+	files := map[string]string{}
+	for i := 0; i < 6; i++ {
+		var b strings.Builder
+		b.WriteString("element Board {\n")
+		for j := 0; j < 40; j++ {
+			fmt.Fprintf(&b, "\titem Button%d { width 10; height 10 }\n", j)
+		}
+		b.WriteString("}\n")
+		files[fmt.Sprintf("b%d.tenn", i)] = b.String()
+	}
+	cs := memSession(t, tempRoot(t, files))
+	got := mustOK(t, cs, "get_state", map[string]any{"find": "Button"})
+	if len(got) > maxFoundBytes+300 {
+		t.Fatalf("find returned %d bytes", len(got))
+	}
+	if !strings.Contains(got, "make the word longer") {
+		t.Fatalf("no hint on a cut search:\n%s", got[len(got)-120:])
 	}
 }
