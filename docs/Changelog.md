@@ -16,6 +16,8 @@ browser editor zooms with two fingers on a touch screen.
   behind the app has no undo step and the window cannot show it to you.
 * The browser editor, the live demo of the site, zooms with a pinch: two fingers over the canvas, one finger
   still pans it.
+* A press inside the item selected in a screen moves it, even where a child covers all of its picture; a
+  second click goes into the child, as before.
 * Check for Updates: a build from a source checkout no longer compares as a version older than a release, and
   a tag of digits only is not taken for a version.
 

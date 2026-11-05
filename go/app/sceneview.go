@@ -396,6 +396,16 @@ func (sv *sceneView) pick(hit, cur *scene.Placed, clicks int) *scene.Placed {
 	return chain[top]
 }
 
+// isInside reports whether n is below ancestor in the placed tree.
+func isInside(n, ancestor *scene.Placed) bool {
+	for p := n.Parent; p != nil; p = p.Parent {
+		if p == ancestor {
+			return true
+		}
+	}
+	return false
+}
+
 // sceneMode reports whether the canvas shows a scene element.
 func (v *Viewer) sceneMode() bool { return v.sv != nil && v.rendered == nil }
 
@@ -568,6 +578,11 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
 		_, cur := v.selectedScene()
 		hit := sv.hitScene(at)
+		// A press inside the selected item moves it, even where a child covers all of it: otherwise an
+		// item made of one instance could not be dragged at all. A second click goes into the child.
+		if hit != nil && cur != nil && hit != cur && cur.Free && cur.Gfx != nil && p.Count < 2 && isInside(hit, cur) {
+			hit = cur
+		}
 		if hit != nil {
 			hit = sv.pick(hit, cur, p.Count)
 		}
