@@ -25,6 +25,9 @@ browser editor zooms with two fingers on a touch screen.
 + Agents change a file by operations on nodes: `design` takes `set`, `move`, `insert`, `delete` and
   `replace_all`, addresses nodes by the paths `get_state` prints, and applies the whole call as one change
   (one undo step in the window), with nothing written if the result adds an error.
++ The design skill carries the syntax of a screen itself: one file to read before drawing, the reference
+  files only for a property it does not list, the library, a full recipe or a diagram. `SKILL.md` was
+  6.8 KB and a run read 38.5 KB of skill; now the first screen costs one read of about 11 KB.
 + `layout` answers with a summary by default: the scene, one line per top-level item and the problems
   (`left its parent`, sits on a plate and leaves it, overlaps), each once with a count; `depth 3` asks
   for the box of every item. A 1920×1080 board went from 5 862 bytes to 682.
