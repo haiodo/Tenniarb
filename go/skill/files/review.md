@@ -33,6 +33,8 @@ and `validate` do the same.
 | the image is smaller than the screen, its top cut | the root has no fill: the image covers only what is drawn | `color #ffffff` on the screen root or in its `use` block |
 | text cut at the end of a cell | the cell of the component has a fixed width and `clip` | `at <cell> { width 60 }` |
 | an empty box where text should be | no `title`, or only a name | `item t { title Save; font-size 14 }` |
+| a square where a shape should be | `color`/`border-color` on a wrapper of path leaves, which has no path | set it on the leaf that has `path` |
+| a spinner that stands still | a closed ring turned by `rotate` looks the same at every angle | make it an open arc, about 270° |
 | an invisible box | no fill by default in layout | `color #ffffff` or `border-color` |
 | huge text | default `font-size` is 18 | set `font-size` on every text |
 | a paragraph is cut in the middle | a fixed `height` on the text | drop the `height`; the body hugs |

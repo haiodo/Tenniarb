@@ -87,6 +87,13 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `pos` | X Y | top left corner of a root item; Y points up |
 | `width`, `height`, `gap`, `padding`, ... | | auto-layout, see `layout.md` |
 
+**Inheritance.** `text-color` and the font (`font-family`, `font-size`, `font-weight`, `font-style`,
+`letter-spacing`) come from the nearest box above that sets them; a text colour with no such box is the
+contrast to the box's own fill, and an icon with no `color`/`border-color` is filled with the text colour
+around it. Everything else stays where it is written: `color`, `border-color`, `line-width`, sizes,
+`padding`, `opacity` and the layout do not inherit. `primary { text-color #ffffff }` on a box colours
+every text and icon below it; a label or an icon sets its own colour only when it differs.
+
 Colors: `#rrggbb`, `#rrggbbaa`, or a name from the palette (`red`, `blue`, `gray-400`, `green-200`).
 Three-digit `#fff` is not a color; for a transparent fill leave `color` out.
 
@@ -94,6 +101,10 @@ An expression `${...}` may stand for any value, a word included: `width ${icon ?
 `hug`, and `${...}` works in a `styles` row and in a keyframe too (`components.md`).
 
 ## Text and icons
+
+`path` belongs to the leaf that draws it: the leaf has no box of its own and the path fills it. A wrapper
+of path leaves has no path, so `color` or `border-color` on the wrapper paints its box — a filled square
+where a shape should be. Colour the leaf that has the `path`, or give the wrapper none.
 
 ```tenn
 element "Bits" {
@@ -186,6 +197,8 @@ item Spinner { width 28; height 28; path "M14 2a12 12 0 1 0 12 12"; border-color
   parent: give it its own copy.
 - The editor plays every animation in a loop; an exported SVG keeps the repeat as written; a PNG is the
   first frame.
+- `rotate` turns about the middle of what the item draws. A shape that looks the same turned — a full ring,
+  a square — shows no motion at all: a spinner is an open arc (about 270°) of a ring.
 
 ## Compact form
 

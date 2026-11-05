@@ -155,11 +155,17 @@ one:
 - a style comes where its `use-style` is written: properties above it are defaults, properties below it win,
   and `at` from the instance wins over both;
 - the last style named wins per property; `use-style -large` drops one;
-- a block inside a style is a selector for a kid: `wide { Label { width 200 } }`;
+- a block inside a style is a selector for a kid: `wide { Label { width 200 } }`. The name selects that
+  node, not what is inside it: to colour an icon inside a wrapper, nest it (`spinner { arc { color #fff } }`)
+  or set the colour on the leaf itself;
+- a kid name matches the node after normalising (`Button states` is `Button_states`); a name that matches
+  nothing is skipped in silence, so list the parts with `get_state {file, path: <component>, depth: 3}` first;
 - `one-of` and `any-of` lines in `styles` list what is valid: the app shows them as a menu and check boxes,
   and a parameter whose default is a member of the group becomes that menu on the instance;
 - `text-color` and the font are inherited by the parts below, the text colour defaults to the contrast of the
-  box; `none` is the transparent colour (`border-color none`).
+  box; `none` is the transparent colour (`border-color none`);
+- a fill, a frame, a size or an opacity named in a style stays on the node the style names: it does not reach
+  the parts below, so repeat it where it is wanted.
 
 A catalogue of copies (`Button`, `Button secondary`, `Button/primary/large`) is the old form: keep using it
 when a library already has it (a pen.dev import does), but a new part is one component with styles.
