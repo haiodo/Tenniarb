@@ -101,3 +101,24 @@ func TestReadBigFile(t *testing.T) {
 		t.Fatalf("paths read:\n%s", small)
 	}
 }
+
+// TestReadByteCap: a board with long lines stops at maxReadBytes, not at a line count that would be
+// tens of kilobytes, and says how to see the rest.
+func TestReadByteCap(t *testing.T) {
+	long := strings.Repeat("x", 200)
+	var b strings.Builder
+	b.WriteString("element Big {\n")
+	for i := 0; i < 300; i++ {
+		fmt.Fprintf(&b, "\titem N%d { title \"%s\" }\n", i, long)
+	}
+	b.WriteString("}\n")
+	root := tempRoot(t, map[string]string{"big.tenn": b.String()})
+	cs := memSession(t, root)
+	got := mustOK(t, cs, "read", map[string]any{"file": "big.tenn"})
+	if len(got) > maxReadBytes+400 {
+		t.Fatalf("read returned %d bytes", len(got))
+	}
+	if !strings.Contains(got, "read one by path") {
+		t.Fatalf("no hint to read a node:\n%s", got[len(got)-120:])
+	}
+}

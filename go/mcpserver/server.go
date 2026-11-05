@@ -577,8 +577,25 @@ func (s *Server) state(in getStateIn) (string, error) {
 	return b.String(), nil
 }
 
-// mountedReadLines bounds what read prints of a mounted file: enough for a board, not the whole library.
-const mountedReadLines = 400
+// mountedReadLines and maxReadBytes bound what read prints: enough for a board, not the whole library.
+// Lines alone are not enough, because a line of a board can be a few hundred characters long.
+const (
+	mountedReadLines = 400
+	maxReadBytes     = 12000
+)
+
+// cutRead keeps the whole text or cuts it at a line boundary, saying how much it left out.
+func cutRead(head, body string, lines int) string {
+	if len(head)+len(body) <= maxReadBytes {
+		return head + body
+	}
+	keep := maxReadBytes - len(head)
+	if at := strings.LastIndexByte(body[:keep], '\n'); at > 0 {
+		keep = at + 1
+	}
+	shown := strings.Count(body[:keep], "\n")
+	return head + body[:keep] + fmt.Sprintf("… %d of %d lines: read one by path (or several with paths)\n", shown, lines)
+}
 
 func (s *Server) read(file, path string) (string, error) {
 	abs, rel, err := s.resolve(file)
@@ -598,9 +615,9 @@ func (s *Server) read(file, path string) (string, error) {
 		show := min(total, mountedReadLines)
 		head := fmt.Sprintf("%s (%d lines%s)\n", rel, total, note)
 		if show < total {
-			head += "… the first " + fmt.Sprint(show) + " lines; get_state lists the nodes, read one by path (or several with paths) to see the rest\n"
+			head += fmt.Sprintf("… the first %d lines; get_state lists the nodes, read one by path (or several with paths) to see the rest\n", show)
 		}
-		return head + numbered(text, 1, show), nil
+		return cutRead(head, numbered(text, 1, show), total), nil
 	}
 	if e, bad := parseError(text); bad {
 		return "", fmt.Errorf("%s has a parse error at %d:%d: %s", rel, e.Line+1, e.Col, e.Message)
@@ -626,13 +643,14 @@ func (s *Server) read(file, path string) (string, error) {
 		if show < lines {
 			head += "… more lines; get_state lists the nodes, read one by path\n"
 		}
-		return head + numbered(src, 1, show), nil
+		return cutRead(head, numbered(src, 1, show), lines), nil
 	}
 	// The node may come from an imported file; its text is the one the tree was built from.
 	src, _ := tree.Source(n.Pos.File)
 	first := strings.Count(src[:n.Range.Start], "\n") + 1
 	last := first + strings.Count(src[n.Range.Start:n.Range.End], "\n")
-	return fmt.Sprintf("%s %s %q lines %d-%d\n%s", n.Pos.File, n.Kind, path, first, last, numbered(src, first, last)), nil
+	head := fmt.Sprintf("%s %s %q lines %d-%d\n", n.Pos.File, n.Kind, path, first, last)
+	return cutRead(head, numbered(src, first, last), last-first+1), nil
 }
 
 func (s *Server) validate(file string) (string, error) {
