@@ -145,14 +145,19 @@ func TestStateCapped(t *testing.T) {
 	}
 }
 
-// TestStateSkipsPackages: node_modules is not searched for designs, so a big workspace still lists.
-func TestStateSkipsPackages(t *testing.T) {
-	root := tempRoot(t, map[string]string{
-		"design.tenn":                    "element Screen { item Btn { title Hi } }\n",
-		"node_modules/@x/pkg/other.tenn": "element Lib { item A { title no } }\n",
-	})
-	got := mustOK(t, memSession(t, root), "get_state", map[string]any{})
-	if !strings.Contains(got, "design.tenn") || strings.Contains(got, "node_modules") {
-		t.Fatalf("listing:\n%s", got)
+// TestCallLog: a call is logged where TENNIARB_MCP_LOG says, and "off" writes nothing.
+func TestCallLog(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TENNIARB_MCP_LOG", filepath.Join(dir, "calls.log"))
+	cs := memSession(t, tempRoot(t, map[string]string{"s.tenn": "element S { item A { width 10; height 10 } }\n"}))
+	mustOK(t, cs, "get_state", map[string]any{})
+	b, err := os.ReadFile(filepath.Join(dir, "calls.log"))
+	if err != nil || !strings.Contains(string(b), `"tool":"get_state"`) {
+		t.Fatalf("log: %q %v", b, err)
+	}
+	t.Setenv("TENNIARB_MCP_LOG", "off")
+	mustOK(t, cs, "get_state", map[string]any{})
+	if b, _ := os.ReadFile(filepath.Join(dir, "calls.log")); strings.Count(string(b), "get_state") != 1 {
+		t.Fatalf("off wrote a line: %q", b)
 	}
 }

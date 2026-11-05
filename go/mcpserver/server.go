@@ -233,12 +233,28 @@ func add[In any](srv *mcp.Server, name, desc string, fn func(In) (string, error)
 		})
 }
 
-// recordCall appends one line per tool call to TENNIARB_MCP_LOG, so a run can be measured: the size of
-// what the agent sent and got back is what costs tokens, and the time is what costs waiting.
+// callLog is where recordCall writes: TENNIARB_MCP_LOG when set ("off" silences it), else a file in the
+// temporary directory. Always on, because the harness that starts the server decides its environment:
+// setting the variable there is a change nobody remembers to make.
+func callLog() string {
+	if p, ok := os.LookupEnv("TENNIARB_MCP_LOG"); ok {
+		if p == "off" {
+			return ""
+		}
+		return p
+	}
+	return filepath.Join(os.TempDir(), "tenniarb-mcp-calls.log")
+}
+
+// recordCall appends one line per tool call to callLog, so a run can be measured: the size of what the
+// agent sent and got back is what costs tokens, and the time is what costs waiting.
 func recordCall(name string, in any, out int, started time.Time) {
-	path := os.Getenv("TENNIARB_MCP_LOG")
+	path := callLog()
 	if path == "" {
 		return
+	}
+	if fi, err := os.Stat(path); err == nil && fi.Size() > maxCallLog {
+		os.Rename(path, path+".1")
 	}
 	args, _ := json.Marshal(in)
 	line, _ := json.Marshal(map[string]any{
@@ -262,6 +278,8 @@ const (
 	maxDiags     = 10
 	// maxState bounds the whole-workspace listing: the overview an agent starts from, not every node there is.
 	maxState = 12000
+	// maxCallLog bounds the call log; it is rolled to .1 and started again.
+	maxCallLog = 1 << 20
 )
 
 // cutState keeps the head of the workspace listing, at a line boundary, and says how to see the rest.
