@@ -36,6 +36,9 @@ func (s *Server) buildScene(tree *scene.Tree, element string, measurer gfx.TextM
 	return sc, screen, nil
 }
 
+// rasterizerFor is newRasterizer, or a stand-in a test uses to check a platform without a backend.
+var rasterizerFor = newRasterizer
+
 // layoutOf builds an element and reports its geometry, without rasterizing anything.
 func (s *Server) layoutOf(file, element string, levels int) (string, error) {
 	abs, rel, err := s.resolve(file)
@@ -60,13 +63,15 @@ func (s *Server) layoutOf(file, element string, levels int) (string, error) {
 	if r := newRenderers(tree); r.of(target) == rendererDiagram {
 		return "", errors.New("layout is for scenes; this element is a classic diagram")
 	}
-	rast, err := newRasterizer()
-	if err != nil {
-		return "", err
+	// Text metrics are all layout needs from the platform: where there is no CoreGraphics (CI on Linux
+	// and Windows) estimate them instead of failing, since a render there would not be checked anyway.
+	measurer := gfx.TextMeasurer(gfx.EstimateText{})
+	if rast, err := rasterizerFor(); err == nil {
+		measurer = rast.Measurer()
 	}
 	s.host.renderMu.Lock()
 	defer s.host.renderMu.Unlock()
-	sc, screen, err := s.buildScene(tree, element, rast.Measurer())
+	sc, screen, err := s.buildScene(tree, element, measurer)
 	if err != nil {
 		return "", err
 	}

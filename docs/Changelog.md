@@ -27,6 +27,8 @@ browser editor zooms with two fingers on a touch screen.
   recipe for a board creates the file, mounts it, then adds the `entry` line.
 + A search across the workspace (`get_state {find}` without a file) stops at 6 KB with the hint to make
   the word longer or to name one file: a word as common as "Button" found a hundred nodes in eight files.
++ `layout` answers with estimated text metrics where the platform has no CoreGraphics, as on the Linux
+  and Windows CI, instead of refusing to lay anything out: a scene without a window still has boxes.
 + A search of the whole workspace lists a mounted file once, in the document that mounts it, and leaves
   out the files that have no match: 27 lines of "nothing named like" and every duplicate went away.
 + `layout` and `render {inspect}` no longer report a plate as an overlap with what is drawn on it, nor a

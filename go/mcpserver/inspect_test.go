@@ -1,6 +1,7 @@
 package mcpserver
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -81,6 +82,21 @@ func TestInspectPlates(t *testing.T) {
 	}
 	if strings.Contains(got, "overlap: __Card") {
 		t.Errorf("a component on its plate is an overlap:\n%s", got)
+	}
+}
+
+// TestLayoutWithoutRasterizer: layout answers with estimated text metrics where the platform has no
+// CoreGraphics, as on the Linux and Windows CI, instead of failing the release.
+func TestLayoutWithoutRasterizer(t *testing.T) {
+	old := rasterizerFor
+	rasterizerFor = func() (rasterizer, error) { return nil, errors.New("no backend") }
+	t.Cleanup(func() { rasterizerFor = old })
+	cs := memSession(t, tempRoot(t, map[string]string{
+		"u.tenn": "element U {\n\titem Box { auto-layout column; width 100; height 50\n\t\titem A { width 10; height 10 }\n\t}\n}\n",
+	}))
+	got := mustOK(t, cs, "layout", map[string]any{"file": "u.tenn", "element": "U"})
+	if !strings.Contains(got, "geometry: 100x50") {
+		t.Fatalf("layout without a rasterizer:\n%s", got)
 	}
 }
 
