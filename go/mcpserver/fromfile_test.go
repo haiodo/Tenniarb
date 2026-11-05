@@ -54,3 +54,27 @@ func TestEntryContext(t *testing.T) {
 		t.Errorf("the edit did not land: %s", part)
 	}
 }
+
+// TestReadMounted: read of an element with --from-file gives the content of that file, and a path inside
+// it gives the node.
+func TestReadMounted(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"main.tenn": "element \"ui\" --from-file \"ui.tenn\"\n",
+		"ui.tenn":   "element \"Forms\" --from-file \"forms.tenn\"\n",
+		"forms.tenn": "item Input { pos 0 0; width 200; height 40; auto-layout abs\n" +
+			"\titem Label { title Label; font-size 12 }\n}\n",
+	})
+	cs := memSession(t, root)
+	got := mustOK(t, cs, "read", map[string]any{"file": "main.tenn", "path": "ui"})
+	if !strings.Contains(got, "Forms") || !strings.Contains(got, "ui.tenn") {
+		t.Fatalf("read of a mounted element:\n%s", got)
+	}
+	got = mustOK(t, cs, "read", map[string]any{"file": "main.tenn", "path": "ui.Forms"})
+	if !strings.Contains(got, `item Input`) || !strings.Contains(got, "forms.tenn") {
+		t.Fatalf("read of a mount two levels deep:\n%s", got)
+	}
+	got = mustOK(t, cs, "read", map[string]any{"file": "main.tenn", "path": "ui.Forms.Input.Label"})
+	if !strings.Contains(got, `title Label`) || strings.Contains(got, "item Input") {
+		t.Fatalf("read of a node inside the mounted file:\n%s", got)
+	}
+}

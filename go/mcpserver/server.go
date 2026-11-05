@@ -81,6 +81,7 @@ type (
 		Element string  `json:"element,omitempty" jsonschema:"dotted path of an element; empty for the content of the file itself"`
 		Scale   float64 `json:"scale,omitempty" jsonschema:"device pixels per scene unit, default 1, at most 8"`
 		View    bool    `json:"view,omitempty" jsonschema:"render what the Tenniarb window of this file shows instead; needs the file open in the app"`
+		Inspect bool    `json:"inspect,omitempty" jsonschema:"add the computed geometry to the text: the box of every item, the items that leave their parent and overlapping pairs, in scene units"`
 	}
 	selectIn struct {
 		File   string   `json:"file" jsonschema:"path of a .tenn file open in Tenniarb, relative to the workspace root; or a link from the selection tool, File.tenn#Element/node (docs/links.md), which also gives nodes"`
@@ -109,7 +110,7 @@ func (s *Server) MCP() *mcp.Server {
 			}
 			return s.state(in)
 		})
-	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against.",
+	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against. A path that names an element with --from-file or a library of them gives the content of the mounted file, not the one-line declaration.",
 		func(in readIn) (string, error) {
 			s.noteNode("read", in.File, in.Path)
 			return s.read(in.File, in.Path)
@@ -129,10 +130,15 @@ func (s *Server) MCP() *mcp.Server {
 		})
 	mcp.AddTool(srv, &mcp.Tool{
 		Name:        "render",
-		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text). Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead.",
+		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text). Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead. inspect adds the geometry: sizes, boxes, items leaving their parent, overlaps — read the numbers instead of measuring the image.",
 	}, func(_ context.Context, _ *mcp.CallToolRequest, in renderIn) (*mcp.CallToolResult, any, error) {
 		s.noteNode("render", in.File, in.Element)
 		r, err := s.render(in.File, in.Element, in.Scale, in.View)
+		if err == nil && in.Inspect && r.screen != nil {
+			if g := inspectScene(r.screen); g != "" {
+				r.text += "\n" + g
+			}
+		}
 		if err != nil {
 			return failure(err), nil, nil
 		}
@@ -476,6 +482,9 @@ func (s *Server) state(in getStateIn) (string, error) {
 	return b.String(), nil
 }
 
+// mountedReadLines bounds what read prints of a mounted file: enough for a board, not the whole library.
+const mountedReadLines = 400
+
 func (s *Server) read(file, path string) (string, error) {
 	abs, rel, err := s.resolve(file)
 	if err != nil {
@@ -503,6 +512,21 @@ func (s *Server) read(file, path string) (string, error) {
 	n, err := nodeAt(tree, rel, path)
 	if err != nil {
 		return "", err
+	}
+	// An element with --from-file shows what its file has: its own line says nothing about the screen.
+	if n.Mount != nil {
+		file := n.Mount.Pos.File
+		src, ok := tree.Source(file)
+		if !ok || strings.TrimSpace(src) == "" {
+			return "", fmt.Errorf("%s is mounted but its file %s is not loaded", path, file)
+		}
+		lines := strings.Count(src, "\n") + 1
+		show := min(lines, mountedReadLines)
+		head := fmt.Sprintf("%s %q lines 1-%d of %d, the content of the element (mounted file)\n", file, path, show, lines)
+		if show < lines {
+			head += "… more lines; get_state lists the nodes, read one by path\n"
+		}
+		return head + numbered(src, 1, show), nil
 	}
 	// The node may come from an imported file; its text is the one the tree was built from.
 	src, _ := tree.Source(n.Pos.File)

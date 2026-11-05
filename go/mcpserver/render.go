@@ -23,8 +23,9 @@ type rasterizer interface {
 }
 
 type rendered struct {
-	png  []byte
-	text string
+	png    []byte
+	text   string
+	screen *scene.Screen
 }
 
 func (s *Server) render(file, element string, scale float64, view bool) (*rendered, error) {
@@ -100,5 +101,5 @@ func (s *Server) render(file, element string, scale float64, view bool) (*render
 		fmt.Fprintf(&b, "%d warnings come from imported files: validate them to see these\n", other)
 	}
 	fmt.Fprintf(&b, "%d warnings", len(screen.Warnings))
-	return &rendered{png: png, text: b.String()}, nil
+	return &rendered{png: png, text: b.String(), screen: screen}, nil
 }
