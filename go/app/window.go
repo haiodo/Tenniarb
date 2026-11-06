@@ -262,7 +262,8 @@ func (v *Viewer) build() {
 	look.SetSidebar(v.win, sidebar, content, g.Spacing.SidebarWidth)
 	look.SetSidebarFullHeight(v.win, true) // the outline scrolls under the toolbar, as Finder's sidebar does
 	look.SetBottomPanel(v.win, content, codePane, g.Scaled(200))
-	look.SetInspector(v.win, content, v.insp.panel, g.Spacing.SidebarWidth)
+	look.SetInspector(v.win, content, v.insp.panel, inspectorWidth())
+	look.SetInspectorFixed(v.win, true)
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)

@@ -138,6 +138,10 @@ func faint() g.Option { return g.Foreground(g.SecondaryText) }
 // labelWidth is the width of the caption column of a row.
 func labelWidth() int { return g.Scaled(68) }
 
+// inspectorWidth is the width of the inspector column: fixed, and wide enough for its widest row - the
+// Fixed/Hug/Fill segments and a pair of fields - so nothing is cut at the panel edge.
+func inspectorWidth() int { return g.Scaled(272) }
+
 // section starts a collapsible section; the fields built until the next call belong to it. The title
 // follows the selection where it names what is shown.
 func (in *inspector) section(label func(selKind) string, when func(selKind) bool, rows ...func() g.Option) g.Option {
@@ -735,7 +739,7 @@ func (in *inspector) build() g.Option {
 				return "None"
 			})),
 		in.sceneSections())
-	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.Ref(&in.scroll), body)
+	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.NoHScroll(), g.Ref(&in.scroll), body)
 }
 
 func (in *inspector) relayout() {
