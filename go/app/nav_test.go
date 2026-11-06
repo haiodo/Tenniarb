@@ -223,16 +223,29 @@ func TestUsePathAndComponents(t *testing.T) {
 	if _, ok := UsePath("kit", NodeAt(root, "Group.inst.y")); ok {
 		t.Error("a node passed into an instance is not a component")
 	}
-	comps := Components("kit", root, "in", 10)
-	comps = slices.DeleteFunc(comps, func(c Component) bool { return c.Name == "Plain" })
+	comps := Components("kit", root, "", 10)
 	var got []string
 	for _, c := range comps {
 		got = append(got, c.Label+"="+c.Path)
 	}
-	if !slices.Equal(got, []string{"Inner - Group=kit.Group.Inner", "inst - Group=kit.Group.inst"}) {
+	if !slices.Equal(got, []string{"Panel=kit.Panel", "Group=kit.Group"}) {
 		t.Errorf("components %q", got)
 	}
-	if n := len(Components("kit", root, "", 2)); n != 2 {
+	if n := len(Components("kit", root, "", 1)); n != 1 {
 		t.Errorf("limit: %d", n)
+	}
+}
+
+func TestComponentsPublicSurface(t *testing.T) {
+	text := "item \"§ Card\" { width 40; height 20; item arc { width 2; height 2 } }\n" +
+		"item Card { width 40; height 20; item title { title Card }; item body { slot } }\n" +
+		"element Extra { item Chip { width 8; height 8; item label { title Chip } } }\n"
+	root := loadText(t, t.TempDir(), text).File("a.tenn")
+	var got []string
+	for _, c := range Components("kit", root, "", 20) {
+		got = append(got, c.Label+"="+c.Path)
+	}
+	if !slices.Equal(got, []string{"Card=kit.Card", "Chip - Extra=kit.Extra.Chip"}) {
+		t.Errorf("components %q", got)
 	}
 }

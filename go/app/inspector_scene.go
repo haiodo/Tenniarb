@@ -398,7 +398,7 @@ func (in *inspector) sceneAnimation(shown func(selKind) bool) func() g.Option {
 	in.cur.fields = append(in.cur.fields, f)
 	return func() g.Option {
 		return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
-			styleRow("Animation", g.Label("", faint(), g.GrowX(), g.Ref(&text))),
+			styleRow("Animation", g.Label("", faint(), g.Wrap(), g.GrowX(), g.Size(g.Scaled(40), 0), g.Ref(&text))),
 			styleRow("Play", g.Button("Play", g.Check(), g.Small(), g.ID("scene-anim-play"),
 				g.Ref(&play), g.Init(func(b *g.ButtonView) {
 					b.OnClick(func() {
@@ -413,7 +413,8 @@ func (in *inspector) sceneAnimation(shown func(selKind) bool) func() g.Option {
 						}
 					})
 				}))),
-			styleRow("Frame", g.Slider(0, 100, g.GrowX(), g.ID("scene-anim-frame"), g.Ref(&frame),
+			// The hint bounds what the row asks for: ten scroller widths are wider than the inspector.
+			styleRow("Frame", g.Slider(0, 100, g.GrowX(), g.Size(g.Scaled(40), 0), g.ID("scene-anim-frame"), g.Ref(&frame),
 				g.Init(func(s *g.SliderView) {
 					s.OnChange(func(at int) {
 						if !in.loading {

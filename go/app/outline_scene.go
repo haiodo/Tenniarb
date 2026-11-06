@@ -251,6 +251,34 @@ func (v *Viewer) showComponentPicker() {
 			})),
 			g.Canvas(paint, g.Size(previewW, previewH), g.ID("component-preview"), g.Ref(&box))))
 	fill("")
+	// The filter holds the focus, so the arrows would move its caret: they move the selection instead.
+	field.Unwrap().AddKeyListener(swt.KeyListenerKeyPressedAdapter(func(e *swt.KeyEvent) {
+		i := list.Index()
+		switch e.KeyCode {
+		case int32(swt.ARROW_UP):
+			i--
+		case int32(swt.ARROW_DOWN):
+			i++
+		case int32(swt.PAGE_UP):
+			i -= 10
+		case int32(swt.PAGE_DOWN):
+			i += 10
+		case int32(swt.HOME):
+			i = 0
+		case int32(swt.END):
+			i = len(shown) - 1
+		default:
+			return
+		}
+		e.Doit = false
+		if len(shown) == 0 {
+			return
+		}
+		i = max(0, min(i, len(shown)-1))
+		list.Select(i)
+		list.Unwrap().ShowSelection()
+		preview(i)
+	}))
 	v.openPopover(p)
 	v.activeText = field.Unwrap()
 	w, _ := v.view.Canvas().Size()

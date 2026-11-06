@@ -429,7 +429,7 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 	v.session.Pick(v.rightClick)
 	out := v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML})
 	// The same command the Element menu offers: a diagram element turns into a scene when it takes one.
-	out = append(out, editor.Entry{Sep: true}, editor.Entry{Label: "Insert Component from Library...", Run: v.showComponentPicker})
+	out = append(out, editor.Entry{Sep: true}, editor.Entry{Label: "Insert Component...", Run: v.showComponentPicker})
 	return append(out, v.exportEntries()...)
 }
 
@@ -462,7 +462,7 @@ func (v *Viewer) sceneEntries() []editor.Entry {
 			editor.Entry{Label: "Delete", Run: v.deleteSceneNode},
 			editor.Entry{Sep: true})
 	}
-	return append(out, editor.Entry{Label: "Insert Component from Library...", Run: v.showComponentPicker})
+	return append(out, editor.Entry{Label: "Insert Component...", Run: v.showComponentPicker})
 }
 
 // copyItemHTML is "Export text as html": the text of the selected item on the clipboard as HTML.

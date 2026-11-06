@@ -128,11 +128,11 @@ func overflow(p *scene.Placed) (string, bool) {
 	return strings.Join(out, ", "), len(out) > 0
 }
 
-// isPlate: the thing a component is laid on is named "§ ..." in the libraries, and a component
-// covering its plate is the point, not a problem. A card on some other box is not checked, which is
-// the price of not reporting a status marker that hangs 2 units over the avatar it sits on.
+// isPlate: a component covering its plate is the point, not a problem. A card on some other box is not
+// checked, which is the price of not reporting a status marker that hangs 2 units over the avatar it sits
+// on.
 func isPlate(p *scene.Placed) bool {
-	return p.Src != nil && strings.HasPrefix(p.Src.Name, "§")
+	return p.Src != nil && scene.IsPlate(p.Src.Name)
 }
 
 // sticksOut finds the items that sit on a plate and leave it, as a card on its plate: the smaller box

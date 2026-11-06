@@ -1,5 +1,13 @@
 #  Changelog
 
+## Unreleased
+
+* The inspector no longer scrolls sideways: a long name, path, list of styles or animation wraps inside the
+  panel, and the Frame slider of an animation fits its row instead of asking for ten times its own width.
+* Insert Component... lists the components of the libraries only, not the plates they sit on or the parts
+  inside a component, and Up/Down, PageUp/PageDown and Home/End move the selection while you type the
+  filter; the canvas menu calls it Insert Component... too.
+
 ## Version 2.1.0
 
 An agent's edit waits for the human now: the window shows it as edited and the file is written only when you

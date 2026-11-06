@@ -3,6 +3,7 @@ package scene
 import (
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/haiodo/tenniarb/go/tenn"
 )
@@ -192,6 +193,10 @@ type StyleGroup struct {
 	AnyOf  bool     // any number of the styles; otherwise a one-of group takes one of them
 	Styles []string // normalized style names
 }
+
+// IsPlate reports whether name is that of a plate: the box a component is laid on, written "§ ..." in the
+// libraries.
+func IsPlate(name string) bool { return strings.HasPrefix(name, "§") }
 
 // Nodes lists the elements, items and uses written directly in n, in file order: the nodes a path
 // can name, without what a use passes in its block.

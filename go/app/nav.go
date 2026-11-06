@@ -353,7 +353,8 @@ type Component struct {
 }
 
 // Components lists what a library file offers, depth first in file order, those whose name or key
-// holds q (case folded): at most limit.
+// holds q (case folded): at most limit. What the file offers is its components: an item with parts,
+// by the name of the element it sits in. A plate and a part of a component are not components.
 func Components(alias string, root *scene.Node, q string, limit int) []Component {
 	q = strings.ToLower(q)
 	var out []Component
@@ -367,6 +368,9 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 				walk(k, k.Name)
 				continue
 			}
+			if scene.IsPlate(k.Name) || len(k.Nodes()) == 0 {
+				continue // the box a component sits on, or one of its parts
+			}
 			hit := strings.Contains(strings.ToLower(k.Name), q) || strings.Contains(strings.ToLower(k.Key), q)
 			if p, ok := UsePath(alias, k); ok && k.Name != "" && hit {
 				label := k.Name
@@ -374,13 +378,6 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 					label += " - " + where
 				}
 				out = append(out, Component{Label: label, Path: p, Name: k.Name, Node: k})
-			}
-			if k.Kind == scene.KItem {
-				w := where
-				if w == "" {
-					w = k.Name
-				}
-				walk(k, w)
 			}
 		}
 	}

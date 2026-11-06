@@ -608,10 +608,12 @@ func (in *inspector) toggle(caption string, when func(selKind) bool, id, name st
 	return in.row(caption, when, refresh, ctl)
 }
 
-// info adds a read-only row.
+// info adds a read-only row. The label asks for the width hint, not for the length of its text: it wraps at the
+// width the panel gives it and grows downwards, so a long list of styles does not widen the inspector.
 func (in *inspector) info(caption string, when func(selKind) bool, text func(selKind) string) func() g.Option {
 	var l *g.LabelView
-	return in.row(caption, when, func(k selKind) { l.SetText(text(k)) }, g.Label("", g.Ref(&l), g.GrowX(), g.Size(g.Scaled(40), 0)))
+	return in.row(caption, when, func(k selKind) { l.SetText(text(k)) },
+		g.Label("", g.Ref(&l), g.Wrap(), g.GrowX(), g.Size(g.Scaled(40), 0)))
 }
 
 func bodyKind(v *Viewer) string {
