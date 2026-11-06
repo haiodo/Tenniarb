@@ -370,8 +370,8 @@ func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
 }
 
 // pick is what a click on hit selects. An instance is selected whole first: the outermost one above hit.
-// A double click goes one level deeper toward hit; with something inside the instance selected already,
-// a click selects what is under the pointer there.
+// A double click goes one level deeper toward hit; a single click never enters an instance, so a component
+// is not taken for the text or the icon it is made of.
 func (sv *sceneView) pick(hit, cur *scene.Placed, clicks int) *scene.Placed {
 	var chain []*scene.Placed // from the top down to hit
 	for c := hit; c != nil; c = c.Parent {
@@ -385,11 +385,11 @@ func (sv *sceneView) pick(hit, cur *scene.Placed, clicks int) *scene.Placed {
 		return hit
 	}
 	at := slices.Index(chain, cur)
-	if clicks >= 2 && at >= 0 && at+1 < len(chain) {
-		return chain[at+1]
-	}
-	for c := cur; c != nil; c = c.Parent {
-		if c.Parent == chain[top] {
+	if clicks >= 2 {
+		if at >= 0 && at+1 < len(chain) {
+			return chain[at+1]
+		}
+		if _, ok := sv.pathOf[hit]; ok {
 			return hit
 		}
 	}
@@ -443,6 +443,46 @@ func (v *Viewer) shownNode() *scene.Node {
 		return pl.Src
 	}
 	return n
+}
+
+// goToComponent shows the element that defines the component the selected use takes: the library is a
+// mount of this document, so the window moves to it instead of opening the file on its own.
+func (v *Viewer) goToComponent() { v.goToComponentNode(v.shownNode()) }
+
+// goToComponentNode is goToComponent for a node taken from a row of the Items tree, which the canvas
+// selection need not follow.
+func (v *Viewer) goToComponentNode(n *scene.Node) {
+	if n == nil || n.Kind != scene.KUse || v.stree == nil {
+		return
+	}
+	comp, err := v.stree.Resolve(n.Parent, n.Path)
+	if err != nil {
+		v.setBanner(err.Error())
+		return
+	}
+	if comp == nil || comp.Pos.File == "" {
+		v.setBanner("the component " + n.Path + " has no file of its own")
+		return
+	}
+	if !v.showMount(comp.Pos.File) {
+		v.setBanner("the component is in " + comp.Pos.File + ", which this document does not mount")
+		return
+	}
+	v.selectComponent(comp)
+}
+
+// selectComponent selects the node a component is defined in, once the window shows the element that
+// mounts its file, and scrolls it into view.
+func (v *Viewer) selectComponent(comp *scene.Node) {
+	if v.sv == nil || comp == nil {
+		return
+	}
+	for path, pl := range v.sv.byPath {
+		if pl.Src == comp {
+			v.selectPaths([]string{path}, true)
+			return
+		}
+	}
 }
 
 // dropStaleSelection forgets the selected paths that name nothing after a change.

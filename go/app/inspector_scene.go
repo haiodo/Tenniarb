@@ -148,12 +148,24 @@ func (in *inspector) sceneSections() g.Option {
 	hasStyles := func(k selKind) bool { return node(k) && len(v.styleGroups()) > 0 }
 	hasAnim := func(k selKind) bool { return node(k) && v.animOf() != nil }
 	hasParams := func(k selKind) bool { return k == kindScene && v.paramNode() != nil }
+	// The component of an instance is a way to the place it is defined, not only a name. A button cannot
+	// wrap, so it shows the tail of the path and holds the whole one as a tooltip.
+	var comp *g.ButtonView
+	compText := func(selKind) {
+		n := v.shownNode()
+		if comp == nil || n == nil {
+			return
+		}
+		comp.SetText(shortPath(n.Path))
+		comp.Unwrap().SetToolTipText(n.Path)
+	}
 	return g.VBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(10)),
 		in.section(title, scr,
 			in.info("Name", scr, nameOf),
-			in.info("Component", isUse, func(selKind) string {
-				return v.shownNode().Path
-			}),
+			in.row("Component", isUse, compText,
+				g.Button("", g.Small(), g.GrowX(), g.Size(valueWidth(), 0), g.Ref(&comp), g.ID("insp-component"), g.Init(func(b *g.ButtonView) {
+					b.OnClick(v.goToComponent)
+				}))),
 			in.info("Size", scr, size)),
 		in.section(sectionTitle("Parameters"), hasParams,
 			in.sceneParams(hasParams)),

@@ -142,6 +142,19 @@ func labelWidth() int { return g.Scaled(68) }
 // Fixed/Hug/Fill segments and a pair of fields - so nothing is cut at the panel edge.
 func inspectorWidth() int { return g.Scaled(272) }
 
+// valueWidth is the room a control of an inspector row gets: the panel minus the caption column and the
+// gaps around it. A control that cannot wrap is cut at it rather than widening the whole panel.
+func valueWidth() int { return inspectorWidth() - labelWidth() - g.Scaled(24) }
+
+// shortPath is the tail of a dotted path, the last two segments: what a narrow field can show.
+func shortPath(p string) string {
+	parts := strings.Split(p, ".")
+	if len(parts) <= 2 {
+		return p
+	}
+	return strings.Join(parts[len(parts)-2:], ".")
+}
+
 // section starts a collapsible section; the fields built until the next call belong to it. The title
 // follows the selection where it names what is shown.
 func (in *inspector) section(label func(selKind) string, when func(selKind) bool, rows ...func() g.Option) g.Option {

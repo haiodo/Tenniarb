@@ -104,8 +104,8 @@ func TestEveryRowSelectsWhatIsDrawn(t *testing.T) {
 	}
 }
 
-// A click on an instance selects the instance, a double click goes one level in, and with something inside
-// selected a click selects what is under the pointer there.
+// A click on an instance selects the instance, and a double click goes one level in; a single click never
+// enters an instance, so the parts of a component are not taken for its neighbours.
 func TestPickInstanceFirst(t *testing.T) {
 	_, sv := rowSceneView(t)
 	cell := sv.byPath["Screen.Top/Body.Cell"]
@@ -123,8 +123,11 @@ func TestPickInstanceFirst(t *testing.T) {
 		t.Errorf("second double click selects %q, want the Cell", sv.pathOf[got])
 	}
 	title := sv.byPath["Screen.Top/Title"]
-	if got := sv.pick(title, body, 1); got != title {
-		t.Errorf("inside the instance a click selects %q", sv.pathOf[got])
+	if got := sv.pick(title, body, 1); got != top {
+		t.Errorf("a click inside the instance selects %q, want the use itself", sv.pathOf[got])
+	}
+	if got := sv.pick(title, body, 2); got != title {
+		t.Errorf("a double click inside the instance selects %q, want the Title", sv.pathOf[got])
 	}
 	screen := sv.byPath["Screen"]
 	if got := sv.pick(screen, nil, 1); got != screen {

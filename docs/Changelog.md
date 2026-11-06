@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+An agent's edit of a library comes into view where the library is shown, a click stops on the component
+instead of falling into its parts, and there is a way to the place a component is defined.
+
+* An edit of a file a window shows as a mounted element - `Libraries.ui_kit`, nested mounts included - is
+  revealed in that window with the mounting element selected, instead of opening the file in a second window.
+* Go to Component, in the Items menu and on the Component button of the inspector, shows the element that
+  defines the component and selects the node it is drawn from.
+* A click on an instance selects the component whole; a double click goes one level in, and a click never
+  falls into the parts of a component on its own.
+* Insert Component inserts into a screen that lives inside a mounted file: the window used to jump to the
+  document's own root, as if every mounted ancestor made the screen a library.
+* The context menus of an item hold their commands in Add and Move submenus instead of one long list.
+* The banner is selectable and has a Copy button, so an error can be pasted elsewhere whole.
+* Insert Component lists the components of a library: plates, the caption groups over them and the parts of
+  a component are left out, and `kind Component` takes precedence when a library says which nodes are
+  components.
+
 An agent can move and rename nodes of the whole workspace now, and the picker shows the components of the
 libraries rather than the boxes they are drawn on.
 

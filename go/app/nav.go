@@ -356,10 +356,24 @@ type Component struct {
 }
 
 // Components lists what a library file offers, depth first in file order, those whose name or key
-// holds q (case folded): at most limit. What the file offers is its components: an item with parts,
-// by the name of the element it sits in. A plate and a part of a component are not components.
+// holds q (case folded): at most limit. What the file offers is its components: a node marked
+// "kind Component", or one that declares parameters. A file that marks none keeps the older rule, an item
+// with parts. A plate, the caption group of a plate and a part of a component are never components.
 func Components(alias string, root *scene.Node, q string, limit int) []Component {
 	q = strings.ToLower(q)
+	marked := declaresComponents(root)
+	isComponent := func(k *scene.Node) bool {
+		if scene.IsPlate(k.Name) || len(k.Nodes()) == 0 {
+			return false
+		}
+		if k.Type == scene.TypeComponent || len(k.Params) > 0 {
+			return true
+		}
+		if marked || captionOnly(k) {
+			return false
+		}
+		return true
+	}
 	var out []Component
 	var walk func(n *scene.Node, where string)
 	walk = func(n *scene.Node, where string) {
@@ -371,8 +385,8 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 				walk(k, k.Name)
 				continue
 			}
-			if scene.IsPlate(k.Name) || len(k.Nodes()) == 0 {
-				continue // the box a component sits on, or one of its parts
+			if !isComponent(k) {
+				continue
 			}
 			hit := strings.Contains(strings.ToLower(k.Name), q) || strings.Contains(strings.ToLower(k.Key), q)
 			if p, ok := UsePath(alias, k); ok && k.Name != "" && hit {
@@ -386,4 +400,29 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 	}
 	walk(root, "")
 	return out
+}
+
+// declaresComponents reports whether a library says which nodes are components: "kind Component", or the
+// parameters a component declares. A library that says nothing yet keeps the older rule.
+func declaresComponents(root *scene.Node) bool {
+	var walk func(n *scene.Node) bool
+	walk = func(n *scene.Node) bool {
+		for _, k := range n.Nodes() {
+			if k.Type == scene.TypeComponent {
+				return true
+			}
+			if walk(k) {
+				return true
+			}
+		}
+		return false
+	}
+	return walk(root)
+}
+
+// captionOnly reports whether a node is the box a group sits on: its only content is the title a plate
+// carries, as "Buttons" holds the caption of the Button group.
+func captionOnly(k *scene.Node) bool {
+	kids := k.Nodes()
+	return len(kids) == 1 && kids[0].Kind == scene.KItem && kids[0].Name == "title" && len(kids[0].Nodes()) == 0
 }

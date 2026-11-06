@@ -46,9 +46,10 @@ func (v *Viewer) libraries() []*library {
 }
 
 // leaveMount puts the last element of the document that is not mounted on the canvas, when a mounted
-// element is there: a use of a component belongs to the document, not to the file it comes from.
+// element itself is there: a use of a component belongs to the document, not to the file it comes from.
+// A screen inside a mounted file is a target of its own: Board settings of Tracker is not the library.
 func (v *Viewer) leaveMount() bool {
-	if model.MountOf(v.state.Current, false) == nil {
+	if v.state.Current == nil || v.state.Current.FromFile == "" {
 		return true
 	}
 	e := v.docElem

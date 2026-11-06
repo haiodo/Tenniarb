@@ -454,10 +454,13 @@ func (v *Viewer) sceneEntries() []editor.Entry {
 			editor.Entry{Label: "Duplicate", Run: v.duplicateScene},
 			editor.Entry{Label: "Group", Run: v.groupSelection},
 			editor.Entry{Label: "Ungroup", Run: v.ungroupSelection},
-			editor.Entry{Label: "Move Up", Run: func() { v.moveNodeBy(-1) }},
-			editor.Entry{Label: "Move Down", Run: func() { v.moveNodeBy(1) }},
-			editor.Entry{Label: "Move into Previous", Run: func() { v.moveNodeInto(-1) }},
-			editor.Entry{Label: "Move into Next", Run: func() { v.moveNodeInto(1) }},
+			editor.Entry{Label: "Move", Sub: []editor.Entry{
+				{Label: "Up", Run: func() { v.moveNodeBy(-1) }},
+				{Label: "Down", Run: func() { v.moveNodeBy(1) }},
+				{Sep: true},
+				{Label: "Into Previous", Run: func() { v.moveNodeInto(-1) }},
+				{Label: "Into Next", Run: func() { v.moveNodeInto(1) }},
+			}},
 			editor.Entry{Label: "Zoom to Item", Run: v.zoomToSelection},
 			editor.Entry{Label: "Delete", Run: v.deleteSceneNode},
 			editor.Entry{Sep: true})
