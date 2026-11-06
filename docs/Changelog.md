@@ -2,11 +2,67 @@
 
 ## Unreleased
 
-* The inspector no longer scrolls sideways: a long name, path, list of styles or animation wraps inside the
-  panel, and the Frame slider of an animation fits its row instead of asking for ten times its own width.
+An agent can move and rename nodes of the whole workspace now, and the picker shows the components of the
+libraries rather than the boxes they are drawn on.
+
+* `refactor` renames or moves a node and rewrites every `use`, `at` and `replace` path that names it or a part
+  of it, in every file that mounts it: a rename of the library button touched 236 places in 11 files. A move
+  refuses where an instance-relative path names the node, and where the node ends a link.
+* The component picker previews the chosen component, and the diagram canvas menu offers Insert Component...
+  `edit` and `design` take `render` and `scale`, so the picture of what changed comes with the change, and
+  `render` draws several elements in one call.
 * Insert Component... lists the components of the libraries only, not the plates they sit on or the parts
   inside a component, and Up/Down, PageUp/PageDown and Home/End move the selection while you type the
   filter; the canvas menu calls it Insert Component... too.
+* The inspector keeps its width - it cannot be dragged sideways any more - and it is wide enough for its
+  widest row: the Fixed/Hug/Fill segments, a pair of fields and a colour value are whole, not cut at the edge.
+  A long name, path, list of styles or animation wraps inside the panel instead of scrolling it sideways.
+* A node a component can be made from - `kind Component`, or one that declares parameters - has a puzzle
+  icon in the Items tree, so a component is not taken for a plain group.
+* A design op that reads a node of a mounted file reads it in the context of its entry, so a part of a board
+  finds the names of the master document; properties in a `use` block are replaced, not duplicated.
+* A node is listed once when two documents mount its file.
+* The design skill has the numbers of a desktop screen (type scale, spacing grid, control heights, window and
+  panel widths) and the direction step before drawing: audit, direction, then passes in an order that stops
+  a screen looking generated.
+* The QA driver's reset closes every window and reopens the document the application was started on, and the
+  helper windows before the documents, so each test starts from one clean window.
+
+## Version 2.3.0
+
+The tools speak in numbers now: a layout report without a picture, reads bounded by bytes, and edits by node
+path. A scene without a rasterizer measures its text, so the same report works where no CoreGraphics is.
+
+* `layout` reports the size of a scene, the box of every item a few levels deep, the items that leave their
+  parent or their plate, and overlapping siblings - once each with a count, and `ok:` when nothing leaves.
+* `read` is bounded by 12 KB rather than 400 lines and points at the node paths to read by, several nodes in
+  one call; a workspace search is bounded by 6 KB, and the whole-file read is capped the same way.
+* `design` changes a file by node path: set a property, move by a delta, insert, delete, replace_all. A node
+  written in a mounted file is refused there, and the file that writes it is named.
+* Reads follow `--from-file` and give the render the computed geometry; an edit of a mounted element writes to
+  its own file, props and new items alike.
+* The listing of a workspace skips `node_modules` and what `.gitignore` skips, and is cut where an agent stops
+  reading, with the name of the call that lists the rest.
+* Every tool call is logged by default (`$TMPDIR/tenniarb-mcp-calls.log`, `TENNIARB_MCP_LOG` for another path,
+  `off` to disable), so a run is measured by the bytes it returns, not by the agent's report.
+* `guide` lists its sections instead of printing the whole reference, and the skill carries the syntax of a
+  screen, so a first drawing needs no separate lookup.
+* The new-board recipe is written in the order that passes first: an empty file takes the body, then the
+  board is mounted, then the body names its entry.
+* Group and ungroup the items of a screen: one item the canvas moves, copies and deletes as a whole, and a
+  `use` may join a group. Edit > Group (Cmd+G) and Ungroup (Cmd+Shift+G), one undo step each.
+* Unsaved work survives the app being told to stop: the documents go to recovery and are offered at the next
+  start.
+* A mounted library gets a window before an agent edits it, so the work is never out of sight.
+
+## Version 2.2.0
+
+* The skill says what a node inherits - font size, weight and text colour go down the tree, colour, size and
+  padding do not - and when a path or a style block paints, so an agent stops painting a wrapper that has
+  nothing to paint.
+* A press inside the selected item that lands on its child moves the item, as before, instead of selecting
+  the child.
+* A new item lands where the empty canvas was clicked, and the view keeps its zoom.
 
 ## Version 2.1.0
 
