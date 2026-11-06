@@ -29,6 +29,8 @@ browser editor zooms with two fingers on a touch screen.
   the word longer or to name one file: a word as common as "Button" found a hundred nodes in eight files.
 + `layout` answers with estimated text metrics where the platform has no CoreGraphics, as on the Linux
   and Windows CI, instead of refusing to lay anything out: a scene without a window still has boxes.
++ The QA driver's reset closes every window and reopens the document the application was started on, so
+  each test starts from one clean window instead of the pile the tests before it left.
 + The component picker previews what is chosen: the component as the canvas draws it, beside the list,
   and its filter field spans the popover.
 + A component can be inserted from the canvas menu of a diagram: the element becomes a scene, as it does

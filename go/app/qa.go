@@ -5,6 +5,7 @@ package app
 import (
 	"fmt"
 	"math"
+	"os"
 	"slices"
 
 	g "github.com/haiodo/gowt"
@@ -32,6 +33,22 @@ func (sh *Shell) registerQA() {
 		return map[string]any{"version": v.version, "builds": v.sceneBuilds, "sceneMode": v.sceneMode(),
 			"nodes": v.selNodes, "dirty": v.isDirty(), "edited": v.edited(), "error": v.bannerText(), "kind": v.kind,
 			"title": Title(v.state.Doc.Path, v.edited()), "agent": v.agent.statusText(), "follow": v.agent.follow}, nil
+	})
+	// reset: the state a test starts from - every window but one closed, and that one back on its file,
+	// so a test never inherits the documents and windows of the test before it.
+	qa.Handle("reset", func(qa.Args) error {
+		for _, v := range slices.Clone(sh.viewers) {
+			v.force = true
+			v.win.Close()
+		}
+		if sh.launch != "" {
+			if _, err := os.Stat(sh.launch); err == nil {
+				sh.openPath(sh.launch)
+				return nil
+			}
+		}
+		sh.newDocument()
+		return nil
 	})
 	// select: what the MCP service will do, for the window of path
 	qa.Handle("select", func(a qa.Args) error {

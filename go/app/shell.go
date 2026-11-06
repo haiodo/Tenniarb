@@ -34,6 +34,8 @@ type Shell struct {
 	agentAt map[string]int64
 	recent  []string
 	repos   link.Repos // the git remotes of the clones a link may name
+	// launch is the document the application opened first, the state a QA reset comes back to.
+	launch string
 
 	viewers []*Viewer
 	active  *Viewer
@@ -129,6 +131,9 @@ func (sh *Shell) start(args []string) {
 			continue
 		}
 		sh.openPath(a)
+		if sh.launch == "" {
+			sh.launch = a
+		}
 	}
 	for _, id := range StashedUntitled(sh.dir) {
 		if text, err := ReadUntitled(sh.dir, id); err == nil {
