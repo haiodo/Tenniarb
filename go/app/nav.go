@@ -18,6 +18,8 @@ type ItemRow struct {
 	Path  string
 	Item  *model.DiagramItem
 	Kids  bool // the row opens; its rows are read when it does
+	// Component is a node a use can take: "kind Component", or one that declares parameters.
+	Component bool
 }
 
 // nodeLabel is how a node is named in a list: its name, the kind of an unnamed one.
@@ -52,7 +54,8 @@ func sceneRows(n *scene.Node, prefix string) ([]ItemRow, []*scene.Node) {
 		if prefix != "" {
 			seg = prefix + "." + seg
 		}
-		out = append(out, ItemRow{Label: nodeLabel(k), Kind: k.Kind.String(), Path: seg, Kids: len(sceneKids(k)) > 0})
+		out = append(out, ItemRow{Label: nodeLabel(k), Kind: k.Kind.String(), Path: seg,
+			Kids: len(sceneKids(k)) > 0, Component: k.Type == scene.TypeComponent || len(k.Params) > 0})
 	}
 	return out, kids
 }
