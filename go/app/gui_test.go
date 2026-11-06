@@ -800,10 +800,14 @@ func TestPropsContextMenu(t *testing.T) {
 	app := qatest.App(t)
 	props := app.Find(qa.ID("props"))
 	const text = "name \"Root\""
+	mod := "Ctrl"
+	if runtime.GOOS == "darwin" { // the menu shows the platform's modifier
+		mod = "Cmd"
+	}
 	props.Type(text)
 	for _, item := range []struct {
 		label, shortcut string
-	}{{"Cut", "Ctrl+X"}, {"Copy", "Ctrl+C"}, {"Paste", "Ctrl+V"}, {"Select All", "Ctrl+A"}} {
+	}{{"Cut", mod + "+X"}, {"Copy", mod + "+C"}, {"Paste", mod + "+V"}, {"Select All", mod + "+A"}} {
 		props.RightClickAt(12, 12)
 		node := app.Find(qa.Text(item.label).In(qa.ID("props"))).Node()
 		if node.Value != item.shortcut {

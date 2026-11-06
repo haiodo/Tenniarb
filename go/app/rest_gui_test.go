@@ -29,7 +29,7 @@ const libraryScreenDoc = `element "Screen" {
 `
 
 const libraryKitDoc = `element "Parts" {
-  item Card { width 20; height 20 }
+  item Card { width 20; height 20; item label { title Card } }
 }
 `
 
@@ -336,7 +336,7 @@ func TestAddLibrary(t *testing.T) {
 	restWait(a)
 
 	// Insert Component sees the components of the mounted file
-	menu(a, "Insert Component...")
+	a.Find(menuBarItem(h.activeTitle(), "Element", "Insert Component...")).Click()
 	restWait(a)
 	h.enterIn("component-filter", "Card")
 	restWait(a)

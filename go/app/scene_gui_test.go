@@ -200,7 +200,7 @@ func TestScene(t *testing.T) {
 	a.ShotTitle("07-new-screen", qa.title(screen))
 
 	// Insert Component... asks for the component: the frame stays the target
-	a.Find(inWindow(qa.menuItem("Insert Component..."), qa.title(screen))).Click()
+	a.Find(menuBarItem(qa.title(screen), "Element", "Insert Component...")).Click()
 	a.Settle()
 	name := use.Path[strings.LastIndex(use.Path, ".")+1:]
 	qa.enterIn("component-filter", name)
@@ -305,6 +305,13 @@ func (h qaHelpers) activeTitle() string {
 
 func (h qaHelpers) menuItem(title string) qa.Selector {
 	return qa.Selector{Class: "MenuItem", Text: title}
+}
+
+// menuBarItem picks an item of a menu bar: in the dump the menu title and its items are MenuItems
+// one under another, while a popup's items are found under a Menu.
+func menuBarItem(window, menu, item string) qa.Selector {
+	return qa.Selector{Class: "MenuItem", Text: item, Within: &qa.Selector{
+		Class: "MenuItem", Text: menu, Within: &qa.Selector{Class: "Shell", Text: window}}}
 }
 
 func (h qaHelpers) class(c string) qa.Selector { return qa.Class(c) }

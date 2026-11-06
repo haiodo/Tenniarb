@@ -207,13 +207,23 @@ func TestAbout(t *testing.T) {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")
 	}
 	app := qatest.App(t)
+	app.Answer(qa.Dialog{Kind: "message", Reply: "No"}) // the save question of a dirty window, if it comes
 	app.State("command", "name", "close-others")
+	// the answers are a queue by kind: what close-others left must not answer About
+	if _, err := app.Call("dialogs", map[string]bool{"clear": true}); err != nil {
+		t.Fatal(err)
+	}
 	app.Answer(qa.Dialog{Kind: "message", Reply: "OK"})
 	app.State("command", "name", "about")
 	d := app.Dialogs()
 	if len(d) != 1 || !strings.Contains(d[0].Message, "Version ") || !strings.Contains(d[0].Message, "Andrey Sobolev") {
 		t.Fatalf("about: %+v", d)
 	}
+	if d[0].Unanswered || d[0].Reply != "OK" {
+		t.Fatalf("the about dialog got %v, unanswered %v", d[0].Reply, d[0].Unanswered)
+	}
+	// the next test's reset closes this window, and a frame in flight then deadlocks the close
+	app.Settle()
 }
 
 func TestPrefsAndHelp(t *testing.T) {

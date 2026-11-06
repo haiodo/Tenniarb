@@ -37,6 +37,13 @@ func (sh *Shell) registerQA() {
 	// reset: the state a test starts from - every window but one closed, and that one back on its file,
 	// so a test never inherits the documents and windows of the test before it.
 	qa.Handle("reset", func(qa.Args) error {
+		// a window-modal state belongs to its window: the auxiliary windows go before the viewers,
+		// not with the last of them
+		for _, w := range []*g.Window{sh.prefsWin.window(), sh.helpWin.window(), sh.updWin} {
+			if w != nil {
+				w.Unwrap().Dispose()
+			}
+		}
 		for _, v := range slices.Clone(sh.viewers) {
 			v.force = true
 			v.win.Close()
