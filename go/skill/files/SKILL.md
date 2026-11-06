@@ -14,6 +14,8 @@ reference, read it only when the task needs that part:
 | File | Read it when |
 |---|---|
 | `format.md` | you need a property this file does not list: gradients, shadows, `body` markdown, `path` icons, animations, compact form |
+| `platforms.md` | you are picking a font size, gap, padding, row or control height, or a window and panel width, and want the number instead of a guess |
+| `direction.md` | before drawing a screen: the audit, the direction and the passes that stop it looking generated |
 | `components.md` | the library has the screen you need and you fill its slots; or the file is a library itself |
 | `layout.md` | you want the full recipe of an app window, a settings page, a list or a dialog, not the short one here |
 | `diagrams.md` | drawing a brain map, flow or other diagram with links |

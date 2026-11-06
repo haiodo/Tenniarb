@@ -24,6 +24,8 @@ and `validate` do the same.
    block has no `height`. If the text looks cut, a fixed height or a missing width is the cause.
 8. **Instances.** Overrides reached the right part: if a label still shows the component's text, the
    `at` path names another node; `get_state {file, path: <component>, depth: 3}` shows the parts.
+9. **Look.** Clean is not designed: `direction.md` lists the tells a screen falls into and the order to fix
+   them in.
 
 ## Typical mistakes
 
