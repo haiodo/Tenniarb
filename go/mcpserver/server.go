@@ -76,12 +76,16 @@ type (
 		Paths []string `json:"paths,omitempty" jsonschema:"several nodes of the file in one call, printed one after another"`
 	}
 	editIn struct {
-		File  string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Edits []EditOp `json:"edits" jsonschema:"find/replace operations applied in order; to create a missing file send one edit with empty find"`
+		File   string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Edits  []EditOp `json:"edits" jsonschema:"find/replace operations applied in order; to create a missing file send one edit with empty find"`
+		Render string   `json:"render,omitempty" jsonschema:"after a successful edit, render this element and return the image, so checking the result is one call; . is the file root"`
+		Scale  float64  `json:"scale,omitempty" jsonschema:"device pixels per scene unit of that render, default 1, at most 8"`
 	}
 	designIn struct {
-		File string     `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Ops  []DesignOp `json:"ops" jsonschema:"operations in order; each addresses a node by its dotted path"`
+		File   string     `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Ops    []DesignOp `json:"ops" jsonschema:"operations in order; each addresses a node by its dotted path"`
+		Render string     `json:"render,omitempty" jsonschema:"after a successful change, render this element and return the image, so checking the result is one call; . is the file root"`
+		Scale  float64    `json:"scale,omitempty" jsonschema:"device pixels per scene unit of that render, default 1, at most 8"`
 	}
 	layoutIn struct {
 		File    string `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
@@ -89,11 +93,12 @@ type (
 		Depth   int    `json:"depth,omitempty" jsonschema:"levels of items to list, default 0: one line per top-level item, then only the problems; 3 lists the box of every item"` //nolint:lll
 	}
 	renderIn struct {
-		File    string  `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
-		Element string  `json:"element,omitempty" jsonschema:"dotted path of an element; empty for the content of the file itself"`
-		Scale   float64 `json:"scale,omitempty" jsonschema:"device pixels per scene unit, default 1, at most 8"`
-		View    bool    `json:"view,omitempty" jsonschema:"render what the Tenniarb window of this file shows instead; needs the file open in the app"`
-		Inspect bool    `json:"inspect,omitempty" jsonschema:"add the computed geometry to the text: the box of every item, the items that leave their parent and overlapping pairs, in scene units"`
+		File     string   `json:"file" jsonschema:"path of a .tenn file relative to the workspace root"`
+		Element  string   `json:"element,omitempty" jsonschema:"dotted path of an element; empty for the content of the file itself"`
+		Elements []string `json:"elements,omitempty" jsonschema:"several elements in one call, each its own image, for a check across the parts of a screen; takes the place of element"`
+		Scale    float64  `json:"scale,omitempty" jsonschema:"device pixels per scene unit, default 1, at most 8"`
+		View     bool     `json:"view,omitempty" jsonschema:"render what the Tenniarb window of this file shows instead; needs the file open in the app"`
+		Inspect  bool     `json:"inspect,omitempty" jsonschema:"add the computed geometry to the text: the box of every item, the items that leave their parent and overlapping pairs, in scene units"`
 	}
 	selectIn struct {
 		File   string   `json:"file" jsonschema:"path of a .tenn file open in Tenniarb, relative to the workspace root; or a link from the selection tool, File.tenn#Element/node (docs/links.md), which also gives nodes"`
@@ -122,10 +127,11 @@ func (s *Server) MCP() *mcp.Server {
 			}
 			return s.state(in)
 		})
-	add(srv, "design", "Change a .tenn file by operations on nodes: set a property, move a node by dx dy, insert commands into a parent, delete a node, replace text everywhere. Paths are the dotted ones of get_state, so nothing has to match as text. All operations of one call go as one change: nothing is written if the result has a parse error or adds a validation error, and a file open in Tenniarb takes it as one undo step, unsaved.",
-		func(in designIn) (string, error) {
-			return s.design(in.File, in.Ops)
-		})
+	s.addRendering(srv, "design", "Change a .tenn file by operations on nodes: set a property, move a node by dx dy, insert commands into a parent, delete a node, replace text everywhere. Paths are the dotted ones of get_state, so nothing has to match as text. All operations of one call go as one change: nothing is written if the result has a parse error or adds a validation error, and a file open in Tenniarb takes it as one undo step, unsaved. render names an element to draw after the change, so the check needs no second call.",
+		func(in designIn) string { return in.File }, func(in designIn) (string, float64) { return in.Render, in.Scale },
+		func(in designIn) (string, error) { return s.design(in.File, in.Ops) })
+	add(srv, "refactor", "Rename a node or move it under another parent, updating every use, at and replace path that names it, here and in the files that mount it. Both paths are read in the tree of file, so a node of a mounted library is named as the entry document names it. The whole workspace is checked and a result that adds an error changes nothing; a move refuses when the node is named inside a use by an at or replace path, which is relative to the instance.",
+		func(in refactorIn) (string, error) { return s.refactor(in) })
 	add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
 		func(in layoutIn) (string, error) {
 			s.noteNode("layout", in.File, in.Element)
@@ -150,7 +156,8 @@ func (s *Server) MCP() *mcp.Server {
 			}
 			return b.String(), nil
 		})
-	add(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched.",
+	s.addRendering(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched. render names an element to draw after the change, so the check needs no second call.",
+		func(in editIn) string { return in.File }, func(in editIn) (string, float64) { return in.Render, in.Scale },
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
 	add(srv, "gen", "Print the text the template of a component generates (spec 5c): the template with its ${parameters} filled and its slots taken from the use, for code generation. set gives the parameter values by name; without it the defaults of the element are used, and where the element is the use, the block of the use.",
 		func(in genToolIn) (string, error) { return s.gen(in) })
@@ -165,25 +172,36 @@ func (s *Server) MCP() *mcp.Server {
 		})
 	mcp.AddTool(srv, &mcp.Tool{
 		Name:        "render",
-		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text). Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead. inspect adds the geometry: sizes, boxes, items leaving their parent, overlaps — read the numbers instead of measuring the image.",
+		Description: "Render an element of a .tenn file to a PNG image (plus warnings as text); elements renders several in one call, each its own image. Elements (and the file root) with a use, or an item with children, a slot or auto-layout, draw as UI scenes; other elements as classic diagrams (brain maps: styles, links, layouts, ${...} evaluated). Y axis points up in scenes: pos y grows upward, so a node with larger y is drawn higher. File must have no errors. view renders the Tenniarb window of the file instead. inspect adds the geometry: sizes, boxes, items leaving their parent, overlaps — read the numbers instead of measuring the image.",
 	}, func(_ context.Context, _ *mcp.CallToolRequest, in renderIn) (*mcp.CallToolResult, any, error) {
 		started := time.Now()
-		s.noteNode("render", in.File, in.Element)
-		r, err := s.render(in.File, in.Element, in.Scale, in.View)
-		if err == nil && in.Inspect && r.screen != nil {
-			if g := inspectScene(r.screen, inspectDepth); g != "" {
-				r.text += "\n" + g
+		if len(in.Elements) > 0 && in.View {
+			return failure(errors.New("view renders the window of the file: ask for it alone")), nil, nil
+		}
+		elements := in.Elements
+		if len(elements) == 0 {
+			elements = []string{in.Element}
+		}
+		var content []mcp.Content
+		out := 0
+		for _, element := range elements {
+			s.noteNode("render", in.File, element)
+			r, err := s.render(in.File, element, in.Scale, in.View)
+			if err != nil {
+				recordCall("render", in, out+len(err.Error()), started)
+				return failure(err), nil, nil
 			}
+			if in.Inspect && r.screen != nil {
+				if g := inspectScene(r.screen, inspectDepth); g != "" {
+					r.text += "\n" + g
+				}
+			}
+			content = append(content, &mcp.ImageContent{Data: r.png, MIMEType: "image/png"},
+				&mcp.TextContent{Text: r.text})
+			out += len(r.png) + len(r.text)
 		}
-		if err != nil {
-			recordCall("render", in, len(err.Error()), started)
-			return failure(err), nil, nil
-		}
-		recordCall("render", in, len(r.text)+len(r.png), started)
-		return &mcp.CallToolResult{Content: []mcp.Content{
-			&mcp.ImageContent{Data: r.png, MIMEType: "image/png"},
-			&mcp.TextContent{Text: r.text},
-		}}, nil, nil
+		recordCall("render", in, out, started)
+		return &mcp.CallToolResult{Content: content}, nil, nil
 	})
 	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths, with a link to it (link, link_text) to share. Fails when the app is not connected.",
 		func(noIn) (string, error) { return s.selection() })
@@ -231,6 +249,38 @@ func add[In any](srv *mcp.Server, name, desc string, fn func(In) (string, error)
 			}
 			recordCall(name, in, len(text), started)
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
+		})
+}
+
+// addRendering registers a tool whose answer is text plus, when the call names an element, its picture:
+// the image is taken after the change, so checking the result costs one call instead of two.
+func (s *Server) addRendering[In any](srv *mcp.Server, name, desc string, file func(In) string,
+	target func(In) (string, float64), fn func(In) (string, error)) {
+	mcp.AddTool(srv, &mcp.Tool{Name: name, Description: desc},
+		func(_ context.Context, _ *mcp.CallToolRequest, in In) (*mcp.CallToolResult, any, error) {
+			started := time.Now()
+			text, err := fn(in)
+			if err != nil {
+				recordCall(name, in, len(err.Error())+6, started)
+				return failure(err), nil, nil
+			}
+			element, scale := target(in)
+			if element == "" {
+				recordCall(name, in, len(text), started)
+				return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
+			}
+			r, rerr := s.render(file(in), element, scale, false)
+			if rerr != nil {
+				// The change went through; a failed picture is a note in the answer, not a failed call.
+				text += "\nrendered nothing: " + rerr.Error()
+				recordCall(name, in, len(text), started)
+				return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
+			}
+			recordCall(name, in, len(text)+len(r.png)+len(r.text), started)
+			return &mcp.CallToolResult{Content: []mcp.Content{
+				&mcp.TextContent{Text: text + "\n" + r.text},
+				&mcp.ImageContent{Data: r.png, MIMEType: "image/png"},
+			}}, nil, nil
 		})
 }
 

@@ -3,6 +3,7 @@ package scene
 import (
 	"slices"
 	"sort"
+	"strings"
 
 	"golang.org/x/text/unicode/norm"
 )
@@ -179,6 +180,36 @@ func linkIndex(l *Node, prop string) int {
 		}
 	}
 	return 0
+}
+
+// PathOf is the path a reference from the entry document writes for n: the names from the top of the
+// tree down, through the mount points, each quoted as a path writes it (spec 4.2). A file mounted in
+// several places gives the path through the first of them, as ctxOf does.
+func (t *Tree) PathOf(n *Node) (string, bool) {
+	if n == nil || n.Kind == KFile {
+		return "", false
+	}
+	var parts []string
+	for cur := n; ; {
+		if cur.Kind != KFile {
+			seg := SegText(cur.Name)
+			if seg == "" {
+				return "", false
+			}
+			parts = append(parts, seg)
+		}
+		if cur.Parent != nil {
+			cur = cur.Parent
+			continue
+		}
+		c := t.ctxs[cur]
+		if c == nil || c.at == nil {
+			break
+		}
+		cur = c.at
+	}
+	slices.Reverse(parts)
+	return strings.Join(parts, "."), true
 }
 
 // NodeNamedAt is the node whose name is written at offset off of file, nil when there is none.

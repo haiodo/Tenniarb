@@ -133,7 +133,9 @@ footer row (`justify end`, `gap 8`).
 - Never `read` a whole library or a large file: list it with `get_state` and read one node.
 - One `edit` call can carry several find/replace pairs for one file.
 - `find` must match exactly once: take the shortest unique text, a name in quotes with its line.
-- After a successful edit do not read the file again: the edit result says what you need.
+- After a successful edit do not read the file again: the edit result says what you need. `edit` and
+  `design` take `render` (an element path), so the picture comes back with the answer.
+- Several elements at once: `render {elements: ["A", "B"]}` draws each as its own image in one call.
 - A file that the app has open is rewritten when it opens (indent, quotes, one command per line), so
   text you wrote may no longer match: take `find` from `read`, not from your own edit.
 - The same override on many instances: one edit with `all: true` (`find` a text all of them share).
@@ -149,6 +151,10 @@ footer row (`justify end`, `gap 8`).
 - `read {file, path: "Lib.Forms"}` follows `--from-file`: a path that ends on a mounting element gives the
   content of the mounted file, not its one-line declaration.
 - `layout` and `render {inspect: true}` report the same geometry; the first draws no picture.
+- `refactor {file, node, rename: "NewName"}` renames a node and every `use`, `at` and `replace` path that
+  names it, in every file that mounts it; `parent` moves it into an item, an element or `.` (the file
+  root), and the paths are written again from the entry document. A move refuses when the node is named
+  inside a `use` by an `at` or `replace` path: those are relative to the instance, not to the file.
 - A nested element is a screen of its own: an element inside an element is not drawn into the parent.
 - `color linear 90 #ffffff #000000` - the angle is CSS (0 up, 90 right), positions are 0..1 on the stops.
 

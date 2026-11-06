@@ -147,3 +147,30 @@ func TestReferencesLinkEnds(t *testing.T) {
 		t.Errorf("both ends of the link Y Y: %d, blocked %q", len(refs), blocked)
 	}
 }
+
+// PathOf is what a reference from the entry document writes: through the mount point, quoted where
+// the name needs it, and the file root itself is not a segment.
+func TestPathOf(t *testing.T) {
+	root := writeFiles(t, map[string]string{
+		"main.tenn": "element kit --from-file kit.tenn\nelement Screen { item \"a b\" { } }\n",
+		"kit.tenn":  "element Parts {\n  item \"§ Button\" { }\n}\n",
+	})
+	tree, err := scene.Load(root, "main.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := tree.PathOf(mustResolve(t, tree, "main.tenn", "kit.Parts.\"§ Button\""))
+	if !ok || got != `kit.Parts."§ Button"` {
+		t.Errorf("path through the mount: %q %v", got, ok)
+	}
+	got, ok = tree.PathOf(mustResolve(t, tree, "main.tenn", `Screen."a b"`))
+	if !ok || got != `Screen."a b"` {
+		t.Errorf("path in the entry: %q %v", got, ok)
+	}
+	// A part opened on its own still writes the path from its entry.
+	if tree2, err := scene.LoadIn(root, "kit.tenn", "main.tenn", nil); err == nil {
+		if got, ok := tree2.PathOf(mustResolve(t, tree2, "kit.tenn", `Parts."§ Button"`)); !ok || got != `kit.Parts."§ Button"` {
+			t.Errorf("path from a part: %q %v", got, ok)
+		}
+	}
+}

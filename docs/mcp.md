@@ -55,11 +55,13 @@ tool stays inside the root. A root with more than 50 000 entries (a home directo
 | `guide` | Short examples and a reference of the .tenn commands the scene engine runs (`go/mcpserver/guide.tenn.md`); `topic` narrows it by section number or heading word |
 | `get_state` | Files, node trees 2 levels deep, renderer of each element, open/unsaved in the app, diagnostics (10 per file); a node line also names its `kind`, `params`, `styles`, `groups` and, on a `use`, its `args` (the parameter values it sets), so a component and its variant can be chosen without reading it; `file`, `path`, `depth` list one subtree, `find` searches nodes by name |
 | `read` | A file or one node by dotted path, with line numbers |
-| `edit` | Atomic find/replace; nothing changes on a mismatch, a parse error or a new validation error |
+| `edit` | Atomic find/replace; nothing changes on a mismatch, a parse error or a new validation error. `render` names an element to draw after the change, so the check is the same call |
+| `design` | Node operations by path: `set`, `move` (dx dy), `insert`, `delete`, `replace_all`; one call is one undo step. `render` as in `edit` |
+| `refactor` | Rename (`rename`) or move (`parent`) a node and every `use`, `at` and `replace` path that names it, in every file that mounts it; the workspace is checked as one change |
 | `validate` | Errors and warnings of one file or the workspace |
 | `gen` | The text the template of a component generates (`file`, `element`, `set`), for code generation |
 | `suggest` | What could be tidied in a file or the workspace: repeats that could be a component, styles, dead commands; reads only |
-| `render` | PNG of an element; `view` renders the app window of the file |
+| `render` | PNG of an element; `elements` draws several in one call, each its own image; `view` renders the app window of the file |
 | `selection` | Documents open in the app and the user's selection |
 | `select` | Select (and reveal) nodes in the app; `file` may be a link, see [links.md](links.md) |
 | `comments` | The comments the user left on a file: id, author, text, anchor (`element`, `node`, `point`, `link_text` that `select` takes), replies; `state` `open` (default) or `all`. A comment on a part the document shows from a mounted file belongs to that file, with the path it has there; an older one stored with the document is still listed for the file |
