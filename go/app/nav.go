@@ -349,6 +349,7 @@ func UsePath(alias string, n *scene.Node) (string, bool) {
 // Component is a node of a library one can insert: the label the picker shows and the use path.
 type Component struct {
 	Label, Path, Name string
+	Node              *scene.Node // the element or item itself, for a preview
 }
 
 // Components lists what a library file offers, depth first in file order, those whose name or key
@@ -372,7 +373,7 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 				if where != "" {
 					label += " - " + where
 				}
-				out = append(out, Component{Label: label, Path: p, Name: k.Name})
+				out = append(out, Component{Label: label, Path: p, Name: k.Name, Node: k})
 			}
 			if k.Kind == scene.KItem {
 				w := where

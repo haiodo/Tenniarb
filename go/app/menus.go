@@ -427,7 +427,10 @@ func (v *Viewer) canvasEntries() []editor.Entry {
 		return append(v.sceneEntries(), v.exportEntries()...)
 	}
 	v.session.Pick(v.rightClick)
-	return append(v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML}), v.exportEntries()...)
+	out := v.session.CanvasEntries(v.rightClick, editor.MenuHost{Layout: v.testLayout, AttachImage: v.attachImage, ExportHTML: v.copyItemHTML})
+	// The same command the Element menu offers: a diagram element turns into a scene when it takes one.
+	out = append(out, editor.Entry{Sep: true}, editor.Entry{Label: "Insert Component from Library...", Run: v.showComponentPicker})
+	return append(out, v.exportEntries()...)
 }
 
 // screenSizeEntries are the frames New Screen offers, the entries of the Element submenu and of the

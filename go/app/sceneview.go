@@ -882,9 +882,15 @@ func (v *Viewer) ensureSceneElement() bool {
 		return true
 	}
 	e := v.state.Current
-	if e == nil || len(e.Items) > 0 {
-		v.setBanner("Screens and components go into a scene element: choose one with frames, or an empty element.")
+	if e == nil {
+		v.setBanner("Choose an element first: a screen goes into a scene element.")
 		return false
+	}
+	for _, it := range e.Items {
+		if it.IsLink() {
+			v.setBanner("Screens and components go into a scene element, and this one holds links, which a scene does not draw: use an empty element or a new screen.")
+			return false
+		}
 	}
 	if v.stree == nil {
 		v.kind = model.DocScene

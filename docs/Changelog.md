@@ -29,6 +29,14 @@ browser editor zooms with two fingers on a touch screen.
   the word longer or to name one file: a word as common as "Button" found a hundred nodes in eight files.
 + `layout` answers with estimated text metrics where the platform has no CoreGraphics, as on the Linux
   and Windows CI, instead of refusing to lay anything out: a scene without a window still has boxes.
++ The component picker previews what is chosen: the component as the canvas draws it, beside the list,
+  and its filter field spans the popover.
++ A component can be inserted from the canvas menu of a diagram: the element becomes a scene, as it does
+  for a new screen; an element with links is refused, a scene drawing none.
++ `design` reads a file in the context of its entry document: the names a library gets from the document
+  that mounts it resolve, as they do in the canvas, so a `use` path of a part works.
++ A property written in the block of a `use` is replaced where it stands: `design {op: "move"}` moved a
+  `use` and left two `pos` lines.
 + `refactor` renames or moves a node and every `use`, `at` and `replace` path that names it, in every
   file that mounts it, as one change: renaming `Libraries.ui_kit.Actions.Button` in the foundation
   library updated 236 places in 11 files, and moving it into `Forms` kept 0 errors.

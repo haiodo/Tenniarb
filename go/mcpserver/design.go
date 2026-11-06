@@ -64,7 +64,9 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tree, err := scene.LoadSource(s.root, rel, text)
+	// The tree of the entry document, not of this file alone: a library names what its entry mounts,
+	// and a path through a mount is what design addresses.
+	tree, err := scene.LoadAuto(s.root, rel, map[string]string{rel: text})
 	if err != nil {
 		return "", err
 	}
@@ -237,12 +239,18 @@ func blockEnd(n *scene.Node) (int, bool) {
 	return n.Body.End - 1, true
 }
 
-// ownPropOf is the property command of name written on n itself.
+// ownPropOf is the property command of name written on n itself: in its own arguments, or in the block
+// of a use, where an override of the root instance is written.
 func ownPropOf(n *scene.Node, name string) *scene.Prop {
 	var found *scene.Prop
 	for _, p := range n.Props {
 		if p.Name == name {
 			found = p
+		}
+	}
+	for _, ov := range n.Block {
+		if ov.Kind == scene.OvProp && ov.Prop != nil && ov.Prop.Name == name {
+			found = ov.Prop
 		}
 	}
 	return found

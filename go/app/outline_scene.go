@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	g "github.com/haiodo/gowt"
+	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -172,8 +173,8 @@ func (v *Viewer) addLibraryFile(path string) error {
 	return v.applyText(at, at, pre+cmd+"\n")
 }
 
-// showComponentPicker is Insert Component...: a filtered list of the components of the libraries;
-// Return or a double click inserts the one chosen.
+// showComponentPicker is Insert Component...: a filtered list of the components of the libraries and a
+// preview of the one chosen; Return or a double click inserts it.
 func (v *Viewer) showComponentPicker() {
 	if len(v.libraries()) == 0 {
 		v.setBanner("The document mounts no library: add one with Element > Add Library...")
@@ -186,7 +187,27 @@ func (v *Viewer) showComponentPicker() {
 	p := v.win.Popover(g.Gap(4), g.Padding(6))
 	var field *g.TextView
 	var list *g.ListView
+	var shot *g.Image
+	var box *g.CanvasView
 	var shown []Component
+	preview := func(i int) {
+		if shot != nil {
+			shot.Dispose()
+			shot = nil
+		}
+		if i >= 0 && i < len(shown) {
+			img, err := v.componentImage(shown[i].Node, previewW, previewH)
+			if err != nil {
+				v.setBanner("preview: " + err.Error())
+			}
+			if err == nil {
+				shot = img
+			}
+		}
+		if box != nil {
+			box.Redraw()
+		}
+	}
 	fill := func(q string) {
 		shown = v.components(q, 200)
 		labels := make([]string, len(shown))
@@ -197,6 +218,7 @@ func (v *Viewer) showComponentPicker() {
 		if len(labels) > 0 {
 			list.Select(0)
 		}
+		preview(0)
 	}
 	pick := func(i int) {
 		if i < 0 || i >= len(shown) {
@@ -206,17 +228,43 @@ func (v *Viewer) showComponentPicker() {
 		p.Close()
 		v.insertComponent(c.Path, c.Name)
 	}
+	paint := func(gc *g.GC) {
+		w, h := gc.Size()
+		raw := gc.Unwrap()
+		raw.SetBackground(swt.DeviceGetDevice().GetSystemColor(swt.COLOR_LIST_BACKGROUND))
+		raw.FillRectangle(0, 0, int32(w), int32(h))
+		if shot == nil {
+			return
+		}
+		iw, ih := shot.Size()
+		gc.Image(shot, (w-iw)/2, (h-ih)/2)
+	}
 	p.Add(
-		g.Text(g.Search(), g.Focused(), g.Hint("Component"), g.ID("component-filter"), g.Ref(&field), g.Init(func(t *g.TextView) {
+		g.Text(g.Search(), g.Focused(), g.Hint("Component"), g.GrowX(), g.ID("component-filter"), g.Ref(&field), g.Init(func(t *g.TextView) {
 			t.OnChange(fill)
 			t.OnActivate(func() { pick(list.Index()) })
 		})),
-		g.List(nil, g.Size(340, 280), g.ID("component-list"), g.Ref(&list), g.Init(func(l *g.ListView) {
-			l.OnActivate(pick)
-		})))
+		g.HBox(
+			g.List(nil, g.Size(340, previewH), g.ID("component-list"), g.Ref(&list), g.Init(func(l *g.ListView) {
+				l.OnActivate(pick)
+				l.OnSelect(preview)
+			})),
+			g.Canvas(paint, g.Size(previewW, previewH), g.ID("component-preview"), g.Ref(&box))))
 	fill("")
 	v.openPopover(p)
 	v.activeText = field.Unwrap()
 	w, _ := v.view.Canvas().Size()
 	p.ShowAtPoint(v.view.Canvas(), w/2, 0, g.PopoverBelow)
+	// The preview is drawn once the popover is on screen: a canvas made before that never paints.
+	v.app.Async(func() {
+		if box != nil {
+			box.Redraw()
+		}
+	})
 }
+
+// The preview pane of the component picker: a component is drawn whole, as large as this allows.
+const (
+	previewW = 320
+	previewH = 280
+)
