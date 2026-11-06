@@ -110,6 +110,11 @@ func (sh *Shell) agentPresence(pr servicewire.Presence) {
 			return
 		}
 		direct = true
+	} else if !direct {
+		// The file is seen through the element that mounts it: show that element, so the edit lands in view
+		// instead of in a file the window only holds.
+		v.showMount(pr.Path)
+		v.followAgent()
 	}
 	v.onPresence(pr, direct)
 }

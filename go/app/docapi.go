@@ -101,14 +101,68 @@ func (sh *Shell) viewerShowing(path string) (v *Viewer, direct bool, err error) 
 	return nil, false, ErrNoDocument
 }
 
-// showsFile reports whether a mounted element of the document shows abs.
+// showsFile reports whether a mounted element of the document shows abs, nested mounts included: a
+// library mounted inside Libraries is shown by the window all the same.
 func (v *Viewer) showsFile(abs string) bool {
 	for _, md := range v.mounts {
 		if realPath(v.libPath(md.file)) == abs {
 			return true
 		}
 	}
+	if v.stree == nil {
+		return false
+	}
+	for _, f := range v.stree.Files() {
+		if realPath(filepath.Join(v.stree.Root(), filepath.FromSlash(f))) == abs {
+			return true
+		}
+	}
 	return false
+}
+
+// showMount selects the element that mounts path: a file seen through the document comes into view where
+// it is mounted, rather than in a window of its own. path may be relative to the workspace root; a nested
+// mount names its file relative to the file that mounts it.
+func (v *Viewer) showMount(path string) bool {
+	if v.session == nil {
+		return false
+	}
+	var want string
+	if filepath.IsAbs(path) {
+		want = realPath(path)
+	} else {
+		want = realPath(filepath.Join(v.root, filepath.FromSlash(path)))
+	}
+	var walk func(e *model.Element, dir string) *model.Element
+	walk = func(e *model.Element, dir string) *model.Element {
+		if e == nil {
+			return nil
+		}
+		if e.FromFile != "" {
+			file := filepath.FromSlash(e.FromFile)
+			if !filepath.IsAbs(file) {
+				file = filepath.Join(dir, file)
+			}
+			if realPath(file) == want {
+				return e
+			}
+			dir = filepath.Dir(file)
+		}
+		for _, c := range e.Elements {
+			if f := walk(c, dir); f != nil {
+				return f
+			}
+		}
+		return nil
+	}
+	e := walk(&v.session.Root().Element, v.root)
+	if e == nil {
+		return false
+	}
+	if e != v.session.Element() {
+		v.session.SetElement(e)
+	}
+	return true
 }
 
 // realPath is p absolute with symlinks resolved, as go/scene names files.

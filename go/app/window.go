@@ -30,14 +30,15 @@ import (
 // Viewer is the window: the outline as the sidebar, the diagram of the selected element, and the
 // inspector on the right, editable through an editor.Session.
 type Viewer struct {
-	app    *g.App
-	sh     *Shell
-	win    *g.Window
-	tree   *g.TreeView
-	banner *g.LabelView
-	note   string // the note in the banner, cleared by the next action
-	view   *view.View
-	scene  *gfx.Scene
+	app        *g.App
+	sh         *Shell
+	win        *g.Window
+	tree       *g.TreeView
+	banner     *g.TextView
+	bannerCopy *g.ButtonView // the Copy button next to the banner
+	note       string        // the note in the banner, cleared by the next action
+	view       *view.View
+	scene      *gfx.Scene
 
 	*docCore
 	// conflict: the file changed on disk while the document had unsaved edits and the edits were kept.
@@ -254,7 +255,12 @@ func (v *Viewer) build() {
 				})),
 				v.itemsPane())),
 		g.VBox(g.Ref(&content), g.Padding(0), g.Gap(0),
-			g.Label("", g.Wrap(), g.GrowX(), g.Ref(&v.banner)),
+			g.HBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
+				g.Text(g.ID("banner"), g.Multiline(), g.ReadOnly(), g.NoBorder(), g.GrowX(),
+					g.Size(0, g.Scaled(36)), g.Ref(&v.banner)),
+				g.Button("Copy", g.Small(), g.Ref(&v.bannerCopy), g.Init(func(b *g.ButtonView) {
+					b.OnClick(func() { v.setClipboard(v.banner.Text()) })
+				}))),
 			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
 				g.Background(g.Adaptive{Light: light, Dark: dark}))),
 		v.codePane(&codePane),
@@ -267,7 +273,7 @@ func (v *Viewer) build() {
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)
-	v.banner.SetVisible(false)
+	v.showBanner(false)
 	v.win.OnClose(v.onClose)
 	v.menus()
 	v.contextMenus()
@@ -538,12 +544,19 @@ func (v *Viewer) reloadCommand() {
 // setBanner shows text in the banner in the colour of an error.
 func (v *Viewer) setBanner(text string) {
 	v.note = "" // an error takes the banner over from a note and stays
+	v.showBanner(text != "")
 	v.banner.SetText(text)
-	v.banner.SetVisible(text != "")
 	if text != "" {
 		v.banner.SetForeground(g.RGB{R: 200, G: 40, B: 40})
 	}
 	v.win.Unwrap().Layout()
+}
+
+// showBanner shows or hides the banner with its Copy button: the text of an error is selectable and can be
+// taken whole, as a message to paste elsewhere.
+func (v *Viewer) showBanner(on bool) {
+	v.banner.SetVisible(on)
+	v.bannerCopy.SetVisible(on)
 }
 
 // noteTime is how long a note about a finished action stays in the banner.
@@ -556,8 +569,8 @@ func (v *Viewer) setNote(text string) {
 	if v.app.Dark() {
 		c = g.RGB{R: 200, G: 200, B: 200}
 	}
+	v.showBanner(text != "")
 	v.banner.SetText(text)
-	v.banner.SetVisible(text != "")
 	if text != "" {
 		v.banner.SetForeground(c)
 	}
