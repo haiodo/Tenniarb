@@ -29,6 +29,8 @@ browser editor zooms with two fingers on a touch screen.
   the word longer or to name one file: a word as common as "Button" found a hundred nodes in eight files.
 + `layout` answers with estimated text metrics where the platform has no CoreGraphics, as on the Linux
   and Windows CI, instead of refusing to lay anything out: a scene without a window still has boxes.
++ A search lists a node once even when several documents mount its file: the trees of two documents
+  parse that file separately, so the same library was printed under each - 31 repeats for "Avatar".
 + A search of the whole workspace lists a mounted file once, in the document that mounts it, and leaves
   out the files that have no match: 27 lines of "nothing named like" and every duplicate went away.
 + `layout` and `render {inspect}` no longer report a plate as an overlap with what is drawn on it, nor a

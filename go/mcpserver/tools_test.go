@@ -166,6 +166,20 @@ func TestFindOnceAndQuiet(t *testing.T) {
 	}
 }
 
+// TestFindOnceAcrossDocuments: a library mounted by two documents is reached through both, and each
+// node is listed once: their trees parse the same file separately, so only the position matches.
+func TestFindOnceAcrossDocuments(t *testing.T) {
+	cs := memSession(t, tempRoot(t, map[string]string{
+		"a.tenn":   "element Lib --from-file \"lib.tenn\"\nelement A {\n\tuse Lib.Button as b\n}\n",
+		"b.tenn":   "element Lib --from-file \"lib.tenn\"\nelement B {\n\tuse Lib.Button as b\n}\n",
+		"lib.tenn": "element Kit {\n\titem Button { width 10; height 10 }\n}\n",
+	}))
+	got := mustOK(t, cs, "get_state", map[string]any{"find": "Button"})
+	if n := strings.Count(got, "Button"); n != 1 {
+		t.Fatalf("Button listed %d times:\n%s", n, got)
+	}
+}
+
 // TestCallLog: a call is logged where TENNIARB_MCP_LOG says, and "off" writes nothing.
 func TestCallLog(t *testing.T) {
 	dir := t.TempDir()

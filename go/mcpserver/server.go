@@ -450,6 +450,16 @@ type finder struct {
 	depth int
 	rend  *renderers
 	count int
+	// seen is a node already listed: several documents can mount the same file, and the same node
+	// would be printed once per document.
+	seen map[nodeKey]bool
+}
+
+// nodeKey identifies a node of a file by where it starts: the trees of two documents parse the same
+// file separately, so the pointer differs and the position does not.
+type nodeKey struct {
+	file  string
+	start int
 }
 
 func (f *finder) walk(parent *scene.Node, prefix string) {
@@ -458,7 +468,9 @@ func (f *finder) walk(parent *scene.Node, prefix string) {
 			continue
 		}
 		p := prefix + keyOf(n)
-		if strings.Contains(strings.ToLower(keyOf(n)), f.q) {
+		at := nodeKey{n.Pos.File, n.Range.Start}
+		if strings.Contains(strings.ToLower(keyOf(n)), f.q) && !f.seen[at] {
+			f.seen[at] = true
 			if f.count++; f.count <= maxFound {
 				writeNode(f.b, n, p, 1, f.rend)
 				f.b.WriteString("\n")
@@ -511,6 +523,7 @@ func (s *Server) state(in getStateIn) (string, error) {
 	}
 	var b strings.Builder
 	b.WriteString(stateHead)
+	seen := map[nodeKey]bool{}
 	for _, rel := range files {
 		es, tree, err := s.diagnose(rel)
 		if err != nil {
@@ -579,7 +592,7 @@ func (s *Server) state(in getStateIn) (string, error) {
 			b.WriteString(sec.String())
 			continue
 		}
-		fd := finder{b: &sec, q: strings.ToLower(in.Find), depth: in.Depth, rend: rend}
+		fd := finder{b: &sec, q: strings.ToLower(in.Find), depth: in.Depth, rend: rend, seen: seen}
 		fd.walk(from, prefix)
 		switch {
 		case fd.count > maxFound:
