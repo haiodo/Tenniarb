@@ -31,7 +31,7 @@ func NewHost() *Host { return NewHostIn(comments.ConfigDir()) }
 
 // NewHostIn is NewHost with the comments in the folder config/comments.
 func NewHostIn(config string) *Host {
-	h := &Host{cache: treeCache{entries: map[cacheKey]*cacheEntry{}}, live: newRegistry()}
+	h := &Host{cache: treeCache{entries: map[cacheKey]*cacheEntry{}, budget: cacheBudget()}, live: newRegistry()}
 	h.presence = newPresenceHub(h.sendPresence)
 	h.comments = newCommentHub(comments.NewStore(comments.DirIn(config)), h.live)
 	return h
@@ -67,9 +67,23 @@ func (h *Host) Session(root string) (*Server, error) {
 	return s, nil
 }
 
-// maxTrees bounds the cache; the least recently used tree goes first. Ceiling: a count, not bytes,
-// so a few huge diagrams can hold a lot of memory; switch to summed source sizes if that bites.
-const maxTrees = 32
+// cacheBudget is what the cache may hold, in bytes of loaded trees; TENNIARB_TREE_CACHE_MB sets it, in
+// megabytes. A count of trees said nothing about memory: 32 trees of a 1.7 MB workspace are 800 MB.
+func cacheBudget() int64 {
+	mb := int64(defaultCacheMB)
+	if s := os.Getenv("TENNIARB_TREE_CACHE_MB"); s != "" {
+		if n, err := strconv.ParseInt(s, 10, 64); err == nil && n > 0 {
+			mb = n
+		}
+	}
+	return mb << 20
+}
+
+const defaultCacheMB = 192
+
+// loadFactor is the memory a loaded tree takes per byte of its source: a workspace of 1.7 MB loads into
+// 25 MB of nodes, measured with go/scene on PlatformDesign.tenn.
+const loadFactor = 15
 
 type cacheKey struct{ root, rel string }
 
@@ -78,12 +92,26 @@ type cacheEntry struct {
 	diags scene.Errors      // copied at load: Build appends to the tree's own list
 	deps  map[string]string // rel -> stamp of every file the tree read
 	used  uint64
+	size  int64 // source bytes of the tree, times loadFactor
 }
 
 type treeCache struct {
 	mu      sync.Mutex
 	entries map[cacheKey]*cacheEntry
 	clock   uint64
+	size    int64 // of the entries, by their size
+	budget  int64
+}
+
+// treeSize estimates what a loaded tree holds: its source bytes times what a byte of source grows into.
+func treeSize(tree *scene.Tree) int64 {
+	var n int64
+	for _, f := range tree.Files() {
+		if src, ok := tree.Source(f); ok {
+			n += int64(len(src))
+		}
+	}
+	return n * loadFactor
 }
 
 // stamp identifies the content of rel: the version of the open document, or size and mtime on disk.
@@ -120,26 +148,36 @@ func (c *treeCache) get(root, rel string, overlay map[string]liveDoc) (*cacheEnt
 }
 
 // put caches a tree without errors. A tree with errors is never cached: a missing mounted file that
-// appears later would not change any stamp.
+// appears later would not change any stamp. The least recently used trees go first when the budget is
+// spent; the one just cached stays even when it is over it alone.
 func (c *treeCache) put(root, rel string, tree *scene.Tree, deps map[string]string) *cacheEntry {
-	e := &cacheEntry{tree: tree, diags: append(scene.Errors(nil), tree.Diagnostics()...), deps: deps}
+	e := &cacheEntry{tree: tree, diags: append(scene.Errors(nil), tree.Diagnostics()...), deps: deps, size: treeSize(tree)}
 	if e.diags.Fatal() {
 		return e
 	}
+	k := cacheKey{root, rel}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.clock++
 	e.used = c.clock
-	c.entries[cacheKey{root, rel}] = e
-	for len(c.entries) > maxTrees {
+	if old, ok := c.entries[k]; ok {
+		c.size -= old.size
+	}
+	c.entries[k] = e
+	c.size += e.size
+	for c.size > c.budget && len(c.entries) > 1 {
 		var oldK cacheKey
 		var oldE *cacheEntry
 		for k, v := range c.entries {
+			if v == e {
+				continue
+			}
 			if oldE == nil || v.used < oldE.used {
 				oldK, oldE = k, v
 			}
 		}
 		delete(c.entries, oldK)
+		c.size -= oldE.size
 	}
 	return e
 }

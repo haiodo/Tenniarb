@@ -5,11 +5,13 @@ package app
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 const leanDoc = "element \"S\" {\n  item A { pos 0 0; width 40; item B { title Hi } }\n}\nelement \"T\" {\n  item C { pos 1 1; item E { width 3 } }\n}\n"
@@ -57,6 +59,27 @@ func TestLeanTextEditUndoRedoRoundTrip(t *testing.T) {
 	for i := len(steps) - 1; i >= 0; i-- {
 		v.session.Undo()
 		check("undo again", i)
+	}
+}
+
+// The element path of the scene tree is the one of the parser, for every range of a text with nested
+// elements, items and a template: the edit takes it from the tree instead of parsing the text again.
+func TestElementIndexFromScene(t *testing.T) {
+	const doc = "element \"S\" {\n  item A { pos 0 0; item B { title Hi } }\n  element \"N\" { item C { } }\n}\n" +
+		"element \"T\" { item D { template { element \"X\" { } } } }\n" +
+		"element \"I\" { item E { element \"F\" { } } }\n"
+	v := newDoc(t, &Shell{}, "", doc)
+	if v.stree == nil {
+		t.Fatal("the document has no scene tree")
+	}
+	ast, _ := tenn.Parse(doc)
+	for start := 0; start < len(doc); start += 5 {
+		for end := start; end <= len(doc); end += 7 {
+			want, got := elementIndexAt(ast, start, end), v.elementIndexAt(start, end)
+			if !slices.Equal(got, want) {
+				t.Fatalf("range %d..%d: scene gives %v, the parser %v", start, end, got, want)
+			}
+		}
 	}
 }
 

@@ -151,6 +151,10 @@ func (d *docCore) sessionChanged() {
 // loadScene reads the scene tree anew, with the unsaved text of the other open documents.
 func (d *docCore) loadScene() {
 	d.stree, d.sceneErr, d.libs, d.entry = nil, "", nil, ""
+	// Taken here, not where it is used: a document that stops being a scene would otherwise keep the tree
+	// of the last edit for good.
+	pending := d.pending
+	d.pending = nil
 	keep := d.keep
 	d.keep = nil
 	if d.kind == model.DocDiagram || d.session == nil {
@@ -162,12 +166,11 @@ func (d *docCore) loadScene() {
 	overlay[rel] = d.text
 	var tree *scene.Tree
 	var err error
-	if p := d.pending; p != nil && maps.Equal(p.overlay, overlay) {
-		tree = p.tree
+	if pending != nil && maps.Equal(pending.overlay, overlay) {
+		tree = pending.tree
 	} else {
 		tree, err = loadAuto(d.root, rel, overlay)
 	}
-	d.pending = nil
 	if tree == nil {
 		d.sceneErr = errString(err)
 		d.mounts = nil
@@ -500,18 +503,52 @@ func (d *docCore) applyText(start, end int, repl string) error {
 		e := p.Errors.Errors[0]
 		return fmt.Errorf("%d:%d: %s", e.Line+1, e.Col, e.Message)
 	}
-	before, _ := tenn.Parse(d.text)
+	idxOld := d.elementIndexAt(start, end)
 	op := &textEditOp{OpBase: model.OpBase{Store: d.session.Store(), UndoCalled: true}, d: d, after: after}
 	if d.kind == model.DocScene {
 		// No classic step holds the objects a swap would keep alive: remember the splice, not the trees.
 		op.lean, op.fresh, op.start = true, true, start
 		op.oldText, op.newText = strings.Clone(d.text[start:end]), strings.Clone(repl)
-		op.idxOld, op.idxNew = elementIndexAt(before, start, end), elementIndexAt(ast, start, start+len(repl))
+		op.idxOld, op.idxNew = idxOld, elementIndexAt(ast, start, start+len(repl))
 	} else {
 		op.before = d.text
 	}
-	op.plan(&d.session.Root().Element, model.ParseTenn(ast), elementIndexAt(before, start, end))
+	op.plan(&d.session.Root().Element, model.ParseTenn(ast), idxOld)
 	return d.session.Execute(op)
+}
+
+// elementIndexAt is the path of the innermost element that holds [start, end) of the document text. The
+// loaded scene tree numbers the element commands of a block as the parser does, so it answers without a
+// second parse; a document with no scene tree, a diagram, is parsed.
+func (d *docCore) elementIndexAt(start, end int) []int {
+	if n := d.file(); n != nil {
+		if src, ok := d.stree.Source(d.rel()); ok && src == d.text {
+			return elementIndexIn(n, start, end)
+		}
+	}
+	ast, _ := tenn.Parse(d.text)
+	return elementIndexAt(ast, start, end)
+}
+
+// elementIndexIn is elementIndexAt over the scene nodes of a loaded file.
+func elementIndexIn(n *scene.Node, start, end int) []int {
+	var path []int
+	for {
+		var next *scene.Node
+		k := 0
+		for _, e := range n.Elems {
+			if start > e.Body.Start && end < e.Body.End {
+				next = e
+				break
+			}
+			k++
+		}
+		if next == nil {
+			return path
+		}
+		path = append(path, k)
+		n = next
+	}
 }
 
 // diffRange is the length of the common prefix and of the common suffix after it.
