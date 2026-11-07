@@ -78,6 +78,7 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `layout` | `left`, `right` | aligns the lines of a leaf with a width; default centered |
 | `color` | color, or `linear ANGLE COLOR [POS] COLOR [POS] ...`; `none` is transparent | fill; the gradient angle is CSS: 0 up, 90 right, 180 down; positions 0..1 on every stop or on none |
 | `border-color`, `line-width` | color, number | frame; `line-width` alone draws nothing |
+| `line-style` | `solid`, `dashed`, `dotted` | the frame of an item and the line of a `link`; default solid |
 | `corner-radius` | `N` or `TL TR BR BL` | |
 | `shadow` | `DX DY [BLUR [COLOR]]` | drop shadow of the box (of the border without `color`); Y points up, so `shadow 0 -4 8` falls down; blur 5 and black at 1/3 by default |
 | `clip` | `yes` | children are cut at the box |

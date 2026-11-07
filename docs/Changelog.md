@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* `line-style dashed|dotted` draws the border of a scene item and the line of a `link` dashed, as it does
+  on a classic diagram; before, the scene ignored it and every frame was solid.
 * Font files of `<config>/fonts` and of every `TENNIARB_FONTS` path are registered for the process at
   start, so a document names its own family (`font-family Manrope`) without a system install.
 * MCP `design` and `refactor` refuse changes made from an outdated document snapshot instead of

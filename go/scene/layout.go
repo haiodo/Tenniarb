@@ -265,7 +265,7 @@ func (p *prep) links(parent *RNode) {
 			continue
 		}
 		p.ends[k] = [2]*RNode{a, b}
-		p.linkStyle(k)
+		_, _ = p.linkStyle(k) // a bad line-style or colour is reported here, not while drawing
 	}
 }
 

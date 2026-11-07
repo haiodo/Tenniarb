@@ -347,7 +347,7 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			inner[i] = math.Max(inner[i]-in, 0)
 		}
 		edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
-		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10}
+		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10, Dash: st.dash, DashPhase: st.dashPhase}
 		if sh != nil { // no fill: the border casts the shadow
 			r.StrokeShadowPath(edge, line, st.border, *sh)
 		} else {
@@ -410,15 +410,15 @@ func (b *builder) link(lk *RNode, node *gfx.Node) {
 	from, to := edgePoint(pa, a, pc), edgePoint(pc, c, pa)
 	ln := b.node()
 	b.tx.Add(node, ln)
-	col, width := b.p.linkStyle(lk)
+	col, stroke := b.p.linkStyle(lk)
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
 	path := &gfx.Path{}
 	path.MoveTo(from.X, from.Y)
 	path.LineTo(to.X, to.Y)
-	r.StrokePath(path, gfx.StrokeStyle{Width: width, MiterLimit: 10}, col)
+	r.StrokePath(path, stroke, col)
 	if pr := b.p.prop(lk, "display"); pr != nil {
 		if s, _ := pr.text(0); s == "arrow" {
-			r.FillPath(arrowHead(from, to, 6+width), col)
+			r.FillPath(arrowHead(from, to, 6+stroke.Width), col)
 		}
 	}
 	b.tx.SetPicture(ln, r.Finish())
@@ -455,6 +455,8 @@ type style struct {
 	grad               *gradient   // set by color linear ...; fill is then its first visible stop
 	shadow             *gfx.Shadow // nil without shadow
 	lineW              float64
+	dash               []float64 // line-style dashed or dotted; nil is a solid line
+	dashPhase          float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
 	clip               bool
 	opacity            float64
@@ -500,6 +502,7 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	if v, ok := p.num(rn, "line-width"); ok {
 		st.lineW = v
 	}
+	st.dash, st.dashPhase = p.dash(rn)
 	if pr := p.prop(rn, "corner-radius"); pr != nil {
 		st.radius = p.radii(pr)
 	}
@@ -516,12 +519,33 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	return st
 }
 
-func (p *prep) linkStyle(lk *RNode) (gfx.Color, float64) {
-	w := 1.0
+func (p *prep) linkStyle(lk *RNode) (gfx.Color, gfx.StrokeStyle) {
+	st := gfx.StrokeStyle{Width: 1, MiterLimit: 10}
 	if v, ok := p.num(lk, "line-width"); ok {
-		w = v
+		st.Width = v
 	}
-	return p.color(lk, "color", black), w
+	st.Dash, st.DashPhase = p.dash(lk)
+	return p.color(lk, "color", black), st
+}
+
+// dash reads line-style: the dashes the renderer of a classic diagram uses, so a border and a link look
+// the same in both.
+func (p *prep) dash(rn *RNode) ([]float64, float64) {
+	pr := p.prop(rn, "line-style")
+	if pr == nil {
+		return nil, 0
+	}
+	s, _ := pr.text(0)
+	switch s {
+	case "dashed":
+		return []float64{5, 5}, 5
+	case "dotted":
+		return []float64{1, 4}, 1
+	case "solid":
+		return nil, 0
+	}
+	p.t.warn(pr.Pos, "line-style takes solid, dashed or dotted, got %q", s)
+	return nil, 0
 }
 
 // radii reads corner-radius: one value for all corners or four in CSS order; anything else uses the first value.
