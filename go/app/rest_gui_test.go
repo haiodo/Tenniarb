@@ -259,7 +259,7 @@ func TestSceneMoveNodes(t *testing.T) {
 	tree := a.Find(qa.ID("items"))
 	tree.RightClickAt(float64(row.Box[0]+20), float64(row.Box[1]+row.Box[3]/2))
 	restWait(a)
-	a.Find(qa.Text("Move Down").In(qa.ID("items"))).Click()
+	a.Find(qa.Text("Down").In(qa.ID("items"))).Click()
 	restWait(a)
 	if got := text(); !order(got, "item B {", "item A {") {
 		t.Fatalf("row menu Move Down:\n%s", got)

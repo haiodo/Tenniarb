@@ -293,9 +293,7 @@ func bannerTexts(a *qatest.Client) []string {
 	var walk func([]qa.Node)
 	walk = func(list []qa.Node) {
 		for _, n := range list {
-			if n.Text != "" {
-				out = append(out, n.Text)
-			}
+			out = append(out, n.Text, n.Value)
 			walk(n.Children)
 		}
 	}
