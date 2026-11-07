@@ -217,3 +217,14 @@ func TestOwnAutoLayoutPaddingInsetsLeafText(t *testing.T) {
 	wantBox(t, m, "Col.Ignored", 0, 0, 11, 19) // font 18: ceil(10.8), ceil(18 * 1.05)
 	wantBox(t, m, "Col.Own", 0, 19, 27, 35)    // plus 2 * 8 on each axis
 }
+
+// A bare title with spaces is several arguments, and only the first used to be drawn.
+func TestTitleWithSpacesRejected(t *testing.T) {
+	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { title Sign in } }`)
+	if err == nil || !strings.Contains(err.Error(), `title takes one value; quote a text with spaces: title "Sign in"`) {
+		t.Fatalf("error %v", err)
+	}
+	if !strings.Contains(err.Error(), "a.tenn:1:24") {
+		t.Errorf("the error does not point at the title: %v", err)
+	}
+}

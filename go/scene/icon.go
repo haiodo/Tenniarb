@@ -43,6 +43,7 @@ type icon struct {
 	path           *gfx.Path
 	vx, vy, vw, vh float64
 	fill, stroke   gfx.Color
+	grad           *gradient // set by color linear ...; fill is then its first visible stop
 }
 
 // hidden reports an item that is out of the layout and the drawing.
@@ -82,7 +83,7 @@ func (p *prep) icon(rn *RNode, n *layout.Node) {
 	if !hasFill && !hasStroke {
 		ic.fill = p.styles[rn].text // the colour of the text around it
 	} else {
-		ic.fill = p.color(rn, "color", gfx.Color{})
+		ic.fill, ic.grad = p.fill(rn, gfx.Color{})
 		ic.stroke = p.color(rn, "border-color", gfx.Color{})
 	}
 	if v, ok := p.word(rn, "fill-rule", "evenodd", "nonzero"); ok {
@@ -112,7 +113,11 @@ func (ic *icon) draw(r *gfx.Recorder, w, h, lineW float64) {
 	m := gfx.Affine{s, 0, 0, s, (w-ic.vw*s)/2 - ic.vx*s, (h-ic.vh*s)/2 - ic.vy*s}
 	g := ic.path.Transform(m)
 	if ic.fill.A > 0 {
-		r.FillPath(g, ic.fill)
+		if ic.grad != nil {
+			r.FillGradient(g, ic.grad.at(w, h))
+		} else {
+			r.FillPath(g, ic.fill)
+		}
 	}
 	if lineW > 0 && ic.stroke.A > 0 {
 		r.StrokePath(g, gfx.StrokeStyle{Width: lineW, MiterLimit: 10}, ic.stroke)

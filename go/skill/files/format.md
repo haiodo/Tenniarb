@@ -84,6 +84,9 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `opacity` | 0..1 | multiplies down the subtree |
 | `hidden` | `yes` | not laid out, not drawn |
 | `path`, `view-box`, `fill-rule` | SVG path data, 4 numbers, `evenodd` | an icon leaf: `color` fills, `border-color` strokes |
+| `image` | path `"assets/photo.png"` | a picture file as the content of the box; `corner-radius` and `clip` cut it |
+| `fit` | `fill` (default), `cover`, `contain` | `cover` fills the box and crops the middle; `contain` fits it all inside |
+| `rotate` | degrees | static turn clockwise about the center of the box |
 | `pos` | X Y | top left corner of a root item; Y points up |
 | `width`, `height`, `gap`, `padding`, ... | | auto-layout, see `layout.md` |
 
@@ -121,6 +124,38 @@ element "Bits" {
 ```
 
 A leaf with a fixed or `fill` width wraps its text at spaces; without a width it is one line.
+
+## Pictures
+
+A photo, a screenshot or a logo is an item with `image`: the file is the content of the box, and
+`corner-radius`, `clip`, `opacity` and `hidden` work as for any item.
+
+```tenn
+item Hero {
+  width 1800; height 1335
+  image "assets/video-bg.png" fit cover
+  corner-radius 24
+}
+item Row {
+  auto-layout row
+  gap 16
+  item Avatar { width 70; height 70; image "assets/ul.jpg" fit cover; corner-radius 35 }
+  item Shot { width 300; height 190; image "shots/tracker.png" fit contain; color #f4f4f5 }
+  item Disc { width 120; height 120; image "img/disc.webp" fit contain; rotate -20 }
+}
+```
+
+- The path is relative to the `.tenn` file that writes the property, as with `element --from-file`, and
+  may not leave the workspace root. PNG, JPEG, GIF and WebP are read; a missing file or another format
+  (AVIF) is a `check` warning and the item is drawn empty - it is not an error, so build the rest.
+- `fit fill` (default) stretches into the box, `cover` fills it and cuts the middle (photos, avatars),
+  `contain` fits all of it inside (logos, screenshots with an edge), with empty bands.
+- Write it as `image "a.png" fit cover` or as two commands `image "a.png"; fit cover`.
+- No `width`/`height` gives the item the size of the file in pixels.
+- An item with `image` has no default fill and no border: `color` and `border-color` turn them back on.
+- The whole screen can be a picture: `element "Landing" { width 1440; height 900; image "bg.png" fit cover }`.
+- `rotate` is degrees clockwise about the middle of the box; it draws only, the layout keeps the upright
+  box. Do not use it to fake a layout rotation.
 
 ## Text blocks: `body`
 

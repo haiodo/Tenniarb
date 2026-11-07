@@ -3,6 +3,7 @@ package mcpserver
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -33,6 +34,7 @@ func TestSkillExamples(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			root := t.TempDir()
+			skillPictures(t, root)
 			var written []string
 			for i, b := range blocks {
 				rel := fmt.Sprintf("%s-%d.tenn", strings.TrimSuffix(name, ".md"), i+1)
@@ -56,6 +58,25 @@ func TestSkillExamples(t *testing.T) {
 				checkSkillFile(t, srv, rel)
 			}
 		})
+	}
+}
+
+// skillPictures writes the picture files the `image` examples of the skill name: a block of tenn text
+// cannot carry a raster, and a missing file is a warning.
+func skillPictures(t *testing.T, root string) {
+	t.Helper()
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, image.NewNRGBA(image.Rect(0, 0, 8, 6))); err != nil {
+		t.Fatal(err)
+	}
+	for _, rel := range []string{"assets/video-bg.png", "assets/ul.jpg", "shots/tracker.png", "img/disc.webp"} {
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, buf.Bytes(), 0o644); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 

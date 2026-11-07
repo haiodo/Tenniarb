@@ -239,6 +239,9 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 	b.made[rn] = node
 	b.tx.Add(parent, node)
 	b.tx.Move(node, ln.RX, ln.RY)
+	if deg := b.p.rotation(rn); deg != 0 {
+		b.tx.SetTransform(node, turn(ln.RX, ln.RY, ln.RW, ln.RH, deg))
+	}
 	if !isRoot {
 		st := b.p.styles[rn]
 		if pic := b.picture(rn, ln, st); pic != nil {
@@ -250,6 +253,11 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 		if st.clip {
 			b.clip(node, ln, st.radius)
 		}
+	} else if im := b.p.images[rn]; im != nil {
+		// The root of a screen is otherwise a bare container; a picture there is the whole screen.
+		r := gfx.NewRecorderWith(b.p.opts.Measurer)
+		b.image(r, im, ln.RW, ln.RH, b.p.radiiOf(rn))
+		b.tx.SetPicture(node, r.Finish())
 	}
 	for _, k := range rn.Kids {
 		switch k.Kind {
@@ -270,6 +278,14 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 		b.tx.SetPicture(body, r.Finish())
 	}
 	return node
+}
+
+// image draws the picture of an item. The file is read here, at the build of a screen that is drawn,
+// not at the layout of every element of the workspace.
+func (b *builder) image(r *gfx.Recorder, im *itemImage, w, h float64, radius [4]float64) {
+	if img := im.raster(b.p); img != nil {
+		drawImage(r, img, im.fit, w, h, radius)
+	}
 }
 
 func (b *builder) clip(node *gfx.Node, ln *layout.Node, radius [4]float64) {
@@ -319,6 +335,9 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			r.FillPath(shape, st.fill)
 		}
 		sh = nil
+	}
+	if im := b.p.images[rn]; im != nil {
+		b.image(r, im, w, h, st.radius)
 	}
 	if st.lineW > 0 && st.border.A > 0 {
 		in := st.lineW / 2
@@ -465,7 +484,9 @@ func (p *prep) color(rn *RNode, name string, def gfx.Color) gfx.Color {
 func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	st := style{lineW: 1, opacity: 1}
 	fill, border := white, black
-	if inCtx {
+	if inCtx || fileImage(rn.prop("image")) {
+		// A picture is the content of the box: the white default would show through a transparent PNG,
+		// and the black frame around every photo is not what a box of content draws.
 		fill, border = gfx.Color{}, gfx.Color{}
 	}
 	st.fill, st.grad = p.fill(rn, fill)

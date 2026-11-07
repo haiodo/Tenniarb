@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+A scene item can draw a raster picture from a file and be turned still: the two things a landing page
+rebuilt in `.tenn` needs for its 55 screenshots and its tilted disc.
+
+* `image "assets/photo.png"` on an item or on the root of an element puts a PNG, JPEG, GIF or WebP file
+  into the box: `fit fill|cover|contain`, `corner-radius` and `clip` cut it, `opacity` and `hidden` work
+  as before. `fit` reads on the same command after the path and as a command of its own. The path is
+  relative to the file that writes it and may not leave the workspace; a missing file or an unreadable
+  format (AVIF) is a warning and an empty item, so `check` and `validate` still pass. Decoded pictures
+  are cached by path, size and mtime in a 512 MiB LRU, so a rebuild does not read them again.
+* `rotate -20` on an item turns it by degrees clockwise about the middle of its box, picture or shape
+  alike; the scene bounds follow the turned box, the auto-layout does not.
+* An element root honours `width` and `height` now: they size the screen, and a root with no size takes
+  the size of its picture.
+* The classic `image <name> <base64>` of a diagram is unchanged.
+* A bare `title` with spaces is an error that names the fix (`title "Sign in"`) instead of drawing only the
+  first word.
+* `color linear` on a `path` leaf fills the shape with the gradient, as on any other item, instead of the
+  `"linear" is not a color` warning.
+
 An agent's edit of a library comes into view where the library is shown, a click stops on the component
 instead of falling into its parts, and there is a way to the place a component is defined.
 

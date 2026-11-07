@@ -54,6 +54,7 @@ type prep struct {
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
 	icons   map[*RNode]*icon
+	images  map[*RNode]*itemImage // an item or a root that draws a picture file
 	anim    map[*RNode]*Animation // the animation a node plays (spec 13)
 	eval    evalFunc              // Options.Eval or EvalVars; nil: no expression runs
 	evals   map[evalKey]*Prop     // a property with an expression -> its evaluated copy, nil if it failed
@@ -88,7 +89,7 @@ func newPrep(t *Tree, o Options) *prep {
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
 		bodies: map[*RNode]*bodyText{}, bodyAt: map[*RNode]*layout.Node{}, styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
-		anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
+		images: map[*RNode]*itemImage{}, anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
 
 // root is the layout of an element: its content at their own positions.
@@ -97,6 +98,26 @@ func (p *prep) root(rn *RNode) *layout.Node {
 	p.animations(rn, nil) // before the layout: the first frame of an animation is part of the picture
 	n := &layout.Node{Dir: layout.Abs, Tag: rn}
 	p.frames[rn] = n
+	// The root sizes the screen: a number is its box, and a picture with no number written gives its own
+	// size, so a screen can be one image.
+	im := p.loadImage(rn)
+	if im != nil {
+		p.images[rn] = im
+	}
+	if pr := p.prop(rn, "width"); pr != nil {
+		if v, ok := pr.num(0); ok {
+			n.W = layout.Fixed(v)
+		}
+	} else if im != nil {
+		n.W = layout.Fixed(float64(im.w))
+	}
+	if pr := p.prop(rn, "height"); pr != nil {
+		if v, ok := pr.num(0); ok {
+			n.H = layout.Fixed(v)
+		}
+	} else if im != nil {
+		n.H = layout.Fixed(float64(im.h))
+	}
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
 			n.Kids = append(n.Kids, p.item(k, false, black))
@@ -263,6 +284,17 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 		n.Y = 0 - y
 	}
 	n.W, n.H = p.size(rn, "width", inCtx, parentAuto), p.size(rn, "height", inCtx, parentAuto)
+	if im := p.loadImage(rn); im != nil {
+		p.images[rn] = im
+		// A picture with no size written takes its own pixels as the size.
+		iw, ih := float64(im.w), float64(im.h)
+		if p.prop(rn, "width") == nil {
+			n.W = layout.Fixed(iw)
+		}
+		if p.prop(rn, "height") == nil {
+			n.H = layout.Fixed(ih)
+		}
+	}
 	if inCtx {
 		p.limits(rn, n)
 		n.Absolute = p.flag(rn, "absolute")
@@ -521,6 +553,11 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	}
 	if pr := p.prop(rn, "title"); pr != nil {
 		title, _ = pr.text(0)
+		// A bare text with spaces is several arguments, and only the first would be drawn: name the
+		// mistake instead of dropping the words.
+		if len(pr.Args) > 1 {
+			p.t.fail(pr.Pos, `title takes one value; quote a text with spaces: title "Sign in"`)
+		}
 	}
 	if title == "" {
 		return nil

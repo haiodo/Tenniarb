@@ -122,3 +122,14 @@ func TestGradientOnlyInFill(t *testing.T) {
 		t.Errorf("warnings %v, svg:\n%s", s.Warnings, svg)
 	}
 }
+
+// A path leaf fills with the gradient too: `color linear` is the documented colour of any item.
+func TestGradientOnPath(t *testing.T) {
+	s, svg := buildSrc(t, paintSrc(`item "Star" { width 24; height 24; view-box 0 0 24 24; path "M12 2l3 7h7l-6 5 2 8-6-4-6 4 2-8-6-5h7z"; color linear 90 #ff0000 0 #0000ff 1 }`))
+	if len(s.Warnings) != 0 {
+		t.Errorf("warnings: %v", s.Warnings)
+	}
+	if !strings.Contains(svg, "linearGradient") || !strings.Contains(svg, `fill="url(#`) {
+		t.Errorf("the gradient of the path is not drawn:\n%s", svg)
+	}
+}
