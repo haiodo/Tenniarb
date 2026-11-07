@@ -448,7 +448,7 @@ func (v *Viewer) screenSizeEntries() []editor.Entry {
 
 // sceneEntries are the canvas menu of a scene: the commands of the selected node, the screens.
 func (v *Viewer) sceneEntries() []editor.Entry {
-	var out []editor.Entry
+	out := []editor.Entry{{Label: "Attach image...", Run: v.attachSceneImage}, {Sep: true}}
 	if len(v.selNodes) > 0 {
 		out = append(out,
 			editor.Entry{Label: "Duplicate", Run: v.duplicateScene},

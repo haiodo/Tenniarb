@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* "Attach image..." is on the canvas menu of a scene: the picture goes in as `image "path"`, a file
+  from the workspace is linked, one from elsewhere is copied into `assets/` beside the document, and
+  with nothing selected it becomes a new item.
+* `shadow` may be written more than once on an item: every command is its own layer, so a soft shadow
+  is a wide faint pass under a tight one instead of a single blur that only gets bigger.
 * `link ... { route elbow top right }` draws a connector orthogonally: it leaves and enters the named
   sides with rounded corners, and the links that share a side spread along it, so a hub with satellites
   needs one link per tile instead of hand-placed paths.
