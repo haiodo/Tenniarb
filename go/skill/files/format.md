@@ -90,6 +90,11 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `pos` | X Y | top left corner of a root item; Y points up |
 | `width`, `height`, `gap`, `padding`, ... | | auto-layout, see `layout.md` |
 
+**Fonts.** `font-family` names a face of the machine. The files of `<config>/fonts` (on macOS
+`~/Library/Application Support/Tenniarb/fonts`) and of every path in `TENNIARB_FONTS` - a file or a
+folder, separated as `PATH` is - are registered for the process at start, so a document can ship its
+own `.ttf`/`.otf` instead of asking the user to install anything. Web fonts (`.woff2`) are not read.
+
 **Inheritance.** `text-color` and the font (`font-family`, `font-size`, `font-weight`, `font-style`,
 `letter-spacing`) come from the nearest box above that sets them; a text colour with no such box is the
 contrast to the box's own fill, and an icon with no `color`/`border-color` is filled with the text colour

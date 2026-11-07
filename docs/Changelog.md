@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Font files of `<config>/fonts` and of every `TENNIARB_FONTS` path are registered for the process at
+  start, so a document names its own family (`font-family Manrope`) without a system install.
 * MCP `design` and `refactor` refuse changes made from an outdated document snapshot instead of
   overwriting edits made by the user while the operation was being prepared. `refactor` also refuses
   files whose application has moved to a newer service.

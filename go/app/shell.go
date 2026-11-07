@@ -73,6 +73,7 @@ func Run(args []string) error { return RunIn(ConfigDir(), args) }
 // RunIn is Run with the files of the application in dir.
 func RunIn(dir string, args []string) error {
 	g.SetAppName("Tenniarb")
+	registerFonts(dir)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	return g.Run(func(app *g.App) {
