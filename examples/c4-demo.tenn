@@ -1,0 +1,361 @@
+element "c4" --from-file "../libraries/c4.tenn"
+
+element "Gallery" {
+    item Canvas {
+        auto-layout column
+        gap 20
+        padding 28
+        width 1160
+        color #F5F7FA
+
+        use c4.Title as t { title "C4 kit"; subtitle "every shape and variant of libraries/c4.tenn" }
+
+        item Shapes {
+            auto-layout row
+            gap 18
+            align start
+            use c4.Person as p { title Customer; technology "external user"; description "Books and pays" }
+            use c4.SoftwareSystem as s { title "CRM Platform"; technology SaaS; description "Deals, contacts, billing" }
+            use c4.Container as c { title API; technology "Go 1.24"; description "REST and gRPC" }
+            use c4.Component as k { title "Deal Service"; technology Go; description "Deal pipeline" }
+        }
+
+        item Stores {
+            auto-layout row
+            gap 18
+            align start
+            use c4.Database as d { title "CRM DB"; technology "PostgreSQL 16" }
+            use c4.Queue as q { title events; technology Kafka }
+            use c4.ExternalSystem as e { title "Email Gateway"; technology SMTP }
+        }
+
+        item Extras {
+            auto-layout row
+            gap 18
+            align start
+            use c4.SoftwareSystem as custom {
+                title "Custom icon"
+                icon "M12 2l3 7h7l-6 5 2 8-6-4-6 4 2-8-6-5h7z"
+            }
+            use c4.Person as plain { title "No icon"; icon "" }
+            use c4.SoftwareSystem as body {
+                title "With body"
+                slot body {
+                    item Note { title "slot body accepts any nodes"; font-size 11 }
+                }
+            }
+        }
+
+        item Boundaries {
+            auto-layout row
+            gap 18
+            align start
+            use c4.Boundary as b1 {
+                title "Enterprise · Acme"
+                type enterprise
+                slot body {
+                    use c4.SoftwareSystem as bs { title CRM }
+                }
+            }
+            use c4.Boundary as b2 {
+                title "CRM Platform"
+                type system
+                slot body {
+                    use c4.Container as bc { title API }
+                }
+            }
+            use c4.Boundary as b3 {
+                title "API container"
+                type container
+                slot body {
+                    use c4.Component as bk { title "Deal Service" }
+                }
+            }
+            use c4.Boundary as b4 {
+                title "Deal Service"
+                type component
+                slot body {
+                    use c4.Component as bk2 { title Repo }
+                }
+            }
+        }
+
+        item Relations {
+            auto-layout row
+            gap 18
+            align center
+            use c4.Relation as r1 { label "uses [HTTPS]"; direction right }
+            use c4.Relation as r2 { label "reads [SQL]"; direction left; stroke dashed }
+            use c4.Relation as r3 { label "publishes [Kafka]"; direction down }
+            use c4.Relation as r4 { label "replies [HTTPS]"; direction up; stroke dashed }
+        }
+
+        use c4.Legend as l { }
+    }
+}
+
+element "Context" {
+    item Canvas {
+        auto-layout column
+        gap 22
+        padding 30
+        width 1080
+        color #F5F7FA
+
+        use c4.Title as head {
+            title "CRM Platform · System Context"
+            subtitle "C4 level 1 — the people who use the platform and the systems it depends on"
+        }
+
+        item Stage {
+            auto-layout column
+            gap 12
+            align center
+
+            item People {
+                auto-layout row
+                gap 60
+                align start
+                item rep {
+                    auto-layout column
+                    gap 10
+                    align center
+                    use c4.Person as p1 { title "Sales rep"; technology internal; description "Works deals and quotes" }
+                    use c4.Relation as r1 { label uses; technology "HTTPS, web UI"; direction down }
+                }
+                item customer {
+                    auto-layout column
+                    gap 10
+                    align center
+                    use c4.Person as p2 { title Customer; technology external; description "Submits and tracks requests" }
+                    use c4.Relation as r2 { label "submits requests"; technology "web form"; direction down }
+                }
+            }
+
+            use c4.Boundary as corp {
+                title "Enterprise · Acme"
+                type enterprise
+                slot body {
+                    use c4.SoftwareSystem as crm {
+                        title "CRM Platform"
+                        technology SaaS
+                        description "Deals, contacts and billing"
+                        width 360
+                    }
+                }
+            }
+
+            item Flow {
+                auto-layout row
+                gap 60
+                align start
+                item f1 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d1 { label "sends notifications"; technology SMTP; direction down }
+                }
+                item f2 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d2 { label "charges cards"; technology "REST/HTTPS"; direction down }
+                }
+                item f3 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d3 { label "creates tickets"; technology REST; direction down }
+                }
+            }
+
+            item Externals {
+                auto-layout row
+                gap 60
+                align start
+                use c4.ExternalSystem as mail { title "Email Gateway"; technology SMTP; description "Delivers notifications" }
+                use c4.ExternalSystem as pay { title "Payment Provider"; technology "REST/HTTPS"; description "Charges and refunds" }
+                use c4.ExternalSystem as desk { title "Support Desk"; technology REST; description "Escalated tickets" }
+            }
+        }
+
+        use c4.Legend as legend { }
+    }
+}
+
+element "Containers" {
+    item Canvas {
+        auto-layout column
+        gap 22
+        padding 30
+        width 1080
+        color #F5F7FA
+
+        use c4.Title as head {
+            title "CRM Platform · Containers"
+            subtitle "C4 level 2 — what runs inside the platform and how it talks to the outside"
+        }
+
+        item Stage {
+            auto-layout column
+            gap 12
+            align center
+
+            item Caller {
+                auto-layout column
+                gap 10
+                align center
+                use c4.Person as rep { title "Sales rep"; technology internal; description "Uses the platform in the browser" }
+                use c4.Relation as r1 { label uses; technology "HTTPS, web UI"; direction down }
+            }
+
+            use c4.Boundary as platform {
+                title "CRM Platform"
+                type system
+                slot body {
+                    item Column {
+                        auto-layout column
+                        gap 10
+                        align center
+                        use c4.Container as web { title "Web App"; technology "React SPA"; description "Deals, contacts, reports" }
+                        use c4.Relation as r2 { label calls; technology "REST/HTTPS, JSON"; direction down }
+                        use c4.Container as api { title API; technology "Go 1.24"; description "Business rules, auth, scheduling" }
+                        item Stores {
+                            auto-layout row
+                            gap 40
+                            align start
+                            item left {
+                                auto-layout column
+                                width 220
+                                align center
+                                use c4.Relation as r3 { label "reads and writes"; technology SQL; direction down }
+                                use c4.Database as db { title "CRM DB"; technology "PostgreSQL 16"; description "Deals, contacts, invoices" }
+                            }
+                            item right {
+                                auto-layout column
+                                width 220
+                                align center
+                                use c4.Relation as r4 { label publishes; technology Kafka; direction down }
+                                use c4.Queue as queue { title events; technology Kafka; description "Deal and billing events" }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item Outbound {
+                auto-layout row
+                gap 60
+                align start
+                item f1 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d1 { label "sends notifications"; technology SMTP; direction down }
+                }
+                item f2 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d2 { label "charges cards"; technology "REST/HTTPS"; direction down }
+                }
+                item f3 {
+                    auto-layout column
+                    width 220
+                    align center
+                    use c4.Relation as d3 { label "creates tickets"; technology REST; direction down }
+                }
+            }
+
+            item Externals {
+                auto-layout row
+                gap 60
+                align start
+                use c4.ExternalSystem as mail { title "Email Gateway"; technology SMTP }
+                use c4.ExternalSystem as pay { title "Payment Provider"; technology "REST/HTTPS" }
+                use c4.ExternalSystem as desk { title "Support Desk"; technology REST }
+            }
+        }
+
+        use c4.Legend as legend { }
+    }
+}
+
+element "Components" {
+    item Canvas {
+        auto-layout column
+        gap 22
+        padding 30
+        width 1080
+        color #F5F7FA
+
+        use c4.Title as head {
+            title "API · Components"
+            subtitle "C4 level 3 — the components inside the API container and the stores they use"
+        }
+
+        item Stage {
+            auto-layout column
+            gap 12
+            align center
+
+            item Caller {
+                auto-layout column
+                gap 10
+                align center
+                use c4.Container as web { title "Web App"; technology "React SPA" }
+                use c4.Relation as r1 { label calls; technology "REST/HTTPS, JSON"; direction down }
+            }
+
+            use c4.Boundary as platform {
+                title "CRM Platform"
+                type system
+                slot body {
+                    item Column {
+                        auto-layout column
+                        gap 10
+                        align center
+                        use c4.Boundary as api {
+                            title "API · Go 1.24"
+                            type container
+                            slot body {
+                                item Parts {
+                                    auto-layout row
+                                    gap 16
+                                    align start
+                                    use c4.Component as deals { title "Deal Service"; technology Go; description "Pipeline, stages, quotes" }
+                                    use c4.Component as contacts { title "Contact Service"; technology Go; description "People and companies" }
+                                    use c4.Component as billing { title "Billing Service"; technology Go; description "Invoices and payments" }
+                                }
+                            }
+                        }
+                        item Stores {
+                            auto-layout row
+                            gap 80
+                            align start
+                            item left {
+                                auto-layout column
+                                width 220
+                                align center
+                                use c4.Relation as r2 { label "reads and writes"; technology SQL; direction down }
+                                use c4.Database as db { title "CRM DB"; technology "PostgreSQL 16" }
+                            }
+                            item right {
+                                auto-layout column
+                                width 220
+                                align center
+                                use c4.Relation as r3 { label publishes; technology Kafka; direction down }
+                                use c4.Queue as queue { title events; technology Kafka }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        use c4.Legend as legend { }
+    }
+}
+
+
+

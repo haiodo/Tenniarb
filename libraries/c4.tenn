@@ -1,0 +1,366 @@
+element "Person" {
+    kind Component
+    export let title = "Person"
+    export let technology = ""
+    export let description = ""
+    export let icon = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+
+    item Box {
+        auto-layout column
+        gap 3
+        align center
+        padding 10 14
+        width 220
+        corner-radius 6
+        color #08427B
+        item Icon { width 26; height 26; view-box 0 0 24 24; path ${icon}; color #ffffff; hidden ${icon == ""} }
+        item Name { title ${title}; font-size 15; font-weight 700; text-color #ffffff }
+        item Tech { title ${technology}; font-size 11; font-style italic; text-color #D6E6F5; hidden ${technology == ""} }
+        item Desc { title ${description}; font-size 12; text-color #E8F1FA; width fill; hidden ${description == ""} }
+        slot body
+    }
+}
+
+element "SoftwareSystem" {
+    kind Component
+    export let title = "Software System"
+    export let technology = ""
+    export let description = ""
+    export let icon = ""
+
+    item Box {
+        auto-layout column
+        gap 3
+        align center
+        padding 10 14
+        width 220
+        corner-radius 6
+        color #1168BD
+        item Icon { width 24; height 24; view-box 0 0 24 24; path ${icon}; color #ffffff; hidden ${icon == ""} }
+        item Name { title ${title}; font-size 15; font-weight 700; text-color #ffffff }
+        item Tech { title ${technology}; font-size 11; font-style italic; text-color #C6DDF5; hidden ${technology == ""} }
+        item Desc { title ${description}; font-size 12; text-color #E3EEFA; width fill; hidden ${description == ""} }
+        slot body
+    }
+}
+
+element "Container" {
+    kind Component
+    export let title = "Container"
+    export let technology = ""
+    export let description = ""
+    export let icon = ""
+
+    item Box {
+        auto-layout column
+        gap 3
+        align center
+        padding 9 13
+        width 220
+        corner-radius 6
+        color #438DD5
+        item Icon { width 20; height 20; view-box 0 0 24 24; path ${icon}; color #ffffff; hidden ${icon == ""} }
+        item Name { title ${title}; font-size 14; font-weight 700; text-color #ffffff }
+        item Tech { title ${technology}; font-size 11; font-style italic; text-color #DCEBFA; hidden ${technology == ""} }
+        item Desc { title ${description}; font-size 12; text-color #EDF5FD; width fill; hidden ${description == ""} }
+        slot body
+    }
+}
+
+element "Component" {
+    kind Component
+    export let title = "Component"
+    export let technology = ""
+    export let description = ""
+    export let icon = ""
+
+    item Box {
+        auto-layout column
+        gap 2
+        align center
+        padding 8 12
+        width 200
+        corner-radius 6
+        color #85BBF0
+        item Icon { width 18; height 18; view-box 0 0 24 24; path ${icon}; color #ffffff; hidden ${icon == ""} }
+        item Name { title ${title}; font-size 13; font-weight 700; text-color #ffffff }
+        item Tech { title ${technology}; font-size 10; font-style italic; text-color #F1F7FE; hidden ${technology == ""} }
+        item Desc { title ${description}; font-size 11; text-color #F7FBFF; width fill; hidden ${description == ""} }
+        slot body
+    }
+}
+
+element "Database" {
+    kind Component
+    export let title = "Database"
+    export let technology = ""
+    export let description = ""
+    export let icon = "M4 6a8 3 0 1 0 16 0 8 3 0 1 0-16 0 M4 6v12a8 3 0 0 0 16 0V6"
+
+    item Box {
+        auto-layout column
+        padding 0
+        width 220
+        corner-radius 8
+        color #438DD5
+        item Lid { width fill; height 14; corner-radius 7; color #6FA9E0 }
+        item Body {
+            auto-layout column
+            gap 3
+            align center
+            padding 8 13 11 13
+            width fill
+            item Icon { width 22; height 22; view-box 0 0 24 24; path ${icon}; border-color #ffffff; line-width 1.5 }
+            item Name { title ${title}; font-size 14; font-weight 700; text-color #ffffff }
+            item Tech { title ${technology}; font-size 11; font-style italic; text-color #DCEBFA; hidden ${technology == ""} }
+            item Desc { title ${description}; font-size 12; text-color #EDF5FD; width fill; hidden ${description == ""} }
+            slot body
+        }
+    }
+}
+
+element "Queue" {
+    kind Component
+    export let title = "Queue"
+    export let technology = ""
+    export let description = ""
+    export let icon = "M4 6h16v3H4z M4 11h16v2.5H4z M4 16h10v2.5H4z"
+
+    item Box {
+        auto-layout column
+        gap 3
+        align center
+        padding 9 13
+        width 220
+        corner-radius 6
+        color #438DD5
+        border-color #2E6FAE
+        line-width 1
+        item Icon { width 20; height 20; view-box 0 0 24 24; path ${icon}; color #ffffff }
+        item Name { title ${title}; font-size 14; font-weight 700; text-color #ffffff }
+        item Tech { title ${technology}; font-size 11; font-style italic; text-color #DCEBFA; hidden ${technology == ""} }
+        item Desc { title ${description}; font-size 12; text-color #EDF5FD; width fill; hidden ${description == ""} }
+        slot body
+    }
+}
+
+element "ExternalSystem" {
+    kind Component
+    export let title = "External System"
+    export let technology = ""
+    export let description = ""
+    export let icon = ""
+
+    styles {
+        dash { width fill; height 2; color #5F5F5F }
+        tick { width 2; height fill; color #5F5F5F }
+    }
+
+    item Ext {
+        auto-layout column
+        width 220
+        gap 3
+        item Top {
+            auto-layout row
+            width fill
+            gap 6
+            item d1 { use-style dash }
+            item d2 { use-style dash }
+            item d3 { use-style dash }
+            item d4 { use-style dash }
+            item d5 { use-style dash }
+            item d6 { use-style dash }
+            item d7 { use-style dash }
+            item d8 { use-style dash }
+            item d9 { use-style dash }
+            item d10 { use-style dash }
+            item d11 { use-style dash }
+        }
+        item Middle {
+            auto-layout row
+            width fill
+            gap 3
+            item Left {
+                auto-layout column
+                height fill
+                gap 6
+                item d1 { use-style tick }
+                item d2 { use-style tick }
+                item d3 { use-style tick }
+                item d4 { use-style tick }
+                item d5 { use-style tick }
+                item d6 { use-style tick }
+            }
+            item Box {
+                auto-layout column
+                gap 3
+                align center
+                padding 8 12
+                width fill
+                corner-radius 4
+                color #999999
+                item Icon { width 20; height 20; view-box 0 0 24 24; path ${icon}; color #ffffff; hidden ${icon == ""} }
+                item Name { title ${title}; font-size 15; font-weight 700; text-color #ffffff }
+                item Tech { title ${technology}; font-size 11; font-style italic; text-color #EFEFEF; hidden ${technology == ""} }
+                item Desc { title ${description}; font-size 12; text-color #F7F7F7; width fill; hidden ${description == ""} }
+                slot body
+            }
+            item Right {
+                auto-layout column
+                height fill
+                gap 6
+                item d1 { use-style tick }
+                item d2 { use-style tick }
+                item d3 { use-style tick }
+                item d4 { use-style tick }
+                item d5 { use-style tick }
+                item d6 { use-style tick }
+            }
+        }
+        item Bottom {
+            auto-layout row
+            width fill
+            gap 6
+            item d1 { use-style dash }
+            item d2 { use-style dash }
+            item d3 { use-style dash }
+            item d4 { use-style dash }
+            item d5 { use-style dash }
+            item d6 { use-style dash }
+            item d7 { use-style dash }
+            item d8 { use-style dash }
+            item d9 { use-style dash }
+            item d10 { use-style dash }
+            item d11 { use-style dash }
+        }
+    }
+}
+
+element "Boundary" {
+    kind Component
+    export let title = "Boundary"
+    export let type = system
+
+    styles {
+        enterprise { border-color #444444; line-width 1.5; line-style dashed }
+        system { border-color #707070; line-width 1.5; line-style dashed }
+        container { border-color #438DD5; line-width 1.5 }
+        component { border-color #85BBF0; line-width 1.5 }
+        type one-of enterprise system container component
+    }
+
+    item Frame {
+        auto-layout column
+        gap 8
+        padding 10 14 14 14
+        corner-radius 6
+        color none
+        border-color #707070
+        line-width 1.5
+        use-style ${type}
+        item Caption { title ${title}; font-size 12; font-weight 700; text-color #4A4A4A; layout left }
+        slot body
+    }
+}
+
+element "Relation" {
+    kind Component
+    export let label = "uses"
+    export let technology = ""
+    export let direction = right
+    export let stroke = solid
+
+    styles {
+        right { Arrow { width 44; height 12; view-box 0 0 44 12; path "M0 6H36M30 1.5L36 6L30 10.5" } }
+        left { Arrow { width 44; height 12; view-box 0 0 44 12; path "M44 6H8M14 1.5L8 6L14 10.5" } }
+        down { Arrow { width 12; height 44; view-box 0 0 12 44; path "M6 0V36M1.5 30L6 36L10.5 30" } }
+        up { Arrow { width 12; height 44; view-box 0 0 12 44; path "M6 44V8M1.5 14L6 8L10.5 14" } }
+        right-dashed { Arrow { width 44; height 12; view-box 0 0 44 12; path "M0 6H4M7 6H11M14 6H18M21 6H25M28 6H32M35 6H36M30 1.5L36 6L30 10.5" } }
+        left-dashed { Arrow { width 44; height 12; view-box 0 0 44 12; path "M44 6H40M37 6H33M30 6H26M23 6H19M16 6H12M9 6H8M14 1.5L8 6L14 10.5" } }
+        down-dashed { Arrow { width 12; height 44; view-box 0 0 12 44; path "M6 0V4M6 7V11M6 14V18M6 21V25M6 28V32M6 35V36M1.5 30L6 36L10.5 30" } }
+        up-dashed { Arrow { width 12; height 44; view-box 0 0 12 44; path "M6 44V40M6 37V33M6 30V26M6 23V19M6 16V12M6 9V8M1.5 14L6 8L10.5 14" } }
+        direction one-of right left down up
+        stroke one-of solid dashed
+    }
+
+    item Flow {
+        auto-layout column
+        align center
+        gap 3
+        use-style ${stroke == "dashed" ? direction + "-dashed" : direction}
+        item Label { title ${label}; font-size 12; font-weight 600; text-color #4A4A4A }
+        item Tech { title ${technology}; font-size 11; font-style italic; text-color #8A8A8A; hidden ${technology == ""} }
+        item Arrow {
+            border-color #4A4A4A
+            line-width 1.5
+        }
+    }
+}
+
+item "Legend" {
+    kind Component
+    export let title = "Legend"
+
+    item Row {
+        auto-layout row
+        gap 14
+        wrap yes
+        align center
+        item Cap { title ${title}; font-size 11; font-weight 700; text-color #4A4A4A }
+        item e1 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 3; color #08427B }
+            item t { title Person; font-size 11; text-color #4A4A4A }
+        }
+        item e2 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 3; color #1168BD }
+            item t { title System; font-size 11; text-color #4A4A4A }
+        }
+        item e3 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 3; color #438DD5 }
+            item t { title Container; font-size 11; text-color #4A4A4A }
+        }
+        item e4 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 3; color #85BBF0 }
+            item t { title Component; font-size 11; text-color #4A4A4A }
+        }
+        item e5 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 3; color #999999; border-color #5F5F5F; line-width 1; line-style dashed }
+            item t { title External; font-size 11; text-color #4A4A4A }
+        }
+        item e6 {
+            auto-layout row
+            gap 5
+            align center
+            item s { width 12; height 12; corner-radius 6; color #6FA9E0 }
+            item t { title Database; font-size 11; text-color #4A4A4A }
+        }
+    }
+}
+
+item "Title" {
+    kind Component
+    export let title = "Context"
+    export let subtitle = ""
+
+    item Box {
+        auto-layout column
+        gap 2
+        item Name { title ${title}; font-size 20; font-weight 700; text-color #1B1B1B }
+        item Sub { title ${subtitle}; font-size 13; text-color #6B7280; hidden ${subtitle == ""} }
+    }
+}
