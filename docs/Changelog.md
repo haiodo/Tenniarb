@@ -20,6 +20,9 @@ instead of falling into its parts, and there is a way to the place a component i
   components.
 * The inspector no longer panics when its scheduled refresh runs after the panel was rebuilt: sections and
   rows that are gone are skipped.
+* The Align and Vertical choices of the inspector show none for an axis the item does not write, and
+  choosing none clears that word instead of leaving the value the renderer would default to; the scene
+  Align, Justify and border Style choices work the same way.
 * An agent's edits are written to disk by the autosave within ten seconds of its last edit, instead of
   waiting for the human's Save: a run that dies, or an app that is replaced mid-session, leaves nothing
   only in memory.

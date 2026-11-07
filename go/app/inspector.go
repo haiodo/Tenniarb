@@ -540,8 +540,14 @@ var (
 	verticalLayouts   = []string{"top", "middle", "bottom", "fill"}
 )
 
-// layoutCombo chooses the horizontal or the vertical word of `layout`, keeping the other word.
-func (in *inspector) layoutCombo(caption string, when func(selKind) bool, id string, mine, other []string, dflt string) func() g.Option {
+// noneChoice is the choice for a property the item does not set: the inspector shows that, not the value
+// the renderer would use, so an unset property is not mistaken for a written one.
+const noneChoice = "none"
+
+// layoutCombo chooses the horizontal or the vertical word of `layout`, keeping the other word. The first
+// choice is none: it leaves the axis unset rather than writing the value the renderer defaults to.
+func (in *inspector) layoutCombo(caption string, when func(selKind) bool, id string, mine, other []string) func() g.Option {
+	options := append([]string{noneChoice}, mine...)
 	var c *g.ComboView
 	words := func() (m, o string) {
 		for _, a := range in.src().get("layout").Args {
@@ -559,14 +565,14 @@ func (in *inspector) layoutCombo(caption string, when func(selKind) bool, id str
 	refresh := func(selKind) {
 		p := in.src().get("layout")
 		m, _ := words()
-		if m == "" {
-			m = dflt
+		i := 0
+		if p.Mixed {
+			i = -1 // the items disagree: no one word to show
 		}
-		i := -1
-		if !p.Mixed {
+		if !p.Mixed && m != "" {
 			for j, o := range mine {
 				if o == m {
-					i = j
+					i = j + 1
 				}
 			}
 		}
@@ -574,15 +580,22 @@ func (in *inspector) layoutCombo(caption string, when func(selKind) bool, id str
 		c.Select(i)
 		in.loading = false
 	}
-	ctl := g.Combo(mine, g.ReadOnly(), g.ID(id), g.Ref(&c), g.GrowX(), g.Size(g.Scaled(60), 0), g.Init(func(c *g.ComboView) {
+	ctl := g.Combo(options, g.ReadOnly(), g.ID(id), g.Ref(&c), g.GrowX(), g.Size(g.Scaled(60), 0), g.Init(func(c *g.ComboView) {
 		c.OnSelect(func(i int) {
-			if in.loading || i < 0 || in.v.session == nil {
+			if in.loading || i < 0 || i >= len(options) || in.v.session == nil {
 				return
 			}
 			_, o := words()
-			args := []string{mine[i]}
+			args := []string{}
+			if i > 0 {
+				args = append(args, mine[i-1])
+			}
 			if o != "" {
 				args = append(args, o)
+			}
+			if len(args) == 0 {
+				in.src().set("layout")
+				return
 			}
 			in.src().set("layout", args...)
 		})
@@ -710,13 +723,13 @@ func (in *inspector) build() g.Option {
 		in.section(sectionTitle("Text"), selected,
 			in.color("Color", selected, entryCfg{id: "insp-text-color", name: "text-color"}),
 			in.text("Size", selected, n("insp-font-size", "font-size")),
-			in.layoutCombo("Align", notLink, "insp-align", horizontalLayouts, verticalLayouts, "center"),
-			in.layoutCombo("Vertical", notLink, "insp-valign", verticalLayouts, horizontalLayouts, "middle"),
+			in.layoutCombo("Align", notLink, "insp-align", horizontalLayouts, verticalLayouts),
+			in.layoutCombo("Vertical", notLink, "insp-valign", verticalLayouts, horizontalLayouts),
 			in.text("Marker", items, entryCfg{id: "insp-marker", name: "marker"})),
 		in.section(sectionTitle("Border"), items,
 			in.color("Color", items, entryCfg{id: "insp-border-color", name: "border-color"}),
 			in.text("Width", items, n("insp-line-width", "line-width")),
-			in.combo("Style", items, "insp-line-style", "line-style", []string{"solid", "dashed", "dotted"}, "solid", nil),
+			in.combo("Style", items, "insp-line-style", "line-style", []string{noneChoice, "solid", "dashed", "dotted"}, noneChoice, nil),
 			in.text("Radius", items, n("insp-radius", "corner-radius"))),
 		in.section(sectionTitle("Shape"), items,
 			in.combo("Display", items, "insp-display", "display", editor.ItemDisplay, "rect", nil)),
