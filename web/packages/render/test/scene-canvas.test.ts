@@ -4,6 +4,7 @@
 // miss a mirrored picture, so this one reads the image itself.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { GlobalFonts } from "@napi-rs/canvas";
 import { readTenn } from "@tenniarb/core";
 import { buildTennScene } from "../src/scene-tenn.ts";
 import { newCanvas } from "./helpers.ts";
@@ -78,6 +79,20 @@ const codeRow = (p: Pixels, y: number): boolean => {
   return n > p.width / 2;
 };
 
+/** What a picture without ink holds, for the failure message: the colours and the fonts that were there. */
+const pictureReport = (p: Pixels): string => {
+  const seen = new Map<string, number>();
+  for (let y = 0; y < p.height; y += 1) {
+    for (let x = 0; x < p.width; x += 1) {
+      const c = at(p, x, y).join(",");
+      seen.set(c, (seen.get(c) ?? 0) + 1);
+    }
+  }
+  const top = [...seen].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([c, n]) => `${c} x${n}`);
+  const inter = GlobalFonts.families.find((f) => f.family === "Inter");
+  return `${p.width}x${p.height}, colours ${top.join("; ")}; Inter ${inter ? `${inter.styles.length} styles` : "is not registered"}, ${GlobalFonts.families.length} families`;
+};
+
 const rows = (p: Pixels, match: (row: number) => boolean): number[] => {
   const out: number[] = [];
   for (let y = 0; y < p.height; y += 1) if (match(y)) out.push(y);
@@ -87,7 +102,7 @@ const rows = (p: Pixels, match: (row: number) => boolean): number[] => {
 test("scene draw: a title above the body, upright glyphs, the code block below", () => {
   const p = render();
   const inked = rows(p, (y) => ink(p, y) > 0);
-  assert.ok(inked.length > 0, `the picture has text at all: draw() wrote inside the canvas (${p.width}x${p.height})`);
+  assert.ok(inked.length > 0, `the picture has text at all: draw() wrote inside the canvas, ${pictureReport(p)}`);
 
   // The title "L" is the first band of ink: a stem, and its foot along the bottom.
   const titleTop = inked[0]!;
