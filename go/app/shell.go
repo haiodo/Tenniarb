@@ -36,6 +36,8 @@ type Shell struct {
 	repos   link.Repos // the git remotes of the clones a link may name
 	// launch is the document the application opened first, the state a QA reset comes back to.
 	launch string
+	// restored says the launch opened documents kept from the last run: a QA reset leaves them alone.
+	restored bool
 
 	viewers []*Viewer
 	active  *Viewer
@@ -145,6 +147,7 @@ func (sh *Shell) start(args []string) {
 	for _, id := range StashedUntitled(sh.dir) {
 		if text, err := ReadUntitled(sh.dir, id); err == nil {
 			sh.newViewer(viewerInit{id: id, text: text, stashed: true})
+			sh.restored = true
 		}
 	}
 	if len(sh.viewers) == 0 {
