@@ -45,7 +45,9 @@ make app            # только .app (build/go/app)
 make go-mcp         # build/go/bin: tenniarb-mcp и tenniarb-service
 make go-mcp-install # оба бинаря в GOBIN
 make go-cli-install # tenniarb CLI в GOBIN
-make skill-install  # скилл в ~/.config/opencode/skill и ~/.agents/skills
+make agent-install  # скилл и MCP во все три агента (opencode, codex, Claude Code)
+make opencode-mcp   # то же в один агент: --opencode | --codex | --claude
+make skill-install  # только скилл, без MCP
 make kill-running   # остановить приложение, прокси и сервис
 make build          # Xcode-сборка Swift-версии (история, не живая версия)
 make test           # Swift-тесты (история)
@@ -81,8 +83,19 @@ Performance-тесты исключены из основного прогона
   `tenniarb install` кладёт те же файлы в `~/.config/opencode/skill/tenniarb-design` и
   `~/.agents/skills`. После правки скилла нужен и реинсталл, и пересборка сервиса, иначе агент
   получит старый текст.
-- Каждый вызов инструмента пишется в `$TMPDIR/tenniarb-mcp-calls.log` (1 МБ, потом в `.1`);
-  `TENNIARB_MCP_LOG` задаёт другой путь, `off` выключает. Методика и задачи - `docs/mcp-bench.md`.
+- Каждый вызов инструмента пишется строкой в лог (`MCP_LOG` из `Makefile`, по умолчанию
+  `~/Library/Logs/Tenniarb/mcp-calls.log`; `TENNIARB_MCP_LOG` задаёт путь, `off` выключает; 8 МБ, потом
+  в `.1`): время, pid, клиент (`opencode`, `codex`), корень воркспейса, инструмент, `ok`, размеры входа и
+  выхода, миллисекунды и начало аргументов (2 КБ). `make install` прописывает путь в конфигах агентов,
+  поэтому лог есть без ручной настройки.
+- `TENNIARB_PPROF` (`MCP_PPROF`, по умолчанию `127.0.0.1:6061`) поднимает `/debug/pprof/` в сервисе и в
+  приложении: `go tool pprof http://127.0.0.1:6061/debug/pprof/heap`. Живёт в процессе, который уже
+  запущен, поэтому включается только при следующем старте сервиса. Методика и задачи - `docs/mcp-bench.md`.
+- Одна загрузка воркспейса (1.7 МБ `.tenn`, 29 файлов) - 25 МБ живой кучи и 300 тысяч объектов: узел
+  на каждую команду плюс разобранные `tenn`-узлы каждого свойства (`scene.Prop.Args`). Приложение на одном
+  документе доходит до 470 МБ кучи, то есть держит больше десятка таких деревьев (текущее, `pending`, до 4
+  `sceneView` в кэше - это шесть; что держит остальные, не найдено). Сервис держит до 32 деревьев
+  (`maxTrees` в `mcpserver/host.go`) - отсюда 1.2 ГБ; бюджет кэша считается в штуках, а не в байтах.
 - Проверка правки инструмента - тест в `go/mcpserver`; живой сервис требует `go install` и `/mcps reload`
   и для проверки не годится.
 - `make install` убивает приложение по SIGTERM: несохранённые документы уходят в

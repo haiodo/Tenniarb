@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/haiodo/tenniarb/go/internal/pprofhttp"
 	"github.com/haiodo/tenniarb/go/mcpserver"
 	"github.com/haiodo/tenniarb/go/servicewire"
 )
@@ -49,6 +50,15 @@ func main() {
 		logger.Fatal(err)
 	}
 	logger.Printf("listening in %s, version %s, idle exit %v", *dir, version, *idle)
+	// The service is the process that holds the loaded trees, so its heap is the one a memory question is
+	// about. Off unless asked for: the endpoints carry whole documents.
+	if addr := os.Getenv("TENNIARB_PPROF"); addr != "" {
+		if listener, err := pprofhttp.Start(addr); err != nil {
+			logger.Printf("pprof: %v", err)
+		} else {
+			logger.Printf("pprof: http://%s/debug/pprof/", listener.Addr())
+		}
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	sv := &mcpserver.Service{Version: version, Idle: *idle, Log: logger}

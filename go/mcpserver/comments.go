@@ -226,13 +226,13 @@ type replyJSON struct {
 }
 
 type commentJSON struct {
-	ID       string      `json:"id"`
-	State    string      `json:"state"`
-	Author   string      `json:"author"`
-	Created  string      `json:"created"`
-	Text     string      `json:"text"`
-	Anchor   anchorJSON  `json:"anchor"`
-	LinkText string      `json:"link_text,omitempty"`
+	ID       string     `json:"id"`
+	State    string     `json:"state"`
+	Author   string     `json:"author"`
+	Created  string     `json:"created"`
+	Text     string     `json:"text"`
+	Anchor   anchorJSON `json:"anchor"`
+	LinkText string     `json:"link_text,omitempty"`
 	// File is set when the comment belongs to a file this document mounts, not to the document itself.
 	File    string      `json:"file,omitempty"`
 	Replies []replyJSON `json:"replies,omitempty"`
@@ -562,10 +562,10 @@ func (s *Server) waitComment(ctx context.Context, in waitIn) (string, error) {
 
 // addCommentTools registers the tools a user's comments reach an agent through.
 func (s *Server) addCommentTools(srv *mcp.Server) {
-	add(srv, "comments", "List the comments the user left on a .tenn file in Tenniarb: id, author, text, the anchor (element, node, and link_text that select takes), the replies. state open (default) or all. A comment on a part a document shows from this file is listed here too, with the path it has in this file. Call it after you finish a task, and answer each comment with reply or resolve.",
+	s.add(srv, "comments", "List the comments the user left on a .tenn file in Tenniarb: id, author, text, the anchor (element, node, and link_text that select takes), the replies. state open (default) or all. A comment on a part a document shows from this file is listed here too, with the path it has in this file. Call it after you finish a task, and answer each comment with reply or resolve.",
 		s.listComments)
-	add(srv, "reply", "Answer a comment of the user; the answer shows in the thread in Tenniarb at once.", s.replyComment)
-	add(srv, "resolve", "Mark a comment as done, optionally with a closing reply; the user sees it resolved in Tenniarb.", s.resolveComment)
+	s.add(srv, "reply", "Answer a comment of the user; the answer shows in the thread in Tenniarb at once.", s.replyComment)
+	s.add(srv, "resolve", "Mark a comment as done, optionally with a closing reply; the user sees it resolved in Tenniarb.", s.resolveComment)
 	mcp.AddTool(srv, &mcp.Tool{
 		Name:        "wait_comment",
 		Description: "Wait until the user leaves a new comment or reply (on file, else on any document) and return it as a list of events: file, event (comment, reply, reopen), the comment with its thread. Returns [] after timeout_s seconds (default 60, at most 600) with nothing new; call it again to stay on duty. Events before the session started or already returned are not repeated.",

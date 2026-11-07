@@ -18,6 +18,16 @@ instead of falling into its parts, and there is a way to the place a component i
 * Insert Component lists the components of a library: plates, the caption groups over them and the parts of
   a component are left out, and `kind Component` takes precedence when a library says which nodes are
   components.
+* The inspector no longer panics when its scheduled refresh runs after the panel was rebuilt: sections and
+  rows that are gone are skipped.
+* `TENNIARB_PPROF=127.0.0.1:6060` starts the Go pprof HTTP endpoint for CPU, heap and goroutine profiles.
+  The listener is off by default. `tenniarb-service` takes the same variable (`127.0.0.1:6061` in
+  `make install`), so the process that holds the loaded trees can be asked where its memory went.
+* The MCP call log records what a call was asked, not only how big it was: the arguments (first 2000
+  bytes), whether the call failed, the client (`opencode`, `codex`) and the workspace root. `make install`
+  points it at `~/Library/Logs/Tenniarb/mcp-calls.log` and probes the profiler as well.
+* `make install` registers the tenniarb MCP in codex (`make codex-mcp`) and Claude Code (`make claude-mcp`)
+as it did in opencode, and writes the design skill into `~/.codex/skills`, where codex reads its own copy.
 
 An agent can move and rename nodes of the whole workspace now, and the picker shows the components of the
 libraries rather than the boxes they are drawn on.

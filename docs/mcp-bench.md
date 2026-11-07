@@ -5,15 +5,18 @@ for a picture, a coordinate or a piece of a file. These runs make that visible a
 
 ## Turning on the log
 
-`TENNIARB_MCP_LOG=/tmp/run.log` makes every MCP tool call append one JSON line:
+`TENNIARB_MCP_LOG=/tmp/run.log` makes every MCP tool call append one JSON line (`make install` writes
+`~/Library/Logs/Tenniarb/mcp-calls.log`, see [Profiling](profiling.md#tool-call-log)):
 
 ```json
-{"tool":"layout","in":58,"out":1680,"ms":21}
+{"at":"2026-11-07T22:15:39.2+07:00","pid":99111,"client":"opencode","root":"/src/app","tool":"layout","ok":true,"in":58,"out":1680,"ms":21,"args":"{\"file\":\"Board.tenn\"}"}
 ```
 
 `in` and `out` are bytes of the request and the answer; `out/4` is a rough token count of what the answer
 adds to the agent's context. Images count as their PNG size here, so a run that renders is cheaper in this
-log than it is in tokens — read the render lines as "at least this much".
+log than it is in tokens — read the render lines as "at least this much". `args` keeps the first 2000
+bytes of the request, `ok` is false for a failed call; the same `tool` plus `client` and `root` tells two
+agents in one workspace apart.
 
 ```bash
 TENNIARB_MCP_LOG=/tmp/run.log <agent with the tenniarb MCP>

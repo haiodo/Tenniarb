@@ -46,22 +46,52 @@ func Names() []string {
 	return out
 }
 
-// Install writes the skill into every directory of Targets and links the Claude Code one to the shared
-// copy, as the other skills of this setup are linked. It returns what it wrote and what failed.
+// Install writes the skill into every place an agent reads it, and links the Claude Code one to the
+// shared copy, as the other skills of this setup are linked. It returns what it wrote and what failed.
 func Install() ([]string, []error) {
+	agents := make([]string, 0, len(Places()))
+	for _, pl := range Places() {
+		agents = append(agents, pl.Agent)
+	}
+	return InstallFor(agents)
+}
+
+// InstallFor is Install limited to the agents named: the shared copy under ~/.agents is written always,
+// since the Claude Code directory is a link to it.
+func InstallFor(agents []string) ([]string, []error) {
 	var done []string
 	var errs []error
-	for _, dir := range Targets() {
-		if err := Write(dir); err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", dir, err))
+	shared := ""
+	places := Places()
+	for _, pl := range places {
+		if pl.Agent == "agents" {
+			if err := Write(pl.Dir); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", pl.Dir, err))
+				continue
+			}
+			shared = pl.Dir
+			done = append(done, pl.Dir)
+			break
+		}
+	}
+	for _, pl := range places {
+		if pl.Agent == "agents" || !slices.Contains(agents, pl.Agent) {
 			continue
 		}
-		done = append(done, dir)
-	}
-	if len(done) > 0 {
-		if err := link(claudeDir(), done[0]); err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", claudeDir(), err))
+		var err error
+		if pl.Link != "" {
+			if shared == "" {
+				continue // the shared copy failed already
+			}
+			err = link(pl.Dir, shared)
+		} else {
+			err = Write(pl.Dir)
 		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", pl.Dir, err))
+			continue
+		}
+		done = append(done, pl.Dir)
 	}
 	return done, errs
 }
@@ -89,25 +119,28 @@ func Write(dir string) error {
 	return nil
 }
 
-// Targets are the directories the skill is written into: the shared ~/.agents/skills and opencode.
-func Targets() []string {
+// Place is one directory the skill is written into and the agent that reads it.
+type Place struct {
+	Agent string // "agents" for the shared copy, then opencode, codex and claude
+	Dir   string
+	// Link is the directory Dir becomes a link to; empty when the files are written there.
+	Link string
+}
+
+// Places are the directories the skill is written into: the shared ~/.agents/skills that every agent
+// reads by default, the copy opencode and codex keep of their own, and the Claude Code link.
+func Places() []Place {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil
 	}
-	return []string{
-		filepath.Join(home, ".agents", "skills", Name),
-		filepath.Join(home, ".config", "opencode", "skill", Name),
+	shared := filepath.Join(home, ".agents", "skills", Name)
+	return []Place{
+		{Agent: "agents", Dir: shared},
+		{Agent: "opencode", Dir: filepath.Join(home, ".config", "opencode", "skill", Name)},
+		{Agent: "codex", Dir: filepath.Join(home, ".codex", "skills", Name)},
+		{Agent: "claude", Dir: filepath.Join(home, ".claude", "skills", Name), Link: shared},
 	}
-}
-
-// claudeDir is where Claude Code reads its skills: a link to the shared copy, as the other skills there.
-func claudeDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-	return filepath.Join(home, ".claude", "skills", Name)
 }
 
 // link makes dir a link to target, replacing a directory an older install wrote there.

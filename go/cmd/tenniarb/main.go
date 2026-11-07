@@ -28,6 +28,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/app"
 	"github.com/haiodo/tenniarb/go/check"
+	"github.com/haiodo/tenniarb/go/internal/pprofhttp"
 	"github.com/haiodo/tenniarb/go/optimize"
 )
 
@@ -38,7 +39,9 @@ const usage = `usage:
   tenniarb bundle [-root DIR] [-o OUT] FILE     replace every --from-file with the block of the file it mounts
   tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
                                                 print the text the template of ELEMENT generates
-  tenniarb install [-dir DIR]                   write the agent skill where Claude Code and opencode read it
+  tenniarb install [-mcp] [-codex|-claude|-opencode|-agents]
+                                                write the agent skill, and with -mcp register the MCP server
+                                                in the config of those agents (every agent by default)
   tenniarb help | -h | --help                   print this text
 `
 
@@ -81,6 +84,14 @@ func main() {
 	launch, files, code := dispatch(os.Args[1:], os.Stdout, os.Stderr)
 	if !launch {
 		os.Exit(code)
+	}
+	if addr := os.Getenv("TENNIARB_PPROF"); addr != "" {
+		listener, err := pprofhttp.Start(addr)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "tenniarb: pprof:", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "tenniarb: pprof: http://%s/debug/pprof/\n", listener.Addr())
+		}
 	}
 	// Documents are big trees that die on every edit: collect earlier, and hard above 1 GiB.
 	if os.Getenv("GOGC") == "" {

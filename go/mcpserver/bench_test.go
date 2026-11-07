@@ -11,6 +11,7 @@ import (
 // callStat is one line of TENNIARB_MCP_LOG.
 type callStat struct {
 	Tool string `json:"tool"`
+	Args string `json:"args"`
 	In   int    `json:"in"`
 	Out  int    `json:"out"`
 	MS   int64  `json:"ms"`

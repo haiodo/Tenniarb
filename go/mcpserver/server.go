@@ -116,11 +116,11 @@ func (s *Server) MCP() *mcp.Server {
 		Instructions: "Edit .tenn files (UI scenes and classic diagrams) as text. To draw a screen or a diagram call read_skill first; for the format call guide. Y axis points up. Paths are relative to the workspace root. Change a file only through edit, never with your own Write/Edit tools: the app holds the document and the user follows the edits in its window. Files open in the Tenniarb app are read and edited live, through its undo. The user may leave comments on a design: after a task call comments, answer with reply or resolve, and loop wait_comment to stay on duty.",
 	})
 	srv.AddReceivingMiddleware(s.learnClient)
-	add(srv, "guide", "Return short examples and a reference of the .tenn commands the scene engine runs: elements, kinds and --from-file, items and auto-layout, pos and the Y axis, use with at/replace/slot, parameters, styles and use-style, colors and text, traps, and what is not supported. topic narrows it to one section by number (3) or heading word (styles); 'examples' returns the examples only.",
+	s.add(srv, "guide", "Return short examples and a reference of the .tenn commands the scene engine runs: elements, kinds and --from-file, items and auto-layout, pos and the Y axis, use with at/replace/slot, parameters, styles and use-style, colors and text, traps, and what is not supported. topic narrows it to one section by number (3) or heading word (styles); 'examples' returns the examples only.",
 		func(in guideIn) (string, error) { return guide(in.Topic), nil })
-	add(srv, "read_skill", "Return the Tenniarb design skill: how to draw UI screens and diagrams in .tenn through these tools (the loop, the format, components, layout recipes, review). No path returns SKILL.md; path returns a file it names, such as layout.md.",
+	s.add(srv, "read_skill", "Return the Tenniarb design skill: how to draw UI screens and diagrams in .tenn through these tools (the loop, the format, components, layout recipes, review). No path returns SKILL.md; path returns a file it names, such as layout.md.",
 		func(in skillIn) (string, error) { return readSkill(in.Path) })
-	add(srv, "get_state", "List the .tenn files of the workspace with the node tree of each, 2 levels deep by default (dotted paths, usable in read, render and use), the renderer of each element (scene or diagram), whether Tenniarb has the file open with unsaved changes, and the errors and warnings of each file. file, path and depth list one subtree; find searches a library for components by name.",
+	s.add(srv, "get_state", "List the .tenn files of the workspace with the node tree of each, 2 levels deep by default (dotted paths, usable in read, render and use), the renderer of each element (scene or diagram), whether Tenniarb has the file open with unsaved changes, and the errors and warnings of each file. file, path and depth list one subtree; find searches a library for components by name.",
 		func(in getStateIn) (string, error) {
 			if in.File != "" {
 				s.noteNode("get_state", in.File, in.Path)
@@ -130,14 +130,14 @@ func (s *Server) MCP() *mcp.Server {
 	s.addRendering(srv, "design", "Change a .tenn file by operations on nodes: set a property, move a node by dx dy, insert commands into a parent, delete a node, replace text everywhere. Paths are the dotted ones of get_state, so nothing has to match as text. All operations of one call go as one change: nothing is written if the result has a parse error or adds a validation error, and a file open in Tenniarb takes it as one undo step, unsaved. render names an element to draw after the change, so the check needs no second call.",
 		func(in designIn) string { return in.File }, func(in designIn) (string, float64) { return in.Render, in.Scale },
 		func(in designIn) (string, error) { return s.design(in.File, in.Ops) })
-	add(srv, "refactor", "Rename a node or move it under another parent, updating every use, at and replace path that names it, here and in the files that mount it. Both paths are read in the tree of file, so a node of a mounted library is named as the entry document names it. The whole workspace is checked and a result that adds an error changes nothing; a move refuses when the node is named inside a use by an at or replace path, which is relative to the instance.",
+	s.add(srv, "refactor", "Rename a node or move it under another parent, updating every use, at and replace path that names it, here and in the files that mount it. Both paths are read in the tree of file, so a node of a mounted library is named as the entry document names it. The whole workspace is checked and a result that adds an error changes nothing; a move refuses when the node is named inside a use by an at or replace path, which is relative to the instance.",
 		func(in refactorIn) (string, error) { return s.refactor(in) })
-	add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
+	s.add(srv, "layout", "Report the geometry of a scene element without drawing it: the size of the scene, the box of every item a few levels deep, the items that leave the plate they sit on, and overlapping siblings, in scene units. Use it instead of a render when the question is about sizes, overflow or spacing.",
 		func(in layoutIn) (string, error) {
 			s.noteNode("layout", in.File, in.Element)
 			return s.layoutOf(in.File, in.Element, in.Depth)
 		})
-	add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against. A path that names an element with --from-file or a library of them gives the content of the mounted file, not the one-line declaration.",
+	s.add(srv, "read", "Read a .tenn file or one node of it by dotted path, as source text with line numbers. A name with punctuation is written in quotes, as get_state prints it. The text is exactly what edit matches against. A path that names an element with --from-file or a library of them gives the content of the mounted file, not the one-line declaration.",
 		func(in readIn) (string, error) {
 			s.noteNode("read", in.File, in.Path)
 			if len(in.Paths) == 0 {
@@ -159,11 +159,11 @@ func (s *Server) MCP() *mcp.Server {
 	s.addRendering(srv, "edit", "Apply find/replace edits in order to a .tenn file. Atomic: if an edit does not match exactly once (unless all), the result has a parse error or adds a validation error, nothing is written and the errors are returned. Otherwise the file is replaced and the remaining warnings returned. A file open in Tenniarb is changed in the app as one undo step and stays unsaved there; the file on disk is not touched. render names an element to draw after the change, so the check needs no second call.",
 		func(in editIn) string { return in.File }, func(in editIn) (string, float64) { return in.Render, in.Scale },
 		func(in editIn) (string, error) { return s.edit(in.File, in.Edits) })
-	add(srv, "gen", "Print the text the template of a component generates (spec 5c): the template with its ${parameters} filled and its slots taken from the use, for code generation. set gives the parameter values by name; without it the defaults of the element are used, and where the element is the use, the block of the use.",
+	s.add(srv, "gen", "Print the text the template of a component generates (spec 5c): the template with its ${parameters} filled and its slots taken from the use, for code generation. set gives the parameter values by name; without it the defaults of the element are used, and where the element is the use, the block of the use.",
 		func(in genToolIn) (string, error) { return s.gen(in) })
-	add(srv, "suggest", "Report what could be tidied in a .tenn file, as tenniarb suggest does: repeated structures that could be one component, nodes that differ only in a colour or a size and could be one style, literals used again and again, dead styles and overrides that change nothing. Reads only, changes nothing. file is one file; empty lists the whole workspace.",
+	s.add(srv, "suggest", "Report what could be tidied in a .tenn file, as tenniarb suggest does: repeated structures that could be one component, nodes that differ only in a colour or a size and could be one style, literals used again and again, dead styles and overrides that change nothing. Reads only, changes nothing. file is one file; empty lists the whole workspace.",
 		func(in suggestToolIn) (string, error) { return s.suggest(in) })
-	add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths are dotted.",
+	s.add(srv, "validate", "Parse and validate one .tenn file (with the files it mounts) or the whole workspace. Returns file:line:col errors and warnings. use paths are dotted.",
 		func(in validateIn) (string, error) {
 			if in.File != "" {
 				s.noteNode("validate", in.File, "")
@@ -188,7 +188,7 @@ func (s *Server) MCP() *mcp.Server {
 			s.noteNode("render", in.File, element)
 			r, err := s.render(in.File, element, in.Scale, in.View)
 			if err != nil {
-				recordCall("render", in, out+len(err.Error()), started)
+				s.recordCall("render", in, out+len(err.Error()), false, started)
 				return failure(err), nil, nil
 			}
 			if in.Inspect && r.screen != nil {
@@ -200,12 +200,12 @@ func (s *Server) MCP() *mcp.Server {
 				&mcp.TextContent{Text: r.text})
 			out += len(r.png) + len(r.text)
 		}
-		recordCall("render", in, out, started)
+		s.recordCall("render", in, out, true, started)
 		return &mcp.CallToolResult{Content: content}, nil, nil
 	})
-	add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths, with a link to it (link, link_text) to share. Fails when the app is not connected.",
+	s.add(srv, "selection", "Show what the user has in Tenniarb: the open documents of this workspace (unsaved or not) and the selection of the front window as dotted paths, with a link to it (link, link_text) to share. Fails when the app is not connected.",
 		func(noIn) (string, error) { return s.selection() })
-	add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths), optionally revealing the first one, so the user sees what you mean.",
+	s.add(srv, "select", "Select nodes in a file open in Tenniarb (dotted paths), optionally revealing the first one, so the user sees what you mean.",
 		func(in selectIn) (string, error) {
 			in, err := s.expandLink(in)
 			if err != nil {
@@ -238,16 +238,16 @@ func (s *Server) learnClient(next mcp.MethodHandler) mcp.MethodHandler {
 }
 
 // add registers a tool that takes In and answers with text; an error becomes a tool error result.
-func add[In any](srv *mcp.Server, name, desc string, fn func(In) (string, error)) {
+func (s *Server) add[In any](srv *mcp.Server, name, desc string, fn func(In) (string, error)) {
 	mcp.AddTool(srv, &mcp.Tool{Name: name, Description: desc},
 		func(_ context.Context, _ *mcp.CallToolRequest, in In) (*mcp.CallToolResult, any, error) {
 			started := time.Now()
 			text, err := fn(in)
 			if err != nil {
-				recordCall(name, in, len(err.Error())+6, started)
+				s.recordCall(name, in, len(err.Error())+6, false, started)
 				return failure(err), nil, nil
 			}
-			recordCall(name, in, len(text), started)
+			s.recordCall(name, in, len(text), true, started)
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 		})
 }
@@ -261,22 +261,22 @@ func (s *Server) addRendering[In any](srv *mcp.Server, name, desc string, file f
 			started := time.Now()
 			text, err := fn(in)
 			if err != nil {
-				recordCall(name, in, len(err.Error())+6, started)
+				s.recordCall(name, in, len(err.Error())+6, false, started)
 				return failure(err), nil, nil
 			}
 			element, scale := target(in)
 			if element == "" {
-				recordCall(name, in, len(text), started)
+				s.recordCall(name, in, len(text), true, started)
 				return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 			}
 			r, rerr := s.render(file(in), element, scale, false)
 			if rerr != nil {
 				// The change went through; a failed picture is a note in the answer, not a failed call.
 				text += "\nrendered nothing: " + rerr.Error()
-				recordCall(name, in, len(text), started)
+				s.recordCall(name, in, len(text), true, started)
 				return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 			}
-			recordCall(name, in, len(text)+len(r.png)+len(r.text), started)
+			s.recordCall(name, in, len(text)+len(r.png)+len(r.text), true, started)
 			return &mcp.CallToolResult{Content: []mcp.Content{
 				&mcp.TextContent{Text: text + "\n" + r.text},
 				&mcp.ImageContent{Data: r.png, MIMEType: "image/png"},
@@ -297,9 +297,9 @@ func callLog() string {
 	return filepath.Join(os.TempDir(), "tenniarb-mcp-calls.log")
 }
 
-// recordCall appends one line per tool call to callLog, so a run can be measured: the size of what the
-// agent sent and got back is what costs tokens, and the time is what costs waiting.
-func recordCall(name string, in any, out int, started time.Time) {
+// recordCall appends one line per tool call to callLog: what the agent asked and got back is what the run
+// is read for, and the sizes and the time are what it costs.
+func (s *Server) recordCall(name string, in any, out int, ok bool, started time.Time) {
 	path := callLog()
 	if path == "" {
 		return
@@ -308,8 +308,14 @@ func recordCall(name string, in any, out int, started time.Time) {
 		os.Rename(path, path+".1")
 	}
 	args, _ := json.Marshal(in)
+	size := len(args)
+	if size > maxCallLogArgs {
+		args = append(args[:maxCallLogArgs:maxCallLogArgs], "…"...)
+	}
 	line, _ := json.Marshal(map[string]any{
-		"tool": name, "in": len(args), "out": out, "ms": time.Since(started).Milliseconds(),
+		"at": time.Now().Format(time.RFC3339Nano), "pid": os.Getpid(), "client": s.clientName(),
+		"root": s.root, "tool": name, "ok": ok, "in": size, "out": out,
+		"ms": time.Since(started).Milliseconds(), "args": string(args),
 	})
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
@@ -317,6 +323,14 @@ func recordCall(name string, in any, out int, started time.Time) {
 	}
 	defer f.Close()
 	f.Write(append(line, '\n'))
+}
+
+// clientName is the MCP client of this session (opencode, codex, ...) as it named itself at initialize.
+func (s *Server) clientName() string {
+	if s.agent == nil {
+		return ""
+	}
+	return s.host.presence.nameOf(s.agent)
 }
 
 func failure(err error) *mcp.CallToolResult {
@@ -333,7 +347,10 @@ const (
 	// nodes in eight files, and the names and parameters of the first ones are what a run acts on.
 	maxFoundBytes = 6000
 	// maxCallLog bounds the call log; it is rolled to .1 and started again.
-	maxCallLog = 1 << 20
+	maxCallLog = 8 << 20
+	// maxCallLogArgs bounds the arguments one line keeps: an edit carries a whole block, and the whole
+	// file in every line is not what a run is read for.
+	maxCallLogArgs = 2000
 )
 
 // cutState keeps the head of the workspace listing, at a line boundary, and says how to see the rest.

@@ -2,6 +2,7 @@ package mcpserver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -180,19 +181,40 @@ func TestFindOnceAcrossDocuments(t *testing.T) {
 	}
 }
 
-// TestCallLog: a call is logged where TENNIARB_MCP_LOG says, and "off" writes nothing.
+// TestCallLog: a call is logged where TENNIARB_MCP_LOG says, with what it was asked and whether it
+// worked, and "off" writes nothing.
 func TestCallLog(t *testing.T) {
 	dir := t.TempDir()
-	t.Setenv("TENNIARB_MCP_LOG", filepath.Join(dir, "calls.log"))
+	log := filepath.Join(dir, "calls.log")
+	t.Setenv("TENNIARB_MCP_LOG", log)
 	cs := memSession(t, tempRoot(t, map[string]string{"s.tenn": "element S { item A { width 10; height 10 } }\n"}))
-	mustOK(t, cs, "get_state", map[string]any{})
-	b, err := os.ReadFile(filepath.Join(dir, "calls.log"))
-	if err != nil || !strings.Contains(string(b), `"tool":"get_state"`) {
+	mustOK(t, cs, "get_state", map[string]any{"file": "s.tenn"})
+	b, err := os.ReadFile(log)
+	line := string(b)
+	if err != nil || !strings.Contains(line, `"tool":"get_state"`) || !strings.Contains(line, `"ok":true`) ||
+		!strings.Contains(line, `"args":"{\"file\":\"s.tenn\"}"`) {
 		t.Fatalf("log: %q %v", b, err)
+	}
+	mustFail(t, cs, "read", map[string]any{"file": "no.tenn"}, "no.tenn")
+	b, _ = os.ReadFile(log)
+	if !strings.Contains(string(b), `"tool":"read"`) || !strings.Contains(string(b), `"ok":false`) {
+		t.Fatalf("a failed call is not logged: %q", b)
+	}
+	// An edit carries a whole block; only its start belongs in the line.
+	body := strings.Repeat("item A { width 10; height 10 }\n", 200)
+	mustOK(t, cs, "edit", map[string]any{"file": "s.tenn", "edits": []map[string]any{{"find": "element S {", "replace": "element S {\n" + body}}})
+	b, _ = os.ReadFile(log)
+	last := strings.TrimSpace(strings.Split(strings.TrimSpace(string(b)), "\n")[2])
+	var stat callStat
+	if err := json.Unmarshal([]byte(last), &stat); err != nil {
+		t.Fatalf("line: %q %v", last, err)
+	}
+	if stat.In <= maxCallLogArgs || len(stat.Args) > maxCallLogArgs+4 {
+		t.Errorf("edit logged %d args of %d", len(stat.Args), stat.In)
 	}
 	t.Setenv("TENNIARB_MCP_LOG", "off")
 	mustOK(t, cs, "get_state", map[string]any{})
-	if b, _ := os.ReadFile(filepath.Join(dir, "calls.log")); strings.Count(string(b), "get_state") != 1 {
+	if b, _ := os.ReadFile(log); strings.Count(string(b), "get_state") != 1 {
 		t.Fatalf("off wrote a line: %q", b)
 	}
 }

@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install opencode-mcp skill-install kill-running install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test app go-mcp go-mcp-install go-cli-install opencode-mcp codex-mcp claude-mcp agent-install skill-install kill-running install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -82,11 +82,25 @@ go-cli-install: ## CLI for agents: go install tenniarb (tenniarb check FILE...) 
 
 GO_PKG_BIN = $(shell cd go && p=$$(go env GOBIN); [ -n "$$p" ] || p=$$(go env GOPATH)/bin; echo $$p)
 
-opencode-mcp: ## Register the tenniarb MCP in opencode (global config), if opencode is on PATH
-	@command -v opencode >/dev/null 2>&1 || { echo "opencode not on PATH: tenniarb MCP not registered"; exit 0; }
-	opencode mcp add --global tenniarb -- $(GO_PKG_BIN)/tenniarb-mcp
+# Where the MCP proxy writes the calls of the agents, and the address of the service profiler: the two
+# things a run is taken apart with. Both are set in the agent config by the targets below, so a session
+# started by opencode or codex writes them without anyone remembering a variable.
+MCP_LOG   ?= $(HOME)/Library/Logs/Tenniarb/mcp-calls.log
+MCP_PPROF ?= 127.0.0.1:6061
 
-install: app go-mcp-install go-cli-install opencode-mcp skill-install kill-running ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the tenniarb MCP in opencode, the agent skill
+agent-install: go-cli-install ## Skill and MCP server in every agent (opencode, codex, Claude Code)
+	$(GO_PKG_BIN)/tenniarb install --mcp --agents --log $(MCP_LOG) --pprof $(MCP_PPROF)
+
+opencode-mcp: go-cli-install ## Skill and MCP server in opencode only
+	$(GO_PKG_BIN)/tenniarb install --mcp --opencode --log $(MCP_LOG) --pprof $(MCP_PPROF)
+
+codex-mcp: go-cli-install ## Skill and MCP server in codex only
+	$(GO_PKG_BIN)/tenniarb install --mcp --codex --log $(MCP_LOG) --pprof $(MCP_PPROF)
+
+claude-mcp: go-cli-install ## Skill and MCP server in Claude Code only
+	$(GO_PKG_BIN)/tenniarb install --mcp --claude --log $(MCP_LOG) --pprof $(MCP_PPROF)
+
+install: app go-mcp-install go-cli-install agent-install kill-running ## Install locally: the app into /Applications (macOS), tenniarb CLI and MCP into GOBIN, the agent skill and the tenniarb MCP in opencode, codex and Claude Code, with the call log and the profiler
 ifeq ($(shell uname),Darwin)
 	rm -rf /Applications/Tenniarb.app
 	cp -R $(GOPKG)/app/Tenniarb.app /Applications/
