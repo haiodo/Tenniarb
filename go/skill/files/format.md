@@ -109,6 +109,19 @@ Three-digit `#fff` is not a color; for a transparent fill leave `color` out.
 An expression `${...}` may stand for any value, a word included: `width ${icon ? 44 : "hug"}` is 44 or
 `hug`, and `${...}` works in a `styles` row and in a keyframe too (`components.md`).
 
+## Links
+
+- `link A B { ... }` joins two items of the same element by name; in a screen they are the aliases of
+  the items around it (`use kit.Card as card`).
+- `display arrow` puts the head at the target; `line-style dashed|dotted`, `line-width` and `color`
+  work as on a frame.
+- `route elbow [exit-side [entry-side]]` draws the line orthogonally: it leaves and enters the named
+  sides (`left`, `right`, `top`, `bottom`), with the corners rounded by `corner-radius` (12 by default).
+  Without the sides it uses the ones that face each other, so a straight pair of boxes still reads.
+  Links that share a side spread along it, in the order of the boxes they lead to - a hub with six
+  satellites is one `link` per tile, not a hand-placed path.
+- Without `route` the line is straight between the boxes' edges.
+
 ## Text and icons
 
 `path` belongs to the leaf that draws it: the leaf has no box of its own and the path fills it. A wrapper

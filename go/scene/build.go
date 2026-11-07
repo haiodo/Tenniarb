@@ -266,7 +266,7 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 				b.emit(k, node, false)
 			}
 		case RLink:
-			b.link(k, node)
+			b.link(rn, k, node)
 		}
 	}
 	if bn := b.p.bodyAt[rn]; bn != nil {
@@ -395,8 +395,9 @@ func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color) 
 	}
 }
 
-// link draws a line between the two items, from edge to edge of their boxes, in the parent's coordinates.
-func (b *builder) link(lk *RNode, node *gfx.Node) {
+// link draws the line between the two items in the parent's coordinates: straight from edge to edge, or
+// as the elbow the link asks for.
+func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 	ends, ok := b.p.ends[lk]
 	if !ok {
 		return
@@ -407,14 +408,35 @@ func (b *builder) link(lk *RNode, node *gfx.Node) {
 	if pa == pc {
 		return
 	}
-	from, to := edgePoint(pa, a, pc), edgePoint(pc, c, pa)
+	b.p.checkRoute(lk)
+	var (
+		path *gfx.Path
+		from gfx.Point
+		to   gfx.Point
+	)
+	if b.p.isElbow(lk) {
+		points := b.elbow(parent, lk)
+		if len(points) < 2 {
+			return
+		}
+		radius := float64(elbowRadius)
+		if pr := b.p.prop(lk, "corner-radius"); pr != nil {
+			if v, ok := pr.num(0); ok {
+				radius = v
+			}
+		}
+		path = elbowPath(points, radius)
+		from, to = points[len(points)-2], points[len(points)-1]
+	} else {
+		from, to = edgePoint(pa, a, pc), edgePoint(pc, c, pa)
+		path = &gfx.Path{}
+		path.MoveTo(from.X, from.Y)
+		path.LineTo(to.X, to.Y)
+	}
 	ln := b.node()
 	b.tx.Add(node, ln)
 	col, stroke := b.p.linkStyle(lk)
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
-	path := &gfx.Path{}
-	path.MoveTo(from.X, from.Y)
-	path.LineTo(to.X, to.Y)
 	r.StrokePath(path, stroke, col)
 	if pr := b.p.prop(lk, "display"); pr != nil {
 		if s, _ := pr.text(0); s == "arrow" {

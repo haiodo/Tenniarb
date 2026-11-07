@@ -1,0 +1,50 @@
+// Hub diagram: a card in the middle and square tiles around it, joined by dotted elbows.
+// The connectors are scene links: `link center tile { route elbow top right; display arrow; line-style dotted }`.
+// Words after elbow name the side the line leaves and the side it enters; without them the sides facing
+// each other are used. Links that share a side spread along it.
+
+element "Tile" {
+    kind Component
+    export let icon = "M12 1.5 L14.2 9.8 L22.5 12 L14.2 14.2 L12 22.5 L9.8 14.2 L1.5 12 L9.8 9.8 Z"
+    export let iconColor = "#23262B"
+    export let rule = "nonzero"
+
+    item Box {
+        width 170; height 170
+        corner-radius 16
+        color #ffffff
+        shadow 0 10 24 #00000012
+        auto-layout column
+        align center
+        justify center
+        item Icon { width 84; height 84; view-box 0 0 24 24; path ${icon}; color ${iconColor}; fill-rule ${rule} }
+    }
+}
+
+element "Hub" {
+    kind Component
+    export let icon = "M7 2 h7 l5 5 v15 H7 Z M14 2 v5 h5"
+    export let title = "skill.md"
+
+    item Outer {
+        width 420; height 310
+        corner-radius 30
+        color #ffffff
+        shadow 0 22 48 #00000010
+        auto-layout column
+        align center
+        justify center
+        item Main {
+            width 340; height 240
+            corner-radius 22
+            color #ffffff
+            border-color #0000000f
+            auto-layout column
+            align center
+            justify center
+            gap 14
+            item Doc { width 96; height 96; view-box 0 0 24 24; path ${icon}; color #23262B }
+            item Label { title ${title}; font-family Menlo; font-size 26; text-color #23262B }
+        }
+    }
+}

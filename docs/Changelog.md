@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* `link ... { route elbow top right }` draws a connector orthogonally: it leaves and enters the named
+  sides with rounded corners, and the links that share a side spread along it, so a hub with satellites
+  needs one link per tile instead of hand-placed paths.
 * `line-style dashed|dotted` draws the border of a scene item and the line of a `link` dashed, as it does
   on a classic diagram; before, the scene ignored it and every frame was solid.
 * Font files of `<config>/fonts` and of every `TENNIARB_FONTS` path are registered for the process at
