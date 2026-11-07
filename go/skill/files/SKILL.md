@@ -24,6 +24,23 @@ reference, read it only when the task needs that part:
 `guide {topic}` is the command reference the engine runs; ask for one section (`styles`, `3`), not the
 whole thing.
 
+## When this skill is for
+
+Drawing or changing a screen, a component or a diagram **in a `.tenn` file**, through these tools.
+Not for prose, notes or reports - those are markdown files, not screens - and not for changing the
+editor or any code: a `.tenn` is data.
+
+## If / then
+
+- The same card, row or dialog appears twice → make a component in a library and `use` it
+  (`components.md`); two copies drift apart on the first change.
+- The content flows along one axis → `auto-layout row|column`; it overlaps or sits at a point → `pos`
+  under a parent without auto-layout.
+- Two boxes are joined → `link` with `display arrow`; a hub or a C4 picture → `route elbow` (see
+  `examples/hub-demo.tenn`), not hand-placed `path` items.
+- A raster is content → `image "assets/x.png" fit cover`; an icon → `path` with `view-box`.
+- A control height, gap or window width exists → take the number from `platforms.md`, do not invent it.
+
 ## The loop
 
 1. `get_state` with no arguments: the files, their top two levels, the renderer of each element,
@@ -129,6 +146,20 @@ footer row (`justify end`, `gap 8`).
 
 **Mobile**: `item Phone { width 390; height 844; auto-layout column; padding 16; gap 12; corner-radius
 40; clip yes }`.
+
+## What the scene cannot do
+
+The workaround belongs in the file, not in a comment about the missing feature.
+
+- `blur`, `backdrop-filter`, `filter` - none of them. Bake the effect into a PNG and draw it with `image`.
+- One `shadow` per item: a second one is a copy of the shape behind it, offset, with a transparent fill.
+- `color` gradients are linear only; there is no radial one.
+- `text-transform` - write the text in the case you want.
+- `clip` is the item's own rounded box; no arbitrary `clip-path` and no ellipse.
+- `line-style` dashes a frame and a `link`, not a stroked `path`.
+- `image` takes a path written in the text; a `${...}` in it is not evaluated.
+- `align` is `start|center|end`, there is no `stretch`: equal heights are a number or `height fill` in
+  a row.
 
 ## Cheap habits
 
