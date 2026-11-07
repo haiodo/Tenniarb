@@ -16,6 +16,7 @@ import (
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/comments"
+	"github.com/haiodo/tenniarb/go/internal/fontset"
 	"github.com/haiodo/tenniarb/go/link"
 	"github.com/haiodo/tenniarb/go/servicewire"
 )
@@ -73,7 +74,7 @@ func Run(args []string) error { return RunIn(ConfigDir(), args) }
 // RunIn is Run with the files of the application in dir.
 func RunIn(dir string, args []string) error {
 	g.SetAppName("Tenniarb")
-	registerFonts(dir)
+	fontset.Register(dir)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	return g.Run(func(app *g.App) {

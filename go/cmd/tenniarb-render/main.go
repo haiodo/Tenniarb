@@ -16,6 +16,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/comments"
+	"github.com/haiodo/tenniarb/go/internal/fontset"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -27,6 +29,7 @@ const exportMargin = 30
 func main() { os.Exit(run(os.Args[1:], os.Stderr)) }
 
 func run(args []string, stderr io.Writer) int {
+	fontset.Register(comments.ConfigDir())
 	fs := flag.NewFlagSet("tenniarb-render", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	element := fs.String("element", "", "element name or A/B path (default: the first element with items)")
