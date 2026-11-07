@@ -97,13 +97,33 @@ const defaultShadowBlur = 5.0
 
 var defaultShadowColor = gfx.Color{A: 1.0 / 3}
 
-// shadow reads `shadow dx dy [blur [color]]` of the box. Y is up as in pos, the screen offset is -dy.
-// A bad offset drops the shadow, a bad blur or color takes the default.
-func (p *prep) shadow(rn *RNode) *gfx.Shadow {
-	pr := p.prop(rn, "shadow")
-	if pr == nil {
-		return nil
+// shadows reads every `shadow dx dy [blur [color]]` of the box, in file order: two of them make a
+// soft one (a wide faint pass) and a crisp one under it. Y is up as in pos, the screen offset is -dy.
+// A bad offset drops that shadow, a bad blur or color takes the default.
+func (p *prep) shadows(rn *RNode) []gfx.Shadow {
+	var out []gfx.Shadow
+	for _, pr := range rn.Props {
+		if pr.Name != "shadow" {
+			continue
+		}
+		if hasExpr(pr) {
+			if p.eval == nil {
+				if !p.classic && !p.opts.noExprWarn {
+					p.t.warn(pr.Pos, "shadow: expressions are not evaluated")
+				}
+				continue
+			}
+			pr = p.evalProp(rn, pr)
+		}
+		if sh := p.shadowOf(pr); sh != nil {
+			out = append(out, *sh)
+		}
 	}
+	return out
+}
+
+// shadowOf parses one shadow command.
+func (p *prep) shadowOf(pr *Prop) *gfx.Shadow {
 	dx, okx := pr.num(0)
 	dy, oky := pr.num(1)
 	if !okx || !oky {

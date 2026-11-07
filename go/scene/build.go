@@ -315,26 +315,23 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 		}
 		return r.Finish()
 	}
-	sh := st.shadow
+	shadows := st.shadows
 	if st.fill.A > 0 {
 		shape := &gfx.Path{}
 		shape.RoundRect4(0, 0, w, h, st.radius)
-		switch {
-		case st.grad != nil && sh != nil:
-			// The shadow follows the alpha of the fill; the gradient is drawn over an opaque base, so a
-			// gradient with transparent stops shows the base. Ceiling: gfx has no gradient with a shadow.
-			base := st.fill
-			base.A = 1
-			r.FillShadowPath(shape, base, *sh)
+		// A shadow takes the alpha of the fill; a gradient is drawn over an opaque base, so a gradient
+		// with transparent stops shows the base. Ceiling: gfx has no gradient with a shadow.
+		base := st.fill
+		base.A = 1
+		for _, sh := range shadows {
+			r.FillShadowPath(shape, base, sh)
+		}
+		if st.grad != nil {
 			r.FillGradient(shape, st.grad.at(w, h))
-		case st.grad != nil:
-			r.FillGradient(shape, st.grad.at(w, h))
-		case sh != nil:
-			r.FillShadowPath(shape, st.fill, *sh)
-		default:
+		} else if len(shadows) == 0 {
 			r.FillPath(shape, st.fill)
 		}
-		sh = nil
+		shadows = nil
 	}
 	if im := b.p.images[rn]; im != nil {
 		b.image(r, im, w, h, st.radius)
@@ -348,8 +345,10 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 		}
 		edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
 		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10, Dash: st.dash, DashPhase: st.dashPhase}
-		if sh != nil { // no fill: the border casts the shadow
-			r.StrokeShadowPath(edge, line, st.border, *sh)
+		if len(shadows) > 0 { // no fill: the border casts the shadow
+			for _, sh := range shadows {
+				r.StrokeShadowPath(edge, line, st.border, sh)
+			}
 		} else {
 			r.StrokePath(edge, line, st.border)
 		}
@@ -474,8 +473,8 @@ func arrowHead(from, to gfx.Point, size float64) *gfx.Path {
 
 type style struct {
 	fill, border, text gfx.Color
-	grad               *gradient   // set by color linear ...; fill is then its first visible stop
-	shadow             *gfx.Shadow // nil without shadow
+	grad               *gradient    // set by color linear ...; fill is then its first visible stop
+	shadows            []gfx.Shadow // in file order, the last one on top
 	lineW              float64
 	dash               []float64 // line-style dashed or dotted; nil is a solid line
 	dashPhase          float64
@@ -514,7 +513,7 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 		fill, border = gfx.Color{}, gfx.Color{}
 	}
 	st.fill, st.grad = p.fill(rn, fill)
-	st.shadow = p.shadow(rn)
+	st.shadows = p.shadows(rn)
 	st.border = p.color(rn, "border-color", border)
 	text := up // inherited from the parent, black at the root
 	if st.fill.A > 0 {

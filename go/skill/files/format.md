@@ -80,7 +80,7 @@ Outside auto-layout (classic diagrams) an item shows its name and has a white bo
 | `border-color`, `line-width` | color, number | frame; `line-width` alone draws nothing |
 | `line-style` | `solid`, `dashed`, `dotted` | the frame of an item and the line of a `link`; default solid |
 | `corner-radius` | `N` or `TL TR BR BL` | |
-| `shadow` | `DX DY [BLUR [COLOR]]` | drop shadow of the box (of the border without `color`); Y points up, so `shadow 0 -4 8` falls down; blur 5 and black at 1/3 by default |
+| `shadow` | `DX DY [BLUR [COLOR]]` | drop shadow of the box (of the border without `color`); Y points up, so `shadow 0 -4 8` falls down; blur 5 and black at 1/3 by default. Write it twice for a soft shadow: a wide faint pass and a tight one |
 | `clip` | `yes` | children are cut at the box |
 | `opacity` | 0..1 | multiplies down the subtree |
 | `hidden` | `yes` | not laid out, not drawn |
