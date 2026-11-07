@@ -20,6 +20,9 @@ instead of falling into its parts, and there is a way to the place a component i
   components.
 * The inspector no longer panics when its scheduled refresh runs after the panel was rebuilt: sections and
   rows that are gone are skipped.
+* An agent's edits are written to disk by the autosave within ten seconds of its last edit, instead of
+  waiting for the human's Save: a run that dies, or an app that is replaced mid-session, leaves nothing
+  only in memory.
 * `TENNIARB_PPROF=127.0.0.1:6060` starts the Go pprof HTTP endpoint for CPU, heap and goroutine profiles.
   The listener is off by default. `tenniarb-service` takes the same variable (`127.0.0.1:6061` in
   `make install`), so the process that holds the loaded trees can be asked where its memory went.

@@ -109,7 +109,7 @@ type Viewer struct {
 
 	id         string // names the stash of an untitled document
 	autosave   *Debounce
-	agentEdits bool // the last change came from an agent: the human saves it, not the autosave
+	agentEdits bool // the last change came from an agent: written by the every-tick of the autosave
 	frameSave  *Debounce
 	force      bool // the window closes without questions (QA)
 }

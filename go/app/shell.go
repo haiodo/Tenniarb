@@ -116,6 +116,13 @@ func (sh *Shell) start(args []string) {
 			v.poll()
 		}
 	})
+	sh.app.Every(AgentAutosaveEvery, func() {
+		for _, v := range slices.Clone(sh.viewers) {
+			if v.agentEdits {
+				v.autosaveNow()
+			}
+		}
+	})
 	sh.app.OnThemeChange(func(bool) {
 		for _, v := range sh.viewers {
 			v.themeChanged()

@@ -14,8 +14,9 @@ import (
 	"github.com/haiodo/tenniarb/go/app"
 )
 
-// TestAgentEditNotSaved: an edit that came through the document API stays unsaved, and Save writes it.
-func TestAgentEditNotSaved(t *testing.T) {
+// TestAgentEditAutosaved: an edit that came through the document API is written by the autosave of the
+// agent edits, after a pause that a running agent cannot postpone; the human's Save has nothing left.
+func TestAgentEditAutosaved(t *testing.T) {
 	if os.Getenv("GOWT_GUI_TEST") == "" {
 		t.Skip("set GOWT_GUI_TEST=1 to open windows")
 	}
@@ -43,22 +44,16 @@ func TestAgentEditNotSaved(t *testing.T) {
 		t.Fatal("the agent edit is not shown as unsaved")
 	}
 
-	time.Sleep(app.AutosaveDelay + 1500*time.Millisecond)
-	a.Settle()
-	if b, _ := os.ReadFile(file); string(b) != text {
-		t.Fatal("the autosave wrote an agent edit")
-	}
-	if !editor(t, a).Dirty {
-		t.Fatal("the document stopped showing the agent edit as unsaved")
-	}
-
-	a.Key("Mod+S")
+	time.Sleep(app.AgentAutosaveEvery + 2*time.Second)
 	a.Settle()
 	b, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(b), "font-size 24") || editor(t, a).Dirty {
-		t.Fatalf("after Save: dirty %v, file\n%s", editor(t, a).Dirty, b)
+	if !strings.Contains(string(b), "font-size 24") {
+		t.Fatalf("the autosave did not write the agent edit:\n%s", b)
+	}
+	if editor(t, a).Dirty {
+		t.Fatal("the document still shows the written edit as unsaved")
 	}
 }

@@ -5,6 +5,10 @@ import "time"
 // AutosaveDelay is the pause after the last change before a document is written.
 const AutosaveDelay = 2 * time.Second
 
+// AgentAutosaveEvery bounds how long an agent's edit waits for the human: the edits of a session come
+// faster than any pause, so the debounce above would keep them in memory for as long as it runs.
+const AgentAutosaveEvery = 10 * time.Second
+
 // FrameDelay is the pause after the last move or resize before the window frame is remembered.
 const FrameDelay = 500 * time.Millisecond
 

@@ -175,9 +175,10 @@ document in memory: a change made behind it lands in no undo step and no follow,
 unsaved edits asks the user to throw them away. Every change, a new file included, goes through `edit`:
 it validates the result and writes the file itself when the app has it closed.
 
-If the user has the file open in Tenniarb, `edit` changes the document in the app as one undo step and
-the file on disk stays untouched until the user saves, so an edit there does not overwrite the user's
-unsaved work. If the user typed since you read, the edit fails: read the lines again and repeat.
+If the user has the file open in Tenniarb, `edit` changes the document in the app as one undo step, and
+the autosave writes it to disk within about ten seconds of your last edit (the app keeps showing it as
+edited until then), so a run of yours cannot stay in memory and be lost. If the user typed since you
+read, the edit fails: read the lines again and repeat.
 `selection` shows what the user selected (dotted paths) and fails when the app is not connected - it is
 not a step of the loop; `select {file, nodes, reveal: true}` points at nodes you are talking about.
 

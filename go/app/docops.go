@@ -88,7 +88,8 @@ func (v *Viewer) writeFile(path string) error {
 	return nil
 }
 
-// keepAgentEdit marks the change as an agent's: it waits for the human, who sees "- Edited" and saves it.
+// keepAgentEdit marks the change as an agent's: it shows as edited until the autosave writes it, which
+// for an agent's burst is the every-tick of the shell, not the pause of a human edit.
 func (v *Viewer) keepAgentEdit() {
 	v.agentEdits = true
 	v.autosave.Cancel() // a pending autosave is of the text before the edit
