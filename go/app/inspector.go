@@ -778,7 +778,7 @@ func (in *inspector) schedule() {
 
 func (in *inspector) refresh() {
 	v := in.v
-	if in.scroll == nil || in.scroll.Unwrap().IsDisposed() {
+	if in.scroll == nil || in.scroll.Unwrap().IsDisposed() || v.win.Unwrap().IsDisposed() {
 		return
 	}
 	k := kindNone
@@ -791,6 +791,11 @@ func (in *inspector) refresh() {
 	changed := k != in.kind
 	in.kind = k
 	for _, s := range in.sections {
+		// The sections of a rebuilt panel are disposed while the list still holds them, and the refresh
+		// runs after the event that rebuilt it.
+		if s.box == nil || s.box.Unwrap().IsDisposed() {
+			continue
+		}
 		show := v.session != nil && s.scene == (k == kindScene) && s.when(k)
 		if s.box.Visible() != show {
 			s.box.SetVisible(show)
@@ -799,13 +804,16 @@ func (in *inspector) refresh() {
 		if !show {
 			continue
 		}
-		if s.d != nil {
+		if s.d != nil && !s.d.Unwrap().IsDisposed() {
 			if t := s.label(k); t != s.shown {
 				s.shown = t
 				s.d.SetTitle(t)
 			}
 		}
 		for _, f := range s.fields {
+			if f.row == nil || f.row.Unwrap().IsDisposed() {
+				continue
+			}
 			vis := f.when(k)
 			if f.row.Visible() != vis {
 				f.row.SetVisible(vis)
