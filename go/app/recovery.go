@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -84,16 +85,23 @@ func LoadRecovery(dir string) (string, recoveryManifest, error) {
 		return "", recoveryManifest{}, nil
 	}
 	sort.Strings(names)
-	at := filepath.Join(root, names[len(names)-1])
-	b, err := os.ReadFile(filepath.Join(at, "manifest.json"))
-	if err != nil {
-		return "", recoveryManifest{}, nil
+	var errs []error
+	for i := len(names) - 1; i >= 0; i-- {
+		at := filepath.Join(root, names[i])
+		b, err := os.ReadFile(filepath.Join(at, "manifest.json"))
+		if err != nil {
+			continue
+		}
+		var m recoveryManifest
+		if err := json.Unmarshal(b, &m); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if len(m.Entries) != 0 {
+			return at, m, nil
+		}
 	}
-	var m recoveryManifest
-	if err := json.Unmarshal(b, &m); err != nil {
-		return "", recoveryManifest{}, err
-	}
-	return at, m, nil
+	return "", recoveryManifest{}, errors.Join(errs...)
 }
 
 // RecoveryText is the kept text of one entry.
@@ -166,20 +174,39 @@ func (sh *Shell) offerRecovery() {
 		fmt.Sprintf("Tenniarb was stopped at %s with %d unsaved file(s). Open them as unsaved changes?", when, len(m.Entries))) {
 		return
 	}
+	if err := sh.restoreRecovery(folder, m); err != nil {
+		ask.setBanner("Could not restore unsaved changes: " + err.Error())
+	}
+}
+
+func (sh *Shell) restoreRecovery(folder string, m recoveryManifest) error {
+	var errs []error
 	for _, e := range m.Entries {
 		text, err := RecoveryText(folder, e.File)
 		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", e.Path, err))
 			continue
 		}
-		sh.openPath(e.Path)
 		v, err := sh.viewer(e.Path)
-		if err != nil || v.text == text {
+		if err != nil {
+			sh.openPath(e.Path)
+			v, err = sh.viewer(e.Path)
+		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", e.Path, err))
+			continue
+		}
+		if v.session != nil && v.text == text {
 			continue
 		}
 		if err := v.applyText(0, len(v.text), text); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", e.Path, err))
 			continue
 		}
 		v.markEdited(0)
 	}
-	_ = DropRecovery(folder)
+	if len(errs) != 0 {
+		return errors.Join(errs...)
+	}
+	return DropRecovery(folder)
 }

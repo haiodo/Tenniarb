@@ -126,3 +126,48 @@ func TestDesignOnPart(t *testing.T) {
 		t.Fatalf("part.tenn:\n%s", txt)
 	}
 }
+
+func TestDesignUsesUnsavedLibraries(t *testing.T) {
+	dir := serviceDir(t)
+	startService(t, dir, "v1", nil, 0)
+	root := tempRoot(t, map[string]string{"lib.tenn": "element Parts { item Old {} }\n", "main.tenn": "element lib --from-file lib.tenn\nelement Screen { use lib.Parts.Old as x {} }\n"})
+	cs := session(t, dir, root, "v1", nil)
+	fake, _ := connectFake(t, dir)
+	if err := fake.Open(filepath.Join(root, "lib.tenn"), "element Parts { item New {} }\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := fake.Open(filepath.Join(root, "main.tenn"), "element lib --from-file lib.tenn\nelement Screen { use lib.Parts.New as x {} }\n"); err != nil {
+		t.Fatal(err)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "main.tenn"})
+	mustOK(t, cs, "design", map[string]any{"file": "main.tenn", "ops": []map[string]any{{"op": "set", "node": "Screen.x", "name": "width", "value": "60"}}})
+	if got, _ := fake.TextOf(filepath.Join(root, "main.tenn")); !strings.Contains(got, "width 60") {
+		t.Fatalf("design not applied: %s", got)
+	}
+}
+
+func TestDesignRefusesStaleSnapshot(t *testing.T) {
+	dir := serviceDir(t)
+	startService(t, dir, "v1", nil, 0)
+	root := tempRoot(t, map[string]string{"a.tenn": liveDisk})
+	cs := session(t, dir, root, "v1", nil)
+	fake, _ := connectFake(t, dir)
+	abs := filepath.Join(root, "a.tenn")
+	if err := fake.Open(abs, liveDisk); err != nil {
+		t.Fatal(err)
+	}
+	user := strings.Replace(liveDisk, "}\n", "    item user\n}\n", 1)
+	reads := 0
+	fake.AfterText = func() {
+		reads++
+		if reads == 1 {
+			if err := fake.Type(abs, user); err != nil {
+				t.Error(err)
+			}
+		}
+	}
+	mustFail(t, cs, "design", map[string]any{"file": "a.tenn", "ops": []map[string]any{{"op": "insert", "parent": "A", "text": "item agent"}}}, "document changed")
+	if got, _ := fake.TextOf(abs); got != user {
+		t.Fatalf("user edit lost: %s", got)
+	}
+}

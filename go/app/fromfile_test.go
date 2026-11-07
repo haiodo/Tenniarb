@@ -185,3 +185,21 @@ func TestMountEditGoesToTheOpenWindowOfTheFile(t *testing.T) {
 		t.Error("the edited element must stay")
 	}
 }
+
+func TestMountSaveConflictPreventsClose(t *testing.T) {
+	v, dir := writeBack(t)
+	v.session.RenameElement(v.session.Root().Elements[0].Elements[0], "Other")
+	if err := os.WriteFile(filepath.Join(dir, "kit.lib.tenn"), []byte(wbLib+"// external change\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if v.confirmDiscard() {
+		t.Fatal("closed despite unsaved mounted changes")
+	}
+	if v.save() {
+		t.Fatal("save succeeded despite unsaved mounted changes")
+	}
+	v.autosaveNow()
+	if !v.libsDirty() || !strings.Contains(v.libText("kit.lib.tenn"), `"Other"`) {
+		t.Fatal("mounted draft was lost")
+	}
+}

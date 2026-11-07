@@ -3,6 +3,7 @@ package mcpserver
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -366,27 +367,65 @@ func lineAt(tree *scene.Tree, file string, off int) string {
 // nothing and only a failure in the middle can leave some files written.
 func (s *Server) applyTexts(tree *scene.Tree, next map[string]string) error {
 	files := sortedKeys(next)
-	// The documents the app has open go first: a refusal there must leave the disk untouched.
+	owners := map[string]*liveDoc{}
+	versions := map[string]int64{}
+	// Check every snapshot before applying any file, so a later refusal preserves earlier files.
 	for _, file := range files {
 		abs := filepath.Join(s.root, filepath.FromSlash(file))
+		old, ok := tree.Source(file)
+		if !ok {
+			return fmt.Errorf("%s is not loaded", file)
+		}
 		d := s.host.live.lookup(abs)
-		if d == nil || d.moved {
+		if d != nil && d.moved {
+			return errMoved
+		}
+		if d != nil {
+			cur, err := s.host.live.text(abs, true)
+			if err != nil {
+				return err
+			}
+			if cur.Text != old {
+				return fmt.Errorf("nothing changed: document changed: %s", file)
+			}
+			owners[file], versions[file] = d, cur.Version
 			continue
 		}
-		cur, err := s.host.live.text(abs, true)
+		cur, err := os.ReadFile(abs)
 		if err != nil {
 			return err
 		}
+		if string(cur) != old {
+			return fmt.Errorf("nothing changed: file changed: %s", file)
+		}
+	}
+	// The documents the app has open go first: a refusal there must leave the disk untouched.
+	for _, file := range files {
+		d := owners[file]
+		if d == nil {
+			continue
+		}
+		abs := filepath.Join(s.root, filepath.FromSlash(file))
+		if cur := s.host.live.lookup(abs); cur != nil && cur.moved {
+			return errMoved
+		}
 		var res servicewire.ApplyResult
-		if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: cur.Version, Text: next[file]}, &res); err != nil {
+		if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: versions[file], Text: next[file]}, &res); err != nil {
 			return fmt.Errorf("nothing written to disk: Tenniarb did not apply the change to %s: %v", file, err)
 		}
-		s.noteEdit(abs, file, tree, cur.Text, next[file])
+		old, _ := tree.Source(file)
+		s.noteEdit(abs, file, tree, old, next[file])
 	}
 	for _, file := range files {
-		abs := filepath.Join(s.root, filepath.FromSlash(file))
-		if d := s.host.live.lookup(abs); d != nil && !d.moved {
+		if owners[file] != nil {
 			continue
+		}
+		abs := filepath.Join(s.root, filepath.FromSlash(file))
+		if d := s.host.live.lookup(abs); d != nil {
+			if d.moved {
+				return errMoved
+			}
+			return fmt.Errorf("nothing written to %s: the file was opened in Tenniarb during the refactor; try again", file)
 		}
 		old, _ := tree.Source(file)
 		if err := writeAtomic(abs, next[file]); err != nil {

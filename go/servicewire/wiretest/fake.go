@@ -21,6 +21,8 @@ type doc struct {
 // Fake implements servicewire.Provider.
 type Fake struct {
 	Client *servicewire.ProviderClient // set after RunProvider; Open and Type report through it
+	// AfterText runs after a snapshot, outside the lock, to race its application.
+	AfterText func()
 	// BeforeApply runs at the start of Apply, outside the lock: a test types there to race the agent.
 	BeforeApply func()
 
@@ -153,12 +155,17 @@ func (f *Fake) report() error {
 
 func (f *Fake) Text(path string) (servicewire.TextResult, error) {
 	f.mu.Lock()
-	defer f.mu.Unlock()
 	d := f.docs[path]
 	if d == nil {
+		f.mu.Unlock()
 		return servicewire.TextResult{}, fmt.Errorf("%s is not open", path)
 	}
-	return servicewire.TextResult{Text: d.text, Version: d.version, Dirty: d.dirty}, nil
+	res := servicewire.TextResult{Text: d.text, Version: d.version, Dirty: d.dirty}
+	f.mu.Unlock()
+	if f.AfterText != nil {
+		f.AfterText()
+	}
+	return res, nil
 }
 
 func (f *Fake) Apply(path string, base int64, text string) (int64, error) {

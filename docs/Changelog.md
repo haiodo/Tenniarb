@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* MCP `design` and `refactor` refuse changes made from an outdated document snapshot instead of
+  overwriting edits made by the user while the operation was being prepared. `refactor` also refuses
+  files whose application has moved to a newer service.
+* `design` reads unsaved changes in open libraries when resolving components.
+* Closing a document stops when its mounted library cannot be saved, preserving the unsaved changes.
+* Recovery keeps backup files when restoring a document fails and finds older backups when the newest
+  recovery folder is incomplete.
+* Save As reloads the scene when the document path changes within the same workspace.
+
 A scene item can draw a raster picture from a file and be turned still: the two things a landing page
 rebuilt in `.tenn` needs for its 55 screenshots and its tilted disc.
 

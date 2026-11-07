@@ -47,12 +47,13 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	d := s.openForEdit(abs)
 	live := d != nil
 	var text string
+	var base int64
 	if live {
 		res, err := s.host.live.text(abs, true)
 		if err != nil {
 			return "", err
 		}
-		text = res.Text
+		text, base = res.Text, res.Version
 	} else {
 		b, err := os.ReadFile(abs)
 		if err != nil {
@@ -66,7 +67,15 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	}
 	// The tree of the entry document, not of this file alone: a library names what its entry mounts,
 	// and a path through a mount is what design addresses.
-	tree, err := scene.LoadAuto(s.root, rel, map[string]string{rel: text})
+	texts, _, err := s.liveTexts()
+	if err != nil {
+		return "", err
+	}
+	if texts == nil {
+		texts = map[string]string{}
+	}
+	texts[rel] = text
+	tree, err := scene.LoadAuto(s.root, rel, texts)
 	if err != nil {
 		return "", err
 	}
@@ -93,12 +102,8 @@ func (s *Server) design(file string, ops []DesignOp) (string, error) {
 	}
 	head := fmt.Sprintf("ok: %d operations in %s\n%s\n", len(ops), rel, strings.Join(lines, "\n"))
 	if live {
-		cur, err := s.host.live.text(abs, true)
-		if err != nil {
-			return "", err
-		}
 		var res servicewire.ApplyResult
-		if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: cur.Version, Text: next}, &res); err != nil {
+		if err := d.prov.call(servicewire.MethodApply, servicewire.ApplyArgs{Path: d.path, Base: base, Text: next}, &res); err != nil {
 			return "", fmt.Errorf("nothing changed: Tenniarb did not apply the change: %v", err)
 		}
 		s.noteEdit(abs, rel, tree, text, next)

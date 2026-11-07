@@ -233,6 +233,28 @@ func newDoc(t *testing.T, sh *Shell, path, text string) *Viewer {
 	return v
 }
 
+func TestSaveAsReloadsSceneInSameWorkspace(t *testing.T) {
+	dir := t.TempDir()
+	v := newDoc(t, &Shell{dir: t.TempDir()}, filepath.Join(dir, "a.tenn"), "item A { width 10; auto-layout column }\n")
+	if err := v.writeFile(filepath.Join(dir, "b.tenn")); err != nil {
+		t.Fatal(err)
+	}
+	if v.file() == nil || NodeAt(v.file(), "A") == nil {
+		t.Fatal("Save As left a scene tree for the previous path")
+	}
+	n := NodeAt(v.file(), "A")
+	e, ok := SetPropEdit(v.text, n, "width", "20")
+	if !ok {
+		t.Fatal("no edit after Save As")
+	}
+	if err := v.applyText(e.Start, e.End, e.New); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(v.text, "width 20") {
+		t.Fatal("scene edit after Save As was lost")
+	}
+}
+
 const mixedDoc = "element \"Map\" {\n    item \"Idea\" {\n        pos 0 0\n    }\n}\n" +
 	"element \"Screens\" {\n  item Login { pos 0 0; width 200; auto-layout column; item Title { title Hi } }\n}\n" +
 	"element kit --from-file kit.tenn\n"

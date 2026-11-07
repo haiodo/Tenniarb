@@ -1,9 +1,12 @@
 package mcpserver
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenniarb/go/servicewire"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -156,5 +159,100 @@ func TestRefactorRenameQuotes(t *testing.T) {
 	}
 	if got := fileText(t, root, "main.tenn"); !strings.Contains(got, `use kit.Parts."Primary Button" as b`) {
 		t.Errorf("main.tenn:\n%s", got)
+	}
+}
+
+func TestRefactorRefusesStaleFilesBeforeApplying(t *testing.T) {
+	dir := serviceDir(t)
+	running := startService(t, dir, "v1", nil, 0)
+	main := "element B --from-file b.tenn\n" + liveDisk
+	root := tempRoot(t, map[string]string{"a.tenn": main, "b.tenn": liveDisk})
+	fake, _ := connectFake(t, dir)
+	for _, file := range []string{"a.tenn", "b.tenn"} {
+		if err := fake.Open(filepath.Join(root, file), fileText(t, root, file)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s, err := running.sv.Host.Session(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	_, tree, err := s.diagnose("a.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user := strings.Replace(liveDisk, "}\n", "    item user\n}\n", 1)
+	if err := fake.Type(filepath.Join(root, "b.tenn"), user); err != nil {
+		t.Fatal(err)
+	}
+	next := map[string]string{"a.tenn": strings.Replace(main, `"x"`, `"renamed"`, 1), "b.tenn": strings.Replace(liveDisk, `"x"`, `"renamed"`, 1)}
+	if err := s.applyTexts(tree, next); err == nil || !strings.Contains(err.Error(), "document changed: b.tenn") {
+		t.Fatalf("got %v, want stale b.tenn refusal", err)
+	}
+	if got, _ := fake.TextOf(filepath.Join(root, "a.tenn")); got != main {
+		t.Fatalf("first document changed: %s", got)
+	}
+	if got, _ := fake.TextOf(filepath.Join(root, "b.tenn")); got != user {
+		t.Fatalf("user edit lost: %s", got)
+	}
+}
+
+func TestRefactorRefusesMovedFilesBeforeWriting(t *testing.T) {
+	root := tempRoot(t, map[string]string{"a.tenn": "element B --from-file b.tenn\n" + liveDisk, "b.tenn": liveDisk})
+	h := NewHostIn(t.TempDir())
+	s, err := h.Session(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	_, tree, err := s.diagnose("a.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	abs := filepath.Join(root, "b.tenn")
+	p := &provider{}
+	h.live.set(p, []servicewire.Doc{{Path: abs, Version: 1}})
+	h.live.drop(p, true)
+	next := map[string]string{"a.tenn": strings.Replace(fileText(t, root, "a.tenn"), `"x"`, `"renamed"`, 1), "b.tenn": strings.Replace(liveDisk, `"x"`, `"renamed"`, 1)}
+	if err := s.applyTexts(tree, next); err != errMoved {
+		t.Fatalf("got %v, want errMoved", err)
+	}
+	if got := fileText(t, root, "a.tenn"); got != "element B --from-file b.tenn\n"+liveDisk {
+		t.Fatalf("first file changed: %s", got)
+	}
+	if got := fileText(t, root, "b.tenn"); got != liveDisk {
+		t.Fatalf("moved file changed: %s", got)
+	}
+	if _, err := s.refactor(refactorIn{File: "b.tenn", Node: "A.x", Rename: "renamed"}); err != errMoved {
+		t.Fatalf("refactor got %v, want errMoved", err)
+	}
+}
+
+func TestRefactorRefusesStaleDiskFilesBeforeWriting(t *testing.T) {
+	main := "element B --from-file b.tenn\n" + liveDisk
+	root := tempRoot(t, map[string]string{"a.tenn": main, "b.tenn": liveDisk})
+	s, err := NewHostIn(t.TempDir()).Session(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	_, tree, err := s.diagnose("a.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user := strings.Replace(liveDisk, `"x"`, `"user"`, 1)
+	if err := os.WriteFile(filepath.Join(root, "b.tenn"), []byte(user), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	next := map[string]string{"a.tenn": strings.Replace(main, `"x"`, `"renamed"`, 1), "b.tenn": strings.Replace(liveDisk, `"x"`, `"renamed"`, 1)}
+	if err := s.applyTexts(tree, next); err == nil || !strings.Contains(err.Error(), "file changed: b.tenn") {
+		t.Fatalf("got %v, want stale b.tenn refusal", err)
+	}
+	if got := fileText(t, root, "a.tenn"); got != main {
+		t.Fatalf("first file changed: %s", got)
+	}
+	if got := fileText(t, root, "b.tenn"); got != user {
+		t.Fatalf("disk edit lost: %s", got)
 	}
 }

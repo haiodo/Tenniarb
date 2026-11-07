@@ -25,7 +25,9 @@ func (v *Viewer) save() bool {
 		return false
 	}
 	v.endInline(true)
-	v.saveMounted()
+	if !v.saveMounted() {
+		return false
+	}
 	path := v.state.Doc.Path
 	if path == "" {
 		return v.saveAs()
@@ -42,6 +44,9 @@ func (v *Viewer) saveAs() bool {
 		return false
 	}
 	v.endInline(true)
+	if !v.saveMounted() {
+		return false
+	}
 	dir, name := "", "Untitled.tenn"
 	if p := v.state.Doc.Path; p != "" {
 		dir, name = filepath.Dir(p), filepath.Base(p)
@@ -69,8 +74,9 @@ func (v *Viewer) writeFile(path string) error {
 	}
 	stamp, _ := StampOf(path)
 	v.watch = Watcher{Path: path, Last: stamp}
+	oldPath := v.state.Doc.Path
 	v.state.Doc.Path, v.state.Doc.Stamp = path, stamp
-	if r := WorkspaceRoot(path); r != v.root {
+	if r := WorkspaceRoot(path); r != v.root || path != oldPath {
 		v.root = r
 		v.loadScene()
 	}
@@ -82,8 +88,10 @@ func (v *Viewer) writeFile(path string) error {
 		DropUntitled(v.sh.dir, v.id)
 		v.id = ""
 	}
-	v.sh.addRecent(path)
-	v.updateTitle()
+	if v.win != nil {
+		v.sh.addRecent(path)
+		v.updateTitle()
+	}
 	v.sh.publish(DocEvent{Path: path, Kind: EventSave, Version: v.version})
 	return nil
 }
@@ -117,7 +125,9 @@ func (v *Viewer) autosaveNow() {
 	if v.session == nil {
 		return
 	}
-	v.saveMounted()
+	if !v.saveMounted() {
+		return
+	}
 	if !v.isDirty() {
 		return
 	}
@@ -137,14 +147,20 @@ func (v *Viewer) autosaveNow() {
 
 // saveMounted writes the mounted files with unsaved edits, as autosave does for the document, and
 // takes the * off the rows that show them.
-func (v *Viewer) saveMounted() {
+func (v *Viewer) saveMounted() bool {
 	if !v.libsDirty() {
-		return
+		return true
 	}
 	if err := v.saveLibs(); err != nil {
-		v.setBanner("Could not save the mounted file: " + err.Error())
+		if v.win != nil {
+			v.setBanner("Could not save the mounted file: " + err.Error())
+		}
+		return false
 	}
-	v.refreshOutline()
+	if v.win != nil {
+		v.refreshOutline()
+	}
+	return true
 }
 
 // onClose is the answer of the window to a close request: the document is kept or discarded, and the
@@ -164,7 +180,9 @@ func (v *Viewer) confirmDiscard() bool {
 		return true
 	}
 	v.endInline(true)
-	v.saveMounted()
+	if !v.saveMounted() {
+		return false
+	}
 	v.asking = true
 	defer func() { v.asking = false }()
 	switch DecideClose(v.state.Doc.Path, v.isDirty(), v.sh.quitting) {
