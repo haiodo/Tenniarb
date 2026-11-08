@@ -1,6 +1,7 @@
 {
   "element": "Button",
   "height": 28,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +50,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +76,8 @@
         "x": 14,
         "y": 7
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Button"
       ],

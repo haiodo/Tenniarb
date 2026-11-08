@@ -1,0 +1,14 @@
+// `rotate` turns an item by degrees clockwise about the middle of its box (spec 5b); the children and
+// the text turn with it, the layout does not.
+element "Turned" {
+    item Stage {
+        width 400; height 320; auto-layout abs; color #ffffff
+
+        item Card {
+            pos 60 -60; width 200; height 80; auto-layout column; padding 10; color #ffcc00; rotate 30
+            item T { width fill; height 20; title "hi" }
+        }
+
+        item Slant { pos 260 -160; width 80; height 160; color #3355ff; rotate -20 }
+    }
+}

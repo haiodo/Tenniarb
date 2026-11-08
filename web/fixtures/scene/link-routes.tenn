@@ -1,0 +1,18 @@
+// Links of a screen (spec 5c): straight edge to edge, an elbow on the sides the route names, arrows,
+// dashes and line width.
+element "Routes" {
+    item Stage {
+        width 640; height 420; auto-layout abs; color #ffffff
+
+        item A { pos 40 -40; width 120; height 60; color #ffffff; border #cccccc }
+        item B { pos 440 -40; width 120; height 60; color #ffffff; border #cccccc }
+        item C { pos 40 -300; width 120; height 60; color #ffffff; border #cccccc }
+        item D { pos 440 -300; width 120; height 60; color #ffffff; border #cccccc }
+
+        link A B { display arrow; color #222222; line-width 2 }
+        link A C { route elbow; display arrow }
+        link B D { route elbow left right }
+        link C D { display arrow; line-style dashed; color #3355ff; line-width 3 }
+        link A D { route elbow top left; corner-radius 4; line-style dotted }
+    }
+}

@@ -36,6 +36,7 @@ function record(): { ctx: Canvas2D; texts: Painted[]; rects: Rect[] } {
     restore: () => Object.assign(state, stack.pop() ?? state),
     translate: () => {},
     scale: () => {},
+    rotate: () => {},
     beginPath: () => {},
     moveTo: () => {},
     lineTo: () => {},
@@ -217,7 +218,7 @@ test("body: without a width the item grows to the widest line", () => {
   assert.equal(width(s, "L"), 58);
 });
 
-test("body: of an auto-layout item it flows below the children and grows the card", () => {
+test("body: a box that holds items shows them instead of its body", () => {
   const s = scene(`element "E" {
     item "Card" {
         auto-layout column
@@ -230,16 +231,15 @@ test("body: of an auto-layout item it flows below the children and grows the car
         }
     }
 }`);
-  // Padding 20, the title line 19, the gap 12, the body line 17, padding 20.
-  assert.equal(height(s, "Card"), 20 + 19 + 12 + 17 + 20);
+  // Padding 20, the title line 19, padding 20: the body of a container is not drawn.
+  assert.equal(height(s, "Card"), 20 + 19 + 20);
   const { texts } = painted(s);
   const title = texts.find((it) => it.text === "Head");
-  const body = texts.find((it) => it.text === "one");
-  assert.ok(title !== undefined && body !== undefined, "title and body are drawn");
-  assert.ok(body.y > title.y, `the body baseline ${body.y} is below the title ${title.y}`);
+  assert.ok(title !== undefined, "the title of the child is drawn");
+  assert.equal(texts.find((it) => it.text === "one"), undefined, "the body of the container is not drawn");
 });
 
-test("body: more text wraps and the card grows by every line", () => {
+test("body: a body on a container does not change its height", () => {
   const s = scene(`element "E" {
     item "Card" {
         auto-layout column
@@ -250,8 +250,8 @@ test("body: more text wraps and the card grows by every line", () => {
         body "one two three four five"
     }
 }`);
-  // The inner width 60 takes one word a line: 5 lines at 17, title 19, gap 10, padding 20.
-  assert.equal(height(s, "Card"), 10 + 19 + 10 + 5 * 17 + 10);
+  // Title 19, padding 20; the five lines of the body would add 5 * 17 if it were drawn.
+  assert.equal(height(s, "Card"), 10 + 19 + 10);
 });
 
 test("body: the three forms of the classic command", () => {

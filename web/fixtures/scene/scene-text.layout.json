@@ -1,0 +1,357 @@
+{
+  "element": "Rules",
+  "height": 420,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Rules",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 420,
+        "w": 640,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Stage",
+      "opacity": 1,
+      "path": "Stage",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 420,
+        "w": 640,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "LeafName",
+      "opacity": 1,
+      "path": "Stage.LeafName",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 20,
+        "y": 20
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "LeafTitle",
+      "opacity": 1,
+      "path": "Stage.LeafTitle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 160,
+        "y": 20
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Titled"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Stage.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 100,
+        "w": 260,
+        "x": 20,
+        "y": 80
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "InBox",
+      "opacity": 1,
+      "path": "Stage.Box.InBox",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 244,
+        "x": 28,
+        "y": 88
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "inside"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffe8cc",
+      "gradient": null,
+      "name": "TitledBox",
+      "opacity": 1,
+      "path": "Stage.TitledBox",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 100,
+        "w": 200,
+        "x": 300,
+        "y": 80
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Box title"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "InTitled",
+      "opacity": 1,
+      "path": "Stage.TitledBox.InTitled",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 184,
+        "x": 308,
+        "y": 88
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "LeafBody",
+      "opacity": 1,
+      "path": "Stage.LeafBody",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 80,
+        "w": 260,
+        "x": 20,
+        "y": 200
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Leaf",
+        "first line"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f4f4f4",
+      "gradient": null,
+      "name": "Column",
+      "opacity": 1,
+      "path": "Stage.Column",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 120,
+        "w": 200,
+        "x": 300,
+        "y": 200
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Named",
+      "opacity": 1,
+      "path": "Stage.Column.Named",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 192,
+        "x": 304,
+        "y": 204
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Titled",
+      "opacity": 1,
+      "path": "Stage.Column.Titled",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 18,
+        "w": 192,
+        "x": 304,
+        "y": 226
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "in flow"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "Alias",
+      "opacity": 1,
+      "path": "Stage.Alias",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 20,
+        "y": 320
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    }
+  ],
+  "width": 640
+}

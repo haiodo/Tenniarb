@@ -1,0 +1,11 @@
+// A diagram without auto-layout (spec 5a): the name of a leaf is its text, and a box that holds items
+// is not a label.
+element "Classic" {
+    item LeafName { width 120; height 40; color #eeeeee }
+    item LeafTitle { width 120; height 40; title "Titled"; color #eeeeee }
+    item Box {
+        pos 0 -80; width 200; height 100; color #ddeeff
+        item Inside { pos 10 -10; width 60; height 20; color #ffffff }
+    }
+    use LeafName as Alias { pos 0 -200; width 120; height 40 }
+}

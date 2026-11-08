@@ -5,6 +5,7 @@ export interface Canvas2D {
   restore(): void;
   translate(x: number, y: number): void;
   scale(x: number, y: number): void;
+  rotate(angle: number): void;
 
   beginPath(): void;
   moveTo(x: number, y: number): void;

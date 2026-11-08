@@ -1,6 +1,7 @@
 {
   "element": "Inbox",
   "height": 453,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +50,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +76,8 @@
         "x": 32,
         "y": 32
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -98,7 +102,8 @@
         "x": 32,
         "y": 32
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Invites"
       ],
@@ -125,7 +130,8 @@
         "x": 559,
         "y": 35.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -150,7 +156,8 @@
         "x": 559,
         "y": 35.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -175,7 +182,8 @@
         "x": 567,
         "y": 37.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "3 new"
       ],
@@ -202,7 +210,8 @@
         "x": 32,
         "y": 71
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -227,7 +236,8 @@
         "x": 48,
         "y": 87
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -252,7 +262,8 @@
         "x": 48,
         "y": 87
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Design team"
       ],
@@ -279,7 +290,8 @@
         "x": 155,
         "y": 87
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -304,7 +316,8 @@
         "x": 155,
         "y": 87
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -329,7 +342,8 @@
         "x": 163,
         "y": 89
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Admin"
       ],
@@ -356,7 +370,8 @@
         "x": 48,
         "y": 115
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -381,7 +396,8 @@
         "x": 48,
         "y": 115
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -406,7 +422,8 @@
         "x": 56.5,
         "y": 124.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "AL"
       ],
@@ -433,7 +450,8 @@
         "x": 90,
         "y": 116
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -458,7 +476,8 @@
         "x": 90,
         "y": 116
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Ada Lovelace"
       ],
@@ -485,7 +504,8 @@
         "x": 90,
         "y": 133
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ada@example.com"
       ],
@@ -512,7 +532,8 @@
         "x": 48,
         "y": 159
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -537,7 +558,8 @@
         "x": 442,
         "y": 159
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -562,7 +584,8 @@
         "x": 442,
         "y": 159
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -587,7 +610,8 @@
         "x": 456,
         "y": 166
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Later"
       ],
@@ -614,7 +638,8 @@
         "x": 517,
         "y": 159
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -639,7 +664,8 @@
         "x": 517,
         "y": 159
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -664,7 +690,8 @@
         "x": 531,
         "y": 166
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Accept"
       ],
@@ -691,7 +718,8 @@
         "x": 32,
         "y": 219
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -716,7 +744,8 @@
         "x": 48,
         "y": 235
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Billing"
       ],
@@ -743,7 +772,8 @@
         "x": 48,
         "y": 263
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Your card expired on 12 October.",
         "Update it to keep the workspace."
@@ -771,7 +801,8 @@
         "x": 48,
         "y": 303
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -796,7 +827,8 @@
         "x": 48,
         "y": 303
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -821,7 +853,8 @@
         "x": 48,
         "y": 303
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -846,7 +879,8 @@
         "x": 62,
         "y": 310
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Update card"
       ],
@@ -873,7 +907,8 @@
         "x": 32,
         "y": 363
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -898,7 +933,8 @@
         "x": 48,
         "y": 379
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Nothing here yet"
       ],
@@ -925,7 +961,8 @@
         "x": 48,
         "y": 405
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     }

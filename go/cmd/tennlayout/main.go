@@ -8,7 +8,8 @@
 //
 // Every entry is one drawn item in paint order: its dotted path (spec 4.2), its rectangle in screen
 // coordinates (y down, as go/scene/placed.go), its wrapped text lines and the colours, radius, clip,
-// opacity, shadow and gradient the item is painted with. Links are not items and are not listed.
+// opacity, shadows and gradient the item is painted with. Links are listed apart, with the path of the
+// item whose coordinates they are drawn in: they are not items and have no box of their own.
 package main
 
 import (
@@ -82,18 +83,123 @@ func dump(screen *scene.Screen) map[string]any {
 	}
 	walk(screen.Placed())
 	nodes := make([]any, 0, len(placed))
+	paths := make(map[*gfx.Node]string, len(placed))
 	for i, pl := range placed {
 		path := ""
 		if i < len(boxes) {
 			path = boxes[i].Path
 		}
 		nodes = append(nodes, node(pl, path))
+		if pl.Gfx != nil {
+			paths[pl.Gfx] = path
+		}
 	}
 	return map[string]any{
 		"width":  round(screen.W),
 		"height": round(screen.H),
 		"nodes":  nodes,
+		"links":  links(screen.Root, paths),
 	}
+}
+
+// links lists the link nodes: every gfx child that is not a placed item and paints a path without text.
+// A link is drawn in the coordinates of the item that owns it, so that item's path goes with it.
+func links(root *gfx.Node, paths map[*gfx.Node]string) []any {
+	out := []any{}
+	var walk func(n *gfx.Node, parent string)
+	walk = func(n *gfx.Node, parent string) {
+		for _, c := range n.Children() {
+			if p, ok := paths[c]; ok {
+				walk(c, p)
+				continue
+			}
+			if l := linkOf(c, parent); l != nil {
+				out = append(out, l)
+			}
+		}
+	}
+	walk(root, "")
+	return out
+}
+
+// linkOf reads the stroke and the arrow head a link paints; nil for a node that paints text or nothing.
+func linkOf(n *gfx.Node, parent string) map[string]any {
+	pic := n.Picture()
+	if pic == nil {
+		return nil
+	}
+	var it gfx.Iter
+	it.Reset(pic)
+	var path []any
+	var color *gfx.Color
+	var width, phase float64
+	var dash []float64
+	arrow := false
+	for it.Next() {
+		op := it.Op()
+		switch op.Kind {
+		case gfx.OpStroke, gfx.OpStrokeShadow:
+			c := op.Color
+			color = &c
+			width = op.Style.Width
+			dash = op.Style.Dash
+			phase = op.Style.DashPhase
+			// The iter reuses the path it decodes into, so the points are copied now.
+			path = pathPoints(op.Path)
+		case gfx.OpFill:
+			// The arrow head is the only fill of a link: a closed triangle at the end of the line.
+			if op.Path != nil && len(op.Path.Verbs) == 4 && op.Path.Verbs[3] == gfx.ClosePath {
+				arrow = true
+			}
+		case gfx.OpText, gfx.OpTextShadow:
+			return nil
+		}
+	}
+	if path == nil || color == nil {
+		return nil
+	}
+	var line []float64
+	if len(dash) > 0 {
+		line = []float64{}
+		for _, d := range dash {
+			line = append(line, round(d))
+		}
+	}
+	return map[string]any{
+		"parent": parent,
+		"path":   path,
+		"color":  hex(*color),
+		"width":  round(width),
+		"dash":   line,
+		"phase":  round(phase),
+		"arrow":  arrow,
+	}
+}
+
+// pathPoints is the path as verbs and points: ["m", x, y], ["l", x, y], ["q", cx, cy, x, y], ["z"].
+// A rounded elbow has quadratic corners; keeping the verbs lets the web side draw the same curve.
+func pathPoints(p *gfx.Path) []any {
+	out := make([]any, 0, len(p.Verbs))
+	i := 0
+	for _, v := range p.Verbs {
+		switch v {
+		case gfx.MoveTo:
+			out = append(out, []any{"m", round(p.Pts[i].X), round(p.Pts[i].Y)})
+			i++
+		case gfx.LineTo:
+			out = append(out, []any{"l", round(p.Pts[i].X), round(p.Pts[i].Y)})
+			i++
+		case gfx.QuadTo:
+			out = append(out, []any{"q", round(p.Pts[i].X), round(p.Pts[i].Y), round(p.Pts[i+1].X), round(p.Pts[i+1].Y)})
+			i += 2
+		case gfx.CubicTo:
+			out = append(out, []any{"c", round(p.Pts[i].X), round(p.Pts[i].Y), round(p.Pts[i+1].X), round(p.Pts[i+1].Y), round(p.Pts[i+2].X), round(p.Pts[i+2].Y)})
+			i += 3
+		case gfx.ClosePath:
+			out = append(out, []any{"z"})
+		}
+	}
+	return out
 }
 
 func node(pl *scene.Placed, path string) map[string]any {
@@ -101,8 +207,13 @@ func node(pl *scene.Placed, path string) map[string]any {
 	var borderW float64
 	var lines []string
 	var grad *gfx.Gradient
-	var shadow *gfx.Shadow
+	var shadows []gfx.Shadow
 	var radius [4]float64
+	rotate := 0.0
+	if pl.Gfx != nil {
+		m := pl.Gfx.Transform()
+		rotate = math.Atan2(m[1], m[0]) * 180 / math.Pi
+	}
 	clip := flagProp(pl, "clip")
 	if pl.Gfx != nil {
 		if pic := pl.Gfx.Picture(); pic != nil {
@@ -122,24 +233,25 @@ func node(pl *scene.Placed, path string) map[string]any {
 					fill = &c
 					radius = mergeRadii(radius, pathRadius(op.Path))
 				case gfx.OpFillShadow:
-					c, sh := op.Color, op.Shadow
-					fill, shadow = &c, &sh
+					c := op.Color
+					fill = &c
+					shadows = addShadow(shadows, op.Shadow)
 					radius = mergeRadii(radius, pathRadius(op.Path))
 				case gfx.OpStroke:
 					c, w := op.Color, op.Style.Width
 					border, borderW = &c, w
 					radius = mergeRadii(radius, pathRadius(op.Path))
 				case gfx.OpStrokeShadow:
-					c, w, sh := op.Color, op.Style.Width, op.Shadow
-					border, borderW, shadow = &c, w, &sh
+					c, w := op.Color, op.Style.Width
+					border, borderW = &c, w
+					shadows = addShadow(shadows, op.Shadow)
 					radius = mergeRadii(radius, pathRadius(op.Path))
 				case gfx.OpText, gfx.OpTextShadow:
 					c := op.Color
 					text = &c
 					lines = append(lines, op.Text)
 					if op.Kind == gfx.OpTextShadow {
-						sh := op.Shadow
-						shadow = &sh
+						shadows = addShadow(shadows, op.Shadow)
 					}
 				}
 			}
@@ -155,6 +267,7 @@ func node(pl *scene.Placed, path string) map[string]any {
 		"name":   placedName(pl),
 		"rect":   map[string]any{"x": round(pl.X), "y": round(pl.Y), "w": round(pl.W), "h": round(pl.H)},
 		"radius": []float64{round(radius[0]), round(radius[1]), round(radius[2]), round(radius[3])},
+		"rotate": round(rotate),
 		"clip":   clip,
 		"opacity": round(func() float64 {
 			if pl.Gfx != nil {
@@ -176,7 +289,7 @@ func node(pl *scene.Placed, path string) map[string]any {
 		out["borderWidth"] = nil
 	}
 	out["textColor"] = colorOf(text)
-	out["shadow"] = shadowOf(shadow)
+	out["shadows"] = shadowsOf(shadows)
 	out["gradient"] = gradientOf(grad)
 	return out
 }
@@ -323,16 +436,25 @@ func gradientOf(g *gfx.Gradient) any {
 	return map[string]any{"angle": round(angle), "stops": stops}
 }
 
-func shadowOf(s *gfx.Shadow) any {
-	if s == nil {
-		return nil
+// addShadow appends a shadow the picture paints, once: a fill and its border may share the same list.
+func addShadow(list []gfx.Shadow, s gfx.Shadow) []gfx.Shadow {
+	if n := len(list); n > 0 && list[n-1] == s {
+		return list
 	}
-	return map[string]any{
-		"dx":    round(s.DX),
-		"dy":    round(s.DY),
-		"blur":  round(s.Blur),
-		"color": hex(s.Color),
+	return append(list, s)
+}
+
+func shadowsOf(list []gfx.Shadow) []any {
+	out := make([]any, 0, len(list))
+	for _, s := range list {
+		out = append(out, map[string]any{
+			"dx":    round(s.DX),
+			"dy":    round(s.DY),
+			"blur":  round(s.Blur),
+			"color": hex(s.Color),
+		})
 	}
+	return out
 }
 
 func round(v float64) float64 {

@@ -1,6 +1,7 @@
 {
   "element": "Animations",
   "height": 386,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +50,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +76,8 @@
         "x": 40,
         "y": 40
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -98,7 +102,8 @@
         "x": 40,
         "y": 47.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "rotate 0 → 360°, linear, forever"
       ],
@@ -125,7 +130,8 @@
         "x": 304,
         "y": 40
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -150,7 +156,8 @@
         "x": 356,
         "y": 46
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -175,7 +182,8 @@
         "x": 40,
         "y": 96
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -200,7 +208,8 @@
         "x": 40,
         "y": 101.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "opacity 1 → 0.25, ease-in-out"
       ],
@@ -227,7 +236,8 @@
         "x": 304,
         "y": 96
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -252,7 +262,8 @@
         "x": 352,
         "y": 96
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -277,7 +288,8 @@
         "x": 40,
         "y": 148
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -302,7 +314,8 @@
         "x": 40,
         "y": 155.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "scale 1 → 1.4, twice"
       ],
@@ -329,7 +342,8 @@
         "x": 304,
         "y": 148
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -354,7 +368,8 @@
         "x": 356,
         "y": 148
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -379,7 +394,8 @@
         "x": 40,
         "y": 204
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -404,7 +420,8 @@
         "x": 40,
         "y": 213.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "opacity 0 → 1: 600ms and 2s"
       ],
@@ -431,7 +448,8 @@
         "x": 304,
         "y": 204
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -456,7 +474,8 @@
         "x": 408,
         "y": 204
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -481,7 +500,8 @@
         "x": 40,
         "y": 264
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -506,7 +526,8 @@
         "x": 40,
         "y": 269.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "colour #cf13a2 → #2f6bff"
       ],
@@ -533,7 +554,8 @@
         "x": 304,
         "y": 264
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -558,7 +580,8 @@
         "x": 40,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -583,7 +606,8 @@
         "x": 40,
         "y": 324.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "the animation is in the style"
       ],
@@ -610,7 +634,8 @@
         "x": 304,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -635,7 +660,8 @@
         "x": 304,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -660,7 +686,8 @@
         "x": 316,
         "y": 324
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Syncing"
       ],
@@ -687,7 +714,8 @@
         "x": 407,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -712,7 +740,8 @@
         "x": 407,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -737,7 +766,8 @@
         "x": 419,
         "y": 324
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Ready"
       ],
@@ -764,7 +794,8 @@
         "x": 494,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -789,7 +820,8 @@
         "x": 494,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -814,7 +846,8 @@
         "x": 506,
         "y": 324
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Failed"
       ],

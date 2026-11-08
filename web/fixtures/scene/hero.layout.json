@@ -1,6 +1,7 @@
 {
   "element": "Hero",
   "height": 600,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -60,7 +62,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -85,12 +88,15 @@
         "x": 48,
         "y": 48
       },
-      "shadow": {
-        "blur": 30,
-        "color": "#1725472e",
-        "dx": 0,
-        "dy": 12
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 30,
+          "color": "#1725472e",
+          "dx": 0,
+          "dy": 12
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -115,7 +121,8 @@
         "x": 48,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -140,7 +147,8 @@
         "x": 64,
         "y": 64
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -177,7 +185,8 @@
         "x": 64,
         "y": 64
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -202,7 +211,8 @@
         "x": 96,
         "y": 68.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Tenniarb"
       ],
@@ -229,7 +239,8 @@
         "x": 172,
         "y": 76
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -254,7 +265,8 @@
         "x": 208,
         "y": 69.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -279,7 +291,8 @@
         "x": 214,
         "y": 70.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "2.0"
       ],
@@ -306,7 +319,8 @@
         "x": 64,
         "y": 94
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -331,7 +345,8 @@
         "x": 64,
         "y": 108
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ПРОЕКТ"
       ],
@@ -358,7 +373,8 @@
         "x": 64,
         "y": 123
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -383,7 +399,8 @@
         "x": 73,
         "y": 129
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Экран оформления"
       ],
@@ -410,7 +427,8 @@
         "x": 64,
         "y": 154
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -435,7 +453,8 @@
         "x": 73,
         "y": 160
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Компоненты"
       ],
@@ -462,7 +481,8 @@
         "x": 64,
         "y": 185
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -487,7 +507,8 @@
         "x": 73,
         "y": 191
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Токены"
       ],
@@ -514,7 +535,8 @@
         "x": 64,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -539,7 +561,8 @@
         "x": 73,
         "y": 222
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "История"
       ],
@@ -566,7 +589,8 @@
         "x": 64,
         "y": 247
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -591,7 +615,8 @@
         "x": 64,
         "y": 254
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ФАЙЛЫ"
       ],
@@ -618,7 +643,8 @@
         "x": 64,
         "y": 269
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -643,7 +669,8 @@
         "x": 73,
         "y": 277
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -668,7 +695,8 @@
         "x": 85,
         "y": 274
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "design-kit.tenn"
       ],
@@ -695,7 +723,8 @@
         "x": 64,
         "y": 297
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -720,7 +749,8 @@
         "x": 73,
         "y": 305
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -745,7 +775,8 @@
         "x": 85,
         "y": 302
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "checkout.tenn"
       ],
@@ -772,7 +803,8 @@
         "x": 64,
         "y": 325
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -797,7 +829,8 @@
         "x": 64,
         "y": 508
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -822,7 +855,8 @@
         "x": 64,
         "y": 510.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -847,7 +881,8 @@
         "x": 76,
         "y": 508
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "MCP подключён"
       ],
@@ -874,7 +909,8 @@
         "x": 64,
         "y": 525
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "v2.0 · macOS"
       ],
@@ -901,7 +937,8 @@
         "x": 254,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -926,7 +963,8 @@
         "x": 255,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -951,7 +989,8 @@
         "x": 255,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -976,7 +1015,8 @@
         "x": 275,
         "y": 66
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Оформление"
       ],
@@ -1003,7 +1043,8 @@
         "x": 379,
         "y": 67
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1028,7 +1069,8 @@
         "x": 387,
         "y": 69
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Screen · 1200 × 600"
       ],
@@ -1055,7 +1097,8 @@
         "x": 517,
         "y": 74.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1080,7 +1123,8 @@
         "x": 648,
         "y": 62
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1105,7 +1149,8 @@
         "x": 660,
         "y": 68
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Просмотр"
       ],
@@ -1144,12 +1189,15 @@
         "x": 738,
         "y": 62
       },
-      "shadow": {
-        "blur": 12,
-        "color": "#cf13a24d",
-        "dx": 0,
-        "dy": 4
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 12,
+          "color": "#cf13a24d",
+          "dx": 0,
+          "dy": 4
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -1174,7 +1222,8 @@
         "x": 751,
         "y": 68
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Опубликовать"
       ],
@@ -1201,7 +1250,8 @@
         "x": 255,
         "y": 101
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1226,7 +1276,8 @@
         "x": 255,
         "y": 102
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1251,7 +1302,8 @@
         "x": 275,
         "y": 118
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1276,7 +1328,8 @@
         "x": 275,
         "y": 118
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1301,12 +1354,15 @@
         "x": 275,
         "y": 118
       },
-      "shadow": {
-        "blur": 10,
-        "color": "#17254714",
-        "dx": 0,
-        "dy": 3
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 10,
+          "color": "#17254714",
+          "dx": 0,
+          "dy": 3
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -1331,7 +1387,8 @@
         "x": 291,
         "y": 130
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1356,7 +1413,8 @@
         "x": 291,
         "y": 130.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Заказ #2841"
       ],
@@ -1383,7 +1441,8 @@
         "x": 385,
         "y": 137.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1408,7 +1467,8 @@
         "x": 807,
         "y": 130
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1433,7 +1493,8 @@
         "x": 815,
         "y": 132
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ok"
       ],
@@ -1460,7 +1521,8 @@
         "x": 291,
         "y": 151
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "3 позиции · доставка 12 ноября"
       ],
@@ -1487,7 +1549,8 @@
         "x": 291,
         "y": 169
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "$128.00"
       ],
@@ -1514,7 +1577,8 @@
         "x": 275,
         "y": 211
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1539,12 +1603,15 @@
         "x": 275,
         "y": 211
       },
-      "shadow": {
-        "blur": 10,
-        "color": "#17254714",
-        "dx": 0,
-        "dy": 3
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 10,
+          "color": "#17254714",
+          "dx": 0,
+          "dy": 3
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -1569,7 +1636,8 @@
         "x": 291,
         "y": 223
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1594,7 +1662,8 @@
         "x": 291,
         "y": 223.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Заказ #2842"
       ],
@@ -1621,7 +1690,8 @@
         "x": 385,
         "y": 230.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1646,7 +1716,8 @@
         "x": 795,
         "y": 223
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1671,7 +1742,8 @@
         "x": 803,
         "y": 225
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "warn"
       ],
@@ -1698,7 +1770,8 @@
         "x": 291,
         "y": 244
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "1 позиция · ждёт оплаты"
       ],
@@ -1725,7 +1798,8 @@
         "x": 291,
         "y": 262
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "$42.00"
       ],
@@ -1752,7 +1826,8 @@
         "x": 275,
         "y": 304
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1777,12 +1852,15 @@
         "x": 275,
         "y": 304
       },
-      "shadow": {
-        "blur": 10,
-        "color": "#17254714",
-        "dx": 0,
-        "dy": 3
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 10,
+          "color": "#17254714",
+          "dx": 0,
+          "dy": 3
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -1807,7 +1885,8 @@
         "x": 291,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1832,7 +1911,8 @@
         "x": 291,
         "y": 316.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Заказ #2843"
       ],
@@ -1859,7 +1939,8 @@
         "x": 385,
         "y": 323.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1884,7 +1965,8 @@
         "x": 807,
         "y": 316
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -1909,7 +1991,8 @@
         "x": 815,
         "y": 318
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ok"
       ],
@@ -1936,7 +2019,8 @@
         "x": 291,
         "y": 337
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "2 позиции · доставлен 9 ноября"
       ],
@@ -1963,7 +2047,8 @@
         "x": 291,
         "y": 355
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "$76.00"
       ],
@@ -2002,12 +2087,15 @@
         "x": 275,
         "y": 397
       },
-      "shadow": {
-        "blur": 16,
-        "color": "#cf13a238",
-        "dx": 0,
-        "dy": 6
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 16,
+          "color": "#cf13a238",
+          "dx": 0,
+          "dy": 6
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -2032,7 +2120,8 @@
         "x": 291,
         "y": 409
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Готово к публикации"
       ],
@@ -2059,7 +2148,8 @@
         "x": 291,
         "y": 426
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "0 ошибок · 2 предупреждения · 18 компонентов"
       ],
@@ -2086,7 +2176,8 @@
         "x": 275,
         "y": 459
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2111,7 +2202,8 @@
         "x": 275,
         "y": 511
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2136,7 +2228,8 @@
         "x": 275,
         "y": 516.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Итого $170.00"
       ],
@@ -2163,7 +2256,8 @@
         "x": 385,
         "y": 523.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2188,7 +2282,8 @@
         "x": 693,
         "y": 511
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2213,7 +2308,8 @@
         "x": 705,
         "y": 517
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Отмена"
       ],
@@ -2240,7 +2336,8 @@
         "x": 769,
         "y": 511
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2265,7 +2362,8 @@
         "x": 781,
         "y": 517
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Оплатить"
       ],
@@ -2292,7 +2390,8 @@
         "x": 871,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2317,7 +2416,8 @@
         "x": 872,
         "y": 48
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2342,7 +2442,8 @@
         "x": 888,
         "y": 64
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "КОМПОНЕНТ"
       ],
@@ -2369,7 +2470,8 @@
         "x": 888,
         "y": 83
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2406,7 +2508,8 @@
         "x": 888,
         "y": 83.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2431,7 +2534,8 @@
         "x": 895,
         "y": 91
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "OC"
       ],
@@ -2458,7 +2562,8 @@
         "x": 922,
         "y": 83
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2483,7 +2588,8 @@
         "x": 922,
         "y": 83
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "OrderCard"
       ],
@@ -2510,7 +2616,8 @@
         "x": 922,
         "y": 99
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "design-kit.tenn"
       ],
@@ -2537,7 +2644,8 @@
         "x": 1020,
         "y": 96.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2562,7 +2670,8 @@
         "x": 1086,
         "y": 89
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2587,7 +2696,8 @@
         "x": 1093,
         "y": 91
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "3 экз."
       ],
@@ -2614,7 +2724,8 @@
         "x": 888,
         "y": 120
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2639,7 +2750,8 @@
         "x": 888,
         "y": 131
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ПАРАМЕТРЫ"
       ],
@@ -2666,7 +2778,8 @@
         "x": 888,
         "y": 150
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2691,7 +2804,8 @@
         "x": 888,
         "y": 150
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "name"
       ],
@@ -2718,7 +2832,8 @@
         "x": 1063,
         "y": 150
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Заказ #2841"
       ],
@@ -2745,7 +2860,8 @@
         "x": 888,
         "y": 172
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2770,7 +2886,8 @@
         "x": 888,
         "y": 172
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "meta"
       ],
@@ -2797,7 +2914,8 @@
         "x": 1076,
         "y": 172
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "3 позиции"
       ],
@@ -2824,7 +2942,8 @@
         "x": 888,
         "y": 194
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2849,7 +2968,8 @@
         "x": 888,
         "y": 194
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "total"
       ],
@@ -2876,7 +2996,8 @@
         "x": 1089,
         "y": 194
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "$128.00"
       ],
@@ -2903,7 +3024,8 @@
         "x": 888,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2928,7 +3050,8 @@
         "x": 888,
         "y": 216.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "tone"
       ],
@@ -2955,7 +3078,8 @@
         "x": 1110,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -2980,7 +3104,8 @@
         "x": 1117,
         "y": 217
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ok"
       ],
@@ -3007,7 +3132,8 @@
         "x": 888,
         "y": 239
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3032,7 +3158,8 @@
         "x": 888,
         "y": 250
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ИСПОЛЬЗОВАНИЕ"
       ],
@@ -3059,7 +3186,8 @@
         "x": 888,
         "y": 269
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3084,7 +3212,8 @@
         "x": 900,
         "y": 279
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "use OrderCard as order {"
       ],
@@ -3111,7 +3240,8 @@
         "x": 900,
         "y": 293
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "  tone ok"
       ],
@@ -3138,7 +3268,8 @@
         "x": 900,
         "y": 307
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "}"
       ],
@@ -3165,7 +3296,8 @@
         "x": 888,
         "y": 338
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3190,7 +3322,8 @@
         "x": 888,
         "y": 349
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "ПРОВЕРКА"
       ],
@@ -3217,7 +3350,8 @@
         "x": 888,
         "y": 368
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3242,7 +3376,8 @@
         "x": 888,
         "y": 368
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Ошибки"
       ],
@@ -3269,7 +3404,8 @@
         "x": 1129,
         "y": 368
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "0"
       ],
@@ -3296,7 +3432,8 @@
         "x": 888,
         "y": 390
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3321,7 +3458,8 @@
         "x": 888,
         "y": 390
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Предупреждения"
       ],
@@ -3348,7 +3486,8 @@
         "x": 1129,
         "y": 390
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "2"
       ],
@@ -3375,7 +3514,8 @@
         "x": 888,
         "y": 412
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3400,7 +3540,8 @@
         "x": 888,
         "y": 412
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Компонентов"
       ],
@@ -3427,7 +3568,8 @@
         "x": 1122,
         "y": 412
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "18"
       ],
@@ -3454,7 +3596,8 @@
         "x": 888,
         "y": 434
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3479,7 +3622,8 @@
         "x": 888,
         "y": 493
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3516,7 +3660,8 @@
         "x": 888,
         "y": 494.5
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -3541,7 +3686,8 @@
         "x": 1118,
         "y": 493
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "90°"
       ],
@@ -3568,7 +3714,8 @@
         "x": 888,
         "y": 514
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Компонент описан один раз — экземпляры",
         "отличаются параметрами"

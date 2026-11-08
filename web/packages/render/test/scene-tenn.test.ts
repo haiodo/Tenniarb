@@ -11,12 +11,22 @@ import type { Canvas2D } from "../src/canvas-types.ts";
 import { renderTenn } from "../src/node.ts";
 import { newCanvas } from "./helpers.ts";
 
-/** A Canvas2D that records what is painted: fills, strokes, text and the alpha in force. */
-function record(): { ctx: Canvas2D; fills: string[]; strokes: string[]; texts: { text: string; fill: string; font: string }[] } {
+/** A Canvas2D that records what is painted: fills, strokes, paths, dashes, text and the alpha in force. */
+function record(): {
+  ctx: Canvas2D;
+  fills: string[];
+  strokes: string[];
+  paths: (string | number)[][][];
+  dashes: { dash: number[]; phase: number }[];
+  texts: { text: string; fill: string; font: string }[];
+} {
   const fills: string[] = [];
   const strokes: string[] = [];
+  const paths: (string | number)[][][] = [];
+  const dashes: { dash: number[]; phase: number }[] = [];
   const texts: { text: string; fill: string; font: string }[] = [];
-  const state = { fill: "rgb(0,0,0)", stroke: "rgb(0,0,0)", alpha: 1, font: "" };
+  let pen: (string | number)[][] = [];
+  const state = { fill: "rgb(0,0,0)", stroke: "rgb(0,0,0)", alpha: 1, font: "", dash: [] as number[], phase: 0 };
   const stack: (typeof state)[] = [];
   const paint = (c: string): string => (state.alpha === 1 || !c.startsWith("rgb(") ? c : c.replace("rgb(", "rgba(").replace(")", `,${state.alpha})`));
   const ctx: Canvas2D = {
@@ -24,22 +34,39 @@ function record(): { ctx: Canvas2D; fills: string[]; strokes: string[]; texts: {
     restore: () => Object.assign(state, stack.pop() ?? state),
     translate: () => {},
     scale: () => {},
-    beginPath: () => {},
-    moveTo: () => {},
-    lineTo: () => {},
+    rotate: () => {},
+    beginPath: () => {
+      pen = [];
+    },
+    moveTo: (x: number, y: number) => {
+      pen.push(["m", x, y]);
+    },
+    lineTo: (x: number, y: number) => {
+      pen.push(["l", x, y]);
+    },
     arcTo: () => {},
-    quadraticCurveTo: () => {},
-    closePath: () => {},
+    quadraticCurveTo: (cx: number, cy: number, x: number, y: number) => {
+      pen.push(["q", cx, cy, x, y]);
+    },
+    closePath: () => {
+      pen.push(["z"]);
+    },
     rect: () => {},
     ellipse: () => {},
     clip: () => {},
     fill: () => fills.push(paint(state.fill)),
-    stroke: () => strokes.push(paint(state.stroke)),
+    stroke: () => {
+      strokes.push(paint(state.stroke));
+      paths.push(pen.map((cmd) => [...cmd]));
+      dashes.push({ dash: [...state.dash], phase: state.phase });
+    },
     fillRect: () => {},
     fillText: (text: string) => texts.push({ text, fill: paint(state.fill), font: state.font }),
     measureText: (text: string) => ({ width: [...text].length * 10 }),
     drawImage: () => {},
-    setLineDash: () => {},
+    setLineDash: (segments: number[]) => {
+      state.dash = [...segments];
+    },
     get fillStyle() {
       return state.fill;
     },
@@ -65,14 +92,19 @@ function record(): { ctx: Canvas2D; fills: string[]; strokes: string[]; texts: {
       state.font = v;
     },
     lineWidth: 1,
-    lineDashOffset: 0,
+    get lineDashOffset() {
+      return state.phase;
+    },
+    set lineDashOffset(v: number) {
+      state.phase = v;
+    },
     shadowColor: "",
     shadowBlur: 0,
     shadowOffsetX: 0,
     shadowOffsetY: 0,
     textBaseline: "alphabetic",
   };
-  return { ctx, fills, strokes, texts };
+  return { ctx, fills, strokes, paths, dashes, texts };
 }
 
 function scene(text: string, name = "Screen"): { scene: TennScene; element: Element } {
@@ -365,6 +397,74 @@ test("a link is drawn edge to edge, with an arrow head when display says so", ()
   assert.deepEqual(p.fills, ["rgb(255,0,0)", "rgb(255,0,0)", "rgb(0,0,0)"]);
 });
 
+test("route elbow leaves the sides it names and rounds its corners", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Stage {
+        width 400; height 300; auto-layout abs; color none; border-color none
+        item A { pos 0 0; width 20; height 20 }
+        item B { pos 200 -100; width 20; height 20 }
+        link A B { route elbow bottom top }
+    }
+}`);
+  assert.deepEqual(s.diagnostics, []);
+  // A's bottom (10,20) to B's top (210,100), the two corners bent by the default 12.
+  assert.deepEqual(paint(s).paths, [
+    [
+      ["m", 10, 20],
+      ["l", 10, 48],
+      ["q", 10, 60, 22, 60],
+      ["l", 198, 60],
+      ["q", 210, 60, 210, 72],
+      ["l", 210, 100],
+    ],
+  ]);
+});
+
+test("two links on one side spread along it in the order of the far ends", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Stage {
+        width 400; height 300; auto-layout abs; color none; border-color none
+        item A { pos 0 0; width 20; height 20 }
+        item B { pos 200 0; width 20; height 20 }
+        item C { pos 200 -100; width 20; height 20 }
+        link A B { route elbow right left }
+        link A C { route elbow right left }
+    }
+}`);
+  // B sits above C, so its link leaves A's right side first: one third and two thirds down.
+  const starts = paint(s).paths.map((path) => path[0]!);
+  assert.deepEqual(starts.map((cmd) => cmd[1]), [20, 20]);
+  assert.ok(Math.abs((starts[0]![2] as number) - 20 / 3) < 0.001, `first start ${starts[0]![2]}`);
+  assert.ok(Math.abs((starts[1]![2] as number) - 40 / 3) < 0.001, `second start ${starts[1]![2]}`);
+});
+
+test("line-style dashed on a link sets its dash and phase", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Stage {
+        width 400; height 300; auto-layout abs; color none; border-color none
+        item A { pos 0 0; width 20; height 20 }
+        item B { pos 200 0; width 20; height 20 }
+        link A B { line-style dashed }
+    }
+}`);
+  assert.deepEqual(paint(s).dashes, [{ dash: [5, 5], phase: 5 }]);
+});
+
+test("a link whose end is an item of another parent fails", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item A { pos 0 0; width 20; height 20 }
+    item Box {
+        pos 100 0; width 60; height 60
+        item Inner { width 10; height 10 }
+    }
+    link A Inner
+}`);
+  assert.deepEqual(
+    s.diagnostics.map((d) => [d.message, d.warn]),
+    [['link "A" "Inner": both ends must be items of the same parent', false]],
+  );
+});
+
 test("an item above the origin is part of the picture", () => {
   const { scene: s } = scene(`element "Screen" { item A { pos 10 10; width 20; height 10; color #ff0000 } }`);
   // pos 10 10 is 10 up: the picture spans layout y -10..10, so the box reaches 10 above the origin.
@@ -518,4 +618,48 @@ test("an SVG export of a gradient and a shadow keeps the base fill and casts the
   // The SVG writer has no gradient object: the box takes the base colour of the gradient.
   assert.match(svg, /fill="rgb\(255,0,0\)"/);
   assert.match(svg, /<feDropShadow /);
+});
+
+test("a box that holds items draws neither its name nor its body", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Box {
+        width 200; height 100; color #ffffff; body "hidden"
+        item In { width 50; height 20; title "in" }
+    }
+    item Leaf { pos 0 -120; width 100; height 40; body "shown" }
+    item C { auto-layout row; color none }
+}`);
+  assert.deepEqual(paint(s).texts.map((t) => t.text), ["in", "Leaf", "shown"]);
+});
+
+test("each shadow line is a pass under the fill", () => {
+  const one = paint(
+    scene(`element "Screen" {
+    item A { width 40; height 20; title ""; color #ffffff; shadow 0 2 4 }
+    item C { auto-layout row; color none }
+}`).scene,
+  );
+  const two = paint(
+    scene(`element "Screen" {
+    item A { width 40; height 20; title ""; color #ffffff; shadow 0 2 4; shadow 0 8 24 #00000018 }
+    item C { auto-layout row; color none }
+}`).scene,
+  );
+  assert.equal(one.fills.length, 1);
+  assert.equal(two.fills.length, 2);
+});
+
+test("line-style dashed sets the dash and its phase on the border", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item A { width 100; height 40; title ""; line-style dashed }
+    item C { auto-layout row; color none }
+}`);
+  assert.deepEqual(paint(s).dashes, [{ dash: [5, 5], phase: 5 }]);
+  const dotted = paint(
+    scene(`element "Screen" {
+    item A { width 100; height 40; title ""; line-style dotted }
+    item C { auto-layout row; color none }
+}`).scene,
+  );
+  assert.deepEqual(dotted.dashes, [{ dash: [1, 4], phase: 1 }]);
 });

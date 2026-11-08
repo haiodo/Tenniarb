@@ -1,0 +1,25 @@
+// `shadow` may be written more than once (spec 5b): the passes are drawn in file order, the last one on
+// top. A border without a fill casts its shadow too.
+element "Shadows" {
+    item Stage {
+        width 420; height 260; auto-layout abs; color #f7f7f7
+
+        item Two {
+            pos 30 -30; width 160; height 100; color #ffffff; corner-radius 16
+            shadow 0 8 24 #00000018
+            shadow 0 2 4 #00000030
+        }
+
+        item BorderOnly {
+            pos 230 -30; width 160; height 100; corner-radius 16; color none
+            border #3355ff; line-width 3
+            shadow 0 6 18 #3355ff40
+        }
+
+        item Titled {
+            pos 30 -170; width 160; height 60; color #ffffff
+            shadow 2 2 0 #00000080
+            title "hard"
+        }
+    }
+}

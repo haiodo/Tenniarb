@@ -1,0 +1,38 @@
+// What a node draws as text (spec 5a): the name of a leaf outside a layout, a title anywhere, and
+// never the body of a node that holds items.
+element "Rules" {
+    item Stage {
+        width 640; height 420; auto-layout abs; color #ffffff
+
+        item LeafName { pos 20 -20; width 120; height 40; color #eeeeee }
+        item LeafTitle { pos 160 -20; width 120; height 40; title "Titled"; color #eeeeee }
+
+        // Holds items: the name is only a path segment, the body is not drawn.
+        item Box {
+            pos 20 -80; width 260; height 100; color #ddeeff; auto-layout column; padding 8
+            body "not drawn"
+            item InBox { width fill; height 20; title "inside"; color #ffffff }
+        }
+
+        // Holds items and has a title: the title is the text.
+        item TitledBox {
+            pos 300 -80; width 200; height 100; color #ffe8cc; auto-layout column; padding 8
+            title "Box title"
+            item InTitled { width fill; height 20; color #ffffff }
+        }
+
+        // A leaf keeps its body under the title.
+        item LeafBody {
+            pos 20 -200; width 260; height 80; color #eeeeee; title Leaf; body "first line"
+        }
+
+        // Inside a layout a leaf is only its title: the name is a path segment here too.
+        item Column {
+            pos 300 -200; width 200; height 120; auto-layout column; gap 4; padding 4; color #f4f4f4
+            item Named { width fill; height 18; color #ffffff }
+            item Titled { width fill; height 18; title "in flow"; color #ffffff }
+        }
+
+        use LeafName as Alias { pos 20 -320; width 120; height 40 }
+    }
+}

@@ -1,0 +1,7 @@
+// width and height of an element size the screen (spec 5b); the items inside are laid out as usual.
+element "Sized" {
+    width 500; height 400
+
+    item Card { pos 20 -20; width 100; height 40; color #dddddd; auto-layout row }
+    item Bottom { pos 20 -340; width 120; height 40; color #bfd8ff }
+}

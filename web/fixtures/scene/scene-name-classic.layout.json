@@ -1,0 +1,172 @@
+{
+  "element": "Classic",
+  "height": 240,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Classic",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 240,
+        "w": 200,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "LeafName",
+      "opacity": 1,
+      "path": "LeafName",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "LeafName"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "LeafTitle",
+      "opacity": 1,
+      "path": "LeafTitle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Titled"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 100,
+        "w": 200,
+        "x": 0,
+        "y": 80
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Inside",
+      "opacity": 1,
+      "path": "Box.Inside",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 20,
+        "w": 60,
+        "x": 10,
+        "y": 90
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Inside"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eeeeee",
+      "gradient": null,
+      "name": "Alias",
+      "opacity": 1,
+      "path": "Alias",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 0,
+        "y": 200
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Alias"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 200
+}

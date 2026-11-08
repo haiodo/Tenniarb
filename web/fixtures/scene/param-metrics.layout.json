@@ -1,6 +1,7 @@
 {
   "element": "Metrics",
   "height": 230,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +50,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +76,8 @@
         "x": 32,
         "y": 32
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -98,7 +102,8 @@
         "x": 32,
         "y": 32
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "This week"
       ],
@@ -125,7 +130,8 @@
         "x": 32,
         "y": 57
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Four cards, one component"
       ],
@@ -152,7 +158,8 @@
         "x": 32,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -177,7 +184,8 @@
         "x": 32,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -202,7 +210,8 @@
         "x": 32,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -227,7 +236,8 @@
         "x": 48,
         "y": 106
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "MRR"
       ],
@@ -254,7 +264,8 @@
         "x": 48,
         "y": 129
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "$48.2k"
       ],
@@ -281,7 +292,8 @@
         "x": 48,
         "y": 169
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "+12.4%"
       ],
@@ -308,7 +320,8 @@
         "x": 280,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -333,7 +346,8 @@
         "x": 280,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -358,7 +372,8 @@
         "x": 296,
         "y": 106
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Sign-ups"
       ],
@@ -385,7 +400,8 @@
         "x": 296,
         "y": 129
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "1 284"
       ],
@@ -412,7 +428,8 @@
         "x": 296,
         "y": 169
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "+3.1%"
       ],
@@ -439,7 +456,8 @@
         "x": 528,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -464,7 +482,8 @@
         "x": 528,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -489,7 +508,8 @@
         "x": 544,
         "y": 106
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Churn"
       ],
@@ -516,7 +536,8 @@
         "x": 544,
         "y": 129
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "2.8%"
       ],
@@ -543,7 +564,8 @@
         "x": 544,
         "y": 169
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "+0.6%"
       ],
@@ -570,7 +592,8 @@
         "x": 776,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -595,7 +618,8 @@
         "x": 776,
         "y": 90
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -620,7 +644,8 @@
         "x": 792,
         "y": 106
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "NPS"
       ],
@@ -647,7 +672,8 @@
         "x": 792,
         "y": 129
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "41"
       ],
@@ -674,7 +700,8 @@
         "x": 792,
         "y": 169
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "no change"
       ],

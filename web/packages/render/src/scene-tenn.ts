@@ -3091,10 +3091,14 @@ interface Look {
   fill: Color;
   /** The `color linear` of the box, painted over fill (the first visible stop, as Go's gradient.base). */
   grad: SceneGradient | null;
-  shadow: SceneShadow | null;
+  /** Every `shadow` of the box in file order, painted one pass each, the last on top. */
+  shadows: SceneShadow[];
   border: Color;
   text: Color;
   lineW: number;
+  /** `line-style` dashes for the border; empty is a solid line. */
+  dash: number[];
+  dashPhase: number;
   radius: [number, number, number, number];
   clip: boolean;
   opacity: number;
@@ -3209,13 +3213,28 @@ function gradientBase(g: SceneGradient): Color {
 const defaultShadowBlur = 5;
 const defaultShadowColor: Color = { r: 0, g: 0, b: 0, a: 1 / 3 };
 
-/** Go's prep.shadow; blur 5 and black at 1/3 alpha by default. A bad offset drops the shadow. */
-function shadowOf(prep: Prep, rn: RNode): SceneShadow | null {
-  const p = propOf(prep, rn, "shadow");
-  if (p === null) {
-    return null;
+/** Go's prep.shadows: every `shadow` property in file order, the last painted on top. */
+function shadowsOf(prep: Prep, rn: RNode): SceneShadow[] {
+  const out: SceneShadow[] = [];
+  for (const raw of rn.props) {
+    if (raw.name !== "shadow") {
+      continue;
+    }
+    const p = hasExpr(raw) ? evaluate(prep.diag, rn, raw) : raw;
+    if (p === null) {
+      continue;
+    }
+    const sh = shadowOf(prep, rn, p);
+    if (sh !== null) {
+      out.push(sh);
+    }
   }
-  const at = rn.src ?? { line: 0, col: 0 };
+  return out;
+}
+
+/** Go's prep.shadowOf; blur 5 and black at 1/3 alpha by default. A bad offset drops that shadow. */
+function shadowOf(prep: Prep, rn: RNode, p: SceneProp): SceneShadow | null {
+  const at = p.pos ?? rn.src ?? { line: 0, col: 0 };
   const dx = propNum(p, 0);
   const dy = propNum(p, 1);
   if (dx === null || dy === null) {
@@ -3272,6 +3291,12 @@ interface Prep {
   bodies: Map<RNode, BodyText>;
   /** The text block a body takes in the flow of an auto-layout item, after its children. */
   bodyAt: Map<RNode, LayoutNode>;
+  /** The ends and the look of every link, resolved once: go/scene's prep.ends and linkStyle. */
+  links: Map<RNode, LinkPlan>;
+  /** Where every elbow link leaves and enters the sides of its boxes, per parent. */
+  linkSides: Map<RNode, LinkSides>;
+  /** The static `rotate` of every node, read at build: go/scene reads it in emit. */
+  rotations: Map<RNode, number>;
   /** Reads the markdown of `body --from-file`; null when the caller gave no reader. */
   readFile: ((path: string) => string | null) | null;
 }
@@ -3363,12 +3388,31 @@ function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions =
     icons: new Map(),
     bodies: new Map(),
     bodyAt: new Map(),
+    links: new Map(),
+    linkSides: new Map(),
+    rotations: new Map(),
     readFile: options.readFile ?? null,
   };
   animations(expanded, new Map(), diag);
   const root = newLayout(expanded);
   root.dir = "abs";
+  // The root sizes the screen: a number is its box (spec 5b), as in Go's root().
+  const rw = propOf(prep, expanded, "width");
+  const rv = rw === null ? null : propNum(rw, 0);
+  if (rv !== null) {
+    root.w = fixed(rv);
+  }
+  const rh = propOf(prep, expanded, "height");
+  const rvH = rh === null ? null : propNum(rh, 0);
+  if (rvH !== null) {
+    root.h = fixed(rvH);
+  }
   prep.frames.set(expanded, root);
+  const turned = (n: RNode): void => {
+    prep.rotations.set(n, rotationOf(prep, n));
+    n.kids.forEach(turned);
+  };
+  turned(expanded);
   for (const k of expanded.kids) {
     if (k.kind === "item" && !flag(prep, k, "hidden")) {
       root.kids.push(itemNode(prep, k, false, colorBlack));
@@ -3414,6 +3458,20 @@ function evaluate(diag: Diagnostics, rn: RNode, p: SceneProp): SceneProp | null 
     val.push(v);
   }
   return { name: p.name, args: p.args, block: p.block, val, pos: p.pos };
+}
+
+/** Go's prep.rotation: degrees clockwise, about the middle of what the item draws. */
+function rotationOf(prep: Prep, rn: RNode): number {
+  const p = propOf(prep, rn, "rotate");
+  if (p === null) {
+    return 0;
+  }
+  const v = propNum(p, 0);
+  if (v !== null) {
+    return v;
+  }
+  prep.diag.warn(p.pos ?? rn.src ?? { line: 0, col: 0 }, "rotate takes degrees, as in rotate 15; ignored");
+  return 0;
 }
 
 function num(prep: Prep, rn: RNode, name: string): number | null {
@@ -3501,10 +3559,15 @@ function paddingOf(prep: Prep, rn: RNode): [number, number, number, number] {
 }
 
 function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
-  let title = inCtx ? "" : rn.name;
+  // The name of a box that holds items is only a path segment; its text is a title if one is written.
+  let title = inCtx || holdsItems(rn) ? "" : rn.name;
   const p = propOf(prep, rn, "title");
   if (p !== null) {
     title = propText(p, 0);
+    // A bare text with spaces is several arguments, and only the first would be drawn.
+    if (p.args.length > 1) {
+      prep.diag.fail(p.pos ?? rn.src ?? { line: 0, col: 0 }, `title takes one value; quote a text with spaces: title "Sign in"`);
+    }
   }
   if (title === "") {
     return null;
@@ -3515,6 +3578,8 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     const v = propNum(fs, 0);
     if (v !== null && v > 0) {
       size = v;
+    } else if (v !== null) {
+      prep.diag.warn(fs.pos ?? rn.src ?? { line: 0, col: 0 }, `font-size: ${goNum(v)} is not above 0, the default is used`);
     }
   }
   const ti: TextInfo = {
@@ -3532,6 +3597,8 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     const v = propNum(lh, 0);
     if (v !== null && v > 0) {
       ti.lineH = v;
+    } else {
+      prep.diag.warn(lh.pos ?? rn.src ?? { line: 0, col: 0 }, "line-height: not a number above 0, ignored");
     }
   }
   const layoutProp = propOf(prep, rn, "layout");
@@ -3598,10 +3665,12 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   const look: Look = {
     fill: inCtx ? noColor : colorWhite,
     grad: null,
-    shadow: null,
+    shadows: [],
     border: inCtx ? noColor : colorBlack,
     text: up,
     lineW: 1,
+    dash: [],
+    dashPhase: 0,
     radius: [0, 0, 0, 0],
     clip: false,
     opacity: 1,
@@ -3609,7 +3678,7 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   const fill = fillOf(prep, rn, look.fill);
   look.fill = fill.fill;
   look.grad = fill.grad;
-  look.shadow = shadowOf(prep, rn);
+  look.shadows = shadowsOf(prep, rn);
   look.border = colorOf(prep, rn, "border-color", look.border);
   let text = up;
   if (look.fill.a > 0) {
@@ -3620,6 +3689,9 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   if (lw !== null) {
     look.lineW = lw;
   }
+  const line = dashOf(prep, rn);
+  look.dash = line.dash;
+  look.dashPhase = line.phase;
   const radius = propOf(prep, rn, "corner-radius");
   if (radius !== null) {
     look.radius = radii(prep, radius);
@@ -3632,6 +3704,25 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     look.clip = flag(prep, rn, "clip");
   }
   return look;
+}
+
+/** Go's prep.dash: the dashes of a classic diagram's border; a bad word warns and leaves it solid. */
+function dashOf(prep: Prep, rn: RNode): { dash: number[]; phase: number } {
+  const p = propOf(prep, rn, "line-style");
+  if (p === null) {
+    return { dash: [], phase: 0 };
+  }
+  const s = propText(p, 0);
+  switch (s) {
+    case "dashed":
+      return { dash: [5, 5], phase: 5 };
+    case "dotted":
+      return { dash: [1, 4], phase: 1 };
+    case "solid":
+      return { dash: [], phase: 0 };
+  }
+  prep.diag.warn(p.pos ?? rn.src ?? { line: 0, col: 0 }, `line-style takes solid, dashed or dotted, got "${s}"`);
+  return { dash: [], phase: 0 };
 }
 
 /** corner-radius: one value for all corners or four in CSS order. */
@@ -3696,7 +3787,8 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
   // The root of an instance that holds items is a container, not a box of its own.
   const look = lookOf(prep, rn, inCtx || (rn.inst && holdsItems(rn)), up);
   prep.looks.set(rn, look);
-  const body = bodyOf(prep, rn, look.text, inCtx);
+  // A body is the content of a leaf; an item that holds items shows them instead.
+  const body = holdsItems(rn) ? null : bodyOf(prep, rn, look.text, inCtx);
   if (body !== null) {
     prep.bodies.set(rn, body);
   }
@@ -4201,6 +4293,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
   applyStyles(expanded);
   const { prep, root } = prepare(expanded, diag, options);
   layoutRoot(root);
+  planLinks(expanded, prep);
   warnBodyFit(prep, expanded);
   const width = root.rw;
   const height = root.rh;
@@ -4236,6 +4329,15 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
     const look = prep.looks.get(rn);
     ctx.save();
     ctx.translate(ln.rx, ln.ry);
+    const deg = prep.rotations.get(rn) ?? 0;
+    if (deg !== 0) {
+      const cx = ln.rw / 2;
+      const cy = ln.rh / 2;
+      ctx.translate(cx, cy);
+      // The scene is drawn inside scale(1, -1), so a clockwise turn is a negative canvas angle.
+      ctx.rotate((-deg * Math.PI) / 180);
+      ctx.translate(-cx, -cy);
+    }
     const opacity = look?.opacity ?? 1;
     if (opacity < 1) {
       ctx.globalAlpha = (ctx.globalAlpha ?? 1) * opacity;
@@ -4256,31 +4358,29 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             roundRectPath(ctx, 0, 0, w, h, look.radius);
             ctx.clip();
           }
-          // Go's picture(): the shadow goes under the fill; a gradient is painted over an opaque base, since
-          // a canvas gradient with a shadow casts it from the gradient's alpha; a border without a fill casts it.
-          let shadow = look.shadow;
+          // Go's picture(): one shadow pass per `shadow`, under the fill; a gradient is painted over an
+          // opaque base, since a canvas gradient with a shadow casts it from the gradient's alpha; a
+          // border without a fill casts the shadow instead.
+          let shadows = look.shadows;
           if (look.fill.a > 0) {
             roundRectPath(ctx, 0, 0, w, h, look.radius);
+            const base = { ...look.fill, a: 1 };
+            for (const sh of shadows) {
+              withShadow(ctx, sh, () => {
+                ctx.fillStyle = sceneCss(base);
+                ctx.fill();
+              });
+            }
             if (look.grad !== null) {
-              if (shadow !== null) {
-                const base = { ...look.fill, a: 1 };
-                withShadow(ctx, shadow, () => {
-                  ctx.fillStyle = sceneCss(base);
-                  ctx.fill();
-                });
-              }
               if (!fillGradient(ctx, look.grad, w, h)) {
                 ctx.fillStyle = sceneCss(look.fill);
                 ctx.fill();
               }
-            } else if (shadow !== null) {
-              ctx.fillStyle = sceneCss(look.fill);
-              withShadow(ctx, shadow, () => ctx.fill());
-            } else {
+            } else if (shadows.length === 0) {
               ctx.fillStyle = sceneCss(look.fill);
               ctx.fill();
             }
-            shadow = null;
+            shadows = [];
           }
           if (look.lineW > 0 && look.border.a > 0) {
             const inset = look.lineW / 2;
@@ -4288,11 +4388,18 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             roundRectPath(ctx, inset, inset, w - look.lineW, h - look.lineW, radius);
             ctx.lineWidth = look.lineW;
             ctx.strokeStyle = sceneCss(look.border);
-            if (shadow !== null) {
-              withShadow(ctx, shadow, () => ctx.stroke());
+            ctx.setLineDash(look.dash);
+            ctx.lineDashOffset = look.dashPhase;
+            if (shadows.length > 0) {
+              for (const sh of shadows) {
+                withShadow(ctx, sh, () => ctx.stroke());
+              }
             } else {
               ctx.stroke();
             }
+            // The dash belongs to this border: a child icon or a link is not dashed.
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
           }
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {
@@ -4315,7 +4422,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
       if (k.kind === "item" && kn !== undefined) {
         drawNode(ctx, k, kn, false);
       } else if (k.kind === "link") {
-        drawLink(ctx, prep, k, rn);
+        drawLink(ctx, prep, k, prep.linkSides.get(rn) ?? null);
       }
     }
     const bodyAt = prep.bodyAt.get(rn);
@@ -4354,48 +4461,318 @@ function evalTree(rn: RNode, diag: Diagnostics): void {
   }
 }
 
-/** A link line between the boxes of its two ends, from edge to edge (go/scene/build.go link). */
-function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, parent: RNode): void {
-  const byName = new Map<string, RNode[]>();
-  for (const k of parent.kids) {
-    if (k.kind === "item") {
-      const list = byName.get(k.name.normalize("NFC")) ?? [];
-      list.push(k);
-      byName.set(k.name.normalize("NFC"), list);
-    }
+// Sides of a box in layout coordinates: X grows to the right, Y down.
+const sideRight = 0;
+const sideLeft = 1;
+const sideTop = 2;
+const sideBottom = 3;
+
+// elbowRadius is the bend of an elbow link; corner-radius on the link overrides it.
+const elbowRadius = 12;
+
+interface ElbowCorner {
+  side: number;
+  f: number;
+}
+
+interface LinkSides {
+  starts: Map<RNode, ElbowCorner>;
+  finishes: Map<RNode, ElbowCorner>;
+}
+
+interface LinkPlan {
+  ends: [RNode, RNode];
+  color: Color;
+  width: number;
+  dash: number[];
+  phase: number;
+}
+
+function sideWord(s: string): number | null {
+  switch (s) {
+    case "right":
+      return sideRight;
+    case "left":
+      return sideLeft;
+    case "top":
+      return sideTop;
+    case "bottom":
+      return sideBottom;
   }
-  const end = (name: string, prop: string): RNode | null => {
-    const index = num(prep, lk, prop) ?? 0;
-    const list = byName.get(name.normalize("NFC")) ?? [];
-    return index >= 0 && index < list.length ? list[index]! : null;
-  };
-  const aNode = end(lk.from, "source-index");
-  const bNode = end(lk.to, "target-index");
-  if (aNode === null || bNode === null) {
+  return null;
+}
+
+const sideVertical = (side: number): boolean => side === sideLeft || side === sideRight;
+
+/** route as written on a link, without a warning: the elbow layout reads it many times. */
+function routeWord(prep: Prep, lk: RNode): string {
+  const p = propOf(prep, lk, "route");
+  return p === null ? "" : propText(p, 0);
+}
+
+const isElbow = (prep: Prep, lk: RNode): boolean => routeWord(prep, lk) === "elbow";
+
+/** Sides the elbow leaves and enters: the ones the route names, else the sides that look at each other. */
+function routeSides(prep: Prep, lk: RNode, a: LayoutNode, c: LayoutNode): [number, number] {
+  const want = facingSides(a, c);
+  const p = propOf(prep, lk, "route");
+  if (p === null) {
+    return want;
+  }
+  for (let i = 0; i < 2; i += 1) {
+    if (i + 1 >= p.args.length) {
+      break;
+    }
+    const word = propText(p, i + 1);
+    const side = sideWord(word);
+    if (side === null) {
+      prep.diag.warn(p.pos ?? lk.src ?? { line: 0, col: 0 }, `a route side is left, right, top or bottom, got "${word}"`);
+      continue;
+    }
+    want[i] = side;
+  }
+  return want;
+}
+
+/** checkRoute warns about a route the format does not know; a link without one is straight. */
+function checkRoute(prep: Prep, lk: RNode): void {
+  const s = routeWord(prep, lk);
+  if (s === "" || s === "straight" || s === "elbow") {
     return;
   }
-  const a = prep.frames.get(aNode);
-  const b = prep.frames.get(bNode);
+  const p = propOf(prep, lk, "route");
+  prep.diag.warn(p?.pos ?? lk.src ?? { line: 0, col: 0 }, `route takes straight or elbow, got "${s}"`);
+}
+
+function facingSides(a: LayoutNode, c: LayoutNode): [number, number] {
+  const dx = c.rx + c.rw / 2 - (a.rx + a.rw / 2);
+  const dy = c.ry + c.rh / 2 - (a.ry + a.rh / 2);
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? [sideRight, sideLeft] : [sideLeft, sideRight];
+  }
+  return dy >= 0 ? [sideBottom, sideTop] : [sideTop, sideBottom];
+}
+
+/** The point at f (0..1) of a side of n. */
+function sideAnchor(n: LayoutNode, side: number, f: number): Point {
+  switch (side) {
+    case sideRight:
+      return { x: n.rx + n.rw, y: n.ry + n.rh * f };
+    case sideLeft:
+      return { x: n.rx, y: n.ry + n.rh * f };
+    case sideTop:
+      return { x: n.rx + n.rw * f, y: n.ry };
+  }
+  return { x: n.rx + n.rw * f, y: n.ry + n.rh };
+}
+
+/** along is the centre of n on the axis a side of the other box runs along. */
+function along(n: LayoutNode, side: number): number {
+  return sideVertical(side) ? n.ry + n.rh / 2 : n.rx + n.rw / 2;
+}
+
+/** elbowSides places every elbow link of a parent on the sides of both its ends, fanned in `along` order. */
+function elbowSides(prep: Prep, parent: RNode): LinkSides {
+  interface Member {
+    lk: RNode;
+    order: number;
+  }
+  const startGroups = new Map<RNode, Map<number, Member[]>>();
+  const endGroups = new Map<RNode, Map<number, Member[]>>();
+  const sides = new Map<RNode, [number, number]>();
+  const add = (groups: Map<RNode, Map<number, Member[]>>, node: RNode, side: number, m: Member): void => {
+    const bySide = groups.get(node) ?? new Map<number, Member[]>();
+    bySide.set(side, [...(bySide.get(side) ?? []), m]);
+    groups.set(node, bySide);
+  };
+  for (const k of parent.kids) {
+    if (k.kind !== "link" || !isElbow(prep, k)) {
+      continue;
+    }
+    const plan = prep.links.get(k);
+    if (plan === undefined) {
+      continue;
+    }
+    const a = prep.frames.get(plan.ends[0]);
+    const c = prep.frames.get(plan.ends[1]);
+    if (a === undefined || c === undefined) {
+      continue;
+    }
+    const [from, to] = routeSides(prep, k, a, c);
+    sides.set(k, [from, to]);
+    add(startGroups, plan.ends[0], from, { lk: k, order: along(c, to) });
+    add(endGroups, plan.ends[1], to, { lk: k, order: along(a, from) });
+  }
+  const place = (groups: Map<RNode, Map<number, Member[]>>, which: 0 | 1): Map<RNode, ElbowCorner> => {
+    const out = new Map<RNode, ElbowCorner>();
+    for (const bySide of groups.values()) {
+      for (const list of bySide.values()) {
+        list.sort((x, y) => x.order - y.order);
+        list.forEach((m, i) => out.set(m.lk, { side: sides.get(m.lk)![which], f: (i + 1) / (list.length + 1) }));
+      }
+    }
+    return out;
+  };
+  return { starts: place(startGroups, 0), finishes: place(endGroups, 1) };
+}
+
+/** The corners of an elbow link, from sideAnchor of each end (go/scene elbow). */
+function elbowPoints(prep: Prep, lk: RNode, sides: LinkSides | null): Point[] {
+  const plan = prep.links.get(lk);
+  if (plan === undefined) {
+    return [];
+  }
+  const a = prep.frames.get(plan.ends[0]);
+  const c = prep.frames.get(plan.ends[1]);
+  if (a === undefined || c === undefined) {
+    return [];
+  }
+  let sa = sides?.starts.get(lk);
+  let sc = sides?.finishes.get(lk);
+  if (sa === undefined || sc === undefined) {
+    // The link was not in the groups: sides still have to be known for the drawing.
+    const [from, to] = routeSides(prep, lk, a, c);
+    sa = { side: from, f: 0.5 };
+    sc = { side: to, f: 0.5 };
+  }
+  const pa = sideAnchor(a, sa.side, sa.f);
+  const pc = sideAnchor(c, sc.side, sc.f);
+  // A side that is a horizontal edge makes the line leave upwards or downwards, and the other way round.
+  const leaves = !sideVertical(sa.side);
+  const enters = !sideVertical(sc.side);
+  if (leaves && !enters) {
+    return [pa, { x: pa.x, y: pc.y }, pc];
+  }
+  if (!leaves && enters) {
+    return [pa, { x: pc.x, y: pa.y }, pc];
+  }
+  if (leaves) {
+    const my = (pa.y + pc.y) / 2;
+    return [pa, { x: pa.x, y: my }, { x: pc.x, y: my }, pc];
+  }
+  const mx = (pa.x + pc.x) / 2;
+  return [pa, { x: mx, y: pa.y }, { x: mx, y: pc.y }, pc];
+}
+
+/** The polyline with the interior corners rounded by r (go/scene elbowPath). */
+function elbowPath(ctx: Canvas2D, points: Point[], r: number): void {
+  ctx.moveTo(points[0]!.x, points[0]!.y);
+  const toward = (from: Point, to: Point, len: number): Point => {
+    const d = Math.hypot(to.x - from.x, to.y - from.y);
+    return d === 0 ? { ...from } : { x: from.x + ((to.x - from.x) / d) * len, y: from.y + ((to.y - from.y) / d) * len };
+  };
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const prev = points[i - 1]!;
+    const cur = points[i]!;
+    const next = points[i + 1]!;
+    const rr = Math.min(r, Math.hypot(cur.x - prev.x, cur.y - prev.y) / 2, Math.hypot(next.x - cur.x, next.y - cur.y) / 2);
+    if (rr <= 0) {
+      ctx.lineTo(cur.x, cur.y);
+      continue;
+    }
+    const before = toward(cur, prev, rr);
+    const after = toward(cur, next, rr);
+    ctx.lineTo(before.x, before.y);
+    ctx.quadraticCurveTo(cur.x, cur.y, after.x, after.y);
+  }
+  const last = points[points.length - 1]!;
+  ctx.lineTo(last.x, last.y);
+}
+
+/** The ends and the look of every link, resolved once: go/scene's prep.links, before anything is drawn. */
+function planLinks(root: RNode, prep: Prep): void {
+  const walk = (parent: RNode): void => {
+    const byName = new Map<string, RNode[]>();
+    for (const k of parent.kids) {
+      if (k.kind === "item") {
+        const list = byName.get(k.name.normalize("NFC")) ?? [];
+        list.push(k);
+        byName.set(k.name.normalize("NFC"), list);
+      }
+    }
+    for (const k of parent.kids) {
+      if (k.kind !== "link") {
+        continue;
+      }
+      const end = (name: string, propName: string): RNode | null => {
+        const index = Math.trunc(num(prep, k, propName) ?? 0);
+        const list = byName.get(name.normalize("NFC")) ?? [];
+        return index >= 0 && index < list.length ? list[index]! : null;
+      };
+      const a = end(k.from, "source-index");
+      const c = end(k.to, "target-index");
+      if (a === null || c === null) {
+        prep.diag.fail(k.src ?? { line: 0, col: 0 }, `link "${k.from}" "${k.to}": both ends must be items of the same parent`);
+        continue;
+      }
+      if (prep.frames.get(a) === undefined || prep.frames.get(c) === undefined) {
+        continue; // an end is hidden: the link goes with it
+      }
+      const line = dashOf(prep, k);
+      prep.links.set(k, {
+        ends: [a, c],
+        color: colorOf(prep, k, "color", colorBlack),
+        width: num(prep, k, "line-width") ?? 1,
+        dash: line.dash,
+        phase: line.phase,
+      });
+      checkRoute(prep, k);
+    }
+    prep.linkSides.set(parent, elbowSides(prep, parent));
+    for (const k of parent.kids) {
+      if (k.kind === "item") {
+        walk(k);
+      }
+    }
+  };
+  walk(root);
+}
+
+/** A link line between the boxes of its two ends: straight edge to edge, or the elbow route (go/scene/build.go link). */
+function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, sides: LinkSides | null): void {
+  const plan = prep.links.get(lk);
+  if (plan === undefined) {
+    return;
+  }
+  const a = prep.frames.get(plan.ends[0]);
+  const b = prep.frames.get(plan.ends[1]);
   if (a === undefined || b === undefined) {
     return;
   }
   const pa = { x: a.rx + a.rw / 2, y: a.ry + a.rh / 2 };
   const pb = { x: b.rx + b.rw / 2, y: b.ry + b.rh / 2 };
-  const from = edgePoint(pa, a, pb);
-  const to = edgePoint(pb, b, pa);
-  const color = propOf(prep, lk, "color");
-  const col = color !== null ? (sceneColor(propText(color, 0)) ?? colorBlack) : colorBlack;
-  const width = num(prep, lk, "line-width") ?? 1;
-  ctx.strokeStyle = sceneCss(col);
-  ctx.lineWidth = width;
+  if (pa.x === pb.x && pa.y === pb.y) {
+    return;
+  }
+  let from: Point;
+  let to: Point;
   ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
+  if (isElbow(prep, lk)) {
+    const points = elbowPoints(prep, lk, sides);
+    if (points.length < 2) {
+      return;
+    }
+    elbowPath(ctx, points, num(prep, lk, "corner-radius") ?? elbowRadius);
+    from = points[points.length - 2]!;
+    to = points[points.length - 1]!;
+  } else {
+    from = edgePoint(pa, a, pb);
+    to = edgePoint(pb, b, pa);
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+  }
+  ctx.strokeStyle = sceneCss(plan.color);
+  ctx.lineWidth = plan.width;
+  ctx.setLineDash(plan.dash);
+  ctx.lineDashOffset = plan.phase;
   ctx.stroke();
+  // The dash belongs to this line: an arrow or the node painted next is not dashed.
+  ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
   const display = propOf(prep, lk, "display");
   if (display !== null && propText(display, 0) === "arrow") {
     // go/scene/build.go arrowHead: a triangle of 6 + line width at the target end.
-    const size = 6 + width;
+    const size = 6 + plan.width;
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const len = Math.hypot(dx, dy) || 1;
@@ -4408,7 +4785,7 @@ function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, parent: RNode): void {
     ctx.lineTo(bx + nx, by + ny);
     ctx.lineTo(bx - nx, by - ny);
     ctx.closePath();
-    ctx.fillStyle = sceneCss(col);
+    ctx.fillStyle = sceneCss(plan.color);
     ctx.fill();
   }
 }

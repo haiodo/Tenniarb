@@ -1,0 +1,160 @@
+{
+  "element": "Shadows",
+  "height": 260,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Shadows",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 260,
+        "w": 420,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f7f7",
+      "gradient": null,
+      "name": "Stage",
+      "opacity": 1,
+      "path": "Stage",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 260,
+        "w": 420,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Two",
+      "opacity": 1,
+      "path": "Stage.Two",
+      "radius": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "rect": {
+        "h": 100,
+        "w": 160,
+        "x": 30,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 24,
+          "color": "#00000018",
+          "dx": 0,
+          "dy": -8
+        },
+        {
+          "blur": 4,
+          "color": "#00000030",
+          "dx": 0,
+          "dy": -2
+        }
+      ],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "BorderOnly",
+      "opacity": 1,
+      "path": "Stage.BorderOnly",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 100,
+        "w": 160,
+        "x": 230,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Titled",
+      "opacity": 1,
+      "path": "Stage.Titled",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 160,
+        "x": 30,
+        "y": 170
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 0,
+          "color": "#00000080",
+          "dx": 2,
+          "dy": -2
+        }
+      ],
+      "text": [
+        "hard"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 420
+}

@@ -1,0 +1,88 @@
+{
+  "element": "Sized",
+  "height": 400,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Sized",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 400,
+        "w": 500,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#dddddd",
+      "gradient": null,
+      "name": "Card",
+      "opacity": 1,
+      "path": "Card",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 100,
+        "x": 20,
+        "y": 20
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#bfd8ff",
+      "gradient": null,
+      "name": "Bottom",
+      "opacity": 1,
+      "path": "Bottom",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 120,
+        "x": 20,
+        "y": 340
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Bottom"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 500
+}

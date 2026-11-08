@@ -1,6 +1,7 @@
 {
   "element": "Gradients",
   "height": 523,
+  "links": [],
   "nodes": [
     {
       "border": null,
@@ -23,7 +24,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +50,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +76,8 @@
         "x": 36,
         "y": 36
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -98,7 +102,8 @@
         "x": 36,
         "y": 36
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Gradients and shadows"
       ],
@@ -125,7 +130,8 @@
         "x": 36,
         "y": 63
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Three angles, five shadows"
       ],
@@ -152,7 +158,8 @@
         "x": 36,
         "y": 100
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -193,12 +200,15 @@
         "x": 36,
         "y": 100
       },
-      "shadow": {
-        "blur": 26,
-        "color": "#6b3ad359",
-        "dx": 0,
-        "dy": 12
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 26,
+          "color": "#6b3ad359",
+          "dx": 0,
+          "dy": 12
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -223,7 +233,8 @@
         "x": 52,
         "y": 200
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "135 degrees"
       ],
@@ -250,7 +261,8 @@
         "x": 52,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "three stops, positions given"
       ],
@@ -289,12 +301,15 @@
         "x": 276,
         "y": 100
       },
-      "shadow": {
-        "blur": 10,
-        "color": "#0f9d5840",
-        "dx": 0,
-        "dy": 4
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 10,
+          "color": "#0f9d5840",
+          "dx": 0,
+          "dy": 4
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -319,7 +334,8 @@
         "x": 292,
         "y": 200
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "90 degrees"
       ],
@@ -346,7 +362,8 @@
         "x": 292,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "two stops, no positions"
       ],
@@ -385,12 +402,15 @@
         "x": 516,
         "y": 100
       },
-      "shadow": {
-        "blur": 12,
-        "color": "#1725471f",
-        "dx": 0,
-        "dy": 3
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 12,
+          "color": "#1725471f",
+          "dx": 0,
+          "dy": 3
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -415,7 +435,8 @@
         "x": 532,
         "y": 200
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "0 degrees"
       ],
@@ -442,7 +463,8 @@
         "x": 532,
         "y": 216
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "text colour does not follow it"
       ],
@@ -469,7 +491,8 @@
         "x": 36,
         "y": 268
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -494,7 +517,8 @@
         "x": 60,
         "y": 292
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Shadow: offset, blur, colour"
       ],
@@ -521,7 +545,8 @@
         "x": 60,
         "y": 323
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -546,12 +571,15 @@
         "x": 60,
         "y": 323
       },
-      "shadow": {
-        "blur": 4,
-        "color": "#17254726",
-        "dx": 0,
-        "dy": 2
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 4,
+          "color": "#17254726",
+          "dx": 0,
+          "dy": 2
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -576,7 +604,8 @@
         "x": 72,
         "y": 335
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "soft"
       ],
@@ -603,12 +632,15 @@
         "x": 234,
         "y": 323
       },
-      "shadow": {
-        "blur": 24,
-        "color": "#17254733",
-        "dx": 0,
-        "dy": 10
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 24,
+          "color": "#17254733",
+          "dx": 0,
+          "dy": 10
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -633,7 +665,8 @@
         "x": 246,
         "y": 335
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "deep blur"
       ],
@@ -660,12 +693,15 @@
         "x": 408,
         "y": 323
       },
-      "shadow": {
-        "blur": 0,
-        "color": "#17254726",
-        "dx": 6,
-        "dy": 6
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 0,
+          "color": "#17254726",
+          "dx": 6,
+          "dy": 6
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -690,7 +726,8 @@
         "x": 420,
         "y": 335
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "hard offset"
       ],
@@ -729,12 +766,15 @@
         "x": 582,
         "y": 323
       },
-      "shadow": {
-        "blur": 18,
-        "color": "#2f6bff59",
-        "dx": 0,
-        "dy": 8
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 18,
+          "color": "#2f6bff59",
+          "dx": 0,
+          "dy": 8
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -759,7 +799,8 @@
         "x": 594,
         "y": 335
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "coloured"
       ],
@@ -786,12 +827,15 @@
         "x": 756,
         "y": 323
       },
-      "shadow": {
-        "blur": 14,
-        "color": "#1725471f",
-        "dx": 0,
-        "dy": 6
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 14,
+          "color": "#1725471f",
+          "dx": 0,
+          "dy": 6
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -816,7 +860,8 @@
         "x": 768,
         "y": 335
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "border only"
       ],
@@ -843,7 +888,8 @@
         "x": 36,
         "y": 455
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -880,12 +926,15 @@
         "x": 36,
         "y": 455
       },
-      "shadow": {
-        "blur": 12,
-        "color": "#cf13a24d",
-        "dx": 0,
-        "dy": 4
-      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 12,
+          "color": "#cf13a24d",
+          "dx": 0,
+          "dy": 4
+        }
+      ],
       "text": null,
       "textColor": null
     },
@@ -910,7 +959,8 @@
         "x": 54,
         "y": 464
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Publish"
       ],
@@ -937,7 +987,8 @@
         "x": 139,
         "y": 455
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -962,7 +1013,8 @@
         "x": 157,
         "y": 464
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Preview"
       ],

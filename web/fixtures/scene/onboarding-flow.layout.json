@@ -1,6 +1,137 @@
 {
   "element": "Onboarding",
   "height": 160,
+  "links": [
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          79,
+          13.5
+        ],
+        [
+          "l",
+          200,
+          13.5
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          321,
+          12.485
+        ],
+        [
+          "l",
+          413.345,
+          10.936
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          568.345,
+          11.034
+        ],
+        [
+          "l",
+          640,
+          12.327
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": [
+        5,
+        5
+      ],
+      "parent": "",
+      "path": [
+        [
+          "m",
+          488.644,
+          29.636
+        ],
+        [
+          "l",
+          478.701,
+          120
+        ]
+      ],
+      "phase": 5,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": [
+        5,
+        5
+      ],
+      "parent": "",
+      "path": [
+        [
+          "m",
+          512.626,
+          120
+        ],
+        [
+          "l",
+          680.615,
+          27
+        ]
+      ],
+      "phase": 5,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": [
+        1,
+        4
+      ],
+      "parent": "",
+      "path": [
+        [
+          "m",
+          263.369,
+          27
+        ],
+        [
+          "l",
+          283.131,
+          120
+        ]
+      ],
+      "phase": 1,
+      "width": 1
+    }
+  ],
   "nodes": [
     {
       "border": null,
@@ -23,7 +154,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -48,7 +180,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -73,7 +206,8 @@
         "x": 0,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Sign up"
       ],
@@ -100,7 +234,8 @@
         "x": 200,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -125,7 +260,8 @@
         "x": 200,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Verify email"
       ],
@@ -152,7 +288,8 @@
         "x": 413.345,
         "y": -10.364
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -177,7 +314,8 @@
         "x": 413.345,
         "y": -10.364
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Create workspace"
       ],
@@ -204,7 +342,8 @@
         "x": 420,
         "y": 120
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -229,7 +368,8 @@
         "x": 420,
         "y": 120
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Invite team",
         "optional"
@@ -257,7 +397,8 @@
         "x": 640,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -282,7 +423,8 @@
         "x": 640,
         "y": 0
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "First project"
       ],
@@ -309,7 +451,8 @@
         "x": 200,
         "y": 120
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": null,
       "textColor": null
     },
@@ -334,7 +477,8 @@
         "x": 200,
         "y": 120
       },
-      "shadow": null,
+      "rotate": 0,
+      "shadows": [],
       "text": [
         "Email not received"
       ],

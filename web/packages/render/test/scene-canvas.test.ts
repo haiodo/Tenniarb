@@ -15,7 +15,8 @@ const source = `element "Card" {
         width 200
         padding 16
         gap 10
-        item "T" { title "L"; font-size 40 }
+        title "L"
+        font-size 40
         body %{
             plain line
 
@@ -34,11 +35,15 @@ interface Pixels {
 
 /** The card drawn the way the callers do it: the canvas is flipped once, draw() fills the y-up world. */
 function render(): Pixels {
-  const model = readTenn(source);
+  return renderSource(source, "Card");
+}
+
+function renderSource(text: string, name: string): Pixels {
+  const model = readTenn(text);
   assert.ok(model !== null, "the document parses");
-  const element = model.elements.find((e) => e.name === "Card");
-  assert.ok(element !== undefined, "element Card");
-  const scene = buildTennScene(element, { source });
+  const element = model.elements.find((e) => e.name === name);
+  assert.ok(element !== undefined, `element ${name}`);
+  const scene = buildTennScene(element, { source: text });
   const width = Math.ceil(scene.width);
   const height = Math.ceil(scene.height);
   assert.ok(Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0, `the scene has a size: ${scene.width}x${scene.height}`);
@@ -122,4 +127,22 @@ test("scene draw: a title above the body, upright glyphs, the code block below",
   assert.ok(grey.length > 0, "the code block is painted");
   assert.ok(grey[0]! > titleBottom, `the code block starts at ${grey[0]}, the title ends at ${titleBottom}`);
   assert.ok(grey[0]! > p.height * 0.4, `the code block is at ${grey[0]} of ${p.height}, not in the lower part`);
+});
+
+test("scene draw: rotate turns a bar about the middle of its box, clockwise", () => {
+  const turn = `element "Turned" {
+    item Stage {
+        width 200; height 200; auto-layout abs; color #ffffff
+        item Bar { pos 50 -100; width 100; height 20; color #ff0000; rotate 90 }
+    }
+}`;
+  const p = renderSource(turn, "Turned");
+  const red = (x: number, y: number): boolean => {
+    const [r, g, b] = at(p, x, y);
+    return r! > 200 && g! < 80 && b! < 80;
+  };
+  // The bar is 100x20 about (100, 110) and a quarter turn makes it 20x100: x 90..110, y 60..160.
+  assert.ok(red(100, 70), "the turned bar covers the place above its old top edge");
+  assert.ok(red(100, 150), "and the place below its old bottom edge");
+  assert.ok(!red(60, 110), "the old left half is empty now");
 });

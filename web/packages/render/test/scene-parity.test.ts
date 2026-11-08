@@ -31,6 +31,18 @@ interface PathState {
   points: number;
   closed: boolean;
   arcs: number[];
+  /** The commands as tennlayout writes a link: ["m"|"l"|"q"|"c", x, y, ...] and ["z"]. */
+  verbs: (string | number)[][];
+}
+
+/** A stroked open path with no arcs: a link, drawn in the coordinates of the item that owns it. */
+interface DrawnLink {
+  path: (string | number)[][];
+  color: string;
+  width: number;
+  dash: number[] | null;
+  phase: number;
+  arrow: boolean;
 }
 
 interface Rec {
@@ -43,6 +55,8 @@ interface Rec {
   base: number;
   own: number | null;
   kids: Rec[];
+  /** A child was flushed: a later open stroke is a link, not the icon of the node itself. */
+  kidsStarted: boolean;
   radius: [number, number, number, number];
   fill: string | null;
   gradient: Gradient | null;
@@ -51,7 +65,10 @@ interface Rec {
   text: string[];
   textColor: string | null;
   clip: boolean;
-  shadow: { dx: number; dy: number; blur: number; color: string } | null;
+  /** Degrees clockwise, as `rotate` counts them in the file. */
+  rotate: number;
+  shadows: { dx: number; dy: number; blur: number; color: string }[];
+  links: DrawnLink[];
 }
 
 const hex2 = (n: number): string => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, "0");
@@ -90,10 +107,13 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     shadowBlur: 0,
     shadowDX: 0,
     shadowDY: 0,
+    dash: [],
+    lineDashOffset: 0,
+    rotation: 0,
   };
   let current: Rec | null = null;
   let pending: { x: number; y: number; base: number } | null = null;
-  let pen: PathState = { points: 0, closed: false, arcs: [] };
+  let pen: PathState = { points: 0, closed: false, arcs: [], verbs: [] };
 
   const flush = (): void => {
     if (pending === null) return;
@@ -103,6 +123,7 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
       base: pending.base,
       own: null,
       kids: [],
+      kidsStarted: false,
       radius: [0, 0, 0, 0],
       fill: null,
       gradient: null,
@@ -111,10 +132,16 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
       text: [],
       textColor: null,
       clip: false,
-      shadow: null,
+      // The scene is drawn inside scale(1, -1), so a canvas rotate(a) turns the picture by -a.
+      rotate: (-state.rotation * 180) / Math.PI,
+      shadows: [],
+      links: [],
     };
     (current === null ? roots : current.kids).push(rec);
-    if (current !== null) current.own ??= state.alpha;
+    if (current !== null) {
+      current.own ??= state.alpha;
+      current.kidsStarted = true;
+    }
     current = rec;
     pending = null;
   };
@@ -126,10 +153,19 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     touch();
     return current;
   };
-  const shadowOf = (): Rec["shadow"] =>
+  const shadowOf = (): Rec["shadows"][number] | null =>
     state.shadowBlur > 0 || state.shadowDX !== 0 || state.shadowDY !== 0 || state.shadowColor !== ""
       ? { dx: state.shadowDX, dy: state.shadowDY, blur: state.shadowBlur, color: cssHex(state.shadowColor) }
       : null;
+  /** A shadow paints each pass; two `shadow` lines in the file mean two passes with the same fill. */
+  const addShadow = (rec: Rec): void => {
+    const sh = shadowOf();
+    if (sh === null) return;
+    const last = rec.shadows[rec.shadows.length - 1];
+    if (last === undefined || last.dx !== sh.dx || last.dy !== sh.dy || last.blur !== sh.blur || last.color !== sh.color) {
+      rec.shadows.push(sh);
+    }
+  };
   const radii = (): [number, number, number, number] | null => {
     if (pen.arcs.length !== 4) return null;
     const [tr, br, bl, tl] = pen.arcs as [number, number, number, number];
@@ -156,8 +192,19 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
       }
     },
     translate: (x: number, y: number) => {
+      if (pending !== null) {
+        // A turn about the middle of a node is translate, rotate, translate back: one position.
+        pending.x += x;
+        pending.y += y;
+        return;
+      }
       flush();
       pending = { x, y, base: state.alpha };
+      // Each node turns about its own box: a child's angle is not its parent's.
+      state.rotation = 0;
+    },
+    rotate: (a: number) => {
+      state.rotation += a;
     },
     scale: () => {
       // The flip of TennScene.draw wraps the whole picture; translate(0,0) before it is not a node.
@@ -165,28 +212,32 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     },
     beginPath: () => {
       touch();
-      pen = { points: 0, closed: false, arcs: [] };
+      pen = { points: 0, closed: false, arcs: [], verbs: [] };
     },
-    moveTo: () => {
+    moveTo: (x, y) => {
       touch();
       pen.points += 1;
+      pen.verbs.push(["m", x, y]);
     },
-    lineTo: () => {
+    lineTo: (x, y) => {
       touch();
       pen.points += 1;
+      pen.verbs.push(["l", x, y]);
     },
     arcTo: (_x1, _y1, _x2, _y2, r) => {
       touch();
       pen.points += 1;
       pen.arcs.push(r);
     },
-    quadraticCurveTo: () => {
+    quadraticCurveTo: (cx, cy, x, y) => {
       touch();
       pen.points += 1;
+      pen.verbs.push(["q", cx, cy, x, y]);
     },
     closePath: () => {
       touch();
       pen.closed = true;
+      pen.verbs.push(["z"]);
     },
     rect: () => {
       touch();
@@ -206,7 +257,13 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     },
     fill: () => {
       const rec = active();
-      if (rec === null || isArrow()) return; // an arrow head of a link, drawn in the parent
+      if (rec === null) return;
+      if (isArrow()) {
+        // The arrow head of a link: the stroke of the line was recorded just before it.
+        const link = rec.links[rec.links.length - 1];
+        if (link !== undefined) link.arrow = true;
+        return;
+      }
       mergeRadius(rec);
       if (typeof state.fill === "object") {
         rec.gradient = state.fill as Gradient;
@@ -214,15 +271,27 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
       } else {
         rec.fill = cssHex(state.fill);
       }
-      rec.shadow ??= shadowOf();
+      addShadow(rec);
     },
     stroke: () => {
       const rec = active();
-      if (rec === null || (pen.points <= 2 && !pen.closed)) return; // a link line, drawn in the parent
+      if (rec === null) return;
+      if (!pen.closed && pen.arcs.length === 0 && rec.kidsStarted) {
+        // Links are drawn after the children of their parent; an icon is stroked before them.
+        rec.links.push({
+          path: pen.verbs,
+          color: typeof state.stroke === "object" ? "#00000000" : cssHex(state.stroke),
+          width: state.lineWidth,
+          dash: state.dash.length > 0 ? [...state.dash] : null,
+          phase: state.lineDashOffset,
+          arrow: false,
+        });
+        return;
+      }
       mergeRadius(rec);
       rec.border = typeof state.stroke === "object" ? "#00000000" : cssHex(state.stroke);
       rec.borderWidth = state.lineWidth;
-      rec.shadow ??= shadowOf();
+      addShadow(rec);
     },
     fillRect: () => {},
     fillText: (text) => {
@@ -233,7 +302,9 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     },
     measureText: (text) => ({ width: [...text].length * 10 }),
     drawImage: () => {},
-    setLineDash: () => {},
+    setLineDash: (segments) => {
+      state.dash = [...segments];
+    },
     get fillStyle() {
       return state.fill;
     },
@@ -299,7 +370,12 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     set lineWidth(v: number) {
       state.lineWidth = v;
     },
-    lineDashOffset: 0,
+    get lineDashOffset() {
+      return state.lineDashOffset;
+    },
+    set lineDashOffset(v: number) {
+      state.lineDashOffset = v;
+    },
     textBaseline: "alphabetic",
   } as Canvas2D;
 
@@ -319,6 +395,9 @@ interface State {
   shadowBlur: number;
   shadowDX: number;
   shadowDY: number;
+  dash: number[];
+  lineDashOffset: number;
+  rotation: number;
 }
 
 function preorder(roots: Rec[]): Rec[] {
@@ -343,12 +422,23 @@ interface DumpNode {
   radius: [number, number, number, number];
   clip: boolean;
   opacity: number;
-  shadow: { dx: number; dy: number; blur: number; color: string } | null;
+  rotate: number;
+  shadows: { dx: number; dy: number; blur: number; color: string }[];
   gradient: { angle: number; stops: { offset: number; color: string }[] } | null;
 }
 
+interface DumpLink {
+  parent: string;
+  path: (string | number)[][];
+  color: string;
+  width: number;
+  dash: number[] | null;
+  phase: number;
+  arrow: boolean;
+}
+
 /** The web scene as tennlayout writes it: the tree of boxes paired with the recorder tree in paint order. */
-function dump(scene: TennScene): { width: number; height: number; nodes: DumpNode[] } {
+function dump(scene: TennScene): { width: number; height: number; nodes: DumpNode[]; links: DumpLink[] } {
   const { ctx, done } = recorder();
   scene.draw(ctx);
   const recs = done();
@@ -374,11 +464,16 @@ function dump(scene: TennScene): { width: number; height: number; nodes: DumpNod
       radius: r.radius,
       clip: r.clip,
       opacity: r.own === null || r.base === 0 ? 1 : r.own / r.base,
-      shadow: r.shadow,
+      rotate: r.rotate,
+      shadows: r.shadows,
       gradient: r.gradient === null ? null : { angle: r.gradient.angle, stops: r.gradient.stops },
     } satisfies DumpNode;
   });
-  return { width: scene.width, height: scene.height, nodes };
+  const links: DumpLink[] = [];
+  boxes.forEach((b, i) => {
+    for (const lk of recs[i]!.links) links.push({ parent: b.path, ...lk });
+  });
+  return { width: scene.width, height: scene.height, nodes, links };
 }
 
 function near(a: number, b: number, tolerance: number): boolean {
@@ -431,12 +526,17 @@ function diff(want: ReturnType<typeof dump>, got: ReturnType<typeof dump>, limit
     }
     if (a.clip !== b.clip) add(`${at}: clip go ${a.clip}, web ${b.clip}`);
     if (!near(a.opacity, b.opacity, 0.01)) add(`${at}: opacity go ${a.opacity}, web ${b.opacity}`);
-    if ((a.shadow === null) !== (b.shadow === null)) add(`${at}: shadow go ${JSON.stringify(a.shadow)}, web ${JSON.stringify(b.shadow)}`);
-    else if (a.shadow !== null && b.shadow !== null) {
-      for (const k of ["dx", "dy", "blur"] as const) {
-        if (!near(a.shadow[k], b.shadow[k], 0.5)) add(`${at}: shadow.${k} go ${a.shadow[k]}, web ${b.shadow[k]}`);
-      }
-      if (!colorNear(a.shadow.color, b.shadow.color)) add(`${at}: shadow colour go ${a.shadow.color}, web ${b.shadow.color}`);
+    if (!near(a.rotate, b.rotate, 0.1)) add(`${at}: rotate go ${a.rotate}, web ${b.rotate}`);
+    if (a.shadows.length !== b.shadows.length) {
+      add(`${at}: ${a.shadows.length} shadow(s) in go, ${b.shadows.length} in web`);
+    } else {
+      a.shadows.forEach((s, k) => {
+        const t = b.shadows[k]!;
+        for (const key of ["dx", "dy", "blur"] as const) {
+          if (!near(s[key], t[key], 0.5)) add(`${at}: shadow ${k}.${key} go ${s[key]}, web ${t[key]}`);
+        }
+        if (!colorNear(s.color, t.color)) add(`${at}: shadow ${k} colour go ${s.color}, web ${t.color}`);
+      });
     }
     if ((a.gradient === null) !== (b.gradient === null)) add(`${at}: gradient go ${JSON.stringify(a.gradient)}, web ${JSON.stringify(b.gradient)}`);
     else if (a.gradient !== null && b.gradient !== null) {
@@ -451,7 +551,39 @@ function diff(want: ReturnType<typeof dump>, got: ReturnType<typeof dump>, limit
       }
     }
   }
+  const key = (l: DumpLink): string => `${l.parent}\u0000${JSON.stringify(l.path)}`;
+  const wa = [...want.links].sort((x, y) => key(x).localeCompare(key(y)));
+  const ga = [...got.links].sort((x, y) => key(x).localeCompare(key(y)));
+  if (wa.length !== ga.length) add(`links: go has ${wa.length}, web has ${ga.length}`);
+  for (let i = 0; i < Math.min(wa.length, ga.length); i += 1) {
+    const a = wa[i]!;
+    const b = ga[i]!;
+    const at = `link ${i} (${a.parent})`;
+    if (a.parent !== b.parent) {
+      add(`${at}: parent go "${a.parent}", web "${b.parent}"`);
+      continue;
+    }
+    if (!pathNear(a.path, b.path)) add(`${at}: path go ${JSON.stringify(a.path)}, web ${JSON.stringify(b.path)}`);
+    if (!colorNear(a.color, b.color)) add(`${at}: colour go ${a.color}, web ${b.color}`);
+    if (!near(a.width, b.width, 0.5)) add(`${at}: width go ${a.width}, web ${b.width}`);
+    if (JSON.stringify(a.dash) !== JSON.stringify(b.dash)) add(`${at}: dash go ${JSON.stringify(a.dash)}, web ${JSON.stringify(b.dash)}`);
+    if (!near(a.phase, b.phase, 0.5)) add(`${at}: dash phase go ${a.phase}, web ${b.phase}`);
+    if (a.arrow !== b.arrow) add(`${at}: arrow go ${a.arrow}, web ${b.arrow}`);
+  }
   return out;
+}
+
+/** The same verbs, with numbers within half a pixel. */
+function pathNear(a: (string | number)[][], b: (string | number)[][]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((cmd, i) => {
+    const other = b[i]!;
+    if (cmd.length !== other.length || cmd[0] !== other[0]) return false;
+    for (let k = 1; k < cmd.length; k += 1) {
+      if (!near(cmd[k] as number, other[k] as number, 0.5)) return false;
+    }
+    return true;
+  });
 }
 
 function load(name: string): { source: string; golden: ReturnType<typeof dump> & { element: string } } {
