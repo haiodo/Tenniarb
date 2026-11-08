@@ -136,6 +136,12 @@ func (v *Viewer) refreshProps() {
 	}
 	v.props.sceneKey = ""
 	target := v.session.PropsTarget()
+	// The keyboard is in the pane: its text is the draft. The session redraws inside ApplyProps, before
+	// props.want records the edit, so a refresh here would take the draft for a change of the code and
+	// put the caret back at the start after every keystroke.
+	if v.propsFocused() && target == v.props.target {
+		return
+	}
 	want := v.session.PropsText(target)
 	cur := v.props.text.Text()
 	// What the user typed stays on screen, valid or not, until the code changes its text.

@@ -823,6 +823,11 @@ func (v *Viewer) sceneCodeNode() (*scene.Node, *scene.Placed) {
 func (v *Viewer) refreshSceneCode() {
 	n, pl := v.sceneCodeNode()
 	key := v.sceneCodeKey()
+	// The keyboard is in the pane: its text is the draft, and the redraw inside the edit arrives before
+	// props.want records the edit, so replacing the text here would move the caret after every keystroke.
+	if v.propsFocused() && key == v.props.sceneKey {
+		return
+	}
 	want := ""
 	switch {
 	case n != nil:

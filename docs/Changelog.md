@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The Code pane keeps the caret while the user types: the session redraws inside the edit it applies,
+  before the edit is recorded, so the pane took the draft for a change of the code and put the caret
+  back at the start after every keystroke.
 * `display` and `layer` work in scenes as they do on a classic diagram: `display stack|circle|no-fill|text|none`
   picks the shape of the box, and `layer background|hover` moves the picture under or over its siblings
   without touching the layout.
