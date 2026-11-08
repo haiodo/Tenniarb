@@ -1,0 +1,18 @@
+// A link's pos is its control point: the middle of the two boxes plus the offset (y up, as an item's
+// pos). A plain link bends through it with two straight runs; layout quad bends with one curve.
+element "E" {
+    item Stage {
+        width 400; height 320; auto-layout abs; color #f7f7f7
+
+        item A { pos 30 -30; width 100; height 50; title "A"; color #ddeeff }
+        item B { pos 250 -30; width 100; height 50; title "B"; color #ddeeff }
+        item C { pos 30 -140; width 100; height 50; title "C"; color #ddeeff }
+        item D { pos 250 -140; width 100; height 50; title "D"; color #ddeeff }
+        item Q { pos 30 -250; width 100; height 50; title "Q"; color #ddeeff }
+        item R { pos 250 -250; width 100; height 50; title "R"; color #ddeeff }
+
+        link A B { display arrow; line-width 2 }
+        link C D { pos 0 60; line-width 2 }
+        link Q R { pos 0 -60; layout quad; display arrow; line-width 2 }
+    }
+}

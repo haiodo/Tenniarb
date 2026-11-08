@@ -30,6 +30,22 @@ func TestElbowRoute(t *testing.T) {
 	}
 }
 
+// TestLinkControl: pos on a link offsets its control point from the middle of the two boxes, and y is up
+// as an item's pos, so a positive offset bends the line upward on screen. layout quad bends it in one curve.
+func TestLinkControl(t *testing.T) {
+	_, svg := buildSrc(t, `element "E" {
+    item A { pos 0 0; width 100; height 40 }
+    item B { pos 200 0; width 100; height 40 }
+    link A B { pos 0 50 }
+    link A B { pos 0 50; layout quad }
+}`)
+	for _, want := range []string{"M90 0L150 -30L210 0", "M90 0Q150 -30 210 0"} {
+		if !strings.Contains(svg, want) {
+			t.Errorf("no path %q in:\n%s", want, svg)
+		}
+	}
+}
+
 // TestElbowAnchorsSpread: two links that leave the same side of a box sit beside each other, not on one
 // point, each in the order of the box it leads to.
 func TestElbowAnchorsSpread(t *testing.T) {

@@ -1,0 +1,296 @@
+{
+  "element": "E",
+  "height": 320,
+  "links": [
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "Stage",
+      "path": [
+        [
+          "m",
+          130,
+          55
+        ],
+        [
+          "l",
+          250,
+          55
+        ]
+      ],
+      "phase": 0,
+      "width": 2
+    },
+    {
+      "arrow": false,
+      "color": "#000000",
+      "dash": null,
+      "parent": "Stage",
+      "path": [
+        [
+          "m",
+          125.833,
+          140
+        ],
+        [
+          "l",
+          190,
+          105
+        ],
+        [
+          "l",
+          254.167,
+          140
+        ]
+      ],
+      "phase": 0,
+      "width": 2
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "Stage",
+      "path": [
+        [
+          "m",
+          125.833,
+          300
+        ],
+        [
+          "q",
+          190,
+          335,
+          254.167,
+          300
+        ]
+      ],
+      "phase": 0,
+      "width": 2
+    }
+  ],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "E",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 320,
+        "w": 400,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f7f7",
+      "gradient": null,
+      "name": "Stage",
+      "opacity": 1,
+      "path": "Stage",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 320,
+        "w": 400,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "A",
+      "opacity": 1,
+      "path": "Stage.A",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 30,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "A"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "B",
+      "opacity": 1,
+      "path": "Stage.B",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 250,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "B"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "C",
+      "opacity": 1,
+      "path": "Stage.C",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 30,
+        "y": 140
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "C"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "D",
+      "opacity": 1,
+      "path": "Stage.D",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 250,
+        "y": 140
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "D"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "Q",
+      "opacity": 1,
+      "path": "Stage.Q",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 30,
+        "y": 250
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Q"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "R",
+      "opacity": 1,
+      "path": "Stage.R",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 100,
+        "x": 250,
+        "y": 250
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "R"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 400
+}

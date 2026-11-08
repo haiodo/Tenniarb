@@ -468,8 +468,8 @@ func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, 
 	}
 }
 
-// link draws the line between the two items in the parent's coordinates: straight from edge to edge, or
-// as the elbow the link asks for.
+// link draws the line between the two items in the parent's coordinates: straight from edge to edge, as
+// the elbow the link asks for, or through the control point its pos gives.
 func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 	ends, ok := b.p.ends[lk]
 	if !ok {
@@ -487,7 +487,9 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 		from gfx.Point
 		to   gfx.Point
 	)
-	if b.p.isElbow(lk) {
+	ctrl, hasCtrl := linkControl(b.p.prop(lk, "pos"), pa, pc)
+	switch {
+	case b.p.isElbow(lk):
 		points := b.elbow(parent, lk)
 		if len(points) < 2 {
 			return
@@ -500,7 +502,20 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 		}
 		path = elbowPath(points, radius)
 		from, to = points[len(points)-2], points[len(points)-1]
-	} else {
+	case hasCtrl:
+		// The ends leave the boxes toward the control point, not toward each other.
+		from, to = edgePoint(pa, a, ctrl), edgePoint(pc, c, ctrl)
+		path = &gfx.Path{}
+		path.MoveTo(from.X, from.Y)
+		if b.p.isQuad(lk) {
+			path.QuadTo(ctrl.X, ctrl.Y, to.X, to.Y)
+		} else {
+			path.LineTo(ctrl.X, ctrl.Y)
+			path.LineTo(to.X, to.Y)
+		}
+		// The arrow keeps the direction of the last stretch: the control point into the target.
+		from = ctrl
+	default:
 		from, to = edgePoint(pa, a, pc), edgePoint(pc, c, pa)
 		path = &gfx.Path{}
 		path.MoveTo(from.X, from.Y)
@@ -517,6 +532,30 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 		}
 	}
 	b.tx.SetPicture(ln, r.Finish())
+}
+
+// linkControl is the control point a link's pos gives: the middle of its two boxes plus the offset. The
+// offset is y up as the file writes it and the scene y down, so its vertical part is negated.
+func linkControl(pr *Prop, pa, pc gfx.Point) (gfx.Point, bool) {
+	if pr == nil {
+		return gfx.Point{}, false
+	}
+	x, okx := pr.num(0)
+	y, oky := pr.num(1)
+	if !okx || !oky || x == 0 && y == 0 {
+		return gfx.Point{}, false
+	}
+	return gfx.Point{X: (pa.X+pc.X)/2 + x, Y: (pa.Y+pc.Y)/2 - y}, true
+}
+
+// isQuad reports whether the link asks for the quad curve with layout quad.
+func (p *prep) isQuad(lk *RNode) bool {
+	pr := p.prop(lk, "layout")
+	if pr == nil {
+		return false
+	}
+	s, _ := pr.text(0)
+	return s == "quad"
 }
 
 // edgePoint is where the line from the center of box n toward other leaves the box.
