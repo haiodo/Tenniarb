@@ -27,6 +27,9 @@ Tenniarb - редактор диаграмм и экранов в формате
 - `docs/mcp-bench.md` - задачи и методика замера прогонов агента
 - `web/` - TypeScript-версия (план в `../my-tasks/tenniarb/plan.md`, раздел 3). npm workspaces `packages/*`,
   тесты `node:test` на `.ts` без компиляции. `web/bench/` - бенчмарки рендера, вне workspaces.
+  **Паритет с Go обязателен**: web открывает и рисует те же `.tenn`, включая сцены (`auto-layout`, `use`,
+  слоты, параметры, стили, картинки); файл, сделанный в Go, вставляют в web и смотрят целиком. Расхождение
+  картинки - дефект. План - `../my-tasks/tenniarb/engine-unify.md`, раздел 4a.
   `web/packages/mindmap` - встраиваемый mind map без вычислений (план, раздел 6): текстовый протокол блока, бандл `dist/mindmap.js`.
 - `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
   в схему `Tenniarb-Performance`. Схема скипает все остальные suite поимённо - при
