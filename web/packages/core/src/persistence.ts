@@ -161,6 +161,9 @@ export function toTennStr(self: Element, includeSubElements = true, includeItems
   return toStr(ee, 0, false);
 }
 
+/** Drops the float noise of a pointer: 1/100 of a point is finer than a screen pixel. */
+const roundPos = (v: number): number => Math.round(v * 100) / 100;
+
 export function buildItemData(item: DiagramItem, itemBlock: TennNode, addPos: boolean): void {
   if (item.description !== null) {
     itemBlock.add(newCommand(cmd("Description"), newStrNode(item.description)));
@@ -170,7 +173,7 @@ export function buildItemData(item: DiagramItem, itemBlock: TennNode, addPos: bo
   const ny = item.y !== 0;
 
   if (nx || ny || addPos) {
-    itemBlock.add(newCommand(cmd("Position"), newFloatNode(item.x), newFloatNode(item.y)));
+    itemBlock.add(newCommand(cmd("Position"), newFloatNode(roundPos(item.x)), newFloatNode(roundPos(item.y))));
   }
 
   for (const p of item.properties) {
@@ -205,7 +208,7 @@ export function buildLinkData(item: DiagramItem, linkDataBlock: TennNode, addPos
   }
 
   if (nx || ny || addPos) {
-    linkDataBlock.add(newCommand(cmd("Position"), newFloatNode(item.x), newFloatNode(item.y)));
+    linkDataBlock.add(newCommand(cmd("Position"), newFloatNode(roundPos(item.x)), newFloatNode(roundPos(item.y))));
   }
 
   for (const p of item.properties) {

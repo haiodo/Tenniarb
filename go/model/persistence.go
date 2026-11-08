@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 
@@ -139,9 +140,13 @@ func ToTennStr(self *Element, includeSubElements, includeItems bool) string {
 	return tenn.ToStr(ToTenn(self, includeSubElements, includeItems), 0, false)
 }
 
+// roundPos drops the float noise of a pointer and of the float32 positions the format reads: 1/100 of
+// a point is finer than a screen pixel, and the file stays readable.
+func roundPos(v float64) float64 { return math.Round(v*100) / 100 }
+
 func addPosition(block *tenn.Node, item *DiagramItem, addPos bool) {
 	if item.X != 0 || item.Y != 0 || addPos {
-		block.Add(tenn.NewCommand(cmd(PersistPosition), tenn.NewFloatNode(item.X), tenn.NewFloatNode(item.Y)))
+		block.Add(tenn.NewCommand(cmd(PersistPosition), tenn.NewFloatNode(roundPos(item.X)), tenn.NewFloatNode(roundPos(item.Y))))
 	}
 }
 

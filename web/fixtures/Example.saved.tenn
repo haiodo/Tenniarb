@@ -9,7 +9,7 @@ element "Documentation" {
             pos -572.0 274.0
         }
         item "Adding new items" {
-            pos -592.5537109375 358.0
+            pos -592.55 358.0
             body {
                 text %{
         * 1. Press 'Tab' to add new item to diagram
@@ -18,14 +18,14 @@ element "Documentation" {
             }
         }
         item "press 'Tab'" {
-            pos -498.5537109375 211.0
+            pos -498.55 211.0
             font-size 10
         }
         link "Item" "press 'Tab'" {
             display arrow
         }
         item "New Item" {
-            pos -411.5712890625 274.0
+            pos -411.57 274.0
         }
         link "press 'Tab'" "New Item" {
             display arrow
@@ -34,7 +34,7 @@ element "Documentation" {
             display arrow
         }
         item "Adding link between items" {
-            pos -585.0693359375 136.0
+            pos -585.07 136.0
             body {
                 text %{
         * 1. Select existing item
@@ -43,13 +43,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -577.5537109375 51.0
+            pos -577.55 51.0
         }
         item "New Item" {
-            pos -417.185546875 51.0
+            pos -417.19 51.0
         }
         item "hold 'Ctrl'" {
-            pos -525.5712890625 -30.0
+            pos -525.57 -30.0
             font-size 10
         }
         link "Item" "hold 'Ctrl'" {
@@ -57,7 +57,7 @@ element "Documentation" {
             display arrow
         }
         item "Draw line" {
-            pos -437.7744140625 -30.0
+            pos -437.77 -30.0
             font-size 10
         }
         link "hold 'Ctrl'" "Draw line"
@@ -71,12 +71,12 @@ element "Documentation" {
             display arrow
         }
         item "Basic editing functions" {
-            pos -604.0693359375 414.0
+            pos -604.07 414.0
             display text
             font-size 20
         }
         item "Duplicate items" {
-            pos -63.0693359375 359.0
+            pos -63.07 359.0
             body {
                 text %{
         * 1. Select one or more items
@@ -85,13 +85,13 @@ element "Documentation" {
             }
         }
         item "Item" {
-            pos -55.5537109375 272.0
+            pos -55.55 272.0
         }
         item "New Item" {
-            pos 145.814453125 273.0
+            pos 145.81 273.0
         }
         item "press 'Cmd+D'" {
-            pos 34.4287109375 209.0
+            pos 34.43 209.0
             font-size 10
         }
         link "press 'Cmd+D'" "New Item" {
@@ -108,7 +108,7 @@ element "Documentation" {
             display arrow
         }
         item "Styling items" {
-            pos -70.2177734375 127.0
+            pos -70.22 127.0
             body {
                 text %{
         * 1. Select *existing* item
@@ -119,13 +119,13 @@ element "Documentation" {
             }
         }
         item "Big yellow item" {
-            pos -65.7998046875 -18.0
+            pos -65.8 -18.0
             color red
             text-color yellow
             font-size 30
         }
         item "ColorAnnotation" {
-            pos 159.1083984375 -11.0
+            pos 159.11 -11.0
             title ""
             body {
                 text-color #1c00cf
@@ -155,11 +155,11 @@ element "Documentation" {
             target-index 1
         }
         item "hold 'Ctrl'" {
-            pos -525.5712890625 -30.0
+            pos -525.57 -30.0
             font-size 10
         }
         item "Draw line" {
-            pos -437.7744140625 -30.0
+            pos -437.77 -30.0
             font-size 10
         }
         link "hold 'Ctrl'" "Draw line" {
@@ -182,14 +182,14 @@ element "Documentation" {
             display arrow
         }
         item "Item" {
-            pos -577.5537109375 51.0
+            pos -577.55 51.0
         }
         link "Item" "Item" {
             source-index 3
             target-index 3
         }
         item "New Item" {
-            pos -417.185546875 51.0
+            pos -417.19 51.0
         }
         link "New Item" "New Item" {
             source-index 3
@@ -204,7 +204,7 @@ element "Documentation" {
             target-index 3
         }
         item "New Item" {
-            pos -394.5712890625 -189.0
+            pos -394.57 -189.0
             color green
         }
         link "press 'Option+Tab'" "New Item" {
@@ -212,7 +212,7 @@ element "Documentation" {
             display arrow
         }
         item "press 'Option+Tab'" {
-            pos -481.5537109375 -252.0
+            pos -481.55 -252.0
             font-size 10
         }
         link "Item" "press 'Option+Tab'" {
@@ -228,7 +228,7 @@ element "Documentation" {
             color green
         }
         item "Adding new items/ copy style" {
-            pos -569.5537109375 -99.0
+            pos -569.55 -99.0
             body {
                 text %{
         * 1. Select item and press `Option+Tab` to add 
@@ -248,7 +248,7 @@ element "Documentation" {
     }
     element "General info" {
         item "Main Window" {
-            pos -499.3359375 -98.12109375
+            pos -499.34 -98.12
             image "Screenshot 2020-01-02 at 19.34.24.png" @(iVBORw0KGgoAAAANSUhEUgAACxIAAAbKCAYAAADoUqJrAAAMTWlDQ1BJQ0MgUHJvZmlsZQAASImVVwdc)
             title %{${name}
 @(Screenshot 2020-01-02 at 19.34.24.png|800)}
@@ -257,11 +257,11 @@ element "Documentation" {
         }
         item "Properties
 panel" {
-            pos 113.5999755859375 -597.865966796875
+            pos 113.6 -597.87
             body "A full tree of styles and execution propeties"
         }
         item "properties-target" {
-            pos -124.13693237304688 -532.865966796875
+            pos -124.14 -532.87
             display none
             title ""
         }
@@ -270,12 +270,12 @@ panel" "properties-target" {
             display arrow
         }
         item "Outline" {
-            pos -502.3025207519531 -602.2598266601562
+            pos -502.3 -602.26
             body %{Hierarchy of
 diagrams}
         }
         item "outline-target" {
-            pos -365.3782958984375 -467.25982666015625
+            pos -365.38 -467.26
             title ""
             display none
         }
@@ -283,10 +283,10 @@ diagrams}
             display arrow
         }
         item "Diagram area" {
-            pos 124.13561248779297 -59.77185821533203
+            pos 124.14 -59.77
         }
         item "diagram-target" {
-            pos 83.95144653320312 -222.7718505859375
+            pos 83.95 -222.77
             title ""
             display none
         }

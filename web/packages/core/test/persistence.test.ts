@@ -80,7 +80,8 @@ for (const f of fixtureNames()) {
     const saved = toTennStr(model);
     const again = load(saved);
     assert.equal(again.errors, 0);
-    assert.deepEqual(modelJson(again.model, null), modelJson(model, null));
+    // Positions are saved to 1/100 of a point: the first save is canonical, a second must not change it.
+    assert.equal(toTennStr(again.model), saved);
   });
 }
 

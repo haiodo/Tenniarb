@@ -161,7 +161,7 @@ func readSource(t *testing.T, name string) string {
 // For these fixtures the model layer reorders or normalizes the tree, so the printer output
 // legitimately differs; every other fixture that has a saved golden must match the printer.
 var persistenceNormalized = map[string]bool{
-	"bom-leading": true, "calc-arith": true, "calc-siblings": true, "calc-template": true,
+	"Example": true, "bom-leading": true, "calc-arith": true, "calc-siblings": true, "calc-template": true,
 	"calc-utils": true, "layout-chain": true, "layout-cycle": true, "layout-disconnected": true,
 	"layout-single": true, "layout-tree": true, "link-and-style": true, "persist-items": true,
 	"persist-links-dup": true, "persist-nested": true, "persist-order": true, "persist-save-loss": true,
