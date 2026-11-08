@@ -3871,7 +3871,9 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
   const pad = propOf(prep, rn, "padding");
   let padX = ti?.padX ?? (inCtx ? 0 : textPadX);
   let padY = ti?.padY ?? (inCtx ? 0 : textPadY);
-  if (pad !== null && propOf(prep, rn, "auto-layout") !== null) {
+  // padding insets the text whether or not the item has auto-layout: a leaf with a written size reads
+  // it as the space between its border and the text.
+  if (pad !== null) {
     padX = n.pad[3];
     padY = n.pad[0];
   }
@@ -4596,6 +4598,29 @@ function routeWord(prep: Prep, lk: RNode): string {
 
 const isElbow = (prep: Prep, lk: RNode): boolean => routeWord(prep, lk) === "elbow";
 
+/** Go's prep.isQuad: layout quad on the link bends it into one curve through the control point. */
+function isQuad(prep: Prep, lk: RNode): boolean {
+  const p = propOf(prep, lk, "layout");
+  return p !== null && propText(p, 0) === "quad";
+}
+
+/**
+ * Go's linkControl: the middle of the two boxes plus the link's pos. pos is y up in the file and the
+ * scene y down, so the vertical offset is negated; (0, 0) gives no control point.
+ */
+function linkControl(prep: Prep, lk: RNode, pa: Point, pb: Point): Point | null {
+  const p = propOf(prep, lk, "pos");
+  if (p === null) {
+    return null;
+  }
+  const x = propNum(p, 0);
+  const y = propNum(p, 1);
+  if (x === null || y === null || (x === 0 && y === 0)) {
+    return null;
+  }
+  return { x: (pa.x + pb.x) / 2 + x, y: (pa.y + pb.y) / 2 - y };
+}
+
 /** Sides the elbow leaves and enters: the ones the route names, else the sides that look at each other. */
 function routeSides(prep: Prep, lk: RNode, a: LayoutNode, c: LayoutNode): [number, number] {
   const want = facingSides(a, c);
@@ -4812,7 +4837,8 @@ function planLinks(root: RNode, prep: Prep): void {
   walk(root);
 }
 
-/** A link line between the boxes of its two ends: straight edge to edge, or the elbow route (go/scene/build.go link). */
+/** A link line between the boxes of its two ends: straight edge to edge, the elbow route, or through its
+ * control point (go/scene/build.go link). */
 function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, sides: LinkSides | null): void {
   const plan = prep.links.get(lk);
   if (plan === undefined) {
@@ -4828,6 +4854,7 @@ function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, sides: LinkSides | null)
   if (pa.x === pb.x && pa.y === pb.y) {
     return;
   }
+  const ctrl = linkControl(prep, lk, pa, pb);
   let from: Point;
   let to: Point;
   ctx.beginPath();
@@ -4839,6 +4866,19 @@ function drawLink(ctx: Canvas2D, prep: Prep, lk: RNode, sides: LinkSides | null)
     elbowPath(ctx, points, num(prep, lk, "corner-radius") ?? elbowRadius);
     from = points[points.length - 2]!;
     to = points[points.length - 1]!;
+  } else if (ctrl !== null) {
+    // The ends leave the boxes toward the control point, not toward each other.
+    from = edgePoint(pa, a, ctrl);
+    to = edgePoint(pb, b, ctrl);
+    ctx.moveTo(from.x, from.y);
+    if (isQuad(prep, lk)) {
+      ctx.quadraticCurveTo(ctrl.x, ctrl.y, to.x, to.y);
+    } else {
+      ctx.lineTo(ctrl.x, ctrl.y);
+      ctx.lineTo(to.x, to.y);
+    }
+    // The arrow keeps the direction of the last stretch: the control point into the target.
+    from = ctrl;
   } else {
     from = edgePoint(pa, a, pb);
     to = edgePoint(pb, b, pa);

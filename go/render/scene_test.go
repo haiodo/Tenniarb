@@ -11,6 +11,23 @@ import (
 
 // Port of the non-AppKit parts of SceneLayoutTests.swift (DrawableScene) and SceneRenderTests.swift.
 
+// A padding on a classic item insets its text: the default inset is 4 a side.
+func TestPaddingInsetsClassicText(t *testing.T) {
+	el := parseDiagram(t, `element Root {
+    item A { pos 0 0; title "xx" }
+    item B { pos 200 0; title "xx"; padding 20 }
+}`)
+	s := Build(el, testOpts())
+	a := s.Drawables[el.Items[0]].SelectorBounds()
+	b := s.Drawables[el.Items[1]].SelectorBounds()
+	if got := math.Round(b.Width - a.Width); got != 32 {
+		t.Errorf("padding 20 widens the box by %v, want 32", b.Width-a.Width)
+	}
+	if got := math.Round(b.Height - a.Height); got != 32 {
+		t.Errorf("padding 20 heightens the box by %v, want 32", b.Height-a.Height)
+	}
+}
+
 func makeDiagram(count int, linked bool) (*model.Element, []*model.DiagramItem) {
 	m := model.NewElementModel()
 	diagram := model.NewElement("Diagram")

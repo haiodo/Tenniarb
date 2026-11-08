@@ -310,9 +310,7 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 		p.limits(rn, n)
 		n.Absolute = p.flag(rn, "absolute")
 	}
-	if pr := p.prop(rn, "padding"); pr != nil && parentAuto && !auto {
-		p.t.warn(pr.Pos, "padding has no effect without auto-layout on the item itself; a text leaf has no inset, wrap it in an item with auto-layout and padding")
-	}
+	n.Pad = p.padding(rn) // the text inset of a leaf, the children inset of a container
 	if auto {
 		p.container(rn, n)
 	} else {
@@ -385,7 +383,6 @@ func (p *prep) container(rn *RNode, n *layout.Node) {
 	n.Gap, _ = p.num(rn, "gap")
 	n.LineGap, _ = p.num(rn, "line-gap")
 	n.Wrap = p.flag(rn, "wrap")
-	n.Pad = p.padding(rn)
 	aligns := map[string]layout.Align{"start": layout.Start, "center": layout.Center, "end": layout.End, "space-between": layout.SpaceBetween}
 	if v, ok := p.word(rn, "align", "start", "center", "end"); ok {
 		n.Align = aligns[v]
@@ -527,7 +524,9 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	if inCtx {
 		padX, padY = 0, 0
 	}
-	if pr := p.prop(rn, "padding"); pr != nil && p.prop(rn, "auto-layout") != nil {
+	// padding insets the text of an item whether or not it has auto-layout: a leaf with a written size
+	// reads it as the space between its border and the text.
+	if pr := p.prop(rn, "padding"); pr != nil {
 		padX, padY = n.Pad[3], n.Pad[0]
 	}
 	if ti != nil {

@@ -213,26 +213,11 @@ func TestExplicitWidthIsTheTextBox(t *testing.T) {
 	}
 }
 
-func TestPaddingWithoutOwnAutoLayoutWarns(t *testing.T) {
-	s, _ := build(t, load(t, "props.tenn"), "LeafPadding")
-	n := 0
-	for _, w := range s.Warnings {
-		if strings.Contains(w.Error(), "padding has no effect") {
-			n++
-			if !strings.Contains(w.Error(), ":") {
-				t.Errorf("no position: %v", w)
-			}
-		}
-	}
-	if n != 2 { // Ignored (a leaf) and Frame (no auto-layout); Own has its own
-		t.Errorf("%d padding warnings, want 2: %v", n, s.Warnings)
-	}
-}
-
-func TestOwnAutoLayoutPaddingInsetsLeafText(t *testing.T) {
+func TestPaddingInsetsLeafText(t *testing.T) {
 	m := boxes(t, "props.tenn", "LeafPadding")
-	wantBox(t, m, "Col.Ignored", 0, 0, 11, 19) // font 18: ceil(10.8), ceil(18 * 1.05)
-	wantBox(t, m, "Col.Own", 0, 19, 27, 35)    // plus 2 * 8 on each axis
+	// font 18: ceil(10.8), ceil(18 * 1.05), plus 2 * 8 on each axis, with or without auto-layout
+	wantBox(t, m, "Col.Ignored", 0, 0, 27, 35)
+	wantBox(t, m, "Col.Own", 0, 35, 27, 35)
 }
 
 // A bare title with spaces is several arguments, and only the first used to be drawn.

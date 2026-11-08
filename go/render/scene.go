@@ -278,6 +278,32 @@ func (s *DrawableScene) inheritedProperties(e *model.DiagramItem) *model.ModelPr
 	return properties
 }
 
+// itemPadding is the text inset of an item: padding takes one value for all sides, two for vertical
+// and horizontal, four as top right bottom left. nil keeps the default 4; a bad value is ignored.
+func itemPadding(props *model.ModelProperties, st *DrawableItemStyle, ev Evaluated) []float64 {
+	node := props.Get("padding")
+	if node == nil {
+		return nil
+	}
+	var v []float64
+	for i := 1; i < node.Count(); i++ {
+		f, ok := st.getFloat(node.GetChild(i), ev)
+		if !ok || f < 0 {
+			return nil
+		}
+		v = append(v, f)
+	}
+	switch len(v) {
+	case 1:
+		return []float64{v[0], v[0]}
+	case 2:
+		return []float64{v[1], v[0]} // horizontal, vertical
+	case 4:
+		return []float64{v[3], v[0]} // left, top
+	}
+	return nil
+}
+
 func (s *DrawableScene) buildItemDrawable(e *model.DiagramItem, elementDrawable *DrawableContainer) {
 	style := s.Style.DefaultItemStyle.Copy()
 	style.ScreenShadow = s.opts.ScreenShadows
@@ -377,6 +403,9 @@ func (s *DrawableScene) buildItemDrawable(e *model.DiagramItem, elementDrawable 
 	textBounds := s.env.calculateSize(attr)
 
 	offx, offy := 4.0, 4.0
+	if pad := itemPadding(properties, style, evaluatedValues); pad != nil {
+		offx, offy = pad[0], pad[1]
+	}
 	// The title wraps in the frame below; the body has to be measured in that width too, and the frame
 	// takes the whole width, so the box grows by the lines the body wraps into instead of one long line.
 	if bodyAttr != nil && style.Width != nil && *style.Width >= 1 {

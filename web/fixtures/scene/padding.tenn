@@ -1,0 +1,7 @@
+// padding insets the text of a leaf with a written size, and grows a hugging one, with or without
+// auto-layout of its own.
+element "E" {
+    item Plain { pos 0 0; width 200; height 60; title "plain" }
+    item Padded { pos 220 0; width 200; height 60; title "padded"; padding 12 }
+    item Hug { pos 0 -80; title "hug"; padding 6 }
+}
