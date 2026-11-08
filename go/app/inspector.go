@@ -13,6 +13,7 @@ import (
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // selKind says what the inspector shows: the element, or the selection by what it holds.
@@ -744,7 +745,21 @@ func (in *inspector) build() g.Option {
 				entryCfg{id: "insp-shadow-x", name: "shadow", numeric: true},
 				entryCfg{id: "insp-shadow-y", name: "shadow", idx: 1, numeric: true}),
 			in.text("Blur", notLink, entryCfg{id: "insp-shadow-blur", name: "shadow", idx: 2, numeric: true}),
-			in.color("Color", notLink, entryCfg{id: "insp-shadow-color", name: "shadow", idx: 3})),
+			in.color("Color", notLink, entryCfg{id: "insp-shadow-color", name: "shadow", idx: 3}),
+			in.info("", notLink, func(selKind) string {
+				if sel := v.session.Selection(); len(sel) == 1 {
+					n := 0
+					for _, p := range sel[0].Properties.Nodes() {
+						if strings.HasPrefix(tenn.ToStr(p, 0, false), "shadow") {
+							n++
+						}
+					}
+					if n > 1 {
+						return fmt.Sprintf("%d shadows: these fields edit the first", n)
+					}
+				}
+				return ""
+			})),
 		in.section(sectionTitle("Item defaults"), none,
 			in.color("Fill", none, entryCfg{id: "insp-def-color", name: "color", src: itemStyles}),
 			in.color("Border", none, entryCfg{id: "insp-def-border", name: "border-color", src: itemStyles}),

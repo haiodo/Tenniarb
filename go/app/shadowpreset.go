@@ -16,6 +16,10 @@ var shadowPresets = map[string][][]string{
 	"floating": {{"0", "-12", "20", "#00000012"}, {"0", "-32", "64", "#0000000f"}},
 }
 
+// customShadow is the row's state for layers written by hand: the presets cannot name them, and
+// picking it changes nothing.
+const customShadow = "custom"
+
 // shadowSrc is the Shadow row of a scene node: it reads the preset the node was given and writes the
 // layers of the chosen one as one undo step.
 func (v *Viewer) shadowSrc() propSrc {
@@ -34,11 +38,14 @@ func (v *Viewer) shadowSrc() propSrc {
 					return editor.Prop{Set: true, Args: []editor.Arg{{Text: name}}}
 				}
 			}
-			return editor.Prop{Set: true} // shadows of its own: the row shows no preset
+			return editor.Prop{Set: true, Args: []editor.Arg{{Text: customShadow}}}
 		},
 		set: func(_ string, args ...string) bool {
 			if len(args) == 0 {
 				return v.setShadowPreset("")
+			}
+			if args[0] == customShadow { // a state, not a preset: the layers the node already has stay
+				return true
 			}
 			return v.setShadowPreset(args[0])
 		},

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The Shadow row of a scene shows `custom` when the node writes layers of its own, instead of `none`;
+  the classic Effects section says how many `shadow` commands the item writes, since its fields edit
+  only the first.
 * The Code pane keeps the caret while the user types: the session redraws inside the edit it applies,
   before the edit is recorded, so the pane took the draft for a change of the code and put the caret
   back at the start after every keystroke.
