@@ -227,7 +227,7 @@ func (p *prep) allProps(rn *RNode, name string) []*Prop {
 			continue
 		}
 		if hasExpr(pr) {
-			if p.eval == nil { // a value check cannot know; the build with an evaluator reports it
+			if !p.canEval() { // a value check cannot know; the build with an evaluator reports it
 				continue
 			}
 			if pr = p.evalProp(rn, pr); pr == nil {

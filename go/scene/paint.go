@@ -107,7 +107,7 @@ func (p *prep) shadows(rn *RNode) []gfx.Shadow {
 			continue
 		}
 		if hasExpr(pr) {
-			if p.eval == nil {
+			if !p.canEval() {
 				if !p.classic && !p.opts.noExprWarn {
 					p.t.warn(pr.Pos, "shadow: expressions are not evaluated")
 				}

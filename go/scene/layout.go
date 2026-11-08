@@ -32,6 +32,10 @@ type Options struct {
 	// (spec 5c): so ${title} and ${size + 12} read what the use sets. It wins over Eval; nil: only Eval
 	// runs, and a parameter is an unknown name to it.
 	EvalVars func(code string, vars map[string]string) (string, bool)
+	// Classic gives the evaluated text of the arguments of prop on the node at, as go/render computed it
+	// from the element model: the scope of a classic diagram (spec 6). It wins over Eval there. nil: a
+	// classic diagram has no values, and its expressions are ignored.
+	Classic func(at ClassicRef, prop string) ([]string, bool)
 }
 
 // Defaults of a text leaf, as in the Tenniarb app (font-size 18) plus a padding around the text.
@@ -58,6 +62,9 @@ type prep struct {
 	anim    map[*RNode]*Animation // the animation a node plays (spec 13)
 	eval    evalFunc              // Options.Eval or EvalVars; nil: no expression runs
 	evals   map[evalKey]*Prop     // a property with an expression -> its evaluated copy, nil if it failed
+	// classicAt names every node of a classic diagram in the terms of the element model, for
+	// Options.Classic; empty in a scene.
+	classicAt map[*RNode]ClassicRef
 }
 
 // evalKey is one property of one node: the Prop of a scene is shared between instances, so its
@@ -156,7 +163,7 @@ func (p *prep) prop(rn *RNode, name string) *Prop {
 	if pr == nil || !hasExpr(pr) {
 		return pr
 	}
-	if p.eval == nil {
+	if !p.canEval() {
 		if !p.classic && !p.opts.noExprWarn {
 			p.t.warn(pr.Pos, "%s: expressions are not evaluated", name)
 		}
@@ -217,6 +224,10 @@ func hasExpr(pr *Prop) bool {
 func (p *prep) evaluated(rn *RNode, pr *Prop) *Prop {
 	out := &Prop{Name: pr.Name, Args: pr.Args, Block: pr.Block, Pos: pr.Pos, Range: pr.Range,
 		Val: make([]string, len(pr.Args))}
+	if vals, ok := p.modelVals(rn, pr); ok {
+		copy(out.Val, vals)
+		return out
+	}
 	for i, a := range pr.Args {
 		v, ok := evalArg(p.eval, a, rn.Vars)
 		if !ok {
