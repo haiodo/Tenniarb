@@ -30,6 +30,11 @@ Tenniarb - редактор диаграмм и экранов в формате
   **Паритет с Go обязателен**: web открывает и рисует те же `.tenn`, включая сцены (`auto-layout`, `use`,
   слоты, параметры, стили, картинки); файл, сделанный в Go, вставляют в web и смотрят целиком. Расхождение
   картинки - дефект. План - `../my-tasks/tenniarb/engine-unify.md`, раздел 4a.
+  Стенд паритета: `go/cmd/tennlayout` печатает дерево Go, голдены - `web/fixtures/scene/*.layout.json`,
+  сверяет `web/packages/render/test/scene-parity.test.ts`; `TestGoldensAreCurrent` в
+  `go/cmd/tennlayout` падает, если голден отстал от фикстуры. Меняешь сцену - пересобери голден и
+  прогони оба теста. Пиксельный тест сцены просит шрифт по имени (`font-family Inter`): стека
+  Helvetica на Linux-раннере нет, иначе на картинке нет глифов.
   `web/packages/mindmap` - встраиваемый mind map без вычислений (план, раздел 6): текстовый протокол блока, бандл `dist/mindmap.js`.
 - `TenniarbTests/` - unit tests (518 тестов, ~70% покрытия); `PerformanceTests` вынесены
   в схему `Tenniarb-Performance`. Схема скипает все остальные suite поимённо - при
