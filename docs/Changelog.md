@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* `display` and `layer` work in scenes as they do on a classic diagram: `display stack|circle|no-fill|text|none`
+  picks the shape of the box, and `layer background|hover` moves the picture under or over its siblings
+  without touching the layout.
 * An item that holds items is a box for them, not a label: it draws no name and no `body`, only a `title`
   if one is written, so `title ""` is no longer needed to keep a card unlabelled. A childless item
   outside a layout still shows its name, as a diagram does.

@@ -3100,6 +3100,10 @@ interface Look {
   dash: number[];
   dashPhase: number;
   radius: [number, number, number, number];
+  /** `display`: rect when unset, else no-fill, circle, stack, text or none. */
+  display: string;
+  /** `layer` as the sort key among the siblings: 0 background, 1 the rest, 2 hover. */
+  layer: number;
   clip: boolean;
   opacity: number;
 }
@@ -3318,7 +3322,7 @@ export interface TennScene {
   diagnostics: { message: string; warn: boolean; line: number; col: number; file: string }[];
   /** Draws into a y-up canvas (the caller flips it once, as drawScene does); `at` is where its bottom edge goes. */
   draw(ctx: Canvas2D, at?: Point): void;
-  /** The laid out items in tree order, for tests and the inspector. */
+  /** The laid out items in paint order, for tests and the inspector. */
   boxes: { name: string; path: string; x: number; y: number; width: number; height: number; depth: number }[];
 }
 
@@ -3672,6 +3676,8 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     dash: [],
     dashPhase: 0,
     radius: [0, 0, 0, 0],
+    display: "",
+    layer: 1,
     clip: false,
     opacity: 1,
   };
@@ -3695,6 +3701,15 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   const radius = propOf(prep, rn, "corner-radius");
   if (radius !== null) {
     look.radius = radii(prep, radius);
+  }
+  const display = propOf(prep, rn, "display");
+  if (display !== null) {
+    look.display = propText(display, 0);
+  }
+  const layer = propOf(prep, rn, "layer");
+  if (layer !== null) {
+    const word = propText(layer, 0);
+    look.layer = word === "background" ? 0 : word === "hover" ? 2 : 1;
   }
   const opacity = num(prep, rn, "opacity");
   if (opacity !== null && opacity >= 0 && opacity <= 1) {
@@ -3743,6 +3758,21 @@ function radii(prep: Prep, p: SceneProp): [number, number, number, number] {
 }
 
 const holdsItems = (rn: RNode): boolean => rn.kids.some((k) => k.kind === "item");
+
+/**
+ * Go's prep.paintOrder: background items first, the rest in file order, then hover items; a link is no
+ * item and stays in the middle pass. The order is the picture only, not the layout.
+ */
+function paintOrder(prep: Prep, rn: RNode): RNode[] {
+  const rank = (k: RNode): number => (k.kind === "item" ? (prep.looks.get(k)?.layer ?? 1) : 1);
+  return rn.kids
+    .map((k, i) => ({ k, i, rank: rank(k) }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .map((e) => e.k);
+}
+
+/** Go's display none: the item takes room and gives bounds but is never drawn, its children with it. */
+const drawn = (prep: Prep, rn: RNode): boolean => (prep.looks.get(rn)?.display ?? "") !== "none";
 
 function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): LayoutNode {
   const n = newLayout(rn);
@@ -4174,6 +4204,27 @@ function roundRectPath(ctx: Canvas2D, x: number, y: number, w: number, h: number
   ctx.closePath();
 }
 
+/** Go's boxPath: an ellipse for display circle, else the rounded rectangle. */
+function boxPath(
+  ctx: Canvas2D,
+  display: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radius: [number, number, number, number],
+): void {
+  if (display === "circle") {
+    ctx.beginPath();
+    ctx.ellipse(x + w / 2, y + h / 2, Math.abs(w) / 2, Math.abs(h) / 2, 0, 0, Math.PI * 2);
+    return;
+  }
+  roundRectPath(ctx, x, y, w, h, radius);
+}
+
+/** The shadow of one sheet of display stack, as Go's stackShadow: black at 1/3 alpha, 5 blur, 1 up and right. */
+const stackShadow: SceneShadow = { dx: 1, dy: 1, blur: 5, color: { r: 0, g: 0, b: 0, a: 1 / 3 } };
+
 /** The linear gradient of the box, through its centre at the angle and reaching the corners (Go's gradient.at). */
 function fillGradient(ctx: Canvas2D, g: SceneGradient, w: number, h: number): boolean {
   // shortcut: the SVG writer has no gradient object, so an SVG export draws the base colour; add one to
@@ -4208,7 +4259,7 @@ function withShadow(ctx: Canvas2D, sh: SceneShadow, paint: () => void): void {
   ctx.restore();
 }
 
-function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color): void {
+function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color, shadow?: SceneShadow): void {
   const lines = textWrap(ti, w - 2 * ti.padX);
   const y0 = leafNode ? (h - lines.length * ti.lineH) / 2 : ti.padY;
   ctx.save();
@@ -4234,7 +4285,11 @@ function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: b
     const base = y0 + i * ti.lineH + (ti.lineH - (ti.asc + ti.desc)) / 2 + ti.asc;
     // The scene draws y down (the two flips of renderElement and of draw() cancel), so the baseline
     // needs no local flip: the glyphs stand on it as usual.
-    ctx.fillText(s, x, base);
+    if (shadow === undefined) {
+      ctx.fillText(s, x, base);
+    } else {
+      withShadow(ctx, shadow, () => ctx.fillText(s, x, base));
+    }
   });
   ctx.restore();
 }
@@ -4313,7 +4368,10 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
       maxX = Math.max(maxX, nx + ln.rw);
       maxY = Math.max(maxY, ny + ln.rh);
     }
-    for (const k of rn.kids) {
+    if (!drawn(prep, rn)) {
+      return;
+    }
+    for (const k of paintOrder(prep, rn)) {
       if (k.kind === "item") {
         walk(k, pathOfNode(k, path), depth + 1, nx, ny);
       }
@@ -4342,7 +4400,8 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
     if (opacity < 1) {
       ctx.globalAlpha = (ctx.globalAlpha ?? 1) * opacity;
     }
-    if (!isRoot && look !== undefined) {
+    const display = look?.display ?? "";
+    if (!isRoot && look !== undefined && display !== "none") {
       const w = ln.rw;
       const h = ln.rh;
       if (w > 0 && h > 0) {
@@ -4358,53 +4417,76 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             roundRectPath(ctx, 0, 0, w, h, look.radius);
             ctx.clip();
           }
-          // Go's picture(): one shadow pass per `shadow`, under the fill; a gradient is painted over an
-          // opaque base, since a canvas gradient with a shadow casts it from the gradient's alpha; a
-          // border without a fill casts the shadow instead.
-          let shadows = look.shadows;
-          if (look.fill.a > 0) {
-            roundRectPath(ctx, 0, 0, w, h, look.radius);
-            const base = { ...look.fill, a: 1 };
-            for (const sh of shadows) {
-              withShadow(ctx, sh, () => {
-                ctx.fillStyle = sceneCss(base);
-                ctx.fill();
-              });
+          // text draws no box at all; no-fill draws only its border.
+          if (display !== "text") {
+            if (display === "stack") {
+              // Three sheets behind the box, stepped 2 up and right, each under the stack shadow.
+              for (let i = 1; i <= 3; i += 1) {
+                const d = 2 * (3 - i);
+                boxPath(ctx, display, d, -d, w, h, look.radius);
+                withShadow(ctx, stackShadow, () => {
+                  ctx.fillStyle = sceneCss(look.fill);
+                  ctx.fill();
+                });
+              }
             }
-            if (look.grad !== null) {
-              if (!fillGradient(ctx, look.grad, w, h)) {
+            // Go's picture(): one shadow pass per `shadow`, under the fill; a gradient is painted over an
+            // opaque base, since a canvas gradient with a shadow casts it from the gradient's alpha; a
+            // border without a fill casts the shadow instead.
+            let shadows = look.shadows;
+            if (display !== "no-fill" && look.fill.a > 0) {
+              boxPath(ctx, display, 0, 0, w, h, look.radius);
+              const base = { ...look.fill, a: 1 };
+              for (const sh of shadows) {
+                withShadow(ctx, sh, () => {
+                  ctx.fillStyle = sceneCss(base);
+                  ctx.fill();
+                });
+              }
+              if (look.grad !== null) {
+                if (!fillGradient(ctx, look.grad, w, h)) {
+                  ctx.fillStyle = sceneCss(look.fill);
+                  ctx.fill();
+                }
+              } else if (shadows.length === 0) {
                 ctx.fillStyle = sceneCss(look.fill);
                 ctx.fill();
               }
-            } else if (shadows.length === 0) {
-              ctx.fillStyle = sceneCss(look.fill);
-              ctx.fill();
+              shadows = [];
             }
-            shadows = [];
-          }
-          if (look.lineW > 0 && look.border.a > 0) {
-            const inset = look.lineW / 2;
-            const radius = look.radius.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
-            roundRectPath(ctx, inset, inset, w - look.lineW, h - look.lineW, radius);
-            ctx.lineWidth = look.lineW;
-            ctx.strokeStyle = sceneCss(look.border);
-            ctx.setLineDash(look.dash);
-            ctx.lineDashOffset = look.dashPhase;
-            if (shadows.length > 0) {
-              for (const sh of shadows) {
-                withShadow(ctx, sh, () => ctx.stroke());
+            if (look.lineW > 0 && look.border.a > 0) {
+              const inset = look.lineW / 2;
+              const radius = look.radius.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
+              boxPath(ctx, display, inset, inset, w - look.lineW, h - look.lineW, radius);
+              ctx.lineWidth = look.lineW;
+              ctx.strokeStyle = sceneCss(look.border);
+              ctx.setLineDash(look.dash);
+              ctx.lineDashOffset = look.dashPhase;
+              if (shadows.length > 0) {
+                for (const sh of shadows) {
+                  withShadow(ctx, sh, () => ctx.stroke());
+                }
+              } else {
+                ctx.stroke();
               }
-            } else {
-              ctx.stroke();
+              // The dash belongs to this border: a child icon or a link is not dashed.
+              ctx.setLineDash([]);
+              ctx.lineDashOffset = 0;
             }
-            // The dash belongs to this border: a child icon or a link is not dashed.
-            ctx.setLineDash([]);
-            ctx.lineDashOffset = 0;
           }
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {
-            // With a body the title goes to the top left and the body follows it.
-            drawText(ctx, ti, w, h, ln.kids.length === 0 && prep.bodies.get(rn) === undefined, look.text);
+            // With a body the title goes to the top left and the body follows it. display text has no
+            // box, so the shadow of the item falls on the glyphs.
+            drawText(
+              ctx,
+              ti,
+              w,
+              h,
+              ln.kids.length === 0 && prep.bodies.get(rn) === undefined,
+              look.text,
+              display === "text" ? look.shadows[0] : undefined,
+            );
           }
           const body = prep.bodies.get(rn);
           if (body !== undefined && prep.bodyAt.get(rn) === undefined) {
@@ -4417,17 +4499,19 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
         }
       }
     }
-    for (const k of rn.kids) {
-      const kn = prep.frames.get(k);
-      if (k.kind === "item" && kn !== undefined) {
-        drawNode(ctx, k, kn, false);
-      } else if (k.kind === "link") {
-        drawLink(ctx, prep, k, prep.linkSides.get(rn) ?? null);
+    if (display !== "none") {
+      for (const k of paintOrder(prep, rn)) {
+        const kn = prep.frames.get(k);
+        if (k.kind === "item" && kn !== undefined) {
+          drawNode(ctx, k, kn, false);
+        } else if (k.kind === "link") {
+          drawLink(ctx, prep, k, prep.linkSides.get(rn) ?? null);
+        }
       }
     }
     const bodyAt = prep.bodyAt.get(rn);
     const flowBody = prep.bodies.get(rn);
-    if (bodyAt !== undefined && flowBody !== undefined) {
+    if (display !== "none" && bodyAt !== undefined && flowBody !== undefined) {
       drawBody(ctx, flowBody, bodyAt.rx, bodyAt.ry, bodyAt.rw);
     }
     ctx.restore();

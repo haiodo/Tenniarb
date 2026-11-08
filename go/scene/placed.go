@@ -39,7 +39,10 @@ func (s *Screen) Placed() *Placed {
 		ln := s.p.frames[rn]
 		pl := &Placed{Src: rn.Src, Inst: rn.Inst, Parent: parent, X: ox + ln.RX, Y: oy + ln.RY, W: ln.RW, H: ln.RH,
 			Gfx: s.gfx[rn], r: rn, Free: parentDir == layout.Abs || ln.Absolute}
-		for _, k := range rn.Kids {
+		if s.p.styles[rn].display == "none" { // display none is not drawn, its children with it
+			return pl
+		}
+		for _, k := range s.p.paintOrder(rn) {
 			if k.Kind == RItem && s.p.frames[k] != nil {
 				pl.Kids = append(pl.Kids, walk(k, pl, pl.X, pl.Y, ln.Dir))
 			}

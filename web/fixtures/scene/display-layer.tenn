@@ -1,0 +1,32 @@
+// display picks the shape of a box: rect (the default), no-fill, circle, stack, text or none. layer
+// changes the draw order among the siblings of one parent: background under the rest, hover over them;
+// it moves the picture only, not the layout.
+element "E" {
+    item Stage {
+        width 480; height 340; auto-layout abs; color #f7f7f7
+
+        item Rect { pos 30 -30; width 120; height 60; title "rect"; color #ddeeff }
+        item NoFill {
+            pos 180 -30; width 120; height 60; title "no-fill"; display no-fill
+            border-color #3355ff; line-width 2; corner-radius 8
+        }
+        item Circle {
+            pos 350 -30; width 100; height 100; title "circle"; display circle
+            color #ffd9d9; border-color #884444; line-width 2
+        }
+        item Stack {
+            pos 30 -170; width 140; height 70; title "stack"; display stack
+            color #ffffff; border-color #dddddd; corner-radius 8
+        }
+        item TextOnly {
+            pos 200 -170; width 120; height 50; title "text"; display text
+            shadow 0 6 12 #00000040
+        }
+        item Nothing { pos 350 -170; width 80; height 60; title "none"; display none; color #333333 }
+
+        // written before Middle and still drawn over it
+        item Front { pos 120 -235; width 200; height 70; color #00aa0030; layer hover }
+        item Back { pos 40 -250; width 200; height 70; color #ff000030; layer background }
+        item Middle { pos 80 -255; width 200; height 70; title "middle"; color #0000ff30 }
+    }
+}

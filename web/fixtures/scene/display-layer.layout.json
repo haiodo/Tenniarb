@@ -1,0 +1,320 @@
+{
+  "element": "E",
+  "height": 340,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "E",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 340,
+        "w": 480,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f7f7f7",
+      "gradient": null,
+      "name": "Stage",
+      "opacity": 1,
+      "path": "Stage",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 340,
+        "w": 480,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ff000030",
+      "gradient": null,
+      "name": "Back",
+      "opacity": 1,
+      "path": "Stage.Back",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 70,
+        "w": 200,
+        "x": 40,
+        "y": 250
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "Rect",
+      "opacity": 1,
+      "path": "Stage.Rect",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 120,
+        "x": 30,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "rect"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#3355ff",
+      "borderWidth": 2,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "NoFill",
+      "opacity": 1,
+      "path": "Stage.NoFill",
+      "radius": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "rect": {
+        "h": 60,
+        "w": 120,
+        "x": 180,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "no-fill"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#884444",
+      "borderWidth": 2,
+      "clip": false,
+      "fill": "#ffd9d9",
+      "gradient": null,
+      "name": "Circle",
+      "opacity": 1,
+      "path": "Stage.Circle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 100,
+        "w": 100,
+        "x": 350,
+        "y": 30
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "circle"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#dddddd",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Stack",
+      "opacity": 1,
+      "path": "Stage.Stack",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 70,
+        "w": 140,
+        "x": 30,
+        "y": 170
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 5,
+          "color": "#00000055",
+          "dx": 1,
+          "dy": -1
+        }
+      ],
+      "text": [
+        "stack"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "TextOnly",
+      "opacity": 1,
+      "path": "Stage.TextOnly",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 50,
+        "w": 120,
+        "x": 200,
+        "y": 170
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 12,
+          "color": "#00000040",
+          "dx": 0,
+          "dy": -6
+        }
+      ],
+      "text": [
+        "text"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Nothing",
+      "opacity": 1,
+      "path": "Stage.Nothing",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 80,
+        "x": 350,
+        "y": 170
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0000ff30",
+      "gradient": null,
+      "name": "Middle",
+      "opacity": 1,
+      "path": "Stage.Middle",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 70,
+        "w": 200,
+        "x": 80,
+        "y": 255
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "middle"
+      ],
+      "textColor": "#ffffff"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#00aa0030",
+      "gradient": null,
+      "name": "Front",
+      "opacity": 1,
+      "path": "Stage.Front",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 70,
+        "w": 200,
+        "x": 120,
+        "y": 235
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    }
+  ],
+  "width": 480
+}

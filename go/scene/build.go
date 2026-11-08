@@ -2,6 +2,7 @@ package scene
 
 import (
 	"math"
+	"slices"
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
@@ -63,7 +64,7 @@ type Box struct {
 	Lines      []string // wrapped text lines of an item with a title
 }
 
-// Boxes lists the items of the screen in tree order, the element itself first.
+// Boxes lists the items of the screen in paint order, the element itself first.
 func (s *Screen) Boxes() []Box {
 	var out []Box
 	var walk func(rn *RNode, path string, depth int)
@@ -74,7 +75,10 @@ func (s *Screen) Boxes() []Box {
 			b.Lines = ti.wrap(ln.RW - 2*ti.padX)
 		}
 		out = append(out, b)
-		for _, k := range rn.Kids {
+		if s.p.styles[rn].display == "none" { // display none is not drawn, its children with it
+			return
+		}
+		for _, k := range s.p.paintOrder(rn) {
 			if k.Kind != RItem || s.p.frames[k] == nil {
 				continue
 			}
@@ -87,6 +91,31 @@ func (s *Screen) Boxes() []Box {
 	}
 	walk(s.tree, "", 0)
 	return out
+}
+
+// paintOrder lists the kids in draw order: background items under the rest, hover items over them, the
+// file order within each pass. links keep the place of an item of no layer.
+func (p *prep) paintOrder(rn *RNode) []*RNode {
+	if len(rn.Kids) < 2 {
+		return rn.Kids
+	}
+	out := slices.Clone(rn.Kids)
+	slices.SortStableFunc(out, func(a, b *RNode) int { return p.layerKey(a) - p.layerKey(b) })
+	return out
+}
+
+// layerKey is the position of a node among its siblings; the zero layer is the middle pass.
+func (p *prep) layerKey(rn *RNode) int {
+	if rn.Kind != RItem {
+		return 1
+	}
+	switch p.styles[rn].layer {
+	case layerBackground:
+		return 0
+	case layerHover:
+		return 2
+	}
+	return 1
 }
 
 // Build resolves the element at path ("" is the content of the file itself), lays it out and adds the
@@ -259,7 +288,11 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 		b.image(r, im, ln.RW, ln.RH, b.p.radiiOf(rn))
 		b.tx.SetPicture(node, r.Finish())
 	}
-	for _, k := range rn.Kids {
+	if !isRoot && b.p.styles[rn].display == "none" {
+		// display none takes room and gives bounds but is never drawn, its children with it.
+		return node
+	}
+	for _, k := range b.p.paintOrder(rn) {
 		switch k.Kind {
 		case RItem:
 			if b.p.frames[k] != nil { // a hidden item has no frame
@@ -304,21 +337,29 @@ func (b *builder) clip(node *gfx.Node, ln *layout.Node, radius [4]float64) {
 
 func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	w, h := ln.RW, ln.RH
-	if w <= 0 || h <= 0 {
+	if w <= 0 || h <= 0 || st.display == "none" {
 		return nil
 	}
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
 	if ic := b.p.icons[rn]; ic != nil {
 		ic.draw(r, w, h, st.lineW)
 		if ti := b.p.texts[rn]; ti != nil {
-			ti.draw(r, w, h, true, st.text)
+			ti.draw(r, w, h, true, st.text, nil)
 		}
 		return r.Finish()
 	}
 	shadows := st.shadows
-	if st.fill.A > 0 {
-		shape := &gfx.Path{}
-		shape.RoundRect4(0, 0, w, h, st.radius)
+	if st.display == "stack" {
+		// Three sheets behind the box, stepped 2 up and right, as the classic renderer draws a stack.
+		for i := 1; i <= 3; i++ {
+			d := 2 * float64(3-i)
+			sheet := &gfx.Path{}
+			sheet.RoundRect4(d, -d, w, h, st.radius)
+			r.FillShadowPath(sheet, st.fill, stackShadow())
+		}
+	}
+	if st.display != "text" && st.display != "no-fill" && st.fill.A > 0 {
+		shape := boxPath(st, w, h)
 		// A shadow takes the alpha of the fill; a gradient is drawn over an opaque base, so a gradient
 		// with transparent stops shows the base. Ceiling: gfx has no gradient with a shadow.
 		base := st.fill
@@ -333,17 +374,22 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 		}
 		shadows = nil
 	}
-	if im := b.p.images[rn]; im != nil {
+	if im := b.p.images[rn]; im != nil && (st.display == "" || st.display == "rect") {
 		b.image(r, im, w, h, st.radius)
 	}
-	if st.lineW > 0 && st.border.A > 0 {
+	if st.display != "text" && st.lineW > 0 && st.border.A > 0 {
 		in := st.lineW / 2
-		edge := &gfx.Path{}
 		inner := st.radius
 		for i := range inner {
 			inner[i] = math.Max(inner[i]-in, 0)
 		}
-		edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
+		var edge *gfx.Path
+		if st.display == "circle" {
+			edge = gfx.EllipsePath(gfx.R(in, in, w-st.lineW, h-st.lineW))
+		} else {
+			edge = &gfx.Path{}
+			edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
+		}
 		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10, Dash: st.dash, DashPhase: st.dashPhase}
 		if len(shadows) > 0 { // no fill: the border casts the shadow
 			for _, sh := range shadows {
@@ -356,7 +402,12 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	if ti := b.p.texts[rn]; ti != nil {
 		// With a body the title goes to the top left and the body follows it, as in classic diagrams.
 		leaf := len(ln.Kids) == 0 && b.p.bodies[rn] == nil
-		ti.draw(r, w, h, leaf, st.text)
+		var sh *gfx.Shadow
+		if st.display == "text" && len(st.shadows) > 0 {
+			// display text has no box, so the shadow of the item falls on the glyphs.
+			sh = &st.shadows[0]
+		}
+		ti.draw(r, w, h, leaf, st.text, sh)
 	}
 	if body := b.p.bodies[rn]; body != nil && b.p.bodyAt[rn] == nil {
 		y := body.padY
@@ -368,8 +419,24 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	return r.Finish()
 }
 
+// boxPath is the outline of the box of an item: an ellipse for display circle, else its rounded rectangle.
+func boxPath(st style, w, h float64) *gfx.Path {
+	if st.display == "circle" {
+		return gfx.EllipsePath(gfx.R(0, 0, w, h))
+	}
+	p := &gfx.Path{}
+	p.RoundRect4(0, 0, w, h, st.radius)
+	return p
+}
+
+// stackShadow is the shadow of one sheet of display stack, as the classic renderer gives it.
+func stackShadow() gfx.Shadow {
+	return gfx.Shadow{DX: 1, DY: -1, Blur: defaultShadowBlur, Color: defaultShadowColor}
+}
+
 // draw writes the title: in a leaf centered unless layout says left or right, at the top left of an item that has children.
-func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color) {
+// With sh set the glyphs cast it (display text), else they are plain text.
+func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow) {
 	lines := ti.wrap(w - 2*ti.padX)
 	y0 := ti.padY
 	if leaf {
@@ -390,7 +457,11 @@ func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color) 
 			}
 		}
 		base := y0 + float64(i)*ti.lineH + (ti.lineH-(ti.asc+ti.desc))/2 + ti.asc
-		r.Text(s, x, base, ti.font, c)
+		if sh != nil {
+			r.TextShadow(s, x, base, ti.font, c, *sh)
+		} else {
+			r.Text(s, x, base, ti.font, c)
+		}
 	}
 }
 
@@ -479,9 +550,18 @@ type style struct {
 	dash               []float64 // line-style dashed or dotted; nil is a solid line
 	dashPhase          float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
+	display            string     // rect when unset; no-fill, circle, stack, text or none
+	layer              int        // draw order among the siblings
 	clip               bool
 	opacity            float64
 }
+
+// The layer of an item among its siblings as style.layer: background then hover, the zero layer (unset)
+// between them, so an item that names no layer draws as it always did.
+const (
+	layerBackground = iota + 1
+	layerHover
+)
 
 var (
 	white = gfx.Color{R: 1, G: 1, B: 1, A: 1}
@@ -526,6 +606,17 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	st.dash, st.dashPhase = p.dash(rn)
 	if pr := p.prop(rn, "corner-radius"); pr != nil {
 		st.radius = p.radii(pr)
+	}
+	if pr := p.prop(rn, "display"); pr != nil {
+		st.display, _ = pr.text(0)
+	}
+	if pr := p.prop(rn, "layer"); pr != nil {
+		switch s, _ := pr.text(0); s {
+		case "background":
+			st.layer = layerBackground
+		case "hover":
+			st.layer = layerHover
+		}
 	}
 	if v, ok := p.num(rn, "opacity"); ok {
 		if v < 0 || v > 1 {

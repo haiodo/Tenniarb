@@ -299,6 +299,8 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
       if (rec === null) return;
       rec.text.push(text);
       rec.textColor = typeof state.fill === "object" ? null : cssHex(state.fill);
+      // A glyph shadow is a shadow of the node like any other (OpTextShadow in Go).
+      addShadow(rec);
     },
     measureText: (text) => ({ width: [...text].length * 10 }),
     drawImage: () => {},
