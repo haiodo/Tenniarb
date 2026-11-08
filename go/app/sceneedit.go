@@ -61,6 +61,53 @@ func ownProp(n *scene.Node, name string) *scene.Prop {
 	return found
 }
 
+// shadowsOf lists the shadow commands written on n itself, in file order.
+func shadowsOf(n *scene.Node) []*scene.Prop {
+	var out []*scene.Prop
+	if n.Kind == scene.KUse {
+		for _, ov := range n.Block {
+			if ov.Kind == scene.OvProp && ov.Prop.Name == "shadow" {
+				out = append(out, ov.Prop)
+			}
+		}
+		return out
+	}
+	for _, p := range n.Props {
+		if p.Name == "shadow" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// SetShadowsEdit replaces every shadow of n with cmds: a soft shadow is more than one command, and the
+// node may hold one already. The edits address one text, so apply them from the last to the first.
+func SetShadowsEdit(text string, n *scene.Node, cmds ...string) []TextEdit {
+	cur := shadowsOf(n)
+	var out []TextEdit
+	switch {
+	case len(cmds) == 0:
+		for _, p := range cur {
+			out = append(out, removeEdit(text, p.Range))
+		}
+	case len(cur) == 0:
+		out = append(out, InsertEdit(text, n, strings.Join(cmds, "\n")))
+	default:
+		// The first command takes the place of the first shadow, so the block never ends up without one.
+		ind := indentAt(text, cur[0].Range.Start)
+		repl := cmds[0]
+		if len(cmds) > 1 {
+			repl += "\n" + indentLines(strings.Join(cmds[1:], "\n"), ind)
+		}
+		out = append(out, TextEdit{cur[0].Range.Start, cur[0].Range.End, repl})
+		for _, p := range cur[1:] {
+			out = append(out, removeEdit(text, p.Range))
+		}
+	}
+	slices.SortFunc(out, func(a, b TextEdit) int { return b.Start - a.Start })
+	return out
+}
+
 // SetPropEdit writes `name args` on n: in place of its own command, else as a new command in its block.
 // No args removes the command.
 func SetPropEdit(text string, n *scene.Node, name string, args ...string) (TextEdit, bool) {

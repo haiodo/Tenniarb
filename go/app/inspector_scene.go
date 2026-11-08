@@ -198,6 +198,7 @@ func (in *inspector) sceneSections() g.Option {
 			in.text("Weight", node, t("scene-font-weight", "font-weight"))),
 		in.section(sectionTitle("Effects"), node,
 			in.text("Opacity", node, num("scene-opacity", "opacity", 0)),
+			in.combo("Shadow", node, "scene-shadow", "shadow", []string{noneChoice, "soft", "floating"}, noneChoice, v.shadowSrc),
 			in.toggle("Hidden", node, "scene-hidden", "hidden", []string{"yes"}, src)))
 }
 
