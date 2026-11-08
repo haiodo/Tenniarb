@@ -16,6 +16,7 @@ const source = `element "Card" {
         padding 16
         gap 10
         title "L"
+        font-family Inter
         font-size 40
         body %{
             plain line
