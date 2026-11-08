@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* An item that holds items is a box for them, not a label: it draws no name and no `body`, only a `title`
+  if one is written, so `title ""` is no longer needed to keep a card unlabelled. A childless item
+  outside a layout still shows its name, as a diagram does.
 * The inspector writes a soft shadow in one choice: `Shadow` offers `soft` and `floating`, each putting
   two `shadow` commands on the selected scene node as one undo step, and `none` takes them away.
 * "Attach image..." is on the canvas menu of a scene: the picture goes in as `image "path"`, a file

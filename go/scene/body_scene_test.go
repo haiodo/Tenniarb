@@ -126,9 +126,9 @@ func TestBodySVG(t *testing.T) {
 	}
 }
 
-// A body of an auto-layout item is a block after the children: below the title and inside the
-// card, whose height includes it (frac: 17 a line, 20 padding, 12 gap).
-func TestBodyFlowsBelowTitle(t *testing.T) {
+// A body is the content of a leaf: an item that holds items shows them instead and is a backdrop, so
+// its body is neither drawn nor counted in its height.
+func TestBodyOfItemWithChildrenIsNotDrawn(t *testing.T) {
 	s, svg := buildSrc(t, `element "E" {
     item "Card" {
         auto-layout column
@@ -141,29 +141,39 @@ func TestBodyFlowsBelowTitle(t *testing.T) {
         }
     }
 }`)
-	if got, want := boxH(s, "Card"), 20.0+17+12+17+20; got != want {
-		t.Errorf("card height %v, want %v", got, want)
+	if got, want := boxH(s, "Card"), 20.0+17+20; got != want {
+		t.Errorf("card height %v, want %v: the body is drawn", got, want)
 	}
-	if yBody, yTitle := svgTextY(t, svg, "one"), svgTextY(t, svg, "Head"); yBody <= yTitle {
-		t.Errorf("body baseline %v, title baseline %v: body is not below", yBody, yTitle)
+	if strings.Contains(svg, ">one ") {
+		t.Errorf("the body of a card with items is drawn:\n%s", svg)
 	}
 }
 
-// More body text wraps and the card grows by every line.
-func TestBodyGrowsCard(t *testing.T) {
-	s, _ := buildSrc(t, `element "E" {
+// A body of a leaf is a block under its title, and the leaf grows by every line of it.
+func TestBodyOfLeafFlowsBelowTitle(t *testing.T) {
+	s, svg := buildSrc(t, `element "E" {
     item "Card" {
         auto-layout column
         width 80
         padding 10
-        gap 10
-        item "T" { title "Head" }
+        title "Head"
         body "one two three four five"
     }
 }`)
-	// 5 body lines at 10 points a rune (inner width 60), title 1, gap 10, padding 20.
-	if got, want := boxH(s, "Card"), 10.0+17+10+5*17+10; got != want {
-		t.Errorf("card height %v, want %v", got, want)
+	if yBody, yTitle := svgTextY(t, svg, "five"), svgTextY(t, svg, "Head"); yBody <= yTitle {
+		t.Errorf("body baseline %v, title baseline %v: body is not below", yBody, yTitle)
+	}
+	oneScreen, _ := buildSrc(t, `element "E" {
+    item "Card" {
+        auto-layout column
+        width 80
+        padding 10
+        title "Head"
+        body "one"
+    }
+}`)
+	if lines := boxH(s, "Card") - boxH(oneScreen, "Card"); lines != 4*17 {
+		t.Errorf("four more lines grow the card by %v, want %v", lines, 4*17)
 	}
 }
 

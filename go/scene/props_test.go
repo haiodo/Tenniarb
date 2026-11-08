@@ -38,6 +38,23 @@ func TestNameIsTextOnlyOutsideLayout(t *testing.T) {
 	wantBox(t, m, "Ctx.Titled", 0, 10, 22, 19)
 }
 
+// TestNameOfContainerIsNotText: an item that holds items is a box for them, so its name is a path
+// segment; the leaf beside it still shows its name, as a classic diagram does.
+func TestNameOfContainerIsNotText(t *testing.T) {
+	_, svg := buildSrc(t, `element "E" {
+    item "Card" {
+        width 200; height 100
+        item "Inner" { pos 10 10; width 50; height 20 }
+    }
+}`)
+	if strings.Contains(svg, ">Card<") {
+		t.Errorf("a container draws its name:\n%s", svg)
+	}
+	if !strings.Contains(svg, ">Inner<") {
+		t.Errorf("a leaf outside the layout does not draw its name:\n%s", svg)
+	}
+}
+
 func TestFontSizeNoClamp(t *testing.T) {
 	m := boxes(t, "props.tenn", "Font")
 	if got := m["Big"].H; got != 59+12 { // ceil(56 * 1.05) + 2 * 6

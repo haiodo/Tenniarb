@@ -54,13 +54,13 @@ func TestBodyLinkBoxes(t *testing.T) {
 	}
 }
 
-// A body of an auto-layout item is a block after its children: the links of it are placed below them.
+// A body of a leaf is a block under its title: the links of it are placed below the title.
 func TestBodyLinkInFlow(t *testing.T) {
 	s, _ := buildSrc(t, `element "E" {
     item "Card" {
         auto-layout column
         width 300
-        item "T" { title "Head"; height 20 }
+        title "Head"
         body %{
             [Цель](#Цель)
 
@@ -72,8 +72,8 @@ func TestBodyLinkInFlow(t *testing.T) {
 	if len(links) != 1 {
 		t.Fatalf("%d links, want one: %+v", len(links), links)
 	}
-	if l := links[0]; l.Y < 20 {
-		t.Errorf("the link at y=%v is not below the 20 point child", l.Y)
+	if l := links[0]; l.Y < 17 {
+		t.Errorf("the link at y=%v is not below the 17 point title", l.Y)
 	}
 	for _, a := range s.BodyAnchors() {
 		if a.Anchor == "цель" && a.Y <= links[0].Y {

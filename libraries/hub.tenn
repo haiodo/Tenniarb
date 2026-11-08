@@ -31,7 +31,6 @@ element "Hub" {
         width 390; height 390
         corner-radius 35
         color #EFEFED
-        title ""
         border-color #ffffffb0
         line-width 1
         shadow 0 -14 12 #00000010
@@ -41,7 +40,6 @@ element "Hub" {
             width 290; height 286
             corner-radius 31
             color #F4F4F2
-            title ""
             border-color #ffffff
             line-width 1
             shadow 0 -6 6 #00000010

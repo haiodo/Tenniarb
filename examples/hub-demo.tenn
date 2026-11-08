@@ -4,7 +4,6 @@ element "hub" --from-file "../libraries/hub.tenn"
 
 element "SkillMap" {
     item "Canvas" {
-        title ""
         width 1800
         height 945
         color #F1F2EF

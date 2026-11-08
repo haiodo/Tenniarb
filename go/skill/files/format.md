@@ -61,7 +61,10 @@ An item whose parent or itself has `auto-layout` is in a layout context. There:
   `check` warns; wrap the text in an item with `auto-layout` and `padding`;
 - spaces at the start and end of a `title` are kept and count in the `hug` width (`title "    indented"`).
 
-Outside auto-layout (classic diagrams) an item shows its name and has a white box with a black frame.
+Outside a layout an item is a diagram node: its name is the text, `title` overrides it, and it has a
+white box with a black frame. An item that **holds items** is a box for them, not a label: it draws a
+shape (and a `title`, if written), never its name, and its `body` is not drawn - the children are the
+content. So a card with rows on it needs no `title ""` to stay unlabelled.
 
 ## Properties
 
@@ -179,7 +182,8 @@ item Row {
 ## Text blocks: `body`
 
 A paragraph, a list or a whole piece of documentation goes into **one** item's `body`, not into an
-item per line. The body is markdown, it wraps by the item's width and the item's height hugs it.
+item per line. The body is markdown, it wraps by the item's width and the item's height hugs it. It is
+the content of a leaf: an item with children does not draw it.
 
 ```tenn
 item Doc {

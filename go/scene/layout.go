@@ -310,7 +310,10 @@ func (p *prep) item(rn *RNode, parentAuto bool, up gfx.Color) *layout.Node {
 	// The root of an instance that holds items is a container for what the element draws, not a box of
 	// its own: a white fill there would cover the screen behind it.
 	p.styles[rn] = p.style(rn, inCtx || (rn.Inst && holdsItems(rn)), up)
-	p.bodies[rn] = p.bodyInfo(rn, p.styles[rn], inCtx)
+	// A body is the content of a leaf; an item that holds items shows them instead and is a backdrop.
+	if !holdsItems(rn) {
+		p.bodies[rn] = p.bodyInfo(rn, p.styles[rn], inCtx)
+	}
 	for _, k := range rn.Kids {
 		if k.Kind == RItem && !p.hidden(k) {
 			n.Kids = append(n.Kids, p.item(k, auto, p.styles[rn].text))
@@ -546,9 +549,10 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 }
 
 func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
-	// As in scene.ts the name is the text and a title overrides it; in a layout context only a title is text.
+	// The name of a leaf is its text, as in a classic diagram, and a title overrides it. A node that holds
+	// items is a box for them: its name is only a path segment, the text is a title if one is written.
 	title := rn.Name
-	if inCtx {
+	if inCtx || holdsItems(rn) {
 		title = ""
 	}
 	if pr := p.prop(rn, "title"); pr != nil {
