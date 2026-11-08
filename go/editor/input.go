@@ -267,13 +267,16 @@ func (s *Session) commitDrag() {
 	dx, dy := s.last.X-s.origin.X, s.last.Y-s.origin.Y
 	var ops []model.ElementOperation
 	for _, st := range s.starts {
-		pos := model.Point{X: st.pos.X + dx, Y: st.pos.Y + dy}
+		pos := model.Point{X: roundCoord(st.pos.X + dx), Y: roundCoord(st.pos.Y + dy)}
 		if (pos.X != st.item.X || pos.Y != st.item.Y) && slices.Contains(s.element.Items, st.item) {
 			ops = append(ops, s.store.CreateUpdatePosition(st.item, pos))
 		}
 	}
 	s.commit(ops)
 }
+
+// roundCoord drops the float noise of a pointer: 1/100 of a point is finer than a screen pixel.
+func roundCoord(v float64) float64 { return math.Round(v*100) / 100 }
 
 // commit runs ops as one composite, one undo step.
 func (s *Session) commit(ops []model.ElementOperation) {

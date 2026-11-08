@@ -7,6 +7,8 @@
   back at the start after every keystroke.
 * `padding` insets the text of an ordinary item, with or without `auto-layout`: one value for all sides,
   two for vertical and horizontal, four as top right bottom left. A hugging item grows by the padding.
+* A drag, a resize, an align and the inspector write coordinates to 1/100 of a point, so a file stops
+  collecting float noise like `-549.527720208378` from a pointer.
 * `display` and `layer` work in scenes as they do on a classic diagram: `display stack|circle|no-fill|text|none`
   picks the shape of the box, and `layer background|hover` moves the picture under or over its siblings
   without touching the layout.

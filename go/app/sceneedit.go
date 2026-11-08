@@ -1,6 +1,7 @@
 package app
 
 import (
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -796,5 +797,6 @@ func FreeName(n *scene.Node, base string) string {
 	return name
 }
 
-// numText prints a coordinate without a trailing .0.
-func numText(f float64) string { return strconv.FormatFloat(f, 'f', -1, 64) }
+// numText prints a coordinate to 1/100 of a point without a trailing .0: a drag gives float noise
+// that makes the file unreadable and says nothing a pixel can show.
+func numText(f float64) string { return strconv.FormatFloat(math.Round(f*100)/100, 'f', -1, 64) }

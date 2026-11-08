@@ -346,15 +346,15 @@ func (s *Session) ResizeBy(key string, fromCenter bool) {
 	if nw != w || nh != h {
 		props := model.ItemToTennAsProps(item, tenn.KindBlockExpr, false)
 		if nw != w {
-			setCommand(props, "width", tenn.NewFloatNode(float64(nw)))
+			setCommand(props, "width", tenn.NewFloatNode(math.Round(float64(nw)*100)/100))
 		}
 		if nh != h {
-			setCommand(props, "height", tenn.NewFloatNode(float64(nh)))
+			setCommand(props, "height", tenn.NewFloatNode(math.Round(float64(nh)*100)/100))
 		}
 		ops = append(ops, s.store.CreateProperties(s.element, item, props))
 	}
 	if fromCenter {
-		ops = append(ops, s.store.CreateUpdatePosition(item, model.Point{X: nx, Y: ny}))
+		ops = append(ops, s.store.CreateUpdatePosition(item, model.Point{X: roundCoord(nx), Y: roundCoord(ny)}))
 	}
 	s.commit(ops)
 }
@@ -428,13 +428,13 @@ func (s *Session) Align(edge string) {
 		var pos model.Point
 		switch edge {
 		case "leading":
-			pos = model.Point{X: target, Y: e.i.Y}
+			pos = model.Point{X: roundCoord(target), Y: e.i.Y}
 		case "trailing":
-			pos = model.Point{X: target - e.b.Width, Y: e.i.Y}
+			pos = model.Point{X: roundCoord(target - e.b.Width), Y: e.i.Y}
 		case "top":
-			pos = model.Point{X: e.i.X, Y: target}
+			pos = model.Point{X: e.i.X, Y: roundCoord(target)}
 		default:
-			pos = model.Point{X: e.i.X, Y: target + e.b.Height}
+			pos = model.Point{X: e.i.X, Y: roundCoord(target + e.b.Height)}
 		}
 		ops = append(ops, s.store.CreateUpdatePosition(e.i, pos))
 	}

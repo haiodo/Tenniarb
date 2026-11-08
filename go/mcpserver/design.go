@@ -3,6 +3,7 @@ package mcpserver
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -320,8 +321,7 @@ func indentUnitOf(text string) string {
 	return "  "
 }
 
-// num prints a coordinate without trailing zeros.
+// num prints a coordinate to 1/100 of a point without trailing zeros.
 func num(f float64) string {
-	s := strconv.FormatFloat(f, 'f', -1, 64)
-	return s
+	return strconv.FormatFloat(math.Round(f*100)/100, 'f', -1, 64)
 }
