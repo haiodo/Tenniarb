@@ -1,11 +1,41 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+// TestGoldensAreCurrent: every golden of the web parity test is what this build makes of its fixture.
+// A Go change that alters a picture fails here instead of leaving the web test green against an old one.
+func TestGoldensAreCurrent(t *testing.T) {
+	dir := filepath.Join("..", "..", "..", "web", "fixtures", "scene")
+	goldens, err := filepath.Glob(filepath.Join(dir, "*.layout.json"))
+	if err != nil || len(goldens) == 0 {
+		t.Fatalf("fixture goldens under %s: %v", dir, err)
+	}
+	for _, golden := range goldens {
+		name := filepath.Base(golden)
+		name = name[:len(name)-len(".layout.json")]
+		want, err := os.ReadFile(golden)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var header struct{ Element string }
+		if err := json.Unmarshal(want, &header); err != nil {
+			t.Fatalf("%s: %v", golden, err)
+		}
+		got, err := layout(dir, name+".tenn", header.Element)
+		if err != nil {
+			t.Fatalf("%s: %v", golden, err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Errorf("%s is stale: regenerate it from %s", golden, name+".tenn")
+		}
+	}
+}
 
 func TestLayout(t *testing.T) {
 	const src = `element "E" {
