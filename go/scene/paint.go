@@ -113,7 +113,9 @@ func (p *prep) shadows(rn *RNode) []gfx.Shadow {
 				}
 				continue
 			}
-			pr = p.evalProp(rn, pr)
+			if pr = p.evalProp(rn, pr); pr == nil {
+				continue
+			}
 		}
 		if sh := p.shadowOf(pr); sh != nil {
 			out = append(out, *sh)

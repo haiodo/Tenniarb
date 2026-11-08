@@ -7,6 +7,8 @@
   outside a layout still shows its name, as a diagram does.
 * The inspector writes a soft shadow in one choice: `Shadow` offers `soft` and `floating`, each putting
   two `shadow` commands on the selected scene node as one undo step, and `none` takes them away.
+* A `shadow` whose offset is an expression the evaluator cannot resolve is skipped with a warning
+  instead of crashing the build.
 * "Attach image..." is on the canvas menu of a scene: the picture goes in as `image "path"`, a file
   from the workspace is linked, one from elsewhere is copied into `assets/` beside the document, and
   with nothing selected it becomes a new item.

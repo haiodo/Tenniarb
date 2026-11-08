@@ -25,3 +25,18 @@ func TestTwoShadows(t *testing.T) {
 		t.Errorf("%d filters for two shadows, %d for one:\n%s", pair, single, two)
 	}
 }
+
+// TestShadowBadExpression: an offset from an expression the evaluator cannot resolve drops that shadow
+// with a warning; the build used to panic on the missing value.
+func TestShadowBadExpression(t *testing.T) {
+	screen, _ := buildEval(t, `element "E" {
+    item A { pos 0 0; width 100; height 40; color #ffffff; shadow ${nope} 4 }
+}`, stubEval(nil))
+	var said []string
+	for _, d := range screen.Warnings {
+		said = append(said, d.Msg)
+	}
+	if len(said) == 0 || !strings.Contains(said[0], "not evaluated") {
+		t.Errorf("warnings %v, want one about the shadow expression", said)
+	}
+}
