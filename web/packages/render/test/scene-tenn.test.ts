@@ -663,3 +663,16 @@ test("line-style dashed sets the dash and its phase on the border", () => {
   );
   assert.deepEqual(dotted.dashes, [{ dash: [1, 4], phase: 1 }]);
 });
+
+test("a dashed border does not dash the icon of a child", () => {
+  const { scene: s } = scene(`element "Screen" {
+    item Box {
+        width 100; height 100; line-style dashed
+        item Icon { pos 10 -10; width 20; height 20; path "M0 0 L10 0 L10 10 Z"; border-color #ff0000 }
+    }
+}`);
+  assert.deepEqual(paint(s).dashes, [
+    { dash: [5, 5], phase: 5 },
+    { dash: [], phase: 0 },
+  ]);
+});
