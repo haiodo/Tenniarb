@@ -136,7 +136,7 @@ element "Map" {
         use hub.Hub as center { pos 700 -295 }
         use hub.Tile as tl { pos 150 -70; iconColor "#E0684B" }
 
-        link center tl { route elbow top right; display arrow; line-style dotted; line-width 2; color #E0684B }
+        link center tl { route elbow top right; display arrow; line-style dashed; line-width 3; color #E0684B }
     }
 }
 ```
@@ -145,8 +145,8 @@ element "Map" {
 
 | Компонент | Параметры | Что рисует |
 |---|---|---|
-| `Tile` | `icon` (SVG-путь 24×24), `iconColor`, `rule` (`nonzero`/`evenodd`) | белая плитка 170×170 со скруглением и тенью |
-| `Hub` | `icon`, `title` | карточка 420×310: внешняя плита с тенью, внутри вложенная с иконкой и моноширинной подписью |
+| `Tile` | `icon` (SVG-путь 24×24), `iconColor`, `rule` (`nonzero`/`evenodd`) | белая плитка 164×164 со скруглением и мягкой тенью в два слоя |
+| `Hub` | `icon`, `title` | две плиты 390×390 и 290×286: внешняя со своей мягкой тенью, вложенная сдвинута вниз-вправо, у неё своя тень, иконка контуром и моноширинная подпись |
 
 ## Как это работает
 

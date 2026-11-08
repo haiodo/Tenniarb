@@ -3,25 +3,82 @@
 element "hub" --from-file "../libraries/hub.tenn"
 
 element "SkillMap" {
-    item Canvas {
+    item "Canvas" {
         title ""
-        width 1800; height 900
+        width 1800
+        height 945
         color #F1F2EF
-
-        use hub.Hub as center { pos 700 -295 }
-
-        use hub.Tile as tl { pos 150 -70; iconColor "#E0684B" }
-        use hub.Tile as tr { pos 1330 -70; icon "M4 8 h16 a2 2 0 0 1 2 2 v8 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 v-8 a2 2 0 0 1 2 -2 Z M8 11 a2 2 0 1 0 0.001 0 Z M16 11 a2 2 0 1 0 0.001 0 Z"; rule evenodd }
-        use hub.Tile as ml { pos 250 -365; icon "M12 1.5 A10.5 10.5 0 1 0 12.001 1.5 Z M12 5.5 A6.5 6.5 0 1 0 12.001 5.5 Z"; rule evenodd }
-        use hub.Tile as mr { pos 1330 -365; icon "M12 1.5 L22 7 L22 17 L12 22.5 L2 17 L2 7 Z" }
-        use hub.Tile as bl { pos 150 -670; iconColor "#3B5BDB" }
-        use hub.Tile as br { pos 1330 -670; icon "M12 2 C14 6 18 10 22 12 C18 14 14 18 12 22 C10 18 6 14 2 12 C6 10 10 6 12 2 Z"; iconColor "#1E9E8A" }
-
-        link center tl { route elbow top right; display arrow; line-style dotted; line-width 2; color #E0684B }
-        link center tr { route elbow top left; display arrow; line-style dotted; line-width 2; color #E0684B }
-        link center ml { route elbow left right; display arrow; line-style dotted; line-width 2; color #E0684B }
-        link center mr { route elbow right left; display arrow; line-style dotted; line-width 2; color #E0684B }
-        link center bl { route elbow bottom right; display arrow; line-style dotted; line-width 2; color #E0684B }
-        link center br { route elbow bottom left; display arrow; line-style dotted; line-width 2; color #E0684B }
+        use hub.Hub as center {
+            pos 705 -278
+        }
+        use hub.Tile as tl {
+            pos 176 -93
+            iconColor "#E0684B"
+        }
+        use hub.Tile as tr {
+            pos 1460 -93
+            icon "M4 8 h16 a2 2 0 0 1 2 2 v8 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 v-8 a2 2 0 0 1 2 -2 Z M8 11 a2 2 0 1 0 0.001 0 Z M16 11 a2 2 0 1 0 0.001 0 Z"
+            rule evenodd
+        }
+        use hub.Tile as ml {
+            pos 302 -391
+            icon "M12 1.5 A10.5 10.5 0 1 0 12.001 1.5 Z M12 5.5 A6.5 6.5 0 1 0 12.001 5.5 Z"
+            rule evenodd
+        }
+        use hub.Tile as mr {
+            pos 1334 -391
+            icon "M12 1.5 L22 7 L22 17 L12 22.5 L2 17 L2 7 Z"
+        }
+        use hub.Tile as bl {
+            pos 176 -688
+            iconColor "#3B5BDB"
+        }
+        use hub.Tile as br {
+            pos 1460 -688
+            icon "M12 2 C14 6 18 10 22 12 C18 14 14 18 12 22 C10 18 6 14 2 12 C6 10 10 6 12 2 Z"
+            iconColor "#1E9E8A"
+        }
+        link center tl {
+            route elbow top right
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
+        link center tr {
+            route elbow top left
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
+        link center ml {
+            route elbow left right
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
+        link center mr {
+            route elbow right left
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
+        link center bl {
+            route elbow bottom right
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
+        link center br {
+            route elbow bottom left
+            display arrow
+            line-style dashed
+            line-width 3
+            color #E0684B
+        }
     }
 }

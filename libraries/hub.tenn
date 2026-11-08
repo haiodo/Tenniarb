@@ -1,5 +1,5 @@
-// Hub diagram: a card in the middle and square tiles around it, joined by dotted elbows.
-// The connectors are scene links: `link center tile { route elbow top right; display arrow; line-style dotted }`.
+// Hub diagram: a card in the middle and square tiles around it, joined by dashed elbows.
+// The connectors are scene links: `link center tile { route elbow top right; display arrow; line-style dashed }`.
 // Words after elbow name the side the line leaves and the side it enters; without them the sides facing
 // each other are used. Links that share a side spread along it.
 
@@ -10,41 +10,48 @@ element "Tile" {
     export let rule = "nonzero"
 
     item Box {
-        width 170; height 170
-        corner-radius 16
+        width 164; height 164
+        corner-radius 20
         color #ffffff
-        shadow 0 10 24 #00000012
+        shadow 0 -6 16 #00000012
+        shadow 0 -16 36 #0000000e
         auto-layout column
         align center
         justify center
-        item Icon { width 84; height 84; view-box 0 0 24 24; path ${icon}; color ${iconColor}; fill-rule ${rule} }
+        item Icon { width 96; height 96; view-box 0 0 24 24; path ${icon}; color ${iconColor}; fill-rule ${rule} }
     }
 }
 
 element "Hub" {
     kind Component
-    export let icon = "M7 2 h7 l5 5 v15 H7 Z M14 2 v5 h5"
+    export let icon = "M6.5 2 h8 l5 5 v12.5 a2.5 2.5 0 0 1 -2.5 2.5 h-10.5 a2.5 2.5 0 0 1 -2.5 -2.5 v-15 a2.5 2.5 0 0 1 2.5 -2.5 Z M14.5 2 v4 a1.5 1.5 0 0 0 1.5 1.5 h3.5"
     export let title = "skill.md"
 
     item Outer {
-        width 420; height 310
-        corner-radius 30
-        color #ffffff
-        shadow 0 22 48 #00000010
-        auto-layout column
-        align center
-        justify center
+        width 390; height 390
+        corner-radius 35
+        color #EFEFED
+        title ""
+        border-color #ffffffb0
+        line-width 1
+        shadow 0 -14 12 #00000010
+        shadow 0 -30 20 #00000010
         item Main {
-            width 340; height 240
-            corner-radius 22
-            color #ffffff
-            border-color #0000000f
+            pos 69 -63
+            width 290; height 286
+            corner-radius 31
+            color #F4F4F2
+            title ""
+            border-color #ffffff
+            line-width 1
+            shadow 0 -6 6 #00000010
+            shadow 0 -14 14 #00000012
             auto-layout column
             align center
             justify center
-            gap 14
-            item Doc { width 96; height 96; view-box 0 0 24 24; path ${icon}; color #23262B }
-            item Label { title ${title}; font-family Menlo; font-size 26; text-color #23262B }
+            gap 40
+            item Doc { width 140; height 140; view-box 0 0 24 24; path ${icon}; border-color #23262B; line-width 5 }
+            item Label { title ${title}; font-family "Space Mono"; font-size 40; text-color #23262B }
         }
     }
 }
