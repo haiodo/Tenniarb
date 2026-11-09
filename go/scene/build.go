@@ -415,7 +415,7 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	if body := b.p.bodies[rn]; body != nil && b.p.bodyAt[rn] == nil {
 		y := body.padY
 		if ti := b.p.texts[rn]; ti != nil {
-			y = ti.padY + float64(len(ti.wrap(w-2*ti.padX)))*ti.lineH
+			y = ti.padY + ti.height(w-2*ti.padX)
 		}
 		body.draw(r, body.padX, y, w-2*body.padX)
 	}
@@ -440,6 +440,10 @@ func stackShadow() gfx.Shadow {
 // draw writes the title: in a leaf centered unless layout says left or right, at the top left of an item that has children.
 // With sh set the glyphs cast it (display text), else they are plain text.
 func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow) {
+	if ti.parts != nil {
+		ti.drawParts(r, w, h, leaf, c, sh)
+		return
+	}
 	lines := ti.wrap(w - 2*ti.padX)
 	y0 := ti.padY
 	if leaf {
@@ -465,6 +469,49 @@ func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, 
 		} else {
 			r.Text(s, x, base, ti.font, c)
 		}
+	}
+}
+
+// drawParts writes a title that holds inline pictures: each line is centered, left or right as a whole,
+// the text on its baseline and the picture centered in the line.
+func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow) {
+	lines := ti.layout(w - 2*ti.padX)
+	total := 0.0
+	for _, ln := range lines {
+		total += ln.h
+	}
+	y := ti.padY
+	if leaf {
+		y = (h - total) / 2
+	}
+	for _, ln := range lines {
+		x := ti.padX
+		if leaf {
+			switch ti.align {
+			case "left":
+			case "right":
+				x = w - ti.padX - ln.w
+			default:
+				x = (w - ln.w) / 2
+			}
+		}
+		for _, part := range ln.parts {
+			if part.img != nil {
+				if img := part.img.raster(ti.p); img != nil {
+					r.DrawImage(img, x, y+(ln.h-part.img.h)/2, part.img.w, part.img.h)
+				}
+				x += part.img.w
+				continue
+			}
+			base := y + (ln.h-ti.lineH)/2 + (ti.lineH-(ti.asc+ti.desc))/2 + ti.asc
+			if sh != nil {
+				r.TextShadow(part.text, x, base, ti.font, c, *sh)
+			} else {
+				r.Text(part.text, x, base, ti.font, c)
+			}
+			x += ti.width(part.text)
+		}
+		y += ln.h
 	}
 }
 

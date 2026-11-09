@@ -28,12 +28,14 @@ const (
 	bodyHeadGap2    = 6.0
 )
 
-// bodyRun is one span of a line in one look: a markdown token after its glyphs are decided.
+// bodyRun is one span of a line in one look: a markdown token after its glyphs are decided, or an
+// inline picture of a classic diagram.
 type bodyRun struct {
 	text string
 	font gfx.Font
-	code bool   // drawn over the code background
-	link string // the target of the link the run is the label of, "" for plain text
+	code bool       // drawn over the code background
+	link string     // the target of the link the run is the label of, "" for plain text
+	img  *textImage // an inline picture: text is empty
 }
 
 // body blocks: a heading, a paragraph, a list of items, a quote, a fenced code block, the table of
@@ -94,6 +96,9 @@ type bodyText struct {
 	pos     Pos    // the body command, for a warning about its height
 	from    string // the markdown file the text was read from; "" for text written in the .tenn
 	base    string // the markdown file the text is resolved from: from, or the .tenn that writes it
+	p       *prep
+	imgs    map[string]*itemImage // the classic inline pictures the body may name
+	prov    *markdown.ImageProvider
 }
 
 type bodyWidthKey struct {
@@ -191,7 +196,11 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 		size = 1
 	}
 	b := &bodyText{m: p.opts.Measurer, font: p.fontOf(rn, size), color: color, lineH: lineH, gap: gap,
-		metrics: map[gfx.Font]gfx.TextMetrics{}, widths: map[bodyWidthKey]float64{}, pos: pr.Pos, from: from}
+		metrics: map[gfx.Font]gfx.TextMetrics{}, widths: map[bodyWidthKey]float64{}, pos: pr.Pos, from: from, p: p}
+	if p.classic {
+		b.imgs = p.inlineImages(rn)
+		b.prov = inlineProvider(b.imgs)
+	}
 	if family != "" {
 		b.font.Family, b.font.Name = family, ""
 	}
@@ -520,7 +529,11 @@ func (b *bodyText) linkRuns(s, link string) []bodyRun {
 		case markdown.TokCode:
 			add(t.Literal, b.mono, true)
 		case markdown.TokImage:
-			add("@("+t.Literal+")", b.font, false)
+			if img := resolveInline(b.prov, b.imgs, t.Literal); img != nil {
+				runs = append(runs, bodyRun{img: img})
+			} else {
+				add("@("+t.Literal+")", b.font, false)
+			}
 		case markdown.TokColor:
 			add("!("+t.Literal+")", b.font, false)
 		case markdown.TokFont:
@@ -759,6 +772,15 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 		started = false
 	}
 	for _, run := range runs {
+		if run.img != nil {
+			if started && width > 0 && line.x+line.w+run.img.w > width+1e-9 {
+				flush()
+			}
+			line.runs = append(line.runs, run)
+			line.w += run.img.w
+			started = true
+			continue
+		}
 		for _, tok := range splitSpaces(run.text) {
 			space := strings.TrimSpace(tok) == ""
 			w := b.widthOf(tok, run.font)
@@ -768,7 +790,7 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 			if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
 				flush()
 			}
-			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link {
+			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
 				line.runs[n-1].text += tok
 			} else {
 				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, code: run.code, link: run.link})
@@ -827,6 +849,11 @@ func (b *bodyText) finishLine(l *bodyLine) {
 	if b.lineH > 0 {
 		l.h = b.lineH
 	}
+	for _, run := range l.runs {
+		if run.img != nil {
+			l.h = math.Max(l.h, run.img.h)
+		}
+	}
 }
 
 // natural is the width of the widest line when nothing wraps.
@@ -856,7 +883,7 @@ func (p *prep) warnBodyFit(rn *RNode) {
 			if bn := p.bodyAt[rn]; bn != nil {
 				width, top = bn.RW, 0
 			} else if ti := p.texts[rn]; ti != nil {
-				top = ti.padY + float64(len(ti.wrap(ln.RW-2*ti.padX)))*ti.lineH
+				top = ti.padY + ti.height(ln.RW-2*ti.padX)
 			}
 			room := have - top - body.padY
 			if need := body.height(width); need > room+0.5 {
@@ -886,6 +913,13 @@ func (b *bodyText) draw(r *gfx.Recorder, x, y, width float64) {
 		xx := x + l.x
 		base := yy + (l.h-(l.asc+l.desc))/2 + l.asc
 		for _, run := range l.runs {
+			if run.img != nil {
+				if img := run.img.raster(b.p); img != nil {
+					r.DrawImage(img, xx, yy+(l.h-run.img.h)/2, run.img.w, run.img.h)
+				}
+				xx += run.img.w
+				continue
+			}
 			w := b.widthOf(run.text, run.font)
 			if run.code && !l.code && w > 0 {
 				r.FillRect(gfx.R(xx, yy, w, l.h), b.codeBg)

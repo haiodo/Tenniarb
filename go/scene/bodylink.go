@@ -72,7 +72,7 @@ func (s *Screen) collectBodies() {
 			if bn := s.p.bodyAt[rn]; bn != nil {
 				bx, by, w = bn.RX, bn.RY, bn.RW
 			} else if ti := s.p.texts[rn]; ti != nil {
-				by = ti.padY + float64(len(ti.wrap(ln.RW-2*ti.padX)))*ti.lineH
+				by = ti.padY + ti.height(ln.RW-2*ti.padX)
 			}
 			for _, p := range body.pieces(w) {
 				switch {

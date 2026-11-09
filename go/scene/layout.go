@@ -61,10 +61,11 @@ type prep struct {
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
 	icons   map[*RNode]*icon
-	images  map[*RNode]*itemImage // an item or a root that draws a picture file
-	anim    map[*RNode]*Animation // the animation a node plays (spec 13)
-	eval    evalFunc              // Options.Eval or EvalVars; nil: no expression runs
-	evals   map[evalKey]*Prop     // a property with an expression -> its evaluated copy, nil if it failed
+	images  map[*RNode]*itemImage            // an item or a root that draws a picture
+	inlines map[*RNode]map[string]*itemImage // the classic images its text names with @(name)
+	anim    map[*RNode]*Animation            // the animation a node plays (spec 13)
+	eval    evalFunc                         // Options.Eval or EvalVars; nil: no expression runs
+	evals   map[evalKey]*Prop                // a property with an expression -> its evaluated copy, nil if it failed
 	// classicAt names every node of a classic diagram in the terms of the element model, for
 	// Options.Classic; empty in a scene.
 	classicAt map[*RNode]ClassicRef
@@ -85,6 +86,28 @@ type textInfo struct {
 	asc, desc  float64
 	text       string
 	m          gfx.TextMeasurer
+	parts      []titlePart // set when the text names an inline image
+	p          *prep
+}
+
+// titlePart is a span of a title: text in the item font, or an inline picture of a classic diagram.
+type titlePart struct {
+	text string
+	img  *textImage
+}
+
+// titleLine is one laid out line of a title; h grows above lineH for an inline picture.
+type titleLine struct {
+	parts []titlePart
+	w, h  float64
+}
+
+func (l titleLine) text() string {
+	var s strings.Builder
+	for _, part := range l.parts {
+		s.WriteString(part.text)
+	}
+	return s.String()
 }
 
 func newPrep(t *Tree, o Options) *prep {
@@ -99,7 +122,8 @@ func newPrep(t *Tree, o Options) *prep {
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
 		bodies: map[*RNode]*bodyText{}, bodyAt: map[*RNode]*layout.Node{}, styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
-		images: map[*RNode]*itemImage{}, anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
+		images: map[*RNode]*itemImage{}, inlines: map[*RNode]map[string]*itemImage{},
+		anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
 
 // root is the layout of an element: its content at their own positions.
@@ -576,7 +600,7 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 		inner := w - 2*padX
 		h := 0.0
 		if ti != nil {
-			h += float64(len(ti.wrap(inner))) * ti.lineH
+			h += ti.height(inner)
 		}
 		if body != nil {
 			h += body.height(inner)
@@ -618,7 +642,10 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	if inCtx {
 		padX, padY = 0, 0
 	}
-	ti := &textInfo{font: p.fontOf(rn, size), padX: padX, padY: padY, text: title, m: p.opts.Measurer}
+	ti := &textInfo{font: p.fontOf(rn, size), padX: padX, padY: padY, text: title, m: p.opts.Measurer, p: p}
+	if p.classic {
+		ti.parts, _ = p.splitTitleImages(title, p.inlineImages(rn))
+	}
 	m := ti.m.MeasureText("Hg", ti.font)
 	ti.asc, ti.desc = m.Ascent, m.Descent
 	ti.lineH = math.Round(m.Ascent + m.Descent)
@@ -699,6 +726,13 @@ func (ti *textInfo) width(s string) float64 { return ti.m.MeasureText(s, ti.font
 
 // natural is the width of the widest line when only "\n" breaks lines.
 func (ti *textInfo) natural() float64 {
+	if ti.parts != nil {
+		w := 0.0
+		for _, ln := range ti.layout(math.Inf(1)) {
+			w = math.Max(w, ln.w)
+		}
+		return w
+	}
 	w := 0.0
 	for _, ln := range strings.Split(ti.text, "\n") {
 		w = math.Max(w, ti.width(ln))
@@ -706,9 +740,87 @@ func (ti *textInfo) natural() float64 {
 	return w
 }
 
+// height is the height of the text at width w; an inline picture is taller than its line of text.
+func (ti *textInfo) height(w float64) float64 {
+	if ti.parts == nil {
+		return float64(len(ti.wrap(w))) * ti.lineH
+	}
+	h := 0.0
+	for _, ln := range ti.layout(w) {
+		h += ln.h
+	}
+	return h
+}
+
+// layout breaks the title at width w, inline pictures counting as one unbreakable box.
+func (ti *textInfo) layout(w float64) []titleLine {
+	var lines []titleLine
+	line := titleLine{h: ti.lineH}
+	started := false
+	flush := func() {
+		lines = append(lines, line)
+		line = titleLine{h: ti.lineH}
+		started = false
+	}
+	add := func(part titlePart) {
+		line.parts = append(line.parts, part)
+		if part.img != nil {
+			line.w += part.img.w
+			line.h = math.Max(line.h, part.img.h)
+			started = true
+			return
+		}
+		line.w += ti.width(part.text)
+		started = started || part.text != ""
+	}
+	for _, part := range ti.parts {
+		if part.img != nil {
+			if started && w > 0 && line.w+part.img.w > w+1e-9 {
+				flush()
+			}
+			add(part)
+			continue
+		}
+		for pi, para := range strings.Split(part.text, "\n") {
+			if pi > 0 {
+				flush()
+			}
+			for i, word := range strings.Split(para, " ") {
+				for j, piece := range hyphenPieces(word) {
+					text := piece
+					if j == 0 && i > 0 {
+						text = " " + piece
+					}
+					if text == "" || !started && strings.TrimSpace(text) == "" {
+						continue
+					}
+					if started && strings.TrimSpace(text) != "" && w > 0 && line.w+ti.width(text) > w+1e-9 {
+						flush()
+						text = piece
+					}
+					if text != "" {
+						add(titlePart{text: text})
+					}
+				}
+			}
+		}
+	}
+	if started || len(lines) == 0 {
+		flush()
+	}
+	return lines
+}
+
 // wrap breaks the text greedily at spaces and after a hyphen inside a word to fit w; a piece wider
 // than w stays on its line.
 func (ti *textInfo) wrap(w float64) []string {
+	if ti.parts != nil {
+		var out []string
+		for _, ln := range ti.layout(w) {
+			out = append(out, ln.text())
+		}
+		return out
+	}
 	var out []string
 	for _, para := range strings.Split(ti.text, "\n") {
 		line := ""
