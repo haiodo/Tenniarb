@@ -75,6 +75,7 @@ type bodyLine struct {
 	h      float64 // line box height
 	gap    float64 // extra space before the line, between blocks
 	quote  bool    // a bar on the left
+	bullet bool    // a line of a list, which go/render measures with the head indent of its bullet
 	code   bool    // a background across the width
 	anchor string  // heading: the anchor of the heading, on its first line
 	runs   []bodyRun
@@ -819,6 +820,9 @@ func (b *bodyText) lines(width float64) []bodyLine {
 				if j == 0 && len(out) > 0 && len(ls) > 0 {
 					ls[0].gap = b.gap
 				}
+				for i := range ls {
+					ls[i].bullet = true
+				}
 				lines = append(lines, ls...)
 			}
 			if len(lines) == 0 {
@@ -1091,10 +1095,25 @@ func (b *bodyText) finishLine(l *bodyLine) {
 // natural is the width of the widest line when nothing wraps.
 func (b *bodyText) natural() float64 {
 	w := 0.0
+	indent := b.classicListIndent()
 	for _, l := range b.lines(math.Inf(1)) {
-		w = math.Max(w, l.x+l.w)
+		line := l.x + l.w
+		if l.bullet {
+			line += indent
+		}
+		w = math.Max(w, line)
 	}
 	return w
+}
+
+// classicListIndent is the room go/render keeps beside a line of a list: the paragraph of a bullet carries
+// a head indent of five points (five per grapheme of the marker), and the measured box of the text grows by
+// it, so the frame of an item with a list is five points wider than the words in it.
+func (b *bodyText) classicListIndent() float64 {
+	if b.p == nil || !b.p.classic {
+		return 0
+	}
+	return 5
 }
 
 // height is the height of the body at width, its block gaps included.

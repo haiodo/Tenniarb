@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The frame of a classic item with a list is five points wider than its words, as go/render made it: the
+  paragraph of a bullet carries a head indent of five, and the text the old renderer measured grew by it. Ten
+  elements of the parity stand line up with it.
 * A body of a classic diagram breaks its lines where go/render broke them, at the newline token of the
   markdown lexer and at the end of a heading or a bullet - not at every newline of the text. A body that
   opens `_` and never closes it loses the newlines to the emphasis in the old renderer, which draws it as one

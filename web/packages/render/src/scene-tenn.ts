@@ -2979,6 +2979,7 @@ interface BodyLine {
   gap: number; // extra space before the line, between blocks
   quote: boolean; // a bar on the left
   code: boolean; // a background across the width
+  bullet: boolean; // a line of a list, which go/render measures with the head indent of its bullet
   runs: BodyRun[];
 }
 
@@ -3391,7 +3392,7 @@ function fitPrefix(b: BodyText, s: string, font: Font, avail: number): string {
 
 function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, cont: number): BodyLine[] {
   const lines: BodyLine[] = [];
-  const empty = (x: number): BodyLine => ({ x, w: 0, asc: 0, desc: 0, h: 0, gap: 0, quote: false, code: false, runs: [] });
+  const empty = (x: number): BodyLine => ({ x, w: 0, asc: 0, desc: 0, h: 0, gap: 0, quote: false, code: false, bullet: false, runs: [] });
   let line = empty(first);
   let started = false;
   const flush = (): void => {
@@ -3526,6 +3527,9 @@ function bodyLines(b: BodyText, width: number): BodyLine[] {
           if (j === 0 && out.length > 0 && ls.length > 0) {
             ls[0]!.gap = b.gap;
           }
+          for (const l of ls) {
+            l.bullet = true;
+          }
           lines.push(...ls);
         });
         if (lines.length === 0) {
@@ -3546,6 +3550,7 @@ function bodyLines(b: BodyText, width: number): BodyLine[] {
               gap: 0,
               quote: false,
               code: true,
+              bullet: false,
               runs: [{ text: part, font: b.mono, code: true }],
             };
             bodyFinish(b, line);
@@ -3580,7 +3585,9 @@ function bodyLines(b: BodyText, width: number): BodyLine[] {
 function bodyNatural(b: BodyText): number {
   let w = 0;
   for (const l of bodyLines(b, Infinity)) {
-    w = Math.max(w, l.x + l.w);
+    // A line of a list carries the five points go/render reserved beside a bullet (the head indent of its
+    // paragraph), so the frame of an item with a list is five points wider than the words in it.
+    w = Math.max(w, l.x + l.w + (l.bullet && b.prep.classic ? 5 : 0));
   }
   return w;
 }
