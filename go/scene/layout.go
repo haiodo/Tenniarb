@@ -68,6 +68,7 @@ type prep struct {
 	anim    map[*RNode]*Animation            // the animation a node plays (spec 13)
 	eval    evalFunc                         // Options.Eval or EvalVars; nil: no expression runs
 	evals   map[evalKey]*Prop                // a property with an expression -> its evaluated copy, nil if it failed
+	warned  map[string]bool                  // colours of the markdown markup already reported
 	// classicAt names every node of a classic diagram in the terms of the element model, for
 	// Options.Classic; empty in a scene.
 	classicAt map[*RNode]ClassicRef
@@ -92,16 +93,23 @@ type textInfo struct {
 	p          *prep
 }
 
-// titlePart is a span of a title: text in the item font, or an inline picture of a classic diagram.
+// titlePart is a span of a title: text in the item font or in a size of its own, or an inline picture of
+// a classic diagram. hasColor marks a text run the !(...) markup coloured; without it the run takes the
+// text colour of the item, which is only known when the title is drawn.
 type titlePart struct {
-	text string
-	img  *textImage
+	text     string
+	font     gfx.Font // zero: the font of the title
+	color    gfx.Color
+	hasColor bool
+	img      *textImage
 }
 
-// titleLine is one laid out line of a title; h grows above lineH for an inline picture.
+// titleLine is one laid out line of a title; h grows above lineH for a larger run or an inline picture,
+// and asc/desc follow the largest run so the baseline stays on it.
 type titleLine struct {
-	parts []titlePart
-	w, h  float64
+	parts     []titlePart
+	w, h      float64
+	asc, desc float64
 }
 
 func (l titleLine) text() string {
@@ -646,7 +654,10 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	}
 	ti := &textInfo{font: p.fontOf(rn, size), padX: padX, padY: padY, text: title, m: p.opts.Measurer, p: p}
 	if p.classic {
-		ti.parts, _ = p.splitTitleImages(title, p.inlineImages(rn))
+		ti.parts = p.titleMarkupParts(rn, ti)
+		if ti.parts == nil {
+			ti.parts, _ = p.splitTitleImages(title, p.inlineImages(rn))
+		}
 	}
 	m := ti.m.MeasureText("Hg", ti.font)
 	ti.asc, ti.desc = m.Ascent, m.Descent
@@ -669,6 +680,116 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 		ti.lineH += v
 	}
 	return ti
+}
+
+// titleMarkupParts cuts a classic title at the !(colour), &(size) and @(picture) of the markdown markup;
+// nil when the title writes none of them, so its text stays as written. The colours and sizes are the ones
+// go/render gives the runs of a title, and everything the markup does not cover keeps its characters.
+func (p *prep) titleMarkupParts(rn *RNode, ti *textInfo) []titlePart {
+	title := ti.text
+	if !strings.Contains(title, "!(") && !strings.Contains(title, "&(") {
+		return nil
+	}
+	imgs := p.inlineImages(rn)
+	prov := inlineProvider(imgs)
+	color, hasColor := gfx.Color{}, false
+	font := ti.font
+	parts := []titlePart{}
+	var plain strings.Builder
+	flush := func() {
+		if plain.Len() == 0 {
+			return
+		}
+		parts = append(parts, titlePart{text: plain.String(), font: font, color: color, hasColor: hasColor})
+		plain.Reset()
+	}
+	for i := 0; i < len(title); {
+		if title[i] == '\\' && i+1 < len(title) && strings.ContainsRune("@$*_#<~!", rune(title[i+1])) {
+			plain.WriteByte(title[i+1])
+			i += 2
+			continue
+		}
+		mark, arg, next, ok := parenAt(title, i)
+		if !ok {
+			plain.WriteByte(title[i])
+			i++
+			continue
+		}
+		switch mark {
+		case "!":
+			flush()
+			before, text, inline := strings.Cut(arg, "|")
+			if inline {
+				c, ok := p.markupColor(rn.Pos, before)
+				parts = append(parts, titlePart{text: text, font: font, color: c, hasColor: ok})
+			} else if strings.TrimSpace(arg) == "" {
+				color, hasColor = gfx.Color{}, false
+			} else if c, ok := p.markupColor(rn.Pos, arg); ok {
+				color, hasColor = c, true
+			} else {
+				color, hasColor = gfx.Color{}, false
+			}
+		case "&":
+			flush()
+			size, text, inline := strings.Cut(arg, "|")
+			if inline {
+				if v, ok := markupSize(size); ok {
+					parts = append(parts, titlePart{text: text, font: sizedFont(font, v), color: color, hasColor: hasColor})
+				}
+			} else if v, ok := markupSize(arg); ok {
+				font = sizedFont(ti.font, v)
+			} else {
+				font = ti.font
+			}
+		case "@":
+			if img := resolveInline(prov, imgs, arg); img != nil {
+				flush()
+				parts = append(parts, titlePart{img: img, font: font})
+			} else {
+				plain.WriteString(title[i:next])
+			}
+		}
+		i = next
+	}
+	flush()
+	return parts
+}
+
+// parenAt reads a marker of the markup at i: "!", "&" or "@" followed by "(...)", the content balanced
+// the way the lexer reads it, and the index after the closing ")".
+func parenAt(s string, i int) (mark, arg string, next int, ok bool) {
+	if i+1 >= len(s) || s[i+1] != '(' || s[i] != '!' && s[i] != '&' && s[i] != '@' {
+		return "", "", i, false
+	}
+	depth := 1
+	for j := i + 2; j < len(s); j++ {
+		switch s[j] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 {
+				return s[i : i+1], s[i+2 : j], j + 1, true
+			}
+		}
+	}
+	return "", "", i, false
+}
+
+// partFont is the font of a part, the title font for a part that names none.
+func (ti *textInfo) partFont(part titlePart) gfx.Font {
+	if part.font.Size == 0 {
+		return ti.font
+	}
+	return part.font
+}
+
+// partWidth is the advance of a part, its picture or its text in its own font.
+func (ti *textInfo) partWidth(part titlePart) float64 {
+	if part.img != nil {
+		return part.img.w
+	}
+	return ti.m.MeasureText(part.text, ti.partFont(part)).Width
 }
 
 // fontOf reads font-family, font-weight, font-style and letter-spacing. gfx.Font.Name wins over Family,
@@ -757,11 +878,11 @@ func (ti *textInfo) height(w float64) float64 {
 // layout breaks the title at width w, inline pictures counting as one unbreakable box.
 func (ti *textInfo) layout(w float64) []titleLine {
 	var lines []titleLine
-	line := titleLine{h: ti.lineH}
+	line := titleLine{h: ti.lineH, asc: ti.asc, desc: ti.desc}
 	started := false
 	flush := func() {
 		lines = append(lines, line)
-		line = titleLine{h: ti.lineH}
+		line = titleLine{h: ti.lineH, asc: ti.asc, desc: ti.desc}
 		started = false
 	}
 	add := func(part titlePart) {
@@ -772,7 +893,14 @@ func (ti *textInfo) layout(w float64) []titleLine {
 			started = true
 			return
 		}
-		line.w += ti.width(part.text)
+		f := ti.partFont(part)
+		line.w += ti.m.MeasureText(part.text, f).Width
+		if f != ti.font {
+			m := ti.m.MeasureText("Hg", f)
+			line.asc = math.Max(line.asc, m.Ascent)
+			line.desc = math.Max(line.desc, m.Descent)
+			line.h = math.Max(line.h, math.Round(m.Ascent+m.Descent))
+		}
 		started = started || part.text != ""
 	}
 	for _, part := range ti.parts {
@@ -783,6 +911,7 @@ func (ti *textInfo) layout(w float64) []titleLine {
 			add(part)
 			continue
 		}
+		partFont := ti.partFont(part)
 		for pi, para := range strings.Split(part.text, "\n") {
 			if pi > 0 {
 				flush()
@@ -796,12 +925,12 @@ func (ti *textInfo) layout(w float64) []titleLine {
 					if text == "" || !started && strings.TrimSpace(text) == "" {
 						continue
 					}
-					if started && strings.TrimSpace(text) != "" && w > 0 && line.w+ti.width(text) > w+1e-9 {
+					if started && strings.TrimSpace(text) != "" && w > 0 && line.w+ti.m.MeasureText(text, partFont).Width > w+1e-9 {
 						flush()
 						text = piece
 					}
 					if text != "" {
-						add(titlePart{text: text})
+						add(titlePart{text: text, font: part.font, color: part.color, hasColor: part.hasColor})
 					}
 				}
 			}

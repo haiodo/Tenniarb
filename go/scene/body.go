@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"math"
+	"strconv"
 	"strings"
 
 	"github.com/haiodo/gowt/gfx"
@@ -31,11 +32,12 @@ const (
 // bodyRun is one span of a line in one look: a markdown token after its glyphs are decided, or an
 // inline picture of a classic diagram.
 type bodyRun struct {
-	text string
-	font gfx.Font
-	code bool       // drawn over the code background
-	link string     // the target of the link the run is the label of, "" for plain text
-	img  *textImage // an inline picture: text is empty
+	text  string
+	font  gfx.Font
+	color gfx.Color  // the colour of the markup at this point of the line
+	code  bool       // drawn over the code background
+	link  string     // the target of the link the run is the label of, "" for plain text
+	img   *textImage // an inline picture: text is empty
 }
 
 // body blocks: a heading, a paragraph, a list of items, a quote, a fenced code block, the table of
@@ -506,56 +508,122 @@ func quoteLine(s string) (string, bool) {
 // inline turns one line of markdown into runs with go/markdown tokens, the runs of a link label carrying
 // its target. Before the lexer runs, the forms it does not know are mapped to the ones it does: [label](url)
 // becomes label, **bold** becomes *bold* and *italic* becomes _italic_. Code spans are copied as they are,
-// so their asterisks and brackets stay literal.
+// so their asterisks and brackets stay literal. The colour and size markup carries from one piece to the
+// next of a link label.
 func (b *bodyText) inline(s string) []bodyRun {
+	st := inlineState{font: b.font, color: b.color}
 	var runs []bodyRun
 	for _, piece := range splitLinks(s) {
-		runs = append(runs, b.linkRuns(piece.text, piece.link)...)
+		runs = append(runs, b.linkRuns(piece.text, piece.link, &st)...)
 	}
 	return runs
 }
 
+// inlineState is the colour and font in force inside a line: what !(...) and &(...) set until !() and &().
+type inlineState struct {
+	font  gfx.Font
+	color gfx.Color
+}
+
 // linkRuns is inline of text that is the label of a link, or plain text when link is "".
-func (b *bodyText) linkRuns(s, link string) []bodyRun {
+func (b *bodyText) linkRuns(s, link string, st *inlineState) []bodyRun {
 	var runs []bodyRun
-	add := func(text string, font gfx.Font, code bool) {
+	add := func(text string, font gfx.Font, color gfx.Color, code bool) {
 		if text == "" {
 			return
 		}
-		if n := len(runs); n > 0 && runs[n-1].font == font && runs[n-1].code == code && runs[n-1].link == link {
+		if n := len(runs); n > 0 && runs[n-1].font == font && runs[n-1].color == color && runs[n-1].code == code && runs[n-1].link == link {
 			runs[n-1].text += text
 			return
 		}
-		runs = append(runs, bodyRun{text: text, font: font, code: code, link: link})
+		runs = append(runs, bodyRun{text: text, font: font, color: color, code: code, link: link})
 	}
 	for _, t := range markdown.GetTokens(normalizeInline(s)) {
 		switch t.Type {
 		case markdown.TokBold:
-			add(t.Literal, b.styled(b.font, 700, false), false)
+			add(t.Literal, b.styled(st.font, 700, false), st.color, false)
 		case markdown.TokItalic:
-			add(t.Literal, b.styled(b.font, 0, true), false)
+			add(t.Literal, b.styled(st.font, 0, true), st.color, false)
 		case markdown.TokCode:
-			add(t.Literal, b.mono, true)
+			add(t.Literal, b.mono, st.color, true)
 		case markdown.TokImage:
 			if img := resolveInline(b.prov, b.imgs, t.Literal); img != nil {
 				runs = append(runs, bodyRun{img: img})
 			} else {
-				add("@("+t.Literal+")", b.font, false)
+				add("@("+t.Literal+")", st.font, st.color, false)
 			}
 		case markdown.TokColor:
-			add("!("+t.Literal+")", b.font, false)
+			before, text, inline := strings.Cut(t.Literal, "|")
+			if inline {
+				c, ok := b.p.markupColor(b.pos, before)
+				if !ok {
+					c = b.color
+				}
+				add(text, st.font, c, false)
+			} else if strings.TrimSpace(t.Literal) == "" {
+				st.color = b.color
+			} else if c, ok := b.p.markupColor(b.pos, t.Literal); ok {
+				st.color = c
+			} else {
+				st.color = b.color
+			}
 		case markdown.TokFont:
-			add("&("+t.Literal+")", b.font, false)
+			if size, text, inline := strings.Cut(t.Literal, "|"); inline {
+				if v, ok := markupSize(size); ok {
+					add(text, sizedFont(st.font, v), st.color, false)
+				}
+			} else if v, ok := markupSize(t.Literal); ok {
+				st.font = sizedFont(b.font, v)
+			} else {
+				st.font = b.font
+			}
 		case markdown.TokUnderline:
-			add("<"+t.Literal+">", b.font, false)
+			add("<"+t.Literal+">", st.font, st.color, false)
 		case markdown.TokScratch:
-			add("~"+t.Literal+"~", b.font, false)
+			add("~"+t.Literal+"~", st.font, st.color, false)
 		case markdown.TokEOF:
 		default:
-			add(t.Literal, b.font, false)
+			add(t.Literal, st.font, st.color, false)
 		}
 	}
 	return runs
+}
+
+// markupColor reads the colour of !(...): a name of the cmkdown table or hex digits, and false for a
+// name it does not know, reported once per build.
+func (p *prep) markupColor(pos Pos, name string) (gfx.Color, bool) {
+	c, ok := parseColor(name)
+	if !ok && p != nil {
+		p.warnColor(pos, name)
+	}
+	return c, ok
+}
+
+// warnColor reports an unknown colour once per build: the same typo on many lines must not bury the rest.
+func (p *prep) warnColor(pos Pos, name string) {
+	if p.warned == nil {
+		p.warned = map[string]bool{}
+	}
+	if p.warned[name] {
+		return
+	}
+	p.warned[name] = true
+	p.t.warn(pos, "!(%s): no such color, the default is used", name)
+}
+
+// markupSize reads the size of &(...); anything that is not a number resets the size, as go/render does.
+func markupSize(s string) (float64, bool) {
+	v, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+	if err != nil || math.IsInf(v, 0) || math.IsNaN(v) {
+		return 0, false
+	}
+	return v, true
+}
+
+// sizedFont is f at another size, its family and weight kept.
+func sizedFont(f gfx.Font, size float64) gfx.Font {
+	f.Size = size
+	return f
 }
 
 // inlinePiece is a piece of a line: plain text, or the label of a link and its target.
@@ -717,7 +785,7 @@ func (b *bodyText) lines(width float64) []bodyLine {
 		case bodyList:
 			bulletW := b.widthOf("• ", b.font)
 			for j, item := range blk.items {
-				runs := append([]bodyRun{{text: "• ", font: b.font}}, item...)
+				runs := append([]bodyRun{{text: "• ", font: b.font, color: b.color}}, item...)
 				ls := b.wrap(runs, width, bodyListIndent, bodyListIndent+bulletW)
 				if j == 0 && len(out) > 0 && len(ls) > 0 {
 					ls[0].gap = b.gap
@@ -739,7 +807,7 @@ func (b *bodyText) lines(width float64) []bodyLine {
 			inner := width - 2*bodyCodePad
 			for _, src := range blk.code {
 				for _, part := range b.codeLines(src, inner) {
-					line := bodyLine{x: bodyCodePad, runs: []bodyRun{{text: part, font: b.mono, code: true}}, code: true}
+					line := bodyLine{x: bodyCodePad, runs: []bodyRun{{text: part, font: b.mono, color: b.color, code: true}}, code: true}
 					b.finishLine(&line)
 					lines = append(lines, line)
 				}
@@ -798,10 +866,10 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 			if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
 				flush()
 			}
-			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
+			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].color == run.color && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
 				line.runs[n-1].text += tok
 			} else {
-				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, code: run.code, link: run.link})
+				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, color: run.color, code: run.code, link: run.link})
 			}
 			line.w += w
 			started = true
@@ -933,7 +1001,7 @@ func (b *bodyText) draw(r *gfx.Recorder, x, y, width float64) {
 				r.FillRect(gfx.R(xx, yy, w, l.h), b.codeBg)
 			}
 			if run.text != "" {
-				r.Text(run.text, xx, base, run.font, b.color)
+				r.Text(run.text, xx, base, run.font, run.color)
 			}
 			xx += w
 		}

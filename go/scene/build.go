@@ -498,23 +498,27 @@ func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Co
 				x = (w - ln.w) / 2
 			}
 		}
+		base := y + (ln.h-(ln.asc+ln.desc))/2 + ln.asc
 		for _, part := range ln.parts {
-			base := y + (ln.h-ti.lineH)/2 + (ti.lineH-(ti.asc+ti.desc))/2 + ti.asc
 			if part.img != nil {
 				// The picture hangs from the cap height of the line, as go/render draws it, not centred
 				// in the line box.
 				if img := part.img.raster(ti.p); img != nil {
-					r.DrawImage(img, x, base-ti.font.Size*capHeightRatio/2-part.img.h/2, part.img.w, part.img.h)
+					r.DrawImage(img, x, base-ti.partFont(part).Size*capHeightRatio/2-part.img.h/2, part.img.w, part.img.h)
 				}
 				x += part.img.w
 				continue
 			}
-			if sh != nil {
-				r.TextShadow(part.text, x, base, ti.font, c, *sh)
-			} else {
-				r.Text(part.text, x, base, ti.font, c)
+			col := c
+			if part.hasColor {
+				col = part.color
 			}
-			x += ti.width(part.text)
+			if sh != nil {
+				r.TextShadow(part.text, x, base, ti.partFont(part), col, *sh)
+			} else {
+				r.Text(part.text, x, base, ti.partFont(part), col)
+			}
+			x += ti.partWidth(part)
 		}
 		y += ln.h
 	}

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* A classic diagram drawn through `go/scene` draws the `!(colour)` and `&(size)` markup of a title and
+  a body instead of its syntax: `!(red|IN)!(green|tegrations)` is two coloured runs, `&(30|x)` makes
+  its line taller and wider, `!()` and `&()` return to the item's colour and size, and the width and
+  height of the item follow the runs. An unknown colour is a warning once and falls back to the text
+  colour (`examples/anti-crm.tenn`, item "Architecture.Integrations").
 * The web scene port lays out a classic diagram: `$(...)`/`${...}` come from the element model through
   the same `ExecutionContext` the old item renderer uses, the text inset is 4 and an item with no text
   is the eight-point dot, so the new classic fixtures of the parity stand match the Go golden.

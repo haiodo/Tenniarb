@@ -133,6 +133,22 @@ func TestBodyInlineUnknownAsText(t *testing.T) {
 	}
 }
 
+// The colour markup colours its runs and !() returns them to the body colour.
+func TestBodyColorMarkup(t *testing.T) {
+	b := newTestBody()
+	b.color = gfx.Color{R: 0.2, G: 0.4, B: 0.6, A: 1}
+	runs := b.inline("!(red|a)b!()")
+	if len(runs) != 2 || runs[0].text != "a" || runs[1].text != "b" {
+		t.Fatalf("runs %+v, want a then b", runs)
+	}
+	if want := (gfx.Color{R: 1, A: 1}); runs[0].color != want {
+		t.Errorf("the inline run is %+v, want red", runs[0].color)
+	}
+	if runs[1].color != b.color {
+		t.Errorf("the reset run is %+v, want the body colour %+v", runs[1].color, b.color)
+	}
+}
+
 func TestBodyQuote(t *testing.T) {
 	b := newTestBody()
 	b.parse("> quoted text")
