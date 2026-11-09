@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+* A classic diagram is drawn closer to what `go/render` and the Swift app draw: the lines of a `body` are
+  hard breaks instead of markdown soft breaks, `\n` written in a string is a newline, the text is inset
+  by the same 4 points as a title and a list hangs no indent, and a box takes the generic grey `#424242`
+  border of the old renderer instead of black. `docs/Example.tenn` lays out like the old picture; the
+  scene goldens are regenerated and the web port follows.
 * A classic diagram drawn through `go/scene` is read from the picture: the pointer, the quick panel,
   Goto Item and the size of the selection take an item's place from the offset the scene laid it out
   with, and a press, a band or a right click where the scene draws nothing no longer grabs the item the
-  old renderer put there. The two renderers measure text differently, so the box `go/render` gave a
-  text-sized item can be hundreds of points wider than the drawn one; the input of a classic diagram
-  still runs through the session, which now asks the picture before it takes a press.
+  old renderer put there. The two renderers measure text differently, so the box `go/render` gives an
+  item need not be the drawn one; the input of a classic diagram still runs through the session, which
+  now asks the picture before it takes a press.
 * gowt 0.15.6: the app builds with `CGO_ENABLED=1 -tags gowtcgo` by default, the native
   AppKit/CoreGraphics calls gowt measures about eight times faster than the purego backends; `CGO=0`
   keeps purego, and the cross-compiled packages stay on it.

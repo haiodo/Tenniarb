@@ -760,6 +760,10 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 		// and the black frame around every photo is not what a box of content draws.
 		fill, border = gfx.Color{}, gfx.Color{}
 	}
+	if p.classic && !inCtx && border.A > 0 {
+		// The border of a classic box is the grey go/render gives it, not the black of a scene.
+		border = classicBorder
+	}
 	st.fill, st.grad = p.fill(rn, fill)
 	st.shadows = p.shadows(rn)
 	st.border = p.color(rn, "border-color", border)

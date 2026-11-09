@@ -82,16 +82,19 @@ type bodyLine struct {
 
 // bodyText is the markdown body of an item, ready to be measured and drawn.
 type bodyText struct {
-	m       gfx.TextMeasurer
-	font    gfx.Font // body text, already 2 points below the title
-	mono    gfx.Font // code
-	color   gfx.Color
-	codeBg  gfx.Color
-	bar     gfx.Color // the bar of a quote
-	lineH   float64   // 0: the font's rounded line box
-	gap     float64   // between blocks
-	padX    float64
-	padY    float64
+	m      gfx.TextMeasurer
+	font   gfx.Font // body text, already 2 points below the title
+	mono   gfx.Font // code
+	color  gfx.Color
+	codeBg gfx.Color
+	bar    gfx.Color // the bar of a quote
+	lineH  float64   // 0: the font's rounded line box
+	gap    float64   // between blocks
+	padX   float64
+	padY   float64
+	// sep joins the lines of a paragraph: a space in a scene, where a line break is soft, and a
+	// newline in a classic diagram, where go/render breaks the line as written.
+	sep     string
 	blocks  []bodyBlock
 	metrics map[gfx.Font]gfx.TextMetrics
 	widths  map[bodyWidthKey]float64
@@ -189,6 +192,11 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	if strings.TrimSpace(text) == "" {
 		return nil
 	}
+	if p.classic {
+		// go/render reads a text `\n` of a body as a newline; a scene keeps the backslash, it is an
+		// ordinary character of its strings (spec 4.3).
+		text = strings.ReplaceAll(text, `\n`, "\n")
+	}
 	text = strings.ReplaceAll(dedent(text), "\t", "    ")
 
 	if size == 0 {
@@ -202,6 +210,7 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	if p.classic {
 		b.imgs = p.inlineImages(rn)
 		b.prov = inlineProvider(b.imgs)
+		b.sep = "\n" // a line break of a classic body is a break, as in go/render
 	}
 	if family != "" {
 		b.font.Family, b.font.Name = family, ""
@@ -209,9 +218,13 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	b.mono = gfx.Font{Size: size, Family: mono}
 	b.codeBg, _ = parseColor("grey-200")
 	b.bar, _ = parseColor("grey-400")
-	if inCtx {
+	switch {
+	case inCtx:
 		b.padX, b.padY = 0, 0
-	} else {
+	case p.classic:
+		// go/render insets the body of a classic item by the same 4 points as its title.
+		b.padX, b.padY = classicTextPad, classicTextPad
+	default:
 		b.padX, b.padY = textPadX, textPadY
 	}
 	b.parse(text)
@@ -393,13 +406,13 @@ func (b *bodyText) parse(text string) {
 	anchors := map[string]int{} // heading anchors seen, for the -2, -3 of a repeat
 	flushPara := func() {
 		if len(para) > 0 {
-			blocks = append(blocks, bodyBlock{kind: bodyParagraph, runs: b.inline(strings.Join(para, " "))})
+			blocks = append(blocks, bodyBlock{kind: bodyParagraph, runs: b.inline(strings.Join(para, b.lineSep()))})
 			para = nil
 		}
 	}
 	flushQuote := func() {
 		if len(quote) > 0 {
-			blocks = append(blocks, bodyBlock{kind: bodyQuote, runs: b.inline(strings.Join(quote, " "))})
+			blocks = append(blocks, bodyBlock{kind: bodyQuote, runs: b.inline(strings.Join(quote, b.lineSep()))})
 			quote = nil
 		}
 	}
@@ -784,9 +797,15 @@ func (b *bodyText) lines(width float64) []bodyLine {
 			}
 		case bodyList:
 			bulletW := b.widthOf("• ", b.font)
+			// go/render hangs no indent on a list of a classic body: the bullet stands where the text does
+			// and a wrapped line returns to the left edge.
+			first := bodyListIndent
+			if b.p != nil && b.p.classic {
+				first = 0
+			}
 			for j, item := range blk.items {
 				runs := append([]bodyRun{{text: "• ", font: b.font, color: b.color}}, item...)
-				ls := b.wrap(runs, width, bodyListIndent, bodyListIndent+bulletW)
+				ls := b.wrap(runs, width, first, first+bulletW)
 				if j == 0 && len(out) > 0 && len(ls) > 0 {
 					ls[0].gap = b.gap
 				}
@@ -835,6 +854,15 @@ func (b *bodyText) lines(width float64) []bodyLine {
 	return out
 }
 
+// lineSep joins the lines of one paragraph: a space where a line break is soft, a newline in a classic
+// diagram.
+func (b *bodyText) lineSep() string {
+	if b.sep == "" {
+		return " "
+	}
+	return b.sep
+}
+
 // wrap breaks runs into lines greedily at spaces; text wider than the width stays on its line.
 // first is the indent of the first line, cont the indent of the continuation lines.
 func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
@@ -857,22 +885,27 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 			started = true
 			continue
 		}
-		for _, tok := range splitSpaces(run.text) {
-			space := strings.TrimSpace(tok) == ""
-			w := b.widthOf(tok, run.font)
-			if space && !started {
-				continue // leading spaces of a line are not drawn
+		for i, seg := range strings.Split(run.text, "\n") {
+			if i > 0 && started {
+				flush() // a newline of the text is a break, not a space
 			}
-			if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
-				flush()
+			for _, tok := range splitSpaces(seg) {
+				space := strings.TrimSpace(tok) == ""
+				w := b.widthOf(tok, run.font)
+				if space && !started {
+					continue // leading spaces of a line are not drawn
+				}
+				if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
+					flush()
+				}
+				if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].color == run.color && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
+					line.runs[n-1].text += tok
+				} else {
+					line.runs = append(line.runs, bodyRun{text: tok, font: run.font, color: run.color, code: run.code, link: run.link})
+				}
+				line.w += w
+				started = true
 			}
-			if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].color == run.color && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
-				line.runs[n-1].text += tok
-			} else {
-				line.runs = append(line.runs, bodyRun{text: tok, font: run.font, color: run.color, code: run.code, link: run.link})
-			}
-			line.w += w
-			started = true
 		}
 	}
 	if started || len(lines) == 0 {

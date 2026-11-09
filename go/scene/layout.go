@@ -56,6 +56,10 @@ const (
 	classicRadius = 8.0
 )
 
+// classicBorder is the border colour of a box of a classic diagram: the generic grey 0.2 of go/render,
+// #424242.
+var classicBorder = gfx.RGBA(66, 66, 66, 1)
+
 // prep turns resolved nodes into a layout tree and keeps what the drawing needs.
 type prep struct {
 	t      *Tree

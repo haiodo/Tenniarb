@@ -67,7 +67,8 @@ func TestBodyFromFileSection(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, svg := buildFile(t, tree, "E")
-	for _, want := range []string{"Цель", "Документация в markdown. Вторая строка.", "• пункт"} {
+	// A classic body breaks its lines as written: go/render draws one paragraph line per line.
+	for _, want := range []string{"Цель", "Документация в markdown.", "Вторая строка.", "• пункт"} {
 		if !strings.Contains(svg, want) {
 			t.Errorf("no %q in:\n%s", want, svg)
 		}
@@ -78,7 +79,7 @@ func TestBodyFromFileSection(t *testing.T) {
 		}
 	}
 	// The heading keeps the size rule of a body written in the .tenn: h2 is the body plus 4 points.
-	body, head := sizeOf(t, svg, "Документация в markdown. Вторая строка."), sizeOf(t, svg, "Цель")
+	body, head := sizeOf(t, svg, "Документация в markdown."), sizeOf(t, svg, "Цель")
 	if head != "18" || body != "14" {
 		t.Errorf("heading %s, body %s, want 18 and 14", head, body)
 	}

@@ -4033,6 +4033,8 @@ const textPadY = 6;
 const classicTextPad = 4;
 /** The corner radius go/render gives a box of a classic diagram. */
 const classicRadius = 8;
+/** The border colour go/render gives a box of a classic diagram: the generic grey 0.2, #424242. */
+const classicBorder: Color = { r: 66 / 255, g: 66 / 255, b: 66 / 255, a: 1 };
 const fontName = "Helvetica, Arial, sans-serif";
 const codeFont = "Inter";
 
@@ -4409,7 +4411,7 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     fill: inCtx ? noColor : colorWhite,
     grad: null,
     shadows: [],
-    border: inCtx ? noColor : colorBlack,
+    border: inCtx ? noColor : prep.classic ? classicBorder : colorBlack,
     text: up,
     lineW: 1,
     dash: [],
