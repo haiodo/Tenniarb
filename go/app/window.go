@@ -47,7 +47,7 @@ type Viewer struct {
 
 	rendered    *render.Rendered
 	overlay     *gfx.Node
-	selHUD      *gfx.Node    // the selection frames of a scene element, on the HUD
+	selHUD      *gfx.Node    // the selection frames of a scene, in the content scene
 	diffHUD     *gfx.Node    // the frames of compare mode, on the HUD
 	sv          *sceneView   // the element on the canvas is drawn by go/scene
 	svCache     []*sceneView // views taken off the canvas, the last one first

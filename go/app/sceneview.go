@@ -684,58 +684,47 @@ func (v *Viewer) dropStaleSelection() {
 	v.selNodes = kept
 }
 
-// selectionPicture records the frames of the selected paths in view points for the camera; they keep
-// 2 points on the screen at any zoom. The classic preview - the rubber band, the line of a link being
-// drawn - comes after them, in the same view points.
-func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture {
-	if cam.Zoom <= 0 {
-		cam.Zoom = 1
+// selectionPicture records the frames of the selected paths in the coordinates of the gfx scene, so a
+// pan or a zoom moves them with the content instead of leaving them a frame behind. The stroke is 2
+// points on the screen at any zoom, as Swift draws the selector box. The classic preview - the rubber
+// band, the line of a link being drawn - comes after them, in the same coordinates.
+func (sv *sceneView) selectionPicture(sel []string, zoom float64) *gfx.Picture {
+	if zoom <= 0 {
+		zoom = 1
 	}
+	w := 2 / zoom
 	r := gfx.NewRecorder()
 	for _, p := range sel {
 		pl := sv.byPath[p]
 		if pl == nil {
 			continue
 		}
-		x, y := pl.X+sv.dragOffset.X, pl.Y+sv.dragOffset.Y
+		x, y := pl.X+sv.off.X+sv.dragOffset.X, pl.Y+sv.off.Y+sv.dragOffset.Y
 		if d := sv.drag; d.pl == pl && d.moved && pl.Gfx != nil {
 			t := pl.Gfx.Transform()
 			x, y = x+t[4]-d.ox, y+t[5]-d.oy
 		}
-		x, y = (x+sv.off.X-cam.Origin.X)*cam.Zoom, (y+sv.off.Y-cam.Origin.Y)*cam.Zoom
-		r.StrokeRect(gfx.R(x, y, pl.W*cam.Zoom, pl.H*cam.Zoom), gfx.StrokeStyle{Width: 2}, accent)
+		r.StrokeRect(gfx.R(x, y, pl.W, pl.H), gfx.StrokeStyle{Width: w}, accent)
 	}
 	if sv.band != nil {
-		r.StrokeRect(viewRect(*sv.band, cam), gfx.StrokeStyle{Width: 1, Dash: []float64{5, 5}}, accent)
+		r.StrokeRect(*sv.band, gfx.StrokeStyle{Width: w, Dash: []float64{5 / zoom, 5 / zoom}}, accent)
 	}
 	if sv.line != nil {
 		p := &gfx.Path{}
-		p.MoveTo(viewPoint(sv.line[0], cam))
-		p.LineTo(viewPoint(sv.line[1], cam))
-		r.StrokePath(p, gfx.StrokeStyle{Width: 1.5}, accent)
+		p.MoveTo(sv.line[0].X, sv.line[0].Y)
+		p.LineTo(sv.line[1].X, sv.line[1].Y)
+		r.StrokePath(p, gfx.StrokeStyle{Width: 1.5 / zoom}, accent)
 	}
 	return r.Finish()
 }
 
-// viewRect is a rectangle of the gfx scene in view points.
-func viewRect(r gfx.Rect, cam gfx.Camera) gfx.Rect {
-	x, y := viewPoint(r.Min, cam)
-	return gfx.R(x, y, r.W()*cam.Zoom, r.H()*cam.Zoom)
-}
-
-// viewPoint is a point of the gfx scene in view points.
-func viewPoint(p gfx.Point, cam gfx.Camera) (x, y float64) {
-	return (p.X - cam.Origin.X) * cam.Zoom, (p.Y - cam.Origin.Y) * cam.Zoom
-}
-
-// setCamera moves the camera and keeps the selection frames on their nodes: the HUD is drawn in view
-// points, so a camera move leaves the frames behind.
+// setCamera moves the camera; the selection frames are part of the scene and follow it.
 func (v *Viewer) setCamera(cam gfx.Camera) {
 	v.view.Compositor().SetCamera(cam)
 	v.drawSceneOverlay()
 }
 
-// panView pans the canvas and keeps the selection frames on their nodes.
+// panView pans the canvas; the selection frames are part of the scene and follow it.
 func (v *Viewer) panView(dx, dy float64) {
 	v.view.Pan(dx, dy)
 	v.drawSceneOverlay()
@@ -765,14 +754,15 @@ func (v *Viewer) drawSceneOverlay() {
 	comp := v.view.Compositor()
 	pic := gfx.NewRecorder().Finish()
 	if v.sceneDrawn() {
-		pic = v.sv.selectionPicture(v.canvasSelection(), comp.Camera())
+		pic = v.sv.selectionPicture(v.canvasSelection(), comp.Camera().Zoom)
 	}
 	if v.selHUD != nil || pic.Len() > 0 {
-		comp.HUD().Update(func(tx *gfx.Tx) {
+		v.scene.Update(func(tx *gfx.Tx) {
 			if v.selHUD == nil {
 				v.selHUD = gfx.NewNode(3)
 				tx.Add(nil, v.selHUD)
 				tx.SetShape(v.selHUD, nil, gfx.HitNone) // hit-testing of the selection is done on the scene
+				tx.SetZ(v.selHUD, overlayZ)
 			}
 			tx.SetPicture(v.selHUD, pic)
 		})
