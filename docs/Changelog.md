@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* Element > Insert Component... offers the components a library writes as *elements*: `libraries/c4.tenn`
+  marks eleven of them that way, and the picker listed only the two items inside them, because a use path of
+  an element was refused. A component the library marks is offered as itself, an element that marks nothing
+  is still a group of its items.
+* The Items pane has a switch between the items of the element and a browser of what the libraries offer.
+  A row of the browser carries a preview of its component, and the component can be dragged onto the canvas -
+  the use is written where the pointer lands - or inserted with a double click at a free spot.
 * A newline inside a `!(colour|text)` span of a classic body breaks the line, as go/render drew it: the
   lexer keeps that newline in the token, so the old renderer started a line there while the scene joined the
   two. Two elements of `anti-crm.tenn` line up with it.

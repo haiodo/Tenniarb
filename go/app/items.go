@@ -20,15 +20,22 @@ import (
 // itemsList is the second level of navigation: the items of the element on the canvas, in the sidebar
 // under the outline.
 type itemsList struct {
-	box      *g.Panel
-	hidden   bool // collapsed by the Items button
-	tree     *g.TreeView
-	open     map[string]bool // expanded scene rows by path, for the canvas of canvasOf
-	canvas   any
-	sig      string // what the rows show, so a redraw that changes none of them keeps them
-	syncing  bool
-	grey     *swt.Color // the colour of instance rows in the theme greyDark
-	greyDark bool
+	box    *g.Panel
+	hidden bool // collapsed by the Items button
+	// components shows the component browser in the pane instead of the rows of the canvas: the rows are
+	// then what the libraries offer, and a drag of one of them puts it on the canvas.
+	components bool
+	comps      []Component         // what the browser lists, kept for the drag of a row
+	previews   map[string]*g.Image // the picture of a component row, by use path
+	itemsBtn   *g.ButtonView       // the two modes of the pane; the pressed one is the one shown
+	compsBtn   *g.ButtonView
+	tree       *g.TreeView
+	open       map[string]bool // expanded scene rows by path, for the canvas of canvasOf
+	canvas     any
+	sig        string // what the rows show, so a redraw that changes none of them keeps them
+	syncing    bool
+	grey       *swt.Color // the colour of instance rows in the theme greyDark
+	greyDark   bool
 
 	addCol  *g.Column // the column of the hover "+"
 	nameCol *g.Column // the column of the name, as wide as the pane
@@ -49,7 +56,16 @@ func (v *Viewer) itemsPane() g.Option {
 	l := &v.itemsUI
 	return g.VBox(g.Ref(&l.box), g.Grow(), g.Padding(0), g.Gap(0),
 		g.HBox(g.GrowX(), g.Padding(4), g.Gap(g.Scaled(4)),
-			g.Label("Items", faint(), g.GrowX(), g.Place(g.AlignStart, g.AlignCenter)),
+			g.HBox(g.GrowX(), g.Gap(g.Scaled(2)),
+				g.Button("Items", g.Small(), g.ID("items-mode-items"), g.Tooltip("The items of this element"),
+					g.Init(func(b *g.ButtonView) {
+						b.OnClick(func() { v.setItemsMode(false) })
+					})),
+				g.Button("Components", g.Small(), g.ID("items-mode-components"),
+					g.Tooltip("What the libraries offer: drag one onto the canvas, or double click it"),
+					g.Init(func(b *g.ButtonView) {
+						b.OnClick(func() { v.setItemsMode(true) })
+					}))),
 			g.Button("+", g.Small(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
 				g.ID("items-add"), g.Tooltip("Add an item"),
 				g.Init(func(b *g.ButtonView) {
@@ -234,9 +250,56 @@ func rowsSig(rows []ItemRow) string {
 	return b.String()
 }
 
+// setItemsMode switches the pane between the rows of the canvas and the browser of what the libraries
+// offer. The browser is a list to drag from: a row carries the use path of its component.
+func (v *Viewer) setItemsMode(components bool) {
+	l := &v.itemsUI
+	if l.components == components {
+		return
+	}
+	l.components = components
+	l.sig = "" // the rows are what changed, not only their text
+	if components {
+		l.comps = v.components("", componentBrowserLimit) // a drop may come before the rows are read
+	}
+	v.rebuildItems()
+}
+
+// componentRows are the rows of the browser: one per component of the mounted libraries, labelled as the
+// picker labels them.
+func (v *Viewer) componentRows() []ItemRow {
+	l := &v.itemsUI
+	l.comps = v.components("", componentBrowserLimit)
+	rows := make([]ItemRow, 0, len(l.comps))
+	for _, c := range l.comps {
+		rows = append(rows, ItemRow{Label: c.Label, Kind: "component", Path: c.Path, Component: true})
+	}
+	if len(rows) == 0 {
+		// A hint instead of an empty list: the pane is where a reader looks when nothing can be inserted.
+		hint := "The document mounts no library: add one with Element > Add Library..."
+		if len(v.libraries()) > 0 {
+			hint = "The libraries mount no component"
+		}
+		rows = append(rows, ItemRow{Label: hint, Kind: "hint"})
+	}
+	return rows
+}
+
+// componentOfPath is the component of a browser row, by the use path the row carries.
+func (v *Viewer) componentOfPath(path string) *Component {
+	for i := range v.itemsUI.comps {
+		if v.itemsUI.comps[i].Path == path {
+			return &v.itemsUI.comps[i]
+		}
+	}
+	return nil
+}
+
 // itemRows are the top rows for the canvas.
 func (v *Viewer) itemRows() []ItemRow {
 	switch {
+	case v.itemsUI.components:
+		return v.componentRows()
 	case v.sceneMode():
 		if v.sv.node == nil {
 			return nil
@@ -279,7 +342,7 @@ func (v *Viewer) addItemRows(parent func(string) *g.Node, rows []ItemRow) {
 		r := &rows[i]
 		n := parent(r.Label)
 		n.SetData(r)
-		n.SetImage(v.itemImage(r))
+		n.SetImage(v.rowImage(r))
 		if instanceRow(r) {
 			n.Unwrap().SetForeground(v.greyColor())
 		}
@@ -319,6 +382,39 @@ func (v *Viewer) greyColor() *swt.Color {
 const componentSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>`
 
 // itemImage is the icon of a row: a puzzle for a node a use can take, the named system icon otherwise.
+// componentBrowserLimit is how many components the pane of the browser lists.
+const componentBrowserLimit = 400
+
+// The size of the preview of a component row in the browser, in points.
+const (
+	componentRowW = 32
+	componentRowH = 22
+)
+
+// rowImage is the picture of a row: the preview of a component in the browser, the kind icon elsewhere.
+func (v *Viewer) rowImage(r *ItemRow) *g.Image {
+	if !v.itemsUI.components || !r.Component {
+		return v.itemImage(r)
+	}
+	l := &v.itemsUI
+	if l.previews == nil {
+		l.previews = map[string]*g.Image{}
+	}
+	if img, ok := l.previews[r.Path]; ok {
+		return img
+	}
+	c := v.componentOfPath(r.Path)
+	if c == nil || c.Node == nil {
+		return v.itemImage(r)
+	}
+	img, err := v.componentImage(c.Node, componentRowW, componentRowH)
+	if err != nil || img == nil {
+		return v.itemImage(r)
+	}
+	l.previews[r.Path] = img
+	return img
+}
+
 func (v *Viewer) itemImage(r *ItemRow) *g.Image {
 	if r.Component {
 		c := g.RGB{R: 30, G: 30, B: 30}

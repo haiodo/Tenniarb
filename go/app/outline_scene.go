@@ -72,7 +72,7 @@ func (v *Viewer) insertFromMount(m *model.Element, r *ItemRow) {
 	n := NodeAt(v.sv.node, r.Path)
 	p, ok := UsePath(scene.NormalizeName(m.Name), n)
 	if !ok {
-		v.setBanner("Only an item of the library, not inside an instance or a slot, can be inserted.")
+		v.setBanner("Only an element or an item of the library, not inside an instance or a slot, can be inserted.")
 		return
 	}
 	if v.leaveMount() {

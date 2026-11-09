@@ -249,3 +249,32 @@ func TestComponentsPublicSurface(t *testing.T) {
 		t.Errorf("components %q", got)
 	}
 }
+
+// A library that writes its components as elements offers them: libraries/c4.tenn marks eleven that way, and
+// the picker used to list only the two items inside them, because a use path of an element was refused.
+func TestComponentsOfALibraryOfElements(t *testing.T) {
+	tree, err := scene.Load("../..", "libraries/c4.tenn")
+	if err != nil {
+		t.Skipf("the library is not here: %v", err)
+	}
+	root := tree.File("libraries/c4.tenn")
+	if root == nil {
+		t.Skip("the library is not loaded")
+	}
+	comps := Components("c4", root, "", 200)
+	byPath := map[string]Component{}
+	for _, c := range comps {
+		byPath[c.Path] = c
+	}
+	for _, want := range []string{"c4.Person", "c4.SoftwareSystem", "c4.Container", "c4.Legend", "c4.Title"} {
+		if _, ok := byPath[want]; !ok {
+			t.Errorf("no %s among %d components", want, len(comps))
+		}
+	}
+	if len(comps) < 11 {
+		t.Errorf("%d components, want the eleven the library marks", len(comps))
+	}
+	if comp, ok := byPath["c4.Person"]; !ok || comp.Name != "Person" {
+		t.Errorf("c4.Person = %+v %v", comp, ok)
+	}
+}

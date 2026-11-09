@@ -122,7 +122,18 @@ func (v *Viewer) activateItem(n *g.Node) {
 	if !ok || v.session == nil {
 		return
 	}
+	v.activateItemRow(*r, n)
+}
+
+// activateItemRow is a double click on the row r, drawn as the node n of the Items list (nil for a row of
+// the component browser, which is no editable name).
+func (v *Viewer) activateItemRow(r ItemRow, n *g.Node) {
 	switch {
+	case r.Kind == "component" && r.Component:
+		// A double click on a component of the browser puts it on the canvas, as the picker does.
+		if c := v.componentOfPath(r.Path); c != nil {
+			v.insertUse(nil, "", c.Path, c.Name)
+		}
 	case r.Item != nil && !r.Item.IsLink():
 		it := r.Item
 		v.editName(v.itemsUI.tree, n, it.Name, func(name string) { v.renameDiagramItem(it, name) })

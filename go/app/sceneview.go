@@ -1103,6 +1103,11 @@ func (v *Viewer) insertComponent(path, name string) {
 // insertUse writes the use into the item or instance into, in its slot; into nil puts it on the
 // canvas at a free spot.
 func (v *Viewer) insertUse(into *scene.Node, slot, path, name string) {
+	v.insertUseAt(into, slot, path, name, nil)
+}
+
+// insertUseAt is insertUse with the spot of the dropped use: nil keeps the free spot the button picks.
+func (v *Viewer) insertUseAt(into *scene.Node, slot, path, name string, at *gfx.Point) {
 	target := into
 	if target == nil {
 		target = v.sv.node
@@ -1112,6 +1117,9 @@ func (v *Viewer) insertUse(into *scene.Node, slot, path, name string) {
 	cmd := SlotCommand(slot, use)
 	if into == nil {
 		x, y := v.freeSpot()
+		if at != nil {
+			x, y = at.X, at.Y
+		}
 		use += " { " + CommandText("pos", numText(x), numText(y)) + " }"
 		cmd = use
 	}

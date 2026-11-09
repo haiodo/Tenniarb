@@ -331,9 +331,10 @@ func SlotCommand(slot, cmd string) string {
 }
 
 // UsePath is the path a use of n writes from the file that mounts n's file as the element alias. False when n
-// cannot be used: it is not an item or a use, or it lies inside an instance or a slot.
+// cannot be used: it is not an element, an item or a use, or it lies inside an instance or a slot. An element
+// is a component of a library too - libraries/c4.tenn writes every one of its components as one.
 func UsePath(alias string, n *scene.Node) (string, bool) {
-	if n == nil || n.Kind != scene.KItem && n.Kind != scene.KUse {
+	if n == nil || n.Kind != scene.KElement && n.Kind != scene.KItem && n.Kind != scene.KUse {
 		return "", false
 	}
 	segs := []string{n.Key}
@@ -382,19 +383,24 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 				return
 			}
 			if k.Kind == scene.KElement {
+				// A library writes its components as elements (libraries/c4.tenn marks eleven that way): an
+				// element that says it is a component is one, not a folder of them. An element that says
+				// nothing is a group - the file's own rule for a component does not extend to elements - so
+				// it is walked and its items are what it offers.
+				if k.Type == scene.TypeComponent || len(k.Params) > 0 {
+					if comp, ok := componentOf(alias, k, where, q); ok {
+						out = append(out, comp)
+					}
+					continue
+				}
 				walk(k, k.Name)
 				continue
 			}
 			if !isComponent(k) {
 				continue
 			}
-			hit := strings.Contains(strings.ToLower(k.Name), q) || strings.Contains(strings.ToLower(k.Key), q)
-			if p, ok := UsePath(alias, k); ok && k.Name != "" && hit {
-				label := k.Name
-				if where != "" {
-					label += " - " + where
-				}
-				out = append(out, Component{Label: label, Path: p, Name: k.Name, Node: k})
+			if comp, ok := componentOf(alias, k, where, q); ok {
+				out = append(out, comp)
 			}
 		}
 	}
@@ -402,7 +408,22 @@ func Components(alias string, root *scene.Node, q string, limit int) []Component
 	return out
 }
 
-// declaresComponents reports whether a library says which nodes are components: "kind Component", or the
+// componentOf is k as a component of the library alias, when its name holds q and its path is one a use
+// can name.
+func componentOf(alias string, k *scene.Node, where, q string) (Component, bool) {
+	hit := strings.Contains(strings.ToLower(k.Name), q) || strings.Contains(strings.ToLower(k.Key), q)
+	p, ok := UsePath(alias, k)
+	if !ok || k.Name == "" || !hit {
+		return Component{}, false
+	}
+	label := k.Name
+	if where != "" && where != k.Name {
+		label += " - " + where
+	}
+	return Component{Label: label, Path: p, Name: k.Name, Node: k}, true
+}
+
+// declaresComponents reports whether a library says which nodes are components:// declaresComponents reports whether a library says which nodes are components: "kind Component", or the
 // parameters a component declares. A library that says nothing yet keeps the older rule.
 func declaresComponents(root *scene.Node) bool {
 	var walk func(n *scene.Node) bool

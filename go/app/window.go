@@ -277,6 +277,7 @@ func (v *Viewer) build() {
 	v.menus()
 	v.contextMenus()
 	v.dragAndDrop()
+	v.dragComponents()
 	v.updateTitle()
 }
 
