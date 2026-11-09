@@ -211,7 +211,8 @@ func (p *prep) loadInline(rn *RNode, pr *Prop, name string) *itemImage {
 		w: cfg.Width, h: cfg.Height}
 }
 
-// namesInline reports whether the title or the body of rn refers to the inline image name.
+// namesInline reports whether a text the item shows refers to the inline image name: its title, its
+// body, or the markdown file the body reads with --from-file.
 func (p *prep) namesInline(rn *RNode, name string) bool {
 	if name == "" {
 		return false
@@ -220,6 +221,13 @@ func (p *prep) namesInline(rn *RNode, name string) bool {
 	for _, prop := range []string{"title", "body"} {
 		if pr := p.prop(rn, prop); pr != nil && propRefers(pr, ref) {
 			return true
+		}
+	}
+	if pr := p.prop(rn, "body"); pr != nil {
+		if file, ok := bodyFileArg(pr.Args); ok {
+			if text, read := p.bodyFileText(pr, file, false); read && strings.Contains(text, ref) {
+				return true
+			}
 		}
 	}
 	return false

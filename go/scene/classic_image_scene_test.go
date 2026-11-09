@@ -83,6 +83,26 @@ func TestClassicBodyInlineImage(t *testing.T) {
 	}
 }
 
+// A body read from a markdown file names the picture just as an inline body does: the picture is text
+// of the body, not the content of the box as well.
+func TestClassicBodyFileInlineImage(t *testing.T) {
+	root := t.TempDir()
+	writeTestFile(t, root, "docs/plan.md", []byte("Logo @(logo|40) in the page\n"))
+	src := fmt.Sprintf(`element "E" {
+  item Pic { pos 0 0; width 300; height 100; body --from-file "docs/plan.md"; image "logo" @(%s) }
+}`, pngData(t, 100, 50))
+	writeTestFile(t, root, "a.tenn", []byte(src))
+	tree, err := Load(root, "a.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen := buildTree(t, tree, "E")
+	rects, _, _ := drawOps(placed(t, screen, "Pic").Gfx.Picture())
+	if len(rects) != 1 {
+		t.Fatalf("picture rects %v, want the body one only", rects)
+	}
+}
+
 // The file form of an image keeps drawing as the content of the box.
 func TestSceneFileImageStillDraws(t *testing.T) {
 	root := t.TempDir()

@@ -46,6 +46,8 @@ const (
 	// classicTextPad is the inset go/render gives a text leaf of a classic diagram when `padding` is not
 	// written: the picture of an old file must not move when the canvas draws it through go/scene.
 	classicTextPad = 4.0
+	// capHeightRatio is the cap height of SF over the font size, as go/render places an inline picture.
+	capHeightRatio = 1490.0 / 2048
 )
 
 // prep turns resolved nodes into a layout tree and keeps what the drawing needs.

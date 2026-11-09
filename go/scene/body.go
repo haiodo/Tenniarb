@@ -177,7 +177,7 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 	}
 	if file, ok := bodyFileArg(pr.Args); ok {
 		var read bool
-		if text, read = p.bodyFileText(pr, file); !read {
+		if text, read = p.bodyFileText(pr, file, true); !read {
 			return nil
 		}
 		from = file
@@ -269,16 +269,20 @@ func bodyFileArg(args []*tenn.Node) (string, bool) {
 
 // bodyFileText is the text of "body --from-file <path>": the whole markdown file, or the section named
 // after "#". The path is relative to the file that writes the body and may not leave the workspace
-// root, as for element --from-file. Every problem is reported here, and ok is false then.
-func (p *prep) bodyFileText(pr *Prop, ref string) (string, bool) {
+// root, as for element --from-file. Every problem is reported when report is set, and ok is false then.
+func (p *prep) bodyFileText(pr *Prop, ref string, report bool) (string, bool) {
 	file, section, hasSection := strings.Cut(ref, "#")
 	if file == "" {
-		p.t.fail(pr.Pos, "body %s needs a file: body %s \"docs/plan.md\"", FromFileFlag, FromFileFlag)
+		if report {
+			p.t.fail(pr.Pos, "body %s needs a file: body %s \"docs/plan.md\"", FromFileFlag, FromFileFlag)
+		}
 		return "", false
 	}
 	abs, rel, ok := p.t.resolveIn(pr.Pos.File, file)
 	if !ok {
-		p.t.fail(pr.Pos, "body %s %q leaves the workspace root", FromFileFlag, file)
+		if report {
+			p.t.fail(pr.Pos, "body %s %q leaves the workspace root", FromFileFlag, file)
+		}
 		return "", false
 	}
 	// shortcut: the file is read on every load and build, no cache by modification time; add one if a
@@ -289,7 +293,9 @@ func (p *prep) bodyFileText(pr *Prop, ref string) (string, bool) {
 		if errors.Is(err, fs.ErrNotExist) {
 			err = fmt.Errorf("no such file")
 		}
-		p.t.fail(pr.Pos, "body %s %q: %v", FromFileFlag, file, err)
+		if report {
+			p.t.fail(pr.Pos, "body %s %q: %v", FromFileFlag, file, err)
+		}
 		return "", false
 	}
 	if !hasSection {
@@ -298,10 +304,12 @@ func (p *prep) bodyFileText(pr *Prop, ref string) (string, bool) {
 	if s, found := bodySection(text, section); found {
 		return s, true
 	}
-	if all := bodyHeadings(text); len(all) > 0 {
-		p.t.fail(pr.Pos, "body %s %q: %s has no heading %q; headings: %s", FromFileFlag, ref, rel, section, strings.Join(all, ", "))
-	} else {
-		p.t.fail(pr.Pos, "body %s %q: %s has no heading %q and no headings at all", FromFileFlag, ref, rel, section)
+	if report {
+		if all := bodyHeadings(text); len(all) > 0 {
+			p.t.fail(pr.Pos, "body %s %q: %s has no heading %q; headings: %s", FromFileFlag, ref, rel, section, strings.Join(all, ", "))
+		} else {
+			p.t.fail(pr.Pos, "body %s %q: %s has no heading %q and no headings at all", FromFileFlag, ref, rel, section)
+		}
 	}
 	return "", false
 }
