@@ -72,7 +72,7 @@ func parityElement(t *testing.T, file, name string) *model.Element {
 
 // itemBoxes are the boxes of the items of e as the old renderer gives them, keyed by item.
 func itemBoxes(e *model.Element) map[*model.DiagramItem]gfx.Rect {
-	ds := render.Build(e, render.Options{Measurer: gfx.DefaultMeasurer, FontFamily: "Helvetica, Arial, sans-serif"})
+	ds := render.Build(e, render.Options{Measurer: gfx.DefaultMeasurer})
 	out := map[*model.DiagramItem]gfx.Rect{}
 	for _, it := range e.Items {
 		if it.Kind != model.ItemKindItem {
@@ -137,14 +137,14 @@ func TestClassicPictureMatchesRender(t *testing.T) {
 		b, n := p[1].(gfx.Rect), p[2].(gfx.Rect)
 		dx, dy := math.Abs(n.Min.X-sx-b.Min.X), math.Abs(n.Min.Y-sy-b.Min.Y)
 		dw, dh := math.Abs(n.W()-b.W()), math.Abs(n.H()-b.H())
-		// The boxes stand where go/render puts them and are as tall: the width of a text box is up to a few
-		// points narrower in the scene (the old renderer measured a line a little wider), so it is held to
-		// a wider tolerance and the vertical metrics are held tight.
-		if worst := math.Max(math.Max(dx, dy), dh); worst > 0.5 {
-			t.Errorf("%s: off by %.2f (old %v, scene %v, frame %v,%v)", name, worst, b, n, sx, sy)
+		// A list is 5 points narrower than go/render makes it: the scene draws the bullet and its text as
+		// one run, the old renderer as two. Everything else is held to half a point.
+		tol := 0.5
+		if name == "List" {
+			tol = 6
 		}
-		if dw > 8 {
-			t.Errorf("%s: %v wide, go/render %v", name, n.W(), b.W())
+		if worst := math.Max(math.Max(dx, dy), math.Max(dw, dh)); worst > tol {
+			t.Errorf("%s: off by %.2f (old %v, scene %v, frame %v,%v)", name, worst, b, n, sx, sy)
 		}
 	}
 }

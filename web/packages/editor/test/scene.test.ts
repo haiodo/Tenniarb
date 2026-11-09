@@ -77,7 +77,15 @@ test("a classic element is drawn by the scene port where its drawables are", () 
   const box = port.boxes.find((b) => b.name === "A")!;
   const drawn = drawnBox(session);
   // The port lays its boxes out y-down; the drawables are y-up, so the picture is the box flipped at the origin.
-  assert.deepEqual(drawn, { x: box.x, y: -box.y - box.height, width: box.width, height: box.height });
+  // The numbers of the picture come back through the SVG text of the draw call, so they are compared with a
+  // tolerance: a width of 51.2 prints as hundreds and comes back as 51.199999999999996.
+  const near = (a: number, b: number, what: string): void => {
+    assert.ok(Math.abs(a - b) < 1e-6, `${what}: ${a} vs ${b}`);
+  };
+  near(drawn.x, box.x, "x");
+  near(drawn.y, -box.y - box.height, "y");
+  near(drawn.width, box.width, "width");
+  near(drawn.height, box.height, "height");
 
   // The selection box is the drawable's, so the two share the top left corner.
   const d = session.scene.drawables.get(item)!.getSelectorBounds();

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The box of a classic item is as wide as the text it measures: the scene rounded the width of a leaf up to
+  a whole point, so a title of 22 characters was 8 points wider than the old picture and a box moved against
+  its own frame. `go/render` kept the fraction, and so does the scene in a classic diagram; a scene still
+  rounds to whole points.
 * A `\n` written in a title or in the name of a classic item is a newline, as the old renderer read it: an
   item called `Text is \`code block\nwith new line\`` drew one long line 363 points wide instead of the four
   lines of the Swift picture.

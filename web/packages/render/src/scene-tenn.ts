@@ -4780,7 +4780,11 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
     body.padX = padX;
     body.padY = padY;
   }
-  n.leafW = () => Math.ceil(Math.max(ti === null ? 0 : textNatural(ti), body === null ? 0 : bodyNatural(body))) + 2 * padX;
+  n.leafW = () => {
+    const w = Math.max(ti === null ? 0 : textNatural(ti), body === null ? 0 : bodyNatural(body));
+    // go/render kept the fraction of a measured line; only a scene rounds its leaf to whole points.
+    return (prep.classic ? w : Math.ceil(w)) + 2 * padX;
+  };
   n.leafH = (w: number) => {
     const inner = w - 2 * padX;
     let h = ti === null ? 0 : titleHeight(ti, inner);

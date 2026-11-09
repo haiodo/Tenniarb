@@ -655,6 +655,10 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 		if body != nil {
 			w = math.Max(w, body.natural())
 		}
+		if p.classic {
+			// go/render kept the fraction of a measured line; only a scene rounds its leaf to whole points.
+			return w + 2*padX
+		}
 		return math.Ceil(w) + 2*padX
 	}
 	n.LeafH = func(w float64) float64 {

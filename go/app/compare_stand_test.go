@@ -87,7 +87,7 @@ func classicElements(e *model.Element) []*model.Element {
 // compareElement draws e both ways, writes the pictures and returns the line of the report.
 func compareElement(t *testing.T, dir, file string, data []byte, e *model.Element, name string) string {
 	t.Helper()
-	opts := render.Options{Measurer: gfx.DefaultMeasurer, FontFamily: "Helvetica, Arial, sans-serif"}
+	opts := render.Options{Measurer: gfx.DefaultMeasurer}
 	oldPNG, err := render.PNG(e, opts, 1, gfx.RGBA(255, 255, 255, 1))
 	if err != nil {
 		return fmt.Sprintf("%-46s old: %v", name, err)
@@ -119,7 +119,7 @@ func compareElement(t *testing.T, dir, file string, data []byte, e *model.Elemen
 // the shadow its picture includes) with the box the scene drew, and reports what is left after the frame
 // offset of the two coordinate spaces.
 func itemReport(name string, e *model.Element, sv *sceneView) string {
-	old := render.Build(e, render.Options{Measurer: gfx.DefaultMeasurer, FontFamily: "Helvetica, Arial, sans-serif"})
+	old := render.Build(e, render.Options{Measurer: gfx.DefaultMeasurer})
 	type box struct {
 		name           string
 		ox, oy, ow, oh float64

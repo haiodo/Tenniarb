@@ -30,9 +30,13 @@ func TestLetterSpacingWidensBox(t *testing.T) {
 		m[b.Path] = b
 	}
 	// EstimateText: 11 runes, each 18*0.6 wide, plus 2 per rune with letter-spacing 2; the inset and the
-	// line box of a classic text leaf are the ones of go/render.
-	wantBox(t, m, "Plain", 0, 0, 127, classicBox(18, 1))
-	wantBox(t, m, "Spaced", 0, -40, 149, classicBox(18, 1))
+	// line box of a classic text leaf are the ones of go/render, which kept the fraction of the measure.
+	// The expectation is measured, not computed: a float sum in a different order lands a rounding apart.
+	est := gfx.EstimateText{}
+	plain := est.MeasureText(strings.Repeat("a", 11), gfx.Font{Size: 18}).Width
+	spaced := est.MeasureText(strings.Repeat("a", 11), gfx.Font{Size: 18, Spacing: 2}).Width
+	wantBox(t, m, "Plain", 0, 0, plain+2*4, classicBox(18, 1))
+	wantBox(t, m, "Spaced", 0, -40, spaced+2*4, classicBox(18, 1))
 	for _, w := range []string{"font-weight: takes", "font-style:", "letter-spacing:"} {
 		if !warned(screen, w) {
 			t.Errorf("no warning %q: %v", w, screen.Warnings)
