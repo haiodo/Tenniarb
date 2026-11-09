@@ -720,6 +720,10 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 			p.t.fail(pr.Pos, `title takes one value; quote a text with spaces: title "Sign in"`)
 		}
 	}
+	if m := p.styles[rn].marker; m != "" {
+		// A marker is drawn in front of the text, with a space, as go/render does it.
+		title = m + " " + title
+	}
 	if title == "" {
 		return nil
 	}

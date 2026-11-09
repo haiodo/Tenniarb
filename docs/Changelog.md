@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A `marker` of a classic item is drawn in front of its title again, with the space go/render put there: an
+  emoji of a mind map was missing from the picture, and the box of the item was 27 points too narrow. The web
+  port follows.
 * The values a classic diagram reads left `go/render` for a package of their own (`go/classic`), the first
   step of removing the old renderer. The pictures are the same: the parity stand measures the same numbers.
 * The box of a classic item is as wide as the text it measures: the scene rounded the width of a leaf up to

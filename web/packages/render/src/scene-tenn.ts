@@ -3923,6 +3923,8 @@ interface Look {
   radius: [number, number, number, number];
   /** The radius a classic diagram gives every box; a hairline keeps square corners. */
   radiusDefault: boolean;
+  /** `marker`: the text an old file draws in front of the title, an emoji of a mind map. */
+  marker: string;
   /** `display`: rect when unset, else no-fill, circle, stack, text or none. */
   display: string;
   /** `layer` as the sort key among the siblings: 0 background, 1 the rest, 2 hover. */
@@ -4433,6 +4435,11 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
       prep.diag.fail(p.pos ?? rn.src ?? { line: 0, col: 0 }, `title takes one value; quote a text with spaces: title "Sign in"`);
     }
   }
+  const marker = prep.looks.get(rn)?.marker ?? "";
+  if (marker !== "") {
+    // A marker is drawn in front of the text, with a space, as go/render does it.
+    title = `${marker} ${title}`;
+  }
   if (title === "") {
     return null;
   }
@@ -4547,6 +4554,7 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     dashPhase: 0,
     radius: [0, 0, 0, 0],
     radiusDefault: false,
+    marker: "",
     display: "",
     layer: 1,
     clip: false,
@@ -4576,6 +4584,11 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     // go/render rounds every box of a classic diagram by 8 points unless the file says otherwise.
     look.radius = [classicRadius, classicRadius, classicRadius, classicRadius];
     look.radiusDefault = true;
+  }
+  const marker = propOf(prep, rn, "marker");
+  if (marker !== null) {
+    // go/render draws the marker in front of the title: an emoji of a mind map is the text of its box.
+    look.marker = propText(marker, 0);
   }
   const display = propOf(prep, rn, "display");
   if (display !== null) {

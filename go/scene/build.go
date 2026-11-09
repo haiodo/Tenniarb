@@ -718,6 +718,7 @@ type style struct {
 	dashPhase          float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
 	radiusDefault      bool       // the radius of a classic diagram, which a hairline does not take
+	marker             string     // the text an old file draws in front of the title, an emoji of a mind map
 	display            string     // rect when unset; no-fill, circle, stack, text or none
 	layer              int        // draw order among the siblings
 	clip               bool
@@ -782,6 +783,10 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 		// The classic renderer rounds every box by 8 points unless the file says otherwise.
 		st.radius = [4]float64{classicRadius, classicRadius, classicRadius, classicRadius}
 		st.radiusDefault = true
+	}
+	if pr := p.prop(rn, "marker"); pr != nil {
+		// go/render draws the marker in front of the title: an emoji of a mind map is the text of its box.
+		st.marker, _ = pr.text(0)
 	}
 	if pr := p.prop(rn, "display"); pr != nil {
 		st.display, _ = pr.text(0)

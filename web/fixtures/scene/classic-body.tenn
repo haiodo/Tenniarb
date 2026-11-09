@@ -33,6 +33,11 @@ a word wider than the sixty points of the box
         title "value ${value}"
         body %{sum ${value + 1}}
     }
+    item "Marked" {
+        pos 320 -60
+        marker "☕️"
+        title "with a marker"
+    }
     item "Name\nbreaks" {
         pos 320 -260
         width 90
