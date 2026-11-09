@@ -404,13 +404,14 @@ test("renderElement flips y so that larger y is higher on the canvas", () => {
   assert.ok(area.width > 40 && area.height > 100);
   const px = (x: number, y: number) => Array.from(ctx.getImageData(x, y, 1, 1).data);
   // Top item is in the upper part of the image (small canvas y), red; Low in the lower part, blue.
-  const top = px(35, 25);
-  const low = px(35, Math.floor(area.height) - 25);
+  // The name sits in the middle of a box, so the probe stays left of the glyphs.
+  const top = px(17, 25);
+  const low = px(17, Math.floor(area.height) - 25);
   assert.ok(top[0]! > 200 && top[2]! < 100, `top pixel ${top}`);
   assert.ok(low[2]! > 200 && low[0]! < 100, `low pixel ${low}`);
 });
 
-test("text is upright and top-aligned: glyph pixels only in the upper part of a tall box", () => {
+test("item text sits in the middle of a tall box", () => {
   const element = parseDiagram(`element Root {
     item T {
         pos 0 0
@@ -434,8 +435,9 @@ test("text is upright and top-aligned: glyph pixels only in the upper part of a 
     }
     return n;
   };
-  assert.ok(dark(15, 45) > 50, "text near the top");
-  assert.equal(dark(75, 115), 0, "nothing near the bottom");
+  assert.equal(dark(15, 45), 0, "nothing near the top");
+  assert.ok(dark(50, 80) > 50, "text in the middle");
+  assert.equal(dark(85, 115), 0, "nothing near the bottom");
 });
 
 test("scene size without drawing matches the drawn rect", async () => {

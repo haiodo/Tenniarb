@@ -1,0 +1,9 @@
+// Links between items that share a name: source-index and target-index pick the end, as the classic
+// model resolves them, so the same name does not make the path ambiguous.
+element "Link index" {
+    item Node { pos 0 0; width 60; height 30; title "A" }
+    item Node { pos 200 0; width 60; height 30; title "B" }
+    item Node { pos 100 120; width 60; height 30; title "C" }
+    link Node Node { source-index 1; target-index 0 }
+    link Node Node { source-index 2; target-index 1; display arrow }
+}

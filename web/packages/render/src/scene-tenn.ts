@@ -5698,24 +5698,35 @@ function elbowPath(ctx: Canvas2D, points: Point[], r: number): void {
 function planLinks(root: RNode, prep: Prep): void {
   const walk = (parent: RNode): void => {
     const byName = new Map<string, RNode[]>();
+    const byItem = new Map<DiagramItem, RNode>();
     for (const k of parent.kids) {
       if (k.kind === "item") {
         const list = byName.get(k.name.normalize("NFC")) ?? [];
         list.push(k);
         byName.set(k.name.normalize("NFC"), list);
+        if (k.src?.item != null) {
+          byItem.set(k.src.item, k);
+        }
       }
     }
     for (const k of parent.kids) {
       if (k.kind !== "link") {
         continue;
       }
-      const end = (name: string, propName: string): RNode | null => {
+      const model = k.src?.item;
+      const link = model != null && model.kind === "Link" ? (model as LinkItem) : null;
+      // The model resolved source-index/target-index to items, which tells apart ends that share a name.
+      const end = (name: string, propName: string, want: DiagramItem | null): RNode | null => {
+        const direct = want === null ? undefined : byItem.get(want);
+        if (direct !== undefined) {
+          return direct;
+        }
         const index = Math.trunc(num(prep, k, propName) ?? 0);
         const list = byName.get(name.normalize("NFC")) ?? [];
         return index >= 0 && index < list.length ? list[index]! : null;
       };
-      const a = end(k.from, "source-index");
-      const c = end(k.to, "target-index");
+      const a = end(k.from, "source-index", link?.source ?? null);
+      const c = end(k.to, "target-index", link?.target ?? null);
       if (a === null || c === null) {
         prep.diag.fail(k.src ?? { line: 0, col: 0 }, `link "${k.from}" "${k.to}": both ends must be items of the same parent`);
         continue;

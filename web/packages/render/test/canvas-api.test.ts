@@ -56,6 +56,12 @@ test("renderer only uses the documented Canvas2D members", async () => {
         display circle
         shadow 1 -1 3
     }
+    item Photo {
+        pos 300 0
+        width 40
+        height 20
+        image "logo" @(iVBORw0KGgoAAAANSUhEUgAAACgAAAAUCAYAAAD/Rn+7AAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAA3SURBVEiJ7c4xAQAgCABBpBKdTGsnicDwgw5/CW7VPjc+lq8DE4OUQcogZZAySBmkDFIGKYNUAxRmAowWRmlIAAAAAElFTkSuQmCC)
+    }
     item Plain {
         pos 200 -100
         display text
@@ -68,6 +74,7 @@ test("renderer only uses the documented Canvas2D members", async () => {
     link Box Dots {
         display arrows
         layout quad
+        pos 0 40
         shadow 1 1 2
         line-style dashed
     }

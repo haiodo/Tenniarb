@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { readTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
-import { buildScene, getSceneSize, renderElement } from "../src/index.ts";
+import { buildScene, createExecutionContext, getSceneSize, layoutScene, renderElement } from "../src/index.ts";
 import { loadDecoder, measure, newCanvas } from "./helpers.ts";
 
 const dir = fileURLToPath(new URL("../../../fixtures/", import.meta.url));
@@ -38,9 +38,13 @@ for (const name of names) {
         assert.ok(Number.isFinite(v), `${path}: bounds ${JSON.stringify(bounds)}`);
       }
       assert.ok(bounds.width >= 0 && bounds.height >= 0);
+      // buildScene is the read-only scene port now; item bounds still come from the classic renderer.
+      const context = createExecutionContext({ decodeImage: options.decodeImage });
+      context.setElement(element);
+      const classic = layoutScene(element, context, options);
       for (const item of element.items) {
         if (item.kind === "Item") {
-          const b = scene.getItemBounds(item);
+          const b = classic.getItemBounds(item);
           assert.ok(b !== null && b.width > 0 && b.height > 0, `${path}: ${item.name} has bounds`);
         }
       }

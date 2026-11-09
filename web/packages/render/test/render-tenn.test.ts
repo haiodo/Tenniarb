@@ -126,7 +126,8 @@ test("shadowColor alpha is raised to canvasQuirks.shadowAlphaPower", async () =>
     canvasQuirks.shadowAlphaPower = 1;
   }
   assert.ok(seen.length > 0);
-  assert.ok(seen.every((c) => Math.abs(Number(/,([\d.]+)\)$/.exec(c)![1]) - Math.sqrt(1 / 3)) < 1e-6), seen.join(" "));
+  // sceneCss rounds the alpha to three decimals, so the quirk value is only that close.
+  assert.ok(seen.every((c) => Math.abs(Number(/,([\d.]+)\)$/.exec(c)![1]) - Math.sqrt(1 / 3)) < 1e-3), seen.join(" "));
 });
 
 // Guards the quirk itself: if @napi-rs/canvas stops squaring blurred shadow alpha, this fails and the quirk must go.

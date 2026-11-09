@@ -1,0 +1,159 @@
+{
+  "element": "Link index",
+  "height": 30,
+  "links": [
+    {
+      "arrow": false,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          200,
+          15
+        ],
+        [
+          "l",
+          60,
+          15
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          142.5,
+          -90
+        ],
+        [
+          "l",
+          217.5,
+          0
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    }
+  ],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Link index",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 260,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Node",
+      "opacity": 1,
+      "path": "Node",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 60,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "A"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Node",
+      "opacity": 1,
+      "path": "Node",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 60,
+        "x": 200,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "B"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Node",
+      "opacity": 1,
+      "path": "Node",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 60,
+        "x": 100,
+        "y": -120
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "C"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 260
+}

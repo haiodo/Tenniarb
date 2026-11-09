@@ -34,17 +34,21 @@ export interface RenderOptions {
 export { createExecutionContext } from "./execution.ts";
 
 /**
- * A scene element (spec 4, 5b, 5c) drawn by the port of go/scene instead of the classic item renderer:
- * the same DrawableScene surface (bounds, layout, draw in y-up space), so every caller stays the same.
- * The expanded nodes are not the model items, so nothing in `drawables`: an editor shows the picture but
- * does not select its parts yet.
+ * An element drawn by the port of go/scene instead of the classic item renderer: the same DrawableScene
+ * surface (bounds, layout, draw in y-up space), so every caller stays the same. The expanded nodes are
+ * not the model items, so nothing in `drawables`: read-only callers get the picture, an editor does not
+ * get selection yet.
  */
 class SceneView extends DrawableScene {
   readonly tenn: TennScene;
 
-  constructor(element: Element, options: RenderOptions) {
+  constructor(element: Element, options: RenderOptions, context: ExecutionContext | null = null) {
     super(element, options.darkMode ?? false, null, {});
-    this.tenn = buildTennScene(element, options.files);
+    this.tenn = buildTennScene(element, {
+      ...options.files,
+      decodeImage: options.decodeImage,
+      context,
+    });
   }
 
   /** The classic item renderer has nothing to build: this scene draws its own nodes. */
@@ -80,7 +84,11 @@ export function buildScene(element: Element, options: RenderOptions = {}): Drawa
     executionContext = createExecutionContext({ evaluate: options.evaluate, decodeImage: options.decodeImage });
     executionContext.setElement(element);
   }
-  return layoutScene(element, executionContext, options);
+  // The scene port draws the whole element; a selection-only export keeps the classic renderer.
+  if (options.items !== undefined) {
+    return layoutScene(element, executionContext, options);
+  }
+  return new SceneView(element, options, executionContext);
 }
 
 /** buildScene with a given context; null renders tokens as written. Bundles that call only this never pull in the evaluator. */
