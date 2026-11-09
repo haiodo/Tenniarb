@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A newline inside a `!(colour|text)` span of a classic body breaks the line, as go/render drew it: the
+  lexer keeps that newline in the token, so the old renderer started a line there while the scene joined the
+  two. Two elements of `anti-crm.tenn` line up with it.
 * A title of a classic item reads the emphasis of the markdown, as go/render reads it: `*ProjectType*` is
   bold `ProjectType` and not the characters with the asterisks, `_ClassicProject_` is italic and a
   `` `code` `` span is monospaced. Every title of a classic diagram with markup in it changes the picture, and

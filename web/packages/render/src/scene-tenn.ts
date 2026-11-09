@@ -3426,10 +3426,17 @@ function hasPlainExpr(text: string): boolean {
 function classicBreaks(text: string): string {
   const breaks = new Set<number>();
   for (const t of MarkdownLexer.getTokens(text)) {
-    if (t.type === "text" && t.literal === "\n") {
-      breaks.add(t.pos);
-    } else if (t.type === "title" || t.type === "bullet") {
-      breaks.add(t.pos + t.size);
+    if (t.type === "title" || t.type === "bullet") {
+      breaks.add(t.pos + t.size); // the newline that closes the block is at its end
+    }
+    if (!t.literal.includes("\n")) {
+      continue;
+    }
+    // The lexer puts pos at the literal it returns, so a newline of it is at pos plus its offset.
+    for (let i = 0; i < t.literal.length; i += 1) {
+      if (t.literal[i] === "\n") {
+        breaks.add(t.pos + i);
+      }
     }
   }
   let out = "";

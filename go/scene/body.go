@@ -883,23 +883,25 @@ func hasPlainExpr(text string) bool {
 	return false
 }
 
-// classicBreaks keeps the newlines go/render breaks a line at: the ones the markdown lexer hands back as a
-// newline token, and the ones that end a block token (a heading, a bullet). A newline the lexer takes into
-// an emphasis run - a body that opens `_` and never closes it, then writes on the next line - is no break in
-// its picture: the text of the whole body is one line. A scene breaks at every newline it is given, so the
-// swallowed ones become spaces here.
+// classicBreaks keeps the newlines go/render breaks a line at: the ones a token of the markdown lexer still
+// carries - a newline token, or a newline inside a text or !(colour) span - and the ones that end a block
+// token (a heading, a bullet). A newline the lexer takes into an emphasis run - a body that opens `_` and
+// never closes it, then writes on the next line - is gone from its tokens, and go/render draws the whole
+// body as one line. A scene breaks at every newline it is given, so the swallowed ones become spaces here.
 func classicBreaks(text string) string {
-	toks := markdown.GetTokens(text)
-	breaks := make(map[int]bool, len(toks))
-	for _, t := range toks {
-		switch t.Type {
-		case markdown.TokText:
-			if t.Literal == "\n" {
-				breaks[t.Pos] = true
+	breaks := make(map[int]bool, 8)
+	for _, t := range markdown.GetTokens(text) {
+		if t.Type == markdown.TokTitle || t.Type == markdown.TokBullet {
+			breaks[t.Pos+t.Size] = true // the newline that closes the block is at its end
+		}
+		if !strings.Contains(t.Literal, "\n") {
+			continue
+		}
+		// The lexer puts Pos at the literal it returns, so a newline of it is at Pos plus its offset.
+		for i := 0; i < len(t.Literal); i++ {
+			if t.Literal[i] == '\n' {
+				breaks[t.Pos+i] = true
 			}
-		case markdown.TokTitle, markdown.TokBullet:
-			// The block token covers its own line: the newline that closes it is at its end.
-			breaks[t.Pos+t.Size] = true
 		}
 	}
 	out := make([]byte, 0, len(text))

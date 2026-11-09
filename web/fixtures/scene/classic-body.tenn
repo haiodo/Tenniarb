@@ -57,6 +57,13 @@ items: \${byTag('value').map(a=>a.value)}
 sum: plain
 }
     }
+    item ColourLines {
+        pos 0 -560
+        body %{
+* mixin: Ref<Class<Task>>!(grey|// Task mixin to hold all
+user defined attributes.)
+}
+    }
     item Emphasis {
         pos 0 -340
         body %{
