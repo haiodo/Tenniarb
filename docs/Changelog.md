@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The dots at the edges of the canvas, which mark the items outside the view, keep one size on screen at
+  any zoom: they are laid out and drawn in view points now, so a zoomed-in diagram no longer shows
+  dinner-plate dots and a zoomed-out one no longer loses them.
 * A classic diagram keeps the line spacing of the Swift app: its lines are stacked by the SF ascent and
   descent `go/render` uses (1980 and 432 of 2048 of the font size, rounded up to the next point), not by
   the measurer's box, so the text of an old file sits on the baseline and in the box of its old picture.

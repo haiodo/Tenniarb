@@ -1,9 +1,12 @@
 package app
 
 import (
+	"math"
 	"testing"
 
 	"github.com/haiodo/gowt/gfx"
+
+	"github.com/haiodo/tenniarb/go/editor"
 )
 
 func TestEdgeDots(t *testing.T) {
@@ -40,5 +43,25 @@ func TestEdgeDots(t *testing.T) {
 	// Partly in view is not off screen.
 	if n := view(gfx.R(90, 100, 20, 20)); n != 0 {
 		t.Errorf("an item that crosses the edge has no dot: %d", n)
+	}
+}
+
+// A dot keeps its size on screen at any zoom: it says where an item is, not how big it is.
+func TestEdgeDotsKeepTheirSizeAtAnyZoom(t *testing.T) {
+	far := gfx.R(5000, 3000, 20, 20)
+	dot := func(zoom float64) gfx.Rect {
+		cam := gfx.Camera{Origin: gfx.Point{X: 100, Y: 50}, Zoom: zoom}
+		dots := EdgeDots([]gfx.Rect{far}, cam, 600, 400)
+		if len(dots) != 1 {
+			t.Fatalf("zoom %v: %d dots, want one", zoom, len(dots))
+		}
+		return editor.IndicatorsPicture(dots, 400, false).Bounds
+	}
+	base := dot(1)
+	for _, z := range []float64{0.25, 2, 8} {
+		got := dot(z)
+		if math.Abs(got.W()-base.W()) > 0.01 || math.Abs(got.H()-base.H()) > 0.01 {
+			t.Errorf("zoom %v: the dot is %vx%v, at zoom 1 it is %vx%v", z, got.W(), got.H(), base.W(), base.H())
+		}
 	}
 }

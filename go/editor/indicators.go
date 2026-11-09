@@ -16,8 +16,9 @@ const (
 	xCount = 30
 )
 
-// Dot is one indicator in the view space: scene units, y up, the origin at the lower-left corner of
-// the view. X and Y are the lower-left corner of the square the dot is drawn in.
+// Dot is one indicator in the pixels of the view: y up, the origin at the lower-left corner of the view,
+// so a dot keeps its size on screen whatever the zoom. X and Y are the lower-left corner of the square
+// the dot is drawn in.
 type Dot struct {
 	X, Y, Size float64
 	Count      int
@@ -112,13 +113,21 @@ func IndicatorDots(bounds []render.Rect, visible render.Rect) []Dot {
 func (s *Session) Indicators(visible render.Rect, k float64, dark bool) *gfx.Picture {
 	bounds := make([]render.Rect, 0, len(s.scene.Items()))
 	for _, i := range s.scene.Items() {
-		bounds = append(bounds, s.scene.Drawables[i].Bounds())
+		b := s.scene.Drawables[i].Bounds()
+		bounds = append(bounds, render.Rect{
+			X:      (b.X - visible.X) * k,
+			Y:      (b.Y - visible.Y) * k,
+			Width:  b.Width * k,
+			Height: b.Height * k,
+		})
 	}
-	return IndicatorsPicture(IndicatorDots(bounds, visible), visible.Height*k, k, dark)
+	px := render.Rect{Width: visible.Width * k, Height: visible.Height * k}
+	return IndicatorsPicture(IndicatorDots(bounds, px), px.Height, dark)
 }
 
-// IndicatorsPicture draws dots on a view of the given pixel height.
-func IndicatorsPicture(dots []Dot, height, k float64, dark bool) *gfx.Picture {
+// IndicatorsPicture draws dots on a view of the given pixel height. The sizes and the offsets of the dots
+// are pixels of the view, so they do not follow the zoom.
+func IndicatorsPicture(dots []Dot, height float64, dark bool) *gfx.Picture {
 	rec := gfx.NewRecorder()
 	// Swift colours: black, or orange on a dark diagram, with a soft shadow down and right.
 	color := gfx.RGB(0, 0, 0)
@@ -127,10 +136,10 @@ func IndicatorsPicture(dots []Dot, height, k float64, dark bool) *gfx.Picture {
 	}
 	sh := gfx.Shadow{DX: 3, DY: 3, Blur: 5, Color: gfx.RGBA(0, 0, 0, 0.33)}
 	for _, d := range dots {
-		r := d.Size / 2 * k
-		p := gfx.EllipsePath(gfx.R(k*(d.X+d.Size/2)-r, height-k*(d.Y+d.Size/2)-r, 2*r, 2*r))
+		r := d.Size / 2
+		p := gfx.EllipsePath(gfx.R(d.X+d.Size/2-r, height-(d.Y+d.Size/2)-r, 2*r, 2*r))
 		rec.FillShadowPath(p, color, sh)
-		rec.StrokeShadowPath(p, gfx.StrokeStyle{Width: k, MiterLimit: 10}, color, sh)
+		rec.StrokeShadowPath(p, gfx.StrokeStyle{Width: 1, MiterLimit: 10}, color, sh)
 	}
 	return rec.Finish()
 }

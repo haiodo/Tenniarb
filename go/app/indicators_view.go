@@ -76,7 +76,7 @@ func (v *Viewer) syncIndicators() {
 		return
 	}
 	ind.dots, ind.key = dots, key
-	pic := editor.IndicatorsPicture(dots, h, cam.Zoom, key.dark)
+	pic := editor.IndicatorsPicture(dots, h, key.dark)
 	hud := comp.HUD()
 	hud.Update(func(tx *gfx.Tx) {
 		if ind.node == nil {
