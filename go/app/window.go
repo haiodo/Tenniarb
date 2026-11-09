@@ -439,6 +439,10 @@ func (v *Viewer) openPath(path string) {
 	}
 	v.state.Open(doc)
 	v.watch = Watcher{Path: path, Last: doc.Stamp}
+	if v.win != nil && len(doc.Notes) > 0 {
+		v.win.MessageBox(g.Message{Title: "Opened with notes", Icon: g.IconInfo, Buttons: g.ButtonsOK,
+			Text: fmt.Sprintf("%d notes:\n\n%s", len(doc.Notes), strings.Join(doc.Notes, "\n"))})
+	}
 	v.conflict = false
 	v.id = ""
 	v.autosave.Cancel()
@@ -475,7 +479,7 @@ func (v *Viewer) openDialog() {
 	if v.state.Doc.Path != "" {
 		dir = filepath.Dir(v.state.Doc.Path)
 	}
-	paths := v.win.FileDialog(g.FileDialog{Title: "Open", Dir: dir, Multi: true, Filters: tennFilters})
+	paths := v.win.FileDialog(g.FileDialog{Title: "Open", Dir: dir, Multi: true, Filters: fileFilters})
 	for _, p := range paths {
 		v.sh.openPath(p)
 	}

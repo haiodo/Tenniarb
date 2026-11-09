@@ -30,6 +30,8 @@ type Document struct {
 	Model  *model.ElementModel
 	Errors []ParseError
 	Stamp  Stamp
+	// Notes is what a converted .canvas file had to change; shown once when it is opened.
+	Notes []string
 }
 
 // Load reads and parses path. The error is for I/O only; parse errors come back in the Document.
@@ -42,8 +44,14 @@ func Load(path string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	doc := ParseText(string(data))
-	doc.Path, doc.Stamp = path, stamp
+	text, notes := string(data), []string(nil)
+	if IsCanvas(path) {
+		if text, notes, err = canvasText(path, data); err != nil {
+			return nil, err
+		}
+	}
+	doc := ParseText(text)
+	doc.Path, doc.Stamp, doc.Notes = path, stamp, notes
 	return doc, nil
 }
 

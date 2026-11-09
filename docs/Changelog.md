@@ -7,7 +7,8 @@
   outside the workspace, `link` an item with a markdown link, `group` a container, and edges become
   `link` with `label`, `display arrow` and `route elbow` sides. Colours `1`..`6` take the nearest
   `.tenn` shade, and everything the format cannot hold is a warning. `canvas2tenn` and
-  `tenn2canvas` in `go/cmd` run the conversion from the shell.
+  `tenn2canvas` in `go/cmd` run the conversion from the shell. The app opens a `.canvas` as a
+  document and saves it back from the scene, listing what the format cannot hold before it is lost.
 
 * The inspector is one panel for a classic item and a scene node: Layout, Fill, Text, Border and Shape
   are built from the same rows for both, the scene node gains the `Display`, `Layer` and border `Style`

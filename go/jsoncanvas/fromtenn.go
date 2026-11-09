@@ -147,9 +147,6 @@ func (e *export) build(el *scene.Node) (*scene.Screen, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, w := range screen.Warnings {
-		e.rep.add("%s", w.Error())
-	}
 	return screen, nil
 }
 

@@ -10,6 +10,13 @@ import (
 
 var tennFilters = []g.FileFilter{{Name: "Tenniarb", Pattern: "*.tenn"}, {Name: "All files", Pattern: "*"}}
 
+// fileFilters is Open and Save As: a .tenn document, a JSON Canvas file, or anything.
+var fileFilters = []g.FileFilter{
+	{Name: "Tenniarb", Pattern: "*.tenn"},
+	{Name: "JSON Canvas", Pattern: "*.canvas"},
+	{Name: "All files", Pattern: "*"},
+}
+
 // diskChanged reports whether the file is not the version this window last read or wrote.
 func (v *Viewer) diskChanged() bool {
 	if v.conflict {
@@ -51,15 +58,28 @@ func (v *Viewer) saveAs() bool {
 	if p := v.state.Doc.Path; p != "" {
 		dir, name = filepath.Dir(p), filepath.Base(p)
 	}
-	paths := v.win.FileDialog(g.FileDialog{Title: "Save As", Dir: dir, Name: name, Save: true, Filters: tennFilters})
+	paths := v.win.FileDialog(g.FileDialog{Title: "Save As", Dir: dir, Name: name, Save: true, Filters: fileFilters})
 	if len(paths) != 1 {
 		return false
 	}
 	return v.writeTo(WithExt(paths[0]))
 }
 
-// writeTo stores the text of the model at path atomically and makes path the file of the document.
+// writeTo stores the document as .tenn text or, for a .canvas path, as JSON Canvas, and makes path
+// the file of the document. A canvas that would group the elements asks first.
 func (v *Viewer) writeTo(path string) bool {
+	if IsCanvas(path) {
+		if notes, ok := v.canvasNotes(); ok {
+			if v.win.MessageBox(g.Message{
+				Title:   "Save as JSON Canvas",
+				Text:    "JSON Canvas cannot hold everything this document has:\n\n" + notes,
+				Icon:    g.IconWarning,
+				Buttons: g.ButtonsOKCancel,
+			}) != g.AnswerOK {
+				return false
+			}
+		}
+	}
 	if err := v.writeFile(path); err != nil {
 		v.win.MessageBox(g.Message{Title: "Save failed", Text: err.Error(), Icon: g.IconError, Buttons: g.ButtonsOK})
 		return false
@@ -69,7 +89,14 @@ func (v *Viewer) writeTo(path string) bool {
 
 func (v *Viewer) writeFile(path string) error {
 	text := v.text
-	if err := WriteFileAtomic(path, []byte(text)); err != nil {
+	data := []byte(text)
+	if IsCanvas(path) {
+		var err error
+		if data, err = v.canvasData(); err != nil {
+			return err
+		}
+	}
+	if err := WriteFileAtomic(path, data); err != nil {
 		return err
 	}
 	stamp, _ := StampOf(path)

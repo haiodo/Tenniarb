@@ -209,6 +209,13 @@ func newDoc(t *testing.T, sh *Shell, path, text string) *Viewer {
 	}
 	doc := ParseText(text)
 	doc.Path = path
+	return newDocFrom(t, sh, doc)
+}
+
+// newDocFrom is newDoc for a document that was read already, a .canvas file included.
+func newDocFrom(t *testing.T, sh *Shell, doc *Document) *Viewer {
+	t.Helper()
+	path := doc.Path
 	v := &Viewer{sh: sh, docCore: &docCore{state: NewState(doc), others: sh.othersText, peer: sh.peerDoc}}
 	if path != "" {
 		v.watch = Watcher{Path: path}
