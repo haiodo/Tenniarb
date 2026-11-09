@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The frame of a selected item is the selector box of the Swift app again: the box of the item grown by 5
+  points, rounded by 9, stroked by a dash of 5 on and 5 off with a glow of its own colour - blue, or green
+  over the item whose text is being edited. The rubber band and the line of a link being drawn take the
+  same dash and glow.
 * A word wider than the box is broken by characters in the text and the body of a classic diagram, as the
   Swift app and `go/render` drew it: an old box grows down instead of the text running over its width. A
   scene keeps the word whole, as markdown does.

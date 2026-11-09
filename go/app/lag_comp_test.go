@@ -303,7 +303,7 @@ func TestLagComp(t *testing.T) {
 			if hud != nil {
 				cam := r.comp.Camera()
 				rc := gfx.NewRecorder()
-				rc.StrokeRect(gfx.R((bb.Min.X+200-cam.Origin.X)*cam.Zoom, (bb.Min.Y+200-cam.Origin.Y)*cam.Zoom, (bb.W()-400)*cam.Zoom, (bb.H()-400)*cam.Zoom), gfx.StrokeStyle{Width: 2}, accent)
+				rc.StrokeRect(gfx.R((bb.Min.X+200-cam.Origin.X)*cam.Zoom, (bb.Min.Y+200-cam.Origin.Y)*cam.Zoom, (bb.W()-400)*cam.Zoom, (bb.H()-400)*cam.Zoom), gfx.StrokeStyle{Width: 2}, selectorBlue)
 				pic := rc.Finish()
 				r.comp.HUD().Update(func(tx *gfx.Tx) { tx.SetPicture(hud, pic) })
 				return
@@ -312,7 +312,7 @@ func TestLagComp(t *testing.T) {
 				return
 			}
 			rc := gfx.NewRecorder()
-			rc.StrokeRect(gfx.R(bb.Min.X+200, bb.Min.Y+200, bb.W()-400, bb.H()-400), gfx.StrokeStyle{Width: 2 / z}, accent)
+			rc.StrokeRect(gfx.R(bb.Min.X+200, bb.Min.Y+200, bb.W()-400, bb.H()-400), gfx.StrokeStyle{Width: 2 / z}, selectorBlue)
 			pic := rc.Finish()
 			r.sc.Update(func(tx *gfx.Tx) { tx.SetPicture(r.ov, pic) })
 		}

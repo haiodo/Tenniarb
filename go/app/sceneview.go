@@ -98,9 +98,6 @@ type sceneDrag struct {
 	moved  bool
 }
 
-// accent is the colour of the selection frame.
-var accent = gfx.RGBA(0, 122, 255, 1)
-
 // realizeScene puts the element on the canvas through go/scene, in place of what was there.
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
@@ -714,6 +711,24 @@ func (v *Viewer) selectComponent(comp *scene.Node) {
 	}
 }
 
+// editingPath is the path of the item whose text is being edited, so its frame turns green as Swift's
+// SelectorBox does.
+func (v *Viewer) editingPath() string {
+	if v.session == nil || v.sv == nil {
+		return ""
+	}
+	it := v.session.Editing()
+	if it == nil {
+		return ""
+	}
+	for p, pl := range v.sv.byPath {
+		if pl.Src != nil && classicItemAt(v.state.Current, pl.Src) == it {
+			return p
+		}
+	}
+	return ""
+}
+
 // dropStaleSelection forgets the selected paths that name nothing after a change.
 func (v *Viewer) dropStaleSelection() {
 	kept := v.selNodes[:0:0]
@@ -725,31 +740,66 @@ func (v *Viewer) dropStaleSelection() {
 	v.selNodes = kept
 }
 
+// The selector frame of the Swift app (SelectorBox): the box of the item grown by 5 points, rounded by 9,
+// stroked by a dash of 5 on and 5 off with a glow of its own colour. Blue, or green over the item that is
+// being edited.
+const (
+	selectorGrow  = 5
+	selectorRound = 9
+	selectorBlur  = 5
+)
+
+var (
+	selectorBlue  = gfx.RGB(0, 0, 255)
+	selectorGreen = gfx.RGB(0, 255, 0)
+)
+
+// selectorPath is the rounded rectangle of Swift's SelectorBox, its arcs the addArc of the corners.
+func selectorPath(r gfx.Rect, radius float64) *gfx.Path {
+	p := &gfx.Path{}
+	p.MoveTo((r.Min.X+r.Max.X)/2, r.Min.Y)
+	p.ArcTo(r.Max.X, r.Min.Y, r.Max.X, r.Max.Y, radius)
+	p.ArcTo(r.Max.X, r.Max.Y, r.Min.X, r.Max.Y, radius)
+	p.ArcTo(r.Min.X, r.Max.Y, r.Min.X, r.Min.Y, radius)
+	p.ArcTo(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y, radius)
+	p.Close()
+	return p
+}
+
+// selectorStroke is the dashed glow of the selector frame, the one of Swift's SelectorBox.draw.
+func selectorStroke(r *gfx.Recorder, path *gfx.Path, color gfx.Color) {
+	r.StrokeShadowPath(path, gfx.StrokeStyle{Width: 1, MiterLimit: 10, Dash: []float64{5, 5}, DashPhase: 5},
+		color, gfx.Shadow{Blur: selectorBlur, Color: color, Screen: true})
+}
+
 // selectionPicture records the frames of the selected paths in the coordinates of the gfx scene, so a
-// pan or a zoom moves them with the content instead of leaving them a frame behind. The stroke is 2
-// points on the screen at any zoom, as Swift draws the selector box. The classic preview - the rubber
-// band, the line of a link being drawn - comes after them, in the same coordinates.
-func (sv *sceneView) selectionPicture(sel []string, zoom float64) *gfx.Picture {
-	if zoom <= 0 {
-		zoom = 1
-	}
-	w := 2 / zoom
+// pan or a zoom moves them with the content instead of leaving them a frame behind. green is the path of
+// the item being edited, if any. The classic preview - the rubber band, the line of a link being drawn -
+// comes after them, in the same coordinates.
+func (sv *sceneView) selectionPicture(sel []string, green string) *gfx.Picture {
 	r := gfx.NewRecorder()
 	for _, p := range sel {
 		pl := sv.byPath[p]
 		if pl == nil {
 			continue
 		}
-		r.StrokeRect(gfx.R(pl.X+sv.off.X, pl.Y+sv.off.Y, pl.W, pl.H), gfx.StrokeStyle{Width: w}, accent)
+		c := selectorBlue
+		if p == green {
+			c = selectorGreen
+		}
+		box := gfx.R(pl.X+sv.off.X-selectorGrow, pl.Y+sv.off.Y-selectorGrow,
+			pl.W+2*selectorGrow, pl.H+2*selectorGrow)
+		selectorStroke(r, selectorPath(box, selectorRound), c)
 	}
 	if sv.band != nil {
-		r.StrokeRect(*sv.band, gfx.StrokeStyle{Width: w, Dash: []float64{5 / zoom, 5 / zoom}}, accent)
+		selectorStroke(r, selectorPath(*sv.band, 0), selectorBlue)
 	}
 	if sv.line != nil {
 		p := &gfx.Path{}
 		p.MoveTo(sv.line[0].X, sv.line[0].Y)
 		p.LineTo(sv.line[1].X, sv.line[1].Y)
-		r.StrokePath(p, gfx.StrokeStyle{Width: 1.5 / zoom}, accent)
+		r.StrokeShadowPath(p, gfx.StrokeStyle{Width: 1, MiterLimit: 10}, selectorBlue,
+			gfx.Shadow{Blur: selectorBlur, Color: selectorBlue, Screen: true})
 	}
 	return r.Finish()
 }
@@ -787,10 +837,9 @@ func (v *Viewer) drawSceneOverlay() {
 		return
 	}
 	v.syncMarks() // the marks sit on the nodes, so they move with the camera
-	comp := v.view.Compositor()
 	pic := gfx.NewRecorder().Finish()
 	if v.sceneDrawn() {
-		pic = v.sv.selectionPicture(v.canvasSelection(), comp.Camera().Zoom)
+		pic = v.sv.selectionPicture(v.canvasSelection(), v.editingPath())
 	}
 	if v.selHUD != nil || pic.Len() > 0 {
 		v.scene.Update(func(tx *gfx.Tx) {
