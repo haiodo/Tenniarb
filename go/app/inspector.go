@@ -373,7 +373,8 @@ func segmentTexts(words []string) []g.Segment {
 	return segs
 }
 
-// itemSize is the drawn size of the selection: the scene node's, or the classic drawable's.
+// itemSize is the drawn size of the selection: the scene node's, or the box the scene draws a classic
+// item with.
 func (v *Viewer) itemSize() (w, h float64) {
 	if _, pl := v.selectedScene(); pl != nil {
 		return pl.W, pl.H
@@ -381,9 +382,11 @@ func (v *Viewer) itemSize() (w, h float64) {
 	if v.session == nil {
 		return 0, 0
 	}
-	ds := v.session.Scene()
 	for _, it := range v.session.Selection() {
-		if d, ok := ds.Drawables[it]; ok {
+		if b, ok := v.drawnRect(it); ok {
+			return b.W(), b.H()
+		}
+		if d, ok := v.session.Scene().Drawables[it]; ok {
 			b := d.Bounds()
 			return b.Width, b.Height
 		}

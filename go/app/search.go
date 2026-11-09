@@ -10,7 +10,6 @@ import (
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/link"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // search is the state of the Goto Item field of the toolbar.
@@ -52,12 +51,15 @@ func (v *Viewer) openSearch() {
 // gotoItem selects the item and scrolls the canvas so that it is in the middle.
 func (v *Viewer) gotoItem(item *model.DiagramItem) {
 	v.session.Reveal(item)
-	d := v.session.Scene().Drawables[item]
-	if d == nil {
-		return
+	b, ok := v.drawnRect(item)
+	if !ok {
+		d := v.session.Scene().Drawables[item]
+		if d == nil {
+			return
+		}
+		b = v.smap.RectToGfx(d.Bounds())
 	}
-	b := d.Bounds()
-	c := v.smap.ToGfx(render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2})
+	c := gfx.Point{X: b.Min.X + b.W()/2, Y: b.Min.Y + b.H()/2}
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
 	v.setCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))

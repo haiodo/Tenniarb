@@ -277,14 +277,18 @@ func (v *Viewer) showOperation() {
 
 // popoverAt shows p over the top left of the item.
 func (v *Viewer) popoverAt(p *g.Popover, item *model.DiagramItem) {
-	d := v.session.Scene().Drawables[item]
-	if d == nil {
-		p.ShowAt(v.view.Canvas(), g.PopoverBelow)
-		return
+	b, ok := v.drawnRect(item)
+	if !ok {
+		// Not drawn by the scene: the box of the old renderer, which no scene element has.
+		d := v.session.Scene().Drawables[item]
+		if d == nil {
+			p.ShowAt(v.view.Canvas(), g.PopoverBelow)
+			return
+		}
+		b = v.smap.RectToGfx(d.SelectorBounds())
 	}
-	b := d.SelectorBounds()
 	cam := v.view.Compositor().Camera()
-	top := v.smap.ToGfx(render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height})
+	top := gfx.Point{X: b.Min.X + b.W()/2, Y: b.Min.Y}
 	x, y := int((top.X-cam.Origin.X)*cam.Zoom), int((top.Y-cam.Origin.Y)*cam.Zoom)
 	p.ShowAtPoint(v.view.Canvas(), x, y, g.PopoverAbove)
 }

@@ -13,7 +13,9 @@ import (
 // root node: gfx = (x + TX, TY - y).
 type SceneMap struct{ TX, TY float64 }
 
-// MapOf is the map of a scene whose content has the bounds b, realized with the default padding.
+// MapOf is the map of a scene whose content has the bounds b, realized with the default padding. The
+// canvas takes its map from the drawn picture (sceneView.mapOf); this is the translation render.Realize
+// gives the root of the old renderer for the same bounds.
 func MapOf(b render.Rect) SceneMap {
 	return SceneMap{TX: render.DefaultPadding - b.X, TY: render.DefaultPadding + math.Max(b.Y, b.Y+b.Height)}
 }

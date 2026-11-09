@@ -105,7 +105,7 @@ var accent = gfx.RGBA(0, 122, 255, 1)
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
-	oldSV, oldMap := v.sv, v.smap
+	oldSV := v.sv
 	// Looked up before the old view is put away, so a redraw of the same element builds anew.
 	sv := v.cachedScene(el, node)
 	cached := sv != nil
@@ -135,14 +135,7 @@ func (v *Viewer) realizeScene() {
 		}
 	})
 	v.sv = sv
-	if sv.classic && v.session != nil {
-		// The session owns the pointer and speaks in the model coordinates, so the map follows its scene.
-		v.smap = MapOf(v.session.Scene().Bounds())
-		if keep {
-			v.smap = oldMap
-		}
-		v.selNodes = nil // the paths of the selected scene nodes name nothing here
-	}
+	v.syncMap(sv)
 	v.animStart(sv.screen)
 	if !cached {
 		v.sceneBuilds++
@@ -462,6 +455,31 @@ func isInside(n, ancestor *scene.Placed) bool {
 // sceneDrawn reports whether the canvas draws the element through go/scene: a scene, or a classic
 // diagram whose picture the scene draws while the session keeps the input.
 func (v *Viewer) sceneDrawn() bool { return v.sv != nil }
+
+// mapOf is the map of a picture the scene drew: the model coordinates of the session go through the
+// same offset as the drawn nodes, so a click and the frame it selects cannot drift apart.
+func (sv *sceneView) mapOf() SceneMap { return SceneMap{TX: sv.off.X, TY: sv.off.Y} }
+
+// syncMap makes the model coordinates of the session follow the picture of a classic diagram: the map
+// is the offset the scene drew it with, not the bounds the old renderer would have given it.
+func (v *Viewer) syncMap(sv *sceneView) bool {
+	if !sv.classic || v.session == nil {
+		return false
+	}
+	v.smap = sv.mapOf()
+	v.selNodes = nil // the paths of the selected scene nodes name nothing here
+	return true
+}
+
+// drawnRect is where the canvas draws a classic item of the element on it; false when the scene does
+// not draw that item, a hidden one or a link.
+func (v *Viewer) drawnRect(it *model.DiagramItem) (gfx.Rect, bool) {
+	pl := v.classicPlaced(it)
+	if pl == nil {
+		return gfx.Rect{}, false
+	}
+	return gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H), true
+}
 
 // sceneMode reports whether the canvas shows a scene element: the pointer, the keys and the edits are
 // the scene's. A classic diagram drawn by the scene stays out: it has no scene input yet.
