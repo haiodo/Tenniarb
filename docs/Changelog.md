@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Choosing a style on a part of an instance replaces the style its `use-style` expression produces, so
+  the row shows the choice afterwards; before, the words of the expression were written into the `at`
+  block as style names and the row kept reading the value the expression still gave.
 * The Shadow row of a scene shows `custom` when the node writes layers of its own, instead of `none`;
   the classic Effects section says how many `shadow` commands the item writes, since its fields edit
   only the first.

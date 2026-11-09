@@ -108,10 +108,11 @@ func styleScope(n *Node) *Node {
 func StyleScope(n *Node) *Node { return styleScope(n) }
 
 // StyleRefs are the styles props name with use-style, in order; "-name" drops the one named before.
+// An expression names its styles only once evaluated: before that its words are not style names.
 func StyleRefs(props []*Prop) []string {
 	var names []string
 	for _, p := range props {
-		if p.Name != "use-style" {
+		if p.Name != "use-style" || (p.Val == nil && hasExpr(p)) {
 			continue
 		}
 		for i := range p.Args {

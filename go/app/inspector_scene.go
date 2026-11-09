@@ -704,7 +704,12 @@ func (v *Viewer) setStyles(want []string) bool {
 	}
 	args := want
 	if _, inst := v.selectedInst(); inst {
-		base := scene.StyleRefs(n.Props)
+		// The parts of a component are drawn with its own use-style already evaluated: the styles the
+		// override adds or drops are the ones the node shows, not the words of its expression.
+		base := v.nodeStyles()
+		if slices.Equal(base, want) {
+			return true
+		}
 		args = append(removals(base, want), additions(base, want)...)
 	} else if ownUseStyle(n) > 1 {
 		// the edit replaces one command, the styles this list drops are removed by name
