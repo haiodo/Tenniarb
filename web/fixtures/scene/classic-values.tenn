@@ -1,0 +1,20 @@
+// Classic expressions: width, height and title come from the item scope and from the element itself,
+// as go/render's ClassicValues reads them, not from the scene scope.
+element "Values" {
+    cols 2
+    width ${cols * 200}
+    item Cell {
+        pos 0 0
+        size 100
+        width ${size * 1.5}
+        height ${size / 2}
+        title "cell ${size}"
+    }
+    item Wide {
+        pos 200 0
+        base 60
+        width ${base * 2 + 40}
+        height ${base}
+        title ${"wide " + base}
+    }
+}

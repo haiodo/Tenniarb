@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The web scene port lays out a classic diagram: `$(...)`/`${...}` come from the element model through
+  the same `ExecutionContext` the old item renderer uses, the text inset is 4 and an item with no text
+  is the eight-point dot, so the new classic fixtures of the parity stand match the Go golden.
 * A classic diagram drawn through `go/scene` keeps its inline pictures: `image "name" @(...)` is
   decoded and cached like a picture file, `@(name)` and `@(name|width)` in a `title` or a `body` draw
   it inline, and an image the text does not name fills the box and sizes it by its pixels

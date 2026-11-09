@@ -1,0 +1,216 @@
+{
+  "element": "Shapes",
+  "height": 110,
+  "links": [
+    {
+      "arrow": true,
+      "color": "#cc3333",
+      "dash": [
+        5,
+        5
+      ],
+      "parent": "",
+      "path": [
+        [
+          "m",
+          60,
+          60
+        ],
+        [
+          "l",
+          60,
+          80
+        ]
+      ],
+      "phase": 5,
+      "width": 1
+    },
+    {
+      "arrow": true,
+      "color": "#000000",
+      "dash": null,
+      "parent": "",
+      "path": [
+        [
+          "m",
+          120,
+          30
+        ],
+        [
+          "l",
+          160,
+          30
+        ]
+      ],
+      "phase": 0,
+      "width": 1
+    }
+  ],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Shapes",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 110,
+        "w": 392,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ddeeff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 120,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Box"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Label",
+      "opacity": 1,
+      "path": "Label",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 30,
+        "w": 120,
+        "x": 0,
+        "y": 80
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Label"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Frame",
+      "opacity": 1,
+      "path": "Frame",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 60,
+        "w": 120,
+        "x": 160,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Frame"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 8,
+        "w": 8,
+        "x": 320,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Tiny",
+      "opacity": 1,
+      "path": "Tiny",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 27,
+        "w": 52,
+        "x": 340,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Tiny"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 392
+}

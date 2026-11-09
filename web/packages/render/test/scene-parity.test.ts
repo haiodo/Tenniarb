@@ -13,7 +13,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { readTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
-import { buildTennScene, isSceneElement } from "../src/scene-tenn.ts";
+import { buildTennScene } from "../src/scene-tenn.ts";
 import type { TennScene } from "../src/scene-tenn.ts";
 import type { Canvas2D } from "../src/canvas-types.ts";
 import { findElement } from "../src/elements.ts";
@@ -600,16 +600,12 @@ const names = readdirSync(fixtures)
   .sort();
 
 for (const name of names) {
-  test(`scene parity: ${name}`, (t) => {
+  test(`scene parity: ${name}`, () => {
     const { source, golden } = load(name);
     const model = readTenn(source);
     assert.ok(model !== null, "the fixture parses");
     const element: Element | null = findElement(model, golden.element);
     assert.ok(element !== null, `element ${golden.element}`);
-    if (!isSceneElement(element)) {
-      t.skip(`${golden.element} is a classic diagram, not a scene; the parity test covers scenes`);
-      return;
-    }
     const got = dump(
       buildTennScene(element, {
         file: `${name}.tenn`,

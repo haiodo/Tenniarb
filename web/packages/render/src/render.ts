@@ -1,15 +1,15 @@
 // Public entry points: build a scene, measure it, draw it. No DOM: the Canvas2D context is passed in.
-import { ExecutionContext } from "@tenniarb/core";
-import type { DiagramItem, Element, ExecutionContextEvaluator } from "@tenniarb/core";
+import type { DiagramItem, Element, ExecutionContext, ExecutionContextEvaluator } from "@tenniarb/core";
 import type { Canvas2D } from "./canvas-types.ts";
 import { DrawableContainer } from "./drawable.ts";
 import type { Drawable } from "./drawable.ts";
+import { createExecutionContext } from "./execution.ts";
 import type { Rect, Size } from "./geometry.ts";
 import type { ImageDecoder } from "./images.ts";
 import { DrawableScene } from "./scene.ts";
 import { buildTennScene, isSceneElement } from "./scene-tenn.ts";
 import type { SceneLoadOptions, TennScene } from "./scene-tenn.ts";
-import { AttributedString, layoutLines, setMeasureContext, systemFont } from "./text.ts";
+import { setMeasureContext } from "./text.ts";
 
 export interface RenderOptions {
   darkMode?: boolean;
@@ -30,36 +30,8 @@ export interface RenderOptions {
   files?: SceneLoadOptions;
 }
 
-/** utils.textSize: a frame of at most 1000 wide in the default font (CTFramesetterSuggestFrameSizeWithConstraints). */
-function measureTextSize(text: string, fontSize: number): Size {
-  const lines = layoutLines(AttributedString.plain(text, systemFont(fontSize)), 1000);
-  let width = 0;
-  let height = 0;
-  for (const l of lines) {
-    width = Math.max(width, l.width);
-    height += l.textAscent + l.textDescent;
-  }
-  return { width: Math.ceil(width), height: Math.ceil(height) };
-}
-
-/** ExecutionContext whose utils.textSize and item width/height come from real text layout and drawable bounds. */
-export function createExecutionContext(options: { evaluate?: boolean; decodeImage?: ImageDecoder } = {}): ExecutionContext {
-  const context: ExecutionContext = new ExecutionContext({
-    evaluate: options.evaluate,
-    measureText: measureTextSize,
-    // Swift builds a throwaway scene per evaluation round and reads the item's drawable size from it.
-    itemSize: (item) => {
-      if (item.parent === null) {
-        return null;
-      }
-      const scene = new DrawableScene(item.parent, false, context, { buildChildren: false, decodeImage: options.decodeImage });
-      scene.buildItemDrawable(item, new DrawableContainer());
-      const bounds = scene.drawables.get(item)?.getSelectorBounds();
-      return bounds === undefined ? null : { width: bounds.width, height: bounds.height };
-    },
-  });
-  return context;
-}
+/** The classic renderer's evaluator, shared with the scene port so both run the same expressions. */
+export { createExecutionContext } from "./execution.ts";
 
 /**
  * A scene element (spec 4, 5b, 5c) drawn by the port of go/scene instead of the classic item renderer:

@@ -8,13 +8,15 @@
 // Not ported yet: transitions, CSS @keyframes of the animations (the still picture is their first frame, as
 // in Go). element --from-file and template are ported; the calling side supplies the files (SceneLoadOptions).
 import { TennParser, newCommand, newFloatNode, parseTenn } from "@tenniarb/core";
-import type { DiagramItem, Element, LinkItem, TennNode } from "@tenniarb/core";
+import type { DiagramItem, Element, ExecutionContext, LinkItem, TennNode } from "@tenniarb/core";
 import { MarkdownLexer } from "@tenniarb/markdown";
 import type { Canvas2D } from "./canvas-types.ts";
 import { parseColor } from "./color.ts";
 import type { Color } from "./color.ts";
 import { canvasQuirks, shadowScale } from "./drawable.ts";
+import { createExecutionContext } from "./execution.ts";
 import type { Point, Rect } from "./geometry.ts";
+import { jsToString } from "./style.ts";
 
 // MARK: - Names and paths (spec 4.2, go/scene/names.go)
 
@@ -204,6 +206,11 @@ export interface SceneLoadOptions {
   readFile?: (path: string) => string | null;
   /** The text of the file `element` was read from, for the exact `template { ... }` and `%{ ... %}` text. */
   source?: string;
+  /**
+   * The classic item renderer's evaluator: a classic element reads `$(...)`/`${...}` through it, so the
+   * values are the ones renderElement would draw. Built for the element here when absent.
+   */
+  context?: ExecutionContext | null;
 }
 
 export type Override =
@@ -234,6 +241,7 @@ export interface SceneNode {
   file: string; // the slash path of the file the node is written in
   src: string | null; // the text of that file
   model: Element | null; // the model element the node was read from
+  item: DiagramItem | null; // the model item or link the node was read from
   template: SceneTemplate | null; // element: the code it generates (spec 5c)
   mount: SceneNode | null; // element with --from-file: the root of the file that holds its content
   mountAt: SceneNode | null; // file root below a mount: the element that contains the mounting one
@@ -261,6 +269,7 @@ function newNode(kind: SceneKind, name: string, parent: SceneNode | null, at: Te
     file: parent?.file ?? "",
     src: parent?.src ?? null,
     model: null,
+    item: null,
     template: null,
     mount: null,
     mountAt: null,
@@ -388,6 +397,7 @@ function addModelContent(owner: SceneNode, item: DiagramItem, diag: Diagnostics)
     return;
   }
   const node = newNode(item.kind === "Link" ? "link" : "item", item.name, owner, null);
+  node.item = item;
   if (item.kind === "Link") {
     const link = item as LinkItem;
     node.from = link.source?.name ?? "";
@@ -3303,11 +3313,15 @@ interface Prep {
   rotations: Map<RNode, number>;
   /** Reads the markdown of `body --from-file`; null when the caller gave no reader. */
   readFile: ((path: string) => string | null) | null;
+  /** The element is a classic diagram (Go's sceneRoot is false): text inset 4, a size below 1 unset. */
+  classic: boolean;
 }
 
 const defaultFontSize = 18;
 const textPadX = 10;
 const textPadY = 6;
+/** The inset go/render gives a text leaf of a classic diagram when `padding` is not written. */
+const classicTextPad = 4;
 const fontName = "Helvetica, Arial, sans-serif";
 const codeFont = "Inter";
 
@@ -3383,7 +3397,7 @@ function sceneNodeFor(file: SceneNode, element: Element): SceneNode | null {
 }
 
 /** The prep of a screen: sizes, styles and text of every node, then the layout. */
-function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions = {}): { prep: Prep; root: LayoutNode } {
+function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions = {}, classic: boolean): { prep: Prep; root: LayoutNode } {
   const prep: Prep = {
     diag,
     frames: new Map(),
@@ -3396,6 +3410,7 @@ function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions =
     linkSides: new Map(),
     rotations: new Map(),
     readFile: options.readFile ?? null,
+    classic,
   };
   animations(expanded, new Map(), diag);
   const root = newLayout(expanded);
@@ -3515,6 +3530,11 @@ function sizeOf(prep: Prep, rn: RNode, name: string, inCtx: boolean, parentAuto:
   }
   const v = propNum(p, 0);
   if (v !== null) {
+    // A classic size below one is not written: an old file that computes 0 falls back to its text,
+    // so it draws a dot and not an invisible box (go/scene size).
+    if (prep.classic && v < 1) {
+      return HUG;
+    }
     return fixed(v);
   }
   const s = propText(p, 0);
@@ -3588,8 +3608,8 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
   }
   const ti: TextInfo = {
     font: fontOf(prep, rn, size),
-    padX: inCtx ? 0 : textPadX,
-    padY: inCtx ? 0 : textPadY,
+    padX: inCtx ? 0 : prep.classic ? classicTextPad : textPadX,
+    padY: inCtx ? 0 : prep.classic ? classicTextPad : textPadY,
     lineH: Math.round(size * 1.05),
     align: "middle",
     asc: size * 0.8,
@@ -3802,7 +3822,6 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
     n.gap = num(prep, rn, "gap") ?? 0;
     n.lineGap = num(prep, rn, "line-gap") ?? 0;
     n.wrap = flag(prep, rn, "wrap");
-    n.pad = paddingOf(prep, rn);
     const align = word(prep, rn, "align", ["start", "center", "end"]);
     if (align !== null) {
       n.align = align as Align;
@@ -3814,6 +3833,8 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
   } else {
     n.dir = "abs";
   }
+  // padding insets the text of a leaf as well as the children of a container (go/scene item).
+  n.pad = paddingOf(prep, rn);
   // The root of an instance that holds items is a container, not a box of its own.
   const look = lookOf(prep, rn, inCtx || (rn.inst && holdsItems(rn)), up);
   prep.looks.set(rn, look);
@@ -3862,20 +3883,26 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
   const ti = textOf(prep, rn, inCtx || icon !== null);
   // An icon has no text body: the path is the content.
   const body = icon === null ? (prep.bodies.get(rn) ?? null) : null;
-  if (ti === null && body === null) {
-    return;
-  }
-  if (ti !== null) {
-    prep.texts.set(rn, ti);
-  }
   const pad = propOf(prep, rn, "padding");
-  let padX = ti?.padX ?? (inCtx ? 0 : textPadX);
-  let padY = ti?.padY ?? (inCtx ? 0 : textPadY);
+  let padX = ti?.padX ?? (inCtx ? 0 : prep.classic ? classicTextPad : textPadX);
+  let padY = ti?.padY ?? (inCtx ? 0 : prep.classic ? classicTextPad : textPadY);
   // padding insets the text whether or not the item has auto-layout: a leaf with a written size reads
   // it as the space between its border and the text.
   if (pad !== null) {
     padX = n.pad[3];
     padY = n.pad[0];
+  }
+  if (ti === null && body === null) {
+    // go/render keeps the inset around a classic item with no text: an eight-point dot, which old
+    // diagrams use as markers and anchors.
+    if (prep.classic && !inCtx) {
+      n.leafW = () => 2 * padX;
+      n.leafH = () => 2 * padY;
+    }
+    return;
+  }
+  if (ti !== null) {
+    prep.texts.set(rn, ti);
   }
   if (ti !== null) {
     ti.padX = padX;
@@ -4346,9 +4373,20 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
   if (expanded === null) {
     return { width: 0, height: 0, bounds: { x: 0, y: 0, width: 0, height: 0 }, diagnostics: diag.list, draw: () => {}, boxes };
   }
-  evalTree(expanded, diag);
+  const classic = !sceneRoot(expanded);
+  if (classic) {
+    // A classic diagram takes its expressions from the element model, as go/render's ClassicValues
+    // does; the classic renderer builds the same ExecutionContext, so both draw the same values.
+    const context = options.context ?? createExecutionContext();
+    if (options.context == null) {
+      context.setElement(element);
+    }
+    classicValues(expanded, context);
+  } else {
+    evalTree(expanded, diag);
+  }
   applyStyles(expanded);
-  const { prep, root } = prepare(expanded, diag, options);
+  const { prep, root } = prepare(expanded, diag, options, classic);
   layoutRoot(root);
   planLinks(expanded, prep);
   warnBodyFit(prep, expanded);
@@ -4544,6 +4582,31 @@ function evalTree(rn: RNode, diag: Diagnostics): void {
   rn.props = rn.props.map((p) => (hasExpr(p) ? (evaluate(diag, rn, p) ?? p) : p));
   for (const k of rn.kids) {
     evalTree(k, diag);
+  }
+}
+
+/** Go's sceneRoot: an instance, an item with child nodes or auto-layout makes the element a scene. */
+function sceneRoot(rn: RNode): boolean {
+  return rn.kids.some((k) => k.kind === "item" && (k.inst || k.kids.length > 0 || prop(k, "auto-layout") !== null));
+}
+
+/** The arguments of a classic diagram as the element model evaluates them: the value, else its text. */
+function classicValues(rn: RNode, context: ExecutionContext): void {
+  const target = rn.src === null ? null : (rn.src.model ?? rn.src.item);
+  const ev = target === null ? null : context.getEvaluated(target);
+  for (let i = 0; i < rn.props.length; i += 1) {
+    const p = rn.props[i]!;
+    if (!hasExpr(p)) {
+      continue;
+    }
+    const val = p.args.map((a) => {
+      const token = a.token;
+      return token !== null && ev !== null && ev.has(token) ? jsToString(ev.get(token)) : (a.getIdentText() ?? "");
+    });
+    rn.props[i] = { ...p, val };
+  }
+  for (const k of rn.kids) {
+    classicValues(k, context);
   }
 }
 

@@ -1,0 +1,17 @@
+// Classic display, links and the two profile rules: a written size below one is not written, and an
+// item with no text is the eight-point dot old files use as a marker.
+element "Shapes" {
+    item Box { pos 0 0; width 120; height 60; color #ddeeff; title "Box" }
+    item Label { pos 0 -80; width 120; height 30; display text; title "Label" }
+    item Frame { pos 160 0; width 120; height 60; display no-fill; title "Frame" }
+    item "" { pos 320 0 }
+    item Tiny {
+        pos 340 0
+        size 0
+        width ${size}
+        height ${size}
+        title "Tiny"
+    }
+    link Box Label { display arrow; line-style dashed; color #cc3333 }
+    link Box Frame { display arrow }
+}
