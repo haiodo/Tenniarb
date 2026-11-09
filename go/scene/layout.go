@@ -158,6 +158,16 @@ func sceneRoot(rn *RNode) bool {
 	return false
 }
 
+// invalid reports a value the scene cannot use: an error in a scene, and only a warning in a classic
+// diagram, where go/render drew what it understood and ignored the rest of the file.
+func (p *prep) invalid(pos Pos, format string, args ...any) {
+	if p.classic {
+		p.t.warn(pos, format, args...)
+		return
+	}
+	p.t.fail(pos, format, args...)
+}
+
 // prop is rn.prop with the expressions of the arguments evaluated (spec 6), in the scope of the instance
 // of the node (spec 5c). Without an evaluator an expression is a warning and the property is ignored; in a
 // classic diagram it is normal and go/render evaluates it.
@@ -272,7 +282,7 @@ func (p *prep) links(parent *RNode) {
 		}
 		a, b := end(k, k.From, "source-index"), end(k, k.To, "target-index")
 		if a == nil || b == nil {
-			p.t.fail(k.Pos, "link %q %q: both ends must be items of the same parent", k.From, k.To)
+			p.invalid(k.Pos, "link %q %q: both ends must be items of the same parent", k.From, k.To)
 			continue
 		}
 		if p.frames[a] == nil || p.frames[b] == nil { // an end is hidden: the link goes with it
@@ -404,7 +414,7 @@ func (p *prep) padding(rn *RNode) [4]float64 {
 	for i := range pr.Args {
 		f, ok := pr.num(i)
 		if !ok {
-			p.t.fail(pr.Pos, "padding takes numbers")
+			p.invalid(pr.Pos, "padding takes numbers")
 			return [4]float64{}
 		}
 		v = append(v, f)
@@ -417,7 +427,7 @@ func (p *prep) padding(rn *RNode) [4]float64 {
 	case 4:
 		return [4]float64{v[0], v[1], v[2], v[3]}
 	}
-	p.t.fail(pr.Pos, "padding takes 1, 2 or 4 numbers, got %d", len(v))
+	p.invalid(pr.Pos, "padding takes 1, 2 or 4 numbers, got %d", len(v))
 	return [4]float64{}
 }
 
@@ -428,7 +438,7 @@ func (p *prep) num(rn *RNode, name string) (float64, bool) {
 	}
 	v, ok := pr.num(0)
 	if !ok {
-		p.t.fail(pr.Pos, "%s takes a number", name)
+		p.invalid(pr.Pos, "%s takes a number", name)
 	}
 	return v, ok
 }
@@ -444,7 +454,7 @@ func (p *prep) flag(rn *RNode, name string) bool {
 	case "no", "false":
 		return false
 	}
-	p.t.fail(pr.Pos, "%s takes yes or no", name)
+	p.invalid(pr.Pos, "%s takes yes or no", name)
 	return false
 }
 
@@ -462,7 +472,7 @@ func (p *prep) word(rn *RNode, name string, allowed ...string) (string, bool) {
 	if s == "space-around" {
 		p.t.warn(pr.Pos, "%s space-around is not supported by the layout", name)
 	} else if name != "auto-layout" || s != "" {
-		p.t.fail(pr.Pos, "%s takes one of %s, got %q", name, strings.Join(allowed, ", "), s)
+		p.invalid(pr.Pos, "%s takes one of %s, got %q", name, strings.Join(allowed, ", "), s)
 	}
 	return "", false
 }
@@ -474,6 +484,11 @@ func (p *prep) size(rn *RNode, name string, inCtx, parentAuto bool) layout.Size 
 		return layout.Size{}
 	}
 	if v, ok := pr.num(0); ok {
+		// go/render takes a size below one as not written, so an item with a zero measure falls back
+		// to its text: an old file that computes 0 draws a dot, not an invisible box.
+		if p.classic && v < 1 {
+			return layout.Size{}
+		}
 		return layout.Fixed(v)
 	}
 	// text, not the token: an expression may give the word as well as a number (spec 6).
@@ -484,14 +499,14 @@ func (p *prep) size(rn *RNode, name string, inCtx, parentAuto bool) layout.Size 
 	case strings.HasSuffix(s, "%"):
 		p.t.warn(pr.Pos, "%s: percentages are not supported, the size is hug", name)
 	default:
-		p.t.fail(pr.Pos, "%s takes a number, hug or fill, got %q", name, s)
+		p.invalid(pr.Pos, "%s takes a number, hug or fill, got %q", name, s)
 	}
 	return layout.Size{}
 }
 
 func (p *prep) sizeWord(pr *Prop, word string, inCtx, parentAuto bool) layout.Size {
 	if !inCtx {
-		p.t.fail(pr.Pos, "%s %s needs auto-layout on the item or on its parent", pr.Name, word)
+		p.invalid(pr.Pos, "%s %s needs auto-layout on the item or on its parent", pr.Name, word)
 		return layout.Size{}
 	}
 	if len(pr.Args) > 1 {
@@ -517,12 +532,6 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	if p.icons[rn] != nil {
 		body = nil // an icon has no text body: the path is the content
 	}
-	if ti == nil && body == nil {
-		return
-	}
-	if ti != nil {
-		p.texts[rn] = ti
-	}
 	padX, padY := textPadX, textPadY
 	if p.classic {
 		padX, padY = classicTextPad, classicTextPad
@@ -534,6 +543,18 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	// reads it as the space between its border and the text.
 	if pr := p.prop(rn, "padding"); pr != nil {
 		padX, padY = n.Pad[3], n.Pad[0]
+	}
+	if ti == nil && body == nil {
+		// go/render keeps the inset around an item with no text: a dot of eight points, which old
+		// diagrams use as markers and anchors.
+		if p.classic && !inCtx {
+			n.LeafW = func() float64 { return 2 * padX }
+			n.LeafH = func(float64) float64 { return 2 * padY }
+		}
+		return
+	}
+	if ti != nil {
+		p.texts[rn] = ti
 	}
 	if ti != nil {
 		ti.padX, ti.padY = padX, padY

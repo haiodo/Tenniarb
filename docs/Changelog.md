@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Every classic diagram of the repository now loads and lays out through `go/scene`: a value the old
+  renderer could not read is a warning instead of an error, a size below one falls back to the text,
+  an item with no text keeps the eight-point dot `go/render` drew, and a link whose end is missing
+  leaves the rest of the file drawn. `TestClassicFilesDrawThroughScene` guards it over
+  `examples/`, `docs/` and `web/fixtures/`.
 * A classic diagram drawn through `go/scene` keeps the text inset of the old renderer (4 on every
   side unless `padding` says otherwise), and a `title` with more than one argument draws the first, as
   it always has, instead of failing the whole file: the first steps of drawing classic elements with

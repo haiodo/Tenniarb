@@ -83,7 +83,12 @@ func TestClassicDiagram(t *testing.T) {
 	if got := mustOK(t, cs, "validate", map[string]any{"file": "map.tenn"}); !strings.Contains(got, "0 errors") {
 		t.Errorf("validate: %s", got)
 	}
-	mustFail(t, cs, "edit", withFile(edits(`link "Idea" "Next step"`, `link "Idea" "Nobody"`), "map.tenn"), "adds errors")
+	// a classic diagram keeps drawing a link it cannot place, as go/render did: the edit goes through
+	// with a warning, not a refusal
+	if got := mustOK(t, cs, "edit", withFile(edits(`link "Idea" "Next step"`, `link "Idea" "Nobody"`), "map.tenn")); !strings.Contains(got, "both ends must be items") {
+		t.Errorf("a broken link is a warning: %s", got)
+	}
+	mustOK(t, cs, "edit", withFile(edits(`link "Idea" "Nobody"`, `link "Idea" "Next step"`), "map.tenn"))
 
 	if runtime.GOOS != "darwin" {
 		t.Skip("render checked on macOS only")

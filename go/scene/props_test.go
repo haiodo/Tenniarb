@@ -135,7 +135,10 @@ func TestFillRule(t *testing.T) {
 	if n := strings.Count(s, `fill-rule="evenodd"`); n != 1 {
 		t.Errorf("%d evenodd paths, want 1:\n%s", n, s)
 	}
-	_, err := scene.LoadSource(t.TempDir(), "m.tenn", `element "E" { item "I" { path "M0 0H1V1Z"; fill-rule diag } }`)
+	_, err := scene.LoadSource(t.TempDir(), "m.tenn", `element "E" {
+  item "I" { path "M0 0H1V1Z"; fill-rule diag }
+  item "L" { auto-layout row; item "C" { } }
+}`)
 	if err == nil || !strings.Contains(err.Error(), "fill-rule takes one of") {
 		t.Errorf("fill-rule diag: err = %v", err)
 	}

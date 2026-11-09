@@ -162,3 +162,55 @@ func TestClassicTitleKeepsItsFirstArgument(t *testing.T) {
 		t.Fatalf("the first argument of the title is not drawn:\n%s", svg)
 	}
 }
+
+// classicBoxes are the boxes of element "E" of src built as a classic diagram.
+func classicBoxes(t *testing.T, src string) map[string]scene.Box {
+	t.Helper()
+	screen, _ := buildClassic(t, src, classicStub(nil, nil))
+	m := map[string]scene.Box{}
+	for _, b := range screen.Boxes() {
+		m[b.Path] = b
+	}
+	return m
+}
+
+// An item with no text and no size is a dot of eight points in go/render: old diagrams hold markers and
+// anchors that way.
+func TestClassicEmptyItemIsADot(t *testing.T) {
+	m := classicBoxes(t, `element "E" { item A { pos 0 0; title "" } }`)
+	if got := m["A"]; got.W != 8 || got.H != 8 {
+		t.Errorf("empty item %gx%g, want 8x8", got.W, got.H)
+	}
+}
+
+// A value go/render could not read was ignored, not fatal: a size below one falls back to the text, and
+// an item that computes 0 still draws.
+func TestClassicIgnoresBadValues(t *testing.T) {
+	m := classicBoxes(t, `element "E" {
+  item A { pos 0 0; width (1 + 2); title "" }
+  item B { pos 20 0; height 0; display circle; title "" }
+}`)
+	for _, name := range []string{"A", "B"} {
+		if got := m[name]; got.W <= 0 || got.H <= 0 {
+			t.Errorf("%s %gx%g draws nothing", name, got.W, got.H)
+		}
+	}
+}
+
+// A link whose end the item list does not hold is a warning in a classic diagram: the persistence
+// fixtures keep such links, and the old renderer drew the rest of the file.
+func TestClassicBrokenLinkWarns(t *testing.T) {
+	screen, _ := buildClassic(t, `element "E" {
+  item A { pos 0 0 }
+  link "A" "Gone"
+}`, classicStub(nil, nil))
+	found := false
+	for _, w := range screen.Warnings {
+		if strings.Contains(w.Msg, "both ends must be items") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("no warning for the broken link: %v", screen.Warnings)
+	}
+}
