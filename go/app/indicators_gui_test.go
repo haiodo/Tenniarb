@@ -15,6 +15,7 @@ type indicatorState struct {
 		X, Y, Size float64
 		Count      int
 	}
+	ItemsDrawn int `json:"itemsDrawn"` // the boxes the dots are made of: display none draws nothing
 }
 
 func indicators(t *testing.T, app *qatest.Client) indicatorState {
@@ -50,8 +51,8 @@ func TestIndicatorsGUI(t *testing.T) {
 	for _, d := range s.Indicators {
 		n += d.Count
 	}
-	if n != editor(t, app).ItemCount {
-		t.Errorf("dots stand for %d items, the diagram has %d", n, editor(t, app).ItemCount)
+	if n != s.ItemsDrawn {
+		t.Errorf("dots stand for %d items, the canvas draws %d", n, s.ItemsDrawn)
 	}
 	app.Shot("indicators-panned")
 

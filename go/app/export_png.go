@@ -114,7 +114,9 @@ func (v *Viewer) selectionToExport() (selectionExport, bool) {
 				}
 			}
 		}
-		if len(x.nodes) == 0 {
+		// A scene exports the whole drawing when nothing is selected; a classic diagram exported nothing
+		// empty, and the canvas menu has no export entry then.
+		if len(x.nodes) == 0 && v.sceneMode() {
 			x.nodes, x.names = []*gfx.Node{x.root}, []string{v.state.Current.Name}
 		}
 	case v.rendered != nil && v.session != nil:

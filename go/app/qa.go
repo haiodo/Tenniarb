@@ -310,6 +310,8 @@ func (v *Viewer) qaState() map[string]any {
 	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
 	out["indicators"] = v.ind.dots
+	// itemsDrawn: the boxes the indicator dots are made of, hidden items and links included as drawn
+	out["itemsDrawn"] = len(v.itemBounds())
 	// bodyLinks: the links of the bodies on the canvas, in view points, for a test that clicks one
 	out["bodyLinks"] = v.qaBodyLinks()
 	// marks: the agent marks and the pulses on the canvas, the path of the node and the time left in ms
