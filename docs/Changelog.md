@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-* gowt 0.15.6: `make app CGO=1` (and `make install CGO=1`) builds with `CGO_ENABLED=1 -tags gowtcgo`,
-  the native AppKit/CoreGraphics calls, which gowt measures about eight times faster than the default
-  purego backends; the default and the cross-compiled packages stay on purego.
+* gowt 0.15.6: the app builds with `CGO_ENABLED=1 -tags gowtcgo` by default, the native
+  AppKit/CoreGraphics calls gowt measures about eight times faster than the purego backends; `CGO=0`
+  keeps purego, and the cross-compiled packages stay on it.
 * The canvas always draws through `go/scene`, a classic diagram included: the
   `TENNIARB_SCENE_CANVAS=0` rollback and the old `go/render` canvas are gone. Editing a classic diagram
   still runs on the session, which the scene follows.

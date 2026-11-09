@@ -124,10 +124,10 @@ GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
 GOWT_DIR = $(shell cd go && go mod download github.com/haiodo/gowt 2>/dev/null; go list -m -f '{{.Dir}}' github.com/haiodo/gowt)
 
-# CGO=1 builds the Go app with gowt's native cgo bindings (CGO_ENABLED=1 -tags gowtcgo): about eight
-# times faster native calls, and it needs a C toolchain. The default keeps the purego backends and
-# cross-compilation; the packaging targets below always stay on the default.
-CGO ?= 0
+# CGO=1 is the default: the app builds with gowt's native cgo bindings (CGO_ENABLED=1 -tags gowtcgo),
+# about eight times faster native calls, and it needs a C toolchain. CGO=0 keeps the purego backends;
+# the packaging targets below always cross-compile on the purego ones.
+CGO ?= 1
 ifeq ($(CGO),1)
 GO_CGO := 1
 GO_TAGS := -tags gowtcgo
@@ -136,7 +136,7 @@ GO_CGO := 0
 GO_TAGS :=
 endif
 
-app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned); CGO=1 for the cgo bindings
+app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned); CGO=0 for purego
 	rm -rf $(GOPKG)/app && mkdir -p $(GOPKG)/app
 	cd go && CGO_ENABLED=$(GO_CGO) go build $(GO_TAGS) -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/app/tenniarb ./cmd/tenniarb
 ifeq ($(shell uname),Darwin)
