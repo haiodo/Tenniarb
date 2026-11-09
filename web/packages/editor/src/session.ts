@@ -30,8 +30,8 @@ import {
   traverseBlock,
 } from "@tenniarb/core";
 import type { Element, ElementOperation, IExecutionContext, ItemKind } from "@tenniarb/core";
-import { CircleBox, DrawableLine, EmptyBox, RoundBox, getString, layoutScene, prepareBodyText, setMeasureContext } from "@tenniarb/render";
-import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect } from "@tenniarb/render";
+import { CircleBox, DrawableLine, EmptyBox, RoundBox, buildTennScene, createExecutionContext, getString, isSceneElement, layoutScene, prepareBodyText, setMeasureContext } from "@tenniarb/render";
+import type { Canvas2D, DrawableScene, DrawableStyle, ImageDecoder, Point, Rect, TennScene } from "@tenniarb/render";
 import { optionNodes } from "./styles.ts";
 import { drawSelection, hitTest, itemsInRect } from "./selection.ts";
 
@@ -93,6 +93,8 @@ export class EditorSession {
   scene!: DrawableScene;
   selection: DiagramItem[] = [];
   band: Rect | null = null;
+  /** The classic picture, drawn by the scene port; null for a scene element, which already draws it. */
+  private tenn: TennScene | null = null;
 
   readonly root: ElementModel;
   private elementCount = 0;
@@ -138,6 +140,13 @@ export class EditorSession {
       decodeImage: this.opts.decodeImage,
       measureContext: this.opts.measureContext,
     });
+    // A classic diagram is drawn by the scene port, as renderElement does; the drawables stay for selection.
+    this.tenn = isSceneElement(this.element)
+      ? null
+      : buildTennScene(this.element, {
+          context: this.exec ?? createExecutionContext({ evaluate: false }),
+          decodeImage: this.opts.decodeImage,
+        });
     this.selection = this.selection.filter((i) => this.scene.drawables.has(i));
     // Rebuilt under a drag (an update from outside): the dragged items stay under the pointer.
     if (this.mode === "drag" && this.moved) this.move(this.last);
@@ -880,7 +889,16 @@ export class EditorSession {
 
   /** Scene plus selection, in scene space. */
   draw(ctx: Canvas2D): void {
-    this.scene.draw(ctx);
+    if (this.tenn !== null) {
+      // The port flips its picture around at.y + height, so -height puts its top edge on the origin,
+      // where the drawables are; a dragged item is previewed at its delta, as Go's dragPreview does.
+      const move = this.mode === "drag" && this.moved ? { x: this.last.x - this.origin.x, y: this.last.y - this.origin.y } : null;
+      const at = { x: this.scene.offset.x, y: this.scene.offset.y - this.tenn.height };
+      this.tenn.draw(ctx, at, move === null ? undefined : (item) => (this.starts.has(item) ? move : null));
+      this.scene.lineToDrawable?.draw(ctx, this.scene.offset);
+    } else {
+      this.scene.draw(ctx);
+    }
     drawSelection(ctx, this.scene, this.mode === "line" && this.lineTarget !== null ? [this.lineTarget] : this.selection, this.band, this.editing);
   }
 }

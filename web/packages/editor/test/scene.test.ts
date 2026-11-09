@@ -1,5 +1,6 @@
 // The editor keeps working on a scene element (spec 4, 5b): the session builds and draws it through the
-// scene renderer, and a save writes the new syntax back.
+// scene renderer, and a save writes the new syntax back. A classic diagram draws its picture through the
+// same port while selection and hit-test stay on the old drawables.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readTenn, toTennStr } from "@tenniarb/core";
@@ -54,4 +55,41 @@ test("a scene element opens, draws and saves in the editor", () => {
   for (const line of ["kind Component", "export let title", "one-of primary secondary", "use-style ${kind}", 'title "Save"']) {
     assert.ok(text.includes(line), `saved text keeps ${line}`);
   }
+});
+
+/** The box of the first filled path the session draws, in scene units. */
+function drawnBox(session: EditorSession): { x: number; y: number; width: number; height: number } {
+  const svg = new SvgContext({ width: 300, height: 200, measureText: () => ({ width: 10 }) });
+  session.draw(svg as never);
+  const d = /<path d="([^"]+)"/.exec(svg.toString())![1]!;
+  const n = [...d.matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+  const xs = n.filter((_, i) => i % 2 === 0);
+  const ys = n.filter((_, i) => i % 2 === 1);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+}
+
+test("a classic element is drawn by the scene port where its drawables are", () => {
+  const model = readTenn('element "D" { item "A" { pos 10 -20; title "Tiny" } }')!;
+  const item = model.elements[0]!.items[0]!;
+  const session = new EditorSession(model.elements[0]!, {});
+  const port = (session as unknown as { tenn: { boxes: { name: string; x: number; y: number; width: number; height: number }[] } }).tenn;
+  const box = port.boxes.find((b) => b.name === "A")!;
+  const drawn = drawnBox(session);
+  // The port lays its boxes out y-down; the drawables are y-up, so the picture is the box flipped at the origin.
+  assert.deepEqual(drawn, { x: box.x, y: -box.y - box.height, width: box.width, height: box.height });
+
+  // The selection box is the drawable's, so the two share the top left corner.
+  const d = session.scene.drawables.get(item)!.getSelectorBounds();
+  assert.equal(drawn.x, d.x);
+  assert.equal(drawn.y + drawn.height, d.y + d.height);
+
+  // Dragging moves the drawable; the picture is previewed at the same delta, so the box stays on the item.
+  const centre = { x: d.x + d.width / 2, y: d.y + d.height / 2 };
+  session.down(centre);
+  session.move({ x: centre.x + 30, y: centre.y - 7 });
+  const moved = drawnBox(session);
+  assert.deepEqual({ x: moved.x - drawn.x, y: moved.y - drawn.y }, { x: 30, y: -7 });
+  const at = session.scene.drawables.get(item)!.getSelectorBounds();
+  assert.deepEqual({ x: at.x - d.x, y: at.y - d.y }, { x: 30, y: -7 });
 });

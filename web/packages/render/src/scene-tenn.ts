@@ -8,7 +8,7 @@
 // Not ported yet: transitions, CSS @keyframes of the animations (the still picture is their first frame, as
 // in Go). element --from-file and template are ported; the calling side supplies the files (SceneLoadOptions).
 import { TennParser, newCommand, newFloatNode, parseTenn } from "@tenniarb/core";
-import type { DiagramItem, Element, ExecutionContext, LinkItem, TennNode } from "@tenniarb/core";
+import type { DiagramItem, Element, IExecutionContext, LinkItem, TennNode } from "@tenniarb/core";
 import { MarkdownLexer, getMaxRect } from "@tenniarb/markdown";
 import type { Canvas2D } from "./canvas-types.ts";
 import type { ImageDecoder } from "./images.ts";
@@ -211,7 +211,7 @@ export interface SceneLoadOptions {
    * The classic item renderer's evaluator: a classic element reads `$(...)`/`${...}` through it, so the
    * values are the ones renderElement would draw. Built for the element here when absent.
    */
-  context?: ExecutionContext | null;
+  context?: IExecutionContext | null;
   /**
    * Decodes the base64 of a classic inline image into something Canvas2D.drawImage takes; without it the
    * picture still sizes the box and the text, but nothing is drawn.
@@ -4046,7 +4046,7 @@ export interface TennScene {
   bounds: Rect;
   diagnostics: { message: string; warn: boolean; line: number; col: number; file: string }[];
   /** Draws into a y-up canvas (the caller flips it once, as drawScene does); `at` is where its bottom edge goes. */
-  draw(ctx: Canvas2D, at?: Point): void;
+  draw(ctx: Canvas2D, at?: Point, moved?: (item: DiagramItem) => Point | null): void;
   /** The laid out items in paint order, for tests and the inspector. */
   boxes: { name: string; path: string; x: number; y: number; width: number; height: number; depth: number }[];
 }
@@ -5260,10 +5260,12 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
   let maxY = height;
   walk(expanded, "", 0, 0, 0);
 
-  const drawNode = (ctx: Canvas2D, rn: RNode, ln: LayoutNode, isRoot: boolean): void => {
+  const drawNode = (ctx: Canvas2D, rn: RNode, ln: LayoutNode, isRoot: boolean, moved?: (item: DiagramItem) => Point | null): void => {
     const look = prep.looks.get(rn);
+    const item = rn.src?.item ?? null;
+    const move = item === null ? null : (moved?.(item) ?? null);
     ctx.save();
-    ctx.translate(ln.rx, ln.ry);
+    ctx.translate(ln.rx + (move?.x ?? 0), ln.ry - (move?.y ?? 0));
     const deg = prep.rotations.get(rn) ?? 0;
     if (deg !== 0) {
       const cx = ln.rw / 2;
@@ -5386,7 +5388,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
       for (const k of paintOrder(prep, rn)) {
         const kn = prep.frames.get(k);
         if (k.kind === "item" && kn !== undefined) {
-          drawNode(ctx, k, kn, false);
+          drawNode(ctx, k, kn, false, moved);
         } else if (k.kind === "link") {
           drawLink(ctx, prep, k, prep.linkSides.get(rn) ?? null);
         }
@@ -5408,13 +5410,13 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
     bounds: { x: minX, y: 0, width: maxX - minX, height: maxY - minY },
     diagnostics: diag.list,
     boxes,
-    draw(ctx: Canvas2D, at: Point = { x: 0, y: 0 }): void {
+    draw(ctx: Canvas2D, at: Point = { x: 0, y: 0 }, moved?: (item: DiagramItem) => Point | null): void {
       ctx.save();
       // The caller draws in a y-up world (drawScene flips the canvas once); the boxes are y-down, so the
       // picture is flipped around its bottom edge, where `at` puts it.
       ctx.translate(at.x, at.y + maxY);
       ctx.scale(1, -1);
-      drawNode(ctx, expanded, root, true);
+      drawNode(ctx, expanded, root, true, moved);
       ctx.restore();
     },
   };
@@ -5434,7 +5436,7 @@ function sceneRoot(rn: RNode): boolean {
 }
 
 /** The arguments of a classic diagram as the element model evaluates them: the value, else its text. */
-function classicValues(rn: RNode, context: ExecutionContext): void {
+function classicValues(rn: RNode, context: IExecutionContext): void {
   const target = rn.src === null ? null : (rn.src.model ?? rn.src.item);
   const ev = target === null ? null : context.getEvaluated(target);
   for (let i = 0; i < rn.props.length; i += 1) {
