@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/offscreen"
@@ -21,12 +22,17 @@ func (v *Viewer) exportScene(e *model.Element) (*gfx.Scene, *scene.Screen, error
 	if v.stree == nil {
 		return nil, nil, fmt.Errorf("the scene of %s is not loaded", e.Name)
 	}
+	var classic func(scene.ClassicRef, string) ([]string, bool)
+	if !v.isScene(e) {
+		// The path is from the file root: the root itself and an element from another file get no values.
+		classic = render.ClassicHook(v.stree, v.root, v.rel(), strings.Join(PathOf(e), "."))
+	}
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	var err error
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{
-			Measurer: gfx.DefaultMeasurer, EvalVars: exec.SceneEvalVars,
+			Measurer: gfx.DefaultMeasurer, EvalVars: exec.SceneEvalVars, Classic: classic,
 		})
 	})
 	if err != nil {
