@@ -118,6 +118,7 @@ func (p *prep) shadows(rn *RNode) []gfx.Shadow {
 			}
 		}
 		if sh := p.shadowOf(pr); sh != nil {
+			sh.Screen = p.opts.ScreenShadows
 			out = append(out, *sh)
 		}
 	}

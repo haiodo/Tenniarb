@@ -132,7 +132,7 @@ func imageIn(t *testing.T, props string) (*Screen, *Placed) {
 	t.Helper()
 	root := t.TempDir()
 	pngFile(t, root, "pic.png", 4, 2)
-	writeTestFile(t, root, "a.tenn", []byte("element \"E\" {\n  item Pic { pos 0 0; width 20; height 20; image \"pic.png\" "+props+" }\n}"))
+	writeTestFile(t, root, "a.tenn", []byte("element \"E\" {\n  item Pic { pos 0 0; width 20; height 20; image \"pic.png\"; corner-radius 0; "+props+" }\n}"))
 	tree, err := Load(root, "a.tenn")
 	if err != nil {
 		t.Fatal(err)

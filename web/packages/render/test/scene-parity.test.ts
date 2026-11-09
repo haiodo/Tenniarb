@@ -33,6 +33,8 @@ interface PathState {
   arcs: number[];
   /** The commands as tennlayout writes a link: ["m"|"l"|"q"|"c", x, y, ...] and ["z"]. */
   verbs: (string | number)[][];
+  /** A dash was set since the path began: a link always sets one, an icon never does. */
+  dashed: boolean;
 }
 
 /** A stroked open path with no arcs: a link, drawn in the coordinates of the item that owns it. */
@@ -113,7 +115,7 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
   };
   let current: Rec | null = null;
   let pending: { x: number; y: number; base: number } | null = null;
-  let pen: PathState = { points: 0, closed: false, arcs: [], verbs: [] };
+  let pen: PathState = { points: 0, closed: false, arcs: [], verbs: [], dashed: false };
 
   const flush = (): void => {
     if (pending === null) return;
@@ -212,7 +214,7 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     },
     beginPath: () => {
       touch();
-      pen = { points: 0, closed: false, arcs: [], verbs: [] };
+      pen = { points: 0, closed: false, arcs: [], verbs: [], dashed: false };
     },
     moveTo: (x, y) => {
       touch();
@@ -276,8 +278,9 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     stroke: () => {
       const rec = active();
       if (rec === null) return;
-      if (!pen.closed && pen.arcs.length === 0 && rec.kidsStarted) {
-        // Links are drawn after the children of their parent; an icon is stroked before them.
+      if (!pen.closed && pen.arcs.length === 0 && pen.dashed) {
+        // A link sets its dash before the stroke, even an empty one; an icon never does, so its open
+        // path falls through to the border it paints.
         rec.links.push({
           path: pen.verbs,
           color: typeof state.stroke === "object" ? "#00000000" : cssHex(state.stroke),
@@ -306,6 +309,7 @@ function recorder(): { ctx: Canvas2D; roots: Rec[]; done: () => Rec[] } {
     drawImage: () => {},
     setLineDash: (segments) => {
       state.dash = [...segments];
+      pen.dashed = true;
     },
     get fillStyle() {
       return state.fill;

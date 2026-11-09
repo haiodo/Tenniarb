@@ -64,6 +64,10 @@ type Box struct {
 	Lines      []string // wrapped text lines of an item with a title
 }
 
+// Classic reports whether the screen is a classic diagram rather than a scene: the profile of go/render,
+// which rounds every box and reads its text as markdown.
+func (s *Screen) Classic() bool { return s.p.classic }
+
 // Boxes lists the items of the screen in paint order, the element itself first.
 func (s *Screen) Boxes() []Box {
 	var out []Box
@@ -104,9 +108,14 @@ func (p *prep) paintOrder(rn *RNode) []*RNode {
 	return out
 }
 
-// layerKey is the position of a node among its siblings; the zero layer is the middle pass.
+// layerKey is the position of a node among its siblings; the zero layer is the middle pass. A classic
+// diagram draws its links first, so a line passes under the boxes it crosses: the Swift editor inserts
+// them at the front.
 func (p *prep) layerKey(rn *RNode) int {
 	if rn.Kind != RItem {
+		if p.classic {
+			return 0
+		}
 		return 1
 	}
 	switch p.styles[rn].layer {
@@ -361,7 +370,9 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			d := 2 * float64(3-i)
 			sheet := &gfx.Path{}
 			sheet.RoundRect4(d, -d, w, h, st.radius)
-			r.FillShadowPath(sheet, st.fill, stackShadow())
+			sh := stackShadow()
+			sh.Screen = b.p.opts.ScreenShadows
+			r.FillShadowPath(sheet, st.fill, sh)
 		}
 	}
 	if st.display != "text" && st.display != "no-fill" && st.fill.A > 0 {
@@ -430,8 +441,13 @@ func boxPath(st style, w, h float64) *gfx.Path {
 	if st.display == "circle" {
 		return gfx.EllipsePath(gfx.R(0, 0, w, h))
 	}
+	radius := st.radius
+	if st.radiusDefault && (w < 2 || h < 2) {
+		// A hairline is a divider, not a pill: the classic renderer keeps it square.
+		radius = [4]float64{}
+	}
 	p := &gfx.Path{}
-	p.RoundRect4(0, 0, w, h, st.radius)
+	p.RoundRect4(0, 0, w, h, radius)
 	return p
 }
 
@@ -701,6 +717,7 @@ type style struct {
 	dash               []float64 // line-style dashed or dotted; nil is a solid line
 	dashPhase          float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
+	radiusDefault      bool       // the radius of a classic diagram, which a hairline does not take
 	display            string     // rect when unset; no-fill, circle, stack, text or none
 	layer              int        // draw order among the siblings
 	clip               bool
@@ -757,6 +774,10 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 	st.dash, st.dashPhase = p.dash(rn)
 	if pr := p.prop(rn, "corner-radius"); pr != nil {
 		st.radius = p.radii(pr)
+	} else if p.classic {
+		// The classic renderer rounds every box by 8 points unless the file says otherwise.
+		st.radius = [4]float64{classicRadius, classicRadius, classicRadius, classicRadius}
+		st.radiusDefault = true
 	}
 	if pr := p.prop(rn, "display"); pr != nil {
 		st.display, _ = pr.text(0)

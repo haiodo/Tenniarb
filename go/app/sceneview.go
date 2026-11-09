@@ -207,7 +207,8 @@ func (v *Viewer) drawSceneView(tx *gfx.Tx, sv *sceneView) error {
 
 // sceneOptions are what go/scene lays e out with: a classic diagram reads its values from the model.
 func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
-	o := scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, EvalVars: exec.SceneEvalVars}
+	// The window keeps the shadows in screen points while the view zooms, as the classic renderer did.
+	o := scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, EvalVars: exec.SceneEvalVars, ScreenShadows: true}
 	if !v.isScene(e) {
 		// The evaluator is made when the first expression asks for it: most diagrams have none.
 		var vals func(scene.ClassicRef, string) ([]string, bool)

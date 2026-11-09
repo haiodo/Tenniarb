@@ -1,0 +1,240 @@
+{
+  "element": "Styles",
+  "height": 190,
+  "links": [
+    {
+      "arrow": true,
+      "color": "#cc3333",
+      "dash": [
+        5,
+        5
+      ],
+      "parent": "",
+      "path": [
+        [
+          "m",
+          50,
+          0
+        ],
+        [
+          "l",
+          50,
+          -40
+        ]
+      ],
+      "phase": 5,
+      "width": 2
+    }
+  ],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Styles",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 190,
+        "w": 400,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef4ff",
+      "gradient": null,
+      "name": "A",
+      "opacity": 1,
+      "path": "A",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 100,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 5,
+          "color": "#00000055",
+          "dx": -5,
+          "dy": 5
+        }
+      ],
+      "text": [
+        "A"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef4ff",
+      "gradient": null,
+      "name": "B",
+      "opacity": 1,
+      "path": "B",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 100,
+        "x": 0,
+        "y": -80
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 5,
+          "color": "#00000055",
+          "dx": -5,
+          "dy": 5
+        }
+      ],
+      "text": [
+        "B"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef4ff",
+      "gradient": null,
+      "name": "C",
+      "opacity": 1,
+      "path": "C",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 100,
+        "x": 160,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 2,
+          "color": "#00000055",
+          "dx": -2,
+          "dy": 2
+        }
+      ],
+      "text": [
+        "C"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef4ff",
+      "gradient": null,
+      "name": "D",
+      "opacity": 1,
+      "path": "D",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 90,
+        "w": 220,
+        "x": 160,
+        "y": 100
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 5,
+          "color": "#00000055",
+          "dx": -5,
+          "dy": 5
+        }
+      ],
+      "text": [
+        "plain",
+        " ",
+        "red",
+        " ",
+        "big",
+        "blue text",
+        " plain ",
+        "bigger"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#000000",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#cccccc",
+      "gradient": null,
+      "name": "Divider",
+      "opacity": 1,
+      "path": "Divider",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 1,
+        "w": 80,
+        "x": 320,
+        "y": 40
+      },
+      "rotate": 0,
+      "shadows": [
+        {
+          "blur": 5,
+          "color": "#00000055",
+          "dx": -5,
+          "dy": 5
+        }
+      ],
+      "text": [
+        "Divider"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 400
+}

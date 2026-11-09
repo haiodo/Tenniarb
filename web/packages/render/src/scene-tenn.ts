@@ -1603,6 +1603,43 @@ function applyStyles(r: RNode): void {
   }
 }
 
+/**
+ * A classic diagram's `styles { item … }` and `styles { line … }` are the look of every box and every
+ * link of the element, not a style a node names: go/render read those two names that way.
+ */
+function classicDefaults(r: RNode): void {
+  if (r.src === null) {
+    return;
+  }
+  const item = r.src.styles.get("item");
+  const line = r.src.styles.get("line");
+  if (item === undefined && line === undefined) {
+    return;
+  }
+  const walk = (n: RNode): void => {
+    if (n.kind === "item") {
+      n.props = [...defaultProps("item", item, n), ...n.props];
+    } else if (n.kind === "link") {
+      n.props = [...defaultProps("line", line, n), ...n.props];
+    }
+    for (const k of n.kids) {
+      walk(k);
+    }
+  };
+  for (const k of r.kids) {
+    walk(k);
+  }
+}
+
+/** The properties a default style gives n; a shadow of n's own replaces the default one. */
+function defaultProps(name: string, st: TennStyle | undefined, n: RNode): SceneProp[] {
+  if (st === undefined || styleRefs(n.props).includes(normalizeName(name))) {
+    return [];
+  }
+  const ownShadow = n.props.some((p) => p.name === "shadow");
+  return st.props.filter((p) => !(ownShadow && p.name === "shadow"));
+}
+
 // MARK: - Animations (spec 13, go/scene/anim.go)
 
 const animatedProps = new Set(["rotate", "scale", "opacity", "color", "border-color", "text-color", "pos"]);
@@ -2057,6 +2094,102 @@ function propRefers(pr: SceneProp, ref: string): boolean {
     }
   }
   return false;
+}
+
+/** parenAt: a !(&/@ marker at i with a balanced (...) argument, the index after the closing one. */
+function parenAt(s: string, i: number): { mark: string; arg: string; next: number } | null {
+  const mark = s[i];
+  if (i + 1 >= s.length || s[i + 1] !== "(" || (mark !== "!" && mark !== "&" && mark !== "@")) {
+    return null;
+  }
+  let depth = 1;
+  for (let j = i + 2; j < s.length; j += 1) {
+    if (s[j] === "(") {
+      depth += 1;
+    } else if (s[j] === ")") {
+      depth -= 1;
+      if (depth === 0) {
+        return { mark, arg: s.slice(i + 2, j), next: j + 1 };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * A classic title cut at the !(colour) and &(size) markup of the markdown, the colours and sizes
+ * go/render gives the runs of a title; null when the title writes neither, so its text stays as written.
+ */
+function titleMarkupParts(prep: Prep, rn: RNode, ti: TextInfo): TitlePart[] | null {
+  const title = ti.text;
+  if (!title.includes("!(") && !title.includes("&(")) {
+    return null;
+  }
+  const imgs = inlineImages(prep, rn);
+  let color: Color | undefined;
+  let font: Font | undefined;
+  const parts: TitlePart[] = [];
+  let plain = "";
+  const flush = (): void => {
+    if (plain === "") {
+      return;
+    }
+    parts.push({ text: plain, img: null, font, color });
+    plain = "";
+  };
+  for (let i = 0; i < title.length; ) {
+    if (title[i] === "\\" && i + 1 < title.length && "@$*_#<~!".includes(title[i + 1]!)) {
+      plain += title[i + 1];
+      i += 2;
+      continue;
+    }
+    const m = parenAt(title, i);
+    if (m === null) {
+      plain += title[i];
+      i += 1;
+      continue;
+    }
+    if (m.mark === "!") {
+      flush();
+      const bar = m.arg.indexOf("|");
+      if (bar >= 0) {
+        const c = sceneColor(m.arg.slice(0, bar));
+        if (c !== null) {
+          parts.push({ text: m.arg.slice(bar + 1), img: null, font, color: c });
+        }
+      } else if (m.arg.trim() === "") {
+        color = undefined;
+      } else {
+        color = sceneColor(m.arg) ?? undefined;
+        if (color === undefined) {
+          prep.diag.warn(rn.src ?? { line: 0, col: 0 }, `!(${m.arg}): no such color, the default is used`);
+        }
+      }
+    } else if (m.mark === "&") {
+      flush();
+      const bar = m.arg.indexOf("|");
+      if (bar >= 0) {
+        const v = markupSize(m.arg.slice(0, bar));
+        if (v !== null) {
+          parts.push({ text: m.arg.slice(bar + 1), img: null, font: { ...(font ?? ti.font), size: v }, color });
+        }
+      } else {
+        const v = markupSize(m.arg);
+        font = v === null ? undefined : { ...ti.font, size: v };
+      }
+    } else {
+      const img = resolveInline(imgs, m.arg);
+      if (img !== null) {
+        flush();
+        parts.push({ text: "", img, font, color });
+      } else {
+        plain += title.slice(i, m.next);
+      }
+    }
+    i = m.next;
+  }
+  flush();
+  return parts;
 }
 
 /** splitTitleImages: a title cut at the inline pictures it names; null when it names none. */
@@ -2584,17 +2717,25 @@ interface Font {
   name: string;
 }
 
-/** A span of a title: text in the item font, or an inline picture of a classic diagram. */
+/**
+ * A span of a title: text in the item font or in a size of its own, or an inline picture of a classic
+ * diagram. `color` marks a run the !(...) markup coloured; without it the run takes the text colour of
+ * the item, which is only known when the title is drawn.
+ */
 interface TitlePart {
   text: string;
   img: InlineRef | null;
+  font?: Font;
+  color?: Color;
 }
 
-/** One laid out line of a title; h grows above lineH for an inline picture. */
+/** One laid out line of a title; h grows above lineH for a larger run or an inline picture. */
 interface TitleLine {
   parts: TitlePart[];
   w: number;
   h: number;
+  asc: number;
+  desc: number;
 }
 
 interface TextInfo {
@@ -2612,7 +2753,15 @@ interface TextInfo {
 }
 
 /** gfx.EstimateText: 0.6 em per rune, ascent 0.8 em, descent 0.25 em. */
-const textWidth = (ti: TextInfo, s: string): number => [...s].length * (ti.font.size * 0.6 + ti.font.spacing);
+const fontWidth = (f: Font, s: string): number => [...s].length * (f.size * 0.6 + f.spacing);
+const textWidth = (ti: TextInfo, s: string): number => fontWidth(ti.font, s);
+
+/** The font of a part, the title font for a part that names none. */
+const partFont = (ti: TextInfo, part: TitlePart): Font => part.font ?? ti.font;
+
+/** The advance of a part, its picture or its text in its own font. */
+const partWidth = (ti: TextInfo, part: TitlePart): number =>
+  part.img !== null ? part.img.w : fontWidth(partFont(ti, part), part.text);
 
 /** The cap height of SF over the font size, as go/render hangs an inline picture from the line. */
 const capHeightRatio = 1490 / 2048;
@@ -2647,11 +2796,12 @@ function titleHeight(ti: TextInfo, w: number): number {
 /** Go's textInfo.layout: the title broken at the references, an inline picture counting as one box. */
 function titleLayout(ti: TextInfo, w: number): TitleLine[] {
   const lines: TitleLine[] = [];
-  let line: TitleLine = { parts: [], w: 0, h: ti.lineH };
+  const empty = (): TitleLine => ({ parts: [], w: 0, h: ti.lineH, asc: ti.asc, desc: ti.desc });
+  let line = empty();
   let started = false;
   const flush = (): void => {
     lines.push(line);
-    line = { parts: [], w: 0, h: ti.lineH };
+    line = empty();
     started = false;
   };
   const add = (part: TitlePart): void => {
@@ -2662,7 +2812,13 @@ function titleLayout(ti: TextInfo, w: number): TitleLine[] {
       started = true;
       return;
     }
-    line.w += textWidth(ti, part.text);
+    const f = partFont(ti, part);
+    line.w += fontWidth(f, part.text);
+    if (f !== ti.font) {
+      line.asc = Math.max(line.asc, f.size * 0.8);
+      line.desc = Math.max(line.desc, f.size * 0.25);
+      line.h = Math.max(line.h, Math.round(f.size * 1.05));
+    }
     started = started || part.text !== "";
   };
   for (const part of ti.parts ?? []) {
@@ -2673,6 +2829,7 @@ function titleLayout(ti: TextInfo, w: number): TitleLine[] {
       add(part);
       continue;
     }
+    const f = partFont(ti, part);
     part.text.split("\n").forEach((para, pi) => {
       if (pi > 0) {
         flush();
@@ -2686,12 +2843,12 @@ function titleLayout(ti: TextInfo, w: number): TitleLine[] {
           if (text === "" || (!started && text.trim() === "")) {
             return;
           }
-          if (started && text.trim() !== "" && w > 0 && line.w + textWidth(ti, text) > w + 1e-9) {
+          if (started && text.trim() !== "" && w > 0 && line.w + fontWidth(f, text) > w + 1e-9) {
             flush();
             text = piece;
           }
           if (text !== "") {
-            add({ text, img: null });
+            add({ text, img: null, font: part.font, color: part.color });
           }
         });
       });
@@ -2762,6 +2919,7 @@ const bodyHeadGap2 = 6;
 interface BodyRun {
   text: string;
   font: Font;
+  color?: Color; // the colour !(...) set, the body colour when unset
   code: boolean; // drawn over the code background
   img?: InlineRef; // an inline picture of a classic diagram: text is empty
 }
@@ -2885,28 +3043,54 @@ function normalizeInline(s: string): string {
   return out;
 }
 
-/** One line of markdown as runs: the lexer's tokens, code spans kept literal by normalizeInline. */
+/** `&(size)`: a number, else the markup sets nothing, as go/render reads it. */
+function markupSize(s: string): number | null {
+  const t = s.trim();
+  const v = Number(t);
+  return t === "" || !Number.isFinite(v) ? null : v;
+}
+
+/**
+ * One line of markdown as runs: the lexer's tokens, code spans kept literal by normalizeInline.
+ * `!(colour)` and `&(size)` set the colour and font until `!()` and `&()`; `!(colour|text)` and
+ * `&(size|text)` style one span, as go/render gives them.
+ */
 function bodyInline(b: BodyText, s: string): BodyRun[] {
   const runs: BodyRun[] = [];
-  const add = (text: string, font: Font, code: boolean): void => {
+  let font = b.font;
+  let color: Color | undefined;
+  const add = (text: string, f: Font, code: boolean, c: Color | undefined = color): void => {
     if (text === "") {
       return;
     }
     const last = runs[runs.length - 1];
-    if (last !== undefined && bodyFontKey(last.font) === bodyFontKey(font) && last.code === code) {
+    if (
+      last !== undefined &&
+      bodyFontKey(last.font) === bodyFontKey(f) &&
+      last.code === code &&
+      last.color === c
+    ) {
       last.text += text;
       return;
     }
-    runs.push({ text, font, code });
+    runs.push({ text, font: f, code, color: c });
+  };
+  const markupColor = (name: string): Color | undefined => {
+    const c = sceneColor(name);
+    if (c === null) {
+      b.prep.diag.warn(b.pos, `!(${name}): no such color, the default is used`);
+      return undefined;
+    }
+    return c;
   };
   const lexer = new MarkdownLexer(normalizeInline(s));
   for (let t = lexer.getToken(); t !== null; t = lexer.getToken()) {
     switch (t.type) {
       case "bold":
-        add(t.literal, bodyStyled(b.font, 700, false), false);
+        add(t.literal, bodyStyled(font, 700, false), false);
         break;
       case "italic":
-        add(t.literal, bodyStyled(b.font, 0, true), false);
+        add(t.literal, bodyStyled(font, 0, true), false);
         break;
       case "code":
         add(t.literal, b.mono, true);
@@ -2914,28 +3098,46 @@ function bodyInline(b: BodyText, s: string): BodyRun[] {
       case "image": {
         const img = resolveInline(b.imgs, t.literal);
         if (img !== null) {
-          runs.push({ text: "", font: b.font, code: false, img });
+          runs.push({ text: "", font, code: false, img });
         } else {
-          add(`@(${t.literal})`, b.font, false);
+          add(`@(${t.literal})`, font, false);
         }
         break;
       }
-      case "color":
-        add(`!(${t.literal})`, b.font, false);
+      case "color": {
+        const bar = t.literal.indexOf("|");
+        if (bar >= 0) {
+          add(t.literal.slice(bar + 1), font, false, markupColor(t.literal.slice(0, bar)));
+        } else if (t.literal.trim() === "") {
+          color = undefined;
+        } else {
+          color = markupColor(t.literal);
+        }
         break;
-      case "font":
-        add(`&(${t.literal})`, b.font, false);
+      }
+      case "font": {
+        const bar = t.literal.indexOf("|");
+        if (bar >= 0) {
+          const v = markupSize(t.literal.slice(0, bar));
+          if (v !== null) {
+            add(t.literal.slice(bar + 1), { ...font, size: v }, false);
+          }
+        } else {
+          const v = markupSize(t.literal);
+          font = v === null ? b.font : { ...b.font, size: v };
+        }
         break;
+      }
       case "underline":
-        add(`<${t.literal}>`, b.font, false);
+        add(`<${t.literal}>`, font, false);
         break;
       case "scratch":
-        add(`~${t.literal}~`, b.font, false);
+        add(`~${t.literal}~`, font, false);
         break;
       case "eof":
         break;
       default:
-        add(t.literal, b.font, false);
+        add(t.literal, font, false);
     }
   }
   return runs;
@@ -3125,10 +3327,16 @@ function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, co
         flush();
       }
       const last = line.runs[line.runs.length - 1];
-      if (last !== undefined && last.img === undefined && bodyFontKey(last.font) === bodyFontKey(run.font) && last.code === run.code) {
+      if (
+        last !== undefined &&
+        last.img === undefined &&
+        bodyFontKey(last.font) === bodyFontKey(run.font) &&
+        last.code === run.code &&
+        last.color === run.color
+      ) {
         last.text += tok;
       } else {
-        line.runs.push({ text: tok, font: run.font, code: run.code });
+        line.runs.push({ text: tok, font: run.font, code: run.code, color: run.color });
       }
       line.w += w;
       started = true;
@@ -3579,7 +3787,7 @@ function drawBody(ctx: Canvas2D, b: BodyText, x: number, y: number, width: numbe
       }
       if (run.text !== "") {
         ctx.font = fontCss(run.font);
-        ctx.fillStyle = sceneCss(b.color);
+        ctx.fillStyle = sceneCss(run.color ?? b.color);
         ctx.fillText(run.text, xx, base);
       }
       xx += w;
@@ -3604,6 +3812,8 @@ interface Look {
   dash: number[];
   dashPhase: number;
   radius: [number, number, number, number];
+  /** The radius a classic diagram gives every box; a hairline keeps square corners. */
+  radiusDefault: boolean;
   /** `display`: rect when unset, else no-fill, circle, stack, text or none. */
   display: string;
   /** `layer` as the sort key among the siblings: 0 background, 1 the rest, 2 hover. */
@@ -3821,6 +4031,8 @@ const textPadX = 10;
 const textPadY = 6;
 /** The inset go/render gives a text leaf of a classic diagram when `padding` is not written. */
 const classicTextPad = 4;
+/** The corner radius go/render gives a box of a classic diagram. */
+const classicRadius = 8;
 const fontName = "Helvetica, Arial, sans-serif";
 const codeFont = "Inter";
 
@@ -4117,9 +4329,12 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     asc: size * 0.8,
     desc: size * 0.25,
     text: title,
-    parts: prep.classic ? splitTitleImages(title, inlineImages(prep, rn)) : null,
+    parts: null,
     prep,
   };
+  if (prep.classic) {
+    ti.parts = titleMarkupParts(prep, rn, ti) ?? splitTitleImages(title, inlineImages(prep, rn));
+  }
   const lh = propOf(prep, rn, "line-height");
   if (lh !== null) {
     const v = propNum(lh, 0);
@@ -4200,6 +4415,7 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     dash: [],
     dashPhase: 0,
     radius: [0, 0, 0, 0],
+    radiusDefault: false,
     display: "",
     layer: 1,
     clip: false,
@@ -4225,6 +4441,10 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   const radius = propOf(prep, rn, "corner-radius");
   if (radius !== null) {
     look.radius = radii(prep, radius);
+  } else if (prep.classic) {
+    // go/render rounds every box of a classic diagram by 8 points unless the file says otherwise.
+    look.radius = [classicRadius, classicRadius, classicRadius, classicRadius];
+    look.radiusDefault = true;
   }
   const display = propOf(prep, rn, "display");
   if (display !== null) {
@@ -4288,7 +4508,9 @@ const holdsItems = (rn: RNode): boolean => rn.kids.some((k) => k.kind === "item"
  * item and stays in the middle pass. The order is the picture only, not the layout.
  */
 function paintOrder(prep: Prep, rn: RNode): RNode[] {
-  const rank = (k: RNode): number => (k.kind === "item" ? (prep.looks.get(k)?.layer ?? 1) : 1);
+  // A classic diagram draws its links first, so a line passes under the boxes it crosses: the Swift
+  // editor inserts them at the front of the element.
+  const rank = (k: RNode): number => (k.kind === "item" ? (prep.looks.get(k)?.layer ?? 1) : prep.classic ? 0 : 1);
   return rn.kids
     .map((k, i) => ({ k, i, rank: rank(k) }))
     .sort((a, b) => a.rank - b.rank || a.i - b.i)
@@ -4749,6 +4971,17 @@ function roundRectPath(ctx: Canvas2D, x: number, y: number, w: number, h: number
 }
 
 /** Go's boxPath: an ellipse for display circle, else the rounded rectangle. */
+/**
+ * The corner radius of a classic box: go/render keeps a hairline square, since a divider of height 1
+ * would otherwise draw rounded ends.
+ */
+function boxRadius(look: Look, w: number, h: number): [number, number, number, number] {
+  if (look.radiusDefault && (w < 2 || h < 2)) {
+    return [0, 0, 0, 0];
+  }
+  return look.radius;
+}
+
 function boxPath(
   ctx: Canvas2D,
   display: string,
@@ -4870,24 +5103,27 @@ function drawTextParts(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNo
           x = (w - ln.w) / 2;
       }
     }
-    const base = y + (ln.h - ti.lineH) / 2 + (ti.lineH - (ti.asc + ti.desc)) / 2 + ti.asc;
+    const base = y + (ln.h - (ln.asc + ln.desc)) / 2 + ln.asc;
     for (const part of ln.parts) {
       if (part.img !== null) {
         const raster = inlineRaster(ti.prep, part.img.im);
         if (raster !== null) {
-          ctx.drawImage(raster, x, base - (ti.font.size * capHeightRatio) / 2 - part.img.h / 2, part.img.w, part.img.h);
+          ctx.drawImage(raster, x, base - (partFont(ti, part).size * capHeightRatio) / 2 - part.img.h / 2, part.img.w, part.img.h);
         }
         x += part.img.w;
         continue;
       }
+      const f = partFont(ti, part);
       if (part.text !== "") {
+        ctx.font = fontCss(f);
+        ctx.fillStyle = sceneCss(part.color ?? color);
         if (shadow === undefined) {
           ctx.fillText(part.text, x, base);
         } else {
           withShadow(ctx, shadow, () => ctx.fillText(part.text, x, base));
         }
       }
-      x += textWidth(ti, part.text);
+      x += fontWidth(f, part.text);
     }
     y += ln.h;
   }
@@ -4975,6 +5211,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
   }
   const classic = !sceneRoot(expanded);
   if (classic) {
+    classicDefaults(expanded);
     // A classic diagram takes its expressions from the element model, as go/render's ClassicValues
     // does; the classic renderer builds the same ExecutionContext, so both draw the same values.
     const context = options.context ?? createExecutionContext();
@@ -5053,8 +5290,9 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             drawText(ctx, ti, w, h, true, look.text);
           }
         } else {
+          const rad = boxRadius(look, w, h);
           if (look.clip) {
-            roundRectPath(ctx, 0, 0, w, h, look.radius);
+            roundRectPath(ctx, 0, 0, w, h, rad);
             ctx.clip();
           }
           // text draws no box at all; no-fill draws only its border.
@@ -5063,7 +5301,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
               // Three sheets behind the box, stepped 2 up and right, each under the stack shadow.
               for (let i = 1; i <= 3; i += 1) {
                 const d = 2 * (3 - i);
-                boxPath(ctx, display, d, -d, w, h, look.radius);
+                boxPath(ctx, display, d, -d, w, h, rad);
                 withShadow(ctx, stackShadow, () => {
                   ctx.fillStyle = sceneCss(look.fill);
                   ctx.fill();
@@ -5075,7 +5313,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             // border without a fill casts the shadow instead.
             let shadows = look.shadows;
             if (display !== "no-fill" && look.fill.a > 0) {
-              boxPath(ctx, display, 0, 0, w, h, look.radius);
+              boxPath(ctx, display, 0, 0, w, h, rad);
               const base = { ...look.fill, a: 1 };
               for (const sh of shadows) {
                 withShadow(ctx, sh, () => {
@@ -5097,11 +5335,11 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             const boxImage = prep.inlineBox.get(rn);
             if (boxImage !== undefined && (display === "" || display === "rect")) {
               const fitProp = propOf(prep, rn, "fit");
-              drawPicture(ctx, prep, boxImage, fitProp === null ? "fill" : propText(fitProp, 0), w, h, look.radius);
+              drawPicture(ctx, prep, boxImage, fitProp === null ? "fill" : propText(fitProp, 0), w, h, rad);
             }
             if (look.lineW > 0 && look.border.a > 0) {
               const inset = look.lineW / 2;
-              const radius = look.radius.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
+              const radius = rad.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
               boxPath(ctx, display, inset, inset, w - look.lineW, h - look.lineW, radius);
               ctx.lineWidth = look.lineW;
               ctx.strokeStyle = sceneCss(look.border);

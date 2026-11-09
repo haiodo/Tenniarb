@@ -1,0 +1,21 @@
+// A classic element's `styles { item }` and `styles { line }` are the look of every box and every link
+// of the element, as go/render read them, not a style a node has to name. An item's own shadow replaces
+// the default one.
+element "Styles" {
+    styles {
+        item { color #eef4ff; shadow -5 -5 5 }
+        line { color #cc3333; line-width 2; line-style dashed }
+    }
+    item A { pos 0 0; width 100; height 40; title "A" }
+    item B { pos 0 80; width 100; height 40; title "B" }
+    item C { pos 160 0; width 100; height 40; title "C"; shadow -2 -2 2 }
+    item D {
+        pos 160 -100
+        width 220
+        height 90
+        title "plain !(red|red) &(24|big)"
+        body %{!(blue)blue text!() plain &(24|bigger)}
+    }
+    item Divider { pos 320 -40; width 80; height 1; color #cccccc }
+    link A B { display arrow }
+}

@@ -22,6 +22,10 @@ type Options struct {
 	FontName string
 	// FirstID is the id of the first scene node made; ids grow from there. 1 when zero.
 	FirstID int
+	// ScreenShadows keeps the offsets and the blur of a shadow in screen points while the view zooms, as
+	// CGContext.setShadow does in the window of the classic editor; an export scales them with the content,
+	// so it leaves this false.
+	ScreenShadows bool
 	// noExprWarn: expressions are a normal value here, not worth a warning (validate lays out without an
 	// evaluator, so every ${...} of a screen would be reported).
 	noExprWarn bool
@@ -48,6 +52,8 @@ const (
 	classicTextPad = 4.0
 	// capHeightRatio is the cap height of SF over the font size, as go/render places an inline picture.
 	capHeightRatio = 1490.0 / 2048
+	// classicRadius is the corner radius go/render gives a box of a classic diagram.
+	classicRadius = 8.0
 )
 
 // prep turns resolved nodes into a layout tree and keeps what the drawing needs.

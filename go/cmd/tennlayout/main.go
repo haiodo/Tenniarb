@@ -66,14 +66,14 @@ func layout(root, file, path string) ([]byte, error) {
 	for _, w := range screen.Warnings {
 		fmt.Fprintln(os.Stderr, w)
 	}
-	out := dump(screen)
+	out := dump(screen, screen.Classic())
 	out["element"] = path
 	return json.MarshalIndent(out, "", "  ")
 }
 
 // dump walks the placed items in paint order and reads each one's picture: what gfx draws is what a
 // backend paints, so the golden is the render itself and not a second reading of the properties.
-func dump(screen *scene.Screen) map[string]any {
+func dump(screen *scene.Screen, classic bool) map[string]any {
 	boxes := screen.Boxes()
 	var placed []*scene.Placed
 	var walk func(p *scene.Placed)
@@ -91,7 +91,7 @@ func dump(screen *scene.Screen) map[string]any {
 		if i < len(boxes) {
 			path = boxes[i].Path
 		}
-		nodes = append(nodes, node(pl, path))
+		nodes = append(nodes, node(pl, path, classic))
 		if pl.Gfx != nil {
 			paths[pl.Gfx] = path
 		}
@@ -204,7 +204,7 @@ func pathPoints(p *gfx.Path) []any {
 	return out
 }
 
-func node(pl *scene.Placed, path string) map[string]any {
+func node(pl *scene.Placed, path string, classic bool) map[string]any {
 	var fill, border, text *gfx.Color
 	var borderW float64
 	var lines []string
@@ -262,7 +262,7 @@ func node(pl *scene.Placed, path string) map[string]any {
 	if fill != nil || clip {
 		// A clip or a fill draws the rounded rectangle of the item itself: the property is the radius
 		// (a border-only item draws it inside by half the line width, which pathRadius has read).
-		radius = propRadius(pl, pl.W, pl.H)
+		radius = propRadius(pl, pl.W, pl.H, classic)
 	}
 	out := map[string]any{
 		"path":   path,
@@ -367,20 +367,26 @@ func pathRadius(p *gfx.Path) [4]float64 {
 }
 
 // propRadius is the corner-radius of the item, clamped as go/scene's RoundRect4 clamps it.
-func propRadius(pl *scene.Placed, w, h float64) [4]float64 {
+func propRadius(pl *scene.Placed, w, h float64, classic bool) [4]float64 {
 	var out [4]float64
 	pr := pl.Prop("corner-radius")
-	if pr == nil {
+	// A classic diagram rounds every box by 8 points unless the file says otherwise; a circle and a
+	// hairline are drawn as they are.
+	switch {
+	case pr == nil && (!classic || displayOf(pl) == "circle" || w < 2 || h < 2):
 		return out
-	}
-	first, _ := pr.Num(0)
-	for i := range out {
-		out[i] = first
-	}
-	if n := len(pr.Values()); n == 4 {
+	case pr == nil:
+		out = [4]float64{8, 8, 8, 8}
+	default:
+		first, _ := pr.Num(0)
 		for i := range out {
-			if v, ok := pr.Num(i); ok {
-				out[i] = v
+			out[i] = first
+		}
+		if n := len(pr.Values()); n == 4 {
+			for i := range out {
+				if v, ok := pr.Num(i); ok {
+					out[i] = v
+				}
 			}
 		}
 	}
@@ -389,6 +395,16 @@ func propRadius(pl *scene.Placed, w, h float64) [4]float64 {
 		out[i] = math.Min(out[i], lim)
 	}
 	return out
+}
+
+// displayOf is the display word of the item, "rect" when unset.
+func displayOf(pl *scene.Placed) string {
+	if pr := pl.Prop("display"); pr != nil {
+		if v := pr.Values(); len(v) > 0 {
+			return v[0]
+		}
+	}
+	return "rect"
 }
 
 // mergeRadii keeps the largest radius of every corner across the paths of an item: the fill path has
