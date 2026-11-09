@@ -1,0 +1,134 @@
+{
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "x": 40.25,
+      "y": 40.5,
+      "width": 240.5,
+      "height": 120.25,
+      "color": "1",
+      "text": "Notes\n\nA **markdown** body with a `code` span."
+    },
+    {
+      "id": "n2",
+      "type": "text",
+      "x": 340,
+      "y": 40,
+      "width": 200,
+      "height": 80,
+      "color": "2",
+      "text": "Second card"
+    },
+    {
+      "id": "n3",
+      "type": "file",
+      "x": 40,
+      "y": 220,
+      "width": 220,
+      "height": 140,
+      "color": "3",
+      "file": "assets/cover.png"
+    },
+    {
+      "id": "n4",
+      "type": "link",
+      "x": 340,
+      "y": 220,
+      "width": 240,
+      "height": 80,
+      "color": "4",
+      "url": "https://example.com/docs"
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "x": 620.5,
+      "y": 30.75,
+      "width": 420.13,
+      "height": 300,
+      "color": "5",
+      "label": "Outer group"
+    },
+    {
+      "id": "n5",
+      "type": "text",
+      "x": 650,
+      "y": 70,
+      "width": 180,
+      "height": 100,
+      "color": "6",
+      "text": "Child card\nwith a line"
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "x": 850,
+      "y": 190,
+      "width": 170,
+      "height": 120,
+      "label": "Inner group"
+    },
+    {
+      "id": "n6",
+      "type": "link",
+      "x": 870,
+      "y": 220,
+      "width": 130,
+      "height": 60,
+      "url": "https://obsidian.md"
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "x": 620,
+      "y": 400,
+      "width": 420,
+      "height": 200,
+      "label": "Frame"
+    },
+    {
+      "id": "n7",
+      "type": "text",
+      "x": 650,
+      "y": 430,
+      "width": 150,
+      "height": 80,
+      "color": "1",
+      "text": "Plain child"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "n1",
+      "fromSide": "right",
+      "toNode": "n2",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "1",
+      "label": "flows to"
+    },
+    {
+      "id": "e2",
+      "fromNode": "n5",
+      "fromSide": "right",
+      "toNode": "g2",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "5",
+      "label": "into"
+    },
+    {
+      "id": "e3",
+      "fromNode": "n1",
+      "toNode": "g1"
+    },
+    {
+      "id": "e4",
+      "fromNode": "n4",
+      "toNode": "n3",
+      "color": "4"
+    }
+  ]
+}

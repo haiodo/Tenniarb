@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* `go/jsoncanvas` reads and writes JSON Canvas 1.0 and converts both ways: `text` becomes an item
+  with the first line as `title` and the rest as markdown `body`, `file` an `image` or a link item
+  outside the workspace, `link` an item with a markdown link, `group` a container, and edges become
+  `link` with `label`, `display arrow` and `route elbow` sides. Colours `1`..`6` take the nearest
+  `.tenn` shade, and everything the format cannot hold is a warning. `canvas2tenn` and
+  `tenn2canvas` in `go/cmd` run the conversion from the shell.
+
 * The inspector is one panel for a classic item and a scene node: Layout, Fill, Text, Border and Shape
   are built from the same rows for both, the scene node gains the `Display`, `Layer` and border `Style`
   rows the classic item always had, and `Padding` reads the same field on either side.
