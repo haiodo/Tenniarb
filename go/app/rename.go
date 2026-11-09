@@ -74,8 +74,8 @@ func keyTaken(n *scene.Node, key string) bool {
 	})
 }
 
-// planElementRename finds what the rename of e changes. Without a scene tree (a diagram document)
-// nothing refers to an element.
+// planElementRename finds what the rename of e changes. A diagram has nothing that names an element by
+// path, so only the session renames it.
 func (d *docCore) planElementRename(e *model.Element, name string) (*renamePlan, error) {
 	p := &renamePlan{name: strings.TrimSpace(name), el: e}
 	if err := d.checkRename(); err != nil {
@@ -84,7 +84,9 @@ func (d *docCore) planElementRename(e *model.Element, name string) (*renamePlan,
 	if p.name == "" || e.Parent == nil {
 		return nil, errors.New("The name cannot be empty.")
 	}
-	if n := d.elementNode(e); n != nil && d.stree != nil {
+	// A diagram-only document keeps its tree for the canvas: the model still names what refers to the
+	// element, as it did before the tree was loaded.
+	if n := d.elementNode(e); n != nil && d.kind != model.DocDiagram {
 		return p, d.planNode(p, n)
 	}
 	for _, s := range e.Parent.Elements {

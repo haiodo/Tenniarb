@@ -14,7 +14,6 @@ import (
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -243,7 +242,7 @@ func (v *Viewer) itemRows() []ItemRow {
 			return nil
 		}
 		return SceneRows(v.sv.node, "")
-	case v.session != nil && v.rendered != nil:
+	case v.session != nil:
 		return DiagramRows(v.session.Element())
 	}
 	return nil
@@ -472,18 +471,31 @@ func (v *Viewer) revealNode() {
 
 // revealItem centres a diagram item that is not all on the canvas.
 func (v *Viewer) revealItem(it *model.DiagramItem) {
-	d := v.session.Scene().Drawables[it]
-	if d == nil || v.rendered == nil {
+	var box gfx.Rect
+	switch {
+	case v.rendered != nil:
+		d := v.session.Scene().Drawables[it]
+		if d == nil {
+			return
+		}
+		box = v.smap.RectToGfx(d.Bounds())
+	case v.sceneDrawn():
+		pl := v.classicPlaced(it)
+		if pl == nil {
+			return
+		}
+		box = gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H)
+	default:
 		return
 	}
-	b, vis := d.Bounds(), v.visibleScene()
-	if b.X >= vis.X && b.Y >= vis.Y && b.X+b.Width <= vis.X+vis.Width && b.Y+b.Height <= vis.Y+vis.Height {
-		return
-	}
-	c := v.smap.ToGfx(render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2})
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
-	v.setCamera(CenterOn(comp.Camera(), gfx.Point{X: c.X, Y: c.Y}, float64(w), float64(h)))
+	cam := comp.Camera()
+	x, y := (box.Min.X-cam.Origin.X)*cam.Zoom, (box.Min.Y-cam.Origin.Y)*cam.Zoom
+	if x >= 0 && y >= 0 && x+box.W()*cam.Zoom <= float64(w) && y+box.H()*cam.Zoom <= float64(h) {
+		return
+	}
+	v.setCamera(CenterOn(cam, box.Center(), float64(w), float64(h)))
 }
 
 // itemsEntries is the context menu of the list: the commands of the selected node, and in a mounted

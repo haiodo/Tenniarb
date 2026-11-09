@@ -29,7 +29,7 @@ type indicatorKey struct {
 func (v *Viewer) itemBounds() []gfx.Rect {
 	var out []gfx.Rect
 	switch {
-	case v.sceneMode():
+	case v.sceneDrawn():
 		if v.sv.placed == nil {
 			return nil
 		}

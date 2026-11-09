@@ -21,18 +21,19 @@ import (
 
 // sceneView is a scene element on the canvas, drawn by go/scene.
 type sceneView struct {
-	el     *model.Element
-	node   *scene.Node
-	screen *scene.Screen // nil when the element has errors
-	placed *scene.Placed
-	byNode map[*scene.Node]*scene.Placed // the items written in the element that one can select, by what is written for them
-	byPath map[string]*scene.Placed      // every item one can select, by selection path
-	pathOf map[*scene.Placed]string
-	inst   map[*scene.Placed]instRef // the items drawn from a component, which the use around overrides
-	root   *gfx.Node                 // moved so that the content starts at the padding
-	off    gfx.Point                 // gfx scene = content + off
-	w, h   float64
-	drag   sceneDrag
+	el      *model.Element
+	classic bool // a classic diagram drawn by the scene: the session keeps the input and the selection
+	node    *scene.Node
+	screen  *scene.Screen // nil when the element has errors
+	placed  *scene.Placed
+	byNode  map[*scene.Node]*scene.Placed // the items written in the element that one can select, by what is written for them
+	byPath  map[string]*scene.Placed      // every item one can select, by selection path
+	pathOf  map[*scene.Placed]string
+	inst    map[*scene.Placed]instRef // the items drawn from a component, which the use around overrides
+	root    *gfx.Node                 // moved so that the content starts at the padding
+	off     gfx.Point                 // gfx scene = content + off
+	w, h    float64
+	drag    sceneDrag
 
 	// what the gfx tree was built from; a cached view is reused only while all of it holds
 	tree *scene.Tree
@@ -97,13 +98,17 @@ var accent = gfx.RGBA(0, 122, 255, 1)
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
-	oldSV, oldRendered := v.sv, v.rendered
+	oldSV, oldRendered, oldMap := v.sv, v.rendered, v.smap
 	// Looked up before the old view is put away, so a redraw of the same element builds anew.
 	sv := v.cachedScene(el, node)
 	cached := sv != nil
 	if !cached {
 		sv = newSceneView(el, node)
+		sv.classic = !v.isScene(el)
 	}
+	// A classic diagram stays where it is drawn across an edit, as it did on go/render: the camera and
+	// the map do not move with the bounds, so the items that did not change do not jump.
+	keep := !cached && sv.classic && oldSV != nil && v.shownElem == el && !v.pendingFit
 	v.cacheScene(oldSV)
 	err := sv.err
 	v.scene.Update(func(tx *gfx.Tx) {
@@ -119,23 +124,21 @@ func (v *Viewer) realizeScene() {
 			v.nextID = sv.next
 			return
 		}
-		sv.root = gfx.NewNode(1)
-		tx.Add(nil, sv.root)
-		if node == nil {
-			return
+		err = v.drawSceneView(tx, sv)
+		if keep && sv.root != nil {
+			sv.off = oldSV.off
+			tx.Move(sv.root, sv.off.X, sv.off.Y)
 		}
-		sv.screen, err = v.stree.BuildElement(tx, sv.root, node, scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, EvalVars: exec.SceneEvalVars})
-		next := 2
-		if sv.screen != nil {
-			sv.placed = sv.screen.Placed()
-			next = sv.screen.NextID
-		}
-		sv.bounds()
-		tx.Move(sv.root, sv.off.X, sv.off.Y)
-		v.nextID = next + 1
-		sv.tree, sv.ver, sv.next, sv.err = v.stree, v.version, v.nextID, err
 	})
 	v.rendered, v.overlay, v.sv = nil, nil, sv
+	if sv.classic && v.session != nil {
+		// The session owns the pointer and speaks in the model coordinates, so the map follows its scene.
+		v.smap = MapOf(v.session.Scene().Bounds())
+		if keep {
+			v.smap = oldMap
+		}
+		v.selNodes = nil // the paths of the selected scene nodes name nothing here
+	}
 	v.animStart(sv.screen)
 	if !cached {
 		v.sceneBuilds++
@@ -157,13 +160,58 @@ func (v *Viewer) realizeScene() {
 		v.pendingFit = first
 		v.placeCamera(first)
 		v.syncOutline()
-	} else if !v.pendingFit && oldSV != nil {
+	} else if !v.pendingFit && oldSV != nil && !sv.classic {
 		comp := v.view.Compositor()
 		v.setCamera(Follow(comp.Camera(), gfx.Point{X: sv.off.X - oldSV.off.X, Y: sv.off.Y - oldSV.off.Y}))
 	}
 	v.drawSceneOverlay()
 	v.rebuildItems()
 	v.syncIndicators()
+	v.moveInline()
+}
+
+// buildSceneView draws the element of sv into a fresh gfx root, as the canvas does.
+func (v *Viewer) buildSceneView(sv *sceneView) error {
+	var err error
+	v.scene.Update(func(tx *gfx.Tx) { err = v.drawSceneView(tx, sv) })
+	return err
+}
+
+// drawSceneView is buildSceneView inside the transaction of the caller: the root is added, the element
+// laid out, and the screen kept for the selection and the animations.
+func (v *Viewer) drawSceneView(tx *gfx.Tx, sv *sceneView) error {
+	var err error
+	sv.root = gfx.NewNode(1)
+	tx.Add(nil, sv.root)
+	if sv.node == nil {
+		return nil
+	}
+	sv.screen, err = v.stree.BuildElement(tx, sv.root, sv.node, v.sceneOptions(sv.el))
+	next := 2
+	if sv.screen != nil {
+		sv.placed, next = sv.screen.Placed(), sv.screen.NextID
+	}
+	sv.bounds()
+	tx.Move(sv.root, sv.off.X, sv.off.Y)
+	v.nextID = next + 1
+	sv.tree, sv.ver, sv.next, sv.err = v.stree, v.version, v.nextID, err
+	return err
+}
+
+// sceneOptions are what go/scene lays e out with: a classic diagram reads its values from the model.
+func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
+	o := scene.Options{Measurer: gfx.DefaultMeasurer, FirstID: 2, EvalVars: exec.SceneEvalVars}
+	if !v.isScene(e) {
+		// The evaluator is made when the first expression asks for it: most diagrams have none.
+		var vals func(scene.ClassicRef, string) ([]string, bool)
+		o.Classic = func(at scene.ClassicRef, prop string) ([]string, bool) {
+			if vals == nil {
+				vals = render.ClassicValues(e, render.NewExecContext(e, render.Options{FontFamily: "Helvetica, Arial, sans-serif"}))
+			}
+			return vals(at, prop)
+		}
+	}
+	return o
 }
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.
@@ -406,8 +454,86 @@ func isInside(n, ancestor *scene.Placed) bool {
 	return false
 }
 
-// sceneMode reports whether the canvas shows a scene element.
-func (v *Viewer) sceneMode() bool { return v.sv != nil && v.rendered == nil }
+// sceneDrawn reports whether the canvas draws the element through go/scene: a scene, or a classic
+// diagram whose picture the scene draws while the session keeps the input.
+func (v *Viewer) sceneDrawn() bool { return v.sv != nil }
+
+// sceneMode reports whether the canvas shows a scene element: the pointer, the keys and the edits are
+// the scene's. A classic diagram drawn by the scene stays out: it has no scene input yet.
+func (v *Viewer) sceneMode() bool { return v.sv != nil && v.rendered == nil && !v.sv.classic }
+
+// canvasSelection is what the scene picture outlines: the selected nodes of a scene, the selected items
+// of a classic diagram drawn by the scene.
+func (v *Viewer) canvasSelection() []string {
+	if v.sceneMode() {
+		return v.selNodes
+	}
+	sel := map[*model.DiagramItem]bool{}
+	for _, it := range v.sessionItems() {
+		sel[it] = true
+	}
+	var out []string
+	for _, pl := range v.sv.byPath {
+		if pl.Src != nil && sel[classicItemAt(v.state.Current, pl.Src)] {
+			out = append(out, v.sv.pathOf[pl])
+		}
+	}
+	return out
+}
+
+// classicPlaced is where the scene draws the classic item it of the element on the canvas.
+func (v *Viewer) classicPlaced(it *model.DiagramItem) *scene.Placed {
+	if v.sv == nil || v.state.Current == nil {
+		return nil
+	}
+	for _, pl := range v.sv.byPath {
+		if pl.Src != nil && classicItemAt(v.state.Current, pl.Src) == it {
+			return pl
+		}
+	}
+	return nil
+}
+
+// classicItemAt is the model item of a drawn classic item: both keep file order, so the n-th drawn item
+// of its parent is the n-th item of the element, a mounted element's file included.
+func classicItemAt(e *model.Element, n *scene.Node) *model.DiagramItem {
+	if e == nil || n == nil || n.Parent == nil {
+		return nil
+	}
+	k := 0
+	for _, c := range n.Parent.Content {
+		if c == n {
+			break
+		}
+		if c.Kind == scene.KItem {
+			k++
+		}
+	}
+	for _, it := range e.Items {
+		if it.Kind != model.ItemKindItem {
+			continue
+		}
+		if k == 0 {
+			return it
+		}
+		k--
+	}
+	return nil
+}
+
+// classicNamed is where the scene draws the classic item with the model name name, the way a comment or a
+// mark names an item.
+func (v *Viewer) classicNamed(name string) *scene.Placed {
+	if v.state.Current == nil {
+		return nil
+	}
+	for _, it := range v.state.Current.Items {
+		if it.Name == name && !it.IsLink() {
+			return v.classicPlaced(it)
+		}
+	}
+	return nil
+}
 
 // selectedScene is the first selected scene node and where it is drawn (nil when not drawn). A part of
 // a component has no node of its own: nil and where it is drawn, see selectedInst.
@@ -555,8 +681,8 @@ func (v *Viewer) drawSceneOverlay() {
 	v.syncMarks() // the marks sit on the nodes, so they move with the camera
 	comp := v.view.Compositor()
 	pic := gfx.NewRecorder().Finish()
-	if v.sceneMode() {
-		pic = v.sv.selectionPicture(v.selNodes, comp.Camera())
+	if v.sceneDrawn() {
+		pic = v.sv.selectionPicture(v.canvasSelection(), comp.Camera())
 	}
 	if v.selHUD != nil || pic.Len() > 0 {
 		comp.HUD().Update(func(tx *gfx.Tx) {

@@ -367,6 +367,16 @@ func (v *Viewer) anchorAt(at gfx.Point) comments.Anchor {
 		s := v.smap.ToScene(p)
 		return comments.Point{X: s.X, Y: s.Y}
 	}
+	if v.sceneDrawn() { // a classic diagram drawn by the scene: the anchor names the model item
+		off := v.sv.off
+		hit := v.sv.hitScene(gfx.Point{X: at.X - off.X, Y: at.Y - off.Y})
+		if hit != nil && hit.Src != nil {
+			if it := classicItemAt(v.state.Current, hit.Src); it != nil {
+				return AnchorAt(element, it.Name, gfx.R(hit.X+off.X, hit.Y+off.Y, hit.W, hit.H), at, toElement)
+			}
+		}
+		return AnchorAt(element, "", gfx.Rect{}, at, toElement)
+	}
 	name, box := v.itemAt(at)
 	return AnchorAt(element, name, box, at, toElement)
 }
@@ -389,6 +399,18 @@ func (v *Viewer) placePins() []Pin {
 		}
 		return PlacePins(v.cm.list, element, v.cm.resolved, box, func(p comments.Point) gfx.Point {
 			return gfx.Point{X: off.X + p.X, Y: off.Y + p.Y}
+		})
+	case v.sceneDrawn(): // a classic diagram drawn by the scene: the anchor names the model item
+		off := v.sv.off
+		box := func(node string) (gfx.Rect, bool) {
+			pl := v.classicNamed(node)
+			if pl == nil {
+				return gfx.Rect{}, false
+			}
+			return gfx.R(pl.X+off.X, pl.Y+off.Y, pl.W, pl.H), true
+		}
+		return PlacePins(v.cm.list, element, v.cm.resolved, box, func(p comments.Point) gfx.Point {
+			return v.smap.ToGfx(renderPoint(p))
 		})
 	case v.session != nil && v.rendered != nil:
 		ds := v.session.Scene()

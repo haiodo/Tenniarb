@@ -446,7 +446,7 @@ func (v *Viewer) sceneReload() {
 	if v.win == nil {
 		return
 	}
-	if v.session != nil && v.isScene(v.state.Current) {
+	if v.session != nil && v.drawsWithScene(v.state.Current) {
 		v.realizeScene()
 	}
 	v.rebuildOutline(v.expandedRows())

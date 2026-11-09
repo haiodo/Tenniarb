@@ -148,6 +148,15 @@ func (d *docCore) sessionChanged() {
 	d.loadScene()
 }
 
+// sceneCanvasOn draws every element through go/scene, a classic diagram included; TENNIARB_SCENE_CANVAS=0
+// keeps a classic diagram on go/render while the new canvas is settling.
+var sceneCanvasOn = os.Getenv("TENNIARB_SCENE_CANVAS") != "0"
+
+// drawsWithScene reports whether go/scene draws e on the canvas.
+func (d *docCore) drawsWithScene(e *model.Element) bool {
+	return d.stree != nil && e != nil && (model.SceneElement(e) || sceneCanvasOn)
+}
+
 // loadScene reads the scene tree anew, with the unsaved text of the other open documents.
 func (d *docCore) loadScene() {
 	d.stree, d.sceneErr, d.libs, d.entry = nil, "", nil, ""
@@ -157,7 +166,8 @@ func (d *docCore) loadScene() {
 	d.pending = nil
 	keep := d.keep
 	d.keep = nil
-	if d.kind == model.DocDiagram || d.session == nil {
+	// A diagram has a tree for the canvas alone: its classic profile is not a document the scene loads.
+	if d.session == nil || d.kind == model.DocDiagram && !sceneCanvasOn {
 		d.mounts = nil
 		return
 	}
@@ -179,6 +189,9 @@ func (d *docCore) loadScene() {
 	d.stree, d.entry = tree, tree.Entry()
 	d.adoptMounts(model.MountFiles(d.session.Root(), tree, rel, keep...))
 	d.sceneErr = sceneErrors(tree.Diagnostics())
+	if d.kind == model.DocDiagram {
+		d.sceneErr = "" // the classic profile warns about what go/render drew; the file has no scene errors
+	}
 	d.libs = map[string]Stamp{}
 	for _, f := range tree.Files()[1:] {
 		abs := filepath.Join(tree.Root(), filepath.FromSlash(f))

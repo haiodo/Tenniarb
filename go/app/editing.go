@@ -26,7 +26,7 @@ type press struct {
 
 // realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
 func (v *Viewer) realize() {
-	if v.isScene(v.state.Current) {
+	if v.drawsWithScene(v.state.Current) {
 		v.realizeScene()
 		return
 	}
@@ -84,7 +84,18 @@ func (v *Viewer) drawOverlay() {
 
 // onRedraw is the session's repaint request: a new scene, or only the pictures that changed.
 func (v *Viewer) onRedraw(r editor.Redraw) {
-	if v.session == nil || v.rendered == nil && !r.Rebuilt {
+	if v.session == nil {
+		return
+	}
+	if v.rendered == nil && !r.Rebuilt {
+		// A classic diagram drawn by the scene: the session moved its drawables, the frames follow the
+		// selection, and the scene itself is rebuilt on the commit as it always was.
+		if v.sv != nil && v.sv.classic {
+			defer v.syncItems()
+			defer v.syncIndicators()
+			v.drawSceneOverlay()
+			v.refreshProps()
+		}
 		return
 	}
 	defer v.refreshProps()

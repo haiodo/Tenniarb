@@ -90,19 +90,28 @@ type selectionExport struct {
 func (v *Viewer) selectionToExport() (selectionExport, bool) {
 	var x selectionExport
 	switch {
-	case v.sceneMode():
+	case v.sceneDrawn():
 		if v.sv.placed == nil || v.sv.placed.Gfx == nil {
 			return x, false
 		}
 		x.root = v.sv.placed.Gfx
-		for _, p := range v.selNodes {
-			if pl := v.sv.byPath[p]; pl != nil && pl.Gfx != nil {
-				x.nodes = append(x.nodes, pl.Gfx)
-				name := v.state.Current.Name
-				if pl.Src != nil && pl.Src.Name != "" {
-					name = pl.Src.Name
+		if v.sceneMode() {
+			for _, p := range v.selNodes {
+				if pl := v.sv.byPath[p]; pl != nil && pl.Gfx != nil {
+					x.nodes = append(x.nodes, pl.Gfx)
+					name := v.state.Current.Name
+					if pl.Src != nil && pl.Src.Name != "" {
+						name = pl.Src.Name
+					}
+					x.names = append(x.names, name)
 				}
-				x.names = append(x.names, name)
+			}
+		} else {
+			for _, p := range v.canvasSelection() {
+				if pl := v.sv.byPath[p]; pl != nil && pl.Gfx != nil {
+					x.nodes = append(x.nodes, pl.Gfx)
+					x.names = append(x.names, pl.Src.Name)
+				}
 			}
 		}
 		if len(x.nodes) == 0 {

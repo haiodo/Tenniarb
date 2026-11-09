@@ -475,3 +475,90 @@ func TestAgentEditWaitsForSave(t *testing.T) {
 		t.Fatal("the document does not show the agent edit as unsaved")
 	}
 }
+
+// A classic diagram gets a scene view for the canvas: the values come from the model and the drawn
+// items are the ones the session selects, though the input stays with the session.
+func TestClassicDrawsThroughScene(t *testing.T) {
+	const text = "element \"D\" {\n  item A { pos 0 0; size 40; width ${size * 2}; title ${size} }\n  item B { pos 200 0 }\n}\n"
+	v := newDoc(t, &Shell{}, "", text)
+	if v.stree == nil {
+		t.Fatal("a classic document has no scene tree")
+	}
+	el := v.session.Root().Elements[0]
+	v.state.Current = el
+	sv := newSceneView(el, v.elementNode(el))
+	sv.classic = !v.isScene(el)
+	v.scene = gfx.NewScene()
+	if err := v.buildSceneView(sv); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	sv.index(sv.placed)
+	v.sv = sv
+	if sv.screen == nil || len(sv.byPath) != 2 {
+		t.Fatalf("screen %v, items %v", sv.screen, sv.byPath)
+	}
+	if w := sv.byPath["A"].W; w != 80 {
+		t.Errorf("item A is %v wide, want the model's ${size * 2} = 80", w)
+	}
+	v.session.Select([]*model.DiagramItem{el.Items[1]})
+	if got := v.canvasSelection(); len(got) != 1 || got[0] != "B" {
+		t.Errorf("the selection of the session outlines %v, want [B]", got)
+	}
+}
+
+// The canvas switch puts the classic diagram back on go/render; a scene element stays on the scene.
+func TestSceneCanvasFlagRestoresClassicRenderer(t *testing.T) {
+	was := sceneCanvasOn
+	defer func() { sceneCanvasOn = was }()
+	const classic = "element \"D\" { item A { pos 0 0 } }\n"
+	sceneCanvasOn = true
+	v := newDoc(t, &Shell{}, "", classic)
+	if el := v.session.Root().Elements[0]; !v.drawsWithScene(el) {
+		t.Error("the flag on: the classic element is not drawn by the scene")
+	}
+	sceneCanvasOn = false
+	v = newDoc(t, &Shell{}, "", classic)
+	el := v.session.Root().Elements[0]
+	if v.stree != nil || v.drawsWithScene(el) {
+		t.Error("the flag off: the classic element still draws through the scene")
+	}
+	sceneCanvasOn = false
+	v = newDoc(t, &Shell{}, "", "item Screen { auto-layout column }\n")
+	if root := &v.session.Root().Element; !v.drawsWithScene(root) {
+		t.Error("the flag off: a scene element left the scene renderer")
+	}
+}
+
+// The classic files of the documentation and the examples build through the canvas scene: every element
+// with items draws them, so the flag can stay on.
+func TestClassicFixturesBuildSceneView(t *testing.T) {
+	for _, path := range []string{"../../docs/Example.tenn", "../../examples/anti-crm.tenn"} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		v := newDoc(t, &Shell{}, "", string(data))
+		if v.stree == nil {
+			t.Fatalf("%s: no scene tree", path)
+		}
+		v.scene = gfx.NewScene()
+		var walk func(e *model.Element)
+		walk = func(e *model.Element) {
+			sv := newSceneView(e, v.elementNode(e))
+			sv.classic = !v.isScene(e)
+			if err := v.buildSceneView(sv); err != nil {
+				t.Errorf("%s: element %q: %v", path, e.Name, err)
+			}
+			if sv.placed != nil {
+				sv.index(sv.placed)
+			}
+			if len(e.Items) > 0 && len(sv.byPath) == 0 {
+				t.Errorf("%s: element %q draws none of its %d items", path, e.Name, len(e.Items))
+			}
+			for _, c := range e.Elements {
+				walk(c)
+			}
+		}
+		walk(&v.session.Root().Element)
+	}
+}

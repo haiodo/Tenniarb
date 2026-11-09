@@ -216,6 +216,12 @@ func (v *Viewer) markRect(path string) (gfx.Rect, bool) {
 			return gfx.Rect{}, false
 		}
 		return gfx.R(v.sv.off.X+pl.X, v.sv.off.Y+pl.Y, pl.W, pl.H), true
+	case v.sceneDrawn(): // a classic diagram drawn by the scene: the mark names the model item
+		pl := v.classicNamed(path)
+		if pl == nil {
+			return gfx.Rect{}, false
+		}
+		return gfx.R(v.sv.off.X+pl.X, v.sv.off.Y+pl.Y, pl.W, pl.H), true
 	case v.session != nil && v.rendered != nil:
 		ds := v.session.Scene()
 		for _, it := range ds.Items() {
