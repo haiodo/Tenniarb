@@ -43,6 +43,9 @@ const (
 	defaultFontSize = 18.0
 	textPadX        = 10.0
 	textPadY        = 6.0
+	// classicTextPad is the inset go/render gives a text leaf of a classic diagram when `padding` is not
+	// written: the picture of an old file must not move when the canvas draws it through go/scene.
+	classicTextPad = 4.0
 )
 
 // prep turns resolved nodes into a layout tree and keeps what the drawing needs.
@@ -521,6 +524,9 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 		p.texts[rn] = ti
 	}
 	padX, padY := textPadX, textPadY
+	if p.classic {
+		padX, padY = classicTextPad, classicTextPad
+	}
 	if inCtx {
 		padX, padY = 0, 0
 	}
@@ -568,8 +574,8 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	if pr := p.prop(rn, "title"); pr != nil {
 		title, _ = pr.text(0)
 		// A bare text with spaces is several arguments, and only the first would be drawn: name the
-		// mistake instead of dropping the words.
-		if len(pr.Args) > 1 {
+		// mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
+		if len(pr.Args) > 1 && !p.classic {
 			p.t.fail(pr.Pos, `title takes one value; quote a text with spaces: title "Sign in"`)
 		}
 	}
@@ -585,6 +591,9 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 		}
 	}
 	padX, padY := textPadX, textPadY
+	if p.classic {
+		padX, padY = classicTextPad, classicTextPad
+	}
 	if inCtx {
 		padX, padY = 0, 0
 	}

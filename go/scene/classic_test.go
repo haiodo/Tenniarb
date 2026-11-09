@@ -151,3 +151,14 @@ func TestClassicWithoutHook(t *testing.T) {
 		t.Errorf("warnings: %v", screen.Warnings)
 	}
 }
+
+// A classic diagram drops the arguments of a title after the first, as go/render always has, instead of
+// failing the whole file: a markdown title followed by another token is common in the examples.
+func TestClassicTitleKeepsItsFirstArgument(t *testing.T) {
+	_, svg := buildClassic(t, `element "E" {
+  item A { width 80; height 20; title %{Hello} !(red) }
+}`, classicStub(nil, nil))
+	if !strings.Contains(svg, "Hello") {
+		t.Fatalf("the first argument of the title is not drawn:\n%s", svg)
+	}
+}

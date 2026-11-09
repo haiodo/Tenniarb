@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* A classic diagram drawn through `go/scene` keeps the text inset of the old renderer (4 on every
+  side unless `padding` says otherwise), and a `title` with more than one argument draws the first, as
+  it always has, instead of failing the whole file: the first steps of drawing classic elements with
+  the scene engine (`docs/Example.tenn`, `examples/anti-crm.tenn` load and lay out).
 * The classic inspector has a `Padding` row, and its Effects section lists every `shadow` layer of the
   item: the layers it writes, or those of the element's `styles { item }` when it writes none, with a
   button to add or drop a layer. The item defaults of the element get the same list, so a soft shadow of

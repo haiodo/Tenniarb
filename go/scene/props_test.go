@@ -57,14 +57,14 @@ func TestNameOfContainerIsNotText(t *testing.T) {
 
 func TestFontSizeNoClamp(t *testing.T) {
 	m := boxes(t, "props.tenn", "Font")
-	if got := m["Big"].H; got != 59+12 { // ceil(56 * 1.05) + 2 * 6
+	if got := m["Big"].H; got != 59+8 { // ceil(56 * 1.05) + 2 * 4, the classic text inset
 		t.Errorf("Big.H = %v", got)
 	}
 	s, _ := build(t, load(t, "props.tenn"), "Font")
 	if !warned(s, "font-size: 0 is not above 0") {
 		t.Errorf("no warning for font-size 0: %v", s.Warnings)
 	}
-	if got := m["Bad"].H; got != 19+12 {
+	if got := m["Bad"].H; got != 19+8 {
 		t.Errorf("Bad.H = %v, want the default size", got)
 	}
 }
@@ -220,13 +220,13 @@ func TestPaddingInsetsLeafText(t *testing.T) {
 	wantBox(t, m, "Col.Own", 0, 35, 27, 35)
 }
 
-// A bare title with spaces is several arguments, and only the first used to be drawn.
+// A bare title with spaces is several arguments in a scene; a classic diagram drops them, as go/render did.
 func TestTitleWithSpacesRejected(t *testing.T) {
-	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { title Sign in } }`)
+	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { auto-layout column; title Sign in } }`)
 	if err == nil || !strings.Contains(err.Error(), `title takes one value; quote a text with spaces: title "Sign in"`) {
 		t.Fatalf("error %v", err)
 	}
-	if !strings.Contains(err.Error(), "a.tenn:1:24") {
+	if !strings.Contains(err.Error(), "a.tenn:1:44") {
 		t.Errorf("the error does not point at the title: %v", err)
 	}
 }
