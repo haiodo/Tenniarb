@@ -169,6 +169,35 @@
       "clip": false,
       "fill": "#ffffff",
       "gradient": null,
+      "name": "Expr",
+      "opacity": 1,
+      "path": "Expr",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 49,
+        "w": 160,
+        "x": 320,
+        "y": 160
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "value 41",
+        "sum 42"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
       "name": "List",
       "opacity": 1,
       "path": "List",

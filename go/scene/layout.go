@@ -670,6 +670,36 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	}
 }
 
+// evalText is the text of a title with the ${...} written in it replaced by its value. A classic diagram
+// asks the element model for the whole title, the way go/render and Swift evaluated it; a scene asks the
+// expression engine about each piece and keeps the text as written where an expression has no value.
+func (p *prep) evalText(rn *RNode, pr *Prop, text string) string {
+	if !strings.Contains(text, "${") {
+		return text
+	}
+	if vals, ok := p.modelVals(rn, pr); ok && len(vals) > 0 {
+		return vals[0]
+	}
+	if p.eval == nil {
+		return text
+	}
+	var b strings.Builder
+	for i := 0; i < len(text); {
+		if strings.HasPrefix(text[i:], "${") {
+			if j := strings.IndexByte(text[i+2:], '}'); j >= 0 {
+				if v, ok := p.eval(text[i+2:i+2+j], rn.Vars); ok {
+					b.WriteString(v)
+					i += len("${") + j + 1
+					continue
+				}
+			}
+		}
+		b.WriteByte(text[i])
+		i++
+	}
+	return b.String()
+}
+
 func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	// The name of a leaf is its text, as in a classic diagram, and a title overrides it. A node that holds
 	// items is a box for them: its name is only a path segment, the text is a title if one is written.
@@ -679,6 +709,7 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	}
 	if pr := p.prop(rn, "title"); pr != nil {
 		title, _ = pr.text(0)
+		title = p.evalText(rn, pr, title)
 		// A bare text with spaces is several arguments, and only the first would be drawn: name the
 		// mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
 		if len(pr.Args) > 1 && !p.classic {

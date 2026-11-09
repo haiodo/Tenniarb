@@ -4299,7 +4299,7 @@ function hasExpr(p: SceneProp): boolean {
     if (a.kind === "Expression" || a.kind === "ExpressionBlock") {
       return true;
     }
-    if (a.kind === "StringLit" && (a.getIdentText() ?? "").includes("${")) {
+    if ((a.kind === "StringLit" || a.kind === "MarkdownLit") && (a.getIdentText() ?? "").includes("${")) {
       return true;
     }
   }

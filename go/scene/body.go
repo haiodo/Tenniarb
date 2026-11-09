@@ -196,6 +196,8 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 		// go/render reads a text `\n` of a body as a newline; a scene keeps the backslash, it is an
 		// ordinary character of its strings (spec 4.3).
 		text = strings.ReplaceAll(text, `\n`, "\n")
+		// The ${...} of an old body is an expression of the element model, as it was in go/render.
+		text = p.evalText(rn, pr, text)
 	}
 	text = strings.ReplaceAll(dedent(text), "\t", "    ")
 

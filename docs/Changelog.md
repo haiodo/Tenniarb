@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* `$(...)`/`${...}` written in the title or the body of a classic item is evaluated again: an old file
+  showed the source of the expression ("`Tasks: parent.items.filter(...)`") where the Swift app showed its
+  value ("`Tasks: 9`"), because a `%{ ... }` text never reached the element model. The web port follows, and
+  the parity fixture of the classic body holds both sides together.
+* An inline picture of a classic item may be a TIFF, the format old screenshots keep: the decoders of the
+  scene read it, so the item is drawn instead of an empty box saying the file is no picture.
 * The frame of a selected item is the selector box of the Swift app again: the box of the item grown by 5
   points, rounded by 9, stroked by a dash of 5 on and 5 off with a glow of its own colour - blue, or green
   over the item whose text is being edited. The rubber band and the line of a link being drawn take the

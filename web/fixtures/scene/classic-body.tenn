@@ -26,6 +26,13 @@ line three
 a word wider than the sixty points of the box
 }
     }
+    item Expr {
+        pos 320 -160
+        width 160
+        value 41
+        title "value ${value}"
+        body %{sum ${value + 1}}
+    }
     item List {
         pos 160 -160
         body %{

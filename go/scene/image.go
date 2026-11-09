@@ -20,6 +20,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/tenniarb/go/markdown"
 	"github.com/haiodo/tenniarb/go/tenn"
+	_ "golang.org/x/image/tiff" // a classic inline picture of an old file is often a TIFF, as CG drew it
 	_ "golang.org/x/image/webp"
 )
 
@@ -353,10 +354,10 @@ func decodeImage(key imageKey) (*gfx.Raster, string) {
 func whyNoImage(raw []byte) string {
 	if len(raw) >= 12 && string(raw[4:8]) == "ftyp" {
 		if brand := string(raw[8:12]); brand == "avif" || brand == "avis" {
-			return "the AVIF format is not read (PNG, JPEG, GIF and WebP are)"
+			return "the AVIF format is not read (PNG, JPEG, GIF, WebP and TIFF are)"
 		}
 	}
-	return "the file is not a PNG, JPEG, GIF or WebP image"
+	return "the file is not a PNG, JPEG, GIF, WebP or TIFF image"
 }
 
 // fitOf reads fit: fill stretches the picture into the box, cover fills the box and cuts the sides,
