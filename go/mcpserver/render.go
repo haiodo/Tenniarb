@@ -7,6 +7,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -23,12 +24,14 @@ type rasterizer interface {
 }
 
 // buildScene lays the element out as the canvas does; measurer gives the text metrics of the platform.
-func (s *Server) buildScene(tree *scene.Tree, element string, measurer gfx.TextMeasurer) (*gfx.Scene, *scene.Screen, error) {
+// A classic diagram takes its ${...} values from go/render, the profile scene builds for it.
+func (s *Server) buildScene(tree *scene.Tree, rel, element string, measurer gfx.TextMeasurer) (*gfx.Scene, *scene.Screen, error) {
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	var err error
+	classic := render.ClassicHook(tree, s.root, rel, element)
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: measurer, FontName: "Helvetica", EvalVars: exec.SceneEvalVars})
+		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: measurer, FontName: "Helvetica", EvalVars: exec.SceneEvalVars, Classic: classic})
 	})
 	if err != nil {
 		return nil, nil, err
@@ -41,11 +44,10 @@ var rasterizerFor = newRasterizer
 
 // layoutOf builds an element and reports its geometry, without rasterizing anything.
 func (s *Server) layoutOf(file, element string, levels int) (string, error) {
-	abs, rel, err := s.resolve(file)
+	_, rel, err := s.resolve(file)
 	if err != nil {
 		return "", err
 	}
-	_ = abs
 	diags, tree, err := s.diagnose(rel)
 	if err != nil {
 		return "", err
@@ -56,12 +58,8 @@ func (s *Server) layoutOf(file, element string, levels int) (string, error) {
 	if element == "." {
 		element = ""
 	}
-	target, err := elementAt(tree, rel, element)
-	if err != nil {
+	if _, err := elementAt(tree, rel, element); err != nil {
 		return "", err
-	}
-	if r := newRenderers(tree); r.of(target) == rendererDiagram {
-		return "", errors.New("layout is for scenes; this element is a classic diagram")
 	}
 	// Text metrics are all layout needs from the platform: where there is no CoreGraphics (CI on Linux
 	// and Windows) estimate them instead of failing, since a render there would not be checked anyway.
@@ -71,7 +69,7 @@ func (s *Server) layoutOf(file, element string, levels int) (string, error) {
 	}
 	s.host.renderMu.Lock()
 	defer s.host.renderMu.Unlock()
-	sc, screen, err := s.buildScene(tree, element, measurer)
+	sc, screen, err := s.buildScene(tree, rel, element, measurer)
 	if err != nil {
 		return "", err
 	}
@@ -109,20 +107,16 @@ func (s *Server) render(file, element string, scale float64, view bool) (*render
 	if element == "." {
 		element = ""
 	}
-	target, err := elementAt(tree, rel, element)
-	if err != nil {
+	if _, err := elementAt(tree, rel, element); err != nil {
 		return nil, err
 	}
 	s.host.renderMu.Lock()
 	defer s.host.renderMu.Unlock()
-	if r := newRenderers(tree); r.of(target) == rendererDiagram {
-		return renderDiagram(r, target, rel, element, scale)
-	}
 	rast, err := newRasterizer()
 	if err != nil {
 		return nil, err
 	}
-	sc, screen, err := s.buildScene(tree, element, rast.Measurer())
+	sc, screen, err := s.buildScene(tree, rel, element, rast.Measurer())
 	if err != nil {
 		return nil, err
 	}

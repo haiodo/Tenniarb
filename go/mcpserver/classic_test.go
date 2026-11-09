@@ -44,6 +44,9 @@ element "Flat" {
         color green
     }
 }
+element "Expr" {
+    item "B" { pos 0 0; width ${40 + 2}; height 10 }
+}
 `
 
 func memSession(t *testing.T, root string) *mcp.ClientSession {
@@ -90,11 +93,16 @@ func TestClassicDiagram(t *testing.T) {
 	}
 	mustOK(t, cs, "edit", withFile(edits(`link "Idea" "Nobody"`, `link "Idea" "Next step"`), "map.tenn"))
 
+	// a classic diagram lays out through go/scene too, reading ${...} from the element model
+	if got := mustOK(t, cs, "layout", map[string]any{"file": "map.tenn", "element": "Expr"}); !strings.Contains(got, "geometry: 42x10") {
+		t.Errorf("layout of a classic diagram:\n%s", got)
+	}
+
 	if runtime.GOOS != "darwin" {
 		t.Skip("render checked on macOS only")
 	}
 	res, text := call(t, cs, "render", map[string]any{"file": "map.tenn", "element": "Map", "scale": 2})
-	if res.IsError || !strings.Contains(text, "as a diagram") {
+	if res.IsError || !strings.Contains(text, "as a scene") {
 		t.Fatalf("render Map: %s", text)
 	}
 	img := res.Content[0].(*mcp.ImageContent)
@@ -147,7 +155,7 @@ func TestRendererRule(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("render checked on macOS only")
 	}
-	if _, text := call(t, cs, "render", map[string]any{"file": "r.tenn", "element": "Slotted"}); !strings.Contains(text, "as a diagram") {
+	if _, text := call(t, cs, "render", map[string]any{"file": "r.tenn", "element": "Slotted"}); !strings.Contains(text, "as a scene") {
 		t.Errorf("render Slotted: %s", text)
 	}
 	if _, text := call(t, cs, "render", map[string]any{"file": "r.tenn", "element": "Comp"}); !strings.Contains(text, "as a scene") {

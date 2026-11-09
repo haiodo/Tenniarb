@@ -32,6 +32,9 @@
   decoded and cached like a picture file, `@(name)` and `@(name|width)` in a `title` or a `body` draw
   it inline, and an image the text does not name fills the box and sizes it by its pixels
   (`docs/Example.tenn`, item "Main Window").
+* The `render` and `layout` MCP tools draw and lay out a classic diagram through `go/scene`, with the
+  `$(...)`/`${...}` values of the element model: `layout` no longer refuses it, and its text line says
+  "as a scene" like a scene element.
 * Every classic diagram of the repository now loads and lays out through `go/scene`: a value the old
   renderer could not read is a warning instead of an error, a size below one falls back to the text,
   an item with no text keeps the eight-point dot `go/render` drew, and a link whose end is missing

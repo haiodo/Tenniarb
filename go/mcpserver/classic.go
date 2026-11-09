@@ -1,12 +1,9 @@
 package mcpserver
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -89,33 +86,4 @@ func diagramElement(root *model.Element, n *scene.Node) (*model.Element, error) 
 		el = next
 	}
 	return el, nil
-}
-
-// renderDiagram draws a classic element with go/render, the renderer of the app's canvas.
-func renderDiagram(r *renderers, n *scene.Node, rel, element string, scale float64) (*rendered, error) {
-	if n.Mount != nil {
-		n = n.Mount
-	}
-	m := r.models[n.Pos.File]
-	if m == nil {
-		return nil, fmt.Errorf("%s does not parse as a diagram", n.Pos.File)
-	}
-	el, err := diagramElement(&m.Element, n)
-	if err != nil {
-		return nil, err
-	}
-	if len(el.Items) == 0 {
-		return nil, errors.New("the element has nothing to draw")
-	}
-	opts := render.Options{FontFamily: "Helvetica"}
-	size := render.SceneSize(el, opts)
-	if px := size.Width * scale * size.Height * scale; px > maxPixels {
-		return nil, fmt.Errorf("image would be %.0f pixels (limit %d): lower scale or render a smaller element", px, maxPixels)
-	}
-	png, err := render.PNG(el, opts, scale, gfx.Color{R: 1, G: 1, B: 1, A: 1})
-	if err != nil {
-		return nil, err
-	}
-	text := fmt.Sprintf("rendered %s %q as a diagram: %.0fx%.0f units, scale %v\n0 warnings", rel, element, size.Width, size.Height, scale)
-	return &rendered{png: png, text: text}, nil
 }
