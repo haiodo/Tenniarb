@@ -151,6 +151,9 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	// ${kind} picks a style by its value (spec 5c, 6).
 	p := newPrep(t, o)
 	p.classic = !sceneRoot(rn)
+	if p.classic {
+		classicDefaults(rn)
+	}
 	if p.classic && p.opts.Classic != nil {
 		p.classicRefs(rn)
 	}

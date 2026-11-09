@@ -1,6 +1,9 @@
 package scene
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 // inheritFont are the text properties an item takes from its parent when it sets none of its own, as
 // font properties inherit in CSS: a component sets the font once on its root (spec 5b).
@@ -139,6 +142,52 @@ func dropName(names []string, name string) []string {
 		if n != key {
 			out = append(out, n)
 		}
+	}
+	return out
+}
+
+// classicDefaults gives the nodes of a classic diagram the default look its element declares with
+// styles { item { … } } and styles { line { … } }: go/render reads those two names as the look of every
+// box and every link of the element, not as styles a node has to name.
+func classicDefaults(r *RNode) {
+	if r.Src == nil {
+		return
+	}
+	item, line := r.Src.Styles["item"], r.Src.Styles["line"]
+	if item == nil && line == nil {
+		return
+	}
+	var walk func(n *RNode)
+	walk = func(n *RNode) {
+		switch n.Kind {
+		case RItem:
+			n.Props = append(defaultProps("item", item, n), n.Props...)
+		case RLink:
+			n.Props = append(defaultProps("line", line, n), n.Props...)
+		}
+		for _, k := range n.Kids {
+			walk(k)
+		}
+	}
+	for _, k := range r.Kids {
+		walk(k)
+	}
+}
+
+// defaultProps are the properties the default style name gives n. A node that names the same style takes
+// it through use-style alone, and a shadow of its own replaces the default one: go/render parsed the
+// default first and the node's properties over it.
+func defaultProps(name string, st *Style, n *RNode) []*Prop {
+	if st == nil || slices.Contains(styleRefs(n), NormalizeName(name)) {
+		return nil
+	}
+	ownShadow := slices.ContainsFunc(n.Props, func(pr *Prop) bool { return pr.Name == "shadow" })
+	out := make([]*Prop, 0, len(st.Props))
+	for _, pr := range st.Props {
+		if ownShadow && pr.Name == "shadow" {
+			continue
+		}
+		out = append(out, pr)
 	}
 	return out
 }
