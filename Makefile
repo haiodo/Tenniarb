@@ -78,7 +78,7 @@ go-mcp-install: ## MCP for agents: go install tenniarb-mcp and tenniarb-service 
 	cd go && go install -trimpath -ldflags '-s -w' ./cmd/tenniarb-mcp ./cmd/tenniarb-service
 
 go-cli-install: ## CLI for agents: go install tenniarb (tenniarb check FILE...) into GOBIN
-	cd go && CGO_ENABLED=0 go install -trimpath -ldflags '$(GO_LDFLAGS)' ./cmd/tenniarb
+	cd go && CGO_ENABLED=$(GO_CGO) go install $(GO_TAGS) -trimpath -ldflags '$(GO_LDFLAGS)' ./cmd/tenniarb
 
 GO_PKG_BIN = $(shell cd go && p=$$(go env GOBIN); [ -n "$$p" ] || p=$$(go env GOPATH)/bin; echo $$p)
 
@@ -124,9 +124,21 @@ GO_BUILD_NO = $(shell git rev-list --count HEAD)
 GO_LDFLAGS = -s -w -X github.com/haiodo/tenniarb/go/app.Version=$(GO_VERSION)
 GOWT_DIR = $(shell cd go && go mod download github.com/haiodo/gowt 2>/dev/null; go list -m -f '{{.Dir}}' github.com/haiodo/gowt)
 
-app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned)
+# CGO=1 builds the Go app with gowt's native cgo bindings (CGO_ENABLED=1 -tags gowtcgo): about eight
+# times faster native calls, and it needs a C toolchain. The default keeps the purego backends and
+# cross-compilation; the packaging targets below always stay on the default.
+CGO ?= 0
+ifeq ($(CGO),1)
+GO_CGO := 1
+GO_TAGS := -tags gowtcgo
+else
+GO_CGO := 0
+GO_TAGS :=
+endif
+
+app: $(EMBED) ## Go app for this machine: build/go/app/Tenniarb.app on macOS, build/go/app/tenniarb elsewhere (unsigned); CGO=1 for the cgo bindings
 	rm -rf $(GOPKG)/app && mkdir -p $(GOPKG)/app
-	cd go && CGO_ENABLED=0 go build -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/app/tenniarb ./cmd/tenniarb
+	cd go && CGO_ENABLED=$(GO_CGO) go build $(GO_TAGS) -trimpath -ldflags '$(GO_LDFLAGS)' -o ../$(GOPKG)/app/tenniarb ./cmd/tenniarb
 ifeq ($(shell uname),Darwin)
 	go/packaging/macos.sh $(GOPKG)/app/tenniarb $(GOPKG)/app $(GOWT_DIR) $(GO_SHORT) $(GO_BUILD_NO) $(EMBED)
 	rm $(GOPKG)/app/tenniarb
