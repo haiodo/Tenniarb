@@ -19,6 +19,13 @@ line three
         width 80
         body "aaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ccc"
     }
+    item Narrow {
+        pos 320 0
+        width 60
+        body %{
+a word wider than the sixty points of the box
+}
+    }
     item List {
         pos 160 -160
         body %{

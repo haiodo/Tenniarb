@@ -131,6 +131,44 @@
       "clip": false,
       "fill": "#ffffff",
       "gradient": null,
+      "name": "Narrow",
+      "opacity": 1,
+      "path": "Narrow",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 220,
+        "w": 60,
+        "x": 320,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Narrow",
+        "a ",
+        "word ",
+        "wider ",
+        "than ",
+        "the ",
+        "sixty ",
+        "point",
+        "s of ",
+        "the ",
+        "box"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
       "name": "List",
       "opacity": 1,
       "path": "List",

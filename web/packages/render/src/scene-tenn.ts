@@ -2793,6 +2793,21 @@ function titleHeight(ti: TextInfo, w: number): number {
   return textWrap(ti, w).length * ti.lineH;
 }
 
+/** The longest prefix of s that fits avail, in whole characters; "" when not even one does. */
+function titleFitPrefix(ti: TextInfo, s: string, f: Font, avail: number): string {
+  if (avail <= 0) {
+    return "";
+  }
+  let cut = "";
+  for (const g of s) {
+    if (fontWidth(f, cut + g) > avail + 1e-9) {
+      break;
+    }
+    cut += g;
+  }
+  return cut;
+}
+
 /** Go's textInfo.layout: the title broken at the references, an inline picture counting as one box. */
 function titleLayout(ti: TextInfo, w: number): TitleLine[] {
   const lines: TitleLine[] = [];
@@ -2847,6 +2862,29 @@ function titleLayout(ti: TextInfo, w: number): TitleLine[] {
           if (started && text.trim() !== "" && w > 0 && line.w + fontWidth(f, text) > w + 1e-9) {
             flush();
             text = piece;
+          }
+          // A word wider than the line is broken by characters in a classic diagram, as go/render drew a
+          // title: the box grows down instead of running over its width.
+          if (ti.prep.classic && w > 0 && text.trim() !== "") {
+            while (text !== "") {
+              if (fontWidth(f, text) <= w - line.w + 1e-9) {
+                add({ text, img: null, font: part.font, color: part.color });
+                break;
+              }
+              let cut = titleFitPrefix(ti, text, f, w - line.w);
+              if (cut === "") {
+                if (!started) {
+                  cut = [...text][0] ?? "";
+                } else {
+                  flush();
+                  continue;
+                }
+              }
+              add({ text: cut, img: null, font: part.font, color: part.color });
+              text = text.slice(cut.length);
+              flush();
+            }
+            return;
           }
           if (text !== "") {
             add({ text, img: null, font: part.font, color: part.color });

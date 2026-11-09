@@ -65,6 +65,30 @@ const (
 // #424242.
 var classicBorder = gfx.RGBA(66, 66, 66, 1)
 
+// fitText is the longest prefix of s that fits avail, in whole characters; "" when not even one does.
+func (p *prep) fitText(s string, f gfx.Font, avail float64) string {
+	if avail <= 0 {
+		return ""
+	}
+	m := p.opts.Measurer
+	cut := ""
+	for _, g := range tenn.Graphemes(s) {
+		if m.MeasureText(cut+g, f).Width > avail+1e-9 {
+			break
+		}
+		cut += g
+	}
+	return cut
+}
+
+// firstText is the first character of s, so a line always makes progress.
+func (p *prep) firstText(s string) string {
+	for _, g := range tenn.Graphemes(s) {
+		return g
+	}
+	return s
+}
+
 // lineBox is the ascent, the descent and the height of one line of f: a scene takes them from the
 // measurer, a classic diagram from the ratios and the rounding of go/render (floor(ascent+descent)+1),
 // so an old file keeps the line spacing, the box and the baseline of its Swift picture.
@@ -953,6 +977,29 @@ func (ti *textInfo) layout(w float64) []titleLine {
 					if started && strings.TrimSpace(text) != "" && w > 0 && line.w+ti.m.MeasureText(text, partFont).Width > w+1e-9 {
 						flush()
 						text = piece
+					}
+					// A word wider than the line is broken by characters in a classic diagram, as go/render
+					// drew the title of an item: the box grows down instead of running over its width.
+					if ti.p != nil && ti.p.classic && w > 0 && strings.TrimSpace(text) != "" {
+						for text != "" {
+							if ti.m.MeasureText(text, partFont).Width <= w-line.w+1e-9 {
+								add(titlePart{text: text, font: part.font, color: part.color, hasColor: part.hasColor})
+								break
+							}
+							cut := ti.p.fitText(text, partFont, w-line.w)
+							if cut == "" {
+								if !started {
+									cut = ti.p.firstText(text)
+								} else {
+									flush()
+									continue
+								}
+							}
+							add(titlePart{text: cut, font: part.font, color: part.color, hasColor: part.hasColor})
+							text = text[len(cut):]
+							flush()
+						}
+						continue
 					}
 					if text != "" {
 						add(titlePart{text: text, font: part.font, color: part.color, hasColor: part.hasColor})
