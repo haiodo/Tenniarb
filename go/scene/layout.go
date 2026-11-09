@@ -719,6 +719,10 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	if title == "" {
 		return nil
 	}
+	if p.classic {
+		// go/render reads a text `\n` as a newline, in a title and in the name a leaf draws.
+		title = strings.ReplaceAll(title, `\n`, "\n")
+	}
 	size := defaultFontSize
 	if fs := p.prop(rn, "font-size"); fs != nil {
 		if v, ok := fs.num(0); ok && v > 0 {

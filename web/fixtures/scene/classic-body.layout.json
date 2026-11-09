@@ -1,6 +1,6 @@
 {
   "element": "Body",
-  "height": 228,
+  "height": 312,
   "links": [],
   "nodes": [
     {
@@ -19,7 +19,7 @@
         0
       ],
       "rect": {
-        "h": 228,
+        "h": 312,
         "w": 658,
         "x": 0,
         "y": 0
@@ -189,6 +189,35 @@
       "text": [
         "value 41",
         "sum 42"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Name\\nbreaks",
+      "opacity": 1,
+      "path": "Name_nbreaks",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 52,
+        "w": 90,
+        "x": 320,
+        "y": 260
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Name",
+        "breaks"
       ],
       "textColor": "#000000"
     },

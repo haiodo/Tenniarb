@@ -4436,6 +4436,10 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
   if (title === "") {
     return null;
   }
+  if (prep.classic) {
+    // go/render reads a text `\n` as a newline, in a title and in the name a leaf draws.
+    title = title.replaceAll("\\n", "\n");
+  }
   let size = defaultFontSize;
   const fs = propOf(prep, rn, "font-size");
   if (fs !== null) {

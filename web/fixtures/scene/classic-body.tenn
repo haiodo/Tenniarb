@@ -33,6 +33,10 @@ a word wider than the sixty points of the box
         title "value ${value}"
         body %{sum ${value + 1}}
     }
+    item "Name\nbreaks" {
+        pos 320 -260
+        width 90
+    }
     item List {
         pos 160 -160
         body %{

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A `\n` written in a title or in the name of a classic item is a newline, as the old renderer read it: an
+  item called `Text is \`code block\nwith new line\`` drew one long line 363 points wide instead of the four
+  lines of the Swift picture.
 * `$(...)`/`${...}` written in the title or the body of a classic item is evaluated again: an old file
   showed the source of the expression ("`Tasks: parent.items.filter(...)`") where the Swift app showed its
   value ("`Tasks: 9`"), because a `%{ ... }` text never reached the element model. The web port follows, and
