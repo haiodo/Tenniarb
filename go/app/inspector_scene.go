@@ -97,6 +97,12 @@ func (in *inspector) sceneSections() g.Option {
 	defer func() { in.building = false }()
 	src := v.sceneSrc
 	node := func(k selKind) bool { return k == kindScene && v.shownNode() != nil }
+	// A part of a component has no node of its own: its shadows live in an at override, which the list
+	// does not edit.
+	own := func(k selKind) bool {
+		n, _ := v.selectedScene()
+		return node(k) && n != nil
+	}
 	scr := func(k selKind) bool { return k == kindScene }
 	t := func(id, name string) entryCfg { return entryCfg{id: id, name: name, src: src} }
 	num := func(id, name string, idx int) entryCfg {
@@ -198,7 +204,8 @@ func (in *inspector) sceneSections() g.Option {
 			in.text("Weight", node, t("scene-font-weight", "font-weight"))),
 		in.section(sectionTitle("Effects"), node,
 			in.text("Opacity", node, num("scene-opacity", "opacity", 0)),
-			in.combo("Shadow", node, "scene-shadow", "shadow", []string{noneChoice, "soft", "floating", customShadow}, noneChoice, v.shadowSrc),
+			in.combo("Preset", node, "scene-shadow", "shadow", []string{noneChoice, "soft", "floating", customShadow}, noneChoice, v.shadowSrc),
+			in.shadowList(own, "scene-shadow-list", v.sceneShadows, nil, v.setSceneShadows),
 			in.toggle("Hidden", node, "scene-hidden", "hidden", []string{"yes"}, src)))
 }
 

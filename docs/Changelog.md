@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The Effects section of a scene node lists its `shadow` layers like the classic inspector does: each
+  layer's X, Y, blur and colour, a button to drop one and one to add a layer, each write one undo step
+  that leaves the file with exactly the layers shown; the `Shadow` row beside it keeps the `soft`,
+  `floating` and `custom` choices.
 * A classic diagram drawn through `go/scene` draws the `!(colour)` and `&(size)` markup of a title and
   a body instead of its syntax: `!(red|IN)!(green|tegrations)` is two coloured runs, `&(30|x)` makes
   its line taller and wider, `!()` and `&()` return to the item's colour and size, and the width and

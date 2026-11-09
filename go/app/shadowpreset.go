@@ -69,13 +69,43 @@ func sameShadows(sh []*scene.Prop, layers [][]string) bool {
 
 // setShadowPreset writes the layers of a preset on the selected node; an empty name removes every shadow.
 func (v *Viewer) setShadowPreset(preset string) bool {
-	n, _ := v.selectedScene()
-	if n == nil || v.session == nil {
-		return false
-	}
 	var cmds []string
 	for _, args := range shadowPresets[preset] {
 		cmds = append(cmds, CommandText("shadow", args...))
+	}
+	return v.setSceneShadowCmds(cmds...)
+}
+
+// sceneShadows are the layers the selected node writes itself, read the way the list edits them.
+func (v *Viewer) sceneShadows() []editor.Prop {
+	n, _ := v.selectedScene()
+	if n == nil {
+		return nil
+	}
+	sh := shadowsOf(n)
+	out := make([]editor.Prop, len(sh))
+	for i, p := range sh {
+		out[i] = editor.Prop{Set: true, Args: argList(p.Values())}
+	}
+	return out
+}
+
+// setSceneShadows writes the list as the node's own shadows: one undo step, and the file holds exactly
+// these layers.
+func (v *Viewer) setSceneShadows(layers []editor.Prop) bool {
+	var cmds []string
+	for _, args := range shadowLists(layers) {
+		cmds = append(cmds, CommandText("shadow", args...))
+	}
+	return v.setSceneShadowCmds(cmds...)
+}
+
+// setSceneShadowCmds replaces every shadow of the selected node with cmds as one undo step; none removes
+// them all.
+func (v *Viewer) setSceneShadowCmds(cmds ...string) bool {
+	n, _ := v.selectedScene()
+	if n == nil || v.session == nil {
+		return false
 	}
 	file := v.ownFileOf(n)
 	edits := SetShadowsEdit(v.fileText(file), n, cmds...)
