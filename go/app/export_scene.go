@@ -45,12 +45,8 @@ func (v *Viewer) exportScene(e *model.Element) (*gfx.Scene, *scene.Screen, error
 	return sc, screen, nil
 }
 
-// exportSVGOf is ExportSVG for an element the viewer has: the scene writer for what the canvas draws
-// with the scene, the classic renderer otherwise.
+// exportSVGOf is ExportSVG for an element the viewer has: the scene writer for what the canvas draws.
 func (v *Viewer) exportSVGOf(e *model.Element, p Prefs) ([]byte, error) {
-	if !v.drawsWithScene(e) {
-		return ExportSVG(e, p)
-	}
 	sc, screen, err := v.exportScene(e)
 	if err != nil {
 		return nil, err
@@ -62,8 +58,7 @@ func (v *Viewer) exportSVGOf(e *model.Element, p Prefs) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// pageDrawing is an element as gfx draws it: a scene element through go/scene, a classic one through
-// go/render, with the area it covers.
+// pageDrawing is an element as gfx draws it through go/scene, with the area it covers.
 type pageDrawing struct {
 	scene *gfx.Scene
 	root  *gfx.Node
@@ -73,21 +68,12 @@ type pageDrawing struct {
 // exportDrawing builds what both the PNG and the PDF export draw for e.
 func (v *Viewer) exportDrawing(e *model.Element) (pageDrawing, error) {
 	var d pageDrawing
-	if v.drawsWithScene(e) {
-		sc, screen, err := v.exportScene(e)
-		if err != nil {
-			return d, err
-		}
-		d.scene, d.root = sc, screen.Root
-		sc.Read(func() { d.area = screen.Root.SubtreeBounds() })
-	} else {
-		s := render.Build(e, exportOptions())
-		d.scene = gfx.NewScene()
-		var r *render.Rendered
-		d.scene.Update(func(tx *gfx.Tx) { r = s.Realize(tx, nil) })
-		d.scene.Commit()
-		d.root, d.area = r.Root, r.Area()
+	sc, screen, err := v.exportScene(e)
+	if err != nil {
+		return d, err
 	}
+	d.scene, d.root = sc, screen.Root
+	sc.Read(func() { d.area = screen.Root.SubtreeBounds() })
 	if len(d.root.Children()) == 0 {
 		return d, fmt.Errorf("%s draws nothing", e.Name)
 	}

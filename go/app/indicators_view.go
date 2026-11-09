@@ -27,37 +27,30 @@ type indicatorKey struct {
 // itemBounds are the rectangles of the items on the gfx scene: every drawable of a classic diagram,
 // the top-level items of a scene element.
 func (v *Viewer) itemBounds() []gfx.Rect {
+	if !v.sceneDrawn() {
+		return nil
+	}
 	var out []gfx.Rect
-	switch {
-	case v.sceneDrawn():
-		// The placed tree keeps the classic items alone: a hidden item has no picture to take a box from,
-		// and a link is drawn beside the items, so its dot comes from the node the screen root holds.
-		if v.sv.classic && v.sv.screen != nil && v.sv.placed != nil {
-			seen := map[*gfx.Node]bool{}
-			for _, k := range v.sv.placed.Kids {
-				seen[k.Gfx] = true
-				out = append(out, gfx.R(k.X+v.sv.off.X, k.Y+v.sv.off.Y, k.W, k.H))
-			}
-			for _, n := range v.sv.screen.Root.Children() {
-				if !seen[n] && n.SubtreeBounds().W() > 0 {
-					out = append(out, n.SubtreeBounds())
-				}
-			}
-			return out
-		}
-		if v.sv.placed == nil {
-			return nil
-		}
+	// The placed tree keeps the classic items alone: a hidden item has no picture to take a box from,
+	// and a link is drawn beside the items, so its dot comes from the node the screen root holds.
+	if v.sv.classic && v.sv.screen != nil && v.sv.placed != nil {
+		seen := map[*gfx.Node]bool{}
 		for _, k := range v.sv.placed.Kids {
+			seen[k.Gfx] = true
 			out = append(out, gfx.R(k.X+v.sv.off.X, k.Y+v.sv.off.Y, k.W, k.H))
 		}
-	case v.session != nil && v.rendered != nil:
-		ds := v.session.Scene()
-		for _, i := range ds.Items() {
-			if d := ds.Drawables[i]; d != nil {
-				out = append(out, v.smap.RectToGfx(d.Bounds()))
+		for _, n := range v.sv.screen.Root.Children() {
+			if !seen[n] && n.SubtreeBounds().W() > 0 {
+				out = append(out, n.SubtreeBounds())
 			}
 		}
+		return out
+	}
+	if v.sv.placed == nil {
+		return nil
+	}
+	for _, k := range v.sv.placed.Kids {
+		out = append(out, gfx.R(k.X+v.sv.off.X, k.Y+v.sv.off.Y, k.W, k.H))
 	}
 	return out
 }

@@ -105,7 +105,7 @@ var accent = gfx.RGBA(0, 122, 255, 1)
 func (v *Viewer) realizeScene() {
 	el := v.state.Current
 	node := v.elementNode(el)
-	oldSV, oldRendered, oldMap := v.sv, v.rendered, v.smap
+	oldSV, oldMap := v.sv, v.smap
 	// Looked up before the old view is put away, so a redraw of the same element builds anew.
 	sv := v.cachedScene(el, node)
 	cached := sv != nil
@@ -113,15 +113,12 @@ func (v *Viewer) realizeScene() {
 		sv = newSceneView(el, node)
 		sv.classic = !v.isScene(el)
 	}
-	// A classic diagram stays where it is drawn across an edit, as it did on go/render: the camera and
-	// the map do not move with the bounds, so the items that did not change do not jump.
+	// A classic diagram stays where it is drawn across an edit: the camera and the map do not move
+	// with the bounds, so the items that did not change do not jump.
 	keep := !cached && sv.classic && oldSV != nil && v.shownElem == el && !v.pendingFit
 	v.cacheScene(oldSV)
 	err := sv.err
 	v.scene.Update(func(tx *gfx.Tx) {
-		if oldRendered != nil {
-			tx.Remove(oldRendered.Root)
-		}
 		if oldSV != nil {
 			tx.Remove(oldSV.root)
 		}
@@ -137,7 +134,7 @@ func (v *Viewer) realizeScene() {
 			tx.Move(sv.root, sv.off.X, sv.off.Y)
 		}
 	})
-	v.rendered, v.overlay, v.sv = nil, nil, sv
+	v.sv = sv
 	if sv.classic && v.session != nil {
 		// The session owns the pointer and speaks in the model coordinates, so the map follows its scene.
 		v.smap = MapOf(v.session.Scene().Bounds())
@@ -161,7 +158,7 @@ func (v *Viewer) realizeScene() {
 	}
 	v.setTitle()
 	v.dropStaleSelection()
-	if v.shownElem != el || oldSV == nil && oldRendered == nil {
+	if v.shownElem != el || oldSV == nil {
 		first := v.shownElem == nil // the first element of the document is the one to fit
 		v.shownElem = el
 		v.pendingFit = first
@@ -468,7 +465,7 @@ func (v *Viewer) sceneDrawn() bool { return v.sv != nil }
 
 // sceneMode reports whether the canvas shows a scene element: the pointer, the keys and the edits are
 // the scene's. A classic diagram drawn by the scene stays out: it has no scene input yet.
-func (v *Viewer) sceneMode() bool { return v.sv != nil && v.rendered == nil && !v.sv.classic }
+func (v *Viewer) sceneMode() bool { return v.sv != nil && !v.sv.classic }
 
 // canvasSelection is what the scene picture outlines: the selected nodes of a scene, the selected items
 // of a classic diagram drawn by the scene.

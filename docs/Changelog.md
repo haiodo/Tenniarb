@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The canvas always draws through `go/scene`, a classic diagram included: the
+  `TENNIARB_SCENE_CANVAS=0` rollback and the old `go/render` canvas are gone. Editing a classic diagram
+  still runs on the session, which the scene follows.
 * `go/jsoncanvas` reads and writes JSON Canvas 1.0 and converts both ways: `text` becomes an item
   with the first line as `title` and the rest as markdown `body`, `file` an `image` or a link item
   outside the workspace, `link` an item with a markdown link, `group` a container, and edges become

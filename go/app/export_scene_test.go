@@ -11,9 +11,8 @@ import (
 	"github.com/haiodo/gowt/gfx"
 )
 
-// The export follows the canvas: a classic diagram drawn by the scene is exported by the scene writer,
-// and the rollback switch puts it back on go/render.
-func TestClassicExportFollowsTheCanvas(t *testing.T) {
+// A classic diagram exports through the scene writer, as the canvas draws it: its items stay in the SVG.
+func TestClassicExportUsesScene(t *testing.T) {
 	text := `element "Old" {
   item A { width 40; height 20; title "A" }
 }
@@ -23,20 +22,9 @@ func TestClassicExportFollowsTheCanvas(t *testing.T) {
 	if e == nil {
 		t.Fatal("no element Old")
 	}
-	was := sceneCanvasOn
-	defer func() { sceneCanvasOn = was }()
-	sceneCanvasOn = false
-	classic, err := v.exportSVGOf(e, DefaultPrefs())
-	if err != nil {
-		t.Fatal(err)
-	}
-	sceneCanvasOn = true
 	drawn, err := v.exportSVGOf(e, DefaultPrefs())
 	if err != nil {
 		t.Fatal(err)
-	}
-	if bytes.Equal(classic, drawn) {
-		t.Fatal("the scene canvas still exports the classic diagram with go/render")
 	}
 	if !strings.Contains(string(drawn), ">A<") {
 		t.Errorf("the scene export lost the title:\n%s", drawn)

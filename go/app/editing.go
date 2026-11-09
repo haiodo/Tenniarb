@@ -25,62 +25,9 @@ type press struct {
 	scene  render.Point // the press in the session coordinates, for the classic drag preview
 }
 
-// realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
+// realize puts the element on the canvas through go/scene and draws the selection over it.
 func (v *Viewer) realize() {
-	if v.drawsWithScene(v.state.Current) {
-		v.realizeScene()
-		return
-	}
-	defer v.rebuildItems()
-	defer v.syncIndicators()
-	if old := v.sv; old != nil {
-		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
-		v.sv, v.selNodes = nil, nil
-		v.drawSceneOverlay()
-	}
-	ds := v.session.Scene()
-	old, oldMap := v.rendered, v.smap
-	// The content stays where it is drawn, and the map with it: the bounds of an edit change under the
-	// content, and a camera following in the same turn can show a frame of the jump before it moves.
-	stays := old != nil && v.shownElem == v.state.Current
-	var next *render.Rendered
-	v.scene.Update(func(tx *gfx.Tx) {
-		if old != nil {
-			tx.Remove(old.Root)
-		}
-		next = ds.Realize(tx, nil)
-		if stays {
-			tx.Move(next.Root, oldMap.TX, oldMap.TY)
-		}
-		v.overlay = gfx.NewNode(next.NextID)
-		tx.Add(next.Root, v.overlay)
-		tx.SetZ(v.overlay, overlayZ)
-		tx.SetPicture(v.overlay, v.session.Overlay())
-	})
-	v.nextID = next.NextID + 1
-	v.rendered = next
-	v.smap = MapOf(ds.Bounds())
-	if stays {
-		v.smap = oldMap
-	}
-
-	if !stays {
-		first := v.shownElem == nil // only the first element of a document is fit to the window
-		v.shownElem = v.state.Current
-		v.pendingFit = first
-		v.placeCamera(first)
-		v.syncOutline()
-	}
-	v.moveInline()
-}
-
-func (v *Viewer) drawOverlay() {
-	if v.overlay == nil || v.session == nil {
-		return
-	}
-	pic := v.session.Overlay()
-	ov := v.overlay
-	v.scene.Update(func(tx *gfx.Tx) { tx.SetPicture(ov, pic) })
+	v.realizeScene()
 }
 
 // onRedraw is the session's repaint request: a new scene, or only the pictures that changed.
@@ -88,35 +35,20 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 	if v.session == nil {
 		return
 	}
-	if v.rendered == nil && !r.Rebuilt {
-		// A classic diagram drawn by the scene: the session moved its drawables, the frames follow the
-		// selection, and the scene itself is rebuilt on the commit as it always was.
-		if v.sv != nil && v.sv.classic {
-			v.previewClassic()
-			defer v.syncItems()
-			defer v.syncIndicators()
-			v.drawSceneOverlay()
-			v.refreshProps()
-		}
-		return
-	}
-	defer v.refreshProps()
 	if r.Rebuilt {
+		defer v.refreshProps()
 		v.realize()
 		return
 	}
-	defer v.syncItems()
-	defer v.syncIndicators()
-	ds := v.session.Scene()
-	rendered, ov, pic := v.rendered, v.overlay, v.session.Overlay()
-	v.scene.Update(func(tx *gfx.Tx) {
-		for _, d := range r.Moved {
-			if n := rendered.Nodes[d]; n != nil {
-				tx.SetPicture(n, ds.Picture(d))
-			}
-		}
-		tx.SetPicture(ov, pic)
-	})
+	// The session moved the drawables of a classic diagram the scene draws: the frames follow the
+	// selection, and the scene itself is rebuilt on the commit as it always was.
+	if v.sv != nil && v.sv.classic {
+		v.previewClassic()
+		defer v.syncItems()
+		defer v.syncIndicators()
+		v.drawSceneOverlay()
+		v.refreshProps()
+	}
 }
 
 // onElement runs when the session puts another element on the canvas; the camera of the old one is kept.

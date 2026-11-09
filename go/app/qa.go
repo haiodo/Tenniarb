@@ -305,9 +305,6 @@ func (v *Viewer) qaState() map[string]any {
 	if v.state.Current != nil {
 		out["element"] = PathOf(v.state.Current)
 	}
-	if v.rendered != nil {
-		out["size"] = []float64{v.rendered.Width, v.rendered.Height}
-	}
 	out["kind"], out["version"], out["sceneMode"], out["nodes"] = v.kind, v.version, v.sceneMode(), v.selNodes
 	out["indicators"] = v.ind.dots
 	// itemsDrawn: the boxes the indicator dots are made of, hidden items and links included as drawn

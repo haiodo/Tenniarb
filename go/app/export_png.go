@@ -119,28 +119,12 @@ func (v *Viewer) selectionToExport() (selectionExport, bool) {
 		if len(x.nodes) == 0 && v.sceneMode() {
 			x.nodes, x.names = []*gfx.Node{x.root}, []string{v.state.Current.Name}
 		}
-	case v.rendered != nil && v.session != nil:
-		x.root = v.rendered.Root
-		for _, it := range v.session.Selection() {
-			if d := v.session.Scene().Drawables[it]; d != nil {
-				if n := v.rendered.Nodes[d]; n != nil {
-					x.nodes = append(x.nodes, n)
-					x.names = append(x.names, it.Name)
-				}
-			}
-		}
 	}
 	return x, len(x.nodes) > 0
 }
 
-// selectionPNG renders the selection with a transparent background; the selection frame is hidden for the
-// time of the render.
+// selectionPNG renders the selection with a transparent background.
 func (v *Viewer) selectionPNG(x selectionExport, scale int) ([]byte, error) {
-	if v.rendered != nil && v.overlay != nil {
-		ov := v.overlay
-		v.scene.Update(func(tx *gfx.Tx) { tx.SetPicture(ov, nil) })
-		defer v.drawOverlay()
-	}
 	return renderNodesPNG(v.scene, x.root, x.nodes, float64(clampExportScale(scale)), gfx.Color{})
 }
 

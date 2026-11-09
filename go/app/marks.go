@@ -222,13 +222,6 @@ func (v *Viewer) markRect(path string) (gfx.Rect, bool) {
 			return gfx.Rect{}, false
 		}
 		return gfx.R(v.sv.off.X+pl.X, v.sv.off.Y+pl.Y, pl.W, pl.H), true
-	case v.session != nil && v.rendered != nil:
-		ds := v.session.Scene()
-		for _, it := range ds.Items() {
-			if d := ds.Drawables[it]; d != nil && !it.IsLink() && it.Name == path {
-				return v.smap.RectToGfx(d.Bounds()), true
-			}
-		}
 	}
 	return gfx.Rect{}, false
 }

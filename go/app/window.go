@@ -45,8 +45,6 @@ type Viewer struct {
 	conflict bool
 	asking   bool // a modal question is open; the poll waits
 
-	rendered    *render.Rendered
-	overlay     *gfx.Node
 	selHUD      *gfx.Node    // the selection frames of a scene, in the content scene
 	diffHUD     *gfx.Node    // the frames of compare mode, on the HUD
 	sv          *sceneView   // the element on the canvas is drawn by go/scene
@@ -339,15 +337,12 @@ func (v *Viewer) fitCommand() {
 	}
 }
 
-// contentSize is the size of what the canvas shows, padding included: a diagram or a scene element.
+// contentSize is the size of what the canvas shows, padding included.
 func (v *Viewer) contentSize() (w, h float64, ok bool) {
-	switch {
-	case v.rendered != nil:
-		return v.rendered.Width, v.rendered.Height, true
-	case v.sv != nil:
-		return v.sv.w, v.sv.h, true
+	if v.sv == nil {
+		return 0, 0, false
 	}
-	return 0, 0, false
+	return v.sv.w, v.sv.h, true
 }
 
 func (v *Viewer) deleteItems() {
@@ -629,13 +624,10 @@ func (v *Viewer) startSession() {
 }
 
 func (v *Viewer) clearCanvas() {
-	if old := v.rendered; old != nil {
-		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.Root) })
-	}
 	if old := v.sv; old != nil {
 		v.scene.Update(func(tx *gfx.Tx) { tx.Remove(old.root) })
 	}
-	v.rendered, v.overlay, v.sv = nil, nil, nil
+	v.sv = nil
 	v.drawSceneOverlay()
 	v.refreshProps()
 }

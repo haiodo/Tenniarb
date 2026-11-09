@@ -412,19 +412,6 @@ func (v *Viewer) placePins() []Pin {
 		return PlacePins(v.cm.list, element, v.cm.resolved, box, func(p comments.Point) gfx.Point {
 			return v.smap.ToGfx(renderPoint(p))
 		})
-	case v.session != nil && v.rendered != nil:
-		ds := v.session.Scene()
-		box := func(node string) (gfx.Rect, bool) {
-			for _, it := range ds.Items() {
-				if d := ds.Drawables[it]; d != nil && !it.IsLink() && it.Name == node {
-					return v.smap.RectToGfx(d.Bounds()), true
-				}
-			}
-			return gfx.Rect{}, false
-		}
-		return PlacePins(v.cm.list, element, v.cm.resolved, box, func(p comments.Point) gfx.Point {
-			return v.smap.ToGfx(renderPoint(p))
-		})
 	}
 	return nil
 }

@@ -553,31 +553,8 @@ func TestClassicDragPreviewFollowsCommit(t *testing.T) {
 	}
 }
 
-// The canvas switch puts the classic diagram back on go/render; a scene element stays on the scene.
-func TestSceneCanvasFlagRestoresClassicRenderer(t *testing.T) {
-	was := sceneCanvasOn
-	defer func() { sceneCanvasOn = was }()
-	const classic = "element \"D\" { item A { pos 0 0 } }\n"
-	sceneCanvasOn = true
-	v := newDoc(t, &Shell{}, "", classic)
-	if el := v.session.Root().Elements[0]; !v.drawsWithScene(el) {
-		t.Error("the flag on: the classic element is not drawn by the scene")
-	}
-	sceneCanvasOn = false
-	v = newDoc(t, &Shell{}, "", classic)
-	el := v.session.Root().Elements[0]
-	if v.stree != nil || v.drawsWithScene(el) {
-		t.Error("the flag off: the classic element still draws through the scene")
-	}
-	sceneCanvasOn = false
-	v = newDoc(t, &Shell{}, "", "item Screen { auto-layout column }\n")
-	if root := &v.session.Root().Element; !v.drawsWithScene(root) {
-		t.Error("the flag off: a scene element left the scene renderer")
-	}
-}
-
 // The classic files of the documentation and the examples build through the canvas scene: every element
-// with items draws them, so the flag can stay on.
+// with items draws them.
 func TestClassicFixturesBuildSceneView(t *testing.T) {
 	for _, path := range []string{"../../docs/Example.tenn", "../../examples/anti-crm.tenn"} {
 		data, err := os.ReadFile(path)

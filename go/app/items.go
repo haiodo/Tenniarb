@@ -471,23 +471,11 @@ func (v *Viewer) revealNode() {
 
 // revealItem centres a diagram item that is not all on the canvas.
 func (v *Viewer) revealItem(it *model.DiagramItem) {
-	var box gfx.Rect
-	switch {
-	case v.rendered != nil:
-		d := v.session.Scene().Drawables[it]
-		if d == nil {
-			return
-		}
-		box = v.smap.RectToGfx(d.Bounds())
-	case v.sceneDrawn():
-		pl := v.classicPlaced(it)
-		if pl == nil {
-			return
-		}
-		box = gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H)
-	default:
+	pl := v.classicPlaced(it)
+	if pl == nil {
 		return
 	}
+	box := gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H)
 	w, h := v.view.Canvas().Size()
 	comp := v.view.Compositor()
 	cam := comp.Camera()

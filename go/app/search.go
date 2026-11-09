@@ -53,7 +53,7 @@ func (v *Viewer) openSearch() {
 func (v *Viewer) gotoItem(item *model.DiagramItem) {
 	v.session.Reveal(item)
 	d := v.session.Scene().Drawables[item]
-	if d == nil || v.rendered == nil {
+	if d == nil {
 		return
 	}
 	b := d.Bounds()
