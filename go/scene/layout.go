@@ -7,6 +7,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
+	"github.com/haiodo/tenniarb/go/markdown"
 	"github.com/haiodo/tenniarb/go/tenn"
 	"golang.org/x/text/unicode/norm"
 )
@@ -779,6 +780,9 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 // go/render gives the runs of a title, and everything the markup does not cover keeps its characters.
 func (p *prep) titleMarkupParts(rn *RNode, ti *textInfo) []titlePart {
 	title := ti.text
+	if parts := p.titleEmphasisParts(ti); parts != nil {
+		return parts
+	}
 	if !strings.Contains(title, "!(") && !strings.Contains(title, "&(") {
 		return nil
 	}
@@ -844,6 +848,70 @@ func (p *prep) titleMarkupParts(rn *RNode, ti *textInfo) []titlePart {
 		i = next
 	}
 	flush()
+	return parts
+}
+
+// titleEmphasisParts is the runs of a title with the emphasis of the markdown markup: **bold**, *italic*
+// and `code`, which go/render reads in the text of a title as it reads them in a body. nil when the title
+// writes none of them, so a plain title keeps the characters it has.
+func (p *prep) titleEmphasisParts(ti *textInfo) []titlePart {
+	text := ti.text
+	if !strings.ContainsAny(text, "*_`") {
+		return nil
+	}
+	// The raw text, as go/render lexes it: **bold** is bold and *italic* is italic, which the normalised
+	// form of a body would swap.
+	toks := markdown.GetTokens(text)
+	if len(toks) == 0 {
+		return nil
+	}
+	styled := func(weight int, italic bool) gfx.Font {
+		f := ti.font
+		if f.Name != "" {
+			fam, _, _ := strings.Cut(f.Name, ",")
+			f.Family, f.Name = strings.TrimSpace(fam), ""
+		}
+		if weight != 0 {
+			f.Weight = weight
+		}
+		f.Italic = italic
+		return f
+	}
+	parts := []titlePart{}
+	plain := ""
+	flush := func() {
+		if plain == "" {
+			return
+		}
+		parts = append(parts, titlePart{text: plain, font: ti.font})
+		plain = ""
+	}
+	marked := false
+	for _, t := range toks {
+		switch t.Type {
+		case markdown.TokBold:
+			flush()
+			parts = append(parts, titlePart{text: t.Literal, font: styled(700, false)})
+			marked = true
+		case markdown.TokItalic:
+			flush()
+			parts = append(parts, titlePart{text: t.Literal, font: styled(0, true)})
+			marked = true
+		case markdown.TokCode:
+			flush()
+			f := ti.font
+			f.Family, f.Name = bodyMonoFace, ""
+			parts = append(parts, titlePart{text: t.Literal, font: f})
+			marked = true
+		case markdown.TokEOF:
+		default:
+			plain += t.Literal
+		}
+	}
+	flush()
+	if !marked {
+		return nil
+	}
 	return parts
 }
 

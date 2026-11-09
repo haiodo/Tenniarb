@@ -20,7 +20,7 @@
       ],
       "rect": {
         "h": 528,
-        "w": 662.6,
+        "w": 756.4,
         "x": 0,
         "y": 0
       },
@@ -198,6 +198,65 @@
       "clip": false,
       "fill": "#ffffff",
       "gradient": null,
+      "name": "*Bold*",
+      "opacity": 1,
+      "path": "_Bold_",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 126.8,
+        "x": 500,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "ProjectType"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Emphasised",
+      "opacity": 1,
+      "path": "Emphasised",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 30,
+        "w": 256.4,
+        "x": 500,
+        "y": 80
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "ClassicProject",
+        " and",
+        " ",
+        "code"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
       "name": "Marked",
       "opacity": 1,
       "path": "Marked",
@@ -343,5 +402,5 @@
       "textColor": "#000000"
     }
   ],
-  "width": 662.6
+  "width": 756.4
 }

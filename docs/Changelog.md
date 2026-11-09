@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* A title of a classic item reads the emphasis of the markdown, as go/render reads it: `*ProjectType*` is
+  bold `ProjectType` and not the characters with the asterisks, `_ClassicProject_` is italic and a
+  `` `code` `` span is monospaced. Every title of a classic diagram with markup in it changes the picture, and
+  the web port follows.
 * The frame of a classic item with a list is five points wider than its words, as go/render made it: the
   paragraph of a bullet carries a head indent of five, and the text the old renderer measured grew by it. Ten
   elements of the parity stand line up with it.

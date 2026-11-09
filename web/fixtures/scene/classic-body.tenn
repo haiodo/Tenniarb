@@ -33,6 +33,14 @@ a word wider than the sixty points of the box
         title "value ${value}"
         body %{sum ${value + 1}}
     }
+    item "*Bold*" {
+        pos 500 0
+        title "*ProjectType*"
+    }
+    item "Emphasised" {
+        pos 500 -80
+        title "_ClassicProject_ and `code`"
+    }
     item "Marked" {
         pos 320 -60
         marker "☕️"

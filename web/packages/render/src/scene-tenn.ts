@@ -2117,11 +2117,80 @@ function parenAt(s: string, i: number): { mark: string; arg: string; next: numbe
 }
 
 /**
+ * The runs of a title with the emphasis of the markdown: **bold**, *italic* and `code`, which go/render
+ * reads in the text of a title as it reads them in a body. null when the title writes none of them.
+ */
+function titleEmphasisParts(ti: TextInfo): TitlePart[] | null {
+  const text = ti.text;
+  if (!/[*_`]/.test(text)) {
+    return null;
+  }
+  const styled = (weight: number, italic: boolean): Font => {
+    const f: Font = { ...ti.font };
+    if (f.name !== "") {
+      const fam = f.name.split(",")[0] ?? "";
+      f.family = fam.trim();
+      f.name = "";
+    }
+    if (weight !== 0) {
+      f.weight = weight;
+    }
+    f.italic = italic;
+    return f;
+  };
+  const parts: TitlePart[] = [];
+  let plain = "";
+  let marked = false;
+  const flush = (): void => {
+    if (plain === "") {
+      return;
+    }
+    parts.push({ text: plain, img: null });
+    plain = "";
+  };
+  // The raw text, as go/render lexes it: **bold** is bold and *italic* is italic.
+  for (const t of MarkdownLexer.getTokens(text)) {
+    switch (t.type) {
+      case "bold":
+        flush();
+        parts.push({ text: t.literal, img: null, font: styled(700, false) });
+        marked = true;
+        break;
+      case "italic":
+        flush();
+        parts.push({ text: t.literal, img: null, font: styled(0, true) });
+        marked = true;
+        break;
+      case "code": {
+        flush();
+        const f: Font = { ...ti.font };
+        f.family = bodyMonoFace;
+        f.name = "";
+        parts.push({ text: t.literal, img: null, font: f });
+        marked = true;
+        break;
+      }
+      case "eof":
+        break;
+      default:
+        plain += t.literal;
+    }
+  }
+  flush();
+  return marked ? parts : null;
+}
+
+/**
+ * A classic title cut at the !(colour) and &(size) markup of the markdown,/**
  * A classic title cut at the !(colour) and &(size) markup of the markdown, the colours and sizes
  * go/render gives the runs of a title; null when the title writes neither, so its text stays as written.
  */
 function titleMarkupParts(prep: Prep, rn: RNode, ti: TextInfo): TitlePart[] | null {
   const title = ti.text;
+  const emphasis = titleEmphasisParts(ti);
+  if (emphasis !== null) {
+    return emphasis;
+  }
   if (!title.includes("!(") && !title.includes("&(")) {
     return null;
   }
