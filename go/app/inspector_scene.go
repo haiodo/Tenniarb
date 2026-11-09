@@ -154,6 +154,18 @@ func (in *inspector) sceneSections() g.Option {
 	hasStyles := func(k selKind) bool { return node(k) && len(v.styleGroups()) > 0 }
 	hasAnim := func(k selKind) bool { return node(k) && v.animOf() != nil }
 	hasParams := func(k selKind) bool { return k == kindScene && v.paramNode() != nil }
+	sceneCfg := nodeCfg{
+		prefix:  "scene",
+		src:     src,
+		words:   true,
+		layout:  node,
+		fill:    node,
+		text:    node,
+		border:  node,
+		shape:   node,
+		display: node,
+		layer:   node,
+	}
 	// The component of an instance is a way to the place it is defined, not only a name. A button cannot
 	// wrap, so it shows the tail of the path and holds the whole one as a tooltip.
 	var comp *g.ButtonView
@@ -179,29 +191,23 @@ func (in *inspector) sceneSections() g.Option {
 			in.sceneAnimation(hasAnim)),
 		in.section(sectionTitle("Styles"), hasStyles,
 			in.sceneStyles(hasStyles)),
-		in.section(sectionTitle("Layout"), node,
+		in.layoutSection(sceneCfg, []func() g.Option{
 			in.combo("Auto layout", node, "scene-auto-layout", "auto-layout", []string{"none", "row", "column", "abs"}, "none", src),
-			in.pair("Position", "X", "Y", node, num("scene-pos-x", "pos", 0), num("scene-pos-y", "pos", 1)),
-			in.pair("Size", "W", "H", node, t("scene-width", "width"), t("scene-height", "height")),
-			in.sizeModes("W", "scene-width-mode", "width", 0, node, func() float64 { w, _ := v.itemSize(); return w }, src),
-			in.sizeModes("H", "scene-height-mode", "height", 0, node, func() float64 { _, h := v.itemSize(); return h }, src),
+		}, []func() g.Option{
 			in.text("Gap", node, num("scene-gap", "gap", 0)),
-			in.text("Padding", node, entryCfg{id: "scene-padding", name: "padding", list: true, src: src}),
 			in.combo("Align", node, "scene-align", "align", []string{noneChoice, "start", "center", "end"}, noneChoice, src),
 			in.combo("Justify", node, "scene-justify", "justify", []string{noneChoice, "start", "center", "end", "space-between"}, noneChoice, src),
-			in.toggle("Clip", node, "scene-clip", "clip", []string{"yes"}, src)),
-		in.section(sectionTitle("Fill"), node,
-			in.color("Color", node, t("scene-color", "color"))),
-		in.section(sectionTitle("Border"), node,
-			in.color("Color", node, t("scene-border-color", "border-color")),
-			in.text("Width", node, num("scene-line-width", "line-width", 0)),
-			in.text("Radius", node, t("scene-radius", "corner-radius"))),
-		in.section(sectionTitle("Text"), node,
+			in.toggle("Clip", node, "scene-clip", "clip", []string{"yes"}, src),
+		}),
+		in.fillSection(sceneCfg, nil, nil),
+		in.textSection(sceneCfg, []func() g.Option{
 			in.text("Title", node, t("scene-title", "title")),
-			in.color("Color", node, t("scene-text-color", "text-color")),
-			in.text("Size", node, num("scene-font-size", "font-size", 0)),
+		}, []func() g.Option{
 			in.text("Font", node, t("scene-font-family", "font-family")),
-			in.text("Weight", node, t("scene-font-weight", "font-weight"))),
+			in.text("Weight", node, t("scene-font-weight", "font-weight")),
+		}),
+		in.borderSection(sceneCfg, nil, nil),
+		in.shapeSection(sceneCfg, nil, nil),
 		in.section(sectionTitle("Effects"), node,
 			in.text("Opacity", node, num("scene-opacity", "opacity", 0)),
 			in.combo("Preset", node, "scene-shadow", "shadow", []string{noneChoice, "soft", "floating", customShadow}, noneChoice, v.shadowSrc),

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The inspector is one panel for a classic item and a scene node: Layout, Fill, Text, Border and Shape
+  are built from the same rows for both, the scene node gains the `Display`, `Layer` and border `Style`
+  rows the classic item always had, and `Padding` reads the same field on either side.
 * The Effects section of a scene node lists its `shadow` layers like the classic inspector does: each
   layer's X, Y, blur and colour, a button to drop one and one to add a layer, each write one undo step
   that leaves the file with exactly the layers shown; the `Shadow` row beside it keeps the `soft`,
