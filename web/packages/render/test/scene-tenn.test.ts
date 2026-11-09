@@ -11,7 +11,7 @@ import type { Canvas2D } from "../src/canvas-types.ts";
 import { renderTenn } from "../src/node.ts";
 import { newCanvas } from "./helpers.ts";
 
-/** A Canvas2D that records what is painted: fills, strokes, paths, dashes, text and the alpha in force. */
+/** A Canvas2D that records what is painted: fills, strokes, paths, dashes, text, images and the alpha in force. */
 function record(): {
   ctx: Canvas2D;
   fills: string[];
@@ -19,12 +19,14 @@ function record(): {
   paths: (string | number)[][][];
   dashes: { dash: number[]; phase: number }[];
   texts: { text: string; fill: string; font: string }[];
+  images: { x: number; y: number; w: number; h: number }[];
 } {
   const fills: string[] = [];
   const strokes: string[] = [];
   const paths: (string | number)[][][] = [];
   const dashes: { dash: number[]; phase: number }[] = [];
   const texts: { text: string; fill: string; font: string }[] = [];
+  const images: { x: number; y: number; w: number; h: number }[] = [];
   let pen: (string | number)[][] = [];
   const state = { fill: "rgb(0,0,0)", stroke: "rgb(0,0,0)", alpha: 1, font: "", dash: [] as number[], phase: 0 };
   const stack: (typeof state)[] = [];
@@ -63,7 +65,7 @@ function record(): {
     fillRect: () => {},
     fillText: (text: string) => texts.push({ text, fill: paint(state.fill), font: state.font }),
     measureText: (text: string) => ({ width: [...text].length * 10 }),
-    drawImage: () => {},
+    drawImage: (_image: unknown, x: number, y: number, w: number, h: number) => images.push({ x, y, w, h }),
     setLineDash: (segments: number[]) => {
       state.dash = [...segments];
     },
@@ -104,7 +106,7 @@ function record(): {
     shadowOffsetY: 0,
     textBaseline: "alphabetic",
   };
-  return { ctx, fills, strokes, paths, dashes, texts };
+  return { ctx, fills, strokes, paths, dashes, texts, images };
 }
 
 function scene(text: string, name = "Screen"): { scene: TennScene; element: Element } {
@@ -150,6 +152,56 @@ test("a scene element is told apart from a classic diagram", () => {
   assert.equal(isSceneElement(classic), false);
   const { element: withAutoLayout } = scene(`element "Screen" { item A { auto-layout row } }`);
   assert.equal(isSceneElement(withAutoLayout), true);
+});
+
+// An 8x4 PNG and a 40x20 one, the payload of a classic `image "name" @(...)`.
+const png8x4 = "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAYAAACzzX7wAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAAVSURBVAiZYzROO/OfAQ9gwidJHQUANtQCbKJNLnwAAAAASUVORK5CYII=";
+const png40x20 = "iVBORw0KGgoAAAANSUhEUgAAACgAAAAUCAYAAAD/Rn+7AAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAA3SURBVEiJ7c4xAQAgCABBpBKdTGsnicDwgw5/CW7VPjc+lq8DE4OUQcogZZAySBmkDFIGKYNUAxRmAowWRmlIAAAAAElFTkSuQmCC";
+
+/** A decoder that lies about the pixels: the op's size has to come from the base64 header, not from it. */
+const stubDecode = (data: string) => ({ image: data, width: 1, height: 1 });
+
+test("a classic inline image nothing names fills the box and sizes it by its pixels", () => {
+  const { element } = scene(`element "Screen" {
+    item Pic { pos 0 0; title ""; image "logo" @(${png8x4}) }
+}`);
+  const s = buildTennScene(element, { decodeImage: stubDecode });
+  const p = record();
+  s.draw(p.ctx);
+  assert.deepEqual([box(s, "Pic").width, box(s, "Pic").height], [8, 4]);
+  assert.deepEqual(p.images, [{ x: 0, y: 0, w: 8, h: 4 }]);
+});
+
+test("a title reference draws the inline picture at the width it asks", () => {
+  const { element } = scene(`element "Screen" {
+    item Pic { pos 0 0; width 200; height 60; title "Icon @(logo|20)"; image "logo" @(${png40x20}) }
+}`);
+  const s = buildTennScene(element, { decodeImage: stubDecode });
+  const p = record();
+  s.draw(p.ctx);
+  // The title names the picture, so it is text of the title and not the content of the box: one op.
+  assert.deepEqual(
+    p.images.map((im) => [im.w, im.h]),
+    [[20, 10]],
+  );
+});
+
+test("a body read with --from-file names the picture instead of the box", () => {
+  const { element } = scene(`element "Screen" {
+    item Pic { pos 0 0; width 300; height 100; body --from-file "docs/plan.md"; image "logo" @(${png40x20}) }
+}`);
+  const s = buildTennScene(element, {
+    file: "a.tenn",
+    readFile: (path) => (path === "docs/plan.md" ? "Logo @(logo|40) in the page" : null),
+    decodeImage: stubDecode,
+  });
+  const p = record();
+  s.draw(p.ctx);
+  assert.deepEqual(s.diagnostics, []);
+  assert.deepEqual(
+    p.images.map((im) => [im.w, im.h]),
+    [[40, 20]],
+  );
 });
 
 test("use-style picks the variant by parameter: the fill and the label colour follow", () => {

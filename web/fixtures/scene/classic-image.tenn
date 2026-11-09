@@ -1,0 +1,5 @@
+// A classic inline picture nothing names is the content of the box, and a box without a written size
+// takes the pixels of the picture.
+element "Classic Image" {
+    item Pic { pos 0 0; title ""; image "logo" @(iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAYAAACzzX7wAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAAVSURBVAiZYzROO/OfAQ9gwidJHQUANtQCbKJNLnwAAAAASUVORK5CYII=) }
+}

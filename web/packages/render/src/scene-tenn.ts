@@ -9,8 +9,9 @@
 // in Go). element --from-file and template are ported; the calling side supplies the files (SceneLoadOptions).
 import { TennParser, newCommand, newFloatNode, parseTenn } from "@tenniarb/core";
 import type { DiagramItem, Element, ExecutionContext, LinkItem, TennNode } from "@tenniarb/core";
-import { MarkdownLexer } from "@tenniarb/markdown";
+import { MarkdownLexer, getMaxRect } from "@tenniarb/markdown";
 import type { Canvas2D } from "./canvas-types.ts";
+import type { ImageDecoder } from "./images.ts";
 import { parseColor } from "./color.ts";
 import type { Color } from "./color.ts";
 import { canvasQuirks, shadowScale } from "./drawable.ts";
@@ -211,6 +212,11 @@ export interface SceneLoadOptions {
    * values are the ones renderElement would draw. Built for the element here when absent.
    */
   context?: ExecutionContext | null;
+  /**
+   * Decodes the base64 of a classic inline image into something Canvas2D.drawImage takes; without it the
+   * picture still sizes the box and the text, but nothing is drawn.
+   */
+  decodeImage?: ImageDecoder;
 }
 
 export type Override =
@@ -1761,6 +1767,355 @@ function animations(rn: RNode, defs: Map<string, Animation>, diag: Diagnostics):
   }
 }
 
+// MARK: - Inline images (go/scene/image.go)
+
+/** A classic `image "name" @(base64)`: the picture of the box or the one a title or body names. */
+interface InlineImage {
+  data: string; // the base64 as written, the key of the decode cache
+  w: number;
+  h: number;
+}
+
+/** The box an @(name|width) reference asks for: the picture and the size the layout draws it at. */
+interface InlineRef {
+  im: InlineImage;
+  w: number;
+  h: number;
+}
+
+/** inlineImage: a classic `image "name" @(data)`, not the `image "path"` of a scene. */
+function inlineImage(pr: SceneProp | null): pr is SceneProp {
+  return pr !== null && pr.val === undefined && pr.args.length >= 2 && pr.args[1]!.kind === "Image";
+}
+
+const inlineBase64 = (data: string): string => data.replace(/[^A-Za-z0-9+/=]/g, "");
+
+const base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/** Go's decodeBase64: the payload of an inline image, unknown characters dropped and the padding ignored. */
+function decodeInlineBase64(data: string): Uint8Array | null {
+  const clean = inlineBase64(data).replace(/=+$/, "");
+  if (clean.length % 4 === 1) {
+    return null;
+  }
+  const out = new Uint8Array(Math.floor((clean.length * 3) / 4));
+  let bits = 0;
+  let n = 0;
+  let o = 0;
+  for (const ch of clean) {
+    const v = base64Digits.indexOf(ch);
+    if (v < 0) {
+      return null;
+    }
+    bits = (bits << 6) | v;
+    n += 6;
+    if (n >= 8) {
+      n -= 8;
+      out[o] = (bits >> n) & 0xff;
+      o += 1;
+      bits &= (1 << n) - 1;
+    }
+  }
+  return out.subarray(0, o);
+}
+
+const be32 = (b: Uint8Array, i: number): number => (b[i]! << 24) | (b[i + 1]! << 16) | (b[i + 2]! << 8) | b[i + 3]!;
+const le16 = (b: Uint8Array, i: number): number => b[i]! | (b[i + 1]! << 8);
+const le24 = (b: Uint8Array, i: number): number => b[i]! | (b[i + 1]! << 8) | (b[i + 2]! << 16);
+
+/** The pixel size of a PNG, JPEG, GIF or WebP, as Go's image.DecodeConfig reads it. */
+function imageSize(raw: Uint8Array): { w: number; h: number } | null {
+  const ascii = (at: number, len: number): string => {
+    let s = "";
+    for (let i = 0; i < len; i += 1) {
+      s += String.fromCharCode(raw[at + i] ?? 0);
+    }
+    return s;
+  };
+  if (raw.length >= 24 && raw[0] === 0x89 && ascii(1, 3) === "PNG") {
+    const w = be32(raw, 16);
+    const h = be32(raw, 20);
+    return w > 0 && h > 0 ? { w, h } : null;
+  }
+  if (raw.length >= 10 && (ascii(0, 6) === "GIF87a" || ascii(0, 6) === "GIF89a")) {
+    const w = le16(raw, 6);
+    const h = le16(raw, 8);
+    return w > 0 && h > 0 ? { w, h } : null;
+  }
+  if (raw.length >= 4 && raw[0] === 0xff && raw[1] === 0xd8) {
+    for (let i = 2; i + 9 < raw.length; ) {
+      if (raw[i] !== 0xff) {
+        i += 1;
+        continue;
+      }
+      const marker = raw[i + 1]!;
+      if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+        i += 2;
+        continue;
+      }
+      const len = (raw[i + 2]! << 8) | raw[i + 3]!;
+      if (len < 2) {
+        return null;
+      }
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        const h = (raw[i + 5]! << 8) | raw[i + 6]!;
+        const w = (raw[i + 7]! << 8) | raw[i + 8]!;
+        return w > 0 && h > 0 ? { w, h } : null;
+      }
+      i += 2 + len;
+    }
+    return null;
+  }
+  if (raw.length >= 30 && ascii(0, 4) === "RIFF" && ascii(8, 4) === "WEBP") {
+    switch (ascii(12, 4)) {
+      case "VP8 ":
+        return { w: le16(raw, 26) & 0x3fff, h: le16(raw, 28) & 0x3fff };
+      case "VP8L": {
+        const bits = raw[21]! | (raw[22]! << 8) | (raw[23]! << 16) | (raw[24]! << 24);
+        return { w: (bits & 0x3fff) + 1, h: ((bits >> 14) & 0x3fff) + 1 };
+      }
+      case "VP8X":
+        return { w: le24(raw, 24) + 1, h: le24(raw, 27) + 1 };
+    }
+  }
+  return null;
+}
+
+/** inlineConfig: the size of an inline picture, or why the data is not one. */
+function inlineConfig(data: string): { w: number; h: number } | { why: string } {
+  const raw = decodeInlineBase64(data);
+  if (raw === null) {
+    return { why: "the data is not base64" };
+  }
+  const size = imageSize(raw);
+  return size ?? { why: "the file is not a PNG, JPEG, GIF or WebP image" };
+}
+
+/** Decoded pictures kept between builds, at 4 bytes a pixel, keyed by their base64 content; least recently used go first. */
+// shortcut: a page above 64 MiB of pixels decodes again on the next build; Go keeps 512 MiB.
+const inlineCacheBytes = 64 << 20;
+
+const inlineCaches = new WeakMap<ImageDecoder, Map<string, { image: unknown; bytes: number }>>();
+
+/** decodeInline: the picture behind a key of the cache, decoded once per content and decoder. */
+function inlineRaster(prep: Prep, im: InlineImage): unknown | null {
+  const decode = prep.decodeImage;
+  if (decode === null) {
+    return null;
+  }
+  let cache = inlineCaches.get(decode);
+  if (cache === undefined) {
+    cache = new Map();
+    inlineCaches.set(decode, cache);
+  }
+  const key = inlineBase64(im.data);
+  const hit = cache.get(key);
+  if (hit !== undefined) {
+    cache.delete(key);
+    cache.set(key, hit);
+    return hit.image;
+  }
+  let decoded;
+  try {
+    decoded = decode(key);
+  } catch {
+    decoded = null;
+  }
+  if (decoded === null) {
+    return null;
+  }
+  const bytes = 4 * im.w * im.h;
+  if (bytes <= inlineCacheBytes) {
+    cache.set(key, { image: decoded.image, bytes });
+    let total = 0;
+    for (const e of cache.values()) {
+      total += e.bytes;
+    }
+    for (const [k, e] of cache) {
+      if (total <= inlineCacheBytes) {
+        break;
+      }
+      cache.delete(k);
+      total -= e.bytes;
+    }
+  }
+  return decoded.image;
+}
+
+/** inlineImages: the `image "name" @(data)` of rn by name, decoded as far as the header. */
+function inlineImages(prep: Prep, rn: RNode): Map<string, InlineImage> {
+  const cached = prep.inlines.get(rn);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const imgs = new Map<string, InlineImage>();
+  prep.inlines.set(rn, imgs);
+  if (!prep.classic) {
+    return imgs;
+  }
+  for (const pr of rn.props) {
+    if (!inlineImage(pr)) {
+      continue;
+    }
+    const name = propText(pr, 0);
+    if (name === "") {
+      prep.diag.warn(pr.pos ?? rn.src ?? { line: 0, col: 0 }, `image takes a name: image "photo" @(...)`);
+      continue;
+    }
+    const data = propText(pr, 1);
+    const size = inlineConfig(data);
+    if ("why" in size) {
+      prep.diag.warn(pr.pos ?? rn.src ?? { line: 0, col: 0 }, `image "${name}": ${size.why}, the item is drawn empty`);
+      continue;
+    }
+    imgs.set(name, { data, w: size.w, h: size.h });
+  }
+  return imgs;
+}
+
+/** The number of a `@(name|width)` style, as Swift's Int(_:radix: 10). */
+function inlineInt(s: string): number | null {
+  return /^[+-]?[0-9]+$/.test(s) ? Number(s) : null;
+}
+
+/** resolveInline: the picture the name of a reference selects, with the box @(name|width) asks for. */
+function resolveInline(imgs: Map<string, InlineImage>, ref: string): InlineRef | null {
+  const bar = ref.indexOf("|");
+  const name = bar < 0 ? ref : ref.slice(0, bar);
+  const im = imgs.get(name);
+  if (im === undefined) {
+    return null;
+  }
+  let w = im.w;
+  let h = im.h;
+  if (bar >= 0) {
+    const style = ref.slice(bar + 1);
+    let widthStr = style;
+    let heightStr = "";
+    const x = style.indexOf("x");
+    if (x >= 0) {
+      widthStr = style.slice(0, x).trim();
+      heightStr = style.slice(x + 1).trim();
+    }
+    const width = inlineInt(widthStr);
+    if (width !== null) {
+      w = width;
+    }
+    const height = inlineInt(heightStr);
+    if (height !== null) {
+      h = height;
+    }
+    // A style without a width or a height keeps the aspect, and never grows the picture.
+    if (widthStr === "" || heightStr === "") {
+      const r = getMaxRect(w, h, im.w, im.h);
+      w = r.width;
+      h = r.height;
+    }
+  }
+  return { im, w, h };
+}
+
+/** namesInline: a title, a body or the file the body reads refers to the inline image name. */
+function namesInline(prep: Prep, rn: RNode, name: string): boolean {
+  if (name === "") {
+    return false;
+  }
+  const ref = `@(${name}`;
+  for (const propName of ["title", "body"]) {
+    const pr = prop(rn, propName);
+    if (pr !== null && propRefers(pr, ref)) {
+      return true;
+    }
+  }
+  const body = prop(rn, "body");
+  if (body !== null) {
+    const file = bodyFileArg(body.args);
+    if (file !== null) {
+      const text = bodyFileText(prep, rn, file, body.pos ?? rn.src ?? { line: 0, col: 0 }, true);
+      if (text !== null && text.includes(ref)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** propRefers: the text of a title or body names ref, in an argument, a value or a block. */
+function propRefers(pr: SceneProp, ref: string): boolean {
+  const nodesRef = (nodes: TennNode[]): boolean => nodes.some((n) => (n.getIdentText() ?? "").includes(ref));
+  if ((pr.val ?? []).some((v) => v.includes(ref))) {
+    return true;
+  }
+  if (nodesRef(pr.args)) {
+    return true;
+  }
+  if (pr.block !== null) {
+    for (const c of pr.block.children ?? []) {
+      if (nodesRef(splitCommand(c).args)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** splitTitleImages: a title cut at the inline pictures it names; null when it names none. */
+function splitTitleImages(title: string, imgs: Map<string, InlineImage>): TitlePart[] | null {
+  if (imgs.size === 0) {
+    return null;
+  }
+  const parts: TitlePart[] = [];
+  let plain = 0;
+  let found = false;
+  let i = 0;
+  while (i + 1 < title.length) {
+    if (title[i] !== "@" || title[i + 1] !== "(") {
+      i += 1;
+      continue;
+    }
+    const j = title.indexOf(")", i + 2);
+    if (j < 0) {
+      break;
+    }
+    const img = resolveInline(imgs, title.slice(i + 2, j));
+    if (img === null) {
+      i += 2;
+      continue;
+    }
+    if (i > plain) {
+      parts.push({ text: title.slice(plain, i), img: null });
+    }
+    parts.push({ text: "", img });
+    i = j + 1;
+    plain = i;
+    found = true;
+  }
+  if (!found) {
+    return null;
+  }
+  if (plain < title.length) {
+    parts.push({ text: title.slice(plain), img: null });
+  }
+  return parts;
+}
+
+/** The picture an item draws as its content: the inline image no title or body names. */
+function inlineBoxImage(prep: Prep, rn: RNode): InlineImage | null {
+  if (!prep.classic) {
+    return null;
+  }
+  const pr = prop(rn, "image");
+  if (!inlineImage(pr)) {
+    return null;
+  }
+  const name = propText(pr, 0);
+  const im = inlineImages(prep, rn).get(name);
+  if (im === undefined || namesInline(prep, rn, name)) {
+    return null;
+  }
+  return im;
+}
+
 // MARK: - Layout (port of gfx/layout and go/scene/layout.go)
 
 type Dir = "row" | "column" | "abs";
@@ -2229,6 +2584,19 @@ interface Font {
   name: string;
 }
 
+/** A span of a title: text in the item font, or an inline picture of a classic diagram. */
+interface TitlePart {
+  text: string;
+  img: InlineRef | null;
+}
+
+/** One laid out line of a title; h grows above lineH for an inline picture. */
+interface TitleLine {
+  parts: TitlePart[];
+  w: number;
+  h: number;
+}
+
 interface TextInfo {
   font: Font;
   padX: number;
@@ -2238,17 +2606,101 @@ interface TextInfo {
   asc: number;
   desc: number;
   text: string;
+  /** Set when the text names an inline picture; null draws the text as it is. */
+  parts: TitlePart[] | null;
+  prep: Prep;
 }
 
 /** gfx.EstimateText: 0.6 em per rune, ascent 0.8 em, descent 0.25 em. */
 const textWidth = (ti: TextInfo, s: string): number => [...s].length * (ti.font.size * 0.6 + ti.font.spacing);
 
+/** The cap height of SF over the font size, as go/render hangs an inline picture from the line. */
+const capHeightRatio = 1490 / 2048;
+
 function textNatural(ti: TextInfo): number {
+  if (ti.parts !== null) {
+    let w = 0;
+    for (const ln of titleLayout(ti, Infinity)) {
+      w = Math.max(w, ln.w);
+    }
+    return w;
+  }
   let w = 0;
   for (const ln of ti.text.split("\n")) {
     w = Math.max(w, textWidth(ti, ln));
   }
   return w;
+}
+
+/** The height of the title at width w; an inline picture is taller than its line of text. */
+function titleHeight(ti: TextInfo, w: number): number {
+  if (ti.parts !== null) {
+    let h = 0;
+    for (const ln of titleLayout(ti, w)) {
+      h += ln.h;
+    }
+    return h;
+  }
+  return textWrap(ti, w).length * ti.lineH;
+}
+
+/** Go's textInfo.layout: the title broken at the references, an inline picture counting as one box. */
+function titleLayout(ti: TextInfo, w: number): TitleLine[] {
+  const lines: TitleLine[] = [];
+  let line: TitleLine = { parts: [], w: 0, h: ti.lineH };
+  let started = false;
+  const flush = (): void => {
+    lines.push(line);
+    line = { parts: [], w: 0, h: ti.lineH };
+    started = false;
+  };
+  const add = (part: TitlePart): void => {
+    line.parts.push(part);
+    if (part.img !== null) {
+      line.w += part.img.w;
+      line.h = Math.max(line.h, part.img.h);
+      started = true;
+      return;
+    }
+    line.w += textWidth(ti, part.text);
+    started = started || part.text !== "";
+  };
+  for (const part of ti.parts ?? []) {
+    if (part.img !== null) {
+      if (started && w > 0 && line.w + part.img.w > w + 1e-9) {
+        flush();
+      }
+      add(part);
+      continue;
+    }
+    part.text.split("\n").forEach((para, pi) => {
+      if (pi > 0) {
+        flush();
+      }
+      para.split(" ").forEach((word, i) => {
+        hyphenPieces(word).forEach((piece, j) => {
+          let text = piece;
+          if (j === 0 && i > 0) {
+            text = ` ${piece}`;
+          }
+          if (text === "" || (!started && text.trim() === "")) {
+            return;
+          }
+          if (started && text.trim() !== "" && w > 0 && line.w + textWidth(ti, text) > w + 1e-9) {
+            flush();
+            text = piece;
+          }
+          if (text !== "") {
+            add({ text, img: null });
+          }
+        });
+      });
+    });
+  }
+  if (started || lines.length === 0) {
+    flush();
+  }
+  return lines;
 }
 
 /** Split a word after each "-" that sits between a letter or digit and another character. */
@@ -2311,6 +2763,7 @@ interface BodyRun {
   text: string;
   font: Font;
   code: boolean; // drawn over the code background
+  img?: InlineRef; // an inline picture of a classic diagram: text is empty
 }
 
 type BodyBlock =
@@ -2346,6 +2799,9 @@ interface BodyText {
   blocks: BodyBlock[];
   pos: DiagPos; // the body command, for a warning about its height
   from: string; // the markdown file the text was read from; "" for text written in the .tenn
+  /** The classic inline pictures the body may name with @(name). */
+  imgs: Map<string, InlineImage>;
+  prep: Prep;
 }
 
 /** gfx's estimate for one run: 0.6 em a rune plus its spacing, as textWidth. */
@@ -2455,9 +2911,15 @@ function bodyInline(b: BodyText, s: string): BodyRun[] {
       case "code":
         add(t.literal, b.mono, true);
         break;
-      case "image":
-        add(`@(${t.literal})`, b.font, false);
+      case "image": {
+        const img = resolveInline(b.imgs, t.literal);
+        if (img !== null) {
+          runs.push({ text: "", font: b.font, code: false, img });
+        } else {
+          add(`@(${t.literal})`, b.font, false);
+        }
         break;
+      }
       case "color":
         add(`!(${t.literal})`, b.font, false);
         break;
@@ -2611,12 +3073,20 @@ function splitSpaces(s: string): string[] {
 
 function bodyFinish(b: BodyText, l: BodyLine): void {
   for (const run of l.runs) {
+    if (run.img !== undefined) {
+      continue;
+    }
     l.asc = Math.max(l.asc, run.font.size * 0.8);
     l.desc = Math.max(l.desc, run.font.size * 0.25);
   }
   l.h = Math.round(l.asc + l.desc);
   if (b.lineH > 0) {
     l.h = b.lineH;
+  }
+  for (const run of l.runs) {
+    if (run.img !== undefined) {
+      l.h = Math.max(l.h, run.img.h);
+    }
   }
 }
 
@@ -2636,6 +3106,15 @@ function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, co
     started = false;
   };
   for (const run of runs) {
+    if (run.img !== undefined) {
+      if (started && width > 0 && line.x + line.w + run.img.w > width + 1e-9) {
+        flush();
+      }
+      line.runs.push(run);
+      line.w += run.img.w;
+      started = true;
+      continue;
+    }
     for (const tok of splitSpaces(run.text)) {
       const space = tok.trim() === "";
       const w = bodyWidth(tok, run.font);
@@ -2646,7 +3125,7 @@ function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, co
         flush();
       }
       const last = line.runs[line.runs.length - 1];
-      if (last !== undefined && bodyFontKey(last.font) === bodyFontKey(run.font) && last.code === run.code) {
+      if (last !== undefined && last.img === undefined && bodyFontKey(last.font) === bodyFontKey(run.font) && last.code === run.code) {
         last.text += tok;
       } else {
         line.runs.push({ text: tok, font: run.font, code: run.code });
@@ -2788,7 +3267,7 @@ function warnBodyFit(prep: Prep, rn: RNode): void {
     } else {
       const ti = prep.texts.get(rn);
       if (ti !== undefined) {
-        top = ti.padY + textWrap(ti, ln.rw - 2 * ti.padX).length * ti.lineH;
+        top = ti.padY + titleHeight(ti, ln.rw - 2 * ti.padX);
       }
     }
     const room = ln.rh - top - body.padY;
@@ -2884,24 +3363,29 @@ function bodyHeadings(text: string): string[] {
 /**
  * The text of "body --from-file <path>": the whole markdown file, or the section named after "#".
  * The path is relative to the file that writes the body and may not leave the workspace root, as for
- * element --from-file. Every problem is reported here, and null is returned then.
+ * element --from-file. Every problem is reported here unless quiet, and null is returned then.
  */
-function bodyFileText(prep: Prep, rn: RNode, ref: string, at: DiagPos): string | null {
+function bodyFileText(prep: Prep, rn: RNode, ref: string, at: DiagPos, quiet = false): string | null {
+  const fail = (message: string): void => {
+    if (!quiet) {
+      prep.diag.fail(at, message);
+    }
+  };
   const cut = ref.indexOf("#");
   const file = cut < 0 ? ref : ref.slice(0, cut);
   const section = cut < 0 ? "" : ref.slice(cut + 1);
   if (file === "") {
-    prep.diag.fail(at, "body --from-file needs a file: body --from-file \"docs/plan.md\"");
+    fail("body --from-file needs a file: body --from-file \"docs/plan.md\"");
     return null;
   }
   const rel = resolvePath(rn.src?.file ?? "", file);
   if (rel === null) {
-    prep.diag.fail(at, `body --from-file "${file}" leaves the workspace root`);
+    fail(`body --from-file "${file}" leaves the workspace root`);
     return null;
   }
   const text = prep.readFile === null ? null : prep.readFile(rel);
   if (text === null) {
-    prep.diag.fail(at, `body --from-file "${file}": no such file`);
+    fail(`body --from-file "${file}": no such file`);
     return null;
   }
   if (cut < 0) {
@@ -2913,9 +3397,9 @@ function bodyFileText(prep: Prep, rn: RNode, ref: string, at: DiagPos): string |
   }
   const all = bodyHeadings(text);
   if (all.length > 0) {
-    prep.diag.fail(at, `body --from-file "${ref}": ${rel} has no heading "${section}"; headings: ${all.join(", ")}`);
+    fail(`body --from-file "${ref}": ${rel} has no heading "${section}"; headings: ${all.join(", ")}`);
   } else {
-    prep.diag.fail(at, `body --from-file "${ref}": ${rel} has no heading "${section}" and no headings at all`);
+    fail(`body --from-file "${ref}": ${rel} has no heading "${section}" and no headings at all`);
   }
   return null;
 }
@@ -3055,6 +3539,8 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
     blocks: [],
     pos: at,
     from,
+    imgs: prep.classic ? inlineImages(prep, rn) : new Map(),
+    prep,
   };
   b.blocks = bodyParse(b, text);
   return b;
@@ -3078,6 +3564,14 @@ function drawBody(ctx: Canvas2D, b: BodyText, x: number, y: number, width: numbe
     let xx = x + l.x;
     const base = yy + (l.h - (l.asc + l.desc)) / 2 + l.asc;
     for (const run of l.runs) {
+      if (run.img !== undefined) {
+        const raster = inlineRaster(b.prep, run.img.im);
+        if (raster !== null) {
+          ctx.drawImage(raster, xx, yy + (l.h - run.img.h) / 2, run.img.w, run.img.h);
+        }
+        xx += run.img.w;
+        continue;
+      }
       const w = bodyWidth(run.text, run.font);
       if (run.code && !l.code && w > 0) {
         ctx.fillStyle = sceneCss(b.codeBg);
@@ -3311,8 +3805,13 @@ interface Prep {
   linkSides: Map<RNode, LinkSides>;
   /** The static `rotate` of every node, read at build: go/scene reads it in emit. */
   rotations: Map<RNode, number>;
+  /** The classic `image "name" @(...)` of a node by name, and the one that fills its box. */
+  inlines: Map<RNode, Map<string, InlineImage>>;
+  inlineBox: Map<RNode, InlineImage>;
   /** Reads the markdown of `body --from-file`; null when the caller gave no reader. */
   readFile: ((path: string) => string | null) | null;
+  /** Decodes the base64 of a classic inline picture; null: the picture is sized but not drawn. */
+  decodeImage: ImageDecoder | null;
   /** The element is a classic diagram (Go's sceneRoot is false): text inset 4, a size below 1 unset. */
   classic: boolean;
 }
@@ -3409,7 +3908,10 @@ function prepare(expanded: RNode, diag: Diagnostics, options: SceneLoadOptions =
     links: new Map(),
     linkSides: new Map(),
     rotations: new Map(),
+    inlines: new Map(),
+    inlineBox: new Map(),
     readFile: options.readFile ?? null,
+    decodeImage: options.decodeImage ?? null,
     classic,
   };
   animations(expanded, new Map(), diag);
@@ -3615,6 +4117,8 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     asc: size * 0.8,
     desc: size * 0.25,
     text: title,
+    parts: prep.classic ? splitTitleImages(title, inlineImages(prep, rn)) : null,
+    prep,
   };
   const lh = propOf(prep, rn, "line-height");
   if (lh !== null) {
@@ -3807,6 +4311,17 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
   }
   n.w = sizeOf(prep, rn, "width", inCtx, parentAuto);
   n.h = sizeOf(prep, rn, "height", inCtx, parentAuto);
+  const boxImage = inlineBoxImage(prep, rn);
+  if (boxImage !== null) {
+    prep.inlineBox.set(rn, boxImage);
+    // A picture with no size written takes its own pixels as the size.
+    if (prop(rn, "width") === null) {
+      n.w = fixed(boxImage.w);
+    }
+    if (prop(rn, "height") === null) {
+      n.h = fixed(boxImage.h);
+    }
+  }
   if (inCtx) {
     n.minW = num(prep, rn, "min-width") ?? 0;
     n.maxW = num(prep, rn, "max-width") ?? 0;
@@ -3915,7 +4430,7 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
   n.leafW = () => Math.ceil(Math.max(ti === null ? 0 : textNatural(ti), body === null ? 0 : bodyNatural(body))) + 2 * padX;
   n.leafH = (w: number) => {
     const inner = w - 2 * padX;
-    let h = ti === null ? 0 : textWrap(ti, inner).length * ti.lineH;
+    let h = ti === null ? 0 : titleHeight(ti, inner);
     if (body !== null) {
       h += bodyHeight(body, inner);
     }
@@ -4289,6 +4804,10 @@ function withShadow(ctx: Canvas2D, sh: SceneShadow, paint: () => void): void {
 }
 
 function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color, shadow?: SceneShadow): void {
+  if (ti.parts !== null) {
+    drawTextParts(ctx, ti, w, h, leafNode, color, shadow);
+    return;
+  }
   const lines = textWrap(ti, w - 2 * ti.padX);
   const y0 = leafNode ? (h - lines.length * ti.lineH) / 2 : ti.padY;
   ctx.save();
@@ -4321,6 +4840,87 @@ function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: b
     }
   });
   ctx.restore();
+}
+
+/** drawParts: a title that holds inline pictures, the text on its baseline and a picture on the cap height. */
+function drawTextParts(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color, shadow?: SceneShadow): void {
+  const lines = titleLayout(ti, w - 2 * ti.padX);
+  let total = 0;
+  for (const ln of lines) {
+    total += ln.h;
+  }
+  let y = ti.padY;
+  if (leafNode) {
+    y = (h - total) / 2;
+  }
+  ctx.save();
+  ctx.font = fontCss(ti.font);
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = sceneCss(color);
+  for (const ln of lines) {
+    let x = ti.padX;
+    if (leafNode) {
+      switch (ti.align) {
+        case "left":
+          break;
+        case "right":
+          x = w - ti.padX - ln.w;
+          break;
+        default:
+          x = (w - ln.w) / 2;
+      }
+    }
+    const base = y + (ln.h - ti.lineH) / 2 + (ti.lineH - (ti.asc + ti.desc)) / 2 + ti.asc;
+    for (const part of ln.parts) {
+      if (part.img !== null) {
+        const raster = inlineRaster(ti.prep, part.img.im);
+        if (raster !== null) {
+          ctx.drawImage(raster, x, base - (ti.font.size * capHeightRatio) / 2 - part.img.h / 2, part.img.w, part.img.h);
+        }
+        x += part.img.w;
+        continue;
+      }
+      if (part.text !== "") {
+        if (shadow === undefined) {
+          ctx.fillText(part.text, x, base);
+        } else {
+          withShadow(ctx, shadow, () => ctx.fillText(part.text, x, base));
+        }
+      }
+      x += textWidth(ti, part.text);
+    }
+    y += ln.h;
+  }
+  ctx.restore();
+}
+
+/** drawImage: a picture in a box, `fit` fill, cover or contain, the corners cut by radius. */
+function drawPicture(ctx: Canvas2D, prep: Prep, im: InlineImage, fit: string, w: number, h: number, radius: [number, number, number, number]): void {
+  const raster = inlineRaster(prep, im);
+  if (raster === null || im.w <= 0 || im.h <= 0) {
+    return;
+  }
+  let x = 0;
+  let y = 0;
+  let dw = w;
+  let dh = h;
+  if (fit === "cover" || fit === "contain") {
+    const s = fit === "cover" ? Math.max(w / im.w, h / im.h) : Math.min(w / im.w, h / im.h);
+    dw = im.w * s;
+    dh = im.h * s;
+    x = (w - dw) / 2;
+    y = (h - dh) / 2;
+  }
+  const cut = fit === "cover" || radius.some((r) => r !== 0);
+  if (cut) {
+    ctx.save();
+    roundRectPath(ctx, 0, 0, w, h, radius);
+    ctx.clip();
+  }
+  ctx.drawImage(raster, x, y, dw, dh);
+  if (cut) {
+    ctx.restore();
+  }
 }
 
 function drawIcon(ctx: Canvas2D, icon: Icon, w: number, h: number, lineW: number): void {
@@ -4494,6 +5094,11 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
               }
               shadows = [];
             }
+            const boxImage = prep.inlineBox.get(rn);
+            if (boxImage !== undefined && (display === "" || display === "rect")) {
+              const fitProp = propOf(prep, rn, "fit");
+              drawPicture(ctx, prep, boxImage, fitProp === null ? "fill" : propText(fitProp, 0), w, h, look.radius);
+            }
             if (look.lineW > 0 && look.border.a > 0) {
               const inset = look.lineW / 2;
               const radius = look.radius.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
@@ -4532,7 +5137,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
           if (body !== undefined && prep.bodyAt.get(rn) === undefined) {
             let y = body.padY;
             if (ti !== undefined) {
-              y = ti.padY + textWrap(ti, w - 2 * ti.padX).length * ti.lineH;
+              y = ti.padY + titleHeight(ti, w - 2 * ti.padX);
             }
             drawBody(ctx, body, body.padX, y, w - 2 * body.padX);
           }
