@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -118,23 +119,49 @@ func OptionNodes(prop, option string) []*tenn.Node {
 	return out
 }
 
-// StyleNames are the named styles of the element (Swift StyleManager.update); the default `item`
-// and `line` are not offered.
+// styleBlock is the styles block of the element, read by the scene's parser: the classic inspector offers
+// the names, the groups and the item/line defaults the scene reads from the same block.
+func (s *Session) styleBlock() *scene.StyleBlock {
+	props := model.ElementToTennAsProps(s.element, tenn.KindBlockExpr, false)
+	cmd, ok := findCmd(props, "styles")
+	if !ok {
+		return nil
+	}
+	return scene.ParseStyles(cmd)
+}
+
+// styleOf is the named style group of the element, nil when it has none.
+func (s *Session) styleOf(group string) *scene.Style {
+	b := s.styleBlock()
+	if b == nil {
+		return nil
+	}
+	return b.Styles[scene.NormalizeName(group)]
+}
+
+// StyleNames are the named styles of the element in file order (Swift StyleManager.update); the default
+// `item` and `line` are not offered.
 func (s *Session) StyleNames() []string {
-	styles := s.element.Properties.Get("styles")
-	if styles == nil {
+	b := s.styleBlock()
+	if b == nil {
 		return nil
 	}
 	var out []string
-	for _, c := range styles.GetBlock(1) {
-		if !c.IsNamedElement() || c.GetChild(1) == nil {
-			continue
-		}
-		if name, _ := c.GetIdent(0); name != "item" && name != "line" {
+	for _, name := range b.Names {
+		if name != "item" && name != "line" {
 			out = append(out, name)
 		}
 	}
 	return out
+}
+
+// StyleGroups are the groups the styles block declares, one-of and any-of, as the scene offers them.
+func (s *Session) StyleGroups() []scene.StyleGroup {
+	b := s.styleBlock()
+	if b == nil {
+		return nil
+	}
+	return b.Groups
 }
 
 // ApplyStyle sets `use-style` of every selected item, one undo step (Swift StyleManager.doApply).
@@ -191,6 +218,18 @@ func (s *Session) Operate(text string) bool {
 	}
 	s.commit(ops)
 	return true
+}
+
+// styleCommand is the group of a styles block, found the way the scene reads its name. Writing goes by
+// the same names the reading side offers, so a group is never duplicated under another spelling.
+func styleCommand(block *tenn.Node, group string) *tenn.Node {
+	key := scene.NormalizeName(group)
+	for _, c := range block.Children {
+		if n, ok := c.GetIdent(0); ok && c.Kind == tenn.KindCommand && scene.NormalizeName(n) == key {
+			return c
+		}
+	}
+	return nil
 }
 
 // stylesBlock is the `styles { }` block of the element's properties props, made when absent.

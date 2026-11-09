@@ -331,16 +331,15 @@ func commandNodes(name string, lists [][]string) ([]*tenn.Node, bool) {
 
 // StyleProps reads every command name of the styles group of the element, in order.
 func (s *Session) StyleProps(group, name string) []Prop {
-	props := model.ElementToTennAsProps(s.element, tenn.KindBlockExpr, false)
-	block := s.stylesGroup(props, group)
-	if block == nil {
+	st := s.styleOf(group)
+	if st == nil {
 		return nil
 	}
-	t := propTarget{element: s.element, props: block}
+	t := propTarget{element: s.element}
 	var out []Prop
-	for _, c := range block.Children {
-		if n, ok := c.GetIdent(0); ok && c.Kind == tenn.KindCommand && n == name {
-			out = append(out, Prop{Set: true, Args: s.argsOf(t, c.Children[1:])})
+	for _, pr := range st.Props {
+		if pr.Name == name {
+			out = append(out, Prop{Set: true, Args: s.argsOf(t, pr.Args)})
 		}
 	}
 	return out
@@ -361,10 +360,10 @@ func (s *Session) SetStyleProps(group, name string, lists [][]string) bool {
 		if len(lists) == 0 {
 			return true // nothing to remove, and no empty styles block is written
 		}
-	} else if len(lists) == 0 && styles.GetChild(1).GetNamedElement(group) == nil {
+	} else if len(lists) == 0 && styleCommand(styles.GetChild(1), group) == nil {
 		return true
 	}
-	g := stylesBlock(props).GetNamedElement(group)
+	g := styleCommand(stylesBlock(props), group)
 	if g == nil {
 		g = tenn.NewCommand(group, tenn.NewBlockExpr())
 		stylesBlock(props).Add(g)
@@ -381,28 +380,19 @@ func (s *Session) SetStyleProps(group, name string, lists [][]string) bool {
 	return true
 }
 
-// stylesGroup is the block `styles { group { ... } }` of the element, nil when absent.
-func (s *Session) stylesGroup(props *tenn.Node, group string) *tenn.Node {
-	styles, ok := findCmd(props, "styles")
-	if !ok || styles.GetChild(1) == nil {
-		return nil
-	}
-	g := styles.GetChild(1).GetNamedElement(group)
-	if g == nil {
-		return nil
-	}
-	return g.GetChild(1)
-}
-
 // StyleProp reads the command name of the named style group of the element (`item`, `line` or a
 // style name from StyleNames), the defaults and named styles the diagram is drawn with.
 func (s *Session) StyleProp(group, name string) Prop {
-	t := propTarget{element: s.element, props: model.ElementToTennAsProps(s.element, tenn.KindBlockExpr, false)}
-	block := s.stylesGroup(t.props, group)
-	if block == nil {
+	st := s.styleOf(group)
+	if st == nil {
 		return Prop{}
 	}
-	return s.readProp([]propTarget{{element: s.element, props: block}}, name)
+	for _, pr := range st.Props {
+		if pr.Name == name {
+			return Prop{Set: true, Args: s.argsOf(propTarget{element: s.element}, pr.Args)}
+		}
+	}
+	return Prop{}
 }
 
 // SetStyleProp is SetProp for the style group of the element; the group is made when absent.
@@ -420,7 +410,7 @@ func (s *Session) SetStyleProp(group, name string, args ...string) bool {
 		nodes[i] = n
 	}
 	props := s.element.Properties.Clone()
-	g := stylesBlock(props).GetNamedElement(group)
+	g := styleCommand(stylesBlock(props), group)
 	if g == nil {
 		g = tenn.NewCommand(group, tenn.NewBlockExpr())
 		stylesBlock(props).Add(g)

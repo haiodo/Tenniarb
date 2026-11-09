@@ -605,23 +605,45 @@ func (t *Tree) resolveIn(at, rel string) (abs, srel string, ok bool) {
 // addStyles reads "styles { name { properties } ... }": the named styles an element gives its nodes.
 // A command without a block is a group declaration for the inspector, not a style.
 func (l *loader) addStyles(owner *Node, c *tenn.Node) {
-	_, block := split(c)
+	b := parseStyles(c, l.prop, func(cmd *tenn.Node, msg string) { l.t.warn(l.pos(cmd), "%s", msg) })
 	if owner.Styles == nil {
 		owner.Styles = map[string]*Style{}
 	}
-	for _, b := range block {
-		name := cmdName(b)
+	for name, st := range b.Styles {
+		owner.Styles[name] = st
+	}
+	owner.StyleGroups = append(owner.StyleGroups, b.Groups...)
+}
+
+// ParseStyles reads a styles block for a caller outside the package: the classic inspector reads the
+// same block the scene does, and the properties come without file positions, which it does not report.
+func ParseStyles(c *tenn.Node) *StyleBlock {
+	return parseStyles(c, func(cmd *tenn.Node) *Prop {
+		args, _ := split(cmd)
+		return &Prop{Name: cmdName(cmd), Args: args}
+	}, nil)
+}
+
+// parseStyles is the one read of a styles block. prop makes a property of a command, so the loader keeps
+// the positions its warnings point at; warn is told of a block a style cannot hold.
+func parseStyles(c *tenn.Node, prop func(*tenn.Node) *Prop, warn func(*tenn.Node, string)) *StyleBlock {
+	b := &StyleBlock{Styles: map[string]*Style{}}
+	_, block := split(c)
+	for _, cmd := range block {
+		name := cmdName(cmd)
 		if name == "" {
 			continue
 		}
-		if !hasBlock(b) {
-			if g, ok := styleGroup(b); ok {
-				owner.StyleGroups = append(owner.StyleGroups, g)
+		if !hasBlock(cmd) {
+			if g, ok := styleGroup(cmd); ok {
+				b.Groups = append(b.Groups, g)
 			}
 			continue
 		}
-		owner.Styles[NormalizeName(name)] = l.style(b)
+		b.Names = append(b.Names, name)
+		b.Styles[NormalizeName(name)] = readStyle(cmd, prop, warn)
 	}
+	return b
 }
 
 // styleGroup reads a group declaration "name one-of a b" or "name any-of a b"; ok is false for any other
@@ -639,8 +661,8 @@ func styleGroup(c *tenn.Node) (StyleGroup, bool) {
 	return g, true
 }
 
-// style reads one style: its properties and the blocks of kid names in it.
-func (l *loader) style(c *tenn.Node) *Style {
+// readStyle reads one style: its properties and the blocks of kid names in it.
+func readStyle(c *tenn.Node, prop func(*tenn.Node) *Prop, warn func(*tenn.Node, string)) *Style {
 	st := &Style{}
 	_, block := split(c)
 	for _, cmd := range block {
@@ -650,13 +672,15 @@ func (l *loader) style(c *tenn.Node) *Style {
 		}
 		if hasBlock(cmd) {
 			if name == "animation" {
-				l.t.warn(l.pos(cmd), "the keyframes block goes in the element, not in a style: write it next to styles")
+				if warn != nil {
+					warn(cmd, "the keyframes block goes in the element, not in a style: write it next to styles")
+				}
 				continue
 			}
-			st.Kids = append(st.Kids, StyleKid{Key: NormalizeName(name), Style: l.style(cmd)})
+			st.Kids = append(st.Kids, StyleKid{Key: NormalizeName(name), Style: readStyle(cmd, prop, warn)})
 			continue
 		}
-		st.Props = append(st.Props, l.prop(cmd))
+		st.Props = append(st.Props, prop(cmd))
 	}
 	return st
 }

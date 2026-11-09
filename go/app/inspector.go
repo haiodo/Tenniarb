@@ -13,6 +13,7 @@ import (
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/scene"
 )
 
 // selKind says what the inspector shows: the element, or the selection by what it holds.
@@ -145,6 +146,15 @@ func inspectorWidth() int { return g.Scaled(272) }
 // valueWidth is the room a control of an inspector row gets: the panel minus the caption column and the
 // gaps around it. A control that cannot wrap is cut at it rather than widening the whole panel.
 func valueWidth() int { return inspectorWidth() - labelWidth() - g.Scaled(24) }
+
+// styleGroupText is one group declaration as the inspector lists it: "kind (one-of primary ghost)".
+func styleGroupText(g scene.StyleGroup) string {
+	mode := "one-of"
+	if g.AnyOf {
+		mode = "any-of"
+	}
+	return g.Name + " (" + mode + " " + strings.Join(g.Styles, " ") + ")"
+}
 
 // shortPath is the tail of a dotted path, the last two segments: what a narrow field can show.
 func shortPath(p string) string {
@@ -938,6 +948,18 @@ func (in *inspector) build() g.Option {
 					return strings.Join(names, ", ")
 				}
 				return "None"
+			}),
+			// The same declarations the scene offers as a choice: the classic inspector only lists them.
+			in.info("Groups", none, func(selKind) string {
+				groups := v.session.StyleGroups()
+				if len(groups) == 0 {
+					return "None"
+				}
+				out := make([]string, len(groups))
+				for i, gr := range groups {
+					out[i] = styleGroupText(gr)
+				}
+				return strings.Join(out, ", ")
 			})),
 		in.sceneSections())
 	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.NoHScroll(), g.Ref(&in.scroll), body)

@@ -186,6 +186,14 @@ type StyleKid struct {
 	Style *Style
 }
 
+// StyleBlock is one styles block read: the styles it declares in file order and the groups among them.
+// The scene and the classic inspector both read it, so they offer the same names.
+type StyleBlock struct {
+	Names  []string          // as written, in declaration order
+	Styles map[string]*Style // by NormalizeName
+	Groups []StyleGroup
+}
+
 // StyleGroup is one group declaration of a styles block, "name one-of a b c" or "name any-of a b": the
 // styles a node of the element may name, in the order they were written.
 type StyleGroup struct {

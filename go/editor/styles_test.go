@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -62,6 +63,52 @@ func TestOptionNodes(t *testing.T) {
 func TestStyleNames(t *testing.T) {
 	f, _, _, _ := newStyles(t, false)
 	eq(t, "names", f.s.StyleNames(), []string{"big"})
+}
+
+const styleGroupSrc = `element "D" {
+  styles {
+    item { color red; corner-radius 8 }
+    line { line-width 2 }
+    primary { color #6b3ad3 }
+    wide_label { Label { width 200 } }
+    kind one-of primary secondary ghost
+    size any-of small large
+  }
+  item "A" { pos 0 0 }
+}`
+
+// The classic inspector reads the one model of a styles block: the same defaults, names and groups the
+// scene loader reads from the same text.
+func TestStylesBlockIsOneModel(t *testing.T) {
+	f := newFixture(t, fixtureOpts{src: styleGroupSrc})
+	tree, err := scene.LoadSource(t.TempDir(), "styles.tenn", styleGroupSrc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	el := tree.File("styles.tenn").Elems[0]
+
+	eq(t, "item default", f.s.StyleProp("item", "color").Arg(0).Text, "red")
+	eq(t, "line default", f.s.StyleProp("line", "line-width").Arg(0).Text, "2")
+	eq(t, "names", f.s.StyleNames(), []string{"primary", "wide_label"})
+	eq(t, "names are scene styles", len(f.s.StyleNames()), len(el.Styles)-2)
+	eq(t, "groups", f.s.StyleGroups(), el.StyleGroups)
+	eq(t, "group of scenes", len(f.s.StyleGroups()), 2)
+	// A kid block of a style reaches the classic reader as well.
+	if st := el.Styles["wide_label"]; st == nil || len(st.Kids) != 1 || st.Kids[0].Key != "Label" {
+		t.Errorf("wide_label kids %+v, want the Label block", st)
+	}
+}
+
+// A write to a group keeps the neighbouring groups: they stay declarations, not empty styles.
+func TestSetStylePropsKeepsNeighbourGroups(t *testing.T) {
+	f := newFixture(t, fixtureOpts{src: styleGroupSrc})
+	if !f.s.SetStyleProps("item", "color", [][]string{{"green"}}) {
+		t.Fatal("refused")
+	}
+	eq(t, "item color", f.s.StyleProp("item", "color").Arg(0).Text, "green")
+	eq(t, "groups", len(f.s.StyleGroups()), 2)
+	eq(t, "names", f.s.StyleNames(), []string{"primary", "wide_label"})
+	contains(t, f.s.Text(), "kind one-of primary secondary ghost")
 }
 
 func TestApplyStyleWholeSelectionOneStep(t *testing.T) {
