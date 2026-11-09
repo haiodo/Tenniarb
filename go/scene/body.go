@@ -196,10 +196,18 @@ func (p *prep) bodyInfo(rn *RNode, st style, inCtx bool) *bodyText {
 		// go/render reads a text `\n` of a body as a newline; a scene keeps the backslash, it is an
 		// ordinary character of its strings (spec 4.3).
 		text = strings.ReplaceAll(text, `\n`, "\n")
-		// The ${...} of an old body is an expression of the element model, as it was in go/render.
-		text = p.evalText(rn, pr, text)
+		// The ${...} of an old body is an expression of the element model, as it was in go/render. A body
+		// that writes \${...} shows the syntax itself - the source of an expression in a help page - and
+		// the model would swallow it, so such a text is kept as written.
+		if hasPlainExpr(text) {
+			text = p.evalText(rn, pr, text)
+		}
 	}
 	text = strings.ReplaceAll(dedent(text), "\t", "    ")
+	if p.classic {
+		// After the dedent, so the offsets of the lexer are the offsets of this text.
+		text = classicBreaks(text)
+	}
 
 	if size == 0 {
 		size = p.titleSize(rn) - bodyFontDrop
@@ -856,7 +864,52 @@ func (b *bodyText) lines(width float64) []bodyLine {
 	return out
 }
 
-// lineSep joins the lines of one paragraph: a space where a line break is soft, a newline in a classic
+// hasPlainExpr reports whether text holds a ${...} that an expression may replace: one not escaped by a
+// backslash, which is how a help page writes the syntax of an expression.
+func hasPlainExpr(text string) bool {
+	for i := 0; i < len(text); i++ {
+		if text[i] != '$' || i+1 >= len(text) || text[i+1] != '{' {
+			continue
+		}
+		if i > 0 && text[i-1] == '\\' {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// classicBreaks keeps the newlines go/render breaks a line at: the ones the markdown lexer hands back as a
+// newline token, and the ones that end a block token (a heading, a bullet). A newline the lexer takes into
+// an emphasis run - a body that opens `_` and never closes it, then writes on the next line - is no break in
+// its picture: the text of the whole body is one line. A scene breaks at every newline it is given, so the
+// swallowed ones become spaces here.
+func classicBreaks(text string) string {
+	toks := markdown.GetTokens(text)
+	breaks := make(map[int]bool, len(toks))
+	for _, t := range toks {
+		switch t.Type {
+		case markdown.TokText:
+			if t.Literal == "\n" {
+				breaks[t.Pos] = true
+			}
+		case markdown.TokTitle, markdown.TokBullet:
+			// The block token covers its own line: the newline that closes it is at its end.
+			breaks[t.Pos+t.Size] = true
+		}
+	}
+	out := make([]byte, 0, len(text))
+	for i := 0; i < len(text); i++ {
+		if text[i] == '\n' && !breaks[i] {
+			out = append(out, ' ')
+			continue
+		}
+		out = append(out, text[i])
+	}
+	return string(out)
+}
+
+// lineSep joins the lines of one paragraph// lineSep joins the lines of one paragraph: a space where a line break is soft, a newline in a classic
 // diagram.
 func (b *bodyText) lineSep() string {
 	if b.sep == "" {

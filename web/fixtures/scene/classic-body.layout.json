@@ -1,6 +1,6 @@
 {
   "element": "Body",
-  "height": 312,
+  "height": 528,
   "links": [],
   "nodes": [
     {
@@ -19,7 +19,7 @@
         0
       ],
       "rect": {
-        "h": 312,
+        "h": 528,
         "w": 657.6,
         "x": 0,
         "y": 0
@@ -246,6 +246,69 @@
       "text": [
         "Name",
         "breaks"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Syntax",
+      "opacity": 1,
+      "path": "Syntax",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 68,
+        "w": 392,
+        "x": 0,
+        "y": 460
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Syntax",
+        "items: ${byTag('value').map(a=\u003ea.value)}",
+        "sum: plain"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Emphasis",
+      "opacity": 1,
+      "path": "Emphasis",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 49,
+        "w": 622.4,
+        "x": 0,
+        "y": 340
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Emphasis",
+        "• ",
+        "open: Ref\u003cClass\u003cDoc\u003e\u003e ",
+        " ",
+        "second: Ref\u003cDoc\u003e ",
+        " changes: ChangeInfo[]"
       ],
       "textColor": "#000000"
     },

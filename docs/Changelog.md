@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* A body of a classic diagram breaks its lines where go/render broke them, at the newline token of the
+  markdown lexer and at the end of a heading or a bullet - not at every newline of the text. A body that
+  opens `_` and never closes it loses the newlines to the emphasis in the old renderer, which draws it as one
+  long line; the scene broke it into five, so an item of `anti-crm.tenn` was 324 points off and a
+  documentation page of `Example.tenn` 218. A body that writes `\${...}` shows the syntax as written,
+  instead of the model swallowing it.
 * A `marker` of a classic item is drawn in front of its title again, with the space go/render put there: an
   emoji of a mind map was missing from the picture, and the box of the item was 27 points too narrow. The web
   port follows.

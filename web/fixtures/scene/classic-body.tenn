@@ -42,6 +42,21 @@ a word wider than the sixty points of the box
         pos 320 -260
         width 90
     }
+    item Syntax {
+        pos 0 -460
+        body %{
+items: \${byTag('value').map(a=>a.value)}
+sum: plain
+}
+    }
+    item Emphasis {
+        pos 0 -340
+        body %{
+* _open: Ref<Class<Doc>>
+* _second: Ref<Doc>
+* changes: ChangeInfo[]
+}
+    }
     item List {
         pos 160 -160
         body %{

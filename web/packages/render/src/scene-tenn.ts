@@ -3338,6 +3338,38 @@ function bodyFinish(b: BodyText, l: BodyLine): void {
  */
 /** The join of the lines of one paragraph: a space where a line break is soft, a newline in a classic
  *  diagram, where go/render breaks the line as written. */
+/** Whether an expression may replace text: a ${...} not escaped by a backslash. */
+function hasPlainExpr(text: string): boolean {
+  for (let i = 0; i + 1 < text.length; i += 1) {
+    if (text[i] !== "$" || text[i + 1] !== "{") {
+      continue;
+    }
+    if (i > 0 && text[i - 1] === "\\") {
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
+/** The newlines go/render breaks a line at: a newline token of the lexer, or the end of a block token. */
+function classicBreaks(text: string): string {
+  const breaks = new Set<number>();
+  for (const t of MarkdownLexer.getTokens(text)) {
+    if (t.type === "text" && t.literal === "\n") {
+      breaks.add(t.pos);
+    } else if (t.type === "title" || t.type === "bullet") {
+      breaks.add(t.pos + t.size);
+    }
+  }
+  let out = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text[i]!;
+    out += c === "\n" && !breaks.has(i) ? " " : c;
+  }
+  return out;
+}
+
 function bodySep(b: BodyText): string {
   return b.prep.classic ? "\n" : " ";
 }
@@ -3828,8 +3860,24 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   if (prep.classic) {
     // go/render reads a text `\n` of a body as a newline; a scene keeps the backslash (spec 4.3).
     text = text.replaceAll("\\n", "\n");
+    // The ${...} of an old body is an expression of the element model: its value replaces the text. A body
+    // that writes \${...} shows the syntax itself - the source of an expression in a help page - and keeps
+    // the text as written.
+    if (pr.val !== undefined && pr.val.length > 0) {
+      const raw = pr.args.length > 0 ? markdownArg(rn.src?.src ?? null, pr.args[0]) : "";
+      // A body of escaped expressions keeps its text: the value of the model has them already swallowed.
+      if (hasPlainExpr(raw)) {
+        text = pr.val[0] ?? text;
+      } else {
+        text = raw;
+      }
+    }
   }
   text = dedent(text).replaceAll("\t", "    ");
+  if (prep.classic) {
+    // After the dedent, so the offsets of the lexer are the offsets of this text.
+    text = classicBreaks(text);
+  }
 
   if (size === 0) {
     size = titleSize(prep, rn) - bodyFontDrop;
