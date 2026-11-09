@@ -35,11 +35,11 @@ type sceneView struct {
 	w, h    float64
 	drag    sceneDrag
 
-	// The classic preview, in gfx scene coordinates: the rubber band, the line of a link being drawn,
-	// and how far the frames of the dragged items follow the pointer.
-	band       *gfx.Rect
-	line       *[2]gfx.Point
-	dragOffset gfx.Point
+	// The classic preview, in gfx scene coordinates: the rubber band, the line of a link being drawn and
+	// where the dragged boxes were when the press started.
+	band     *gfx.Rect
+	line     *[2]gfx.Point
+	dragBase map[*scene.Placed]gfx.Point
 
 	// what the gfx tree was built from; a cached view is reused only while all of it holds
 	tree *scene.Tree
@@ -499,7 +499,7 @@ func (v *Viewer) canvasSelection() []string {
 // will write them, the rubber band, and the line of a link being drawn.
 func (v *Viewer) previewClassic() {
 	sv := v.sv
-	sv.band, sv.line, sv.dragOffset = nil, nil, gfx.Point{}
+	sv.band, sv.line = nil, nil
 	if v.session == nil {
 		return
 	}
@@ -517,8 +517,6 @@ func (v *Viewer) previewClassic() {
 	if v.dragAt == v.press.scene {
 		return
 	}
-	dx, dy := v.dragAt.X-v.press.scene.X, v.dragAt.Y-v.press.scene.Y
-	sv.dragOffset = gfx.Point{X: dragRound(dx), Y: -dragRound(dy)}
 	v.scene.Update(func(tx *gfx.Tx) { v.dragPreview(v.press.scene, v.dragAt, tx) })
 }
 
@@ -526,6 +524,16 @@ func (v *Viewer) previewClassic() {
 // coordinates: every item lands where the drop rounds its position, so the picture under the pointer is
 // where the commit writes it.
 func (v *Viewer) dragPreview(from, to render.Point, tx *gfx.Tx) {
+	sv := v.sv
+	if sv.dragBase == nil {
+		// The drawn place of an item moves with the pointer, so the start is kept once per press.
+		sv.dragBase = map[*scene.Placed]gfx.Point{}
+		for _, it := range v.sessionItems() {
+			if pl := v.classicPlaced(it); pl != nil {
+				sv.dragBase[pl] = gfx.Point{X: pl.X, Y: pl.Y}
+			}
+		}
+	}
 	dx, dy := to.X-from.X, to.Y-from.Y
 	for _, it := range v.sessionItems() {
 		if it.Kind != model.ItemKindItem {
@@ -535,8 +543,9 @@ func (v *Viewer) dragPreview(from, to render.Point, tx *gfx.Tx) {
 		if pl == nil || pl.Gfx == nil {
 			continue
 		}
+		base := sv.dragBase[pl]
 		x, y := dragRound(it.X+dx), dragRound(it.Y+dy)
-		tx.Move(pl.Gfx, pl.X+x-it.X, pl.Y-(y-it.Y))
+		sv.screen.MoveItem(tx, pl, base.X+x-it.X, base.Y-(y-it.Y))
 	}
 }
 
@@ -699,12 +708,7 @@ func (sv *sceneView) selectionPicture(sel []string, zoom float64) *gfx.Picture {
 		if pl == nil {
 			continue
 		}
-		x, y := pl.X+sv.off.X+sv.dragOffset.X, pl.Y+sv.off.Y+sv.dragOffset.Y
-		if d := sv.drag; d.pl == pl && d.moved && pl.Gfx != nil {
-			t := pl.Gfx.Transform()
-			x, y = x+t[4]-d.ox, y+t[5]-d.oy
-		}
-		r.StrokeRect(gfx.R(x, y, pl.W, pl.H), gfx.StrokeStyle{Width: w}, accent)
+		r.StrokeRect(gfx.R(pl.X+sv.off.X, pl.Y+sv.off.Y, pl.W, pl.H), gfx.StrokeStyle{Width: w}, accent)
 	}
 	if sv.band != nil {
 		r.StrokeRect(*sv.band, gfx.StrokeStyle{Width: w, Dash: []float64{5 / zoom, 5 / zoom}}, accent)
@@ -859,8 +863,8 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		if d := &sv.drag; d.pl != nil {
 			dx, dy := at.X-d.from.X, at.Y-d.from.Y
 			d.moved = d.moved || math.Abs(dx)+math.Abs(dy) >= 1
-			n := d.pl.Gfx
-			v.scene.Update(func(tx *gfx.Tx) { tx.Move(n, d.ox+dx, d.oy+dy) })
+			pl := d.pl
+			v.scene.Update(func(tx *gfx.Tx) { sv.screen.MoveItem(tx, pl, d.ox+dx, d.oy+dy) })
 			v.drawSceneOverlay()
 		}
 	case view.PointerUp, view.PointerCancel:

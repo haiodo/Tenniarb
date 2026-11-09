@@ -524,20 +524,75 @@ func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Co
 	}
 }
 
+// MoveItem puts an absolute item of the screen at x, y in its coordinates and redraws the links attached
+// to it, so the editor previews a drag before the model is written. Only an item that is placed by its
+// own pos moves this way: one in a flow is placed by its parent and needs the layout again.
+func (s *Screen) MoveItem(tx *gfx.Tx, pl *Placed, x, y float64) bool {
+	if pl == nil || pl.r == nil || pl.Gfx == nil || pl.Parent == nil || pl.Parent.r == nil {
+		return false
+	}
+	fr, parent := s.p.frames[pl.r], s.p.frames[pl.Parent.r]
+	if fr == nil || parent == nil || parent.Dir != layout.Abs && !fr.Absolute {
+		return false
+	}
+	dx, dy := x-pl.X, y-pl.Y
+	if dx == 0 && dy == 0 {
+		return true
+	}
+	fr.X += dx
+	fr.Y += dy
+	fr.RX += dx
+	fr.RY += dy
+	pl.X, pl.Y = x, y
+	if deg := s.p.rotation(pl.r); deg != 0 {
+		tx.SetTransform(pl.Gfx, turn(fr.RX, fr.RY, fr.RW, fr.RH, deg))
+	} else {
+		tx.Move(pl.Gfx, fr.RX, fr.RY)
+	}
+	b := &builder{p: s.p, tx: tx}
+	for _, k := range pl.Parent.r.Kids {
+		if k.Kind != RLink {
+			continue
+		}
+		if ends, ok := s.p.ends[k]; !ok || ends[0] != pl.r && ends[1] != pl.r {
+			continue
+		}
+		if ln := s.gfx[k]; ln != nil {
+			if pic, ok := b.linkPicture(pl.Parent.r, k); ok {
+				tx.SetPicture(ln, pic)
+			}
+		}
+	}
+	return true
+}
+
 // link draws the line between the two items in the parent's coordinates: straight from edge to edge, as
 // the elbow the link asks for, or through the control point its pos gives.
 func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
-	ends, ok := b.p.ends[lk]
+	b.p.checkRoute(lk)
+	pic, ok := b.linkPicture(parent, lk)
 	if !ok {
 		return
+	}
+	ln := b.node()
+	b.made[lk] = ln
+	b.tx.Add(node, ln)
+	b.tx.SetPicture(ln, pic)
+}
+
+// linkPicture is the stroke and the arrow of lk where the boxes of its ends are now, so a link is redrawn
+// without being built again when a dragged item moves.
+func (b *builder) linkPicture(parent, lk *RNode) (*gfx.Picture, bool) {
+	ends, ok := b.p.ends[lk]
+	if !ok {
+		return nil, false
 	}
 	a, c := b.p.frames[ends[0]], b.p.frames[ends[1]]
 	pa := gfx.Point{X: a.RX + a.RW/2, Y: a.RY + a.RH/2}
 	pc := gfx.Point{X: c.RX + c.RW/2, Y: c.RY + c.RH/2}
 	if pa == pc {
-		return
+		return nil, false
 	}
-	b.p.checkRoute(lk)
 	var (
 		path *gfx.Path
 		from gfx.Point
@@ -548,7 +603,7 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 	case b.p.isElbow(lk):
 		points := b.elbow(parent, lk)
 		if len(points) < 2 {
-			return
+			return nil, false
 		}
 		radius := float64(elbowRadius)
 		if pr := b.p.prop(lk, "corner-radius"); pr != nil {
@@ -577,8 +632,6 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 		path.MoveTo(from.X, from.Y)
 		path.LineTo(to.X, to.Y)
 	}
-	ln := b.node()
-	b.tx.Add(node, ln)
 	col, stroke := b.p.linkStyle(lk)
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
 	r.StrokePath(path, stroke, col)
@@ -587,7 +640,7 @@ func (b *builder) link(parent, lk *RNode, node *gfx.Node) {
 			r.FillPath(arrowHead(from, to, 6+stroke.Width), col)
 		}
 	}
-	b.tx.SetPicture(ln, r.Finish())
+	return r.Finish(), true
 }
 
 // linkControl is the control point a link's pos gives: the middle of its two boxes plus the offset. The

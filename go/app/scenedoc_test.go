@@ -528,6 +528,7 @@ func TestClassicDragPreviewFollowsCommit(t *testing.T) {
 	from := render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
 	to := render.Point{X: from.X + 33.333, Y: from.Y - 12.3456}
 	startX, startY := it.X, it.Y
+	drawX, drawY := pl.X, pl.Y
 	if !v.session.MouseDown(editor.MouseEvent{P: from, Clicks: 1}) {
 		t.Fatal("the press did not grab item A")
 	}
@@ -535,7 +536,7 @@ func TestClassicDragPreviewFollowsCommit(t *testing.T) {
 	v.scene.Update(func(tx *gfx.Tx) { v.dragPreview(from, to, tx) })
 	v.scene.Commit()
 	wantX, wantY := dragRound(startX+to.X-from.X), dragRound(startY+to.Y-from.Y)
-	tx, ty := pl.X+wantX-startX, pl.Y-(wantY-startY)
+	tx, ty := drawX+wantX-startX, drawY-(wantY-startY)
 	if tr := pl.Gfx.Transform(); math.Abs(tr[4]-tx) > 1e-9 || math.Abs(tr[5]-ty) > 1e-9 {
 		t.Errorf("the preview put item A at %v,%v, want %v,%v", tr[4], tr[5], tx, ty)
 	}
