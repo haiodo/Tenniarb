@@ -45,10 +45,10 @@ func (v *Viewer) exportScene(e *model.Element) (*gfx.Scene, *scene.Screen, error
 	return sc, screen, nil
 }
 
-// exportSVGOf is ExportSVG for an element the viewer has: the scene writer for a scene, the classic
-// renderer otherwise.
+// exportSVGOf is ExportSVG for an element the viewer has: the scene writer for what the canvas draws
+// with the scene, the classic renderer otherwise.
 func (v *Viewer) exportSVGOf(e *model.Element, p Prefs) ([]byte, error) {
-	if !v.isScene(e) {
+	if !v.drawsWithScene(e) {
 		return ExportSVG(e, p)
 	}
 	sc, screen, err := v.exportScene(e)
@@ -73,7 +73,7 @@ type pageDrawing struct {
 // exportDrawing builds what both the PNG and the PDF export draw for e.
 func (v *Viewer) exportDrawing(e *model.Element) (pageDrawing, error) {
 	var d pageDrawing
-	if v.isScene(e) {
+	if v.drawsWithScene(e) {
 		sc, screen, err := v.exportScene(e)
 		if err != nil {
 			return d, err
