@@ -40,6 +40,7 @@ type sceneView struct {
 	band     *gfx.Rect
 	line     *[2]gfx.Point
 	dragBase map[*scene.Placed]gfx.Point
+	moved    bool // a drag put the drawn items somewhere the model has not written yet
 
 	// what the gfx tree was built from; a cached view is reused only while all of it holds
 	tree *scene.Tree
@@ -54,7 +55,7 @@ const sceneCacheSize = 4
 // cacheScene keeps sv, which was just taken off the canvas, if nothing changed since it was built.
 func (v *Viewer) cacheScene(sv *sceneView) {
 	v.dropStaleScenes()
-	if sv == nil || sv.screen == nil || sv.err != nil {
+	if sv == nil || sv.screen == nil || sv.err != nil || sv.moved {
 		return
 	}
 	v.svCache = append([]*sceneView{sv}, v.svCache...)
@@ -545,7 +546,9 @@ func (v *Viewer) dragPreview(from, to render.Point, tx *gfx.Tx) {
 		}
 		base := sv.dragBase[pl]
 		x, y := dragRound(it.X+dx), dragRound(it.Y+dy)
-		sv.screen.MoveItem(tx, pl, base.X+x-it.X, base.Y-(y-it.Y))
+		if sv.screen.MoveItem(tx, pl, base.X+x-it.X, base.Y-(y-it.Y)) {
+			sv.moved = true
+		}
 	}
 }
 
@@ -864,7 +867,11 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			dx, dy := at.X-d.from.X, at.Y-d.from.Y
 			d.moved = d.moved || math.Abs(dx)+math.Abs(dy) >= 1
 			pl := d.pl
-			v.scene.Update(func(tx *gfx.Tx) { sv.screen.MoveItem(tx, pl, d.ox+dx, d.oy+dy) })
+			v.scene.Update(func(tx *gfx.Tx) {
+				if sv.screen.MoveItem(tx, pl, d.ox+dx, d.oy+dy) {
+					sv.moved = true
+				}
+			})
 			v.drawSceneOverlay()
 		}
 	case view.PointerUp, view.PointerCancel:
