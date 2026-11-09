@@ -72,3 +72,40 @@ func TestSceneBodyKeepsSoftBreaks(t *testing.T) {
 		t.Errorf("a scene body broke the soft line:\n%s", svg)
 	}
 }
+
+// A word wider than the line is broken by characters in a classic body, as go/render did: the box grows
+// down instead of running over its width. A scene body keeps the word whole, as markdown does.
+func TestClassicBodyBreaksALongWord(t *testing.T) {
+	long := strings.Repeat("abcdefghij", 20)
+	box := func(src string) scene.Box {
+		tree, err := scene.LoadSource(t.TempDir(), "e.tenn", src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sc := gfx.NewScene()
+		var screen *scene.Screen
+		sc.Update(func(tx *gfx.Tx) {
+			screen, err = tree.Build(tx, nil, "E", scene.Options{Measurer: frac{}})
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, b := range screen.Boxes() {
+			if b.Path == "A" {
+				return b
+			}
+		}
+		t.Fatal("no box A")
+		return scene.Box{}
+	}
+	if b := box("element \"E\" { item A { width 100; body \"" + long + "\" } }\n"); b.W != 100 || b.H < 100 {
+		t.Errorf("classic body %vx%v, want 100 wide and broken down the box", b.W, b.H)
+	}
+	words := 0
+	for _, line := range box("element \"E\" { item A { auto-layout column; width 100; body \"" + long + "\" } }\n").Lines {
+		words += len(strings.Fields(line))
+	}
+	if words > 1 {
+		t.Errorf("a scene body broke the word into %d lines", words)
+	}
+}

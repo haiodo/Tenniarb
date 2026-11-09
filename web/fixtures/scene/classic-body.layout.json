@@ -1,0 +1,160 @@
+{
+  "element": "Body",
+  "height": 228,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Body",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 228,
+        "w": 658,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Lines",
+      "opacity": 1,
+      "path": "Lines",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 87,
+        "w": 104,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Lines",
+        "line one",
+        "line two",
+        "line three"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Escaped",
+      "opacity": 1,
+      "path": "Escaped",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 68,
+        "w": 84,
+        "x": 0,
+        "y": 120
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Escaped",
+        "one",
+        "two"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Wrapped",
+      "opacity": 1,
+      "path": "Wrapped",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 163,
+        "w": 80,
+        "x": 160,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "Wrapped",
+        "aaaaaa ",
+        "bbbbbbb",
+        "bbbbbbb",
+        "bbbbbbb",
+        "bbbbbbb",
+        "bbbbbbb",
+        "bbb ccc"
+      ],
+      "textColor": "#000000"
+    },
+    {
+      "border": "#424242",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "List",
+      "opacity": 1,
+      "path": "List",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 68,
+        "w": 498,
+        "x": 160,
+        "y": 160
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "List",
+        "• first item of the list",
+        "• second item, long enough to grow the box a little"
+      ],
+      "textColor": "#000000"
+    }
+  ],
+  "width": 658
+}

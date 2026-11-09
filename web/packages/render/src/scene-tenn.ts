@@ -3177,13 +3177,13 @@ function bodyParse(b: BodyText, text: string): BodyBlock[] {
   let code: string[] | null = null;
   const flushPara = (): void => {
     if (para.length > 0) {
-      blocks.push({ kind: "p", runs: bodyInline(b, para.join(" ")) });
+      blocks.push({ kind: "p", runs: bodyInline(b, para.join(bodySep(b))) });
       para = [];
     }
   };
   const flushQuote = (): void => {
     if (quote.length > 0) {
-      blocks.push({ kind: "q", runs: bodyInline(b, quote.join(" ")) });
+      blocks.push({ kind: "q", runs: bodyInline(b, quote.join(bodySep(b))) });
       quote = [];
     }
   };
@@ -3298,6 +3298,27 @@ function bodyFinish(b: BodyText, l: BodyLine): void {
  * Greedy wrap at spaces; text wider than the width stays on its line. first is the indent of the
  * first line, cont the indent of the continuation lines.
  */
+/** The join of the lines of one paragraph: a space where a line break is soft, a newline in a classic
+ *  diagram, where go/render breaks the line as written. */
+function bodySep(b: BodyText): string {
+  return b.prep.classic ? "\n" : " ";
+}
+
+/** The longest prefix of s that fits avail, in whole characters; "" when not even one does. */
+function fitPrefix(b: BodyText, s: string, font: Font, avail: number): string {
+  if (avail <= 0) {
+    return "";
+  }
+  let cut = "";
+  for (const g of s) {
+    if (bodyWidth(cut + g, font) > avail + 1e-9) {
+      break;
+    }
+    cut += g;
+  }
+  return cut;
+}
+
 function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, cont: number): BodyLine[] {
   const lines: BodyLine[] = [];
   const empty = (x: number): BodyLine => ({ x, w: 0, asc: 0, desc: 0, h: 0, gap: 0, quote: false, code: false, runs: [] });
@@ -3309,6 +3330,50 @@ function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, co
     line = empty(cont);
     started = false;
   };
+  const put = (text: string, run: BodyRun, w: number): void => {
+    const last = line.runs[line.runs.length - 1];
+    if (
+      last !== undefined &&
+      last.img === undefined &&
+      bodyFontKey(last.font) === bodyFontKey(run.font) &&
+      last.color === run.color &&
+      last.code === run.code
+    ) {
+      last.text += text;
+    } else {
+      line.runs.push({ text, font: run.font, color: run.color, code: run.code });
+    }
+    line.w += w;
+    started = true;
+  };
+  // classicWord breaks a word wider than the width by characters, as go/render did: an old body grows down
+  // instead of running over its box.
+  const classicWord = (word: string, run: BodyRun, w: number): boolean => {
+    if (!b.prep.classic || width <= 0 || w <= width + 1e-9) {
+      return false;
+    }
+    while (word !== "") {
+      const avail = width - (line.x + line.w);
+      const fit = bodyWidth(word, run.font);
+      if (fit <= avail + 1e-9) {
+        put(word, run, fit);
+        return true;
+      }
+      let cut = fitPrefix(b, word, run.font, avail);
+      if (cut === "") {
+        if (!started) {
+          cut = [...word][0] ?? "";
+        } else {
+          flush();
+          continue;
+        }
+      }
+      put(cut, run, bodyWidth(cut, run.font));
+      word = word.slice(cut.length);
+      flush();
+    }
+    return true;
+  };
   for (const run of runs) {
     if (run.img !== undefined) {
       if (started && width > 0 && line.x + line.w + run.img.w > width + 1e-9) {
@@ -3319,29 +3384,25 @@ function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, co
       started = true;
       continue;
     }
-    for (const tok of splitSpaces(run.text)) {
-      const space = tok.trim() === "";
-      const w = bodyWidth(tok, run.font);
-      if (space && !started) {
-        continue; // leading spaces of a line are not drawn
+    const segs = run.text.split("\n");
+    for (let si = 0; si < segs.length; si++) {
+      if (si > 0 && started) {
+        flush(); // a newline of the text is a break, not a space
       }
-      if (!space && started && width > 0 && line.x + line.w + w > width + 1e-9) {
-        flush();
+      for (const tok of splitSpaces(segs[si]!)) {
+        const space = tok.trim() === "";
+        const w = bodyWidth(tok, run.font);
+        if (space && !started) {
+          continue; // leading spaces of a line are not drawn
+        }
+        if (!space && started && width > 0 && line.x + line.w + w > width + 1e-9) {
+          flush();
+        }
+        if (!space && classicWord(tok, run, w)) {
+          continue;
+        }
+        put(tok, run, w);
       }
-      const last = line.runs[line.runs.length - 1];
-      if (
-        last !== undefined &&
-        last.img === undefined &&
-        bodyFontKey(last.font) === bodyFontKey(run.font) &&
-        last.code === run.code &&
-        last.color === run.color
-      ) {
-        last.text += tok;
-      } else {
-        line.runs.push({ text: tok, font: run.font, code: run.code, color: run.color });
-      }
-      line.w += w;
-      started = true;
     }
   }
   if (started || lines.length === 0) {
@@ -3388,7 +3449,10 @@ function bodyLines(b: BodyText, width: number): BodyLine[] {
         const bulletW = bodyWidth("• ", b.font);
         blk.items.forEach((item, j) => {
           const runs = [{ text: "• ", font: b.font, code: false }, ...item];
-          const ls = bodyWrap(b, runs, width, bodyListIndent, bodyListIndent + bulletW);
+          // go/render hangs no indent on a list of a classic body: the bullet stands where the text does
+          // and a wrapped line returns to the left edge.
+          const first = b.prep.classic ? 0 : bodyListIndent;
+          const ls = bodyWrap(b, runs, width, first, first + bulletW);
           if (j === 0 && out.length > 0 && ls.length > 0) {
             ls[0]!.gap = b.gap;
           }
@@ -3723,6 +3787,10 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   if (text.trim() === "") {
     return null;
   }
+  if (prep.classic) {
+    // go/render reads a text `\n` of a body as a newline; a scene keeps the backslash (spec 4.3).
+    text = text.replaceAll("\\n", "\n");
+  }
   text = dedent(text).replaceAll("\t", "    ");
 
   if (size === 0) {
@@ -3744,8 +3812,9 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
     bar: sceneColor("grey-400") ?? noColor,
     lineH,
     gap,
-    padX: inCtx ? 0 : textPadX,
-    padY: inCtx ? 0 : textPadY,
+    // go/render insets the body of a classic item by the same 4 points as its title.
+    padX: inCtx ? 0 : prep.classic ? classicTextPad : textPadX,
+    padY: inCtx ? 0 : prep.classic ? classicTextPad : textPadY,
     blocks: [],
     pos: at,
     from,

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A word wider than the box of a classic `body` is broken by characters, as the Swift app and `go/render`
+  drew it: an old body grows down instead of running over its width. A scene body keeps the word whole,
+  as markdown does.
 * The dots at the edges of the canvas, which mark the items outside the view, keep one size on screen at
   any zoom: they are laid out and drawn in view points now, so a zoomed-in diagram no longer shows
   dinner-plate dots and a zoomed-out one no longer loses them.

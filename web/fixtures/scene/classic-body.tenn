@@ -1,0 +1,29 @@
+// The body of a classic diagram: every line of the text is a hard break, \n of a string is a newline, the
+// text is inset by the 4 points of a title, a list hangs no indent and a word wider than the box is broken
+// by characters, as go/render draws it.
+element "Body" {
+    item Lines {
+        pos 0 0
+        body %{
+line one
+line two
+line three
+}
+    }
+    item Escaped {
+        pos 0 -120
+        body "one\ntwo"
+    }
+    item Wrapped {
+        pos 160 0
+        width 80
+        body "aaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ccc"
+    }
+    item List {
+        pos 160 -160
+        body %{
+* first item of the list
+* second item, long enough to grow the box a little
+}
+    }
+}

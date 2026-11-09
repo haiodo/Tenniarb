@@ -863,8 +863,9 @@ func (b *bodyText) lineSep() string {
 	return b.sep
 }
 
-// wrap breaks runs into lines greedily at spaces; text wider than the width stays on its line.
-// first is the indent of the first line, cont the indent of the continuation lines.
+// wrap breaks runs into lines greedily at spaces; text wider than the width stays on its line. A classic
+// body breaks a word that does not fit, as go/render did: its text grows down instead of running over the
+// box. first is the indent of the first line, cont the indent of the continuation lines.
 func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 	var lines []bodyLine
 	line := bodyLine{x: first}
@@ -874,6 +875,41 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 		lines = append(lines, line)
 		line = bodyLine{x: cont}
 		started = false
+	}
+	put := func(text string, run bodyRun, w float64) {
+		if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].color == run.color && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
+			line.runs[n-1].text += text
+		} else {
+			line.runs = append(line.runs, bodyRun{text: text, font: run.font, color: run.color, code: run.code, link: run.link})
+		}
+		line.w += w
+		started = true
+	}
+	// classicWord breaks a word wider than the width by characters, at most the line each time.
+	classicWord := func(word string, run bodyRun, w float64) bool {
+		if !b.classic() || width <= 0 || w <= width+1e-9 {
+			return false
+		}
+		for word != "" {
+			avail := width - (line.x + line.w)
+			if w := b.widthOf(word, run.font); w <= avail+1e-9 {
+				put(word, run, w)
+				return true
+			}
+			cut := b.fitPrefix(word, run.font, avail)
+			if cut == "" {
+				if !started {
+					cut = firstGrapheme(word)
+				} else {
+					flush()
+					continue
+				}
+			}
+			put(cut, run, b.widthOf(cut, run.font))
+			word = word[len(cut):]
+			flush()
+		}
+		return true
 	}
 	for _, run := range runs {
 		if run.img != nil {
@@ -898,13 +934,10 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 				if !space && started && width > 0 && line.x+line.w+w > width+1e-9 {
 					flush()
 				}
-				if n := len(line.runs); n > 0 && line.runs[n-1].font == run.font && line.runs[n-1].color == run.color && line.runs[n-1].code == run.code && line.runs[n-1].link == run.link && line.runs[n-1].img == nil {
-					line.runs[n-1].text += tok
-				} else {
-					line.runs = append(line.runs, bodyRun{text: tok, font: run.font, color: run.color, code: run.code, link: run.link})
+				if !space && classicWord(tok, run, w) {
+					continue
 				}
-				line.w += w
-				started = true
+				put(tok, run, w)
 			}
 		}
 	}
@@ -912,6 +945,32 @@ func (b *bodyText) wrap(runs []bodyRun, width, first, cont float64) []bodyLine {
 		flush()
 	}
 	return lines
+}
+
+// classic is whether this body is the body of a classic diagram.
+func (b *bodyText) classic() bool { return b.p != nil && b.p.classic }
+
+// fitPrefix is the longest prefix of s that fits avail, in whole characters; "" when not even one does.
+func (b *bodyText) fitPrefix(s string, f gfx.Font, avail float64) string {
+	if avail <= 0 {
+		return ""
+	}
+	cut := ""
+	for _, g := range tenn.Graphemes(s) {
+		if b.widthOf(cut+g, f) > avail+1e-9 {
+			break
+		}
+		cut += g
+	}
+	return cut
+}
+
+// firstGrapheme is the first character of s, so a line always makes progress.
+func firstGrapheme(s string) string {
+	for _, g := range tenn.Graphemes(s) {
+		return g
+	}
+	return s
 }
 
 // codeLines breaks a code line at the width by characters: code has no spaces to break at.
