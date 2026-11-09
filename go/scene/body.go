@@ -949,12 +949,21 @@ func splitSpaces(s string) []string {
 }
 
 func (b *bodyText) finishLine(l *bodyLine) {
-	for _, run := range l.runs {
-		m := b.metric(run.font)
-		l.asc = math.Max(l.asc, m.Ascent)
-		l.desc = math.Max(l.desc, m.Descent)
+	if b.p != nil && b.p.classic {
+		for _, run := range l.runs {
+			asc, desc, _ := b.p.lineBox(run.font)
+			l.asc = math.Max(l.asc, asc)
+			l.desc = math.Max(l.desc, desc)
+		}
+		l.h = math.Floor(l.asc+l.desc) + 1
+	} else {
+		for _, run := range l.runs {
+			m := b.metric(run.font)
+			l.asc = math.Max(l.asc, m.Ascent)
+			l.desc = math.Max(l.desc, m.Descent)
+		}
+		l.h = math.Round(l.asc + l.desc)
 	}
-	l.h = math.Round(l.asc + l.desc)
 	if b.lineH > 0 {
 		l.h = b.lineH
 	}

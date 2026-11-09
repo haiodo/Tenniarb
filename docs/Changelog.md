@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* A classic diagram keeps the line spacing of the Swift app: its lines are stacked by the SF ascent and
+  descent `go/render` uses (1980 and 432 of 2048 of the font size, rounded up to the next point), not by
+  the measurer's box, so the text of an old file sits on the baseline and in the box of its old picture.
+  The type of a scene is untouched. `docs/Example.tenn` matches `go/render` item for item; the scene
+  goldens are regenerated and the web port follows.
 * A classic diagram is drawn closer to what `go/render` and the Swift app draw: the lines of a `body` are
   hard breaks instead of markdown soft breaks, `\n` written in a string is a newline, the text is inset
   by the same 4 points as a title and a list hangs no indent, and a box takes the generic grey `#424242`

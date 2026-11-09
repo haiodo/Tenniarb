@@ -29,10 +29,10 @@ func TestLetterSpacingWidensBox(t *testing.T) {
 	for _, b := range screen.Boxes() {
 		m[b.Path] = b
 	}
-	// EstimateText: 11 runes, each 18*0.6 wide, plus 2 per rune with letter-spacing 2; the inset of a
-	// classic text leaf is 4 on every side, as go/render gives it.
-	wantBox(t, m, "Plain", 0, 0, 127, 27)
-	wantBox(t, m, "Spaced", 0, -40, 149, 27)
+	// EstimateText: 11 runes, each 18*0.6 wide, plus 2 per rune with letter-spacing 2; the inset and the
+	// line box of a classic text leaf are the ones of go/render.
+	wantBox(t, m, "Plain", 0, 0, 127, classicBox(18, 1))
+	wantBox(t, m, "Spaced", 0, -40, 149, classicBox(18, 1))
 	for _, w := range []string{"font-weight: takes", "font-style:", "letter-spacing:"} {
 		if !warned(screen, w) {
 			t.Errorf("no warning %q: %v", w, screen.Warnings)

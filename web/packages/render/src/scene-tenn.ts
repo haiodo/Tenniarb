@@ -2815,9 +2815,10 @@ function titleLayout(ti: TextInfo, w: number): TitleLine[] {
     const f = partFont(ti, part);
     line.w += fontWidth(f, part.text);
     if (f !== ti.font) {
-      line.asc = Math.max(line.asc, f.size * 0.8);
-      line.desc = Math.max(line.desc, f.size * 0.25);
-      line.h = Math.max(line.h, Math.round(f.size * 1.05));
+      const box = lineBox(ti.prep, f.size);
+      line.asc = Math.max(line.asc, box.asc);
+      line.desc = Math.max(line.desc, box.desc);
+      line.h = Math.max(line.h, box.h);
     }
     started = started || part.text !== "";
   };
@@ -3278,10 +3279,11 @@ function bodyFinish(b: BodyText, l: BodyLine): void {
     if (run.img !== undefined) {
       continue;
     }
-    l.asc = Math.max(l.asc, run.font.size * 0.8);
-    l.desc = Math.max(l.desc, run.font.size * 0.25);
+    const box = lineBox(b.prep, run.font.size);
+    l.asc = Math.max(l.asc, box.asc);
+    l.desc = Math.max(l.desc, box.desc);
   }
-  l.h = Math.round(l.asc + l.desc);
+  l.h = b.prep.classic ? Math.floor(l.asc + l.desc) + 1 : Math.round(l.asc + l.desc);
   if (b.lineH > 0) {
     l.h = b.lineH;
   }
@@ -4035,6 +4037,21 @@ const classicTextPad = 4;
 const classicRadius = 8;
 /** The border colour go/render gives a box of a classic diagram: the generic grey 0.2, #424242. */
 const classicBorder: Color = { r: 66 / 255, g: 66 / 255, b: 66 / 255, a: 1 };
+
+/** The parts of the font size go/render takes as the ascent and the descent of a line. */
+const classicAscent = 1980 / 2048;
+const classicDescent = 432 / 2048;
+
+/** The line box of a font at size: a scene estimates it as gfx does, a classic diagram takes the ratios
+ *  and the rounding of go/render, so an old file keeps the spacing and the baseline of its picture. */
+function lineBox(prep: Prep, size: number): { asc: number; desc: number; h: number } {
+  if (prep.classic) {
+    const asc = size * classicAscent;
+    const desc = size * classicDescent;
+    return { asc, desc, h: Math.floor(asc + desc) + 1 };
+  }
+  return { asc: size * 0.8, desc: size * 0.25, h: Math.round(size * 1.05) };
+}
 const fontName = "Helvetica, Arial, sans-serif";
 const codeFont = "Inter";
 
@@ -4326,10 +4343,11 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     font: fontOf(prep, rn, size),
     padX: inCtx ? 0 : prep.classic ? classicTextPad : textPadX,
     padY: inCtx ? 0 : prep.classic ? classicTextPad : textPadY,
-    lineH: Math.round(size * 1.05),
+    ...(() => {
+      const box = lineBox(prep, size);
+      return { lineH: box.h, asc: box.asc, desc: box.desc };
+    })(),
     align: "middle",
-    asc: size * 0.8,
-    desc: size * 0.25,
     text: title,
     parts: null,
     prep,

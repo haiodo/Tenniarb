@@ -57,14 +57,14 @@ func TestNameOfContainerIsNotText(t *testing.T) {
 
 func TestFontSizeNoClamp(t *testing.T) {
 	m := boxes(t, "props.tenn", "Font")
-	if got := m["Big"].H; got != 59+8 { // ceil(56 * 1.05) + 2 * 4, the classic text inset
+	if got := m["Big"].H; got != classicBox(56, 1) { // the line box and the 4 point inset of a classic leaf
 		t.Errorf("Big.H = %v", got)
 	}
 	s, _ := build(t, load(t, "props.tenn"), "Font")
 	if !warned(s, "font-size: 0 is not above 0") {
 		t.Errorf("no warning for font-size 0: %v", s.Warnings)
 	}
-	if got := m["Bad"].H; got != 19+8 {
+	if got := m["Bad"].H; got != classicBox(18, 1) {
 		t.Errorf("Bad.H = %v, want the default size", got)
 	}
 }

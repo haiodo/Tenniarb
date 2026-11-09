@@ -187,7 +187,9 @@ func TestAnimTurn(t *testing.T) {
 		name, body string
 		nested     bool
 	}{
-		{"top level", `item dot { width 24; height 8; color #ffffff; pos 40 30; animation turn 1s linear infinite }`, false},
+		// The box holds the line of its name: a leaf outside a layout draws the name it is called by, and
+		// the picture of a box smaller than its text is the text, not the box.
+		{"top level", `item dot { width 24; height 40; color #ffffff; pos 40 30; animation turn 1s linear infinite }`, false},
 		{"auto-layout", `item row { auto-layout row; gap 8; padding 16
 		item dot { width 24; height 8; color #ffffff; animation turn 1s linear infinite }
 	}`, true},
@@ -203,7 +205,7 @@ func TestAnimTurn(t *testing.T) {
 			if dist(rest, want) > 1e-9 {
 				t.Errorf("at rest the picture is centered at %v, the box at %v", rest, want)
 			}
-			// 90 degrees: the center holds, the bounding box of the box turns from 24x8 to 8x24
+			// 90 degrees: the center holds, the bounding box of the box turns from 24x40 to 40x24
 			turned := turn(t, sc, screen, 90, 1)
 			if dist(turned, rest) > 1e-9 {
 				t.Errorf("turned by 90 the center is at %v, at rest %v", turned, rest)

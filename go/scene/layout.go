@@ -54,11 +54,28 @@ const (
 	capHeightRatio = 1490.0 / 2048
 	// classicRadius is the corner radius go/render gives a box of a classic diagram.
 	classicRadius = 8.0
+	// classicAscentRatio and classicDescentRatio are the parts of the font size go/render takes as the
+	// ascent and the descent of a line (render/text.go, the SF metrics the Swift app measured with), so
+	// a classic diagram keeps the line spacing and the baseline of its old picture.
+	classicAscentRatio  = 1980.0 / 2048
+	classicDescentRatio = 432.0 / 2048
 )
 
 // classicBorder is the border colour of a box of a classic diagram: the generic grey 0.2 of go/render,
 // #424242.
 var classicBorder = gfx.RGBA(66, 66, 66, 1)
+
+// lineBox is the ascent, the descent and the height of one line of f: a scene takes them from the
+// measurer, a classic diagram from the ratios and the rounding of go/render (floor(ascent+descent)+1),
+// so an old file keeps the line spacing, the box and the baseline of its Swift picture.
+func (p *prep) lineBox(f gfx.Font) (asc, desc, h float64) {
+	if p != nil && p.classic {
+		asc, desc = f.Size*classicAscentRatio, f.Size*classicDescentRatio
+		return asc, desc, math.Floor(asc+desc) + 1
+	}
+	m := p.opts.Measurer.MeasureText("Hg", f)
+	return m.Ascent, m.Descent, math.Round(m.Ascent + m.Descent)
+}
 
 // prep turns resolved nodes into a layout tree and keeps what the drawing needs.
 type prep struct {
@@ -669,9 +686,7 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 			ti.parts, _ = p.splitTitleImages(title, p.inlineImages(rn))
 		}
 	}
-	m := ti.m.MeasureText("Hg", ti.font)
-	ti.asc, ti.desc = m.Ascent, m.Descent
-	ti.lineH = math.Round(m.Ascent + m.Descent)
+	ti.asc, ti.desc, ti.lineH = p.lineBox(ti.font)
 	if lh := p.prop(rn, "line-height"); lh != nil {
 		if v, ok := lh.num(0); ok && v > 0 {
 			ti.lineH = v
@@ -906,10 +921,10 @@ func (ti *textInfo) layout(w float64) []titleLine {
 		f := ti.partFont(part)
 		line.w += ti.m.MeasureText(part.text, f).Width
 		if f != ti.font {
-			m := ti.m.MeasureText("Hg", f)
-			line.asc = math.Max(line.asc, m.Ascent)
-			line.desc = math.Max(line.desc, m.Descent)
-			line.h = math.Max(line.h, math.Round(m.Ascent+m.Descent))
+			asc, desc, h := ti.p.lineBox(f)
+			line.asc = math.Max(line.asc, asc)
+			line.desc = math.Max(line.desc, desc)
+			line.h = math.Max(line.h, h)
 		}
 		started = started || part.text != ""
 	}

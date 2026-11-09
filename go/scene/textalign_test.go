@@ -46,13 +46,13 @@ func boxH(s *scene.Screen, path string) float64 {
 	return -1
 }
 
-func TestLineBoxIsRounded(t *testing.T) {
+func TestLineBoxIsClassic(t *testing.T) {
 	s, _ := buildSrc(t, `element "E" {
     item "A" { title "x" }
     item "B" { title "x"; line-height 30 }
     item "C" { title "x"; line-height 30; line-spacing 2 }
 }`)
-	for path, want := range map[string]float64{"A": 17 + 2*4, "B": 30 + 2*4, "C": 32 + 2*4} {
+	for path, want := range map[string]float64{"A": classicBox(18, 1), "B": 30 + 2*4, "C": 32 + 2*4} {
 		if got := boxH(s, path); got != want {
 			t.Errorf("%s height %v, want %v", path, got, want)
 		}
