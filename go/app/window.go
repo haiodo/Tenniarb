@@ -609,6 +609,9 @@ func (v *Viewer) startSession() {
 		OnEdit:        v.onEdit,
 		OnOperation:   v.showOperation,
 		OnError:       func(err error) { v.setBanner(err.Error()) },
+		// A classic diagram is drawn by go/scene but hit by the boxes of go/render: the picture has the
+		// last word on what a press finds.
+		Covers: v.drawnCovers,
 	})
 	if err != nil {
 		v.setBanner(err.Error())

@@ -481,6 +481,19 @@ func (v *Viewer) drawnRect(it *model.DiagramItem) (gfx.Rect, bool) {
 	return gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H), true
 }
 
+// drawnCovers is editor.Options.Covers of a classic diagram: the session's boxes come from go/render and
+// the picture from go/scene, so a press where nothing is drawn must not grab the item.
+func (v *Viewer) drawnCovers(r render.Rect, it *model.DiagramItem) bool {
+	if v.sv == nil || !v.sv.classic {
+		return true
+	}
+	b, ok := v.drawnRect(it)
+	if !ok {
+		return true // nothing drawn for it: a link or a hidden item, the picture has no say
+	}
+	return b.Intersects(v.smap.RectToGfx(r))
+}
+
 // sceneMode reports whether the canvas shows a scene element: the pointer, the keys and the edits are
 // the scene's. A classic diagram drawn by the scene stays out: it has no scene input yet.
 func (v *Viewer) sceneMode() bool { return v.sv != nil && !v.sv.classic }

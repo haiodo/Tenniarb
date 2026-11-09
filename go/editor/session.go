@@ -54,6 +54,10 @@ type Options struct {
 	OnOperation func()
 	// OnError gets what the store reports, in Swift nothing: a bad index of an undo step.
 	OnError func(error)
+	// Covers reports whether the drawn picture of it meets r, both in scene coordinates: the window
+	// passes the boxes go/scene drew for a classic diagram, whose boxes differ from the ones go/render
+	// gives, so a press finds what it sees. nil: the boxes of the scene are the picture.
+	Covers func(r render.Rect, it *model.DiagramItem) bool
 }
 
 type mode int

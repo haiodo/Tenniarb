@@ -74,7 +74,27 @@ func (s *Session) itemsInRect(rect render.Rect) []*model.DiagramItem {
 }
 
 // Hit is the items under p as a click finds them (Swift find): boxes before lines, in scene order.
-func (s *Session) Hit(p render.Point) []*model.DiagramItem { return s.scene.Find(p, false) }
+func (s *Session) Hit(p render.Point) []*model.DiagramItem {
+	return s.covered(pointRect(p), s.scene.Find(p, false))
+}
+
+// pointRect is the rectangle a press covers, for the checks that take a rectangle.
+func pointRect(p render.Point) render.Rect { return render.Rect{X: p.X, Y: p.Y} }
+
+// covered drops the items the drawn picture does not show under r: the box go/render gives an item can
+// reach where go/scene draws nothing, and a press there must not grab it.
+func (s *Session) covered(r render.Rect, hits []*model.DiagramItem) []*model.DiagramItem {
+	if s.opts.Covers == nil || len(hits) == 0 {
+		return hits
+	}
+	out := make([]*model.DiagramItem, 0, len(hits))
+	for _, it := range hits {
+		if s.opts.Covers(r, it) {
+			out = append(out, it)
+		}
+	}
+	return out
+}
 
 // MouseDown starts a press. It returns false when nothing was grabbed and the window may pan; the
 // window then still sends MouseMove and MouseUp, which tell a click from a pan. Swift's modifiers:
@@ -98,7 +118,7 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 		return true
 	}
 
-	hits := s.scene.Find(e.P, false)
+	hits := s.covered(pointRect(e.P), s.scene.Find(e.P, false))
 	// A selected item under the pointer wins over the others, so a selection can be dragged.
 	var under []*model.DiagramItem
 	if e.Clicks <= 1 {
@@ -120,7 +140,7 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 		s.emit()
 		return true
 	}
-	if len(under) > 0 {
+	if under = s.covered(pointRect(e.P), under); len(under) > 0 {
 		hits = under
 	}
 	if len(hits) == 0 {
@@ -194,7 +214,7 @@ func (s *Session) moveTo(p render.Point) {
 	case modeBand:
 		b := render.Rect{X: math.Min(s.origin.X, p.X), Y: math.Min(s.origin.Y, p.Y), Width: math.Abs(dx), Height: math.Abs(dy)}
 		s.band = &b
-		s.selection = s.itemsInRect(b)
+		s.selection = s.covered(b, s.itemsInRect(b))
 	case modeLine:
 		if len(s.selection) == 0 {
 			return
@@ -202,7 +222,7 @@ func (s *Session) moveTo(p render.Point) {
 		source := s.selection[0]
 		s.lineTarget = nil
 		// Not the source itself: Swift would add a self-link there.
-		if hits := s.scene.Find(p, false); len(hits) > 0 && hits[0].Kind == model.ItemKindItem && hits[0] != source {
+		if hits := s.covered(pointRect(p), s.scene.Find(p, false)); len(hits) > 0 && hits[0].Kind == model.ItemKindItem && hits[0] != source {
 			s.lineTarget = hits[0]
 		}
 		s.scene.UpdateLineTo(source, p, s.lineTarget)
@@ -303,7 +323,7 @@ func (s *Session) Pick(p render.Point) {
 	if s.opts.Readonly {
 		return
 	}
-	hits := s.scene.Find(p, false)
+	hits := s.covered(pointRect(p), s.scene.Find(p, false))
 	if !slices.ContainsFunc(hits, func(i *model.DiagramItem) bool { return slices.Contains(s.selection, i) }) {
 		if len(hits) > 0 {
 			s.setActive([]*model.DiagramItem{hits[0]})

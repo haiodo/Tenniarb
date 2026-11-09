@@ -2,12 +2,12 @@
 
 ## Unreleased
 
-* A classic diagram drawn through `go/scene` is now read from the picture: the pointer, the quick panel,
+* A classic diagram drawn through `go/scene` is read from the picture: the pointer, the quick panel,
   Goto Item and the size of the selection take an item's place from the offset the scene laid it out
-  with instead of the bounds of the old renderer, so a click lands on the box under it. The two
-  renderers still measure text differently: the box `go/render` gave a text-sized item can be hundreds
-  of points wider than the drawn one, and the hit-test of the session follows that box until the press
-  is resolved on the drawn nodes.
+  with, and a press, a band or a right click where the scene draws nothing no longer grabs the item the
+  old renderer put there. The two renderers measure text differently, so the box `go/render` gave a
+  text-sized item can be hundreds of points wider than the drawn one; the input of a classic diagram
+  still runs through the session, which now asks the picture before it takes a press.
 * gowt 0.15.6: the app builds with `CGO_ENABLED=1 -tags gowtcgo` by default, the native
   AppKit/CoreGraphics calls gowt measures about eight times faster than the purego backends; `CGO=0`
   keeps purego, and the cross-compiled packages stay on it.

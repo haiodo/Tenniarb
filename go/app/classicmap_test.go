@@ -8,6 +8,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 )
 
@@ -66,4 +67,44 @@ func TestClassicItemSizeIsTheDrawnBox(t *testing.T) {
 	if math.Abs(w-b.W()) > 1e-9 || math.Abs(h-b.H()) > 1e-9 {
 		t.Errorf("the inspector writes %v x %v, the drawn box is %v x %v", w, h, b.W(), b.H())
 	}
+}
+
+// A press in the margin the old renderer gave a text item, where the scene draws nothing, does not grab
+// it: the picture has the last word on what is under the pointer.
+func TestClassicPressInTheDrawnMarginMisses(t *testing.T) {
+	v, sv, el := classicView(t, classicDriftDoc)
+	v.syncMap(sv)
+	it := el.Items[0]
+	b, ok := v.drawnRect(it)
+	if !ok {
+		t.Fatal("item A is not drawn")
+	}
+	margin := gfx.Point{X: b.Max.X + 10, Y: b.Min.Y + b.H()/2}
+	at := v.smap.ToScene(margin)
+	if !v.session.MouseDown(editor.MouseEvent{P: at, Clicks: 1}) {
+		// Nothing grabbed: the window pans, exactly what a click on empty canvas does.
+		v.session.MouseUp(editor.MouseEvent{P: at})
+		if sel := v.session.Selection(); len(sel) != 0 {
+			t.Fatalf("the press in the margin selected %v", sel)
+		}
+		return
+	}
+	v.session.MouseUp(editor.MouseEvent{P: at})
+	t.Fatalf("the press in the margin grabbed %v", v.session.Selection())
+}
+
+// A press inside the drawn box still grabs the item.
+func TestClassicPressInsideTheDrawnBoxGrabs(t *testing.T) {
+	v, sv, el := classicView(t, classicDriftDoc)
+	v.syncMap(sv)
+	it := el.Items[0]
+	b, _ := v.drawnRect(it)
+	at := v.smap.ToScene(gfx.Point{X: b.Min.X + b.W()/2, Y: b.Min.Y + b.H()/2})
+	if !v.session.MouseDown(editor.MouseEvent{P: at, Clicks: 1}) {
+		t.Fatal("the press on the drawn box grabbed nothing")
+	}
+	if sel := v.session.Selection(); len(sel) != 1 || sel[0] != it {
+		t.Errorf("the press selected %v", sel)
+	}
+	v.session.MouseUp(editor.MouseEvent{P: at})
 }

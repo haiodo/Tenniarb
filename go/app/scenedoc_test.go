@@ -229,6 +229,7 @@ func newDocFrom(t *testing.T, sh *Shell, doc *Document) *Viewer {
 			sh.publish(DocEvent{Path: path, Kind: EventChange, Version: v.version})
 		},
 		OnElement: func() { v.state.Current = v.session.Element() },
+		Covers:    v.drawnCovers,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -502,6 +503,7 @@ func classicView(t *testing.T, text string) (*Viewer, *sceneView, *model.Element
 	}
 	sv.index(sv.placed)
 	v.sv = sv
+	v.syncMap(sv) // the window maps the session's coordinates in realizeScene
 	return v, sv, el
 }
 
