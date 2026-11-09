@@ -13,7 +13,6 @@ import (
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // selKind says what the inspector shows: the element, or the selection by what it holds.
@@ -198,6 +197,7 @@ type entryCfg struct {
 	idx     int
 	numeric bool // only numbers and expressions
 	keep    bool // an empty text leaves the value, as for a name
+	list    bool // the field holds every argument, split on blanks, as `padding` does
 	src     func() propSrc
 	hint    string // the hint when the value is not set and there is no effective one
 	prefix  string // what to call the value, inside the field: X, Y, W, H
@@ -272,10 +272,21 @@ func (e *entry) commit() {
 	switch {
 	case text == "" && e.cfg.keep:
 	case e.cfg.numeric && text != "" && !isNumberOrExpr(text):
+	case e.cfg.list:
+		e.cfg.src().set(e.cfg.name, strings.Fields(text)...)
 	default:
 		e.cfg.src().arg(e.cfg.name, e.cfg.idx, text)
 	}
 	e.shown = e.ctl.Text()
+}
+
+// listText joins the arguments of a command written as one field, as `padding`.
+func listText(p editor.Prop) string {
+	parts := make([]string, len(p.Args))
+	for i, a := range p.Args {
+		parts[i] = a.Text
+	}
+	return strings.Join(parts, " ")
 }
 
 func isNumberOrExpr(s string) bool {
@@ -299,6 +310,8 @@ func (e *entry) refresh() {
 	switch {
 	case p.Mixed:
 		hint = "Mixed"
+	case p.Set && e.cfg.list:
+		text = listText(p)
 	case p.Set && a.Expr:
 		text, e.expr, tip = a.Value, a.Text, a.Text
 	case p.Set:
@@ -426,6 +439,13 @@ func colorOf(text string) (g.RGB, bool) {
 
 // color adds a row with a swatch that opens the colour picker and a text with the name or hex.
 func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg) func() g.Option {
+	ctl, refresh := in.colorCtl(cfg)
+	return in.row(caption, when, refresh, ctl...)
+}
+
+// colorCtl is the swatch and the text of a colour, without the row: a row built again with the
+// selection, as a shadow layer, puts them beside its other fields.
+func (in *inspector) colorCtl(cfg entryCfg) ([]g.Option, func(selKind)) {
 	e := in.newEntry(cfg)
 	var sw *g.CanvasView
 	var cur g.RGB
@@ -489,7 +509,20 @@ func (in *inspector) color(caption string, when func(selKind) bool, cfg entryCfg
 		e.refresh()
 		sw.Redraw()
 	}
-	return in.row(caption, when, refresh, swatch, e.option())
+	return []g.Option{swatch, e.option()}, refresh
+}
+
+// textRow is in.text for a row built again with the selection: it returns the row and its refresh.
+func (in *inspector) textRow(caption string, cfg entryCfg) (g.Option, func()) {
+	e := in.newEntry(cfg)
+	return styleRow(caption, e.option()), e.refresh
+}
+
+// pairRow is in.pair for a row built again with the selection.
+func (in *inspector) pairRow(caption, a, b string, c1, c2 entryCfg) (g.Option, func()) {
+	c1.prefix, c2.prefix = a, b
+	e1, e2 := in.newEntry(c1), in.newEntry(c2)
+	return styleRow(caption, e1.option(), e2.option()), func() { e1.refresh(); e2.refresh() }
 }
 
 // combo adds a row with a read-only choice of a property. Choosing unset removes the property.
@@ -718,7 +751,8 @@ func (in *inspector) build() g.Option {
 				entryCfg{id: "insp-pos-y", name: "pos", idx: 1, numeric: true, keep: true}),
 			in.pair("Size", "W", "H", items, n("insp-width", "width"), n("insp-height", "height")),
 			in.sizeModes("W", "insp-width-mode", "width", 0, items, func() float64 { w, _ := v.itemSize(); return w }, nil),
-			in.sizeModes("H", "insp-height-mode", "height", 0, items, func() float64 { _, h := v.itemSize(); return h }, nil)),
+			in.sizeModes("H", "insp-height-mode", "height", 0, items, func() float64 { _, h := v.itemSize(); return h }, nil),
+			in.text("Padding", items, entryCfg{id: "insp-padding", name: "padding", list: true})),
 		in.section(sectionTitle("Fill"), notLink,
 			in.color("Color", notLink, entryCfg{id: "insp-color", name: "color"})),
 		in.section(sectionTitle("Text"), selected,
@@ -740,33 +774,15 @@ func (in *inspector) build() g.Option {
 			in.combo("Style", links, "insp-link-style", "line-style", []string{"solid", "dashed", "dotted"}, "solid", nil),
 			in.combo("Arrows", links, "insp-arrows", "display", []string{"solid", "arrow", "arrows", "arrow-source"}, "solid", nil)),
 		in.section(sectionTitle("Effects"), notLink,
-			in.toggle("Shadow", notLink, "insp-shadow", "shadow", []string{"-5", "-5", "5"}, nil),
-			in.pair("Offset", "X", "Y", notLink,
-				entryCfg{id: "insp-shadow-x", name: "shadow", numeric: true},
-				entryCfg{id: "insp-shadow-y", name: "shadow", idx: 1, numeric: true}),
-			in.text("Blur", notLink, entryCfg{id: "insp-shadow-blur", name: "shadow", idx: 2, numeric: true}),
-			in.color("Color", notLink, entryCfg{id: "insp-shadow-color", name: "shadow", idx: 3}),
-			in.info("", notLink, func(selKind) string {
-				if sel := v.session.Selection(); len(sel) == 1 {
-					n := 0
-					for _, p := range sel[0].Properties.Nodes() {
-						if strings.HasPrefix(tenn.ToStr(p, 0, false), "shadow") {
-							n++
-						}
-					}
-					if n > 1 {
-						return fmt.Sprintf("%d shadows: these fields edit the first", n)
-					}
-				}
-				return ""
-			})),
+			in.shadowList(notLink, "insp-shadow", v.shownShadows, v.shadowsInherited, v.setShadows)),
 		in.section(sectionTitle("Item defaults"), none,
 			in.color("Fill", none, entryCfg{id: "insp-def-color", name: "color", src: itemStyles}),
 			in.color("Border", none, entryCfg{id: "insp-def-border", name: "border-color", src: itemStyles}),
 			in.color("Text", none, entryCfg{id: "insp-def-text", name: "text-color", src: itemStyles}),
 			in.text("Font size", none, entryCfg{id: "insp-def-font", name: "font-size", numeric: true, src: itemStyles}),
+			in.text("Padding", none, entryCfg{id: "insp-def-padding", name: "padding", list: true, src: itemStyles}),
 			in.combo("Display", none, "insp-def-display", "display", editor.ItemDisplay, "rect", itemStyles),
-			in.toggle("Shadow", none, "insp-def-shadow", "shadow", []string{"-5", "-5", "5"}, itemStyles)),
+			in.shadowList(none, "insp-def-shadow", v.itemDefaultShadows, nil, v.setItemDefaultShadows)),
 		in.section(sectionTitle("Link defaults"), none,
 			in.color("Color", none, entryCfg{id: "insp-def-line-color", name: "color", src: lineStyles}),
 			in.text("Width", none, entryCfg{id: "insp-def-line-width", name: "line-width", numeric: true, src: lineStyles}),

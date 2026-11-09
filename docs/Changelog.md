@@ -2,12 +2,14 @@
 
 ## Unreleased
 
+* The classic inspector has a `Padding` row, and its Effects section lists every `shadow` layer of the
+  item: the layers it writes, or those of the element's `styles { item }` when it writes none, with a
+  button to add or drop a layer. The item defaults of the element get the same list, so a soft shadow of
+  two layers is editable on either side.
 * Choosing a style on a part of an instance replaces the style its `use-style` expression produces, so
   the row shows the choice afterwards; before, the words of the expression were written into the `at`
   block as style names and the row kept reading the value the expression still gave.
-* The Shadow row of a scene shows `custom` when the node writes layers of its own, instead of `none`;
-  the classic Effects section says how many `shadow` commands the item writes, since its fields edit
-  only the first.
+* The Shadow row of a scene shows `custom` when the node writes layers of its own, instead of `none`.
 * The Code pane keeps the caret while the user types: the session redraws inside the edit it applies,
   before the edit is recorded, so the pane took the draft for a change of the code and put the caret
   back at the start after every keystroke.

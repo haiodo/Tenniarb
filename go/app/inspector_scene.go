@@ -180,7 +180,7 @@ func (in *inspector) sceneSections() g.Option {
 			in.sizeModes("W", "scene-width-mode", "width", 0, node, func() float64 { w, _ := v.itemSize(); return w }, src),
 			in.sizeModes("H", "scene-height-mode", "height", 0, node, func() float64 { _, h := v.itemSize(); return h }, src),
 			in.text("Gap", node, num("scene-gap", "gap", 0)),
-			in.text("Padding", node, t("scene-padding", "padding")),
+			in.text("Padding", node, entryCfg{id: "scene-padding", name: "padding", list: true, src: src}),
 			in.combo("Align", node, "scene-align", "align", []string{noneChoice, "start", "center", "end"}, noneChoice, src),
 			in.combo("Justify", node, "scene-justify", "justify", []string{noneChoice, "start", "center", "end", "space-between"}, noneChoice, src),
 			in.toggle("Clip", node, "scene-clip", "clip", []string{"yes"}, src)),

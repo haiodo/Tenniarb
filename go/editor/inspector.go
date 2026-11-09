@@ -279,6 +279,108 @@ func (s *Session) SetPropArg(name string, i int, text string) bool {
 	})
 }
 
+// Props reads every command name of the first target, in order, with the values of its expressions.
+// Unlike Prop it keeps the repeated commands: `shadow` is written once per layer.
+func (s *Session) Props(name string) []Prop {
+	targets := s.propTargets()
+	if len(targets) == 0 {
+		return nil
+	}
+	t := targets[0]
+	var out []Prop
+	for _, c := range t.props.Children {
+		if n, ok := c.GetIdent(0); ok && c.Kind == tenn.KindCommand && n == name {
+			out = append(out, Prop{Set: true, Args: s.argsOf(t, c.Children[1:])})
+		}
+	}
+	return out
+}
+
+// SetProps writes lists as the commands name of every target, one command per list, in order; nil
+// removes them. One undo step, as SetProp.
+func (s *Session) SetProps(name string, lists [][]string) bool {
+	cmds, ok := commandNodes(name, lists)
+	if !ok {
+		return false
+	}
+	return s.edit(func(t propTarget) bool {
+		t.props.RemoveNamed(name)
+		for _, c := range cmds {
+			t.props.Add(c.Clone())
+		}
+		return true
+	})
+}
+
+// commandNodes makes one command name per list of argument texts.
+func commandNodes(name string, lists [][]string) ([]*tenn.Node, bool) {
+	cmds := make([]*tenn.Node, len(lists))
+	for i, list := range lists {
+		args := make([]*tenn.Node, len(list))
+		for j, a := range list {
+			n, ok := argNode(a, stringProps[name])
+			if !ok {
+				return nil, false
+			}
+			args[j] = n
+		}
+		cmds[i] = tenn.NewCommand(name, args...)
+	}
+	return cmds, true
+}
+
+// StyleProps reads every command name of the styles group of the element, in order.
+func (s *Session) StyleProps(group, name string) []Prop {
+	props := model.ElementToTennAsProps(s.element, tenn.KindBlockExpr, false)
+	block := s.stylesGroup(props, group)
+	if block == nil {
+		return nil
+	}
+	t := propTarget{element: s.element, props: block}
+	var out []Prop
+	for _, c := range block.Children {
+		if n, ok := c.GetIdent(0); ok && c.Kind == tenn.KindCommand && n == name {
+			out = append(out, Prop{Set: true, Args: s.argsOf(t, c.Children[1:])})
+		}
+	}
+	return out
+}
+
+// SetStyleProps is SetProps for the styles group of the element.
+func (s *Session) SetStyleProps(group, name string, lists [][]string) bool {
+	defer s.EndEvent()
+	if s.opts.Readonly {
+		return false
+	}
+	cmds, ok := commandNodes(name, lists)
+	if !ok {
+		return false
+	}
+	props := s.element.Properties.Clone()
+	if styles := props.Get("styles"); styles == nil || styles.GetChild(1) == nil {
+		if len(lists) == 0 {
+			return true // nothing to remove, and no empty styles block is written
+		}
+	} else if len(lists) == 0 && styles.GetChild(1).GetNamedElement(group) == nil {
+		return true
+	}
+	g := stylesBlock(props).GetNamedElement(group)
+	if g == nil {
+		g = tenn.NewCommand(group, tenn.NewBlockExpr())
+		stylesBlock(props).Add(g)
+	}
+	if g.GetChild(1) == nil {
+		g.Add(tenn.NewBlockExpr())
+	}
+	block := g.GetChild(1)
+	block.RemoveNamed(name)
+	for _, c := range cmds {
+		block.Add(c)
+	}
+	s.fail(s.store.SetProperties(s.element, props.AsNode(), s.um, s.refresh))
+	return true
+}
+
 // stylesGroup is the block `styles { group { ... } }` of the element, nil when absent.
 func (s *Session) stylesGroup(props *tenn.Node, group string) *tenn.Node {
 	styles, ok := findCmd(props, "styles")

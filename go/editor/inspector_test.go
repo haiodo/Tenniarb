@@ -167,3 +167,62 @@ func TestTrimFloat(t *testing.T) {
 	eq(t, "measured", trimFloat(43.0068359375), "43.01")
 	eq(t, "whole", trimFloat(30), "30.0")
 }
+
+const shadowSrc = `element "D" {
+  styles {
+    item {
+      shadow 0 -4 12 #00000010
+      shadow 0 -10 10 #00000010
+    }
+  }
+  item "A" { pos 0 0 }
+  item "B" {
+    pos 100 0
+    shadow 1 1 2 #000000ff
+    shadow 3 3 4 #00000080
+  }
+}`
+
+// A soft shadow is written as several `shadow` commands: the inspector reads them all, and the item
+// defaults of the element are a list of their own.
+func TestShadowListIsEveryCommand(t *testing.T) {
+	f := newFixture(t, fixtureOpts{src: shadowSrc})
+	a, b := f.s.element.Items[0], f.s.element.Items[1]
+
+	eq(t, "none on A", len(f.s.Props("shadow")), 0)
+	def := f.s.StyleProps("item", "shadow")
+	eq(t, "defaults", len(def), 2)
+	eq(t, "default 2", []string{def[1].Arg(0).Text, def[1].Arg(1).Text, def[1].Arg(2).Text, def[1].Arg(3).Text},
+		[]string{"0", "-10", "10", "#00000010"})
+
+	f.s.Select([]*model.DiagramItem{b})
+	own := f.s.Props("shadow")
+	eq(t, "B layers", len(own), 2)
+	eq(t, "B second blur", own[1].Arg(2).Text, "4")
+
+	if !f.s.SetProps("shadow", [][]string{{"1", "1", "2", "#000000ff"}}) {
+		t.Fatal("refused")
+	}
+	eq(t, "one layer left", len(f.s.Props("shadow")), 1)
+	f.s.Undo()
+	eq(t, "one undo", len(f.s.Props("shadow")), 2)
+
+	f.s.Select([]*model.DiagramItem{a})
+	if !f.s.SetProps("shadow", [][]string{{"0", "-4", "12", "#00000010"}, {"0", "-10", "10", "#00000010"}}) {
+		t.Fatal("refused")
+	}
+	eq(t, "override", len(f.s.Props("shadow")), 2)
+	f.s.Undo()
+	eq(t, "undone", len(f.s.Props("shadow")), 0)
+
+	f.s.Select(nil)
+	if !f.s.SetStyleProps("item", "shadow", [][]string{{"0", "-2", "4", "#00000020"}}) {
+		t.Fatal("refused")
+	}
+	eq(t, "defaults written", len(f.s.StyleProps("item", "shadow")), 1)
+	f.s.Undo()
+	eq(t, "defaults undone", len(f.s.StyleProps("item", "shadow")), 2)
+
+	f.s.SetStyleProps("item", "shadow", nil)
+	eq(t, "cleared", len(f.s.StyleProps("item", "shadow")), 0)
+}
