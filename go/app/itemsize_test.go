@@ -24,8 +24,9 @@ import (
 // change the picture of an item.
 //
 // It measures every item of docs/Example.tenn through both, and holds the number that agree: the ones that
-// do not are the body layouts the parity stand also reports (a list, an emphasis that spans lines), so the
-// ratio may only grow. It is 95% now.
+// do not are the body layouts the parity stand also reports (a list, an emphasis that spans lines, a code
+// span the scene draws in `mono` while go/render never read that property), so the ratio may only grow. It
+// is 97% now.
 func TestSceneSizesItemsLikeRender(t *testing.T) {
 	const file = "../../docs/Example.tenn" // from the go directory, as the other tests read it
 	const rel = "docs/Example.tenn"        // from the workspace root, as scene.Load wants it
