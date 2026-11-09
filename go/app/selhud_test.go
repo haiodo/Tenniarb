@@ -44,3 +44,25 @@ func TestSelectionPictureLeavesSceneAlone(t *testing.T) {
 		}
 	}
 }
+
+// The rubber band and the line of a link being drawn are drawn in view points over the frames.
+func TestSelectionPicturePreviewGeometry(t *testing.T) {
+	near := func(a, b float64) bool { return a-b < 3 && b-a < 3 }
+	cam := gfx.Camera{Origin: gfx.Point{X: 10, Y: 10}, Zoom: 2}
+	sv := newSceneView(nil, nil)
+
+	band := gfx.R(20, 30, 40, 10) // gfx scene: view (20,40) 80x20
+	sv.band = &band
+	b := sv.selectionPicture(nil, cam).Bounds
+	if !near(b.Min.X, 20) || !near(b.Min.Y, 40) || !near(b.W(), 80) || !near(b.H(), 20) {
+		t.Errorf("band bounds %v, want 20,40 80x20", b)
+	}
+
+	sv.band = nil
+	line := [2]gfx.Point{{X: 20, Y: 30}, {X: 60, Y: 30}} // gfx scene: view x 20..100 at y 40
+	sv.line = &line
+	b = sv.selectionPicture(nil, cam).Bounds
+	if !near(b.Min.X, 20) || !near(b.Max.X, 100) || !near((b.Min.Y+b.Max.Y)/2, 40) {
+		t.Errorf("line bounds %v, want 20..100 at y 40", b)
+	}
+}

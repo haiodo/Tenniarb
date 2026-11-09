@@ -35,6 +35,12 @@ type sceneView struct {
 	w, h    float64
 	drag    sceneDrag
 
+	// The classic preview, in gfx scene coordinates: the rubber band, the line of a link being drawn,
+	// and how far the frames of the dragged items follow the pointer.
+	band       *gfx.Rect
+	line       *[2]gfx.Point
+	dragOffset gfx.Point
+
 	// what the gfx tree was built from; a cached view is reused only while all of it holds
 	tree *scene.Tree
 	ver  int
@@ -478,8 +484,64 @@ func (v *Viewer) canvasSelection() []string {
 			out = append(out, v.sv.pathOf[pl])
 		}
 	}
+	// The item under the pointer while a link is drawn is outlined too, so the drop target is visible.
+	if v.session != nil {
+		if t := v.session.LineTarget(); t != nil {
+			if pl := v.classicPlaced(t); pl != nil {
+				out = append(out, v.sv.pathOf[pl])
+			}
+		}
+	}
 	return out
 }
+
+// previewClassic draws what the session previews in a classic diagram: the dragged items where the drop
+// will write them, the rubber band, and the line of a link being drawn.
+func (v *Viewer) previewClassic() {
+	sv := v.sv
+	sv.band, sv.line, sv.dragOffset = nil, nil, gfx.Point{}
+	if v.session == nil {
+		return
+	}
+	if b := v.session.Band(); b != nil {
+		r := v.smap.RectToGfx(*b)
+		sv.band = &r
+		return
+	}
+	if ln := v.session.Scene().LineTo; ln != nil {
+		a := v.smap.ToGfx(render.Point{X: ln.Source.X, Y: ln.Source.Y})
+		b := v.smap.ToGfx(render.Point{X: ln.Target.X, Y: ln.Target.Y})
+		sv.line = &[2]gfx.Point{a, b}
+		return
+	}
+	if v.dragAt == v.press.scene {
+		return
+	}
+	dx, dy := v.dragAt.X-v.press.scene.X, v.dragAt.Y-v.press.scene.Y
+	sv.dragOffset = gfx.Point{X: dragRound(dx), Y: -dragRound(dy)}
+	v.scene.Update(func(tx *gfx.Tx) { v.dragPreview(v.press.scene, v.dragAt, tx) })
+}
+
+// dragPreview moves the drawn items of a classic diagram by the pointer from to to, both in session
+// coordinates: every item lands where the drop rounds its position, so the picture under the pointer is
+// where the commit writes it.
+func (v *Viewer) dragPreview(from, to render.Point, tx *gfx.Tx) {
+	dx, dy := to.X-from.X, to.Y-from.Y
+	for _, it := range v.sessionItems() {
+		if it.Kind != model.ItemKindItem {
+			continue
+		}
+		pl := v.classicPlaced(it)
+		if pl == nil || pl.Gfx == nil {
+			continue
+		}
+		x, y := dragRound(it.X+dx), dragRound(it.Y+dy)
+		tx.Move(pl.Gfx, pl.X+x-it.X, pl.Y-(y-it.Y))
+	}
+}
+
+// dragRound is the editor's roundCoord: the preview must land on the position the drop commits.
+func dragRound(v float64) float64 { return math.Round(v*100) / 100 }
 
 // classicPlaced is where the scene draws the classic item it of the element on the canvas.
 func (v *Viewer) classicPlaced(it *model.DiagramItem) *scene.Placed {
@@ -623,7 +685,8 @@ func (v *Viewer) dropStaleSelection() {
 }
 
 // selectionPicture records the frames of the selected paths in view points for the camera; they keep
-// 2 points on the screen at any zoom.
+// 2 points on the screen at any zoom. The classic preview - the rubber band, the line of a link being
+// drawn - comes after them, in the same view points.
 func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture {
 	if cam.Zoom <= 0 {
 		cam.Zoom = 1
@@ -634,7 +697,7 @@ func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture
 		if pl == nil {
 			continue
 		}
-		x, y := pl.X, pl.Y
+		x, y := pl.X+sv.dragOffset.X, pl.Y+sv.dragOffset.Y
 		if d := sv.drag; d.pl == pl && d.moved && pl.Gfx != nil {
 			t := pl.Gfx.Transform()
 			x, y = x+t[4]-d.ox, y+t[5]-d.oy
@@ -642,7 +705,27 @@ func (sv *sceneView) selectionPicture(sel []string, cam gfx.Camera) *gfx.Picture
 		x, y = (x+sv.off.X-cam.Origin.X)*cam.Zoom, (y+sv.off.Y-cam.Origin.Y)*cam.Zoom
 		r.StrokeRect(gfx.R(x, y, pl.W*cam.Zoom, pl.H*cam.Zoom), gfx.StrokeStyle{Width: 2}, accent)
 	}
+	if sv.band != nil {
+		r.StrokeRect(viewRect(*sv.band, cam), gfx.StrokeStyle{Width: 1, Dash: []float64{5, 5}}, accent)
+	}
+	if sv.line != nil {
+		p := &gfx.Path{}
+		p.MoveTo(viewPoint(sv.line[0], cam))
+		p.LineTo(viewPoint(sv.line[1], cam))
+		r.StrokePath(p, gfx.StrokeStyle{Width: 1.5}, accent)
+	}
 	return r.Finish()
+}
+
+// viewRect is a rectangle of the gfx scene in view points.
+func viewRect(r gfx.Rect, cam gfx.Camera) gfx.Rect {
+	x, y := viewPoint(r.Min, cam)
+	return gfx.R(x, y, r.W()*cam.Zoom, r.H()*cam.Zoom)
+}
+
+// viewPoint is a point of the gfx scene in view points.
+func viewPoint(p gfx.Point, cam gfx.Camera) (x, y float64) {
+	return (p.X - cam.Origin.X) * cam.Zoom, (p.Y - cam.Origin.Y) * cam.Zoom
 }
 
 // setCamera moves the camera and keeps the selection frames on their nodes: the HUD is drawn in view

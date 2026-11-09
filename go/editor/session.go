@@ -181,6 +181,9 @@ func (s *Session) Selection() []*model.DiagramItem { return s.selection }
 // Band is the rubber band being dragged, nil when none.
 func (s *Session) Band() *render.Rect { return s.band }
 
+// LineTarget is the item under the pointer while a link is drawn, nil otherwise.
+func (s *Session) LineTarget() *model.DiagramItem { return s.lineTarget }
+
 // Pivot is where the next new item goes.
 func (s *Session) Pivot() render.Point { return s.pivot }
 

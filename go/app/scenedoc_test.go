@@ -5,6 +5,7 @@ package app
 import (
 	"bytes"
 	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -476,15 +477,15 @@ func TestAgentEditWaitsForSave(t *testing.T) {
 	}
 }
 
-// A classic diagram gets a scene view for the canvas: the values come from the model and the drawn
-// items are the ones the session selects, though the input stays with the session.
-func TestClassicDrawsThroughScene(t *testing.T) {
-	const text = "element \"D\" {\n  item A { pos 0 0; size 40; width ${size * 2}; title ${size} }\n  item B { pos 200 0 }\n}\n"
+// classicView is a classic diagram on a headless canvas, its scene view built the way a window does.
+func classicView(t *testing.T, text string) (*Viewer, *sceneView, *model.Element) {
+	t.Helper()
 	v := newDoc(t, &Shell{}, "", text)
 	if v.stree == nil {
 		t.Fatal("a classic document has no scene tree")
 	}
 	el := v.session.Root().Elements[0]
+	v.session.SetElement(el)
 	v.state.Current = el
 	sv := newSceneView(el, v.elementNode(el))
 	sv.classic = !v.isScene(el)
@@ -494,6 +495,14 @@ func TestClassicDrawsThroughScene(t *testing.T) {
 	}
 	sv.index(sv.placed)
 	v.sv = sv
+	return v, sv, el
+}
+
+// A classic diagram gets a scene view for the canvas: the values come from the model and the drawn
+// items are the ones the session selects, though the input stays with the session.
+func TestClassicDrawsThroughScene(t *testing.T) {
+	const text = "element \"D\" {\n  item A { pos 0 0; size 40; width ${size * 2}; title ${size} }\n  item B { pos 200 0 }\n}\n"
+	v, sv, el := classicView(t, text)
 	if sv.screen == nil || len(sv.byPath) != 2 {
 		t.Fatalf("screen %v, items %v", sv.screen, sv.byPath)
 	}
@@ -503,6 +512,36 @@ func TestClassicDrawsThroughScene(t *testing.T) {
 	v.session.Select([]*model.DiagramItem{el.Items[1]})
 	if got := v.canvasSelection(); len(got) != 1 || got[0] != "B" {
 		t.Errorf("the selection of the session outlines %v, want [B]", got)
+	}
+}
+
+// The drag preview moves a drawn item to the rounded position the drop commits, so the picture under
+// the pointer is where the item lands.
+func TestClassicDragPreviewFollowsCommit(t *testing.T) {
+	v, _, el := classicView(t, "element \"D\" {\n  item A { pos 0 0; size 40 }\n  item B { pos 100 20; size 40 }\n}\n")
+	it := el.Items[0]
+	pl := v.classicPlaced(it)
+	if pl == nil || pl.Gfx == nil {
+		t.Fatal("item A is not drawn")
+	}
+	b := v.session.Scene().Drawables[it].Bounds()
+	from := render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
+	to := render.Point{X: from.X + 33.333, Y: from.Y - 12.3456}
+	startX, startY := it.X, it.Y
+	if !v.session.MouseDown(editor.MouseEvent{P: from, Clicks: 1}) {
+		t.Fatal("the press did not grab item A")
+	}
+	v.session.MouseMove(editor.MouseEvent{P: to})
+	v.scene.Update(func(tx *gfx.Tx) { v.dragPreview(from, to, tx) })
+	v.scene.Commit()
+	wantX, wantY := dragRound(startX+to.X-from.X), dragRound(startY+to.Y-from.Y)
+	tx, ty := pl.X+wantX-startX, pl.Y-(wantY-startY)
+	if tr := pl.Gfx.Transform(); math.Abs(tr[4]-tx) > 1e-9 || math.Abs(tr[5]-ty) > 1e-9 {
+		t.Errorf("the preview put item A at %v,%v, want %v,%v", tr[4], tr[5], tx, ty)
+	}
+	v.session.MouseUp(editor.MouseEvent{P: to})
+	if math.Abs(it.X-wantX) > 1e-9 || math.Abs(it.Y-wantY) > 1e-9 {
+		t.Errorf("the drop wrote %v,%v, the preview showed %v,%v", it.X, it.Y, wantX, wantY)
 	}
 }
 

@@ -84,6 +84,7 @@ type Viewer struct {
 	animOff    bool          // the playback is paused by the scrub of the inspector
 
 	press      press
+	dragAt     render.Point // the pointer of the move in flight, in session coordinates, for the classic drag preview
 	inline     *view.Editor
 	inlineMode editor.EditMode
 	activeText *swt.Text // a text field of the window that has the keyboard: clipboard commands go to it

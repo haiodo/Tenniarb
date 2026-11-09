@@ -20,8 +20,9 @@ type press struct {
 	active bool
 	pan    bool // the window pans: the session refused the press, or the middle button
 	cam    gfx.Camera
-	pos    gfx.Point // view point of the last event
-	from   gfx.Point // view point of the press
+	pos    gfx.Point    // view point of the last event
+	from   gfx.Point    // view point of the press
+	scene  render.Point // the press in the session coordinates, for the classic drag preview
 }
 
 // realize replaces the diagram on the canvas by the scene of the session and draws the selection over it.
@@ -91,6 +92,7 @@ func (v *Viewer) onRedraw(r editor.Redraw) {
 		// A classic diagram drawn by the scene: the session moved its drawables, the frames follow the
 		// selection, and the scene itself is rebuilt on the commit as it always was.
 		if v.sv != nil && v.sv.classic {
+			v.previewClassic()
 			defer v.syncItems()
 			defer v.syncIndicators()
 			v.drawSceneOverlay()
@@ -182,7 +184,8 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		if p.Button != 1 {
 			return
 		}
-		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
+		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos, scene: v.smap.ToScene(p.Scene)}
+		v.dragAt = v.press.scene
 		owned := v.session != nil && v.session.MouseDown(v.sceneEvent(p, p.Scene))
 		if !owned {
 			v.press.pan = true
@@ -201,7 +204,10 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 			}
 			return
 		}
-		v.session.MouseMove(v.sceneEvent(p, p.Scene))
+		ev := v.sceneEvent(p, p.Scene)
+		v.dragAt = ev.P
+		v.session.MouseMove(ev)
+		v.dragAt = v.press.scene // no preview without a move in flight
 	case view.PointerUp, view.PointerCancel:
 		if !v.press.active {
 			return
@@ -214,6 +220,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		ev.Cancel = p.Kind == view.PointerCancel
 		pressed := v.press
 		v.press = press{}
+		v.dragAt = render.Point{} // the preview is over; the commit rebuilds the scene
 		v.view.SetCursor(view.CursorArrow)
 		if v.session != nil {
 			v.session.MouseUp(ev)
