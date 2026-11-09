@@ -121,6 +121,13 @@ func SVGBackground(w io.Writer, element *model.Element, o Options, scale float64
 	return gfx.WriteSubtreeSVGWith(w, gs, r.Root, r.Area(), scale, gfx.SVGOptions{Background: bg})
 }
 
+// ClassicContext is classic.Context backed by the evaluator of the old renderer, with the font family the
+// Swift app measured in. It is the bridge the engine work removes (E7): once go/scene sizes an item itself,
+// the values of a classic diagram are computed without go/render.
+func ClassicContext(e *model.Element) model.IExecutionContext {
+	return NewExecContext(e, Options{FontFamily: "Helvetica, Arial, sans-serif"})
+}
+
 // MeasureTextSize is utils.textSize of the expression engine: a frame at most 1000 wide in the default
 // font (CTFramesetterSuggestFrameSizeWithConstraints).
 func MeasureTextSize(o Options, text string, fontSize float64) Size {

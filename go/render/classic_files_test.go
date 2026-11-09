@@ -9,6 +9,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
@@ -86,7 +87,7 @@ func checkClassicElement(t *testing.T, rel string, tree *scene.Tree, e *model.El
 	var err error
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err = tree.BuildElement(tx, nil, node, scene.Options{Measurer: gfx.EstimateText{},
-			EvalVars: exec.SceneEvalVars, Classic: render.ClassicValues(e, render.NewExecContext(e, o))})
+			EvalVars: exec.SceneEvalVars, Classic: classic.Values(e, render.NewExecContext(e, o))})
 	})
 	if err != nil {
 		t.Fatalf("%s: %v", e.Name, err)

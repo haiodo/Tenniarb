@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -29,7 +30,7 @@ func (s *Server) buildScene(tree *scene.Tree, rel, element string, measurer gfx.
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	var err error
-	classic := render.ClassicHook(tree, s.root, rel, element)
+	classic := classic.Hook(tree, s.root, rel, element, render.ClassicContext)
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: measurer, FontName: "Helvetica", EvalVars: exec.SceneEvalVars, Classic: classic})
 	})

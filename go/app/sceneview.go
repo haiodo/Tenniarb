@@ -12,6 +12,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
 
+	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
@@ -201,7 +202,7 @@ func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
 		var vals func(scene.ClassicRef, string) ([]string, bool)
 		o.Classic = func(at scene.ClassicRef, prop string) ([]string, bool) {
 			if vals == nil {
-				vals = render.ClassicValues(e, render.NewExecContext(e, render.Options{FontFamily: "Helvetica, Arial, sans-serif"}))
+				vals = classic.Values(e, render.NewExecContext(e, render.Options{FontFamily: "Helvetica, Arial, sans-serif"}))
 			}
 			return vals(at, prop)
 		}

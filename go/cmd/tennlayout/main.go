@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -55,7 +56,7 @@ func layout(root, file, path string) ([]byte, error) {
 	}
 	sc := gfx.NewScene()
 	var screen *scene.Screen
-	classic := render.ClassicHook(tree, root, file, path)
+	classic := classic.Hook(tree, root, file, path, render.ClassicContext)
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err = tree.Build(tx, nil, path, scene.Options{FontName: "Helvetica, Arial, sans-serif", EvalVars: exec.SceneEvalVars, Classic: classic})
 	})

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* The values a classic diagram reads left `go/render` for a package of their own (`go/classic`), the first
+  step of removing the old renderer. The pictures are the same: the parity stand measures the same numbers.
 * The box of a classic item is as wide as the text it measures: the scene rounded the width of a leaf up to
   a whole point, so a title of 22 characters was 8 points wider than the old picture and a box moved against
   its own frame. `go/render` kept the fraction, and so does the scene in a classic diagram; a scene still
