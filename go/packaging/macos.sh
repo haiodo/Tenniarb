@@ -39,6 +39,10 @@ pb "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string tenniarb"
 plutil -lint "$plist" >/dev/null
 mkdir -p "$app/Contents/Resources"
 cp "$embed" "$app/Contents/Resources/"
+# The libraries of the application: icons and C4 are mounted by "tenniarb-library://<name>", and the
+# finder looks for them beside the executable and in Resources (go/library/find.go).
+rm -rf "$app/Contents/Resources/libraries"
+cp -R "$root/libraries" "$app/Contents/Resources/libraries"
 # The MCP proxy ships inside the app: Help > Install MCP for Agents registers this path, and an app
 # update replaces it with the app.
 if [ -n "$mcp" ]; then

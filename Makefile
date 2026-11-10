@@ -78,7 +78,7 @@ icons: ## Refresh libraries/icons.tenn from the lucide-static package (needs npm
 	@rm -rf $(ICONS_DIR) && mkdir -p $(ICONS_DIR)
 	@tar -xzf "$$(ls -t /tmp/lucide-static-*.tgz | head -1)" -C $(ICONS_DIR)
 	@cp $(ICONS_DIR)/package/LICENSE libraries/LICENSES/lucide.txt
-	@cd go && go run ./cmd/tennicons -format tenn -icons $(ICONS_DIR)/package/icons -o ../libraries/icons.tenn
+	@cd go && go run ./cmd/tennicons -icons $(ICONS_DIR)/package/icons -o ../libraries/icons.tenn
 	@echo "libraries/icons.tenn is written: commit it with libraries/LICENSES/lucide.txt"
 
 go-mcp: ## MCP for agents: build/go/bin/tenniarb-mcp (proxy) and tenniarb-service, side by side
@@ -154,6 +154,7 @@ ifeq ($(shell uname),Darwin)
 	rm $(GOPKG)/app/tenniarb
 else
 	cp $(EMBED) $(GOPKG)/app/
+	rm -rf $(GOPKG)/app/libraries && cp -R libraries $(GOPKG)/app/libraries
 endif
 
 go-pkg-mac: $(EMBED) ## Go app: build/go/Tenniarb-<ver>-arm64.{app.zip,dmg} for Apple silicon (unsigned)

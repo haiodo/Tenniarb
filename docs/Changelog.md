@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* A document mounts a library of the application by name: `element "icons" --from-file
+  "tenniarb-library://icons"` finds `libraries/icons.tenn` wherever the document lies, so a design no
+  longer needs a relative path that only works from one folder. `c4` is mounted the same way, and `make app`
+  puts the libraries of the repository into the bundle, so the application carries them: the notice of the
+  icons travels with them. An installed library shadows the shipped one. The icons of a `.pen` come from the
+  library now, and the generated Go table of them is gone.
 * Undo puts the properties pane back on the code: a pane with the keyboard kept its draft from every
   redraw, so a Cmd+Z changed the model and left the old text on screen. The draft is kept only while the
   code echoes the edit the pane itself made; an undo, a redo or a control of the inspector says something

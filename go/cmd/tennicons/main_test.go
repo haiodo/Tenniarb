@@ -127,7 +127,7 @@ func TestRenderTennWritesOneItemPerIcon(t *testing.T) {
 		viewBox: [4]float64{0, 0, 24, 24},
 		stroke:  2,
 	}
-	out, err := render("tenn", "", "1.71.0", tbl)
+	out, err := render("1.71.0", tbl)
 	if err != nil {
 		t.Fatal(err)
 	}
