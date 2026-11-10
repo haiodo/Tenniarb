@@ -2,8 +2,9 @@
 //
 //	pen2tenn -o OUTDIR file.pen [file.pen ...]
 //
-// It writes one .tenn per .pen, libraries imported by the files included, plus a .map file with the
-// pen id and the path of every node and a .vars file with the variables that were resolved to colors.
+// It writes one .tenn per .pen, libraries imported by the files included. With -sidecars it also writes a
+// .map file with the pen id and the path of every node and a .vars file with the variables that were
+// resolved to colors; nothing reads them back.
 // The summary on stderr lists what could not be converted.
 // With -check each output is also loaded by go/scene, and the layout of every screen is compared
 // with the layout gfx/pen makes of the original.
@@ -25,10 +26,11 @@ import (
 func main() {
 	out := flag.String("o", "", "output directory")
 	check := flag.Bool("check", false, "load the output with go/scene and compare screen layouts with gfx/pen")
+	sidecars := flag.Bool("sidecars", false, "also write a .map and a .vars file per converted file, to look at")
 	all := flag.Bool("check-all", false, "with -check: compare every top level node, not only those of 400 x 300 and more")
 	fonts := flag.String("fonts", "", "with -check: directory of fonts to measure text with, instead of the estimate")
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: pen2tenn -o OUTDIR [-check] file.pen ...")
+		fmt.Fprintln(os.Stderr, "usage: pen2tenn -o OUTDIR [-sidecars] [-check] file.pen ...")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -36,19 +38,24 @@ func main() {
 		flag.Usage()
 		os.Exit(2)
 	}
-	if err := run(*out, flag.Args(), *check, *all, *fonts); err != nil {
+	if err := run(*out, flag.Args(), *check, *all, *fonts, *sidecars); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(out string, paths []string, check, all bool, fonts string) error {
+func run(out string, paths []string, check, all bool, fonts string, sidecars bool) error {
 	res, err := penimport.Convert(paths, penimport.Options{})
 	if err != nil {
 		return err
 	}
 	if err := res.Write(out); err != nil {
 		return err
+	}
+	if sidecars {
+		if err := res.WriteSidecars(out); err != nil {
+			return err
+		}
 	}
 	for _, f := range res.Files {
 		report(f, res.Tenn(f))

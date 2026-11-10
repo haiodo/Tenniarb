@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Importing a `.pen` leaves one file beside it, the `.tenn`: the `.map` and the `.vars` the converter wrote
+  for its own use are gone from the import, and `pen2tenn -sidecars` writes them when someone wants to look
+  at what the converter saw.
 * A text of a `.pen` that grows of itself (`textGrowth: auto`) does not take the width of the sample it is
   a component of any more: the instance says `width hug`, so a tagline of the footer stays inside its column
   instead of standing 640 points wide in a 300 point brand block.

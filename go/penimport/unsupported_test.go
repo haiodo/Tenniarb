@@ -1,6 +1,7 @@
 package penimport
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -53,4 +54,36 @@ func TestTextInstanceDoesNotTakeTheSampleWidth(t *testing.T) {
 	// The fidelity of a hand-made fixture is not Pen's: a text that grows of itself has no box of its own
 	// in the file, and nothing to compare with.
 	_ = dir
+}
+
+// An import leaves the document and nothing but the document: the map and the variables of the converter
+// were written beside every converted file, and a reader who asked for a .tenn got three files.
+func TestWriteLeavesOnlyTheDocument(t *testing.T) {
+	res, _, _ := convertJSON(t, `{"version":"2.21","children":[
+	 {"type":"frame","id":"f","name":"Screen","width":100,"height":50}]}`)
+	dir := t.TempDir()
+	if err := res.Write(dir); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	if len(names) != 1 || !strings.HasSuffix(names[0], ".tenn") {
+		t.Fatalf("the import wrote %v, want one .tenn", names)
+	}
+	// The files are still there for whoever debugs the converter, and only when asked.
+	if err := res.WriteSidecars(dir); err != nil {
+		t.Fatal(err)
+	}
+	if entries, err = os.ReadDir(dir); err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 3 {
+		t.Fatalf("with the sidecars there are %d files, want three", len(entries))
+	}
 }

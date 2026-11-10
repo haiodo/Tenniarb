@@ -204,16 +204,29 @@ func (r *Result) Vars(f *File) string {
 	return sb.String()
 }
 
-// Write saves a .tenn, a .map and a .vars file per converted file into dir.
+// Write saves the .tenn of every converted file into dir, and nothing else: the document is what a reader
+// of the design wants, and the files beside it are for the one who debugs the converter (WriteSidecars).
 func (r *Result) Write(dir string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 	for _, f := range r.Files {
-		base := filepath.Join(dir, f.Name)
-		if err := os.WriteFile(base+".tenn", []byte(r.Tenn(f)), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, f.Name+".tenn"), []byte(r.Tenn(f)), 0o644); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// WriteSidecars saves the .map and the .vars of every converted file into dir: the pen id and the path of
+// every node, and the variables that were resolved to colours. Nothing reads them back; they are there to
+// look at what the converter saw.
+func (r *Result) WriteSidecars(dir string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	for _, f := range r.Files {
+		base := filepath.Join(dir, f.Name)
 		if err := os.WriteFile(base+".map", []byte(r.Map(f)), 0o644); err != nil {
 			return err
 		}
