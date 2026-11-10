@@ -20,6 +20,7 @@ import (
 	"github.com/haiodo/gowt/rx"
 	"github.com/haiodo/gowt/swt"
 
+	"github.com/haiodo/tenniarb/go/check"
 	"github.com/haiodo/tenniarb/go/diff"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/geometry"
@@ -43,6 +44,7 @@ type Viewer struct {
 	tree         *g.TreeView
 	banner       *g.TextView
 	bannerCopy   *g.ButtonView // the Copy button next to the banner
+	bannerFix    *g.ButtonView // the Fix button, shown when the banner names a diagnostic the fixer repairs
 	note         string        // the note in the banner, cleared by the next action
 	view         *view.View
 	scene        *gfx.Scene
@@ -264,6 +266,10 @@ func (v *Viewer) build() {
 			g.HBox(g.GrowX(), g.Padding(0), g.Gap(g.Scaled(6)),
 				g.Text(g.ID("banner"), g.Multiline(), g.ReadOnly(), g.NoBorder(), g.GrowX(),
 					g.Size(0, g.Scaled(36)), g.Ref(&v.banner)),
+				g.Button("Fix", g.Small(), g.Ref(&v.bannerFix), g.ID("banner-fix"), g.Init(func(b *g.ButtonView) {
+					b.SetTooltip("Quote the titles this diagnostic names, as one undo step")
+					b.OnClick(func() { v.fixDiagnostics() })
+				})),
 				g.Button("Copy", g.Small(), g.Ref(&v.bannerCopy), g.Init(func(b *g.ButtonView) {
 					b.OnClick(func() { v.setClipboard(v.banner.Text()) })
 				}))),
@@ -551,20 +557,22 @@ func (v *Viewer) reloadCommand() {
 
 // setBanner shows text in the banner in the colour of an error.
 func (v *Viewer) setBanner(text string) {
-	v.note = "" // an error takes the banner over from a note and stays
+	v.note = ""            // an error takes the banner over from a note and stays
+	v.banner.SetText(text) // the text decides whether Fix is offered, so it goes first
 	v.showBanner(text != "")
-	v.banner.SetText(text)
 	if text != "" {
 		v.banner.SetForeground(g.RGB{R: 200, G: 40, B: 40})
 	}
 	v.win.Unwrap().Layout()
 }
 
-// showBanner shows or hides the banner with its Copy button: the text of an error is selectable and can be
-// taken whole, as a message to paste elsewhere.
+// showBanner shows or hides the banner with its Copy button, and its Fix button when the message names a
+// diagnostic the fixer repairs: the text of an error is selectable, and a reader without a terminal has the
+// fix here.
 func (v *Viewer) showBanner(on bool) {
 	v.banner.SetVisible(on)
 	v.bannerCopy.SetVisible(on)
+	v.bannerFix.SetVisible(on && check.Fixable(v.banner.Text()))
 }
 
 // noteTime is how long a note about a finished action stays in the banner.
@@ -577,8 +585,8 @@ func (v *Viewer) setNote(text string) {
 	if v.app.Dark() {
 		c = g.RGB{R: 200, G: 200, B: 200}
 	}
+	v.banner.SetText(text) // the text decides whether Fix is offered, so it goes first
 	v.showBanner(text != "")
-	v.banner.SetText(text)
 	if text != "" {
 		v.banner.SetForeground(c)
 	}

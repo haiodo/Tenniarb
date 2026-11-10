@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* A banner that names a diagnostic the fixer repairs - `title Gap and padding` instead of `title "Gap and
+  padding"` - carries a **Fix** button: it quotes the words as one undo step and the banner goes away with
+  it. A reader of the picture is not at a terminal, so the repair that only `tenniarb check -fix` knew about
+  is in the window.
 * `go/render` is gone, and `go/scene` is the one engine that draws and answers for a diagram. The tests
   that compared the two pictures go with it: the comparison stand did its work - the blank lines of a block
   title, the advance of the `@` before a picture, the width of a body line - and there is nothing left to

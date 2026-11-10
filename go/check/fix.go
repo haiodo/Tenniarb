@@ -75,19 +75,35 @@ func quoteText(s string) string {
 	return b.String()
 }
 
-// fixFile applies quoteTitles to the file at abs, and answers how many titles it rewrote. A file that does
+// FixTitles is the text with every title of one unquoted value quoted, and how many it changed. A text
+// that does not parse comes back as it was: the check says what is wrong with it, and a guess would only
+// make it worse. The window calls it for the button that fixes what the banner reports.
+func FixTitles(text string) (string, int) {
+	root, parser := tenn.Parse(strings.TrimPrefix(text, "\xef\xbb\xbf"))
+	if parser.Errors.HasErrors() || root == nil {
+		return text, 0
+	}
+	fixed, n := quoteTitles(text, root)
+	if n == 0 {
+		return text, 0
+	}
+	return fixed, n
+}
+
+// Fixable reports whether a diagnostic of the check is one the fixer repairs: a title of one unquoted
+// value. The window shows its Fix button for a message that names one.
+func Fixable(diagnostic string) bool {
+	return strings.Contains(diagnostic, "title takes one value")
+}
+
+// fixFile applies FixTitles to the file at abs, and answers how many titles it rewrote. A file that does
 // not read is left alone: the diagnostics of the check say what is wrong with it.
 func fixFile(abs string) (int, error) {
 	data, err := os.ReadFile(abs)
 	if err != nil {
 		return 0, err
 	}
-	text := string(data)
-	root, parser := tenn.Parse(strings.TrimPrefix(text, "\xef\xbb\xbf"))
-	if parser.Errors.HasErrors() {
-		return 0, nil
-	}
-	fixed, n := quoteTitles(text, root)
+	fixed, n := FixTitles(string(data))
 	if n == 0 {
 		return 0, nil
 	}
