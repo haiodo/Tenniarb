@@ -1,8 +1,8 @@
 package editor
 
 import (
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // Entry is a context menu entry (SceneDrawView.menu(for:)). A separator has only Sep set; an entry
@@ -83,7 +83,7 @@ func (s *Session) StyleEntries() []Entry {
 }
 
 // CanvasEntries is Swift menu(for:): p is the right-click point (scene space). Call Pick(p) first.
-func (s *Session) CanvasEntries(p render.Point, host MenuHost) []Entry {
+func (s *Session) CanvasEntries(p geometry.Point, host MenuHost) []Entry {
 	sel := s.selection
 	under := s.covered(pointRect(p), s.geom().Find(p, true))
 	// Overlapping items to pick from; not offered when the plain hit test finds the same single one.

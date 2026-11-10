@@ -5,13 +5,19 @@
 // the y-flip happens once, when a drawable is recorded into a gfx.Picture.
 package render
 
-import "math"
+import (
+	"math"
 
-type Point struct{ X, Y float64 }
+	"github.com/haiodo/tenniarb/go/geometry"
+)
+
+// Point and Rect are the geometry of the editor and of this renderer: one type each, kept in go/geometry so
+// the editor does not import a renderer for them.
+type Point = geometry.Point
+
+type Rect = geometry.Rect
 
 type Size struct{ Width, Height float64 }
-
-type Rect struct{ X, Y, Width, Height float64 }
 
 func minX(r Rect) float64 { return math.Min(r.X, r.X+r.Width) }
 func maxX(r Rect) float64 { return math.Max(r.X, r.X+r.Width) }
@@ -98,9 +104,3 @@ func crossPointLine(p1, p2, p Point) bool {
 	d := a*a + b*b
 	return containsPoint(r, Point{(b*(b*p.X-a*p.Y) - a*c) / d, (a*(-b*p.X+a*p.Y) - b*c) / d})
 }
-
-// Contains is CGRect.contains(point): min edges inclusive, max edges exclusive.
-func (r Rect) Contains(p Point) bool { return containsPoint(r, p) }
-
-// Intersects is CGRect.intersects.
-func (r Rect) Intersects(o Rect) bool { return intersects(r, o) }

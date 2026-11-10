@@ -15,6 +15,7 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -61,7 +62,7 @@ type Options struct {
 	// Covers reports whether the drawn picture of it meets r, both in scene coordinates: the window
 	// passes the boxes go/scene drew for a classic diagram, whose boxes differ from the ones go/render
 	// gives, so a press finds what it sees. nil: the boxes of the scene are the picture.
-	Covers func(r render.Rect, it *model.DiagramItem) bool
+	Covers func(r geometry.Rect, it *model.DiagramItem) bool
 }
 
 type mode int
@@ -92,13 +93,13 @@ const undoDepth = 200
 
 type itemPos struct {
 	item *model.DiagramItem
-	pos  render.Point
+	pos  geometry.Point
 }
 
 type editing struct {
 	item *model.DiagramItem
 	mode EditMode
-	rect render.Rect
+	rect geometry.Rect
 }
 
 // Session is the editor state of one document: the element on the canvas, its scene, the selection.
@@ -112,16 +113,16 @@ type Session struct {
 	element   *model.Element
 	scene     *render.DrawableScene
 	selection []*model.DiagramItem
-	band      *render.Rect
+	band      *geometry.Rect
 
 	elementCount int
 	createIndex  int
 	// pivot is where the next new item goes: the last click on empty space or right of the selection.
-	pivot render.Point
+	pivot geometry.Point
 	zoom  float64
 
 	mode         mode
-	origin, last render.Point
+	origin, last geometry.Point
 	moved        bool
 	starts       []itemPos
 	lineTarget   *model.DiagramItem
@@ -191,13 +192,13 @@ func (s *Session) Scene() *render.DrawableScene { return s.scene }
 func (s *Session) Selection() []*model.DiagramItem { return s.selection }
 
 // Band is the rubber band being dragged, nil when none.
-func (s *Session) Band() *render.Rect { return s.band }
+func (s *Session) Band() *geometry.Rect { return s.band }
 
 // LineTarget is the item under the pointer while a link is drawn, nil otherwise.
 func (s *Session) LineTarget() *model.DiagramItem { return s.lineTarget }
 
 // Pivot is where the next new item goes.
-func (s *Session) Pivot() render.Point { return s.pivot }
+func (s *Session) Pivot() geometry.Point { return s.pivot }
 
 // Readonly reports whether edits are refused.
 func (s *Session) Readonly() bool { return s.opts.Readonly }
@@ -350,7 +351,7 @@ func (s *Session) setElement(element *model.Element) {
 		s.exec.SetElement(element)
 	}
 	s.selection, s.editing = nil, nil
-	s.pivot = render.Point{}
+	s.pivot = geometry.Point{}
 	s.rebuild()
 	if s.opts.OnElement != nil {
 		s.opts.OnElement()
@@ -372,7 +373,7 @@ func (s *Session) pivotRightOf(item *model.DiagramItem) {
 	if b, ok := s.geom().PaintBox(item); ok {
 		width = b.Width
 	}
-	s.pivot = render.Point{X: item.X + width + 10, Y: item.Y}
+	s.pivot = geometry.Point{X: item.X + width + 10, Y: item.Y}
 }
 
 // Undo and Redo do nothing when readonly or when there is nothing to undo.

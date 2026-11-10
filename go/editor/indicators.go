@@ -5,7 +5,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
-	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/geometry"
 )
 
 // Port of SceneDrawView.drawRulers: dots at the view edges for items that are outside it, a dot
@@ -26,7 +26,7 @@ type Dot struct {
 
 // IndicatorDots counts the bounds that lie outside visible (the part of the scene on screen, y up)
 // and places the dots.
-func IndicatorDots(bounds []render.Rect, visible render.Rect) []Dot {
+func IndicatorDots(bounds []geometry.Rect, visible geometry.Rect) []Dot {
 	w, h := visible.Width, visible.Height
 	ox, oy := -visible.X, -visible.Y
 	ystep, xstep := h/yCount, w/xCount
@@ -110,22 +110,22 @@ func IndicatorDots(bounds []render.Rect, visible render.Rect) []Dot {
 // Indicators records the dots for the elements outside visible, the scene rectangle (y up) that the
 // view of k pixels per unit shows. The picture is in view pixels, y down, from the top-left corner
 // of the view.
-func (s *Session) Indicators(visible render.Rect, k float64, dark bool) *gfx.Picture {
+func (s *Session) Indicators(visible geometry.Rect, k float64, dark bool) *gfx.Picture {
 	items := s.geom().Items()
-	bounds := make([]render.Rect, 0, len(items))
+	bounds := make([]geometry.Rect, 0, len(items))
 	for _, i := range items {
 		b, ok := s.geom().PaintBox(i)
 		if !ok {
 			continue
 		}
-		bounds = append(bounds, render.Rect{
+		bounds = append(bounds, geometry.Rect{
 			X:      (b.X - visible.X) * k,
 			Y:      (b.Y - visible.Y) * k,
 			Width:  b.Width * k,
 			Height: b.Height * k,
 		})
 	}
-	px := render.Rect{Width: visible.Width * k, Height: visible.Height * k}
+	px := geometry.Rect{Width: visible.Width * k, Height: visible.Height * k}
 	return IndicatorsPicture(IndicatorDots(bounds, px), px.Height, dark)
 }
 

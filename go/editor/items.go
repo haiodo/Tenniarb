@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -386,7 +386,7 @@ func (s *Session) Align(edge string) {
 	first := s.selection[0]
 	type entry struct {
 		i *model.DiagramItem
-		b render.Rect
+		b geometry.Rect
 	}
 	var list []entry
 	for _, i := range s.selection {
@@ -453,7 +453,7 @@ func (s *Session) Order(forward bool) {
 
 // TestLayout is Swift performSpringLayout ("Test layout"); bounds is the view rectangle centred on
 // the origin. The pivot goes back to the origin, as Swift does after the layout.
-func (s *Session) TestLayout(bounds render.Rect) {
+func (s *Session) TestLayout(bounds geometry.Rect) {
 	defer s.EndEvent()
 	if s.opts.Readonly {
 		return
@@ -463,7 +463,7 @@ func (s *Session) TestLayout(bounds render.Rect) {
 	s.fail(err)
 	s.commit(ops)
 	if len(ops) > 0 {
-		s.pivot = render.Point{}
+		s.pivot = geometry.Point{}
 	}
 }
 

@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // Modifiers are the keys held during an event.
@@ -27,7 +27,7 @@ func (m Modifiers) Has(f Modifiers) bool { return m&f == f }
 
 // MouseEvent is a pointer event in scene coordinates (y up).
 type MouseEvent struct {
-	P    render.Point
+	P    geometry.Point
 	Mods Modifiers
 	// Clicks is the click count of a press: 2 is a double click. Zero counts as 1.
 	Clicks int
@@ -63,7 +63,7 @@ func (s *Session) setActive(items []*model.DiagramItem) {
 }
 
 // itemsInRect are the selectable items whose bounds meet rect, in scene order.
-func (s *Session) itemsInRect(rect render.Rect) []*model.DiagramItem {
+func (s *Session) itemsInRect(rect geometry.Rect) []*model.DiagramItem {
 	var out []*model.DiagramItem
 	for _, i := range s.geom().Items() {
 		if b, ok := s.geom().PaintBox(i); ok && s.geom().Selectable(i) && rect.Intersects(b) {
@@ -74,16 +74,16 @@ func (s *Session) itemsInRect(rect render.Rect) []*model.DiagramItem {
 }
 
 // Hit is the items under p as a click finds them (Swift find): boxes before lines, in scene order.
-func (s *Session) Hit(p render.Point) []*model.DiagramItem {
+func (s *Session) Hit(p geometry.Point) []*model.DiagramItem {
 	return s.covered(pointRect(p), s.geom().Find(p, false))
 }
 
 // pointRect is the rectangle a press covers, for the checks that take a rectangle.
-func pointRect(p render.Point) render.Rect { return render.Rect{X: p.X, Y: p.Y} }
+func pointRect(p geometry.Point) geometry.Rect { return geometry.Rect{X: p.X, Y: p.Y} }
 
 // covered drops the items the drawn picture does not show under r: the box go/render gives an item can
 // reach where go/scene draws nothing, and a press there must not grab it.
-func (s *Session) covered(r render.Rect, hits []*model.DiagramItem) []*model.DiagramItem {
+func (s *Session) covered(r geometry.Rect, hits []*model.DiagramItem) []*model.DiagramItem {
 	if s.opts.Covers == nil || len(hits) == 0 {
 		return hits
 	}
@@ -192,7 +192,7 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 		// Links move only alone, as in Swift.
 		for _, i := range drag {
 			if i.Kind == model.ItemKindItem || len(drag) == 1 {
-				s.starts = append(s.starts, itemPos{i, render.Point{X: i.X, Y: i.Y}})
+				s.starts = append(s.starts, itemPos{i, geometry.Point{X: i.X, Y: i.Y}})
 			}
 		}
 	}
@@ -203,7 +203,7 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 // MouseMove is a pointer move with the button held.
 func (s *Session) MouseMove(e MouseEvent) { s.moveTo(e.P) }
 
-func (s *Session) moveTo(p render.Point) {
+func (s *Session) moveTo(p geometry.Point) {
 	dx, dy := p.X-s.origin.X, p.Y-s.origin.Y
 	if !s.moved && math.Hypot(dx, dy) < dragSlop {
 		return
@@ -212,7 +212,7 @@ func (s *Session) moveTo(p render.Point) {
 	s.last = p
 	switch s.mode {
 	case modeBand:
-		b := render.Rect{X: math.Min(s.origin.X, p.X), Y: math.Min(s.origin.Y, p.Y), Width: math.Abs(dx), Height: math.Abs(dy)}
+		b := geometry.Rect{X: math.Min(s.origin.X, p.X), Y: math.Min(s.origin.Y, p.Y), Width: math.Abs(dx), Height: math.Abs(dy)}
 		s.band = &b
 		s.selection = s.covered(b, s.itemsInRect(b))
 	case modeLine:
@@ -235,11 +235,11 @@ func (s *Session) moveTo(p render.Point) {
 }
 
 // dragTo moves the dragged drawables to where p puts them. The model is not touched until MouseUp.
-func (s *Session) dragTo(p render.Point) {
+func (s *Session) dragTo(p geometry.Point) {
 	dx, dy := p.X-s.origin.X, p.Y-s.origin.Y
-	positions := make(map[*model.DiagramItem]render.Point, len(s.starts))
+	positions := make(map[*model.DiagramItem]geometry.Point, len(s.starts))
 	for _, st := range s.starts {
-		positions[st.item] = render.Point{X: st.pos.X + dx, Y: st.pos.Y + dy}
+		positions[st.item] = geometry.Point{X: st.pos.X + dx, Y: st.pos.Y + dy}
 	}
 	for _, it := range s.geom().Move(positions) {
 		if !slices.Contains(s.dirty, it) {
@@ -318,7 +318,7 @@ func (s *Session) Execute(op model.ElementOperation) error {
 
 // Pick is the right click: it selects what is under p unless something there is selected already
 // (Swift menu(for:)); on empty space it clears the selection and moves the pivot there.
-func (s *Session) Pick(p render.Point) {
+func (s *Session) Pick(p geometry.Point) {
 	defer s.EndEvent()
 	if s.opts.Readonly {
 		return

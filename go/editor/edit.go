@@ -3,6 +3,7 @@ package editor
 import (
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -39,7 +40,7 @@ func fieldName(item *model.DiagramItem) string {
 type EditTarget struct {
 	// Rect is the box of the editor in scene space: the item's box grown to 100 by 20, anchored at its
 	// bottom-left corner as Swift does (the y-up frame origin).
-	Rect render.Rect
+	Rect geometry.Rect
 	Text string
 	// FontSize in scene units.
 	FontSize float64
@@ -88,7 +89,7 @@ func (s *Session) EditTarget(item *model.DiagramItem, mode EditMode) (EditTarget
 		size -= 2
 	}
 	return EditTarget{
-		Rect:     render.Rect{X: b.X, Y: b.Y, Width: max(b.Width, 100), Height: max(b.Height, 20)},
+		Rect:     geometry.Rect{X: b.X, Y: b.Y, Width: max(b.Width, 100), Height: max(b.Height, 20)},
 		Text:     s.editText(item, mode),
 		FontSize: size,
 	}, true
