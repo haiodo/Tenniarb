@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A text of a `.pen` that grows of itself (`textGrowth: auto`) does not take the width of the sample it is
+  a component of any more: the instance says `width hug`, so a tagline of the footer stays inside its column
+  instead of standing 640 points wide in a 300 point brand block.
 * A `.pen` file that uses a component of a type the converter does not build - an `icon` of a library, for
   one - leaves a placeholder the size of that component instead of a point, so the layout around it stays as
   it was drawn, and the warning names the type rather than claiming the component is missing.

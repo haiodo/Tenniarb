@@ -532,6 +532,13 @@ func fontProps(m map[string]any, explicit bool) []Prop {
 
 func (c *conv) textProps(f *File, m map[string]any, x pctx) []Prop {
 	var ps []Prop
+	// A text grows one way in the file: `fixed-width` wraps inside the width it names, `auto` takes the
+	// width of its words. A component of a text is the first kind and carries the width of its sample, so an
+	// instance that grows of itself must say so - otherwise it takes the width of the sample and sticks out
+	// of the frame it was placed in.
+	if g, _ := m["textGrowth"].(string); g == "auto" {
+		ps = append(ps, prop("width", wordArg("hug")))
+	}
 	if s, ok := m["content"].(string); ok {
 		ps = append(ps, prop("title", strArg(s)))
 	} else if m["content"] != nil {

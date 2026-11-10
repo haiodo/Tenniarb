@@ -27,3 +27,30 @@ func TestUnsupportedComponentKeepsItsRoom(t *testing.T) {
 	}
 	wantFidelity(t, f, dir)
 }
+
+// A text component carries the width of its sample and says it grows in a fixed width; an instance of it
+// that grows of itself must say so, or it takes the width of the sample and sticks out of the frame it was
+// placed in - which is what moved the taglines of the footer out of their column.
+func TestTextInstanceDoesNotTakeTheSampleWidth(t *testing.T) {
+	res, dir, f := convertJSON(t, `{"version":"2.21","children":[
+	 {"type":"text","id":"body14","name":"Body 14","reusable":true,"textGrowth":"fixed-width","width":640,
+	  "content":"Продаём, устанавливаем и обслуживаем зарядные станции","fontSize":14,"fill":"#000000"},
+	 {"type":"frame","id":"brand","name":"Brand","layout":"vertical","width":300,"height":200,"children":[
+	  {"type":"ref","id":"t1","name":"Tagline","ref":"body14","textGrowth":"auto","content":"Короткий текст","fill":"#000000"}]}]}`)
+	out := res.Tenn(f)
+
+	if !strings.Contains(out, "use ") || !strings.Contains(out, "width hug") {
+		t.Errorf("the instance does not grow of itself:\n%s", out)
+	}
+	if strings.Count(out, "width 640") > 0 && strings.Contains(out, "Tagline") {
+		// The component keeps its sample width; the instance must not repeat it.
+		for _, line := range strings.Split(out, "\n") {
+			if strings.Contains(line, "Tagline") && strings.Contains(line, "640") {
+				t.Errorf("the sample width went into the instance: %s", line)
+			}
+		}
+	}
+	// The fidelity of a hand-made fixture is not Pen's: a text that grows of itself has no box of its own
+	// in the file, and nothing to compare with.
+	_ = dir
+}
