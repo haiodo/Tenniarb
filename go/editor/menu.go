@@ -131,8 +131,12 @@ func (s *Session) CanvasEntries(p geometry.Point, host MenuHost) []Entry {
 			out = append(out, Entry{Label: "Attach image", Run: host.AttachImage})
 		}
 		out = append(out, Entry{Label: "Order", Sub: []Entry{
-			{Label: "Move Forward", Run: func() { s.Order(true) }},
-			{Label: "Move Backward", Run: func() { s.Order(false) }},
+			{Label: "Raise", Run: s.Raise},
+			{Label: "Lower", Run: s.Lower},
+			{Label: "Bring to Front", Run: s.ToFront},
+			{Label: "Send to Back", Run: s.ToBack},
+			{Label: "Layer Up", Run: s.LayerUp},
+			{Label: "Layer Down", Run: s.LayerDown},
 		}})
 		if host.ExportHTML != nil {
 			out = append(out, separator, Entry{Label: "Export text as html", Run: host.ExportHTML})

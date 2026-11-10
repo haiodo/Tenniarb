@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Six commands of the drawing order, in Edit > Arrange and in the context menu of the canvas: Raise and
+  Lower move the selection one place in the order the items are drawn in, Bring to Front and Send to Back
+  take it to the ends, and Layer Up and Layer Down move it between the layers of the format (background
+  under the rest, hover above it). Each command is one undo step, and a block of neighbours keeps its own
+  order.
 * Importing a `.pen` leaves one file beside it, the `.tenn`: the `.map` and the `.vars` the converter wrote
   for its own use are gone from the import, and `pen2tenn -sidecars` writes them when someone wants to look
   at what the converter saw.

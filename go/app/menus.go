@@ -60,6 +60,14 @@ func (v *Viewer) menus() {
 	edit.Item("Select All &Links", func() { v.selectKind(model.ItemKindLink) })
 	edit.Item("Select &None", func() { v.selectKind("-") })
 	edit.Separator()
+	arrange := edit.Submenu("&Arrange")
+	arrange.Item("Raise", func() { v.cmdOrder(v.session.Raise) }, g.Shortcut("Cmd+]"))
+	arrange.Item("Lower", func() { v.cmdOrder(v.session.Lower) }, g.Shortcut("Cmd+["))
+	arrange.Item("Bring to Front", func() { v.cmdOrder(v.session.ToFront) }, g.Shortcut("Cmd+Shift+]"))
+	arrange.Item("Send to Back", func() { v.cmdOrder(v.session.ToBack) }, g.Shortcut("Cmd+Shift+["))
+	arrange.Item("Layer Up", func() { v.cmdOrder(v.session.LayerUp) }, g.Shortcut("Cmd+Alt+]"))
+	arrange.Item("Layer Down", func() { v.cmdOrder(v.session.LayerDown) }, g.Shortcut("Cmd+Alt+["))
+	edit.Separator()
 	edit.Item("Paste as I&tem", func() { v.pasteAs(false) })
 	edit.Item("Paste as Item &Set", func() { v.pasteAs(true) })
 	edit.Item("I&nherit", func() {
@@ -555,4 +563,14 @@ func (v *Viewer) itemHTML(item *model.DiagramItem) string {
 		return ""
 	}
 	return v.sv.screen.ItemHTML(pl.Src)
+}
+
+// cmdOrder runs a command of the drawing order of a classic diagram: the items take their place in the
+// list, which is the order they are drawn in.
+func (v *Viewer) cmdOrder(run func()) {
+	if v.session == nil || v.activeText != nil || v.propsFocused() {
+		return
+	}
+	run()
+	v.sessionChanged()
 }

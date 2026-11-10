@@ -100,6 +100,7 @@ func TestParityMenus(t *testing.T) {
 	for _, want := range []string{"New", "Open...", "Open Recent", "Save", "Save As...", "Reload", "Close Window", "Undo", "Redo", "Cut", "Copy", "Paste",
 		"Delete", "Duplicate", "Select All", "Select All Items", "Select All Links", "Select None", "Paste as Item", "Paste as Item Set", "Inherit",
 		"Show Edit Box", "Edit Title", "Edit Body", "Edit Value", "New Item", "New Linked Item", "Linked Styled Item",
+		"Arrange", "Raise", "Lower", "Bring to Front", "Send to Back", "Layer Up", "Layer Down",
 		"Goto Item...", "Zoom In", "Zoom Out", "Reset Zoom", "Zoom to Fit", "Tenniarb Help"} {
 		if !slices.Contains(have, want) {
 			t.Errorf("no menu item %q", want)
