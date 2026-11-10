@@ -911,7 +911,7 @@ func classicBreaks(text string) string {
 	return string(out)
 }
 
-// lineSep joins the lines of one paragraph// lineSep joins the lines of one paragraph: a space where a line break is soft, a newline in a classic
+// lineSep joins the lines of one paragraph: a space where a line break is soft, a newline in a classic
 // diagram.
 func (b *bodyText) lineSep() string {
 	if b.sep == "" {

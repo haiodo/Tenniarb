@@ -3402,12 +3402,6 @@ function bodyFinish(b: BodyText, l: BodyLine): void {
   }
 }
 
-/**
- * Greedy wrap at spaces; text wider than the width stays on its line. first is the indent of the
- * first line, cont the indent of the continuation lines.
- */
-/** The join of the lines of one paragraph: a space where a line break is soft, a newline in a classic
- *  diagram, where go/render breaks the line as written. */
 /** Whether an expression may replace text: a ${...} not escaped by a backslash. */
 function hasPlainExpr(text: string): boolean {
   for (let i = 0; i + 1 < text.length; i += 1) {
@@ -3447,6 +3441,8 @@ function classicBreaks(text: string): string {
   return out;
 }
 
+/** The join of the lines of one paragraph: a space where a line break is soft, a newline in a classic
+ *  diagram, where go/render breaks the line as written. */
 function bodySep(b: BodyText): string {
   return b.prep.classic ? "\n" : " ";
 }
@@ -3466,6 +3462,10 @@ function fitPrefix(b: BodyText, s: string, font: Font, avail: number): string {
   return cut;
 }
 
+/**
+ * Greedy wrap at spaces; text wider than the width stays on its line. first is the indent of the
+ * first line, cont the indent of the continuation lines.
+ */
 function bodyWrap(b: BodyText, runs: BodyRun[], width: number, first: number, cont: number): BodyLine[] {
   const lines: BodyLine[] = [];
   const empty = (x: number): BodyLine => ({ x, w: 0, asc: 0, desc: 0, h: 0, gap: 0, quote: false, code: false, bullet: false, runs: [] });
