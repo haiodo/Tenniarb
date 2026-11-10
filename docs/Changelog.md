@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* "Export text as html" builds the text from what the canvas drew - the words, their weight, their slant,
+  their colour, the code and the links - instead of asking the old renderer for its own copy of the text.
+  The markup differs here and there (a list is a real list now, not a row with a `*`), the words are the
+  same.
 * The shadow of the inspector is editable again: X, Y and blur were three fields in one row of a column that
   holds two, so X and Y were 13 points wide - a digit and a half - and the blur had no width at all and sat
   outside the panel. The pair keeps its row, the blur has its own with the word in front of it.

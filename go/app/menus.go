@@ -14,7 +14,6 @@ import (
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // cmdIsCtrl: the menu shortcut key is Ctrl where there is no Command key.
@@ -474,15 +473,7 @@ func (v *Viewer) copyItemHTML() {
 	if len(sel) != 1 {
 		return
 	}
-	var html string
-	if d := v.session.Scene().Drawables[sel[0]]; d != nil {
-		d.Traverse(func(c render.Drawable) bool {
-			if tb, ok := c.(*render.TextBox); ok && html == "" {
-				html = tb.HTML()
-			}
-			return true
-		})
-	}
+	html := v.itemHTML(sel[0])
 	if html != "" {
 		_ = v.app.Clipboard().SetHTML(html, html)
 	}
@@ -551,4 +542,17 @@ func (v *Viewer) attachImage() {
 		return
 	}
 	v.session.AttachImage(filepath.Base(paths[0]), data)
+}
+
+// itemHTML is the text of an item as HTML for the clipboard: the title and the body as the canvas lays
+// them out. The old renderer built it from its own text boxes; the scene draws the text and knows it.
+func (v *Viewer) itemHTML(item *model.DiagramItem) string {
+	if v.sv == nil || v.sv.screen == nil || item == nil {
+		return ""
+	}
+	pl := v.classicPlaced(item)
+	if pl == nil || pl.Src == nil {
+		return ""
+	}
+	return v.sv.screen.ItemHTML(pl.Src)
 }
