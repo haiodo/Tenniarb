@@ -410,9 +410,9 @@ func TestParityContext(t *testing.T) {
 	// Order, Define new style, Attach image and Delete on one item
 	canvas.ClickAt(5, 5)
 	rightClick("D")
-	entry("Move Forward")
+	entry("Raise")
 	if s = par(t, app); !s.Dirty {
-		t.Fatal("Order > Move Forward changed nothing")
+		t.Fatal("Order > Raise changed nothing")
 	}
 	app.Key("Mod+Z")
 	rightClick("D")
