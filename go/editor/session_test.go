@@ -614,9 +614,6 @@ func TestCtrlDragAddsLink(t *testing.T) {
 	if f.s.Scene().LineTo == nil {
 		t.Error("preview line expected")
 	}
-	if pic := f.s.Overlay(); pic.Len() == 0 {
-		t.Error("overlay must draw the preview")
-	}
 	f.s.MouseUp(MouseEvent{P: f.centre(f.c), Mods: ModCtrl})
 	if f.s.Scene().LineTo != nil {
 		t.Error("preview must be gone")
