@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* `go/scene` reads the several `path` commands of an item and the `line-cap`/`line-join` of a stroke, as
+  the web renderer does: a glyph of a shape library that draws a contour and a filled dot is two paths, and
+  a library of outline icons asks for `round` ends and corners. The ink of a command is the whole ink of
+  its shape - a shape that names a fill is filled and not stroked - and only a shape that names no ink
+  takes the one of the item.
 * The Code section hides the data of a classic `image "name" @(base64)` of an old diagram: a picture of
   megabytes shows as `@(image data 2.4 MB, hidden <digest>)`, a stub that parses and prints as tenn, and
   the bytes go back untouched when the pane, undo or autosave writes the document. The same stub is in

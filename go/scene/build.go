@@ -362,8 +362,10 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	}
 	mask := pictureMask(st, w, h)
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
-	if ic := b.p.icons[rn]; ic != nil {
-		ic.draw(r, w, h, st.lineW)
+	if icons := b.p.icons[rn]; len(icons) > 0 {
+		for _, ic := range icons {
+			ic.draw(r, w, h, ic.width, st.cap, st.join)
+		}
 		if ti := b.p.texts[rn]; ti != nil {
 			ti.draw(r, w, h, true, st.text, nil, mask)
 		}
@@ -413,7 +415,7 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			edge = &gfx.Path{}
 			edge.RoundRect4(in, in, w-st.lineW, h-st.lineW, inner)
 		}
-		line := gfx.StrokeStyle{Width: st.lineW, MiterLimit: 10, Dash: st.dash, DashPhase: st.dashPhase}
+		line := gfx.StrokeStyle{Width: st.lineW, Cap: st.cap, Join: st.join, MiterLimit: 10, Dash: st.dash, DashPhase: st.dashPhase}
 		if len(shadows) > 0 { // no fill: the border casts the shadow
 			for _, sh := range shadows {
 				r.StrokeShadowPath(edge, line, st.border, sh)
@@ -744,6 +746,8 @@ type style struct {
 	grad               *gradient    // set by color linear ...; fill is then its first visible stop
 	shadows            []gfx.Shadow // in file order, the last one on top
 	lineW              float64
+	cap                gfx.Cap   // line-cap: the ends of the stroke
+	join               gfx.Join  // line-join: the corners of the stroke
 	dash               []float64 // line-style dashed or dotted; nil is a solid line
 	dashPhase          float64
 	radius             [4]float64 // top left, top right, bottom right, bottom left
@@ -803,6 +807,24 @@ func (p *prep) style(rn *RNode, inCtx bool, up gfx.Color) style {
 		text = contrast(st.fill)
 	}
 	st.text = p.color(rn, "text-color", text)
+	if pr := p.prop(rn, "line-cap"); pr != nil {
+		if w, _ := pr.text(0); w == "round" {
+			st.cap = gfx.CapRound
+		} else if w == "square" {
+			st.cap = gfx.CapSquare
+		} else if w != "butt" {
+			p.t.warn(pr.Pos, "line-cap takes butt, round or square, got %q", w)
+		}
+	}
+	if pr := p.prop(rn, "line-join"); pr != nil {
+		if w, _ := pr.text(0); w == "round" {
+			st.join = gfx.JoinRound
+		} else if w == "bevel" {
+			st.join = gfx.JoinBevel
+		} else if w != "miter" {
+			p.t.warn(pr.Pos, "line-join takes miter, round or bevel, got %q", w)
+		}
+	}
 	if v, ok := p.num(rn, "line-width"); ok {
 		st.lineW = v
 	}
@@ -846,6 +868,12 @@ func (p *prep) linkStyle(lk *RNode) (gfx.Color, gfx.StrokeStyle) {
 	st := gfx.StrokeStyle{Width: 1, MiterLimit: 10}
 	if v, ok := p.num(lk, "line-width"); ok {
 		st.Width = v
+	}
+	if v, ok := p.word(lk, "line-cap", "butt", "round", "square"); ok {
+		st.Cap = map[string]gfx.Cap{"round": gfx.CapRound, "square": gfx.CapSquare}[v]
+	}
+	if v, ok := p.word(lk, "line-join", "miter", "round", "bevel"); ok {
+		st.Join = map[string]gfx.Join{"round": gfx.JoinRound, "bevel": gfx.JoinBevel}[v]
 	}
 	st.Dash, st.DashPhase = p.dash(lk)
 	return p.color(lk, "color", black), st

@@ -114,7 +114,7 @@ type prep struct {
 	ends   map[*RNode][2]*RNode // link -> its two items
 	// classic: the element being laid out is a classic diagram (sceneRoot is false).
 	classic bool
-	icons   map[*RNode]*icon
+	icons   map[*RNode][]*icon
 	images  map[*RNode]*itemImage            // an item or a root that draws a picture
 	inlines map[*RNode]map[string]*itemImage // the classic images its text names with @(name)
 	anim    map[*RNode]*Animation            // the animation a node plays (spec 13)
@@ -183,7 +183,7 @@ func newPrep(t *Tree, o Options) *prep {
 		o.FirstID = 1
 	}
 	return &prep{t: t, opts: o, frames: map[*RNode]*layout.Node{}, texts: map[*RNode]*textInfo{},
-		bodies: map[*RNode]*bodyText{}, bodyAt: map[*RNode]*layout.Node{}, styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode]*icon{},
+		bodies: map[*RNode]*bodyText{}, bodyAt: map[*RNode]*layout.Node{}, styles: map[*RNode]style{}, ends: map[*RNode][2]*RNode{}, icons: map[*RNode][]*icon{},
 		images: map[*RNode]*itemImage{}, inlines: map[*RNode]map[string]*itemImage{},
 		anim: map[*RNode]*Animation{}, eval: evaluator(o), evals: map[evalKey]*Prop{}}
 }
@@ -629,9 +629,9 @@ func (p *prep) sizeWord(pr *Prop, word string, inCtx, parentAuto bool) layout.Si
 func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	p.icon(rn, n)
 	// An icon draws no name as text, as in a layout context.
-	ti := p.textOf(rn, inCtx || p.icons[rn] != nil)
+	ti := p.textOf(rn, inCtx || len(p.icons[rn]) > 0)
 	body := p.bodies[rn]
-	if p.icons[rn] != nil {
+	if len(p.icons[rn]) > 0 {
 		body = nil // an icon has no text body: the path is the content
 	}
 	padX, padY := textPadX, textPadY

@@ -1,0 +1,34 @@
+// Several `path` commands on one item, each with the ink of its own command, and the ends and corners of
+// a stroke: a glyph with a filled dot and an outlined contour is two paths, as `tag` of lucide is.
+element "Paths" {
+	item "Tag" {
+		pos 0 0
+		width 24
+		height 24
+		view-box 0 0 24 24
+		border-color #112233
+		line-width 2
+		path "M2 2 L22 2 L22 12 L2 12 Z"
+		path "M11 20 a2 2 0 1 0 0.01 0" color #ff0000
+	}
+	item "Round" {
+		pos 40 0
+		width 24
+		height 24
+		view-box 0 0 24 24
+		border-color #000000
+		line-width 3
+		line-cap round
+		line-join round
+		path "M2 12 L12 2 L22 12"
+	}
+	item "Plain" {
+		pos 80 0
+		width 24
+		height 24
+		view-box 0 0 24 24
+		border-color #000000
+		line-width 2
+		path "M2 2 L22 22"
+	}
+}

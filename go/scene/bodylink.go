@@ -67,7 +67,7 @@ func (s *Screen) collectBodies() {
 			return
 		}
 		x, y := ox+ln.RX, oy+ln.RY
-		if body := s.p.bodies[rn]; body != nil && s.p.icons[rn] == nil {
+		if body := s.p.bodies[rn]; body != nil && len(s.p.icons[rn]) == 0 {
 			bx, by, w := body.padX, body.padY, ln.RW-2*body.padX
 			if bn := s.p.bodyAt[rn]; bn != nil {
 				bx, by, w = bn.RX, bn.RY, bn.RW
