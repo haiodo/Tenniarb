@@ -5,7 +5,6 @@ import (
 
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -23,7 +22,7 @@ func BodyText(item *model.DiagramItem) string {
 			node = t.GetChild(1)
 		}
 	}
-	text, _ := render.GetString(node)
+	text, _ := nodeText(node)
 	return text
 }
 
@@ -51,14 +50,14 @@ func (s *Session) editText(item *model.DiagramItem, mode EditMode) string {
 	case EditName:
 		return item.Name
 	case EditBody:
-		return render.PrepareBodyText(BodyText(item))
+		return prepareBodyText(BodyText(item))
 	}
 	var node *tenn.Node
 	if v := item.Properties.Get(fieldName(item)); v != nil {
 		node = v.GetChild(1)
 	}
-	text, _ := render.GetString(node)
-	return render.PrepareBodyText(text)
+	text, _ := nodeText(node)
+	return prepareBodyText(text)
 }
 
 // EditTarget gives the editor of item its box, text and font. False: readonly, or item is not in

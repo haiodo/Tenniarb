@@ -9,9 +9,9 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/palette"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -155,7 +155,7 @@ func (s *Session) argsOf(t propTarget, args []*tenn.Node) []Arg {
 	ev := s.exec.GetEvaluated(t.evalTarget(), block, size)
 	for i, a := range args {
 		if v, ok := ev[a.Token]; ok && out[i].Expr {
-			out[i].Value = render.ValueString(v)
+			out[i].Value = jsval.String(v)
 		}
 	}
 	return out

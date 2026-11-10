@@ -16,6 +16,7 @@ import (
 	"slices"
 
 	"github.com/haiodo/tenniarb/go/geometry"
+	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -451,7 +452,7 @@ func (s *Session) PropsValues(t Target, text string) map[int]string {
 		}
 	}
 	for tok, v := range s.exec.GetEvaluated(evalTarget, node, size) {
-		values[tok.Line] = render.ValueString(v)
+		values[tok.Line] = jsval.String(v)
 	}
 	return values
 }

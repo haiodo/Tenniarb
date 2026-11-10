@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The inline editor reads the text of a property and prepares a body itself, with a copy of the preparation
+  go/render does; a test holds the two to the same answers on the shapes a body takes. What the edit session
+  still takes from the old renderer is its own fallback geometry, the expression engine it builds when the
+  window gives none, and two options.
 * `go vet` is clean again: taking `Point` and `Rect` out of go/render made every positional literal of them
   read as a foreign struct built by position, and a stale build cache hid the two hundred and five
   complaints. They name their fields now.
