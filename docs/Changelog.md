@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* The inspector keeps its width when the selection changes: `Fit` sized its content to the natural width of
+  the widest row, the pane took that as the width it wanted (about 390 points instead of 272) and the window
+  cut the right of every field - the third segment of `Fixed | Hug | Fill` and the `Y`/`H` of a pair were
+  gone. The content is held to the room the panel has now, so a control that cannot wrap is cut, not the
+  panel.
 * The switch of the Items pane between the items and the component browser is two icons the size of a
   control, not two words: the header asks for about sixty points, so the pane fits a narrow sidebar.
 * Element > Insert Component... offers the components a library writes as *elements*: `libraries/c4.tenn`

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	g "github.com/haiodo/gowt"
+	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -421,7 +422,10 @@ func (in *inspector) sizeModes(caption, id, name string, idx int, when func(selK
 		c.Select(i)
 		in.loading = false
 	}
-	ctl := g.Segmented(segmentTexts([]string{"Fixed", "Hug", "Fill"}), g.Small(), g.GrowX(), g.ID(id), g.Ref(&c),
+	// Three segments do not wrap: an unqualified control would widen the whole panel and cut the fields
+	// beside it, so it is held to the room a value has (AGENTS.md, the inspector).
+	ctl := g.Segmented(segmentTexts([]string{"Fixed", "Hug", "Fill"}), g.Small(),
+		g.Size(valueWidth(), 0), g.ID(id), g.Ref(&c),
 		g.Init(func(c *g.SegmentedView) {
 			c.OnSelect(func(i int) {
 				if in.loading || in.v.session == nil {
@@ -974,6 +978,14 @@ func (in *inspector) relayout() {
 	}
 	in.scroll.Content().Unwrap().LayoutOverload1(true)
 	in.scroll.Fit()
+	// Fit asks the content how wide it wants to be, and the pane takes that as its own width: a row of the
+	// item inspector (a pair of fields, the Fixed/Hug segments) asks for about 390 points, so the pane grew
+	// past its fixed width and the window cut the right of every field. The content is held to the room the
+	// panel gives it instead - a control that cannot wrap is cut, as AGENTS.md asks of the inspector.
+	if c := in.scroll.Unwrap(); c != nil && !c.IsDisposed() {
+		c.SetMinSizeWidthHeight(int32(inspectorWidth()-2*g.Scaled(8)), 0)
+	}
+	look.SetInspectorWidth(in.v.win, inspectorWidth())
 }
 
 // schedule refreshes the inspector once, after the events that are queued: a drag asks for it at
@@ -1091,7 +1103,11 @@ func (in *inspector) bodyRow() func() g.Option {
 		}}
 		in.cur.fields = append(in.cur.fields, f)
 		return g.VBox(g.Ref(&f.row), g.GrowX(), g.Padding(0), g.Gap(0),
-			g.Text(g.ID("insp-body"), g.Multiline(), g.Border(), g.Scrollbars(), g.GrowX(), g.Size(g.Scaled(48), g.Scaled(96)),
+			// The requested width is the room a value has: a multiline field asks for about forty
+			// characters, and without a width of its own it widened the whole panel and cut every row at
+			// the window edge.
+			g.Text(g.ID("insp-body"), g.Multiline(), g.Border(), g.Scrollbars(),
+				g.Size(valueWidth(), g.Scaled(96)),
 				g.Ref(&b.ctl), g.Init(func(t *g.TextView) {
 					t.OnChange(func(text string) {
 						if in.loading || v.session == nil || text == b.shown {
