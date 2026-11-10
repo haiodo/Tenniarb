@@ -868,8 +868,7 @@ func (b *bodyText) lines(width float64) []bodyLine {
 	return out
 }
 
-// hasPlainExpr reports whether text holds a ${...} that an expression may replace: one not escaped by a
-// backslash, which is how a help page writes the syntax of an expression.
+// hasPlainExpr reports whether text holds a ${...} no backslash escapes - a help page writes its syntax so.
 func hasPlainExpr(text string) bool {
 	for i := 0; i < len(text); i++ {
 		if text[i] != '$' || i+1 >= len(text) || text[i+1] != '{' {
@@ -883,11 +882,8 @@ func hasPlainExpr(text string) bool {
 	return false
 }
 
-// classicBreaks keeps the newlines go/render breaks a line at: the ones a token of the markdown lexer still
-// carries - a newline token, or a newline inside a text or !(colour) span - and the ones that end a block
-// token (a heading, a bullet). A newline the lexer takes into an emphasis run - a body that opens `_` and
-// never closes it, then writes on the next line - is gone from its tokens, and go/render draws the whole
-// body as one line. A scene breaks at every newline it is given, so the swallowed ones become spaces here.
+// classicBreaks keeps the newlines go/render breaks at - a token's own newline or the end of a block token -
+// and turns the ones the lexer swallowed into an emphasis run into spaces.
 func classicBreaks(text string) string {
 	breaks := make(map[int]bool, 8)
 	for _, t := range markdown.GetTokens(text) {
@@ -1108,9 +1104,8 @@ func (b *bodyText) natural() float64 {
 	return w
 }
 
-// classicListIndent is the room go/render keeps beside a line of a list: the paragraph of a bullet carries
-// a head indent of five points (five per grapheme of the marker), and the measured box of the text grows by
-// it, so the frame of an item with a list is five points wider than the words in it.
+// classicListIndent is the head indent go/render puts on the paragraph of a bullet: five points, so the box
+// of an item with a list is wider than its words by that much.
 func (b *bodyText) classicListIndent() float64 {
 	if b.p == nil || !b.p.classic {
 		return 0

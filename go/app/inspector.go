@@ -978,10 +978,8 @@ func (in *inspector) relayout() {
 	}
 	in.scroll.Content().Unwrap().LayoutOverload1(true)
 	in.scroll.Fit()
-	// Fit asks the content how wide it wants to be, and the pane takes that as its own width: a row of the
-	// item inspector (a pair of fields, the Fixed/Hug segments) asks for about 390 points, so the pane grew
-	// past its fixed width and the window cut the right of every field. The content is held to the room the
-	// panel gives it instead - a control that cannot wrap is cut, as AGENTS.md asks of the inspector.
+	// Fit asks the content how wide it wants to be, and the pane takes that as its own width - about 390
+	// points for the item inspector - so the content is held to the panel instead.
 	if c := in.scroll.Unwrap(); c != nil && !c.IsDisposed() {
 		c.SetMinSizeWidthHeight(int32(inspectorWidth()-2*g.Scaled(8)), 0)
 	}
@@ -1103,9 +1101,8 @@ func (in *inspector) bodyRow() func() g.Option {
 		}}
 		in.cur.fields = append(in.cur.fields, f)
 		return g.VBox(g.Ref(&f.row), g.GrowX(), g.Padding(0), g.Gap(0),
-			// The requested width is the room a value has: a multiline field asks for about forty
-			// characters, and without a width of its own it widened the whole panel and cut every row at
-			// the window edge.
+			// The requested width is the room a value has: a multiline field asks for forty characters
+			// otherwise, and that widened the panel.
 			g.Text(g.ID("insp-body"), g.Multiline(), g.Border(), g.Scrollbars(),
 				g.Size(valueWidth(), g.Scaled(96)),
 				g.Ref(&b.ctl), g.Init(func(t *g.TextView) {

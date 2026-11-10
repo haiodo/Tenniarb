@@ -244,8 +244,7 @@ func rowsSig(rows []ItemRow) string {
 	return b.String()
 }
 
-// itemsModeButton is one mode of the pane: an icon the width of a control, so the header fits the narrowest
-// sidebar the window allows.
+// itemsModeButton is one mode of the pane, an icon the width of a control, so the header stays narrow.
 func (v *Viewer) itemsModeButton(icon, tip, id string, ref **g.ButtonView, components bool) g.Option {
 	return g.Button("", g.Small(), g.Toggle(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
 		g.ID(id), g.Ref(ref), g.Tooltip(tip),

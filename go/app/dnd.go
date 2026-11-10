@@ -60,8 +60,7 @@ func (v *Viewer) dropElement() {
 	}
 }
 
-// componentDragPrefix marks the text a component row carries: the canvas tells it from a text drop of a
-// row of the outline, which pastes an element.
+// componentDragPrefix marks the text a component row carries, told from the text drop of an outline row.
 const componentDragPrefix = "\x00tenniarb-component:"
 
 // dragComponents lets a row of the component browser of the Items pane be dragged onto the canvas: the
@@ -105,8 +104,7 @@ func (v *Viewer) dragComponents() {
 	})
 }
 
-// takeComponentDrop is the canvas accepting a text drop: a component of the browser puts the use where the
-// pointer is, anything else is left to the other handlers.
+// takeComponentDrop puts the use of a dropped component where the pointer is; false for other text.
 func (v *Viewer) takeComponentDrop(text string, x, y int) bool {
 	if !strings.HasPrefix(text, componentDragPrefix) {
 		return false

@@ -675,8 +675,7 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	}
 }
 
-// quotedTitle is the title as the file should write it: every argument in one quoted text, so a message
-// about a title with spaces shows the line to write instead of an example that looks like the value.
+// quotedTitle is the title as the file should write it: every argument in one quoted text.
 func quotedTitle(pr *Prop) string {
 	words := make([]string, 0, len(pr.Args))
 	for i := range pr.Args {
@@ -687,9 +686,8 @@ func quotedTitle(pr *Prop) string {
 	return `title "` + strings.Join(words, " ") + `"`
 }
 
-// evalText is the text of a title with the ${...} written in it replaced by its value. A classic diagram
-// asks the element model for the whole title, the way go/render and Swift evaluated it; a scene asks the
-// expression engine about each piece and keeps the text as written where an expression has no value.
+// evalText is the text of a title with each ${...} replaced by its value: the element model hands the
+// whole title of a classic item, a scene asks the engine about each piece.
 func (p *prep) evalText(rn *RNode, pr *Prop, text string) string {
 	if !strings.Contains(text, "${") {
 		return text
@@ -863,9 +861,8 @@ func (p *prep) titleMarkupParts(rn *RNode, ti *textInfo) []titlePart {
 	return parts
 }
 
-// titleEmphasisParts is the runs of a title with the emphasis of the markdown markup: **bold**, *italic*
-// and `code`, which go/render reads in the text of a title as it reads them in a body. nil when the title
-// writes none of them, so a plain title keeps the characters it has.
+// titleEmphasisParts is the runs of a title with the emphasis go/render reads in it: **bold**, *italic*,
+// `code`. nil when the title writes none, so a plain title keeps its characters.
 func (p *prep) titleEmphasisParts(ti *textInfo) []titlePart {
 	text := ti.text
 	if !strings.ContainsAny(text, "*_`") {

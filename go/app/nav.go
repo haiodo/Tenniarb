@@ -331,8 +331,7 @@ func SlotCommand(slot, cmd string) string {
 }
 
 // UsePath is the path a use of n writes from the file that mounts n's file as the element alias. False when n
-// cannot be used: it is not an element, an item or a use, or it lies inside an instance or a slot. An element
-// is a component of a library too - libraries/c4.tenn writes every one of its components as one.
+// cannot be used: not an element, an item or a use, or inside an instance or a slot.
 func UsePath(alias string, n *scene.Node) (string, bool) {
 	if n == nil || n.Kind != scene.KElement && n.Kind != scene.KItem && n.Kind != scene.KUse {
 		return "", false
