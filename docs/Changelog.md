@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* The switch of the Items pane between the items and the component browser is two icons the size of a
+  control, not two words: the header asks for about sixty points, so the pane fits a narrow sidebar.
 * Element > Insert Component... offers the components a library writes as *elements*: `libraries/c4.tenn`
   marks eleven of them that way, and the picker listed only the two items inside them, because a use path of
   an element was refused. A component the library marks is offered as itself, an element that marks nothing

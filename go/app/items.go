@@ -57,15 +57,9 @@ func (v *Viewer) itemsPane() g.Option {
 	return g.VBox(g.Ref(&l.box), g.Grow(), g.Padding(0), g.Gap(0),
 		g.HBox(g.GrowX(), g.Padding(4), g.Gap(g.Scaled(4)),
 			g.HBox(g.GrowX(), g.Gap(g.Scaled(2)),
-				g.Button("Items", g.Small(), g.ID("items-mode-items"), g.Tooltip("The items of this element"),
-					g.Init(func(b *g.ButtonView) {
-						b.OnClick(func() { v.setItemsMode(false) })
-					})),
-				g.Button("Components", g.Small(), g.ID("items-mode-components"),
-					g.Tooltip("What the libraries offer: drag one onto the canvas, or double click it"),
-					g.Init(func(b *g.ButtonView) {
-						b.OnClick(func() { v.setItemsMode(true) })
-					}))),
+				v.itemsModeButton("menu", "The items of this element", "items-mode-items", &l.itemsBtn, false),
+				v.itemsModeButton("copy", "What the libraries offer: drag one onto the canvas, or double click it",
+					"items-mode-components", &l.compsBtn, true)),
 			g.Button("+", g.Small(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
 				g.ID("items-add"), g.Tooltip("Add an item"),
 				g.Init(func(b *g.ButtonView) {
@@ -248,6 +242,17 @@ func rowsSig(rows []ItemRow) string {
 		b.WriteByte('\x03')
 	}
 	return b.String()
+}
+
+// itemsModeButton is one mode of the pane: an icon the width of a control, so the header fits the narrowest
+// sidebar the window allows.
+func (v *Viewer) itemsModeButton(icon, tip, id string, ref **g.ButtonView, components bool) g.Option {
+	return g.Button("", g.Small(), g.Toggle(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
+		g.ID(id), g.Ref(ref), g.Tooltip(tip),
+		g.Init(func(b *g.ButtonView) {
+			b.SetImage(icons.Get(v.app, icon, icons.Size(12)))
+			b.OnClick(func() { v.setItemsMode(components) })
+		}))
 }
 
 // setItemsMode switches the pane between the rows of the canvas and the browser of what the libraries
