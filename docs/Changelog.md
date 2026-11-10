@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The edit session of a classic diagram works on the boxes the canvas draws: `canvasGeom` answers
+  `editor.Geom` from go/scene - the frame of an item, the line of a link as the distance to the segment
+  between its ends, the drag preview, the step of the grid. The canvas is the one engine that draws the
+  diagram and says where it is.
 * The edit session asks the canvas where its items are - one interface, `editor.Geom` - instead of reading
   the drawables of the old renderer. The canvas answers from what it draws; a session without one still
   asks the boxes go/render built for it, so nothing changes for a caller that has no canvas yet.

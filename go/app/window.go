@@ -614,6 +614,8 @@ func (v *Viewer) startSession() {
 		// A classic diagram is drawn by go/scene but hit by the boxes of go/render: the picture has the
 		// last word on what a press finds.
 		Covers: v.drawnCovers,
+		// The session asks the canvas where the items are: one engine draws and answers for the diagram.
+		Geom: canvasGeom{v: v},
 	})
 	if err != nil {
 		v.setBanner(err.Error())
