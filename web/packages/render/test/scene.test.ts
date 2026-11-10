@@ -550,3 +550,55 @@ test("line-cap and line-join reach the canvas", () => {
   );
   assert.equal(drawn.get("lineCap") ?? "butt", "butt");
 });
+
+// Several `path` commands on one item, as `shadow` repeats: each turns with its own ink, the first lies
+// under the rest, and a command that names no ink takes the one of the item.
+test("several paths of one item draw in file order with their own ink", () => {
+  const fills: string[] = [];
+  const strokes: string[] = [];
+  const element = parseDiagram(`element Root {
+    item Tag {
+        pos 0 0
+        width 40
+        height 40
+        view-box 0 0 24 24
+        border-color #112233
+        line-width 2
+        path "M2 2 L22 2 L22 12 L2 12 Z"
+        path "M11 20 a2 2 0 1 0 0.01 0" color #ff0000
+    }
+}`);
+  const { canvas2d } = newCanvas(60, 60);
+  const recording = new Proxy(canvas2d, {
+    get(t, key) {
+      const v = Reflect.get(t, key, t);
+      if (key === "fill" && typeof v === "function") {
+        return () => {
+          fills.push(String(t.fillStyle));
+          v.call(t);
+        };
+      }
+      if (key === "stroke" && typeof v === "function") {
+        return () => {
+          strokes.push(String(t.strokeStyle));
+          v.call(t);
+        };
+      }
+      return typeof v === "function" ? v.bind(t) : v;
+    },
+    set(t, key, value) {
+      return Reflect.set(t, key, value, t);
+    },
+  });
+  renderElement(recording as typeof canvas2d, element, { background: "#ffffff" });
+  // The second path names a fill of its own: the dot is painted red, which the item alone never says.
+  assert.ok(
+    fills.some((s) => s.includes("255,0,0")),
+    `no red fill, fills ${JSON.stringify(fills)}`,
+  );
+  // The first path names no ink and takes the border of the item: it is stroked with it.
+  assert.ok(
+    strokes.some((s) => s.includes("17,34,51")),
+    `no stroke of the item, strokes ${JSON.stringify(strokes)}`,
+  );
+});

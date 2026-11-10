@@ -326,7 +326,8 @@ func (b *builder) emit(rn *RNode, parent *gfx.Node, isRoot bool) *gfx.Node {
 		b.tx.Add(node, body)
 		b.tx.Move(body, bn.RX, bn.RY)
 		r := gfx.NewRecorderWith(b.p.opts.Measurer)
-		b.p.bodies[rn].draw(r, 0, 0, bn.RW)
+		// The body of a flow item is a block of the flow, not the box of the circle: no mask of the box.
+		b.p.bodies[rn].draw(r, 0, 0, bn.RW, nil)
 		b.tx.SetPicture(body, r.Finish())
 	}
 	return node
@@ -359,11 +360,12 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 	if w <= 0 || h <= 0 || st.display == "none" {
 		return nil
 	}
+	mask := pictureMask(st, w, h)
 	r := gfx.NewRecorderWith(b.p.opts.Measurer)
 	if ic := b.p.icons[rn]; ic != nil {
 		ic.draw(r, w, h, st.lineW)
 		if ti := b.p.texts[rn]; ti != nil {
-			ti.draw(r, w, h, true, st.text, nil)
+			ti.draw(r, w, h, true, st.text, nil, mask)
 		}
 		return r.Finish()
 	}
@@ -428,14 +430,14 @@ func (b *builder) picture(rn *RNode, ln *layout.Node, st style) *gfx.Picture {
 			// display text has no box, so the shadow of the item falls on the glyphs.
 			sh = &st.shadows[0]
 		}
-		ti.draw(r, w, h, leaf, st.text, sh)
+		ti.draw(r, w, h, leaf, st.text, sh, mask)
 	}
 	if body := b.p.bodies[rn]; body != nil && b.p.bodyAt[rn] == nil {
 		y := body.padY
 		if ti := b.p.texts[rn]; ti != nil {
 			y = ti.padY + ti.height(w-2*ti.padX)
 		}
-		body.draw(r, body.padX, y, w-2*body.padX)
+		body.draw(r, body.padX, y, w-2*body.padX, mask)
 	}
 	return r.Finish()
 }
@@ -455,6 +457,29 @@ func boxPath(st style, w, h float64) *gfx.Path {
 	return p
 }
 
+// pictureMask is the shape that cuts the pictures a box draws with its title and its body: the ellipse
+// of display circle, nil for a plain box. A circle is a shape, not a box: a picture put in it is
+// inscribed, as its fill and its border are drawn in the ellipse. The text is not cut, since a classic
+// circle carries a label wider than itself.
+func pictureMask(st style, w, h float64) *gfx.Path {
+	if st.display != "circle" || w <= 0 || h <= 0 {
+		return nil
+	}
+	return gfx.EllipsePath(gfx.R(0, 0, w, h))
+}
+
+// drawCut draws with mask as the clip, when there is one.
+func drawCut(r *gfx.Recorder, mask *gfx.Path, draw func()) {
+	if mask == nil {
+		draw()
+		return
+	}
+	r.Save()
+	r.ClipPath(mask)
+	draw()
+	r.Restore()
+}
+
 // stackShadow is the shadow of one sheet of display stack, as the classic renderer gives it.
 func stackShadow() gfx.Shadow {
 	return gfx.Shadow{DX: 1, DY: -1, Blur: defaultShadowBlur, Color: defaultShadowColor}
@@ -462,9 +487,9 @@ func stackShadow() gfx.Shadow {
 
 // draw writes the title: in a leaf centered unless layout says left or right, at the top left of an item that has children.
 // With sh set the glyphs cast it (display text), else they are plain text.
-func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow) {
+func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow, mask *gfx.Path) {
 	if ti.parts != nil {
-		ti.drawParts(r, w, h, leaf, c, sh)
+		ti.drawParts(r, w, h, leaf, c, sh, mask)
 		return
 	}
 	lines := ti.wrap(w - 2*ti.padX)
@@ -497,7 +522,7 @@ func (ti *textInfo) draw(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, 
 
 // drawParts writes a title that holds inline pictures: each line is centered, left or right as a whole,
 // the text on its baseline and the picture centered in the line.
-func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow) {
+func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Color, sh *gfx.Shadow, mask *gfx.Path) {
 	lines := ti.layout(w - 2*ti.padX)
 	total := 0.0
 	for _, ln := range lines {
@@ -524,7 +549,8 @@ func (ti *textInfo) drawParts(r *gfx.Recorder, w, h float64, leaf bool, c gfx.Co
 				// The picture hangs from the cap height of the line, as go/render draws it, not centred
 				// in the line box.
 				if img := part.img.raster(ti.p); img != nil {
-					r.DrawImage(img, x, base-ti.partFont(part).Size*capHeightRatio/2-part.img.h/2, part.img.w, part.img.h)
+					iy := base - ti.partFont(part).Size*capHeightRatio/2 - part.img.h/2
+					drawCut(r, mask, func() { r.DrawImage(img, x, iy, part.img.w, part.img.h) })
 				}
 				x += part.img.w
 				continue

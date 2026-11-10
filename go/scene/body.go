@@ -1147,8 +1147,8 @@ func (p *prep) warnBodyFit(rn *RNode) {
 	}
 }
 
-// draw draws the body with its top left corner at x, y.
-func (b *bodyText) draw(r *gfx.Recorder, x, y, width float64) {
+// draw draws the body with its top left corner at x, y, its pictures cut by mask when there is one.
+func (b *bodyText) draw(r *gfx.Recorder, x, y, width float64, mask *gfx.Path) {
 	yy := y
 	for _, l := range b.lines(width) {
 		yy += l.gap
@@ -1163,7 +1163,8 @@ func (b *bodyText) draw(r *gfx.Recorder, x, y, width float64) {
 		for _, run := range l.runs {
 			if run.img != nil {
 				if img := run.img.raster(b.p); img != nil {
-					r.DrawImage(img, xx, yy+(l.h-run.img.h)/2, run.img.w, run.img.h)
+					iy := yy + (l.h-run.img.h)/2
+					drawCut(r, mask, func() { r.DrawImage(img, xx, iy, run.img.w, run.img.h) })
 				}
 				xx += run.img.w
 				continue

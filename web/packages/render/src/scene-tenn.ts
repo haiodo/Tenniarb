@@ -3994,8 +3994,17 @@ function bodyOf(prep: Prep, rn: RNode, styleColor: Color, inCtx: boolean): BodyT
   return b;
 }
 
-/** Draws the body with its top left corner at x, y. */
-function drawBody(ctx: Canvas2D, b: BodyText, x: number, y: number, width: number): void {
+/** Draws the body with its top left corner at x, y, its pictures cut by the ellipse of a circle box. */
+function drawBody(
+  ctx: Canvas2D,
+  b: BodyText,
+  x: number,
+  y: number,
+  width: number,
+  display: string,
+  boxW: number,
+  boxH: number,
+): void {
   ctx.save();
   ctx.textBaseline = "alphabetic";
   let yy = y;
@@ -4013,11 +4022,13 @@ function drawBody(ctx: Canvas2D, b: BodyText, x: number, y: number, width: numbe
     const base = yy + (l.h - (l.asc + l.desc)) / 2 + l.asc;
     for (const run of l.runs) {
       if (run.img !== undefined) {
-        const raster = inlineRaster(b.prep, run.img.im);
+        const im = run.img;
+        const raster = inlineRaster(b.prep, im.im);
         if (raster !== null) {
-          ctx.drawImage(raster, xx, yy + (l.h - run.img.h) / 2, run.img.w, run.img.h);
+          const py = yy + (l.h - im.h) / 2;
+          drawCut(ctx, display, boxW, boxH, () => ctx.drawImage(raster, xx, py, im.w, im.h));
         }
-        xx += run.img.w;
+        xx += im.w;
         continue;
       }
       const w = bodyWidth(run.text, run.font);
@@ -4231,6 +4242,8 @@ function shadowOf(prep: Prep, rn: RNode, p: SceneProp): SceneShadow | null {
 
 interface Icon {
   segments: PathCommand[];
+  /** `line-width` of the command, else of the item: the stroke of this glyph alone. */
+  width: number;
   vx: number;
   vy: number;
   vw: number;
@@ -4251,7 +4264,7 @@ interface Prep {
   frames: Map<RNode, LayoutNode>;
   texts: Map<RNode, TextInfo>;
   looks: Map<RNode, Look>;
-  icons: Map<RNode, Icon>;
+  icons: Map<RNode, Icon[]>;
   bodies: Map<RNode, BodyText>;
   /** The text block a body takes in the flow of an auto-layout item, after its children. */
   bodyAt: Map<RNode, LayoutNode>;
@@ -4426,6 +4439,21 @@ function propOf(prep: Prep, rn: RNode, name: string): SceneProp | null {
     return p;
   }
   return evaluate(prep.diag, rn, p);
+}
+
+/** Every command of the node with that name, in file order: `path` and `shadow` may repeat. */
+function propsOf(rn: RNode, name: string): SceneProp[] {
+  return rn.props.filter((p) => p.name === name);
+}
+
+/** The argument a command writes after the word `name`: `path "d" color #e11` names its ink that way. */
+function argAfter(p: SceneProp, name: string): TennNode | null {
+  for (let i = 0; i + 1 < p.args.length; i++) {
+    if (argText(p.args[i]) === name) {
+      return p.args[i + 1] ?? null;
+    }
+  }
+  return null;
 }
 
 function hasExpr(p: SceneProp): boolean {
@@ -4933,9 +4961,10 @@ function itemNode(prep: Prep, rn: RNode, parentAuto: boolean, up: Color): Layout
 
 /** An item without children takes the size of its title and body, or of its icon. */
 function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
-  const icon = iconOf(prep, rn);
+  const icons = iconsOf(prep, rn);
+  const icon = icons.length > 0 ? icons[0]! : null;
   if (icon !== null) {
-    prep.icons.set(rn, icon);
+    prep.icons.set(rn, icons);
     n.leafW = () => icon.vw;
     n.leafH = () => icon.vh;
   }
@@ -4987,53 +5016,86 @@ function leaf(prep: Prep, rn: RNode, n: LayoutNode, inCtx: boolean): void {
 }
 
 /** path and view-box of a leaf: a vector icon drawn in place of the box (5a.16). */
-function iconOf(prep: Prep, rn: RNode): Icon | null {
-  const p = propOf(prep, rn, "path");
-  if (p === null) {
-    return null;
+/**
+ * The glyphs of an item: every `path` command, in file order, each with the ink of its own command. A
+ * command may name its ink - `path "M…" color #e11 border-color #fff line-width 2` - and what it leaves
+ * out it takes from the item, as a `shadow` without a colour takes the alpha of the fill. The first path
+ * is drawn first, so it lies under the rest.
+ */
+function iconsOf(prep: Prep, rn: RNode): Icon[] {
+  const list = propsOf(rn, "path");
+  if (list.length === 0) {
+    return [];
   }
-  const d = propText(p, 0);
-  const segments = parseSvgPath(d);
-  if (segments === null || segments.length === 0) {
-    prep.diag.warn({ line: 0, col: 0 }, "path: not an SVG path, the item is drawn as a box");
-    return null;
-  }
+  const look = prep.looks.get(rn);
+  const itemFill = propOf(prep, rn, "color") !== null;
+  const itemStroke = propOf(prep, rn, "border-color") !== null;
+  const itemWidth = num(prep, rn, "line-width");
+  const vb = propOf(prep, rn, "view-box");
   let vx = 0;
   let vy = 0;
   let vw = 0;
   let vh = 0;
-  const bounds = pathBounds(segments);
-  if (bounds !== null) {
-    [vx, vy, vw, vh] = bounds;
-  }
-  const vb = propOf(prep, rn, "view-box");
+  let haveBox = false;
   if (vb !== null) {
     const v = [0, 1, 2, 3].map((i) => propNum(vb, i));
     if (v.every((x) => x !== null) && v[2]! > 0 && v[3]! > 0) {
       [vx, vy, vw, vh] = [v[0]!, v[1]!, v[2]!, v[3]!];
+      haveBox = true;
     }
   }
-  if (vw <= 0 || vh <= 0) {
-    prep.diag.warn({ line: 0, col: 0 }, "path: empty bounds, give a view-box");
-    return null;
-  }
-  const hasFill = propOf(prep, rn, "color") !== null;
-  const hasStroke = propOf(prep, rn, "border-color") !== null;
-  let fill: Color = noColor;
-  let stroke: Color = noColor;
-  if (!hasFill && !hasStroke) {
-    fill = prep.looks.get(rn)?.text ?? colorBlack;
-  } else {
-    const c = propOf(prep, rn, "color");
-    if (c !== null) {
-      fill = sceneColor(propText(c, 0)) ?? noColor;
+  const out: Icon[] = [];
+  for (const p of list) {
+    if (hasExpr(p)) {
+      const e = evaluate(prep.diag, rn, p);
+      if (e === null) {
+        continue;
+      }
+      p.val = e.val;
     }
-    const s = propOf(prep, rn, "border-color");
-    if (s !== null) {
-      stroke = sceneColor(propText(s, 0)) ?? noColor;
+    const d = propText(p, 0);
+    const segments = parseSvgPath(d);
+    if (segments === null || segments.length === 0) {
+      prep.diag.warn(p.pos ?? { line: 0, col: 0 }, "path: not an SVG path, the item is drawn as a box");
+      continue;
     }
+    let bx = vx;
+    let by = vy;
+    let bw = vw;
+    let bh = vh;
+    if (!haveBox) {
+      const bounds = pathBounds(segments);
+      if (bounds === null) {
+        prep.diag.warn(p.pos ?? { line: 0, col: 0 }, "path: empty bounds, give a view-box");
+        continue;
+      }
+      [bx, by, bw, bh] = bounds;
+    }
+    // The ink of the command itself, else the one of the item, else as a text stroke.
+    const ownFill = argAfter(p, "color");
+    const ownStroke = argAfter(p, "border-color");
+    const ownWidth = argAfter(p, "line-width");
+    let fill: Color = noColor;
+    let stroke: Color = noColor;
+    if (ownFill !== null) {
+      fill = sceneColor(argText(ownFill)) ?? noColor;
+    } else if (ownStroke === null && p === list[0] && !itemFill && !itemStroke) {
+      fill = look?.text ?? colorBlack;
+    } else if (itemFill) {
+      fill = sceneColor(propText(propOf(prep, rn, "color")!, 0)) ?? noColor;
+    }
+    if (ownStroke !== null) {
+      stroke = sceneColor(argText(ownStroke)) ?? noColor;
+    } else if (itemStroke) {
+      stroke = sceneColor(propText(propOf(prep, rn, "border-color")!, 0)) ?? noColor;
+    }
+    let width = ownWidth !== null ? Number(argText(ownWidth)) : (itemWidth ?? 1);
+    if (!Number.isFinite(width) || width < 0) {
+      width = 1;
+    }
+    out.push({ segments, vx: bx, vy: by, vw: bw, vh: bh, fill, stroke, width });
   }
-  return { segments, vx, vy, vw, vh, fill, stroke };
+  return out;
 }
 
 // MARK: - SVG path data (the icon subset: M L H V C S Q T A Z, absolute and relative)
@@ -5362,9 +5424,31 @@ function withShadow(ctx: Canvas2D, sh: SceneShadow, paint: () => void): void {
   ctx.restore();
 }
 
-function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color, shadow?: SceneShadow): void {
+/** drawCut: a picture of a title or a body of a circle is cut by the ellipse of its box, as Go's drawCut. */
+function drawCut(ctx: Canvas2D, display: string, w: number, h: number, draw: () => void): void {
+  if (display !== "circle" || w <= 0 || h <= 0) {
+    draw();
+    return;
+  }
+  ctx.save();
+  boxPath(ctx, "circle", 0, 0, w, h, [0, 0, 0, 0]);
+  ctx.clip();
+  draw();
+  ctx.restore();
+}
+
+function drawText(
+  ctx: Canvas2D,
+  ti: TextInfo,
+  w: number,
+  h: number,
+  leafNode: boolean,
+  color: Color,
+  shadow: SceneShadow | undefined,
+  display: string,
+): void {
   if (ti.parts !== null) {
-    drawTextParts(ctx, ti, w, h, leafNode, color, shadow);
+    drawTextParts(ctx, ti, w, h, leafNode, color, shadow, display);
     return;
   }
   const lines = textWrap(ti, w - 2 * ti.padX);
@@ -5402,7 +5486,16 @@ function drawText(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: b
 }
 
 /** drawParts: a title that holds inline pictures, the text on its baseline and a picture on the cap height. */
-function drawTextParts(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNode: boolean, color: Color, shadow?: SceneShadow): void {
+function drawTextParts(
+  ctx: Canvas2D,
+  ti: TextInfo,
+  w: number,
+  h: number,
+  leafNode: boolean,
+  color: Color,
+  shadow: SceneShadow | undefined,
+  display: string,
+): void {
   const lines = titleLayout(ti, w - 2 * ti.padX);
   let total = 0;
   for (const ln of lines) {
@@ -5432,11 +5525,13 @@ function drawTextParts(ctx: Canvas2D, ti: TextInfo, w: number, h: number, leafNo
     const base = y + (ln.h - (ln.asc + ln.desc)) / 2 + ln.asc;
     for (const part of ln.parts) {
       if (part.img !== null) {
-        const raster = inlineRaster(ti.prep, part.img.im);
+        const im = part.img;
+        const raster = inlineRaster(ti.prep, im.im);
         if (raster !== null) {
-          ctx.drawImage(raster, x, base - (partFont(ti, part).size * capHeightRatio) / 2 - part.img.h / 2, part.img.w, part.img.h);
+          const py = base - (partFont(ti, part).size * capHeightRatio) / 2 - im.h / 2;
+          drawCut(ctx, display, w, h, () => ctx.drawImage(raster, x, py, im.w, im.h));
         }
-        x += part.img.w;
+        x += im.w;
         continue;
       }
       const f = partFont(ti, part);
@@ -5612,12 +5707,14 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
       const w = ln.rw;
       const h = ln.rh;
       if (w > 0 && h > 0) {
-        const icon = prep.icons.get(rn);
-        if (icon !== undefined) {
-          drawIcon(ctx, icon, w, h, look.lineW, look.cap, look.join);
+        const icons = prep.icons.get(rn);
+        if (icons !== undefined) {
+          for (const icon of icons) {
+            drawIcon(ctx, icon, w, h, icon.width, look.cap, look.join);
+          }
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {
-            drawText(ctx, ti, w, h, true, look.text);
+            drawText(ctx, ti, w, h, true, look.text, undefined, display);
           }
         } else {
           const rad = boxRadius(look, w, h);
@@ -5701,6 +5798,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
               ln.kids.length === 0 && prep.bodies.get(rn) === undefined,
               look.text,
               display === "text" ? look.shadows[0] : undefined,
+              display,
             );
           }
           const body = prep.bodies.get(rn);
@@ -5709,7 +5807,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
             if (ti !== undefined) {
               y = ti.padY + titleHeight(ti, w - 2 * ti.padX);
             }
-            drawBody(ctx, body, body.padX, y, w - 2 * body.padX);
+            drawBody(ctx, body, body.padX, y, w - 2 * body.padX, display, w, h);
           }
         }
       }
@@ -5727,7 +5825,8 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
     const bodyAt = prep.bodyAt.get(rn);
     const flowBody = prep.bodies.get(rn);
     if (display !== "none" && bodyAt !== undefined && flowBody !== undefined) {
-      drawBody(ctx, flowBody, bodyAt.rx, bodyAt.ry, bodyAt.rw);
+      // The body of a flow item is a block of the flow, not the box of the circle: no mask of the box.
+      drawBody(ctx, flowBody, bodyAt.rx, bodyAt.ry, bodyAt.rw, "", 0, 0);
     }
     ctx.restore();
   };

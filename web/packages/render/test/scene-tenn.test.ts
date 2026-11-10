@@ -20,6 +20,9 @@ function record(): {
   dashes: { dash: number[]; phase: number }[];
   texts: { text: string; fill: string; font: string }[];
   images: { x: number; y: number; w: number; h: number }[];
+  clips: number;
+  ellipses: [number, number, number, number][];
+  events: string[];
 } {
   const fills: string[] = [];
   const strokes: string[] = [];
@@ -27,6 +30,9 @@ function record(): {
   const dashes: { dash: number[]; phase: number }[] = [];
   const texts: { text: string; fill: string; font: string }[] = [];
   const images: { x: number; y: number; w: number; h: number }[] = [];
+  const ellipses: [number, number, number, number][] = [];
+  const events: string[] = [];
+  let clips = 0;
   let pen: (string | number)[][] = [];
   const state = { fill: "rgb(0,0,0)", stroke: "rgb(0,0,0)", alpha: 1, font: "", dash: [] as number[], phase: 0 };
   const stack: (typeof state)[] = [];
@@ -54,8 +60,13 @@ function record(): {
       pen.push(["z"]);
     },
     rect: () => {},
-    ellipse: () => {},
-    clip: () => {},
+    ellipse: (x: number, y: number, rx: number, ry: number) => {
+      ellipses.push([x, y, rx, ry]);
+    },
+    clip: () => {
+      clips += 1;
+      events.push("clip");
+    },
     fill: () => fills.push(paint(state.fill)),
     stroke: () => {
       strokes.push(paint(state.stroke));
@@ -65,7 +76,10 @@ function record(): {
     fillRect: () => {},
     fillText: (text: string) => texts.push({ text, fill: paint(state.fill), font: state.font }),
     measureText: (text: string) => ({ width: [...text].length * 10 }),
-    drawImage: (_image: unknown, x: number, y: number, w: number, h: number) => images.push({ x, y, w, h }),
+    drawImage: (_image: unknown, x: number, y: number, w: number, h: number) => {
+      images.push({ x, y, w, h });
+      events.push("image");
+    },
     setLineDash: (segments: number[]) => {
       state.dash = [...segments];
     },
@@ -106,7 +120,20 @@ function record(): {
     shadowOffsetY: 0,
     textBaseline: "alphabetic",
   };
-  return { ctx, fills, strokes, paths, dashes, texts, images };
+  return {
+    ctx,
+    fills,
+    strokes,
+    paths,
+    dashes,
+    texts,
+    images,
+    get clips(): number {
+      return clips;
+    },
+    ellipses,
+    events,
+  };
 }
 
 function scene(text: string, name = "Screen"): { scene: TennScene; element: Element } {
@@ -727,4 +754,26 @@ test("a dashed border does not dash the icon of a child", () => {
     { dash: [5, 5], phase: 5 },
     { dash: [], phase: 0 },
   ]);
+});
+
+// A picture in the title of a circle is inscribed: the ellipse of the box cuts it, as the fill and the
+// border are drawn in it. A box draws its pictures in full. Go's TestCircleTitleImageIsCut.
+test("a picture in the title of a circle is cut by the ellipse", () => {
+  const source = (display: string): string => `element "E" { item Pic { pos 0 0; width 100; height 100; display ${display}; title "@(logo|40)"; image "logo" @(${png40x20}) } }`;
+  const draw = (display: string): ReturnType<typeof record> => {
+    const model = readTenn(source(display));
+    assert.ok(model !== null, "the document parses");
+    const s = buildTennScene(model.elements[0]!, { decodeImage: stubDecode });
+    const p = record();
+    s.draw(p.ctx);
+    assert.equal(p.images.length, 1, "the picture of the title is drawn");
+    return p;
+  };
+  const circle = draw("circle");
+  assert.deepEqual(circle.events, ["clip", "image"], "the circle cuts the picture by the ellipse of its box");
+  assert.deepEqual(circle.ellipses.at(-1), [50, 50, 50, 50], "the mask is the ellipse of the box");
+
+  const box = draw("rect");
+  assert.deepEqual(box.events, ["image"], "a box cuts nothing of the picture");
+  assert.equal(box.clips, 0);
 });

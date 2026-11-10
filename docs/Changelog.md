@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* An item may carry several `path` commands, as it carries several `shadow`: each is a shape with the ink
+  of its own command (`color` fills it, `border-color` and `line-width` stroke it, `fill-rule` sets the
+  rule), the first is drawn under the rest, and a command that names no ink takes the one of the item. A
+  glyph with a filled detail and an outlined contour - `tag`, `key-round` of lucide - is two paths, so the
+  drawn shape is now the shape the library has. One `path` reads exactly as before. The web renderer reads
+  it; `go/scene` follows.
+* A picture put in a circle is inscribed: with `display circle` the ellipse now cuts the pictures its
+  item draws with the title and the body, the way it draws the fill and the border. A classic circle with
+  `@(logo|80)` in its title showed the picture across the whole box, so its corners stood outside the
+  circle; the text stays uncut, since a classic circle carries a label wider than itself. The same rule is
+  in the port of `go/scene` on the web.
 * A stroke of a `.tenn` names its ends and corners: `line-cap` (`butt`, `round`, `square`) and `line-join`
   (`miter`, `round`, `bevel`), on a frame of an item, a `path` outline and a `link`. The canvas of a shape
   library asks for `round` at both - lucide draws its icons that way - and until now a round icon came out
