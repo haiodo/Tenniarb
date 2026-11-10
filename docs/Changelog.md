@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* `go vet` is clean again: taking `Point` and `Rect` out of go/render made every positional literal of them
+  read as a foreign struct built by position, and a stale build cache hid the two hundred and five
+  complaints. They name their fields now.
+* The way an evaluated value reads as text (JavaScript's toString) is in `go/jsval`, shared by the editor
+  and the renderer instead of living in one of them.
 * The application speaks the geometry of `go/geometry` and measures the text of a classic diagram with the
   engine that draws it: what it still takes from `go/render` is a padding constant, the options of a session
   no window builds and a comment.

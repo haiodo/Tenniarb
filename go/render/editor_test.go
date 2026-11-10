@@ -29,30 +29,30 @@ func editorScene(t *testing.T) (*DrawableScene, []*model.DiagramItem) {
 	return Build(el, o), el.Items
 }
 
-func centre(r Rect) Point { return Point{midX(r), midY(r)} }
+func centre(r Rect) Point { return Point{X: midX(r), Y: midY(r)} }
 
 func TestCrossPointLine(t *testing.T) {
-	p1, p2 := Point{0, 0}, Point{100, 0}
+	p1, p2 := Point{X: 0, Y: 0}, Point{X: 100, Y: 0}
 	for _, c := range []struct {
 		name string
 		p    Point
 		want bool
 	}{
-		{"on the line", Point{50, 0}, true},
-		{"within tolerance", Point{50, 6}, true},
-		{"too far", Point{50, 8}, false},
-		{"near the start", Point{-5, 3}, true},
-		{"beyond the end, outside the radius", Point{120, 0}, false},
-		{"near the end", Point{105, 0}, true},
+		{"on the line", Point{X: 50, Y: 0}, true},
+		{"within tolerance", Point{X: 50, Y: 6}, true},
+		{"too far", Point{X: 50, Y: 8}, false},
+		{"near the start", Point{X: -5, Y: 3}, true},
+		{"beyond the end, outside the radius", Point{X: 120, Y: 0}, false},
+		{"near the end", Point{X: 105, Y: 0}, true},
 	} {
 		if got := crossPointLine(p1, p2, c.p); got != c.want {
 			t.Errorf("%s: %v", c.name, got)
 		}
 	}
-	if crossPointLine(Point{10, 10}, Point{10, 10}, Point{30, 30}) {
+	if crossPointLine(Point{X: 10, Y: 10}, Point{X: 10, Y: 10}, Point{X: 30, Y: 30}) {
 		t.Error("a zero-length segment hits only near its point")
 	}
-	if !crossPointLine(Point{0, 0}, Point{0, 100}, Point{3, 50}) {
+	if !crossPointLine(Point{X: 0, Y: 0}, Point{X: 0, Y: 100}, Point{X: 3, Y: 50}) {
 		t.Error("a vertical line is padded to 5")
 	}
 }
@@ -70,24 +70,24 @@ func TestFind(t *testing.T) {
 		t.Errorf("all: %v", got)
 	}
 	cb := centre(s.Drawables[b].SelectorBounds())
-	mid := Point{(ca.X + cb.X) / 2, (ca.Y + cb.Y) / 2}
+	mid := Point{X: (ca.X + cb.X) / 2, Y: (ca.Y + cb.Y) / 2}
 	if got := hit(mid, false); len(got) != 1 || got[0].Kind != model.ItemKindLink {
 		t.Errorf("line between boxes: %v", got)
 	}
-	if got := hit(Point{5000, 5000}, false); len(got) != 0 {
+	if got := hit(Point{X: 5000, Y: 5000}, false); len(got) != 0 {
 		t.Errorf("empty: %v", got)
 	}
 	// Where a box and a line meet, only the box.
 	line := s.Drawables[items[4]].(*DrawableLine)
-	if got := hit(Point{line.Source.X - 1, line.Source.Y}, false); len(got) != 1 || got[0] != a {
+	if got := hit(Point{X: line.Source.X - 1, Y: line.Source.Y}, false); len(got) != 1 || got[0] != a {
 		t.Errorf("box wins over line: %v", got)
 	}
 }
 
 func TestLineFindFollowsWaypoints(t *testing.T) {
-	l := NewDrawableLineBetween(Point{0, 0}, Point{100, 0}, NewDrawableLineStyle(false))
-	l.ExtraPoints = []Point{{100, 100}}
-	if !l.Find(Point{100, 50}) || !l.Find(Point{50, 50}) || l.Find(Point{50, 0}) {
+	l := NewDrawableLineBetween(Point{X: 0, Y: 0}, Point{X: 100, Y: 0}, NewDrawableLineStyle(false))
+	l.ExtraPoints = []Point{{X: 100, Y: 100}}
+	if !l.Find(Point{X: 100, Y: 50}) || !l.Find(Point{X: 50, Y: 50}) || l.Find(Point{X: 50, Y: 0}) {
 		t.Error("the polyline goes through the waypoint")
 	}
 }
@@ -96,7 +96,7 @@ func TestLabelBounds(t *testing.T) {
 	s, items := editorScene(t)
 	l := s.Drawables[items[4]].(*DrawableLine)
 	b := l.Bounds()
-	assertRect(t, "no label", l.LabelBounds(), Rect{midX(b) - 50, midY(b) - 15, 100, 30})
+	assertRect(t, "no label", l.LabelBounds(), Rect{X: midX(b) - 50, Y: midY(b) - 15, Width: 100, Height: 30})
 	env := testEnv()
 	l.AddLabel("lbl", s.newImageProvider(items[4]), env)
 	lb := l.LabelBounds()
@@ -104,22 +104,22 @@ func TestLabelBounds(t *testing.T) {
 	if lb.Width != size.Width || lb.Height != size.Height {
 		t.Errorf("label size %v, label %v", lb, size)
 	}
-	l.ExtraPoints = []Point{{10, 20}}
-	assertRect(t, "after the first waypoint", l.LabelBounds(), Rect{15, 20 - l.Label.Bounds().Height, size.Width, size.Height})
+	l.ExtraPoints = []Point{{X: 10, Y: 20}}
+	assertRect(t, "after the first waypoint", l.LabelBounds(), Rect{X: 15, Y: 20 - l.Label.Bounds().Height, Width: size.Width, Height: size.Height})
 }
 
 func TestUpdateLineTo(t *testing.T) {
 	s, items := editorScene(t)
 	a, c := items[0], items[2]
 	sa, sc := s.Drawables[a].Bounds(), s.Drawables[c].Bounds()
-	s.UpdateLineTo(a, Point{300, 300}, nil)
+	s.UpdateLineTo(a, Point{X: 300, Y: 300}, nil)
 	if s.LineTo == nil {
 		t.Fatal("no preview")
 	}
-	if s.LineTo.Target != (Point{300, 300}) || !containsRect(insetBy(sa, -1e-9, -1e-9), Rect{s.LineTo.Source.X, s.LineTo.Source.Y, 0, 0}) {
+	if s.LineTo.Target != (Point{X: 300, Y: 300}) || !containsRect(insetBy(sa, -1e-9, -1e-9), Rect{X: s.LineTo.Source.X, Y: s.LineTo.Source.Y, Width: 0, Height: 0}) {
 		t.Errorf("free end: %v -> %v", s.LineTo.Source, s.LineTo.Target)
 	}
-	s.UpdateLineTo(a, Point{300, 300}, c)
+	s.UpdateLineTo(a, Point{X: 300, Y: 300}, c)
 	end := s.LineTo.Target
 	onEdge := math.Abs(end.X-minX(sc)) < 1e-6 || math.Abs(end.X-maxX(sc)) < 1e-6 || math.Abs(end.Y-minY(sc)) < 1e-6 || math.Abs(end.Y-maxY(sc)) < 1e-6
 	if !onEdge {
@@ -138,7 +138,7 @@ func TestUpdateLineTo(t *testing.T) {
 func TestUpdateLayoutMatchesFreshBuild(t *testing.T) {
 	s, items := editorScene(t)
 	a, b := items[0], items[1]
-	moved := s.UpdateLayout(map[*model.DiagramItem]Point{a: {40, 30}})
+	moved := s.UpdateLayout(map[*model.DiagramItem]Point{a: {X: 40, Y: 30}})
 	if len(moved) != 2 { // A and its link
 		t.Fatalf("moved %d drawables", len(moved))
 	}
@@ -161,14 +161,14 @@ func TestUpdateLayoutMatchesFreshBuild(t *testing.T) {
 		t.Error("untouched link differs")
 	}
 	// A box moved far away stays in the picture.
-	s.UpdateLayout(map[*model.DiagramItem]Point{b: {1e5, 1e5}})
+	s.UpdateLayout(map[*model.DiagramItem]Point{b: {X: 1e5, Y: 1e5}})
 	if !s.Drawables[b].Visible() {
 		t.Error("layout must not cull a moved box")
 	}
 	// A link moves its control point.
 	link := items[4]
-	s.UpdateLayout(map[*model.DiagramItem]Point{link: {30, 40}})
-	if s.Drawables[link].(*DrawableLine).Control != (Point{30, 40}) {
+	s.UpdateLayout(map[*model.DiagramItem]Point{link: {X: 30, Y: 40}})
+	if s.Drawables[link].(*DrawableLine).Control != (Point{X: 30, Y: 40}) {
 		t.Error("control point")
 	}
 }
@@ -178,7 +178,7 @@ func TestSelectorsDraw(t *testing.T) {
 	rec := s.NewRecorder()
 	NewSelectorBox(s.Drawables[items[0]].SelectorBounds(), false).Draw(rec, Point{})
 	NewSelectorLine(s.Drawables[items[4]].(*DrawableLine)).Draw(rec, Point{})
-	(&SelectorBox{Pos: Point{0, 0}, Size: Size{10, 10}, Blur: 5}).Draw(rec, Point{}) // the band: square corners
+	(&SelectorBox{Pos: Point{X: 0, Y: 0}, Size: Size{10, 10}, Blur: 5}).Draw(rec, Point{}) // the band: square corners
 	pic := rec.Finish()
 	if pic.Len() == 0 {
 		t.Fatal("nothing drawn")
@@ -191,10 +191,10 @@ func TestSelectorsDraw(t *testing.T) {
 		t.Errorf("selectors are dashed:\n%s", svg.String())
 	}
 	green := s.NewRecorder()
-	NewSelectorBox(Rect{0, 0, 10, 10}, true).Draw(green, Point{})
+	NewSelectorBox(Rect{X: 0, Y: 0, Width: 10, Height: 10}, true).Draw(green, Point{})
 	if green.Finish().Equal(func() *gfx.Picture {
 		r := s.NewRecorder()
-		NewSelectorBox(Rect{0, 0, 10, 10}, false).Draw(r, Point{})
+		NewSelectorBox(Rect{X: 0, Y: 0, Width: 10, Height: 10}, false).Draw(r, Point{})
 		return r.Finish()
 	}()) {
 		t.Error("the editing outline is green, not blue")
@@ -250,7 +250,7 @@ func shadowScreens(t *testing.T, screen bool) []bool {
 	s := Build(el, o)
 	rec := s.NewRecorder()
 	s.Draw(rec, Point{})
-	NewSelectorBox(Rect{0, 0, 10, 10}, false).Draw(rec, Point{})
+	NewSelectorBox(Rect{X: 0, Y: 0, Width: 10, Height: 10}, false).Draw(rec, Point{})
 	var got []bool
 	var it gfx.Iter
 	it.Reset(rec.Finish())

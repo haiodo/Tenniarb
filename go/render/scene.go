@@ -443,9 +443,9 @@ func (s *DrawableScene) buildItemDrawable(e *model.DiagramItem, elementDrawable 
 	}
 
 	sz := Size{width + shift.X + wx, height + shift.Y + wy}
-	bounds := Rect{e.X, e.Y - sz.Height, sz.Width, sz.Height}
+	bounds := Rect{X: e.X, Y: e.Y - sz.Height, Width: sz.Width, Height: sz.Height}
 
-	ftb := Rect{offx, offy, textBounds.Width + shift.X, textBounds.Height + shift.Y}
+	ftb := Rect{X: offx, Y: offy, Width: textBounds.Width + shift.X, Height: textBounds.Height + shift.Y}
 	if ftb.Width+offx*2 < width {
 		ftb.Width = width - offx*2
 	}
@@ -546,8 +546,8 @@ func (s *DrawableScene) buildElementScene(element *model.Element, buildChildren 
 		linkStyle := s.Style.DefaultLineStyle.Copy()
 		linkStyle.ScreenShadow = s.opts.ScreenShadows
 		linkStyle.ParseStyle(e.Properties.AsNode(), evaluated)
-		sr := Rect{0, 0, 5, 5}
-		tr := Rect{0, 5, 5, 5}
+		sr := Rect{X: 0, Y: 0, Width: 5, Height: 5}
+		tr := Rect{X: 0, Y: 5, Width: 5, Height: 5}
 
 		if e.Source != nil {
 			if d, ok := s.Drawables[e.Source]; ok {
@@ -561,7 +561,7 @@ func (s *DrawableScene) buildElementScene(element *model.Element, buildChildren 
 				tr = d.SelectorBounds()
 			}
 		}
-		line := NewDrawableLine(sr, tr, linkStyle, Point{e.X, e.Y})
+		line := NewDrawableLine(sr, tr, linkStyle, Point{X: e.X, Y: e.Y})
 		if len(e.Name) > 0 {
 			line.AddLabel(e.Name, s.newImageProvider(e), s.env)
 		}

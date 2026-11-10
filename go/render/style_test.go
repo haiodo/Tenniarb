@@ -241,12 +241,12 @@ func TestItemStyle(t *testing.T) {
 }
 
 func TestSceneStyle(t *testing.T) {
-	if NewSceneStyle(false).GridSpan != (Point{5, 5}) || NewSceneStyle(false).DefaultLineStyle.FontSize != 12 {
+	if NewSceneStyle(false).GridSpan != (Point{X: 5, Y: 5}) || NewSceneStyle(false).DefaultLineStyle.FontSize != 12 {
 		t.Error("scene defaults")
 	}
 	s := NewSceneStyle(false)
 	apply(t, "grid 20 30", s)
-	if s.GridSpan != (Point{20, 30}) {
+	if s.GridSpan != (Point{X: 20, Y: 30}) {
 		t.Error("grid")
 	}
 	apply(t, "styles {\n  item {\n    font-size 24\n  }\n  line {\n    line-width 4\n  }\n}", s)

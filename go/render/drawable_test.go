@@ -24,14 +24,14 @@ func makeLine(from, to Rect, style *DrawableLineStyle) *DrawableLine {
 func host() *model.DiagramItem { return model.NewDiagramItem(model.ItemKindItem, "Host") }
 
 var (
-	left  = Rect{0, 0, 40, 20}
-	right = Rect{200, 0, 40, 20}
-	above = Rect{0, 200, 40, 20}
+	left  = Rect{X: 0, Y: 0, Width: 40, Height: 20}
+	right = Rect{X: 200, Y: 0, Width: 40, Height: 20}
+	above = Rect{X: 0, Y: 200, Width: 40, Height: 20}
 )
 
 func TestLineEndpointsSitBetweenBoxes(t *testing.T) {
 	l := makeLine(left, right, NewDrawableLineStyle(false))
-	if l.Source != (Point{40, 10}) || l.Target != (Point{200, 10}) {
+	if l.Source != (Point{X: 40, Y: 10}) || l.Target != (Point{X: 200, Y: 10}) {
 		t.Errorf("endpoints %+v %+v", l.Source, l.Target)
 	}
 }
@@ -43,29 +43,29 @@ func TestLineFollowsVerticalArrangementAndMovedTarget(t *testing.T) {
 	}
 	h := makeLine(left, right, NewDrawableLineStyle(false))
 	before := h.Target
-	h.UpdateLayout(left, Rect{500, 0, 40, 20})
+	h.UpdateLayout(left, Rect{X: 500, Y: 0, Width: 40, Height: 20})
 	if h.Target == before {
 		t.Error("moving the target must move the endpoint")
 	}
 }
 
 func TestLinePointConstructorKeepsCoordinates(t *testing.T) {
-	l := NewDrawableLineBetween(Point{1, 2}, Point{3, 4}, lineStyle(t, ""))
-	if l.Source != (Point{1, 2}) || l.Target != (Point{3, 4}) || len(l.ExtraPoints) != 0 {
+	l := NewDrawableLineBetween(Point{X: 1, Y: 2}, Point{X: 3, Y: 4}, lineStyle(t, ""))
+	if l.Source != (Point{X: 1, Y: 2}) || l.Target != (Point{X: 3, Y: 4}) || len(l.ExtraPoints) != 0 {
 		t.Errorf("%+v", l)
 	}
 }
 
 func TestLineControlPointBendsThroughOneExtraPoint(t *testing.T) {
-	l := NewDrawableLine(left, right, lineStyle(t, ""), Point{0, 50})
-	if len(l.ExtraPoints) != 1 || l.ExtraPoints[0] != (Point{120, 60}) {
+	l := NewDrawableLine(left, right, lineStyle(t, ""), Point{X: 0, Y: 50})
+	if len(l.ExtraPoints) != 1 || l.ExtraPoints[0] != (Point{X: 120, Y: 60}) {
 		t.Errorf("extra %+v", l.ExtraPoints)
 	}
 }
 
 func TestLineUpdateLayoutClearsWaypoints(t *testing.T) {
 	style := lineStyle(t, "layout middle")
-	l := makeLine(Rect{0, 0, 40, 20}, Rect{10, 200, 40, 20}, style)
+	l := makeLine(Rect{X: 0, Y: 0, Width: 40, Height: 20}, Rect{X: 10, Y: 200, Width: 40, Height: 20}, style)
 	if len(l.ExtraPoints) == 0 {
 		t.Fatal("the middle layout routes around the boxes")
 	}
@@ -77,16 +77,16 @@ func TestLineUpdateLayoutClearsWaypoints(t *testing.T) {
 }
 
 func TestMiddleLayoutRoutes(t *testing.T) {
-	v := makeLine(Rect{0, 0, 40, 20}, Rect{10, 300, 40, 20}, lineStyle(t, "layout middle"))
+	v := makeLine(Rect{X: 0, Y: 0, Width: 40, Height: 20}, Rect{X: 10, Y: 300, Width: 40, Height: 20}, lineStyle(t, "layout middle"))
 	if len(v.ExtraPoints) != 2 || !near(v.ExtraPoints[0].X, v.ExtraPoints[1].X, 1e-3) {
 		t.Errorf("vertical stack: %+v", v.ExtraPoints)
 	}
-	h := makeLine(Rect{0, 0, 40, 20}, Rect{300, 5, 40, 20}, lineStyle(t, "layout middle"))
+	h := makeLine(Rect{X: 0, Y: 0, Width: 40, Height: 20}, Rect{X: 300, Y: 5, Width: 40, Height: 20}, lineStyle(t, "layout middle"))
 	if len(h.ExtraPoints) != 2 || !near(h.ExtraPoints[0].Y, h.ExtraPoints[1].Y, 1e-3) {
 		t.Errorf("horizontal: %+v", h.ExtraPoints)
 	}
-	d := makeLine(Rect{0, 0, 40, 20}, Rect{200, 100, 40, 20}, lineStyle(t, "layout middle"))
-	if d.Source != (Point{40, 10}) || d.Target != (Point{220, 100}) || len(d.ExtraPoints) != 1 || d.ExtraPoints[0] != (Point{220, 10}) {
+	d := makeLine(Rect{X: 0, Y: 0, Width: 40, Height: 20}, Rect{X: 200, Y: 100, Width: 40, Height: 20}, lineStyle(t, "layout middle"))
+	if d.Source != (Point{X: 40, Y: 10}) || d.Target != (Point{X: 220, Y: 100}) || len(d.ExtraPoints) != 1 || d.ExtraPoints[0] != (Point{X: 220, Y: 10}) {
 		t.Errorf("diagonal: %+v %+v %+v", d.Source, d.Target, d.ExtraPoints)
 	}
 }
@@ -116,22 +116,22 @@ func TestLineBoundsCoverEndpoints(t *testing.T) {
 }
 
 func TestArrowDisplayShortensPathAndWidensBounds(t *testing.T) {
-	plain := NewDrawableLineBetween(Point{0, 0}, Point{100, 0}, lineStyle(t, ""))
-	arrowed := NewDrawableLineBetween(Point{0, 0}, Point{100, 0}, lineStyle(t, "display arrow"))
+	plain := NewDrawableLineBetween(Point{X: 0, Y: 0}, Point{X: 100, Y: 0}, lineStyle(t, ""))
+	arrowed := NewDrawableLineBetween(Point{X: 0, Y: 0}, Point{X: 100, Y: 0}, lineStyle(t, "display arrow"))
 	bp := arrowed.buildPath(Point{})
-	if !bp.drawArrow || bp.to != (Point{95, 0}) {
+	if !bp.drawArrow || bp.to != (Point{X: 95, Y: 0}) {
 		t.Errorf("arrow %+v", bp)
 	}
 	if !(arrowed.Bounds().Height > plain.Bounds().Height) {
 		t.Error("arrow bounds")
 	}
-	if arrow(Point{0, 0}, Point{3, 0}, 0, 10, 10) != nil {
+	if arrow(Point{X: 0, Y: 0}, Point{X: 3, Y: 0}, 0, 10, 10) != nil {
 		t.Error("too short for an arrow")
 	}
 }
 
 func TestIdenticalBoxesGiveFiniteCoordinates(t *testing.T) {
-	box := Rect{10, 10, 40, 20}
+	box := Rect{X: 10, Y: 10, Width: 40, Height: 20}
 	l := makeLine(box, box, NewDrawableLineStyle(false))
 	for _, v := range []float64{l.Source.X, l.Source.Y, l.Target.X, l.Target.Y} {
 		if math.IsNaN(v) || math.IsInf(v, 0) {
@@ -172,12 +172,12 @@ func TestImageProvider(t *testing.T) {
 }
 
 func TestRoundBoxBoundsAndSetPath(t *testing.T) {
-	bounds := Rect{1, 2, 30, 40}
+	bounds := Rect{X: 1, Y: 2, Width: 30, Height: 40}
 	box := NewRoundBox(bounds, NewDrawableItemStyle(false), true)
 	if !containsRect(box.Bounds(), bounds) || math.Abs(box.Bounds().Width-bounds.Width) >= 1 || box.Path() == nil {
 		t.Errorf("bounds %+v", box.Bounds())
 	}
-	moved := Rect{5, 6, 20, 20}
+	moved := Rect{X: 5, Y: 6, Width: 20, Height: 20}
 	box.SetPath(moved)
 	if !containsRect(box.Bounds(), moved) || math.Abs(midX(box.Bounds())-midX(moved)) > 1e-3 {
 		t.Errorf("moved %+v", box.Bounds())
@@ -187,8 +187,8 @@ func TestRoundBoxBoundsAndSetPath(t *testing.T) {
 func TestRoundBoxPathHonoursRadii(t *testing.T) {
 	s := NewDrawableItemStyle(false)
 	s.ParseStyle(styleTree(t, "corner-radius 2 4 6 8"), nil)
-	box := NewRoundBox(Rect{0, 0, 50, 50}, s, true)
-	assertRect(t, "path box", box.Path().boundingBox(), Rect{0, 0, 50, 50})
+	box := NewRoundBox(Rect{X: 0, Y: 0, Width: 50, Height: 50}, s, true)
+	assertRect(t, "path box", box.Path().boundingBox(), Rect{X: 0, Y: 0, Width: 50, Height: 50})
 	if box.radius != [4]float64{2, 4, 6, 8} {
 		t.Errorf("radii %v", box.radius)
 	}
@@ -197,29 +197,29 @@ func TestRoundBoxPathHonoursRadii(t *testing.T) {
 func TestShadowGrowsBoundsOnShadowSide(t *testing.T) {
 	s := NewDrawableItemStyle(false)
 	s.ParseStyle(styleTree(t, "shadow 3 -3 4"), nil)
-	b := NewRoundBox(Rect{0, 0, 50, 50}, s, true).Bounds()
+	b := NewRoundBox(Rect{X: 0, Y: 0, Width: 50, Height: 50}, s, true).Bounds()
 	if !(b.Width > 50 && b.Height > 50 && b.Y < 0) {
 		t.Errorf("shadow bounds %+v", b)
 	}
 }
 
 func TestEmptyAndCircleBoxKeepBounds(t *testing.T) {
-	bounds := Rect{3, 4, 15, 25}
+	bounds := Rect{X: 3, Y: 4, Width: 15, Height: 25}
 	empty := NewEmptyBox(bounds, newDrawableStyle(false))
 	assertRect(t, "empty", empty.Bounds(), bounds)
-	moved := Rect{0, 0, 1, 1}
+	moved := Rect{X: 0, Y: 0, Width: 1, Height: 1}
 	empty.SetPath(moved)
 	assertRect(t, "empty moved", empty.Bounds(), moved)
-	cb := Rect{0, 0, 40, 40}
+	cb := Rect{X: 0, Y: 0, Width: 40, Height: 40}
 	assertRect(t, "circle", NewCircleBox(cb, newDrawableStyle(false), true).Bounds(), cb)
 }
 
 func TestTextBoxFrame(t *testing.T) {
-	tb := &TextBox{frame: Rect{1, 1, 50, 20}, attr: PlainText("hello", systemFont(12)), env: testEnv()}
+	tb := &TextBox{frame: Rect{X: 1, Y: 1, Width: 50, Height: 20}, attr: PlainText("hello", systemFont(12)), env: testEnv()}
 	if tb.Bounds().Width != 50 || !tb.Visible() || !tb.Selectable() {
 		t.Error("text box")
 	}
-	tb.SetFrame(Rect{0, 0, 80, 30})
+	tb.SetFrame(Rect{X: 0, Y: 0, Width: 80, Height: 30})
 	if tb.Bounds().Width != 80 {
 		t.Error("SetFrame")
 	}
@@ -242,9 +242,9 @@ func TestBackgroundLayerNotSelectable(t *testing.T) {
 }
 
 func TestContainerUnionOfChildren(t *testing.T) {
-	a := NewEmptyBox(Rect{0, 0, 10, 10}, newDrawableStyle(false))
-	b := NewEmptyBox(Rect{100, 100, 10, 10}, newDrawableStyle(false))
-	assertRect(t, "union", NewDrawableContainer(a, b).Bounds(), Rect{0, 0, 110, 110})
+	a := NewEmptyBox(Rect{X: 0, Y: 0, Width: 10, Height: 10}, newDrawableStyle(false))
+	b := NewEmptyBox(Rect{X: 100, Y: 100, Width: 10, Height: 10}, newDrawableStyle(false))
+	assertRect(t, "union", NewDrawableContainer(a, b).Bounds(), Rect{X: 0, Y: 0, Width: 110, Height: 110})
 	if len(NewDrawableContainer().Children) != 0 {
 		t.Error("empty container")
 	}
@@ -252,7 +252,7 @@ func TestContainerUnionOfChildren(t *testing.T) {
 
 func TestArcToPathShapes(t *testing.T) {
 	// A corner radius over half the side makes the tangent point run backwards, as CGPath.addArc does.
-	box := NewRoundBox(Rect{0, 0, 10, 10}, NewDrawableItemStyle(false), true)
+	box := NewRoundBox(Rect{X: 0, Y: 0, Width: 10, Height: 10}, NewDrawableItemStyle(false), true)
 	g := box.Path().toGfx(0, 0)
 	if g.Empty() {
 		t.Fatal("empty path")

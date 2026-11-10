@@ -653,5 +653,5 @@ func (t *TextBox) Traverse(op func(Drawable) bool) { op(t) }
 func (t *TextBox) Draw(rec *gfx.Recorder, at Point) { t.drawShadowed(rec, at, nil) }
 
 func (t *TextBox) drawShadowed(rec *gfx.Recorder, at Point, sh *gfx.Shadow) {
-	t.env.drawAttributedString(rec, t.attr, Rect{at.X + t.frame.X, at.Y + t.frame.Y, t.frame.Width, t.frame.Height}, sh)
+	t.env.drawAttributedString(rec, t.attr, Rect{X: at.X + t.frame.X, Y: at.Y + t.frame.Y, Width: t.frame.Width, Height: t.frame.Height}, sh)
 }

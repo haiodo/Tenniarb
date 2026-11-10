@@ -221,7 +221,7 @@ type RoundBox struct {
 }
 
 func NewRoundBox(bounds Rect, style *DrawableItemStyle, fill bool) *RoundBox {
-	b := &RoundBox{DrawableContainer: DrawableContainer{itemBase: itemBase{visible: true}}, Style: style, Fill: fill, StackStep: Point{2, 2}}
+	b := &RoundBox{DrawableContainer: DrawableContainer{itemBase: itemBase{visible: true}}, Style: style, Fill: fill, StackStep: Point{X: 2, Y: 2}}
 	b.SetPath(bounds)
 	return b
 }
@@ -242,11 +242,11 @@ func (b *RoundBox) SetPath(rect Rect) {
 
 	b.bounds = rect
 	p := newPath()
-	p.move(Point{midX(rect), minY(rect)})
-	p.arc(Point{maxX(rect), minY(rect)}, Point{maxX(rect), maxY(rect)}, radius[2])
-	p.arc(Point{maxX(rect), maxY(rect)}, Point{minX(rect), maxY(rect)}, radius[1])
-	p.arc(Point{minX(rect), maxY(rect)}, Point{minX(rect), minY(rect)}, radius[0])
-	p.arc(Point{minX(rect), minY(rect)}, Point{maxX(rect), minY(rect)}, radius[3])
+	p.move(Point{X: midX(rect), Y: minY(rect)})
+	p.arc(Point{X: maxX(rect), Y: minY(rect)}, Point{X: maxX(rect), Y: maxY(rect)}, radius[2])
+	p.arc(Point{X: maxX(rect), Y: maxY(rect)}, Point{X: minX(rect), Y: maxY(rect)}, radius[1])
+	p.arc(Point{X: minX(rect), Y: maxY(rect)}, Point{X: minX(rect), Y: minY(rect)}, radius[0])
+	p.arc(Point{X: minX(rect), Y: minY(rect)}, Point{X: maxX(rect), Y: minY(rect)}, radius[3])
 	p.close()
 	b.path = p
 }
@@ -300,8 +300,8 @@ func (b *RoundBox) Draw(rec *gfx.Recorder, at Point) {
 	b.doDraw(rec, at, itemShadow(&b.Style.DrawableStyle))
 
 	// The width is one short, as in Swift.
-	rec.ClipRect(gfxRect(Rect{b.bounds.X + at.X, b.bounds.Y + at.Y, b.bounds.Width - 1, b.bounds.Height}))
-	b.drawChildren(rec, Point{minX(b.bounds) + at.X, minY(b.bounds) + at.Y})
+	rec.ClipRect(gfxRect(Rect{X: b.bounds.X + at.X, Y: b.bounds.Y + at.Y, Width: b.bounds.Width - 1, Height: b.bounds.Height}))
+	b.drawChildren(rec, Point{X: minX(b.bounds) + at.X, Y: minY(b.bounds) + at.Y})
 	rec.Restore()
 }
 
@@ -334,8 +334,8 @@ func (b *EmptyBox) Traverse(op func(Drawable) bool) { traverseWith(b, b.Children
 
 func (b *EmptyBox) Draw(rec *gfx.Recorder, at Point) {
 	rec.Save()
-	rec.ClipRect(gfxRect(Rect{b.bounds.X + at.X, b.bounds.Y + at.Y, b.bounds.Width, b.bounds.Height}))
-	b.drawChildrenShadowed(rec, Point{minX(b.bounds) + at.X, minY(b.bounds) + at.Y}, itemShadow(b.Style))
+	rec.ClipRect(gfxRect(Rect{X: b.bounds.X + at.X, Y: b.bounds.Y + at.Y, Width: b.bounds.Width, Height: b.bounds.Height}))
+	b.drawChildrenShadowed(rec, Point{X: minX(b.bounds) + at.X, Y: minY(b.bounds) + at.Y}, itemShadow(b.Style))
 	rec.Restore()
 }
 
@@ -374,12 +374,12 @@ func (b *CircleBox) SetPath(rect Rect) { b.bounds = rect }
 func (b *CircleBox) Traverse(op func(Drawable) bool) { traverseWith(b, b.Children, op) }
 
 func ellipsePath(r Rect) *gfx.Path {
-	return gfx.EllipsePath(gfxRect(Rect{midX(r) - math.Abs(r.Width)/2, midY(r) - math.Abs(r.Height)/2, math.Abs(r.Width), math.Abs(r.Height)}))
+	return gfx.EllipsePath(gfxRect(Rect{X: midX(r) - math.Abs(r.Width)/2, Y: midY(r) - math.Abs(r.Height)/2, Width: math.Abs(r.Width), Height: math.Abs(r.Height)}))
 }
 
 func (b *CircleBox) Draw(rec *gfx.Recorder, at Point) {
 	rec.Save()
-	r := Rect{b.bounds.X + at.X, b.bounds.Y + at.Y, b.bounds.Width, b.bounds.Height}
+	r := Rect{X: b.bounds.X + at.X, Y: b.bounds.Y + at.Y, Width: b.bounds.Width, Height: b.bounds.Height}
 	fill := b.Style.Color.gfxColor()
 	sh := itemShadow(b.Style)
 	if b.Fill {
@@ -400,8 +400,8 @@ func (b *CircleBox) Draw(rec *gfx.Recorder, at Point) {
 		rec.StrokePath(ellipsePath(r), strokeStyle(b.Style), b.Style.BorderColor.gfxColor())
 	}
 
-	rec.ClipPath(ellipsePath(Rect{r.X + 2, r.Y + 2, r.Width - 4, r.Height - 4}))
-	b.drawChildren(rec, Point{minX(b.bounds) + at.X, minY(b.bounds) + at.Y})
+	rec.ClipPath(ellipsePath(Rect{X: r.X + 2, Y: r.Y + 2, Width: r.Width - 4, Height: r.Height - 4}))
+	b.drawChildren(rec, Point{X: minX(b.bounds) + at.X, Y: minY(b.bounds) + at.Y})
 	rec.Restore()
 }
 
@@ -426,10 +426,12 @@ func (b *ImageBox) Layer() Layer                    { return LayerDefault }
 func (b *ImageBox) Layout(_, _ Rect)                {}
 func (b *ImageBox) Traverse(op func(Drawable) bool) { op(b) }
 func (b *ImageBox) SelectorBounds() Rect            { return b.Bounds() }
-func (b *ImageBox) Bounds() Rect                    { return Rect{b.Pos.X, b.Pos.Y, b.Size.Width, b.Size.Height} }
+func (b *ImageBox) Bounds() Rect {
+	return Rect{X: b.Pos.X, Y: b.Pos.Y, Width: b.Size.Width, Height: b.Size.Height}
+}
 
 func (b *ImageBox) Draw(rec *gfx.Recorder, at Point) {
-	g := gfxRect(Rect{b.Pos.X + at.X, b.Pos.Y + at.Y, b.Size.Width, b.Size.Height})
+	g := gfxRect(Rect{X: b.Pos.X + at.X, Y: b.Pos.Y + at.Y, Width: b.Size.Width, Height: b.Size.Height})
 	rec.DrawImage(b.Img, g.Min.X, g.Min.Y, g.W(), g.H())
 }
 
@@ -441,19 +443,19 @@ func arrow(from, to Point, tailWidth, headWidth, headLength float64) *path {
 	}
 	tailLength := length - headLength
 	points := []Point{
-		{0, tailWidth / 2.0},
-		{tailLength, tailWidth / 2.0},
-		{tailLength, headWidth / 2.0},
-		{length, 0},
-		{tailLength, -headWidth / 2.0},
-		{tailLength, -tailWidth / 2.0},
-		{0, -tailWidth / 2.0},
+		{X: 0, Y: tailWidth / 2.0},
+		{X: tailLength, Y: tailWidth / 2.0},
+		{X: tailLength, Y: headWidth / 2.0},
+		{X: length, Y: 0},
+		{X: tailLength, Y: -headWidth / 2.0},
+		{X: tailLength, Y: -tailWidth / 2.0},
+		{X: 0, Y: -tailWidth / 2.0},
 	}
 	cosine := (to.X - from.X) / length
 	sine := (to.Y - from.Y) / length
 	p := newPath()
 	for i, pt := range points {
-		q := Point{cosine*pt.X - sine*pt.Y + from.X, sine*pt.X + cosine*pt.Y + from.Y}
+		q := Point{X: cosine*pt.X - sine*pt.Y + from.X, Y: sine*pt.X + cosine*pt.Y + from.Y}
 		if i == 0 {
 			p.move(q)
 		} else {
@@ -493,7 +495,7 @@ func (l *DrawableLine) AddLabel(label string, images *ElementImageProvider, env 
 	shift := Point{}
 	attr := toAttributedString(markdown.GetTokens(strings.ReplaceAll(label, `\n`, "\n")), FontSpec{Size: l.Style.FontSize}, l.Style.BorderColor, &shift, images, []TextPosition{Center, Middle}, 0)
 	size := env.calculateSize(attr)
-	l.Label = &TextBox{frame: Rect{0, 0, size.Width, size.Height}, attr: attr, env: env}
+	l.Label = &TextBox{frame: Rect{X: 0, Y: 0, Width: size.Width, Height: size.Height}, attr: attr, env: env}
 }
 
 // UpdateLayout recomputes the end points and waypoints for boxes sr and tr.
@@ -512,69 +514,69 @@ func (l *DrawableLine) UpdateLayout(sr, tr Rect) {
 			// Variant A
 			if y1+h1 < y2 {
 				// Below
-				l.Source = Point{x1 + w1, y1 + h1/2.0}
-				l.Target = Point{x2 + w2, y2 + h2/2.0}
+				l.Source = Point{X: x1 + w1, Y: y1 + h1/2.0}
+				l.Target = Point{X: x2 + w2, Y: y2 + h2/2.0}
 				offset := math.Max(x1+w1, x2+w2) + 20
-				l.ExtraPoints = append(l.ExtraPoints, Point{offset, l.Source.Y}, Point{offset, l.Target.Y})
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: offset, Y: l.Source.Y}, Point{X: offset, Y: l.Target.Y})
 			} else {
 				// Under
-				l.Source = Point{x1, y1 + h1/2.0}
-				l.Target = Point{x2, y2 + h2/2.0}
+				l.Source = Point{X: x1, Y: y1 + h1/2.0}
+				l.Target = Point{X: x2, Y: y2 + h2/2.0}
 				offset := math.Min(x1, x2) - 20
-				l.ExtraPoints = append(l.ExtraPoints, Point{offset, l.Source.Y}, Point{offset, l.Target.Y})
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: offset, Y: l.Source.Y}, Point{X: offset, Y: l.Target.Y})
 			}
 		case !cx && cy:
 			// Variant B
 			if x1+w1 < x2 {
 				// Left
-				l.Source = Point{x1 + w1/2, y1}
-				l.Target = Point{x2 + w2/2, y2}
+				l.Source = Point{X: x1 + w1/2, Y: y1}
+				l.Target = Point{X: x2 + w2/2, Y: y2}
 				offset := math.Min(y1, y2) - 20
-				l.ExtraPoints = append(l.ExtraPoints, Point{l.Source.X, offset}, Point{l.Target.X, offset})
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Source.X, Y: offset}, Point{X: l.Target.X, Y: offset})
 			} else {
 				// Right
-				l.Source = Point{x1 + w1/2, y1 + h1}
-				l.Target = Point{x2 + w2/2, y2 + h2}
+				l.Source = Point{X: x1 + w1/2, Y: y1 + h1}
+				l.Target = Point{X: x2 + w2/2, Y: y2 + h2}
 				offset := math.Max(y1+h1, y2+h2) + 20
-				l.ExtraPoints = append(l.ExtraPoints, Point{l.Source.X, offset}, Point{l.Target.X, offset})
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Source.X, Y: offset}, Point{X: l.Target.X, Y: offset})
 			}
 		case x1+w1 < x2:
 			// variant C, Left
 			if y1+h1 < y2 {
 				// Up
-				l.Source = Point{x1 + w1, y1 + h1/2}
-				l.Target = Point{x2 + w2/2, y2}
-				l.ExtraPoints = append(l.ExtraPoints, Point{l.Target.X, l.Source.Y})
+				l.Source = Point{X: x1 + w1, Y: y1 + h1/2}
+				l.Target = Point{X: x2 + w2/2, Y: y2}
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Target.X, Y: l.Source.Y})
 			} else {
 				// Down
-				l.Source = Point{x1 + w1/2, y1}
-				l.Target = Point{x2, y2 + h2/2}
-				l.ExtraPoints = append(l.ExtraPoints, Point{l.Source.X, l.Target.Y})
+				l.Source = Point{X: x1 + w1/2, Y: y1}
+				l.Target = Point{X: x2, Y: y2 + h2/2}
+				l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Source.X, Y: l.Target.Y})
 			}
 		case y1+h1 < y2:
 			// Right and Up
-			l.Source = Point{x1 + w1/2, y1 + h1}
-			l.Target = Point{x2 + w2, y2 + h2/2}
-			l.ExtraPoints = append(l.ExtraPoints, Point{l.Source.X, l.Source.Y})
+			l.Source = Point{X: x1 + w1/2, Y: y1 + h1}
+			l.Target = Point{X: x2 + w2, Y: y2 + h2/2}
+			l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Source.X, Y: l.Source.Y})
 		default:
 			// h2 where h1 would be expected: a quirk of the Swift original.
-			l.Source = Point{x1, y1 + h2/2}
-			l.Target = Point{x2 + w2/2, y2 + h2}
-			l.ExtraPoints = append(l.ExtraPoints, Point{l.Target.X, l.Source.Y})
+			l.Source = Point{X: x1, Y: y1 + h2/2}
+			l.Target = Point{X: x2 + w2/2, Y: y2 + h2}
+			l.ExtraPoints = append(l.ExtraPoints, Point{X: l.Target.X, Y: l.Source.Y})
 		}
 		return
 	}
 
-	p1 := Point{midX(sr), midY(sr)}
-	p2 := Point{midX(tr), midY(tr)}
+	p1 := Point{X: midX(sr), Y: midY(sr)}
+	p2 := Point{X: midX(tr), Y: midY(tr)}
 	hasControl := l.Control.X != 0 || l.Control.Y != 0
 
 	fromToLen := math.Sqrt(math.Pow(p1.X-p2.X, 2) + math.Pow(p1.Y-p2.Y, 2))
 	if fromToLen == 0 {
 		fromToLen = 1
 	}
-	fTo := Point{(p2.X - p1.X) / fromToLen, (p2.Y - p1.Y) / fromToLen}
-	ctrl := Point{p1.X + l.Control.X + fTo.X*fromToLen/2, p1.Y + fTo.Y*fromToLen/2 + l.Control.Y}
+	fTo := Point{X: (p2.X - p1.X) / fromToLen, Y: (p2.Y - p1.Y) / fromToLen}
+	ctrl := Point{X: p1.X + l.Control.X + fTo.X*fromToLen/2, Y: p1.Y + fTo.Y*fromToLen/2 + l.Control.Y}
 
 	srcTo, tgtFrom := p2, p1
 	if hasControl {
@@ -600,7 +602,7 @@ func (l *DrawableLine) labelPosition(lbl *TextBox) Point {
 	if math.Abs(l.Source.X-l.Target.X) < 10 {
 		ny -= lb.Height / 2
 	}
-	return Point{nx + 5, ny}
+	return Point{X: nx + 5, Y: ny}
 }
 
 type builtPath struct {
@@ -625,9 +627,9 @@ func (l *DrawableLine) buildPath(point Point) builtPath {
 	arrowTarget := display == "arrow" || display == "arrows"
 	arrowSource := display == "arrow-source" || display == "arrows"
 
-	fromPt := Point{l.Source.X + point.X, l.Source.Y + point.Y}
+	fromPt := Point{X: l.Source.X + point.X, Y: l.Source.Y + point.Y}
 	fromPtLast := fromPt
-	toPt := Point{l.Target.X + point.X, l.Target.Y + point.Y}
+	toPt := Point{X: l.Target.X + point.X, Y: l.Target.Y + point.Y}
 
 	p.move(fromPt)
 
@@ -635,14 +637,14 @@ func (l *DrawableLine) buildPath(point Point) builtPath {
 	quadCp := fromPt
 	for _, ep := range l.ExtraPoints {
 		// Move from pt to new location
-		fromPtLast = Point{ep.X + point.X, ep.Y + point.Y}
+		fromPtLast = Point{X: ep.X + point.X, Y: ep.Y + point.Y}
 
 		if arrowSource {
 			// We need to move source point a bit less
 			px, py := fromPtLast.X-fromPt.X, fromPtLast.Y-fromPt.Y
 			plen := math.Sqrt(px*px + py*py)
 			if plen > 10 {
-				fromPt = Point{fromPt.X + px/plen*5, fromPt.Y + py/plen*5}
+				fromPt = Point{X: fromPt.X + px/plen*5, Y: fromPt.Y + py/plen*5}
 				p.move(fromPt)
 			}
 		}
@@ -652,7 +654,7 @@ func (l *DrawableLine) buildPath(point Point) builtPath {
 			p.line(fromPtLast)
 		}
 		if l.Label != nil {
-			labelPoint = &Point{ep.X + 5, ep.Y - l.Label.Bounds().Height}
+			labelPoint = &Point{X: ep.X + 5, Y: ep.Y - l.Label.Bounds().Height}
 		}
 	}
 
@@ -667,7 +669,7 @@ func (l *DrawableLine) buildPath(point Point) builtPath {
 		px, py := toPt.X-fromPtLast.X, toPt.Y-fromPtLast.Y
 		plen := math.Sqrt(px*px + py*py)
 		if plen > 10 {
-			toPt = Point{toPt.X - px/plen*5, toPt.Y - py/plen*5}
+			toPt = Point{X: toPt.X - px/plen*5, Y: toPt.Y - py/plen*5}
 		}
 		if quad {
 			p.quad(toPt, quadCp)
@@ -698,8 +700,8 @@ func (l *DrawableLine) Draw(rec *gfx.Recorder, at Point) {
 	if bp.drawArrow {
 		spt, ept := bp.to, bp.from
 		if n := len(l.ExtraPoints); n > 0 {
-			spt = Point{l.ExtraPoints[0].X + at.X, l.ExtraPoints[0].Y + at.Y}
-			ept = Point{l.ExtraPoints[n-1].X + at.X, l.ExtraPoints[n-1].Y + at.Y}
+			spt = Point{X: l.ExtraPoints[0].X + at.X, Y: l.ExtraPoints[0].Y + at.Y}
+			ept = Point{X: l.ExtraPoints[n-1].X + at.X, Y: l.ExtraPoints[n-1].Y + at.Y}
 		}
 		toPt, fromPt := bp.to, bp.from
 		heads := newPath()
@@ -707,14 +709,14 @@ func (l *DrawableLine) Draw(rec *gfx.Recorder, at Point) {
 		if display == "arrow" || display == "arrows" {
 			px, py := ept.X-toPt.X, ept.Y-toPt.Y
 			if plen := math.Sqrt(px*px + py*py); plen > 10 {
-				ept = Point{toPt.X + px/plen*10, toPt.Y + py/plen*10}
+				ept = Point{X: toPt.X + px/plen*10, Y: toPt.Y + py/plen*10}
 			}
 			appendPath(heads, arrow(ept, toPt, 0, 10, 10))
 		}
 		if display == "arrow-source" || display == "arrows" {
 			px, py := spt.X-fromPt.X, spt.Y-fromPt.Y
 			if plen := math.Sqrt(px*px + py*py); plen > 10 {
-				spt = Point{fromPt.X + px/plen*10, fromPt.Y + py/plen*10}
+				spt = Point{X: fromPt.X + px/plen*10, Y: fromPt.Y + py/plen*10}
 			}
 			appendPath(heads, arrow(spt, fromPt, 0, 10, 10))
 		}
@@ -730,7 +732,7 @@ func (l *DrawableLine) Draw(rec *gfx.Recorder, at Point) {
 	}
 
 	if l.Label != nil && bp.labelPoint != nil {
-		l.Label.drawShadowed(rec, Point{at.X + bp.labelPoint.X, at.Y + bp.labelPoint.Y}, sh)
+		l.Label.drawShadowed(rec, Point{X: at.X + bp.labelPoint.X, Y: at.Y + bp.labelPoint.Y}, sh)
 	}
 	rec.Restore()
 }
@@ -767,7 +769,7 @@ func (l *DrawableLine) Bounds() Rect {
 		x0, y0, x1, y1 = x0-10, y0-10, x1+10, y1+10
 	}
 	lw := l.Style.LineWidth
-	return insetBy(Rect{x0, y0, math.Abs(x1 - x0), math.Max(math.Abs(y1-y0), 5)}, -lw, -lw)
+	return insetBy(Rect{X: x0, Y: y0, Width: math.Abs(x1 - x0), Height: math.Max(math.Abs(y1-y0), 5)}, -lw, -lw)
 }
 
 func (l *DrawableLine) SelectorBounds() Rect {
@@ -776,7 +778,7 @@ func (l *DrawableLine) SelectorBounds() Rect {
 		x0, x1 = math.Min(ep.X, x0), math.Max(ep.X, x1)
 		y0, y1 = math.Min(ep.Y, y0), math.Max(ep.Y, y1)
 		if l.Label != nil {
-			pt := Point{ep.X + 5, ep.Y - l.Label.Bounds().Height}
+			pt := Point{X: ep.X + 5, Y: ep.Y - l.Label.Bounds().Height}
 			lb := l.Label.SelectorBounds()
 			x1 = math.Max(x1, pt.X+lb.Width+5)
 			y0 = math.Min(y0, pt.Y-5)
@@ -789,5 +791,5 @@ func (l *DrawableLine) SelectorBounds() Rect {
 		y0 = math.Min(y0, pt.Y-5)
 	}
 	lw := l.Style.LineWidth
-	return insetBy(Rect{x0, y0, math.Abs(x1 - x0), math.Max(math.Abs(y1-y0), 5)}, -lw, -lw)
+	return insetBy(Rect{X: x0, Y: y0, Width: math.Abs(x1 - x0), Height: math.Max(math.Abs(y1-y0), 5)}, -lw, -lw)
 }

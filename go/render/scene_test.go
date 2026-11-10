@@ -180,7 +180,7 @@ func TestBackgroundLayerItemIsNotSelectable(t *testing.T) {
 
 func TestItemGeometryIsYUp(t *testing.T) {
 	_, _, d := drawableOf(t, "element Root {\n item A {\n pos 10 20\n width 100\n height 40\n }\n}")
-	assertRect(t, "selector bounds", d.SelectorBounds(), Rect{10, -20, 100, 40})
+	assertRect(t, "selector bounds", d.SelectorBounds(), Rect{X: 10, Y: -20, Width: 100, Height: 40})
 }
 
 func TestSceneWithoutChildrenAndSubset(t *testing.T) {

@@ -53,7 +53,7 @@ func (p *path) close() { p.ops = append(p.ops, pathOp{kind: 'Z'}) }
 
 // boundingBox is CGPath.boundingBox: all points including control points.
 func (p *path) boundingBox() Rect {
-	return Rect{p.box.x0, p.box.y0, p.box.x1 - p.box.x0, p.box.y1 - p.box.y0}
+	return Rect{X: p.box.x0, Y: p.box.y0, Width: p.box.x1 - p.box.x0, Height: p.box.y1 - p.box.y0}
 }
 
 // toGfx replays the path into a gfx.Path moved by (dx, dy) in y-up space and flipped to y-down.

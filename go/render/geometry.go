@@ -29,7 +29,7 @@ func midY(r Rect) float64 { return (minY(r) + maxY(r)) / 2 }
 func union(a, b Rect) Rect {
 	x0 := math.Min(minX(a), minX(b))
 	y0 := math.Min(minY(a), minY(b))
-	return Rect{x0, y0, math.Max(maxX(a), maxX(b)) - x0, math.Max(maxY(a), maxY(b)) - y0}
+	return Rect{X: x0, Y: y0, Width: math.Max(maxX(a), maxX(b)) - x0, Height: math.Max(maxY(a), maxY(b)) - y0}
 }
 
 func intersects(a, b Rect) bool {
@@ -37,7 +37,7 @@ func intersects(a, b Rect) bool {
 }
 
 func insetBy(r Rect, dx, dy float64) Rect {
-	return Rect{r.X + dx, r.Y + dy, r.Width - 2*dx, r.Height - 2*dy}
+	return Rect{X: r.X + dx, Y: r.Y + dy, Width: r.Width - 2*dx, Height: r.Height - 2*dy}
 }
 
 func containsRect(outer, inner Rect) bool {
@@ -54,7 +54,7 @@ func crossLine(p1, p2, p3, p4 Point) (Point, bool) {
 	tb := db / d
 	// NaN (parallel or zero-length segments) fails every comparison, as in the Swift and TS code.
 	if ta >= 0 && ta <= 1 && tb >= 0 && tb <= 1 {
-		return Point{p1.X + ta*(p2.X-p1.X), p1.Y + ta*(p2.Y-p1.Y)}, true
+		return Point{X: p1.X + ta*(p2.X-p1.X), Y: p1.Y + ta*(p2.Y-p1.Y)}, true
 	}
 	return Point{}, false
 }
@@ -62,16 +62,16 @@ func crossLine(p1, p2, p3, p4 Point) (Point, bool) {
 // crossBox is where segment p1-p2 crosses the border of rect; the sides are tried top, left, bottom, right.
 func crossBox(p1, p2 Point, rect Rect) (Point, bool) {
 	ox, oy := rect.X, rect.Y
-	if p, ok := crossLine(p1, p2, Point{ox, oy}, Point{ox + rect.Width, oy}); ok {
+	if p, ok := crossLine(p1, p2, Point{X: ox, Y: oy}, Point{X: ox + rect.Width, Y: oy}); ok {
 		return p, true
 	}
-	if p, ok := crossLine(p1, p2, Point{ox, oy}, Point{ox, oy + rect.Height}); ok {
+	if p, ok := crossLine(p1, p2, Point{X: ox, Y: oy}, Point{X: ox, Y: oy + rect.Height}); ok {
 		return p, true
 	}
-	if p, ok := crossLine(p1, p2, Point{ox, oy + rect.Height}, Point{ox + rect.Width, oy + rect.Height}); ok {
+	if p, ok := crossLine(p1, p2, Point{X: ox, Y: oy + rect.Height}, Point{X: ox + rect.Width, Y: oy + rect.Height}); ok {
 		return p, true
 	}
-	return crossLine(p1, p2, Point{ox + rect.Width, oy}, Point{ox + rect.Width, oy + rect.Height})
+	return crossLine(p1, p2, Point{X: ox + rect.Width, Y: oy}, Point{X: ox + rect.Width, Y: oy + rect.Height})
 }
 
 // containsPoint is CGRect.contains(point): min edges inclusive, max edges exclusive.
@@ -94,13 +94,13 @@ func crossPointLine(p1, p2, p Point) bool {
 		return false
 	}
 	// The foot of the perpendicular must fall inside the segment's box, padded to 5 for flat lines.
-	r := Rect{math.Min(p1.X, p2.X), math.Min(p1.Y, p2.Y), math.Abs(p1.X - p2.X), math.Abs(p1.Y - p2.Y)}
+	r := Rect{X: math.Min(p1.X, p2.X), Y: math.Min(p1.Y, p2.Y), Width: math.Abs(p1.X - p2.X), Height: math.Abs(p1.Y - p2.Y)}
 	if r.Height < 5 {
-		r = Rect{r.X, r.Y - 2.5, r.Width, r.Height + 5}
+		r = Rect{X: r.X, Y: r.Y - 2.5, Width: r.Width, Height: r.Height + 5}
 	}
 	if r.Width < 5 {
-		r = Rect{r.X - 2.5, r.Y, r.Width + 5, r.Height}
+		r = Rect{X: r.X - 2.5, Y: r.Y, Width: r.Width + 5, Height: r.Height}
 	}
 	d := a*a + b*b
-	return containsPoint(r, Point{(b*(b*p.X-a*p.Y) - a*c) / d, (a*(-b*p.X+a*p.Y) - b*c) / d})
+	return containsPoint(r, Point{X: (b*(b*p.X-a*p.Y) - a*c) / d, Y: (a*(-b*p.X+a*p.Y) - b*c) / d})
 }

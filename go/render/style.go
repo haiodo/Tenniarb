@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
@@ -17,56 +18,7 @@ type Evaluated map[*tenn.Token]any
 var floatRe = regexp.MustCompile(`^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$`)
 
 // jsToString is JSValue.toString() for the values an expression engine returns.
-func jsToString(v any) string {
-	switch x := v.(type) {
-	case nil:
-		return "null"
-	case string:
-		return x
-	case bool:
-		return strconv.FormatBool(x)
-	case float64:
-		return jsNumber(x)
-	case float32:
-		return jsNumber(float64(x))
-	case int:
-		return strconv.Itoa(x)
-	case int64:
-		return strconv.FormatInt(x, 10)
-	case []any:
-		parts := make([]string, len(x))
-		for i, e := range x {
-			if _, undef := e.(exec.UndefinedType); e != nil && !undef {
-				parts[i] = jsToString(e)
-			}
-		}
-		return strings.Join(parts, ",")
-	}
-	// undefined, Error, Function, objects: what the engine exports.
-	return exec.ToString(v)
-}
-
-func jsNumber(f float64) string {
-	switch {
-	case math.IsNaN(f):
-		return "NaN"
-	case math.IsInf(f, 1):
-		return "Infinity"
-	case math.IsInf(f, -1):
-		return "-Infinity"
-	case f == 0:
-		return "0"
-	}
-	if a := math.Abs(f); a >= 1e21 || a < 1e-6 {
-		s := strconv.FormatFloat(f, 'e', -1, 64)
-		// Go writes e+21 and e-07, JS e+21 and e-7.
-		mant, exp, _ := strings.Cut(s, "e")
-		sign := exp[:1]
-		exp = strings.TrimLeft(exp[1:], "0")
-		return mant + "e" + sign + exp
-	}
-	return strconv.FormatFloat(f, 'f', -1, 64)
-}
+func jsToString(v any) string { return jsval.String(v) }
 
 // jsToDouble is JSValue.toDouble() / Number(v).
 func jsToDouble(v any) float64 {
@@ -445,7 +397,7 @@ type SceneStyle struct {
 }
 
 func NewSceneStyle(darkMode bool) *SceneStyle {
-	s := &SceneStyle{DrawableStyle: *newDrawableStyle(darkMode), GridSpan: Point{5, 5}}
+	s := &SceneStyle{DrawableStyle: *newDrawableStyle(darkMode), GridSpan: Point{X: 5, Y: 5}}
 	s.DefaultItemStyle = NewDrawableItemStyle(darkMode)
 	s.DefaultLineStyle = NewDrawableLineStyle(darkMode)
 	s.DefaultLineStyle.FontSize = 12
@@ -482,7 +434,7 @@ func (s *SceneStyle) parseLine(cmdName string, child *tenn.Node, ev Evaluated) {
 		x, okx := child.GetFloat(1)
 		y, oky := child.GetFloat(2)
 		if okx && oky {
-			s.GridSpan = Point{x, y}
+			s.GridSpan = Point{X: x, Y: y}
 		}
 	default:
 		s.DrawableStyle.parseLine(cmdName, child, ev)

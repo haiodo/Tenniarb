@@ -10,7 +10,7 @@ import (
 // Editor parts of the Swift scene: find, updateLineTo, updateLayout, SelectorBox and SelectorLine.
 
 // Everywhere is a dirty area that never culls a box moved away from its place.
-var Everywhere = Rect{-1e9, -1e9, 2e9, 2e9}
+var Everywhere = Rect{X: -1e9, Y: -1e9, Width: 2e9, Height: 2e9}
 
 // DrawableOf is the item a drawable draws, nil for text and containers.
 func DrawableOf(d Drawable) *model.DiagramItem {
@@ -69,13 +69,13 @@ func (l *DrawableLine) LabelBounds() Rect {
 		pt := l.labelPosition(l.Label)
 		if len(l.ExtraPoints) > 0 {
 			ep := l.ExtraPoints[0]
-			pt = Point{ep.X + 5, ep.Y - l.Label.Bounds().Height}
+			pt = Point{X: ep.X + 5, Y: ep.Y - l.Label.Bounds().Height}
 		}
 		lb := l.Label.SelectorBounds()
-		return Rect{pt.X, pt.Y, lb.Width, lb.Height}
+		return Rect{X: pt.X, Y: pt.Y, Width: lb.Width, Height: lb.Height}
 	}
 	b := l.Bounds()
-	return Rect{midX(b) - 50, midY(b) - 15, 100, 30}
+	return Rect{X: midX(b) - 50, Y: midY(b) - 15, Width: 100, Height: 30}
 }
 
 // UpdateLineTo is DrawableScene.updateLineTo: the preview line from source to p, or to the middle
@@ -92,10 +92,10 @@ func (s *DrawableScene) UpdateLineTo(source *model.DiagramItem, p Point, target 
 		if td, ok := s.Drawables[target]; ok {
 			b := td.Bounds()
 			tb = &b
-			end = Point{midX(b), midY(b)}
+			end = Point{X: midX(b), Y: midY(b)}
 		}
 	}
-	mid := Point{midX(sb), midY(sb)}
+	mid := Point{X: midX(sb), Y: midY(sb)}
 	if cp, ok := crossBox(mid, end, sb); ok {
 		mid = cp
 	}
@@ -129,7 +129,7 @@ func (s *DrawableScene) UpdateLayout(positions map[*model.DiagramItem]Point) []D
 			SetPath(Rect)
 		}:
 			sb := b.SelectorBounds()
-			b.SetPath(Rect{pos.X, pos.Y - sb.Height, sb.Width, sb.Height})
+			b.SetPath(Rect{X: pos.X, Y: pos.Y - sb.Height, Width: sb.Width, Height: sb.Height})
 		case *DrawableLine:
 			b.Control = pos
 			b.UpdateLayout(b.SourceRect, b.TargetRect)
@@ -189,7 +189,7 @@ type SelectorBox struct {
 
 // NewSelectorBox is the outline of bounds, grown by 5 on each side as Swift does for an item.
 func NewSelectorBox(bounds Rect, green bool) *SelectorBox {
-	return &SelectorBox{Pos: Point{bounds.X - 5, bounds.Y - 5}, Size: Size{bounds.Width + 10, bounds.Height + 10}, Radius: 9, Green: green, Blur: 5}
+	return &SelectorBox{Pos: Point{X: bounds.X - 5, Y: bounds.Y - 5}, Size: Size{bounds.Width + 10, bounds.Height + 10}, Radius: 9, Green: green, Blur: 5}
 }
 
 func (b *SelectorBox) color() Color {
@@ -207,13 +207,13 @@ func dashedGlow(rec *gfx.Recorder, p *path, at Point, width, blur float64, c Col
 }
 
 func (b *SelectorBox) Draw(rec *gfx.Recorder, at Point) {
-	r := Rect{b.Pos.X, b.Pos.Y, b.Size.Width, b.Size.Height}
+	r := Rect{X: b.Pos.X, Y: b.Pos.Y, Width: b.Size.Width, Height: b.Size.Height}
 	p := newPath()
-	p.move(Point{midX(r), minY(r)})
-	p.arc(Point{maxX(r), minY(r)}, Point{maxX(r), maxY(r)}, b.Radius)
-	p.arc(Point{maxX(r), maxY(r)}, Point{minX(r), maxY(r)}, b.Radius)
-	p.arc(Point{minX(r), maxY(r)}, Point{minX(r), minY(r)}, b.Radius)
-	p.arc(Point{minX(r), minY(r)}, Point{maxX(r), minY(r)}, b.Radius)
+	p.move(Point{X: midX(r), Y: minY(r)})
+	p.arc(Point{X: maxX(r), Y: minY(r)}, Point{X: maxX(r), Y: maxY(r)}, b.Radius)
+	p.arc(Point{X: maxX(r), Y: maxY(r)}, Point{X: minX(r), Y: maxY(r)}, b.Radius)
+	p.arc(Point{X: minX(r), Y: maxY(r)}, Point{X: minX(r), Y: minY(r)}, b.Radius)
+	p.arc(Point{X: minX(r), Y: minY(r)}, Point{X: maxX(r), Y: minY(r)}, b.Radius)
 	p.close()
 	rec.Save()
 	dashedGlow(rec, p, at, 1, b.Blur, b.color(), b.Screen)
