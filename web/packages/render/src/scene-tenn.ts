@@ -4567,7 +4567,7 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
       const words = p.args.map((_, i) => propText(p, i)).filter((w) => w !== "");
       prep.diag.fail(
         p.pos ?? rn.src ?? { line: 0, col: 0 },
-        `title takes one value; quote a text with spaces: title "${words.join(" ")}"`,
+        `title takes one value: quote the words, title "${words.join(" ")}" (tenniarb check -fix does it)`,
       );
     }
   }

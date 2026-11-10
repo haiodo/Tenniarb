@@ -21,7 +21,7 @@ const (
 	ExitUsage  = 2
 )
 
-const usage = "usage: tenniarb check [-json] [-root DIR] [-entry FILE] FILE..."
+const usage = "usage: tenniarb check [-json] [-fix] [-root DIR] [-entry FILE] FILE..."
 
 // Diag is one diagnostic in the -json output; File is relative to the working directory.
 type Diag struct {
@@ -38,6 +38,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("check", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	asJSON := fs.Bool("json", false, "print the diagnostics as a JSON array")
+	fix := fs.Bool("fix", false, "quote a title written with spaces and no quotes: title \"a b\"")
 	root := fs.String("root", "", "workspace root for --from-file (default: the working directory, or the directory of a file outside it)")
 	entry := fs.String("entry", "", "entry document the files are checked in the context of (default: the entry property, else found by searching up for a file that mounts it)")
 	if err := fs.Parse(args); err != nil {
@@ -67,6 +68,15 @@ func Run(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stderr, "tenniarb check:", err)
 			failed = true
 			continue
+		}
+		if *fix {
+			if n, err := fixFile(abs); err != nil {
+				fmt.Fprintln(stderr, "tenniarb check:", err)
+				failed = true
+				continue
+			} else if n > 0 {
+				fmt.Fprintf(stderr, "tenniarb check: %s: quoted %d title(s)\n", f, n)
+			}
 		}
 		r := rootOf(*root, cwd, abs)
 		es, tree, err := diagnose(r, abs, *entry)

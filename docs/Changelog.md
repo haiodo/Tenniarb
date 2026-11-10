@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* `tenniarb check -fix` rewrites a title written with spaces and no quotes, `title Gap and padding` as
+  `title "Gap and padding"`, and says how many it quoted. The error about such a title now names that
+  command, so the file can be fixed without knowing the format: `title takes one value: quote the words,
+  title "Gap and padding" (tenniarb check -fix does it)`.
 * Export as HTML, and the PNG the MCP tools hand out, draw what the canvas draws through go/scene: the old
   renderer no longer makes a picture of its own, so an export and the window show the same thing.
 * A classic diagram works out the `width` and `height` an expression reads from the picture the canvas

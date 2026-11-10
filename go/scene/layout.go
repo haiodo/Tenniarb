@@ -744,7 +744,7 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 		// A bare text with spaces is several arguments, and only the first would be drawn: name the
 		// mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
 		if len(pr.Args) > 1 && !p.classic {
-			p.t.fail(pr.Pos, "title takes one value; quote a text with spaces: %s", quotedTitle(pr))
+			p.t.fail(pr.Pos, "title takes one value: quote the words, %s (tenniarb check -fix does it)", quotedTitle(pr))
 		}
 	}
 	if m := p.styles[rn].marker; m != "" {

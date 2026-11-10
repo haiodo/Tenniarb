@@ -228,7 +228,7 @@ func TestPaddingInsetsLeafText(t *testing.T) {
 // read `title "Gap and padding"` back, and a canned example made it look like the value in the file.
 func TestTitleWithSpacesRejected(t *testing.T) {
 	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { auto-layout column; title Gap and padding } }`)
-	if err == nil || !strings.Contains(err.Error(), `title takes one value; quote a text with spaces: title "Gap and padding"`) {
+	if err == nil || !strings.Contains(err.Error(), `title takes one value: quote the words, title "Gap and padding"`) {
 		t.Fatalf("error %v", err)
 	}
 	if !strings.Contains(err.Error(), "a.tenn:1:44") {
