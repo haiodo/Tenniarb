@@ -4,6 +4,7 @@ package app
 
 import (
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -47,15 +48,17 @@ func (g canvasGeom) Items() []*model.DiagramItem {
 // the canvas drew no frame for - the session holds a classic diagram the canvas shows as a scene - is
 // placed by the size the scene gives it, so the session still works on it.
 func (g canvasGeom) Box(it *model.DiagramItem) (geometry.Rect, bool) {
+	// An item the element no longer holds has no box, however recently it was drawn: the session leans on
+	// this to let go of a deleted item, and a stale one under the pointer would grab the next press.
+	if it == nil || !g.present(it) {
+		return geometry.Rect{}, false
+	}
 	if b, ok := g.v.drawnRect(it); ok {
 		r := g.v.smap.RectToScene(b)
 		if p, moved := g.v.previewBoxes[it]; moved {
 			r.X, r.Y = p.X, p.Y
 		}
 		return r, true
-	}
-	if it == nil {
-		return geometry.Rect{}, false
 	}
 	if it.Kind == model.ItemKindLink {
 		if a, ok := g.centre(it.Source); ok {
@@ -76,6 +79,16 @@ func (g canvasGeom) Box(it *model.DiagramItem) (geometry.Rect, bool) {
 		h = v
 	}
 	return geometry.Rect{X: it.X, Y: it.Y - h, Width: w, Height: h}, true
+}
+
+// present reports whether the item is still part of the element on the canvas: a deleted item is not,
+// and the selection must let go of it.
+func (g canvasGeom) present(it *model.DiagramItem) bool {
+	v := g.v
+	if v == nil || v.state.Current == nil {
+		return false
+	}
+	return slices.Contains(v.state.Current.Items, it)
 }
 
 // PaintBox is the same box: the scene draws the frame, and the shadow of an item is not a separate box.
