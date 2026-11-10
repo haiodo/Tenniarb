@@ -1263,3 +1263,48 @@ func (s *Screen) rnodeOf(n *Node) *RNode {
 	}
 	return nil
 }
+
+// BodyLine is one line of a body as the layout breaks it, for a test or a parity stand: the room it takes
+// (the gap above it included), the height of its box and its words.
+type BodyLine struct {
+	W, H, Gap float64
+	Text      string
+}
+
+// BodyLines is how the body of the node is broken at width w: the lines with their heights, so a stand can
+// compare them and not only the box of the item.
+func (s *Screen) BodyLines(n *Node, w float64) []BodyLine {
+	if s == nil || s.p == nil || n == nil {
+		return nil
+	}
+	rn := s.rnodeOfBody(n)
+	if rn == nil {
+		return nil
+	}
+	b := s.p.bodies[rn]
+	if b == nil {
+		return nil
+	}
+	if w <= 0 {
+		w = math.Inf(1)
+	}
+	out := make([]BodyLine, 0, 8)
+	for _, l := range b.lines(w) {
+		var text strings.Builder
+		for _, r := range l.runs {
+			text.WriteString(r.text)
+		}
+		out = append(out, BodyLine{W: l.w, H: l.h, Gap: l.gap, Text: text.String()})
+	}
+	return out
+}
+
+// rnodeOfBody is the node of the layout whose body was written for n.
+func (s *Screen) rnodeOfBody(n *Node) *RNode {
+	for rn := range s.p.bodies {
+		if rn.Src == n {
+			return rn
+		}
+	}
+	return nil
+}

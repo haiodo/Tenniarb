@@ -114,7 +114,7 @@ func (in *inspector) shadowRows(id string, layers func() []editor.Prop, inherite
 		xy, xyRefresh := in.pairRow(caption, "X", "Y",
 			entryCfg{id: prefix + "-x", name: "shadow", idx: 0, numeric: true, src: src},
 			entryCfg{id: prefix + "-y", name: "shadow", idx: 1, numeric: true, src: src})
-		blur, blurRefresh := in.textRow("", entryCfg{id: prefix + "-blur", name: "shadow", idx: 2, numeric: true, src: src})
+		blur, blurRefresh := in.textRow("", entryCfg{id: prefix + "-blur", name: "shadow", idx: 2, numeric: true, src: src, prefix: "Blur"})
 		color, colorRefresh := in.colorCtl(entryCfg{id: prefix + "-color", name: "shadow", idx: 3, src: src})
 		remove := g.Button("−", g.Small(), g.Size(g.Scaled(24), 0), g.ID(prefix+"-remove"),
 			g.Init(func(b *g.ButtonView) {
@@ -127,8 +127,11 @@ func (in *inspector) shadowRows(id string, layers func() []editor.Prop, inherite
 					write(slices.Delete(list, at, at+1))
 				})
 			}))
+		// Three fields in one row do not fit the value column: they were squeezed into stubs that showed a
+		// digit and a half. The pair keeps its row, the blur its own, the colour its own beside the button.
 		rows = append(rows,
-			styleRow("", xy, blur),
+			styleRow("", xy),
+			styleRow("", blur),
 			styleRow("", append(color, remove)...))
 		refresh = append(refresh, xyRefresh, blurRefresh, func() { colorRefresh(kindNone) })
 	}

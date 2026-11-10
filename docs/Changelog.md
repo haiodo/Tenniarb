@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The shadow of the inspector is editable again: X, Y and blur were three fields in one row of a column that
+  holds two, so X and Y were 13 points wide - a digit and a half - and the blur had no width at all and sat
+  outside the panel. The pair keeps its row, the blur has its own with the word in front of it.
 * A picture in a classic title keeps the advance of the `@` that names it, as the old renderer counted it:
   without that space every item with a picture in its title was five points narrower than before. `Circle
   image` of `docs/Example.tenn` now matches the old width exactly (213 points) and its mean is 1.4 where it
