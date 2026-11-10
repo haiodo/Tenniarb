@@ -8,14 +8,15 @@ import (
 	"testing"
 )
 
-// check -fix rewrites the file and the check that follows finds it clean: the whole way a reader of the
-// error is meant to go.
-func TestCheckFixesTitles(t *testing.T) {
+// check -fix rewrites the file, and the check that follows finds it clean: the whole way a reader of the
+// error is meant to go. A title is quoted and a long pos is rounded in the same run.
+func TestCheckFixesTitlesAndPos(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "e.tenn")
 	const text = `element "E" {
     item A {
         title Gap and padding
+        pos -666.55078125 142.05078125
     }
 }
 `
@@ -26,15 +27,17 @@ func TestCheckFixesTitles(t *testing.T) {
 	if code := Run([]string{"-fix", "-root", dir, file}, &out, &errOut); code != ExitOK {
 		t.Fatalf("check -fix: %d\n%s%s", code, out.String(), errOut.String())
 	}
-	if !strings.Contains(errOut.String(), "quoted 1 title") {
+	if !strings.Contains(errOut.String(), "fixed 3 place(s)") {
 		t.Errorf("no report of the fix: %s", errOut.String())
 	}
 	fixed, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(fixed), `title "Gap and padding"`) {
-		t.Fatalf("not fixed:\n%s", fixed)
+	for _, want := range []string{`title "Gap and padding"`, "pos -666.55 142.05"} {
+		if !strings.Contains(string(fixed), want) {
+			t.Fatalf("%q is not fixed:\n%s", want, fixed)
+		}
 	}
 	out.Reset()
 	errOut.Reset()

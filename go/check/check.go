@@ -38,7 +38,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("check", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	asJSON := fs.Bool("json", false, "print the diagnostics as a JSON array")
-	fix := fs.Bool("fix", false, "quote a title written with spaces and no quotes: title \"a b\"")
+	fix := fs.Bool("fix", false, "quote a title written with spaces and no quotes, round a pos value longer than two decimals")
 	root := fs.String("root", "", "workspace root for --from-file (default: the working directory, or the directory of a file outside it)")
 	entry := fs.String("entry", "", "entry document the files are checked in the context of (default: the entry property, else found by searching up for a file that mounts it)")
 	if err := fs.Parse(args); err != nil {
@@ -75,7 +75,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 				failed = true
 				continue
 			} else if n > 0 {
-				fmt.Fprintf(stderr, "tenniarb check: %s: quoted %d title(s)\n", f, n)
+				fmt.Fprintf(stderr, "tenniarb check: %s: fixed %d place(s)\n", f, n)
 			}
 		}
 		r := rootOf(*root, cwd, abs)
