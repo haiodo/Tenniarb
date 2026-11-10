@@ -1,6 +1,8 @@
 package classic
 
 import (
+	"golang.org/x/text/unicode/norm"
+
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/exec"
@@ -98,4 +100,38 @@ func SceneContext(tree *scene.Tree, path string, measure gfx.TextMeasurer, measu
 		ctx.SetElement(el)
 		return ctx
 	}
+}
+
+// LinkAt is the link of el a node of the element is written for: a link is matched by its ends and by its
+// place among the links with the same ends, which is how the file resolves `link A B` when it repeats.
+func LinkAt(e *model.Element, n *scene.Node) *model.DiagramItem {
+	if e == nil || n == nil || n.Kind != scene.KLink {
+		return nil
+	}
+	nth := 0
+	if n.Parent != nil {
+		for _, c := range n.Parent.Content {
+			if c == n {
+				break
+			}
+			if c.Kind == scene.KLink && c.From == n.From && c.To == n.To {
+				nth++
+			}
+		}
+	}
+	seen := 0
+	for _, it := range e.Items {
+		if it.Kind != model.ItemKindLink {
+			continue
+		}
+		from, to := endNames(it)
+		if norm.NFC.String(from) != norm.NFC.String(n.From) || norm.NFC.String(to) != norm.NFC.String(n.To) {
+			continue
+		}
+		if seen == nth {
+			return it
+		}
+		seen++
+	}
+	return nil
 }
