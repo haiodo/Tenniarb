@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The pixel test of a title in the middle of a tall box asks for `Inter` by name, as the other one does: it
+  fell back to whatever font the runner had, and failed on the Linux CI runner where that font is not the
+  one of a Mac. The test environment registers Inter from files, so the metrics are the same everywhere.
 * Six commands of the drawing order, in Edit > Arrange and in the context menu of the canvas: Raise and
   Lower move the selection one place in the order the items are drawn in, Bring to Front and Send to Back
   take it to the ends, and Layer Up and Layer Down move it between the layers of the format (background

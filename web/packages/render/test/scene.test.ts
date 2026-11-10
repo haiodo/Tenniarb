@@ -419,6 +419,7 @@ test("item text sits in the middle of a tall box", () => {
         height 100
         layout top left
         title "WWWW"
+        font-family Inter
         color white
         border-color white
     }
