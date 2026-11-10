@@ -473,6 +473,10 @@ func (l *loader) addParam(owner *Node, c *tenn.Node) {
 		return
 	}
 	name := argText(args, 1)
+	if name == "ctx" {
+		l.t.warn(l.pos(args[1]), "ctx is the context of the scene (spec 5f), not a parameter")
+		return
+	}
 	if owner.Param(name) != nil {
 		l.t.warn(l.pos(args[1]), "parameter %q is declared twice", name)
 		return

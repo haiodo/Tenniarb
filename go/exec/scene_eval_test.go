@@ -55,3 +55,23 @@ func TestSceneEvalColorBranch(t *testing.T) {
 	}
 }
 
+// TestSceneEvalContext: ctx.* keys of the scope are one object named ctx, a number is a number there too,
+// and a context value works inside a ternary (spec 5f).
+func TestSceneEvalContext(t *testing.T) {
+	vars := map[string]string{"size": "40", "ctx.theme": "dark", "ctx.radius": "12", "ctx.label": "Save"}
+	for _, c := range []struct{ code, want string }{
+		{`ctx.theme`, "dark"},
+		{`ctx.radius * 2`, "24"},
+		{`ctx.theme === "dark" ? "#131925" : "#f0f4ff"`, "#131925"},
+		{"`${ctx.label}: ${size}`", "Save: 40"},
+		{`typeof ctx`, "object"},
+	} {
+		if got, ok := exec.SceneEvalVars(c.code, vars); !ok || got != c.want {
+			t.Errorf("SceneEvalVars(%q) = %q, %v; want %q, true", c.code, got, ok, c.want)
+		}
+	}
+	// a missing key is undefined, which the scene layer then reports (spec 5f); the text is not a value
+	if got, ok := exec.SceneEvalVars("ctx.nope", vars); !ok || got != "undefined" {
+		t.Errorf("SceneEvalVars(ctx.nope) = %q, %v; want undefined from the engine", got, ok)
+	}
+}

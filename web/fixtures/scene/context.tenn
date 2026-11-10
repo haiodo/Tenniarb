@@ -1,0 +1,74 @@
+// Context (spec 5f): a provider sets values for its whole subtree, a component reads them as ctx.* and
+// keeps a default with ?=, so the same component stands alone, inside a dark frame, and with one value
+// overridden at the place of insertion. Slot content is written at the use site and still inherits the
+// context of the provider it lands in.
+element "Card" {
+    kind Component
+    context tone ?= light
+    context radius 8
+    item Box {
+        auto-layout column
+        justify center
+        padding 12
+        width 150
+        height 64
+        corner-radius ${ctx.radius}
+        color ${ctx.tone === "dark" ? "#131925" : "#ffffff"}
+        border-color ${ctx.tone === "dark" ? "#ffffff1a" : "#e4e7ee"}
+        line-width 1
+        item t {
+            title ${ctx.tone}
+            font-size 13
+            text-color ${ctx.tone === "dark" ? "#c1c9d6" : "#3c4149"}
+        }
+    }
+}
+
+element "Frame" {
+    kind Component
+    item Box {
+        auto-layout column
+        padding 12
+        width 200
+        color ${ctx.tone === "dark" ? "#0d1219" : "#f0f4ff"}
+        slot
+    }
+}
+
+element "Context" {
+    item canvas {
+        auto-layout column
+        gap 16
+        padding 24
+        color #f6f7fb
+
+        // no provider above: the ?= default of the component gives light
+        item Light {
+            use Card as light
+        }
+
+        item Dark {
+            context tone dark
+            use Card as dark
+        }
+
+        // the block of the use is above the provider: radius 20, tone still dark
+        item Override {
+            context tone dark
+            use Card as square {
+                context radius 20
+            }
+        }
+
+        item Slot {
+            context tone dark
+            use Frame as frame {
+                item Inner {
+                    title "inside the slot"
+                    font-size 13
+                    text-color ${ctx.tone === "dark" ? "#8e99af" : "#5a667e"}
+                }
+            }
+        }
+    }
+}

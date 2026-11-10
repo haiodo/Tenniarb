@@ -41,7 +41,17 @@ func evalArg(eval evalFunc, a *tenn.Node, vars map[string]string) (string, bool)
 	if eval == nil {
 		return "", false
 	}
-	return eval(code, vars)
+	return evalValue(eval, code, vars)
+}
+
+// evalValue is eval with the rule of spec 5f: undefined and NaN are not a value, so the caller reports the
+// expression instead of drawing their text in the scene.
+func evalValue(eval evalFunc, code string, vars map[string]string) (string, bool) {
+	v, ok := eval(code, vars)
+	if ok && (v == "undefined" || v == "NaN") {
+		return "", false
+	}
+	return v, ok
 }
 
 // params are the parameters of instance target in use: a value the use sets by name, evaluated in the

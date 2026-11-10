@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* A scene has a context: `context <key> <value>` on an item, an element, a file or in the block of a `use`
+  passes a value down the subtree, `context <key> ?= <value>` is its default, and an expression reads it as
+  `ctx.<key>` - the way a theme or a radius is set once for a frame instead of being passed as a parameter
+  through every component and every `use`. The place of insertion, the definition of the component and the
+  block of the use apply in that order, a nearer declaration wins, and the values cross `use` and the content
+  of a slot. `go/scene`, `go/exec` and the web renderer read it; the parity fixture `context` draws the three
+  layers and the slot, so a divergence is a picture that differs. A `ctx.<key>` that nothing set, and any
+  expression that comes out `undefined` or `NaN` (`${digits[0]}`), is now a diagnostic with the position of
+  the node instead of that word in the picture.
 * `design` writes a node into a block without taking the closing brace of the parent with it: `insert` and
   `set` of a new property put the command on a line of its own, so the next `delete` of a sibling no longer
   fails with `Wrong statements terminator` on a file whose `validate` was clean. `insert` takes the root of

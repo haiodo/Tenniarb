@@ -1,0 +1,484 @@
+{
+  "element": "Context",
+  "height": 326,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Context",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 326,
+        "w": 248,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f6f7fb",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 326,
+        "w": 248,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Light",
+      "opacity": 1,
+      "path": "canvas.Light",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 24
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "light",
+      "opacity": 1,
+      "path": "canvas.Light.light",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 24
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#ffffff",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.Light.light.Box",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 24
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Light.light.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 39,
+        "x": 36,
+        "y": 49
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "light"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Dark",
+      "opacity": 1,
+      "path": "canvas.Dark",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 104
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "dark",
+      "opacity": 1,
+      "path": "canvas.Dark.dark",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 104
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff1a",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#131925",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.Dark.dark.Box",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 104
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Dark.dark.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 32,
+        "x": 36,
+        "y": 129
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "dark"
+      ],
+      "textColor": "#c1c9d6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Override",
+      "opacity": 1,
+      "path": "canvas.Override",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 184
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "square",
+      "opacity": 1,
+      "path": "canvas.Override.square",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 184
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff1a",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#131925",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.Override.square.Box",
+      "radius": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "rect": {
+        "h": 64,
+        "w": 150,
+        "x": 24,
+        "y": 184
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "t",
+      "opacity": 1,
+      "path": "canvas.Override.square.Box.t",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 32,
+        "x": 36,
+        "y": 209
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "dark"
+      ],
+      "textColor": "#c1c9d6"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Slot",
+      "opacity": 1,
+      "path": "canvas.Slot",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 38,
+        "w": 200,
+        "x": 24,
+        "y": 264
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "frame",
+      "opacity": 1,
+      "path": "canvas.Slot.frame",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 38,
+        "w": 200,
+        "x": 24,
+        "y": 264
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#0d1219",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "canvas.Slot.frame.Box",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 38,
+        "w": 200,
+        "x": 24,
+        "y": 264
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Inner",
+      "opacity": 1,
+      "path": "canvas.Slot.frame.Box.Inner",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 14,
+        "w": 117,
+        "x": 36,
+        "y": 276
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "inside the slot"
+      ],
+      "textColor": "#8e99af"
+    }
+  ],
+  "width": 248
+}

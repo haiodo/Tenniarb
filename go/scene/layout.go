@@ -718,7 +718,7 @@ func (p *prep) evalText(rn *RNode, pr *Prop, text string) string {
 	for i := 0; i < len(text); {
 		if strings.HasPrefix(text[i:], "${") {
 			if j := strings.IndexByte(text[i+2:], '}'); j >= 0 {
-				if v, ok := p.eval(text[i+2:i+2+j], rn.Vars); ok {
+				if v, ok := evalValue(p.eval, text[i+2:i+2+j], rn.Vars); ok {
 					b.WriteString(v)
 					i += len("${") + j + 1
 					continue

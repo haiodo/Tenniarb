@@ -29,8 +29,9 @@ type RNode struct {
 	touched  bool     // RSlot: at or replace went through it into the fallback
 	replaced bool     // RSlot: declared by the nodes of a replace, which win over a slot of the same name
 	From, To string   // RLink
-	// Vars are the parameters of the component instance the node is in, by name (spec 5c): what an
-	// expression in its properties reads. Nil outside a component.
+	// Vars are the variables of the expressions of the node: the parameters of the component instance it
+	// is in, by name, and the context in scope as ctx.* keys (spec 5c, 5f). Nil outside a component and
+	// without context.
 	Vars map[string]string
 	// Def is the definition the root of an instance stands for: the item or element the use names, nil
 	// elsewhere. The styles of the root come from there, not from the place the use is written in.
@@ -62,6 +63,7 @@ type expander struct {
 	rec   *refFinder        // set by References: sees the paths that resolve
 	eval  evalFunc          // Options.EvalVars or Eval, for the values of parameters (spec 5c); nil: no expression runs
 	vars  map[string]string // parameters of the instance being expanded
+	env   map[string]string // context declarations in scope, key -> value (spec 5f)
 }
 
 func label(n *Node) string {
@@ -96,11 +98,11 @@ func (x *expander) enter(n *Node, pos Pos) bool {
 func (x *expander) leave() { x.stack = x.stack[:len(x.stack)-1] }
 
 func (x *expander) newR(kind RKind, n *Node) *RNode {
-	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...), Src: n, Vars: x.vars}
+	return &RNode{Kind: kind, Name: n.Name, Key: n.Key, Pos: n.Pos, Props: append([]*Prop(nil), n.Props...), Src: n, Vars: x.scope()}
 }
 
 // container expands an element or a file: its content is the scene.
-func (x *expander) container(n *Node) *RNode {
+func (x *expander) container(n *Node, env map[string]string) *RNode {
 	if !x.enter(n, n.Pos) {
 		return nil
 	}
@@ -110,6 +112,13 @@ func (x *expander) container(n *Node) *RNode {
 		x.ctx = saved.push(n)
 		defer func() { x.ctx = saved }()
 	}
+	savedEnv := x.env
+	if env != nil { // an instance: the declarations of the definition root are already in env
+		x.env = env
+	} else {
+		x.env = x.context(n.Props, x.env)
+	}
+	defer func() { x.env = savedEnv }()
 	r := x.newR(RItem, n)
 	r.Kids = x.contents(n.Content)
 	return r
@@ -130,7 +139,7 @@ func (x *expander) content(n *Node) *RNode {
 	case KItem:
 		return x.item(n)
 	case KUse:
-		return x.use(n, false)
+		return x.use(n, false, nil, nil)
 	case KLink:
 		r := x.newR(RLink, n)
 		r.Name, r.Key, r.From, r.To = "", "", n.From, n.To
@@ -152,23 +161,33 @@ func (x *expander) item(n *Node) *RNode {
 		x.vars = x.defaults(n)
 		defer func() { x.vars = caller }()
 	}
-	return x.itemBody(n)
+	return x.itemBody(n, nil)
 }
 
 // itemBody expands the content of an item in the scope x.vars already holds: the use of a component item
-// has set the values there, and they must not fall back to the defaults.
-func (x *expander) itemBody(n *Node) *RNode {
+// has set the values there, and they must not fall back to the defaults. env is the context of an
+// instance, nil for an item written in place: then its own context commands declare it.
+func (x *expander) itemBody(n *Node, env map[string]string) *RNode {
 	if !x.enter(n, n.Pos) {
 		return nil
 	}
 	defer x.leave()
+	saved := x.env
+	if env != nil {
+		x.env = env
+	} else {
+		x.env = x.context(n.Props, x.env)
+	}
+	defer func() { x.env = saved }()
 	r := x.newR(RItem, n)
 	r.Kids = x.contents(n.Content)
 	return r
 }
 
-// use expands an instance. As a target of another use (asTarget) its slots stay open for that use.
-func (x *expander) use(n *Node, asTarget bool) *RNode {
+// use expands an instance. As a target of another use (asTarget) its slots stay open for that use. env is
+// the context of the use site (nil: x.env), overlay the block declarations of the uses whose target it
+// is, weakest first (spec 5f).
+func (x *expander) use(n *Node, asTarget bool, env map[string]string, overlay []ctxDecl) *RNode {
 	if !x.enter(n, n.Pos) {
 		return nil
 	}
@@ -185,13 +204,35 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	}
 	// The values of the parameters are the scope of the block of the use, a default the scope of the
 	// declaration; without parameters of its own the target reads the scope it is written in.
-	caller := x.vars
-	values, used := x.params(target, n, caller)
+	caller, callerEnv := x.vars, x.env
+	if env != nil {
+		callerEnv = env
+	}
+	scope := x.scopeOf(caller, callerEnv)
+	values, used := x.params(target, n, scope)
+	if values != nil {
+		scope = x.scopeOf(values, callerEnv) // the block reads the parameters of the instance it makes
+	}
+	// The order of the context is: the place of the use, the definition root, the block of the use
+	// (spec 5f). A use as target keeps its own block below the block that inserts it, so the nested use
+	// applies the two itself.
+	block := x.ctxDecls(blockProps(n.Block), scope)
+	var inst *RNode
+	var instEnv map[string]string
 	x.ctx = tctx // the component's names resolve in its own file, the block's in this one
 	if values != nil {
 		x.vars = values
 	}
-	inst := x.instance(target, n)
+	if target.Kind == KUse {
+		passed := make([]ctxDecl, 0, len(block)+len(overlay))
+		passed = append(append(passed, block...), overlay...)
+		inst = x.instance(target, n, callerEnv, passed)
+	} else {
+		instEnv = applyCtx(callerEnv, x.ctxDecls(target.Props, scope))
+		instEnv = applyCtx(instEnv, block)
+		instEnv = applyCtx(instEnv, overlay)
+		inst = x.instance(target, n, instEnv, nil)
+	}
 	x.ctx, x.vars = ctx, caller
 	if inst == nil {
 		return nil
@@ -199,23 +240,29 @@ func (x *expander) use(n *Node, asTarget bool) *RNode {
 	inst.Def = target
 	inst.Name, inst.Key, inst.Pos, inst.Inst, inst.Src = n.Name, n.Key, n.Pos, true, n
 	inst.Props = withoutProp(inst.Props, "pos") // the component's pos is its place on the library canvas
+	if instEnv == nil {
+		instEnv = ctxEnv(inst.Vars)
+	}
+	savedEnv := x.env // the content of the slots and at reads the context of the instance it lands in
+	x.env = instEnv
 	x.apply(inst, n.Block, used)
+	x.env = savedEnv
 	if !asTarget && x.depth == 1 {
 		finalize(inst)
 	}
 	return inst
 }
 
-func (x *expander) instance(target, use *Node) *RNode {
+func (x *expander) instance(target, use *Node, env map[string]string, overlay []ctxDecl) *RNode {
 	switch target.Kind {
 	case KItem:
-		return x.itemBody(target)
+		return x.itemBody(target, env)
 	case KLink:
 		return x.content(target)
 	case KUse:
-		return x.use(target, true)
+		return x.use(target, true, env, overlay)
 	case KElement, KFile:
-		return x.container(target)
+		return x.container(target, env)
 	}
 	x.t.fail(use.Pos, "path %s names a %s, not a node", use.Path, target.Kind)
 	return nil

@@ -77,7 +77,7 @@ func (f *refFinder) add(kind RefKind, file string, arg Range, text string, seg i
 // expand expands n and what is written below it as validate does, in the context of its mount.
 func (f *refFinder) expand(n *Node, c *mountCtx) {
 	x := &expander{t: f.t, ctx: c, rec: f}
-	x.container(n)
+	x.container(n, nil)
 	if n.Mount != nil {
 		c = c.push(n)
 	}

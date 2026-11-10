@@ -773,6 +773,10 @@ function addParam(owner: SceneNode, c: TennNode, diag: Diagnostics): void {
     return;
   }
   const name = argText(args[1]);
+  if (name === "ctx") {
+    diag.warn(pos(c), '"ctx" is reserved: the context is read as ctx.<key>');
+    return;
+  }
   if (owner.params.some((p) => p.name === name)) {
     diag.warn(pos(c), `parameter "${name}" is declared twice`);
     return;
@@ -921,18 +925,21 @@ interface RNode {
   from: string;
   to: string;
   vars: Record<string, string> | null;
+  ctx: Record<string, string>; // the context in force at the node
+  own: CtxDecl[]; // its `context` declarations, so a layer above can overrule what it inherited
   def: SceneNode | null; // the definition the root of an instance stands for
   src: SceneNode | null;
 }
 
 const cloneProp = (p: SceneProp): SceneProp => ({ name: p.name, args: p.args, block: p.block, val: p.val, pos: p.pos });
 
-function rnode(kind: RKind, n: SceneNode | null, name: string, vars: Record<string, string> | null): RNode {
+function rnode(kind: RKind, n: SceneNode | null, name: string, vars: Record<string, string> | null, ctx: Record<string, string>, own: CtxDecl[] = []): RNode {
   return {
     kind,
     name,
     key: normalizeName(name),
-    props: n === null ? [] : n.props.map(cloneProp),
+    // Read into the scope of the node at expansion, as `export` and `styles` are: never a property of the drawing.
+    props: n === null ? [] : n.props.filter((p) => p.name !== "context").map(cloneProp),
     kids: [],
     slot: "",
     inst: false,
@@ -941,6 +948,8 @@ function rnode(kind: RKind, n: SceneNode | null, name: string, vars: Record<stri
     from: "",
     to: "",
     vars,
+    ctx,
+    own,
     def: null,
     src: n,
   };
@@ -954,9 +963,78 @@ interface SlotFill {
   explicit: boolean;
 }
 
+/** One `context <key> <value>` declaration of a node, its value already evaluated where it was written. */
+interface CtxDecl {
+  key: string;
+  value: string;
+  soft: boolean; // `?=`: applies only where the key is not inherited yet
+}
+
+/** The `context` commands of a node, in file order; the value is the rest of the arguments as text. */
+function ctxDecls(props: SceneProp[], vars: Record<string, string> | null, ctx: Record<string, string>, diag: Diagnostics): CtxDecl[] {
+  const out: CtxDecl[] = [];
+  for (const p of props) {
+    if (p.name !== "context") {
+      continue;
+    }
+    const at = p.pos ?? { line: 0, col: 0 };
+    if (p.args.length < 2) {
+      diag.warn(at, "context is written: context <key> [?=] <value>");
+      continue;
+    }
+    const key = argText(p.args[0]);
+    const soft = argText(p.args[1]) === "?=";
+    const rest = p.args.slice(soft ? 2 : 1);
+    if (rest.length === 0) {
+      diag.warn(at, `context ${key} needs a value`);
+      continue;
+    }
+    const value = evalText(rest, vars, ctx);
+    if (!value.ok) {
+      diag.warn(at, `context ${key}: the expression is not evaluated`);
+    }
+    out.push({ key, value: value.text, soft });
+  }
+  return out;
+}
+
+/** The properties a use block writes under that name, in file order. */
+function blockProps(block: Override[], name: string): SceneProp[] {
+  const out: SceneProp[] = [];
+  for (const o of block) {
+    if (o.kind === "prop" && o.prop.name === name) {
+      out.push(o.prop);
+    }
+  }
+  return out;
+}
+
+/** The inherited scope with the declarations of a node on top; `?=` yields to a key already there. */
+function applyCtx(base: Record<string, string>, decls: CtxDecl[]): Record<string, string> {
+  const out = { ...base };
+  for (const d of decls) {
+    if (!d.soft || !(d.key in out)) {
+      out[d.key] = d.value;
+    }
+  }
+  return out;
+}
+
+/** A layer declared above a node: it overrules the value the node inherited, but not its own hard one. */
+function pushCtx(n: RNode, d: CtxDecl): void {
+  if (n.own.some((o) => o.key === d.key && !o.soft)) {
+    return;
+  }
+  n.ctx = { ...n.ctx, [d.key]: d.value };
+  for (const k of n.kids) {
+    pushCtx(k, d);
+  }
+}
+
 class Expander {
   private readonly stack: SceneNode[] = [];
   private vars: Record<string, string> | null = null;
+  private ctx: Record<string, string> = {};
   private readonly diag: Diagnostics;
 
   constructor(diag: Diagnostics) {
@@ -967,12 +1045,17 @@ class Expander {
     if (!this.enter(n)) {
       return null;
     }
-    const r = rnode("item", n, n.name, this.vars);
     // A mounted element is its file: the file root's properties and content (go/scene container + mountFile).
+    const src = n.mount ?? n;
+    const own = ctxDecls(src.props, this.vars, this.ctx, this.diag);
+    const inherited = this.ctx;
+    this.ctx = applyCtx(inherited, own);
+    const r = rnode("item", n, n.name, this.vars, this.ctx, own);
     if (n.mount !== null) {
-      r.props = n.mount.props.map(cloneProp);
+      r.props = n.mount.props.filter((p) => p.name !== "context").map(cloneProp);
     }
-    r.kids = this.contents((n.mount ?? n).content);
+    r.kids = this.contents(src.content);
+    this.ctx = inherited;
     this.leave();
     return r;
   }
@@ -995,13 +1078,13 @@ class Expander {
       case "use":
         return this.use(n, false);
       case "link": {
-        const r = rnode("link", n, "", this.vars);
+        const r = rnode("link", n, "", this.vars, this.ctx);
         r.from = n.from;
         r.to = n.to;
         return r;
       }
       case "slot": {
-        const r = rnode("slot", n, n.name, this.vars);
+        const r = rnode("slot", n, n.name, this.vars, this.ctx);
         r.slot = n.key;
         r.kids = this.contents(n.content);
         return r;
@@ -1027,8 +1110,12 @@ class Expander {
   }
 
   private itemBody(n: SceneNode): RNode {
-    const r = rnode("item", n, n.name, this.vars);
+    const own = ctxDecls(n.props, this.vars, this.ctx, this.diag);
+    const inherited = this.ctx;
+    this.ctx = applyCtx(inherited, own);
+    const r = rnode("item", n, n.name, this.vars, this.ctx, own);
     r.kids = this.contents(n.content);
+    this.ctx = inherited;
     return r;
   }
 
@@ -1044,6 +1131,7 @@ class Expander {
     }
     const target = found.node;
     const caller = this.vars;
+    const callerCtx = this.ctx;
     const { values, used } = this.params(target, n, caller);
     this.vars = values ?? caller;
     const inst = this.instance(target, n);
@@ -1058,7 +1146,21 @@ class Expander {
     inst.inst = true;
     inst.src = n;
     inst.props = inst.props.filter((p) => p.name !== "pos"); // the component's pos is its library place
+    // The block of the use is the layer above the definition root: its values are read in the parameters
+    // of the instance and the context of the use site, and it fills what a slot or a child does not declare.
+    for (const d of ctxDecls(blockProps(n.block, "context"), values ?? caller, callerCtx, this.diag)) {
+      if (d.soft && d.key in inst.ctx) {
+        continue;
+      }
+      inst.ctx = { ...inst.ctx, [d.key]: d.value };
+      for (const k of inst.kids) {
+        pushCtx(k, d);
+      }
+    }
+    this.ctx = inst.ctx;
     this.apply(inst, n.block, used);
+    this.ctx = callerCtx;
+    inst.props = inst.props.filter((p) => p.name !== "context");
     if (!asTarget) {
       finalize(inst);
     }
@@ -1111,7 +1213,7 @@ class Expander {
         missing.push(prm.name);
         continue;
       }
-      values[prm.name] = evalWords(prop, givenProp !== undefined ? caller : null, this.diag);
+      values[prm.name] = evalWords(prop, givenProp !== undefined ? caller : null, this.ctx, this.diag);
     }
     if (missing.length > 0) {
       this.diag.fail(use, `element "${target.name}" needs ${missing.map((m) => `"${m}"`).join(", ")}: set it in the block of the use`);
@@ -1126,7 +1228,7 @@ class Expander {
     }
     const values: Record<string, string> = {};
     for (const prm of n.params) {
-      values[prm.name] = prm.def === null ? "" : evalWords(prm.def, null, this.diag);
+      values[prm.name] = prm.def === null ? "" : evalWords(prm.def, null, this.ctx, this.diag);
     }
     return values;
   }
@@ -1228,6 +1330,8 @@ class Expander {
           from: "",
           to: "",
           vars: this.vars,
+          ctx: this.ctx,
+          own: [],
           def: null,
           src: null,
         });
@@ -1419,25 +1523,34 @@ function slotNames(r: RNode, out: string[] = []): string[] {
 
 const plainNumber = /^-?\d+(\.\d+)?$/;
 
+const plainValue = (v: string): string | number => (plainNumber.test(v) && String(Number(v)) === v ? Number(v) : v);
+
 /** Go's exec.SceneEvalVars: a value that only looks like a number stays text, the rest are JS values. */
-export function evalCode(code: string, vars: Record<string, string> | null): string | null {
-  const names = Object.keys(vars ?? {});
-  const values = names.map((n) => {
-    const v = vars![n]!;
-    return plainNumber.test(v) && String(Number(v)) === v ? Number(v) : v;
-  });
+export function evalCode(code: string, vars: Record<string, string> | null, ctx: Record<string, string> = {}): string | null {
+  const names = Object.keys(vars ?? {}).filter((n) => n !== "ctx");
+  const values = names.map((n) => plainValue(vars![n]!));
+  const scope: Record<string, string | number> = {};
+  for (const key of Object.keys(ctx)) {
+    scope[key] = plainValue(ctx[key]!);
+  }
   try {
     // shortcut: new Function is the whole evaluator; a page with a CSP that forbids it gets no expressions
     // (a value check still draws). Swap in the shared ExecutionContext when scenes need its names.
-    const fn = new Function(...names, `"use strict"; return (${code});`);
-    return String(fn(...values));
+    const fn = new Function("ctx", ...names, `"use strict"; return (${code});`);
+    const v = fn(scope, ...values) as unknown;
+    // undefined and NaN are not a value: `${digits[0]}` or a missing ctx key is not evaluated (spec 6).
+    if (v === undefined || (typeof v === "number" && Number.isNaN(v))) {
+      return null;
+    }
+    const text = String(v);
+    return text === "undefined" || text === "NaN" ? null : text;
   } catch {
     return null;
   }
 }
 
 /** The text of an argument, or the value of an expression; a string holding ${...} is a template. */
-function evalArg(a: TennNode, vars: Record<string, string> | null): string | null {
+function evalArg(a: TennNode, vars: Record<string, string> | null, ctx: Record<string, string>): string | null {
   const text = a.getIdentText() ?? "";
   let code: string;
   if (a.kind === "Expression" || a.kind === "ExpressionBlock") {
@@ -1447,7 +1560,20 @@ function evalArg(a: TennNode, vars: Record<string, string> | null): string | nul
   } else {
     return text;
   }
-  return evalCode(code, vars);
+  return evalCode(code, vars, ctx);
+}
+
+/** Arguments as words, each evaluated in vars and ctx; ok is false when one of them is not a value. */
+function evalText(args: TennNode[], vars: Record<string, string> | null, ctx: Record<string, string>): { text: string; ok: boolean } {
+  const words: string[] = [];
+  for (const a of args) {
+    const v = evalArg(a, vars, ctx);
+    if (v === null) {
+      return { text: words.join(" "), ok: false };
+    }
+    words.push(v);
+  }
+  return { text: words.join(" "), ok: true };
 }
 
 const propText = (p: SceneProp, i: number): string => (p.val !== undefined ? (p.val[i] ?? "") : argText(p.args[i]));
@@ -1471,18 +1597,13 @@ function propNum(p: SceneProp, i: number): number | null {
 const argNum = (args: TennNode[], i: number): number | null =>
   args[i] === undefined ? null : propNum({ name: "", args, block: null }, i);
 
-/** The arguments of a property as words, each an expression evaluated in vars. */
-function evalWords(p: SceneProp, vars: Record<string, string> | null, diag: Diagnostics): string {
-  const words: string[] = [];
-  for (const a of p.args) {
-    const v = evalArg(a, vars);
-    if (v === null) {
-      diag.warn(p as unknown as SceneNode, `${p.name}: the expression is not evaluated`);
-      return words.join(" ");
-    }
-    words.push(v);
+/** The arguments of a property as words, each an expression evaluated in vars and the context. */
+function evalWords(p: SceneProp, vars: Record<string, string> | null, ctx: Record<string, string>, diag: Diagnostics): string {
+  const { text, ok } = evalText(p.args, vars, ctx);
+  if (!ok) {
+    diag.warn(p as unknown as SceneNode, `${p.name}: the expression is not evaluated`);
   }
-  return words.join(" ");
+  return text;
 }
 
 // MARK: - Styles (spec 5b, go/scene/styles.go)
@@ -4474,7 +4595,7 @@ function hasExpr(p: SceneProp): boolean {
 function evaluate(diag: Diagnostics, rn: RNode, p: SceneProp): SceneProp | null {
   const val: string[] = [];
   for (const a of p.args) {
-    const v = evalArg(a, rn.vars);
+    const v = evalArg(a, rn.vars, rn.ctx);
     if (v === null) {
       diag.warn(rn.src ?? { line: 0, col: 0 }, `${p.name}: the expression "${a.getIdentText() ?? ""}" is not evaluated`);
       return null;
@@ -6320,7 +6441,7 @@ function useProp(use: SceneNode | null, name: string): SceneProp | null {
 function wordsOf(p: SceneProp): { value: string; ok: boolean } {
   const words: string[] = [];
   for (const a of p.args) {
-    const v = evalArg(a, null);
+    const v = evalArg(a, null, {});
     if (v === null) {
       return { value: words.join(" "), ok: false };
     }

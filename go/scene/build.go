@@ -235,7 +235,7 @@ func (t *Tree) element(path string, eval evalFunc) *RNode {
 func (t *Tree) expandElement(target *Node, ctx *mountCtx, eval evalFunc) *RNode {
 	x := &expander{t: t, ctx: ctx, eval: eval}
 	x.vars = x.defaults(target) // a component on its own shows its defaults (spec 5c)
-	rn := x.container(target)
+	rn := x.container(target, nil)
 	if rn != nil {
 		finalize(rn)
 	}
@@ -248,7 +248,7 @@ func (t *Tree) validate() {
 	var each func(n *Node, c *mountCtx)
 	each = func(n *Node, c *mountCtx) {
 		x := &expander{t: t, ctx: c}
-		if rn := x.container(n); rn != nil {
+		if rn := x.container(n, nil); rn != nil {
 			finalize(rn)
 			// validate lays out without an evaluator: an expression is a value check cannot know, not a
 			// problem of the file (the build with Options.Eval and check report it).
