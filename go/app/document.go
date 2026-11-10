@@ -101,33 +101,6 @@ func (w *Watcher) Poll() bool {
 	return true
 }
 
-// PathOf names e by the names of its ancestors; a repeated name among siblings gets "#n", n counting
-// from 1 for the second one. Resolve finds the element again after the file is read anew.
-func PathOf(e *model.Element) []string {
-	var rev []string
-	for ; e != nil && e.Parent != nil; e = e.Parent {
-		seg := e.Name
-		n := 0
-		for _, s := range e.Parent.Elements {
-			if s == e {
-				break
-			}
-			if s.Name == e.Name {
-				n++
-			}
-		}
-		if n > 0 {
-			seg += "#" + strconv.Itoa(n)
-		}
-		rev = append(rev, seg)
-	}
-	path := make([]string, len(rev))
-	for i, s := range rev {
-		path[len(rev)-1-i] = s
-	}
-	return path
-}
-
 // Resolve finds the element of path under root; the root for an empty path, nil when it is gone.
 func Resolve(root *model.Element, path []string) *model.Element {
 	cur := root
@@ -162,3 +135,6 @@ func nth(parent *model.Element, name string, n int) *model.Element {
 	}
 	return nil
 }
+
+// PathOf names e by the names of its ancestors: the model owns the naming, the window reads it.
+func PathOf(e *model.Element) []string { return model.PathOf(e) }

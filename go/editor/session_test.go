@@ -54,7 +54,7 @@ func TestClickToggleClearBand(t *testing.T) {
 	f.s.MouseUp(MouseEvent{P: far})
 	eq(t, "click on empty clears", len(f.s.Selection()), 0)
 
-	bc := f.s.scene.Drawables[f.c].SelectorBounds()
+	bc := f.box(f.c)
 	from := render.Point{X: bc.X - 20, Y: bc.Y - 20}
 	to := render.Point{X: bc.X + bc.Width + 20, Y: bc.Y + bc.Height + 20}
 	f.s.MouseDown(MouseEvent{P: from, Mods: ModShift})
@@ -76,7 +76,7 @@ func TestClickToggleClearBand(t *testing.T) {
 func TestBandReleasedWithoutShiftRestoresSelection(t *testing.T) {
 	f := newFixture(t)
 	f.click(f.centre(f.b), 0)
-	bc := f.s.scene.Drawables[f.c].SelectorBounds()
+	bc := f.box(f.c)
 	f.s.MouseDown(MouseEvent{P: render.Point{X: bc.X - 20, Y: bc.Y - 20}, Mods: ModShift})
 	eq(t, "band start clears", len(f.s.Selection()), 0)
 	f.s.MouseMove(MouseEvent{P: render.Point{X: bc.X + 50, Y: bc.Y + 50}, Mods: ModShift})
@@ -146,7 +146,7 @@ func TestAttachedLinesFollowDrag(t *testing.T) {
 func TestDragLinkChangesControl(t *testing.T) {
 	f := newFixture(t)
 	link := f.s.element.Items[3]
-	r := f.s.scene.Drawables[link].Bounds()
+	r := f.paint(link)
 	p := render.Point{X: r.X + r.Width/2, Y: r.Y + r.Height/2}
 	f.s.MouseDown(MouseEvent{P: p})
 	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{link})
@@ -196,7 +196,7 @@ func TestBodyCreatedEditedUndone(t *testing.T) {
 	f.s.CommitEdit(f.a, EditBody, "one\ntwo")
 	eq(t, "body 2", text(), "one\ntwo")
 	eq(t, "changes", len(f.changes), 2)
-	if f.s.scene.Drawables[f.a].SelectorBounds().Height <= 0 {
+	if f.box(f.a).Height <= 0 {
 		t.Error("item must have a height")
 	}
 	f.s.Undo()
@@ -271,8 +271,8 @@ func TestPasteRemapsLinks(t *testing.T) {
 	if sel[2].Source != sel[0] || sel[2].Target != sel[1] {
 		t.Error("link must join the pasted items")
 	}
-	if _, ok := f.s.scene.Drawables[sel[2]]; !ok {
-		t.Error("link must be drawn")
+	if _, ok := f.s.geom().Box(sel[2]); !ok {
+		t.Error("link must have a drawn box")
 	}
 	f.s.Undo()
 	eq(t, "undone", len(f.s.element.Items), 5)
@@ -381,7 +381,7 @@ func TestApplyPropsRefusals(t *testing.T) {
 func TestPropsValues(t *testing.T) {
 	m := model.ReadTenn(testSrc)
 	ctx := exec.NewExecutionContext(exec.Options{})
-	s, err := New(m.Elements[0], Options{Render: render.Options{Measurer: gfx.EstimateText{}, Exec: ctx}})
+	s, err := New(m.Elements[0], Options{Geom: testGeom(t, m.Elements[0], testSrc, gfx.EstimateText{}), Exec: ctx})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -521,7 +521,7 @@ func TestPasteAsItemSet(t *testing.T) {
 func TestAlign(t *testing.T) {
 	f := newFixture(t)
 	f.s.Select([]*model.DiagramItem{f.a, f.b, f.c})
-	right := func(i *model.DiagramItem) float64 { return i.X + f.s.scene.Drawables[i].Bounds().Width }
+	right := func(i *model.DiagramItem) float64 { return i.X + f.paint(i).Width }
 	f.s.Align("trailing")
 	if math.Abs(right(f.a)-right(f.b)) > 1e-9 || math.Abs(right(f.b)-right(f.c)) > 1e-9 {
 		t.Errorf("trailing: %v %v %v", right(f.a), right(f.b), right(f.c))
@@ -534,7 +534,7 @@ func TestAlign(t *testing.T) {
 	eq(t, "top", []float64{f.a.Y, f.b.Y, f.c.Y}, []float64{0, 0, 0})
 	f.s.Undo()
 	f.s.Align("bottom")
-	bottom := func(i *model.DiagramItem) float64 { return i.Y - f.s.scene.Drawables[i].Bounds().Height }
+	bottom := func(i *model.DiagramItem) float64 { return i.Y - f.paint(i).Height }
 	// The target edge is rounded, as in Swift.
 	if math.Abs(bottom(f.a)-bottom(f.c)) > 1 || math.Abs(f.c.Y+150) > 1 {
 		t.Errorf("bottom: %v %v %v", bottom(f.a), bottom(f.c), f.c.Y)
@@ -647,8 +647,8 @@ func TestCtrlDragDroppedElsewhereAddsNothing(t *testing.T) {
 	f.s.MouseUp(MouseEvent{P: f.centre(f.c), Cancel: true})
 	eq(t, "items", len(f.s.element.Items), 5)
 	eq(t, "changes", len(f.changes), 0)
-	if f.s.Scene().LineTo != nil {
-		t.Error("preview must be gone")
+	if f.s.DrawingLine() || f.s.LineTarget() != nil {
+		t.Error("the preview must be gone")
 	}
 }
 

@@ -14,8 +14,8 @@ import (
 	"github.com/haiodo/gowt/gfx/cg"
 
 	"github.com/haiodo/tenniarb/go/editor"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/scenegeom"
 )
 
 // Headless run of the gowt compositor on a fake host: how much of the view is blank frame by frame
@@ -186,7 +186,7 @@ func TestLagComp(t *testing.T) {
 	doc.Path = path
 	d := &docCore{state: NewState(doc)}
 	sess, err := editor.New(d.state.Current, editor.Options{
-		Render: render.Options{ScreenShadows: true}, OnModelChange: func() { d.sessionChanged() },
+		Geom: scenegeom.New(nil, d.state.Current, gfx.EstimateText{}), OnModelChange: func() { d.sessionChanged() },
 		OnElement: func() { d.state.Current = d.session.Element() },
 	})
 	if err != nil {
@@ -367,7 +367,7 @@ func TestLagCache(t *testing.T) {
 	doc := ParseText(string(data))
 	doc.Path = path
 	d := &docCore{state: NewState(doc)}
-	sess, err := editor.New(d.state.Current, editor.Options{Render: render.Options{ScreenShadows: true}})
+	sess, err := editor.New(d.state.Current, editor.Options{Geom: scenegeom.New(nil, d.state.Current, gfx.EstimateText{})})
 	if err != nil {
 		t.Fatal(err)
 	}

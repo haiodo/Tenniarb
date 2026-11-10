@@ -72,7 +72,7 @@ func num(v float64) string { return tenn.SwiftDouble(v) }
 
 func TestScenarioTabAddsLinkedItem(t *testing.T) {
 	scenario(t, func(f *fixture) string {
-		x := num(f.a.X + f.s.scene.Drawables[f.a].Bounds().Width + 10)
+		x := num(f.a.X + f.paint(f.a).Width + 10)
 		return doc(`item "Untitled 1" { pos ` + x + ` 0 }
 link "A" "Untitled 1"`)
 	}, func(f *fixture) {

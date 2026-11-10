@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Nothing of the application, the edit session or the tools asks `go/render` for anything any more: the
+  session takes its geometry through `go/geom` - answered by the canvas, or by `go/scenegeom` over the scene
+  tree where no window draws - and builds its expression engine from that geometry. The old renderer is
+  left to the tests that compare the two pictures, which is what the comparison stand is for.
 * The inline editor reads the text of a property and prepares a body itself, with a copy of the preparation
   go/render does; a test holds the two to the same answers on the shapes a body takes. What the edit session
   still takes from the old renderer is its own fallback geometry, the expression engine it builds when the

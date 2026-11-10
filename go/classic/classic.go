@@ -57,7 +57,11 @@ func Values(el *model.Element, ctx model.IExecutionContext) func(at scene.Classi
 		if cmd == nil {
 			return nil, false
 		}
-		ev := ctx.GetEvaluated(target, nil, nil)
+		var ev map[*tenn.Token]any
+		if ctx != nil {
+			// The first round of a build has no evaluator yet: the values are the text as written.
+			ev = ctx.GetEvaluated(target, nil, nil)
+		}
 		out := make([]string, 0, len(cmd.Children))
 		for _, a := range argsOf(cmd) {
 			if v, ok := ev[a.Token]; ok {

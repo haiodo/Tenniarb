@@ -1,7 +1,6 @@
 package editor
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/haiodo/tenniarb/go/model"
@@ -17,15 +16,6 @@ const execSrc = `element D {
     title ${"w=" + items.A.width}
   }
 }`
-
-func drawnText(t *testing.T, f *fixture, item *model.DiagramItem) string {
-	t.Helper()
-	var b strings.Builder
-	if err := f.s.scene.Picture(f.s.scene.Drawables[item]).WriteSVG(&b, 1); err != nil {
-		t.Fatal(err)
-	}
-	return b.String()
-}
 
 // A change made through the session reaches the expressions that read it, and undo takes it back.
 func TestExpressionsRecalculateAfterEdit(t *testing.T) {
@@ -48,8 +38,8 @@ func TestExpressionsRecalculateAfterEdit(t *testing.T) {
 	if got := eval(); got != "w=120" {
 		t.Errorf("after undo: %q", got)
 	}
-	if drawnText(t, f, b) == "" {
-		t.Error("B must draw")
+	if _, ok := f.s.geom().Box(b); !ok {
+		t.Error("B must have a drawn box")
 	}
 }
 

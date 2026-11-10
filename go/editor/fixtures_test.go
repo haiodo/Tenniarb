@@ -8,8 +8,9 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/scenegeom"
 )
 
 // Every fixture the model tests read (the files Swift saved) is opened, edited in each way a user can, and
@@ -36,7 +37,7 @@ func TestFixturesEditAndUndo(t *testing.T) {
 		walk = func(e *model.Element) {
 			if len(e.Items) > 0 {
 				edited++
-				editElement(t, filepath.Base(file)+"/"+e.Name, e)
+				editElement(t, filepath.Base(file)+"/"+e.Name, e, file, string(raw))
 			}
 			for _, c := range e.Elements {
 				walk(c)
@@ -49,11 +50,12 @@ func TestFixturesEditAndUndo(t *testing.T) {
 	}
 }
 
-func editElement(t *testing.T, name string, e *model.Element) {
+func editElement(t *testing.T, name string, e *model.Element, file, raw string) {
 	t.Helper()
 	s, err := New(e, Options{
-		Render:  render.Options{Measurer: gfx.EstimateText{}, NoEvaluate: true},
-		OnError: func(err error) { t.Errorf("%s: store error: %v", name, err) },
+		Geom:       testGeomFile(t, e, file, raw, gfx.EstimateText{}),
+		NoEvaluate: true,
+		OnError:    func(err error) { t.Errorf("%s: store error: %v", name, err) },
 	})
 	if err != nil {
 		t.Fatalf("%s: %v", name, err)
@@ -67,13 +69,13 @@ func editElement(t *testing.T, name string, e *model.Element) {
 		"paste":     func() { s.SelectAll(""); s.Paste(s.CopyText()) },
 		"align":     func() { s.SelectAll(model.ItemKindItem); s.Align("leading") },
 		"drag": func() {
-			c := s.scene.Drawables[s.element.Items[0]].SelectorBounds()
-			p := render.Point{X: c.X + 1, Y: c.Y + 1}
+			c := boxOf(t, s, s.element.Items[0])
+			p := geometry.Point{X: c.X + 1, Y: c.Y + 1}
 			s.MouseDown(MouseEvent{P: p})
-			s.MouseMove(MouseEvent{P: render.Point{X: p.X + 20, Y: p.Y - 20}})
-			s.MouseUp(MouseEvent{P: render.Point{X: p.X + 20, Y: p.Y - 20}})
+			s.MouseMove(MouseEvent{P: geometry.Point{X: p.X + 20, Y: p.Y - 20}})
+			s.MouseUp(MouseEvent{P: geometry.Point{X: p.X + 20, Y: p.Y - 20}})
 		},
-		"layout": func() { s.TestLayout(render.Rect{X: -400, Y: -300, Width: 800, Height: 600}) },
+		"layout": func() { s.TestLayout(geometry.Rect{X: -400, Y: -300, Width: 800, Height: 600}) },
 		"style":  func() { s.Select(s.element.Items[:1]); s.SetQuickStyle("color", "red") },
 	}
 	for step, run := range steps {
@@ -103,7 +105,7 @@ func TestSessionOnFixtureWithExpressions(t *testing.T) {
 			break
 		}
 	}
-	s, err := New(el, Options{Render: render.Options{Measurer: gfx.EstimateText{}}})
+	s, err := New(el, Options{Geom: scenegeom.New(nil, el, gfx.EstimateText{})})
 	if err != nil {
 		t.Fatal(err)
 	}

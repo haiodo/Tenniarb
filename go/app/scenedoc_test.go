@@ -15,9 +15,9 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/penimport"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -222,7 +222,7 @@ func newDocFrom(t *testing.T, sh *Shell, doc *Document) *Viewer {
 		v.watch.Poll()
 	}
 	s, err := editor.New(v.state.Current, editor.Options{
-		Render: render.Options{Measurer: gfx.EstimateText{}, NoEvaluate: true},
+		Geom: canvasGeom{v: v}, NoEvaluate: true,
 		OnModelChange: func() {
 			v.sessionChanged()
 			sh.docChanged(v)
@@ -533,9 +533,12 @@ func TestClassicDragPreviewFollowsCommit(t *testing.T) {
 	if pl == nil || pl.Gfx == nil {
 		t.Fatal("item A is not drawn")
 	}
-	b := v.session.Scene().Drawables[it].Bounds()
-	from := render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
-	to := render.Point{X: from.X + 33.333, Y: from.Y - 12.3456}
+	b, ok := v.session.Geometry().PaintBox(it)
+	if !ok {
+		t.Fatal("item A has no box")
+	}
+	from := geometry.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
+	to := geometry.Point{X: from.X + 33.333, Y: from.Y - 12.3456}
 	startX, startY := it.X, it.Y
 	drawX, drawY := pl.X, pl.Y
 	if !v.session.MouseDown(editor.MouseEvent{P: from, Clicks: 1}) {

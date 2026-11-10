@@ -15,8 +15,8 @@ import (
 	"github.com/haiodo/gowt/gfx/cg"
 
 	"github.com/haiodo/tenniarb/go/editor"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/scenegeom"
 )
 
 // Headless measurement of an element switch (gfx tree build) and of tile rasterization. No window.
@@ -34,7 +34,7 @@ func TestLagDoc(t *testing.T) {
 	doc.Path = path
 	d := &docCore{state: NewState(doc)}
 	sess, err := editor.New(d.state.Current, editor.Options{
-		Render:        render.Options{ScreenShadows: true},
+		Geom:          scenegeom.New(nil, d.state.Current, gfx.EstimateText{}),
 		OnModelChange: func() { d.sessionChanged() },
 		OnElement:     func() { d.state.Current = d.session.Element() },
 	})

@@ -25,22 +25,27 @@ import (
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/palette"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
 // Viewer is the window: the outline as the sidebar, the diagram of the selected element, and the
 // inspector on the right, editable through an editor.Session.
 type Viewer struct {
-	app        *g.App
-	sh         *Shell
-	win        *g.Window
-	tree       *g.TreeView
-	banner     *g.TextView
-	bannerCopy *g.ButtonView // the Copy button next to the banner
-	note       string        // the note in the banner, cleared by the next action
-	view       *view.View
-	scene      *gfx.Scene
+	app *g.App
+	sh  *Shell
+	// geomSize is the item sizes of the classic diagram for the expression engine, and geomSizeEl the
+	// element they were built for.
+	geomSize   func(*model.DiagramItem, model.IExecutionContext) *model.DrawableSize
+	geomSizeEl *model.Element
+	// previewBoxes is where a drag has taken the boxes, before the model is written.
+	previewBoxes map[*model.DiagramItem]geometry.Point
+	win          *g.Window
+	tree         *g.TreeView
+	banner       *g.TextView
+	bannerCopy   *g.ButtonView // the Copy button next to the banner
+	note         string        // the note in the banner, cleared by the next action
+	view         *view.View
+	scene        *gfx.Scene
 
 	*docCore
 	// conflict: the file changed on disk while the document had unsaved edits and the edits were kept.
@@ -603,8 +608,6 @@ func (v *Viewer) startSession() {
 		return
 	}
 	s, err := editor.New(v.state.Current, editor.Options{
-		// Shadows stay constant in screen points while zooming, as Swift setShadow ignores the zoom CTM.
-		Render:        render.Options{DarkMode: v.app.Dark(), ScreenShadows: true},
 		PCKeys:        runtime.GOOS != "darwin",
 		OnModelChange: v.onChange,
 		OnRedraw:      v.onRedraw,
@@ -612,8 +615,7 @@ func (v *Viewer) startSession() {
 		OnEdit:        v.onEdit,
 		OnOperation:   v.showOperation,
 		OnError:       func(err error) { v.setBanner(err.Error()) },
-		// A classic diagram is drawn by go/scene but hit by the boxes of go/render: the picture has the
-		// last word on what a press finds.
+		// The picture has the last word on what a press finds: the canvas knows what it drew there.
 		Covers: v.drawnCovers,
 		// The session asks the canvas where the items are: one engine draws and answers for the diagram.
 		Geom: canvasGeom{v: v},

@@ -3,6 +3,9 @@
 // two types; go/render aliases them, so both sides speak the same ones.
 package geometry
 
+// Padding is the room the canvas leaves around the diagram: the classic one had fifteen points.
+const Padding = 15.0
+
 // Point is a point of the diagram.
 type Point struct{ X, Y float64 }
 

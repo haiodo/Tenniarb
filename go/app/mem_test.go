@@ -18,8 +18,8 @@ import (
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/scenegeom"
 )
 
 // Headless memory measurement of opening a document. Not a GUI test: nothing here creates a window.
@@ -134,7 +134,7 @@ func TestMemDoc(t *testing.T) {
 
 	d := &docCore{state: NewState(doc)}
 	sess, err := editor.New(d.state.Current, editor.Options{
-		Render:        render.Options{ScreenShadows: true},
+		Geom:          scenegeom.New(nil, d.state.Current, gfx.EstimateText{}),
 		OnModelChange: func() { d.sessionChanged() },
 		OnElement:     func() { d.state.Current = d.session.Element() },
 	})

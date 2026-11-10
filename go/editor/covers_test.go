@@ -5,8 +5,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // Covers lets the window veto a hit: the box go/render gives an item can reach where go/scene draws
@@ -18,20 +18,20 @@ func TestCoversVetoesAPress(t *testing.T) {
 	}
 	veto := false
 	s, err := New(m.Elements[0], Options{
-		Render:  render.Options{Measurer: gfx.EstimateText{}, NoEvaluate: true},
-		Covers:  func(r render.Rect, it *model.DiagramItem) bool { return !veto },
-		OnError: func(err error) { t.Error(err) },
+		Geom:       testGeom(t, m.Elements[0], testSrc, gfx.EstimateText{}),
+		NoEvaluate: true,
+		Covers:     func(r geometry.Rect, it *model.DiagramItem) bool { return !veto },
+		OnError:    func(err error) { t.Error(err) },
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	a := m.Elements[0].Items[0]
-	d := s.Scene().Drawables[a]
-	if d == nil {
-		t.Fatal("the item has no drawable")
+	b, ok := s.geom().PaintBox(a)
+	if !ok {
+		t.Fatal("the item has no box")
 	}
-	b := d.Bounds()
-	at := render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
+	at := geometry.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}
 	if hits := s.Hit(at); len(hits) == 0 || hits[0] != a {
 		t.Fatalf("the press on the box hits %v", hits)
 	}
@@ -57,10 +57,10 @@ func TestCoversVetoesAPress(t *testing.T) {
 		t.Fatalf("the right click selected %v", sel)
 	}
 	// A band over the item does not take it either.
-	s.MouseDown(MouseEvent{P: render.Point{X: b.X - 20, Y: b.Y - 20}, Mods: ModShift})
-	s.MouseMove(MouseEvent{P: render.Point{X: b.X + b.Width + 20, Y: b.Y + b.Height + 20}})
+	s.MouseDown(MouseEvent{P: geometry.Point{X: b.X - 20, Y: b.Y - 20}, Mods: ModShift})
+	s.MouseMove(MouseEvent{P: geometry.Point{X: b.X + b.Width + 20, Y: b.Y + b.Height + 20}})
 	if sel := s.Selection(); len(sel) != 0 {
 		t.Fatalf("the band selected %v", sel)
 	}
-	s.MouseUp(MouseEvent{P: render.Point{X: b.X + b.Width + 20, Y: b.Y + b.Height + 20}, Mods: ModShift})
+	s.MouseUp(MouseEvent{P: geometry.Point{X: b.X + b.Width + 20, Y: b.Y + b.Height + 20}, Mods: ModShift})
 }

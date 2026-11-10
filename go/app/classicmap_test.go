@@ -28,7 +28,7 @@ func TestClassicMapFollowsTheDrawnPicture(t *testing.T) {
 	if v.smap != sv.mapOf() {
 		t.Fatalf("the map is %v, the picture was drawn at %v", v.smap, sv.mapOf())
 	}
-	if old := MapOf(v.session.Scene().Bounds()); old == v.smap {
+	if old := MapOf(v.session.Geometry().Bounds()); old == v.smap {
 		t.Fatalf("the map %v is the one of the old renderer: the fixture must show the drift", old)
 	}
 	// A press in the middle of the drawn box is a press on the item.
@@ -45,8 +45,8 @@ func TestClassicMapFollowsTheDrawnPicture(t *testing.T) {
 	}
 }
 
-// The size the inspector writes for a classic diagram is the size of the drawn box: the field shows the
-// item as it is on the canvas, not the box the old renderer computed for it.
+// The size the inspector writes for a classic diagram is the size of the drawn box: the session and the
+// canvas ask the same engine, so the field and the picture cannot drift apart.
 func TestClassicItemSizeIsTheDrawnBox(t *testing.T) {
 	v, sv, el := classicView(t, classicDriftDoc)
 	v.syncMap(sv)
@@ -55,12 +55,12 @@ func TestClassicItemSizeIsTheDrawnBox(t *testing.T) {
 	if !ok {
 		t.Fatal("item A is not drawn")
 	}
-	d := v.session.Scene().Drawables[it]
-	if d == nil {
-		t.Fatal("no drawable to compare with")
+	own, ok := v.session.Geometry().PaintBox(it)
+	if !ok {
+		t.Fatal("no box to compare with")
 	}
-	if old := d.Bounds(); math.Abs(old.Width-b.W()) < 1e-9 && math.Abs(old.Height-b.H()) < 1e-9 {
-		t.Fatal("the drawn box and the old one are equal: the fixture must show the drift")
+	if math.Abs(own.Width-b.W()) > 1e-6 || math.Abs(own.Height-b.H()) > 1e-6 {
+		t.Fatalf("the session's box is %v x %v, the drawn one %v x %v", own.Width, own.Height, b.W(), b.H())
 	}
 	v.session.Select([]*model.DiagramItem{it})
 	w, h := v.itemSize()

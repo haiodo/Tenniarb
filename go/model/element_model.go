@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/haiodo/tenniarb/go/tenn"
 )
@@ -394,4 +395,31 @@ func NewElementModelFactory() *ElementModelFactory {
 	m := NewElementModel()
 	m.AddElement(NewElement("Unnamed diagram"))
 	return &ElementModelFactory{ElementModel: m}
+}
+
+// PathOf names e by the names of its ancestors; a repeated name among siblings gets "#n", n counting
+// from 1 for the second one. Resolve finds the element again after the file is read anew.
+func PathOf(e *Element) []string {
+	var rev []string
+	for ; e != nil && e.Parent != nil; e = e.Parent {
+		seg := e.Name
+		n := 0
+		for _, s := range e.Parent.Elements {
+			if s == e {
+				break
+			}
+			if s.Name == e.Name {
+				n++
+			}
+		}
+		if n > 0 {
+			seg += "#" + strconv.Itoa(n)
+		}
+		rev = append(rev, seg)
+	}
+	path := make([]string, len(rev))
+	for i, s := range rev {
+		path[len(rev)-1-i] = s
+	}
+	return path
 }

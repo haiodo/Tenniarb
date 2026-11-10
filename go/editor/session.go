@@ -15,10 +15,10 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -33,12 +33,14 @@ type Redraw struct {
 
 // Options configure a Session.
 type Options struct {
-	// Render builds the scene. Its Exec is the expression engine; when nil the session makes one
-	// (render.NewExecContext) unless NoEvaluate is set. Items and FirstID are ignored.
-	Render render.Options
+	// Exec is the expression engine. When nil the session makes one from the geometry - the sizes of the
+	// items and the measurement of text - unless NoEvaluate is set.
+	Exec model.IExecutionContext
+	// NoEvaluate: nothing runs, so the values a caller reads are the raw text (a preview of a file whose
+	// expressions must not run).
+	NoEvaluate bool
 	// Geom is where the session finds the items and their boxes: the canvas, which draws them with
-	// go/scene, answers it. Nil: the session builds a scene of its own with Render and asks that, which is
-	// what it did before the canvas could answer.
+	// go/scene, answers it, and the scene itself answers when no window draws it.
 	Geom Geom
 	// Readonly: no selection and no edits.
 	Readonly bool
@@ -112,7 +114,6 @@ type Session struct {
 	opts  Options
 
 	element   *model.Element
-	scene     *render.DrawableScene
 	selection []*model.DiagramItem
 	band      *geometry.Rect
 
@@ -156,11 +157,16 @@ func New(element *model.Element, opts Options) (*Session, error) {
 		zoom:        1,
 	}
 	s.store = model.NewElementModelStore(root.Model)
-	if opts.Render.Exec != nil {
-		s.exec = opts.Render.Exec
+	if opts.Exec != nil {
+		s.exec = opts.Exec
 		s.exec.SetElement(element)
-	} else if !opts.Render.NoEvaluate {
-		s.exec = render.NewExecContext(element, opts.Render)
+	} else if !opts.NoEvaluate && opts.Geom != nil {
+		ctx := exec.NewExecutionContext(exec.Options{
+			ItemSize:    opts.Geom.ItemSize,
+			MeasureText: opts.Geom.MeasureText,
+		})
+		ctx.SetElement(element)
+		s.exec = ctx
 	}
 	if s.exec != nil {
 		s.store.ExecutionContext = s.exec
@@ -186,8 +192,8 @@ func (s *Session) Root() *model.ElementModel { return s.root }
 // Element is the element on the canvas.
 func (s *Session) Element() *model.Element { return s.element }
 
-// Scene is the current scene, laid out. It is replaced after each change of the model.
-func (s *Session) Scene() *render.DrawableScene { return s.scene }
+// Geometry is the diagram as the session sees it: what a canvas answered, or the scene itself.
+func (s *Session) Geometry() Geom { return s.opts.Geom }
 
 // Selection is the selected items in the order they were selected. Do not change the slice.
 func (s *Session) Selection() []*model.DiagramItem { return s.selection }
@@ -282,13 +288,6 @@ func (s *Session) fallback() *model.Element {
 }
 
 func (s *Session) rebuild() {
-	if s.opts.Geom == nil {
-		// A session without geometry of its own builds the scene of go/render and asks that. A session the
-		// canvas answers needs no scene: the diagram on the screen is the diagram.
-		o := s.opts.Render
-		o.Exec, o.Items = s.exec, nil
-		s.scene = render.Build(s.element, o)
-	}
 	s.rebuilt = true
 	kept := s.selection[:0:0]
 	for _, i := range s.selection {
@@ -322,10 +321,9 @@ func (s *Session) SetReadonly(readonly bool) {
 	s.emit()
 }
 
-// SetDarkMode rebuilds the scene in the other scheme.
+// SetDarkMode tells the session the window changed scheme: the canvas draws in it, so the session has
+// nothing of its own to redraw but the picture the window takes.
 func (s *Session) SetDarkMode(dark bool) {
-	s.opts.Render.DarkMode = dark
-	s.rebuild()
 	s.emit()
 }
 

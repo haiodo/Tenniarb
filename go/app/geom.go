@@ -5,16 +5,18 @@ package app
 import (
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// canvasGeom is editor.Geom over the scene the canvas drew: the session asks where an item is and the
-// canvas answers from its own picture, so the edit of a classic diagram no longer needs a scene built by
-// go/render.
+// canvasGeom is geom.Geom over the scene the canvas drew: the session asks where an item is and the canvas
+// answers from its own picture.
 type canvasGeom struct{ v *Viewer }
 
 // Items is every item of the shown element in the order the scene paints it.
@@ -41,13 +43,39 @@ func (g canvasGeom) Items() []*model.DiagramItem {
 	return out
 }
 
-// Box is the drawn frame of the item in the coordinates of the editor scene, the shadow left out.
+// Box is the drawn frame of the item in the coordinates of the editor scene, the shadow left out. An item
+// the canvas drew no frame for - the session holds a classic diagram the canvas shows as a scene - is
+// placed by the size the scene gives it, so the session still works on it.
 func (g canvasGeom) Box(it *model.DiagramItem) (geometry.Rect, bool) {
-	b, ok := g.v.drawnRect(it)
-	if !ok {
+	if b, ok := g.v.drawnRect(it); ok {
+		r := g.v.smap.RectToScene(b)
+		if p, moved := g.v.previewBoxes[it]; moved {
+			r.X, r.Y = p.X, p.Y
+		}
+		return r, true
+	}
+	if it == nil {
 		return geometry.Rect{}, false
 	}
-	return g.v.smap.RectToScene(b), true
+	if it.Kind == model.ItemKindLink {
+		if a, ok := g.centre(it.Source); ok {
+			if b, ok2 := g.centre(it.Target); ok2 {
+				x, y := math.Min(a.X, b.X), math.Min(a.Y, b.Y)
+				return geometry.Rect{X: x, Y: y, Width: math.Abs(a.X - b.X), Height: math.Abs(a.Y - b.Y)}, true
+			}
+		}
+		return geometry.Rect{}, false
+	}
+	// Nothing drawn for it: the place and the size the model names, and the size the session gives an item
+	// it knows no more about.
+	w, h := 100.0, 50.0
+	if v, ok := propNum(it, "width"); ok && v > 0 {
+		w = v
+	}
+	if v, ok := propNum(it, "height"); ok && v > 0 {
+		h = v
+	}
+	return geometry.Rect{X: it.X, Y: it.Y - h, Width: w, Height: h}, true
 }
 
 // PaintBox is the same box: the scene draws the frame, and the shadow of an item is not a separate box.
@@ -92,7 +120,7 @@ func (g canvasGeom) Find(p geometry.Point, over bool) []*model.DiagramItem {
 
 // HitLine reports whether p is on the line of a link: the segment between the middles of its two ends.
 func (g canvasGeom) HitLine(it *model.DiagramItem, p geometry.Point) bool {
-	if it == nil || !it.IsLink() || it.Source == nil || it.Target == nil {
+	if it == nil || it.Source == nil || it.Target == nil {
 		return false
 	}
 	a, ok1 := g.centre(it.Source)
@@ -123,33 +151,17 @@ func distanceToSegment(p, a, b geometry.Point) float64 {
 	return math.Hypot(p.X-(a.X+t*dx), p.Y-(a.Y+t*dy))
 }
 
-// Move puts the drawn boxes of the items where a drag takes them, in the coordinates of the editor scene,
-// and answers the items that moved.
+// Move takes the boxes where a drag asks, without moving the scene: the session commits the model once,
+// and the canvas draws the preview of the drag from the same positions.
 func (g canvasGeom) Move(positions map[*model.DiagramItem]geometry.Point) []*model.DiagramItem {
-	v := g.v
-	if v.sv == nil {
-		return nil
+	if g.v.previewBoxes == nil {
+		g.v.previewBoxes = map[*model.DiagramItem]geometry.Point{}
 	}
-	var moved []*model.DiagramItem
-	v.scene.Update(func(tx *gfx.Tx) {
-		for it, pos := range positions {
-			pl := v.classicPlaced(it)
-			if pl == nil {
-				continue
-			}
-			b, ok := g.Box(it)
-			if !ok {
-				continue
-			}
-			// Scene coordinates are y up and the drawn box is the top left in y down: the frame of the
-			// layout takes the corner the box keeps, without the offset of the canvas.
-			gfxBox := v.smap.RectToGfx(geometry.Rect{X: pos.X, Y: pos.Y, Width: b.Width, Height: b.Height})
-			if v.sv.screen.MoveItem(tx, pl, gfxBox.Min.X-v.sv.off.X, gfxBox.Min.Y-v.sv.off.Y) {
-				moved = append(moved, it)
-			}
-		}
-	})
-	v.drawSceneOverlay()
+	moved := make([]*model.DiagramItem, 0, len(positions))
+	for it, p := range positions {
+		g.v.previewBoxes[it] = p
+		moved = append(moved, it)
+	}
 	return moved
 }
 
@@ -203,4 +215,24 @@ func (g canvasGeom) Bounds() geometry.Rect {
 	}
 	g.v.sv.bounds()
 	return geometry.Rect{Width: g.v.sv.w, Height: g.v.sv.h}
+}
+
+// ItemSize is the size the expression engine reads as width and height of the item: the scene is asked for
+// it once per evaluation round, as the classic renderer's throwaway scene was.
+func (g canvasGeom) ItemSize(it *model.DiagramItem, prev model.IExecutionContext) *model.DrawableSize {
+	v := g.v
+	if v == nil || v.stree == nil || v.state.Current == nil {
+		return nil
+	}
+	if v.geomSize == nil || v.geomSizeEl != v.state.Current {
+		v.geomSize = classic.Sizes(v.stree, strings.Join(PathOf(v.state.Current), "."), v.state.Current, gfx.DefaultMeasurer)
+		v.geomSizeEl = v.state.Current
+	}
+	return v.geomSize(it, prev)
+}
+
+// MeasureText is the size of a plain text at a font size, measured by the engine that draws it.
+func (g canvasGeom) MeasureText(text string, fontSize float64) model.DrawableSize {
+	w, h := scene.MeasureText(gfx.DefaultMeasurer, text, fontSize)
+	return model.DrawableSize{Width: w, Height: h}
 }

@@ -6,20 +6,18 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/geometry"
-
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // SceneMap converts between the gfx scene of the canvas (y down, the space of View pointer events)
-// and the scene of go/render and go/editor (y up). It is the translation render.Realize gives the
+// and the scene of the edit session (y up). It is the translation the old renderer gave its
 // root node: gfx = (x + TX, TY - y).
 type SceneMap struct{ TX, TY float64 }
 
 // MapOf is the map of a scene whose content has the bounds b, realized with the default padding. The
-// canvas takes its map from the drawn picture (sceneView.mapOf); this is the translation render.Realize
+// canvas takes its map from the drawn picture (sceneView.mapOf); this is the translation the old
 // gives the root of the old renderer for the same bounds.
 func MapOf(b geometry.Rect) SceneMap {
-	return SceneMap{TX: render.DefaultPadding - b.X, TY: render.DefaultPadding + math.Max(b.Y, b.Y+b.Height)}
+	return SceneMap{TX: geometry.Padding - b.X, TY: geometry.Padding + math.Max(b.Y, b.Y+b.Height)}
 }
 
 // ToScene turns a gfx scene point into a point of the editor scene.

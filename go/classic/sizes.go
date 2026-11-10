@@ -47,7 +47,8 @@ func Sizes(tree *scene.Tree, path string, el *model.Element, measure gfx.TextMea
 		failed bool
 	)
 	return func(item *model.DiagramItem, prev model.IExecutionContext) *model.DrawableSize {
-		if item == nil {
+		if item == nil || tree == nil {
+			// No tree, no sizes: a caller that has no scene places the items from the model alone.
 			return nil
 		}
 		if sizes == nil || built != prev {

@@ -17,7 +17,6 @@ import (
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -216,8 +215,7 @@ func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
 }
 
 // classicContext is the evaluator of a classic diagram: what it asks for the size of an item is
-// answered by the scene, so the picture no longer depends on go/render. Text is still measured by the old
-// framesetter, through the measure the caller gives it.
+// answered by the scene, and the text is measured by the caller's measurer, as the scene measures it.
 func (v *Viewer) classicContext(e *model.Element) model.IExecutionContext {
 	path := strings.Join(PathOf(e), ".")
 	return classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
@@ -229,7 +227,7 @@ func (v *Viewer) classicContext(e *model.Element) model.IExecutionContext {
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.
 func (sv *sceneView) bounds() {
-	pad := render.DefaultPadding
+	pad := geometry.Padding
 	minX, minY, maxX, maxY := 0.0, 0.0, 0.0, 0.0
 	first := true
 	var walk func(p *scene.Placed)
@@ -516,8 +514,8 @@ func (v *Viewer) drawnLinkRect(it *model.DiagramItem) (gfx.Rect, bool) {
 	return gfx.Rect{}, false
 }
 
-// drawnCovers is editor.Options.Covers of a classic diagram: the session's boxes come from go/render and
-// the picture from go/scene, so a press where nothing is drawn must not grab the item.
+// drawnCovers is editor.Options.Covers of a classic diagram: the boxes of the session and the picture of
+// the canvas come from the same scene, and a press where nothing is drawn still must not grab the item.
 func (v *Viewer) drawnCovers(r geometry.Rect, it *model.DiagramItem) bool {
 	if v.sv == nil || !v.sv.classic {
 		return true
