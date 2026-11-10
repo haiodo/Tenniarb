@@ -78,7 +78,7 @@ func (v *Viewer) exportTo(k exportKind, path string) error {
 	case exportSVG:
 		data, err = v.exportSVGOf(e, p)
 	case exportHTML:
-		data, err = ExportHTML(e, p, v.exportScale())
+		data, err = v.exportHTMLOf(e, p, v.exportScale())
 	case exportLive:
 		var pack string
 		if pack, err = v.embedBundle(); err != nil {

@@ -12,10 +12,8 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/offscreen"
 
-	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
-	"github.com/haiodo/tenniarb/go/scene"
+	"github.com/haiodo/tenniarb/go/palette"
 )
 
 // The document API of the shell, for the MCP service: every method may be called from any goroutine
@@ -326,7 +324,7 @@ func (sh *Shell) RenderPNG(path string, scale float64) (png []byte, err error) {
 }
 
 func (v *Viewer) renderPNG(scale float64) ([]byte, error) {
-	bg, _ := render.ParseColor(v.sh.prefs.Background)
+	bg, _ := palette.Parse(v.sh.prefs.Background)
 	if v.view != nil {
 		r, err := offscreen.Default()
 		if err != nil {
@@ -345,15 +343,7 @@ func (v *Viewer) renderPNG(scale float64) ([]byte, error) {
 	if e == nil {
 		return nil, errors.New("the document has parse errors")
 	}
-	if !v.isScene(e) {
-		return render.PNG(e, exportOptions(), scale, bg)
-	}
-	s := gfx.NewScene()
-	var screen *scene.Screen
-	var err error
-	s.Update(func(tx *gfx.Tx) {
-		screen, err = v.stree.BuildElement(tx, nil, v.elementNode(e), scene.Options{Measurer: gfx.DefaultMeasurer, EvalVars: exec.SceneEvalVars})
-	})
+	s, screen, err := v.exportScene(e)
 	if err != nil {
 		return nil, err
 	}

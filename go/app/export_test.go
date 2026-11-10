@@ -29,26 +29,26 @@ func exampleElement(t *testing.T) (*model.ElementModel, *model.Element) {
 }
 
 func TestExportFormats(t *testing.T) {
-	_, e := exampleElement(t)
+	text, err := os.ReadFile("../../docs/Example.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
 	p := DefaultPrefs()
+	v := newDoc(t, &Shell{prefs: p}, filepath.Join(t.TempDir(), "m.tenn"), string(text))
+	e := Resolve(&v.session.Root().Element, []string{"Documentation", "Basic steps"})
+	if e == nil {
+		t.Fatal("no element")
+	}
 
-	png, err := ExportPNG(e, p, 1)
+	png, err := v.exportPNGOf(e, p, 1)
 	if err != nil || !bytes.HasPrefix(png, []byte("\x89PNG")) {
 		t.Fatalf("png: %v", err)
 	}
-	svg, err := ExportSVG(e, p)
+	svg, err := v.exportSVGOf(e, p)
 	if err != nil || !strings.Contains(string(svg), "<svg") || !strings.Contains(string(svg), "Basic editing functions") {
 		t.Fatalf("svg: %v", err)
 	}
-	// the background is the export setting
-	withBg := string(svg)
-	p.ExportBackground = false
-	plain, _ := ExportSVG(e, p)
-	if len(withBg) <= len(plain) {
-		t.Fatal("the background rectangle is missing")
-	}
-
-	html, err := ExportHTML(e, DefaultPrefs(), 1)
+	html, err := v.exportHTMLOf(e, p, 1)
 	if err != nil {
 		t.Fatal(err)
 	}

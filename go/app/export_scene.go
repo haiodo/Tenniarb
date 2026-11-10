@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -84,6 +85,28 @@ func (v *Viewer) exportDrawing(e *model.Element) (pageDrawing, error) {
 		return d, fmt.Errorf("%s draws nothing", e.Name)
 	}
 	return d, nil
+}
+
+// exportHTMLOf is Swift's "Export as HTML": the PNG of the canvas scene, inline, sized to the drawing.
+func (v *Viewer) exportHTMLOf(e *model.Element, p Prefs, scale float64) ([]byte, error) {
+	d, err := v.exportDrawing(e)
+	if err != nil {
+		return nil, err
+	}
+	rend, err := offscreen.Default()
+	if err != nil {
+		return nil, err
+	}
+	raster, err := gfx.RenderSubtree(rend, d.scene, d.root, d.area, scale, p.exportBackground())
+	if err != nil {
+		return nil, err
+	}
+	png, err := raster.PNG()
+	if err != nil {
+		return nil, err
+	}
+	return fmt.Appendf(nil, "<html>\n\t<body>\n\t\t<img style=\"border: 1px solid #eeeeee;\" width=\"%.0f\" height=\"%.0f\" src=\"data:image/png;base64,%s\"/>\n\t</body>\n</html>",
+		d.area.W(), d.area.H(), base64.StdEncoding.EncodeToString(png)), nil
 }
 
 // exportPNGOf is ExportPNG for an element the viewer has.

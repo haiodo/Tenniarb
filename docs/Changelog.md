@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Export as HTML, and the PNG the MCP tools hand out, draw what the canvas draws through go/scene: the old
+  renderer no longer makes a picture of its own, so an export and the window show the same thing.
 * A classic diagram works out the `width` and `height` an expression reads from the picture the canvas
   draws, not from a second drawing by the old renderer: the two pictures of the stand agree in 60 of 125
   elements now, against 56 before, and in 88 within a point, against 82.

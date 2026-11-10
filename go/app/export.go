@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/palette"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // ExportMargin is the margin of Swift's ExportManager: the image is the scene grown by 30 on every side.
@@ -22,12 +20,6 @@ const ExportMargin = 30
 // EmbedBundleName is the file of the interactive HTML export (make embed builds it from web/packages/embed).
 const EmbedBundleName = "tenniarb-embed.min.js"
 
-// exportOptions render the default way: dark mode off, shadows in scene units (not the screen ones).
-func exportOptions() render.Options {
-	m := float64(ExportMargin)
-	return render.Options{Padding: &m}
-}
-
 // exportBackground is the fill of a PNG: the light canvas colour when Prefs ask for it, else transparent.
 func (p Prefs) exportBackground() gfx.Color {
 	if !p.ExportBackground {
@@ -35,31 +27,6 @@ func (p Prefs) exportBackground() gfx.Color {
 	}
 	c, _ := palette.Parse(p.Background)
 	return c
-}
-
-// ExportPNG renders element at scale device pixels per unit.
-func ExportPNG(e *model.Element, p Prefs, scale float64) ([]byte, error) {
-	return render.PNG(e, exportOptions(), scale, p.exportBackground())
-}
-
-// ExportSVG renders element as an SVG document.
-func ExportSVG(e *model.Element, p Prefs) ([]byte, error) {
-	var buf bytes.Buffer
-	if err := render.SVGBackground(&buf, e, exportOptions(), 1, p.exportBackground()); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-// ExportHTML is Swift's "Export as HTML": the PNG as an inline image.
-func ExportHTML(e *model.Element, p Prefs, scale float64) ([]byte, error) {
-	png, err := ExportPNG(e, p, scale)
-	if err != nil {
-		return nil, err
-	}
-	size := render.SceneSize(e, exportOptions())
-	return fmt.Appendf(nil, "<html>\n\t<body>\n\t\t<img style=\"border: 1px solid #eeeeee;\" width=\"%.0f\" height=\"%.0f\" src=\"data:image/png;base64,%s\"/>\n\t</body>\n</html>",
-		size.Width, size.Height, base64.StdEncoding.EncodeToString(png)), nil
 }
 
 // ErrNoEmbedBundle: the interactive HTML export needs tenniarb-embed.min.js, which is a build product.
