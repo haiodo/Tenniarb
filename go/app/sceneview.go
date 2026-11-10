@@ -577,16 +577,80 @@ func (v *Viewer) previewClassic() {
 		sv.band = &r
 		return
 	}
-	if ln := v.session.Scene().LineTo; ln != nil {
-		a := v.smap.ToGfx(render.Point{X: ln.Source.X, Y: ln.Source.Y})
-		b := v.smap.ToGfx(render.Point{X: ln.Target.X, Y: ln.Target.Y})
-		sv.line = &[2]gfx.Point{a, b}
+	if v.session.DrawingLine() {
+		if a, b, ok := v.linePreview(); ok {
+			sv.line = &[2]gfx.Point{a, b}
+		}
 		return
 	}
 	if v.dragAt == v.press.scene {
 		return
 	}
 	v.scene.Update(func(tx *gfx.Tx) { v.dragPreview(v.press.scene, v.dragAt, tx) })
+}
+
+// linePreview is the line a link is drawn along, in gfx scene coordinates: from the edge of the source box
+// to the edge of the item under the pointer, or to the pointer itself.
+func (v *Viewer) linePreview() (gfx.Point, gfx.Point, bool) {
+	sel := v.session.Selection()
+	if len(sel) == 0 {
+		return gfx.Point{}, gfx.Point{}, false
+	}
+	from, ok := v.drawnRect(sel[0])
+	if !ok {
+		return gfx.Point{}, gfx.Point{}, false
+	}
+	mid := gfx.Point{X: from.Min.X + from.W()/2, Y: from.Min.Y + from.H()/2}
+	end := v.smap.ToGfx(render.Point{X: v.dragAt.X, Y: v.dragAt.Y})
+	var target gfx.Rect
+	if t := v.session.LineTarget(); t != nil {
+		if r, ok := v.drawnRect(t); ok {
+			target = r
+			end = gfx.Point{X: r.Min.X + r.W()/2, Y: r.Min.Y + r.H()/2}
+		}
+	}
+	if p, ok := crossBoxPoint(mid, end, from); ok {
+		mid = p
+	}
+	if target.W() > 0 {
+		if p, ok := crossBoxPoint(mid, end, target); ok {
+			end = p
+		}
+	}
+	return mid, end, true
+}
+
+// crossBoxPoint is where the segment mid-end leaves the box: the nearest edge crossing, and false when the
+// segment does not meet it.
+func crossBoxPoint(mid, end gfx.Point, r gfx.Rect) (gfx.Point, bool) {
+	edges := [4][2]gfx.Point{
+		{{X: r.Min.X, Y: r.Min.Y}, {X: r.Max.X, Y: r.Min.Y}},
+		{{X: r.Min.X, Y: r.Min.Y}, {X: r.Min.X, Y: r.Max.Y}},
+		{{X: r.Min.X, Y: r.Max.Y}, {X: r.Max.X, Y: r.Max.Y}},
+		{{X: r.Max.X, Y: r.Min.Y}, {X: r.Max.X, Y: r.Max.Y}},
+	}
+	for _, e := range edges {
+		if p, ok := crossSegments(mid, end, e[0], e[1]); ok {
+			return p, true
+		}
+	}
+	return gfx.Point{}, false
+}
+
+// crossSegments is the point where two segments meet, false when they do not.
+func crossSegments(a, b, c, d gfx.Point) (gfx.Point, bool) {
+	rx, ry := b.X-a.X, b.Y-a.Y
+	sx, sy := d.X-c.X, d.Y-c.Y
+	den := rx*sy - ry*sx
+	if den == 0 {
+		return gfx.Point{}, false
+	}
+	t := ((c.X-a.X)*sy - (c.Y-a.Y)*sx) / den
+	u := ((c.X-a.X)*ry - (c.Y-a.Y)*rx) / den
+	if t < 0 || t > 1 || u < 0 || u > 1 {
+		return gfx.Point{}, false
+	}
+	return gfx.Point{X: a.X + t*rx, Y: a.Y + t*ry}, true
 }
 
 // dragPreview moves the drawn items of a classic diagram by the pointer from to to, both in session

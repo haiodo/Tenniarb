@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The canvas draws the line of a link being drawn from the boxes it draws itself, not from the line the old
+  renderer kept for it: the application no longer asks go/render for anything of a diagram that is on
+  screen.
 * "Export text as html" builds the text from what the canvas drew - the words, their weight, their slant,
   their colour, the code and the links - instead of asking the old renderer for its own copy of the text.
   The markup differs here and there (a list is a real list now, not a row with a `*`), the words are the

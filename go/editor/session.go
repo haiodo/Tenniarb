@@ -171,6 +171,10 @@ func (s *Session) Store() *model.ElementModelStore { return s.store }
 func (s *Session) UndoManager() *model.UndoManager { return s.um }
 
 // Root is the document.
+// DrawingLine reports whether a link is being drawn: the canvas draws the preview line then, from the box
+// of the source to the pointer or to the item under it, without asking for the old renderer's line.
+func (s *Session) DrawingLine() bool { return s.mode == modeLine }
+
 func (s *Session) Root() *model.ElementModel { return s.root }
 
 // Element is the element on the canvas.
