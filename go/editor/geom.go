@@ -123,3 +123,19 @@ func (s *Session) geom() Geom {
 	}
 	return sceneGeom{scene: s.scene}
 }
+
+func fontSizeOf(d render.Drawable) float64 {
+	switch b := d.(type) {
+	case *render.RoundBox:
+		return b.Style.FontSize
+	case *render.CircleBox:
+		return b.Style.FontSize
+	case *render.EmptyBox:
+		return b.Style.FontSize
+	case *render.InvisibleBox:
+		return b.Style.FontSize
+	case *render.DrawableLine:
+		return b.Style.FontSize
+	}
+	return 18
+}

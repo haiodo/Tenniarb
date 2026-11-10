@@ -61,22 +61,6 @@ func (s *Session) editText(item *model.DiagramItem, mode EditMode) string {
 	return render.PrepareBodyText(text)
 }
 
-func fontSizeOf(d render.Drawable) float64 {
-	switch b := d.(type) {
-	case *render.RoundBox:
-		return b.Style.FontSize
-	case *render.CircleBox:
-		return b.Style.FontSize
-	case *render.EmptyBox:
-		return b.Style.FontSize
-	case *render.InvisibleBox:
-		return b.Style.FontSize
-	case *render.DrawableLine:
-		return b.Style.FontSize
-	}
-	return 18
-}
-
 // EditTarget gives the editor of item its box, text and font. False: readonly, or item is not in
 // the scene.
 func (s *Session) EditTarget(item *model.DiagramItem, mode EditMode) (EditTarget, bool) {
