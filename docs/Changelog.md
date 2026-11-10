@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* A stroke of a `.tenn` names its ends and corners: `line-cap` (`butt`, `round`, `square`) and `line-join`
+  (`miter`, `round`, `bevel`), on a frame of an item, a `path` outline and a `link`. The canvas of a shape
+  library asks for `round` at both - lucide draws its icons that way - and until now a round icon came out
+  with square ends and sharp corners. Read on the web with a picture test, and in `go/scene` next.
 * A document mounts a library of the application by name: `element "icons" --from-file
   "tenniarb-library://icons"` finds `libraries/icons.tenn` wherever the document lies, so a design no
   longer needs a relative path that only works from one folder. `c4` is mounted the same way, and `make app`

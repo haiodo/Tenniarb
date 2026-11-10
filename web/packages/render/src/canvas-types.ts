@@ -27,6 +27,7 @@ export interface Canvas2D {
   lineWidth: number;
   lineDashOffset: number;
   lineCap?: string;
+  lineJoin?: string;
   setLineDash(segments: number[]): void;
 
   globalAlpha?: number;

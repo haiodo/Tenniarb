@@ -492,3 +492,61 @@ test("an inline image grows the item and is drawn upright", async () => {
   assert.ok(find(255, 0) < Infinity && find(0, 255) < Infinity, "both halves are drawn");
   assert.ok(find(255, 0) < find(0, 255), "red half above blue half");
 });
+
+// A stroke of a file names its ends and corners: an outline icon of lucide asks for round both, and the
+// frame of a box may ask for square ends. Nothing else about the picture changes.
+test("line-cap and line-join reach the canvas", () => {
+  const drawn = new Map<string, string>();
+  const element = parseDiagram(`element Root {
+    item Box {
+        pos 0 0
+        width 100
+        height 60
+        border-color black
+        line-width 4
+        line-cap round
+        line-join bevel
+        path "M10 10 L50 10 L50 40"
+        color black
+    }
+}`);
+  const { ctx, canvas2d } = newCanvas(130, 130);
+  const recording = new Proxy(canvas2d, {
+    get(t, key) {
+      const v = Reflect.get(t, key, t);
+      return typeof v === "function" ? v.bind(t) : v;
+    },
+    set(t, key, value) {
+      if (key === "lineCap" || key === "lineJoin") {
+        drawn.set(String(key), String(value));
+      }
+      return Reflect.set(t, key, value, t);
+    },
+  });
+  renderElement(recording as typeof canvas2d, element, { background: "#ffffff" });
+  assert.equal(drawn.get("lineCap"), "round", `lineCap ${drawn.get("lineCap")}`);
+  assert.equal(drawn.get("lineJoin"), "bevel", `lineJoin ${drawn.get("lineJoin")}`);
+  // The default of a file that says nothing keeps the canvas default.
+  const plain = parseDiagram(`element Root {
+    item Box { pos 0 0; width 20; height 20; border-color black; line-width 2 }
+}`);
+  drawn.clear();
+  const second = newCanvas(40, 40);
+  renderElement(
+    new Proxy(second.canvas2d, {
+      get(t, key) {
+        const v = Reflect.get(t, key, t);
+        return typeof v === "function" ? v.bind(t) : v;
+      },
+      set(t, key, value) {
+        if (key === "lineCap" || key === "lineJoin") {
+          drawn.set(String(key), String(value));
+        }
+        return Reflect.set(t, key, value, t);
+      },
+    }) as typeof second.canvas2d,
+    plain,
+    { background: "#ffffff" },
+  );
+  assert.equal(drawn.get("lineCap") ?? "butt", "butt");
+});

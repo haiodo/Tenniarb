@@ -4048,6 +4048,10 @@ interface Look {
   border: Color;
   text: Color;
   lineW: number;
+  /** `line-cap`: the ends of the stroke, "butt" unless the file says round or square. */
+  cap: string;
+  /** `line-join`: the corners of the stroke, "miter" unless the file says round or bevel. */
+  join: string;
   /** `line-style` dashes for the border; empty is a solid line. */
   dash: number[];
   dashPhase: number;
@@ -4686,6 +4690,8 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
     border: inCtx ? noColor : prep.classic ? classicBorder : colorBlack,
     text: up,
     lineW: 1,
+    cap: "butt",
+    join: "miter",
     dash: [],
     dashPhase: 0,
     radius: [0, 0, 0, 0],
@@ -4710,6 +4716,8 @@ function lookOf(prep: Prep, rn: RNode, inCtx: boolean, up: Color): Look {
   if (lw !== null) {
     look.lineW = lw;
   }
+  look.cap = lineCapOf(prep, rn, look.cap);
+  look.join = lineJoinOf(prep, rn, look.join);
   const line = dashOf(prep, rn);
   look.dash = line.dash;
   look.dashPhase = line.phase;
@@ -4762,6 +4770,40 @@ function dashOf(prep: Prep, rn: RNode): { dash: number[]; phase: number } {
   }
   prep.diag.warn(p.pos ?? rn.src ?? { line: 0, col: 0 }, `line-style takes solid, dashed or dotted, got "${s}"`);
   return { dash: [], phase: 0 };
+}
+
+/** line-cap: the ends of a stroke; a library of outline icons asks for round. */
+function lineCapOf(prep: Prep, rn: RNode, cur: string): string {
+  const p = propOf(prep, rn, "line-cap");
+  if (p === null) {
+    return cur;
+  }
+  const s = propText(p, 0);
+  switch (s) {
+    case "butt":
+    case "round":
+    case "square":
+      return s;
+  }
+  prep.diag.warn(p.pos ?? rn.src ?? { line: 0, col: 0 }, `line-cap takes butt, round or square, got "${s}"`);
+  return cur;
+}
+
+/** line-join: the corners of a stroke; a library of outline icons asks for round. */
+function lineJoinOf(prep: Prep, rn: RNode, cur: string): string {
+  const p = propOf(prep, rn, "line-join");
+  if (p === null) {
+    return cur;
+  }
+  const s = propText(p, 0);
+  switch (s) {
+    case "miter":
+    case "round":
+    case "bevel":
+      return s;
+  }
+  prep.diag.warn(p.pos ?? rn.src ?? { line: 0, col: 0 }, `line-join takes miter, round or bevel, got "${s}"`);
+  return cur;
 }
 
 /** corner-radius: one value for all corners or four in CSS order. */
@@ -5443,7 +5485,7 @@ function drawPicture(ctx: Canvas2D, prep: Prep, im: InlineImage, fit: string, w:
   }
 }
 
-function drawIcon(ctx: Canvas2D, icon: Icon, w: number, h: number, lineW: number): void {
+function drawIcon(ctx: Canvas2D, icon: Icon, w: number, h: number, lineW: number, cap: string, join: string): void {
   const s = Math.min(w / icon.vw, h / icon.vh);
   const ox = (w - icon.vw * s) / 2 - icon.vx * s;
   const oy = (h - icon.vh * s) / 2 - icon.vy * s;
@@ -5465,6 +5507,8 @@ function drawIcon(ctx: Canvas2D, icon: Icon, w: number, h: number, lineW: number
   }
   if (lineW > 0 && icon.stroke.a > 0) {
     ctx.lineWidth = lineW;
+    ctx.lineCap = cap;
+    ctx.lineJoin = join;
     ctx.strokeStyle = sceneCss(icon.stroke);
     ctx.stroke();
   }
@@ -5570,7 +5614,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
       if (w > 0 && h > 0) {
         const icon = prep.icons.get(rn);
         if (icon !== undefined) {
-          drawIcon(ctx, icon, w, h, look.lineW);
+          drawIcon(ctx, icon, w, h, look.lineW, look.cap, look.join);
           const ti = prep.texts.get(rn);
           if (ti !== undefined) {
             drawText(ctx, ti, w, h, true, look.text);
@@ -5628,6 +5672,8 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
               const radius = rad.map((r) => Math.max(r - inset, 0)) as [number, number, number, number];
               boxPath(ctx, display, inset, inset, w - look.lineW, h - look.lineW, radius);
               ctx.lineWidth = look.lineW;
+              ctx.lineCap = look.cap;
+              ctx.lineJoin = look.join;
               ctx.strokeStyle = sceneCss(look.border);
               ctx.setLineDash(look.dash);
               ctx.lineDashOffset = look.dashPhase;

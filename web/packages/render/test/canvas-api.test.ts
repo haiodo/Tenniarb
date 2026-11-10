@@ -8,7 +8,7 @@ import { loadDecoder, newCanvas, parseDiagram } from "./helpers.ts";
 const allowed = new Set([
   "save", "restore", "translate", "scale",
   "beginPath", "moveTo", "lineTo", "arcTo", "quadraticCurveTo", "closePath", "rect", "ellipse", "clip", "fill", "stroke", "fillRect",
-  "fillStyle", "strokeStyle", "lineWidth", "lineDashOffset", "setLineDash",
+  "fillStyle", "strokeStyle", "lineWidth", "lineCap", "lineJoin", "lineDashOffset", "setLineDash",
   "shadowColor", "shadowBlur", "shadowOffsetX", "shadowOffsetY",
   "font", "textBaseline", "fillText", "measureText", "drawImage",
 ]);
