@@ -4,6 +4,10 @@
 // A .pen file is one canvas, so a .tenn file is one scene: every top level pen node becomes an item at
 // the file root, at its canvas position (Y up, so pos y is -y). There is no element per screen: it
 // would repeat the name of every screen as a second segment of the paths.
+//
+// An icon node names a glyph of a library and keeps no geometry, while the format has no icon property:
+// the glyph of libraries/icons.tenn becomes the `path` of an item, with its `view-box`, so the .tenn file
+// stays readable without the icons library.
 package penimport
 
 import (
@@ -112,6 +116,10 @@ type File struct {
 	Warnings  []string
 	// Placeholders lists the refs that point nowhere.
 	Placeholders []string
+	// missingIcons is the set of icon names the table does not have, so that the warning is written once
+	// per name; once is the same for the approximations counted once per file.
+	missingIcons map[string]bool
+	once         map[string]bool
 }
 
 type Top struct {

@@ -599,7 +599,13 @@ func (c *conv) props(f *File, m map[string]any, typ string, x pctx) []Prop {
 	if b, ok := m["clip"].(bool); ok && (b || x.explicit) {
 		ps = append(ps, prop("clip", wordArg(map[bool]string{true: "yes", false: "no"}[b])))
 	}
-	ps = append(ps, c.lookProps(f, m, typ, x)...)
+	if typ == "icon" {
+		// An icon has no box and no border of its own: its fill is the colour of the glyph, which is the
+		// stroke of the path, and the path itself is the drawing.
+		ps = append(ps, c.iconProps(f, m, x)...)
+	} else {
+		ps = append(ps, c.lookProps(f, m, typ, x)...)
+	}
 	if o, ok := m["opacity"]; ok {
 		ps = append(ps, opacityProp(f, o, x.explicit)...)
 	}

@@ -96,7 +96,7 @@ func (c *conv) buildNode(f *File, m map[string]any, parent *Node, b bctx) *Node 
 	}
 	typ, _ := m["type"].(string)
 	switch typ {
-	case "frame", "rectangle", "ellipse", "path", "text":
+	case "frame", "rectangle", "ellipse", "path", "text", "icon":
 		return c.buildItem(f, m, typ, parent, b)
 	case "ref":
 		n := &Node{Kind: KUse, File: f, res: b.res, ID: id, Typ: b.res.rootType(m), Pen: m, Parent: parent, Name: penName(m), b: b}

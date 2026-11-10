@@ -3,12 +3,14 @@ package scene
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/library"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -67,7 +69,7 @@ func LoadIn(root, file, entry string, overlay map[string]string) (*Tree, error) 
 	if r, err := filepath.EvalSymlinks(absRoot); err == nil {
 		absRoot = r
 	}
-	t := &Tree{root: absRoot, files: map[string]*Node{}, seen: map[Error]bool{}, overlay: overlay, src: map[string]string{}}
+	t := &Tree{root: absRoot, files: map[string]*Node{}, seen: map[Error]bool{}, overlay: maps.Clone(overlay), src: map[string]string{}}
 	abs, ok := t.inside(t.abs(file))
 	if !ok {
 		return nil, fmt.Errorf("%s is outside the workspace root %s", file, absRoot)
@@ -570,6 +572,12 @@ func fromFile(args []*tenn.Node) (string, bool) {
 // mountFile makes the content of the file the content of n: the lists are shared, so one file
 // mounted twice is one subtree, and scopes inside it stay in that file.
 func (l *loader) mountFile(n *Node, rel string) {
+	if library.IsScheme(rel) {
+		var ok bool
+		if rel, ok = l.mountLibrary(rel, n.Pos); !ok {
+			return
+		}
+	}
 	abs, ok := l.resolveFile(rel, n.Pos, "element --from-file")
 	if !ok {
 		return
@@ -583,6 +591,37 @@ func (l *loader) mountFile(n *Node, rel string) {
 	if n.Type == "" { // the kind of the mounted file, unless the mounting element says its own
 		n.Type = file.Type
 	}
+}
+
+// libraryMountDir is the folder below the workspace root where a library named by a scheme is mounted.
+// The file of a library lies outside the workspace, so its text comes from the overlay under this
+// reserved path: a document file of the same name never stands in for it.
+const libraryMountDir = ".tenniarb-library"
+
+// mountLibrary reads the library of a tenniarb-library:// path and puts its text into the overlay. It
+// returns the relative path to mount it under, ok false when the name is bad or the library is missing.
+func (l *loader) mountLibrary(scheme string, pos Pos) (string, bool) {
+	p, err := library.Parse(scheme)
+	if err != nil {
+		l.t.fail(pos, "%s", err)
+		return "", false
+	}
+	file, err := library.Default(l.t.root).Resolve(p)
+	if err != nil {
+		l.t.fail(pos, "%s", err)
+		return "", false
+	}
+	text, err := os.ReadFile(file)
+	if err != nil {
+		l.t.fail(pos, "library %s: cannot read %s: %v", p, file, err)
+		return "", false
+	}
+	rel := path.Join(libraryMountDir, p.Rel())
+	if l.t.overlay == nil {
+		l.t.overlay = map[string]string{}
+	}
+	l.t.overlay[rel] = string(text)
+	return rel, true
 }
 
 // resolveFile finds rel relative to the file being read; it fails when the path leaves the workspace root.

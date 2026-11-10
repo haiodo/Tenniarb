@@ -86,20 +86,14 @@ type Roots struct{ Installed, Shipped string }
 
 // Resolve tries Installed first: an installed copy shadows a shipped one.
 func (r Roots) Resolve(p Path) (string, error) {
-	if err := p.valid(); err != nil {
-		return "", err
+	var f Finder
+	if r.Installed != "" {
+		f.Installed = []string{r.Installed}
 	}
-	rel := p.Rel()
-	for _, root := range []string{r.Installed, r.Shipped} {
-		if root == "" {
-			continue
-		}
-		file := filepath.Join(root, filepath.FromSlash(rel))
-		if _, err := os.Stat(file); err == nil {
-			return file, nil
-		}
+	if r.Shipped != "" {
+		f.Shipped = []string{r.Shipped}
 	}
-	return "", fmt.Errorf("library %s not found in %s or %s", rel, r.Installed, r.Shipped)
+	return f.Resolve(p)
 }
 
 // Entry is one line of the index of installed libraries.
