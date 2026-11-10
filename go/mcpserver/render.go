@@ -8,6 +8,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
@@ -30,9 +31,13 @@ func (s *Server) buildScene(tree *scene.Tree, rel, element string, measurer gfx.
 	sc := gfx.NewScene()
 	var screen *scene.Screen
 	var err error
-	classic := classic.Hook(tree, s.root, rel, element, render.ClassicContext)
+	vals := classic.Hook(tree, s.root, rel, element, classic.SceneContext(tree, element, measurer,
+		func(text string, fontSize float64) model.DrawableSize {
+			sz := render.MeasureTextSize(render.Options{Measurer: measurer}, text, fontSize)
+			return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+		}))
 	sc.Update(func(tx *gfx.Tx) {
-		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: measurer, FontName: "Helvetica", EvalVars: exec.SceneEvalVars, Classic: classic})
+		screen, err = tree.Build(tx, nil, element, scene.Options{Measurer: measurer, FontName: "Helvetica", EvalVars: exec.SceneEvalVars, Classic: vals})
 	})
 	if err != nil {
 		return nil, nil, err

@@ -18,6 +18,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
@@ -51,7 +52,11 @@ func run(root, file, path string, scale float64) error {
 	}
 	sc := gfx.NewScene()
 	var screen *scene.Screen
-	classic := classic.Hook(tree, root, file, path, render.ClassicContext)
+	classic := classic.Hook(tree, root, file, path, classic.SceneContext(tree, path, gfx.DefaultMeasurer,
+		func(text string, fontSize float64) model.DrawableSize {
+			sz := render.MeasureTextSize(render.Options{Measurer: gfx.DefaultMeasurer}, text, fontSize)
+			return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+		}))
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err = tree.Build(tx, nil, path, scene.Options{Measurer: textMeasurer(), FontName: "Helvetica, Arial, sans-serif",
 			EvalVars: exec.SceneEvalVars, Classic: classic})

@@ -26,7 +26,12 @@ func (v *Viewer) exportScene(e *model.Element) (*gfx.Scene, *scene.Screen, error
 	var vals func(scene.ClassicRef, string) ([]string, bool)
 	if !v.isScene(e) {
 		// The path is from the file root: the root itself and an element from another file get no values.
-		vals = classic.Hook(v.stree, v.root, v.rel(), strings.Join(PathOf(e), "."), render.ClassicContext)
+		path := strings.Join(PathOf(e), ".")
+		vals = classic.Hook(v.stree, v.root, v.rel(), path, classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
+			func(text string, fontSize float64) model.DrawableSize {
+				sz := render.MeasureTextSize(render.Options{Measurer: gfx.DefaultMeasurer}, text, fontSize)
+				return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+			}))
 	}
 	sc := gfx.NewScene()
 	var screen *scene.Screen

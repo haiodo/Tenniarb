@@ -3,6 +3,7 @@ package classic
 import (
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
 )
@@ -82,5 +83,19 @@ func collectSizes(el *model.Element, p *scene.Placed, out map[*model.DiagramItem
 			}
 		}
 		collectSizes(el, k, out)
+	}
+}
+
+// SceneContext is Context with the item sizes of the scene: what the evaluator asks for `width` and
+// `height` is answered by the box the scene draws, and measureText is the frame size of a text the caller
+// still measures with (the CTFramesetter of go/render while it is there).
+func SceneContext(tree *scene.Tree, path string, measure gfx.TextMeasurer, measureText func(string, float64) model.DrawableSize) Context {
+	return func(el *model.Element) model.IExecutionContext {
+		ctx := exec.NewExecutionContext(exec.Options{
+			ItemSize:    Sizes(tree, path, el, measure),
+			MeasureText: measureText,
+		})
+		ctx.SetElement(el)
+		return ctx
 	}
 }
