@@ -106,6 +106,12 @@ func (c *conv) buildNode(f *File, m map[string]any, parent *Node, b bctx) *Node 
 		}
 		return n
 	}
+	if id != "" {
+		if f.unsupported == nil {
+			f.unsupported = map[string]string{}
+		}
+		f.unsupported[id] = typ
+	}
 	f.unsup("type " + typ)
 	return nil
 }

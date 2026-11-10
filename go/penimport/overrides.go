@@ -1,6 +1,7 @@
 package penimport
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -106,14 +107,52 @@ func (c *conv) placeholder(u *Node, why string) {
 	f := u.File
 	f.unsup("unresolved ref")
 	f.Placeholders = append(f.Placeholders, u.ref)
-	f.warn("%s: %s (ref %s), a zero size placeholder is written", u.Name, why, u.ref)
+	// The placeholder takes the room of the component it stands for: an icon of twenty points leaves an
+	// empty box of twenty points, not a point, so the layout of the frame around it stays as it was drawn.
+	w, h := u.res.componentSize(u.ref)
+	f.warn("%s: %s (ref %s), a %gx%g placeholder is written", u.Name, why, u.ref, w, h)
 	u.Kind, u.Target, u.Block = KItem, nil, nil
 	u.Name = "missing: " + u.Name
 	u.missing = true
 	u.Typ = "frame"
 	// absolute keeps the placeholder out of the gaps of a flow, as the node that gfx/pen leaves out
-	u.Props = append([]Prop{prop("width", numArg(0)), prop("height", numArg(0)), prop("absolute", wordArg("yes"))},
+	u.Props = append([]Prop{prop("width", numArg(w)), prop("height", numArg(h)), prop("absolute", wordArg("yes"))},
 		posProps(u.Pen, u.b)...)
+}
+
+// whyMissing is what a ref to id found instead of a component: a type this converter does not build, or
+// nothing at all.
+func (f *File) whyMissing(id string) string {
+	if typ, ok := f.unsupported[id]; ok {
+		return fmt.Sprintf("the component is a %q, a type this converter does not build", typ)
+	}
+	return "the component is not there"
+}
+
+// penNumber is a number of the .pen: the format writes them as JSON numbers.
+func penNumber(v any) (float64, bool) {
+	switch x := v.(type) {
+	case float64:
+		return x, true
+	case int:
+		return float64(x), true
+	}
+	return 0, false
+}
+
+// componentSize is the room the component with that id asks for in the .pen, and the size an icon takes
+// when the file leaves it to the icon: twenty points, the default of the format.
+func (f *File) componentSize(id string) (w, h float64) {
+	w, h = 20, 20
+	if m, ok := f.rawIdx[id]; ok {
+		if v, ok := penNumber(m["width"]); ok && v > 0 {
+			w = v
+		}
+		if v, ok := penNumber(m["height"]); ok && v > 0 {
+			h = v
+		}
+	}
+	return w, h
 }
 
 func (c *conv) finish(u *Node) {
@@ -129,7 +168,7 @@ func (c *conv) finish(u *Node) {
 	defer func() { u.state = 2 }()
 	t := u.res.resolve(u.ref)
 	if t == nil {
-		c.placeholder(u, "the component is not there")
+		c.placeholder(u, u.res.whyMissing(u.ref))
 		return
 	}
 	u.Target = t

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A `.pen` file that uses a component of a type the converter does not build - an `icon` of a library, for
+  one - leaves a placeholder the size of that component instead of a point, so the layout around it stays as
+  it was drawn, and the warning names the type rather than claiming the component is missing.
 * A banner that names a diagnostic the fixer repairs - `title Gap and padding` instead of `title "Gap and
   padding"` - carries a **Fix** button: it quotes the words as one undo step and the banner goes away with
   it. A reader of the picture is not at a terminal, so the repair that only `tenniarb check -fix` knew about

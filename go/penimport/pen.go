@@ -99,7 +99,10 @@ type File struct {
 	vars    map[string]map[string]any
 	index   map[string]*Node
 	dropped map[string]bool
-	slots   map[string]bool
+	// unsupported is the type of every node this converter leaves out: a ref to one resolves to nothing, and
+	// the placeholder says the type is not supported instead of guessing that the component is missing.
+	unsupported map[string]string
+	slots       map[string]bool
 	// Tops lists the top level pen nodes that became items: the pen index and the node.
 	Tops []Top
 	// Unsupported counts what was left out or approximated, by feature.
