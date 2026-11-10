@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* The title of a classic item written as a block, `title %{` on its own line, is drawn without the newlines
+  and the indentation of the block edges, as the old renderer drew it: they made an empty line above the
+  text and one below it, so an item with a picture in its title was a line taller than before. `Circle
+  image` of `docs/Example.tenn` comes down from a mean of 18.3 points off to 5.0, and `Backlinks` of
+  `examples/anti-crm.tenn` from 7.9 to nothing.
 * `tenniarb check -fix` rewrites a title written with spaces and no quotes, `title Gap and padding` as
   `title "Gap and padding"`, and says how many it quoted. The error about such a title now names that
   command, so the file can be fixed without knowing the format: `title takes one value: quote the words,

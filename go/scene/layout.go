@@ -755,8 +755,10 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 		return nil
 	}
 	if p.classic {
-		// go/render reads a text `\n` as a newline, in a title and in the name a leaf draws.
-		title = strings.ReplaceAll(title, `\n`, "\n")
+		// go/render reads a text `\n` as a newline, in a title and in the name a leaf draws. The block of a
+		// title keeps the newlines and the indentation of its edges when the model hands it over, and
+		// go/render drew neither: they became an empty line above the text and one below it.
+		title = strings.Trim(strings.ReplaceAll(title, `\n`, "\n"), " \t\r\n")
 	}
 	size := defaultFontSize
 	if fs := p.prop(rn, "font-size"); fs != nil {
@@ -1203,4 +1205,59 @@ func hyphenPieces(word string) []string {
 		}
 	}
 	return append(out, string(rs[start:]))
+}
+
+// TitleLine is one line of a title as the layout breaks it, for a test or a parity stand: how wide and
+// tall the line is, the words on it, and whether a picture stands on it (written as "@").
+type TitleLine struct {
+	W, H  float64
+	Parts []string
+}
+
+// TitleLines is how the title of the node is broken at w: one line when w is infinite or not above zero.
+// It is the same layout the canvas draws, so a stand can compare the lines and not only the box.
+func (s *Screen) TitleLines(n *Node, w float64) []TitleLine {
+	if s == nil || s.p == nil || n == nil {
+		return nil
+	}
+	rn := s.rnodeOf(n)
+	if rn == nil {
+		return nil
+	}
+	ti := s.p.texts[rn]
+	if ti == nil {
+		return nil
+	}
+	if w <= 0 {
+		w = math.Inf(1)
+	}
+	out := make([]TitleLine, 0, 4)
+	if ti.parts == nil {
+		for _, text := range ti.wrap(w) {
+			out = append(out, TitleLine{W: ti.width(text), H: ti.lineH, Parts: []string{text}})
+		}
+		return out
+	}
+	for _, ln := range ti.layout(w) {
+		line := TitleLine{W: ln.w, H: ln.h}
+		for _, part := range ln.parts {
+			if part.img != nil {
+				line.Parts = append(line.Parts, "@")
+				continue
+			}
+			line.Parts = append(line.Parts, part.text)
+		}
+		out = append(out, line)
+	}
+	return out
+}
+
+// rnodeOf is the node of the layout that was written for n.
+func (s *Screen) rnodeOf(n *Node) *RNode {
+	for rn := range s.p.texts {
+		if rn.Src == n {
+			return rn
+		}
+	}
+	return nil
 }
