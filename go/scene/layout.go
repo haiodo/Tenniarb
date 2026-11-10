@@ -1075,7 +1075,9 @@ func (ti *textInfo) layout(w float64) []titleLine {
 	add := func(part titlePart) {
 		line.parts = append(line.parts, part)
 		if part.img != nil {
-			line.w += part.img.w
+			// go/render kept the advance of the `@` that names the picture as a space beside it; dropping it
+			// made an item with a picture in its title five points narrower than the old renderer drew it.
+			line.w += part.img.w + ti.m.MeasureText(" ", ti.partFont(part)).Width
 			line.h = math.Max(line.h, part.img.h)
 			started = true
 			return

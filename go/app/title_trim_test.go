@@ -3,6 +3,7 @@
 package app
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,53 @@ func TestClassicTitleEdgesAreTrimmed(t *testing.T) {
 					if got := strings.Join(lines[0].Parts, ""); got != "The words" {
 						t.Errorf("the line %q, want the words without the indentation", got)
 					}
+				}
+				walk(k)
+			}
+		}
+		walk(screen.Placed())
+	})
+}
+
+// A picture in a title carries the advance of the `@` that names it, as go/render counted it: without that
+// space every item with a picture in its title was five points narrower than the old renderer drew it.
+const titlePNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="
+
+func TestClassicPictureInTitleKeepsItsSpace(t *testing.T) {
+	const text = "element \"Doc\" {\n  element \"E\" {\n    item A { title %{A@(pic.png|32)}; image \"pic.png\" @(" + titlePNG + ") }\n  }\n}\n"
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "e.tenn"), []byte(text), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	el := &model.ReadTenn(text).Element
+	for _, c := range el.Elements {
+		for _, d := range c.Elements {
+			if d.Name == "E" {
+				el = d
+			}
+		}
+	}
+	tree, err := scene.Load(dir, "e.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := render.NewExecContext(el, render.Options{Measurer: gfx.DefaultMeasurer})
+	want, err := render.ItemSize(el.Items[0], render.Options{Measurer: gfx.DefaultMeasurer})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sc := gfx.NewScene()
+	sc.Update(func(tx *gfx.Tx) {
+		screen, err := tree.Build(tx, nil, "Doc.E", scene.Options{
+			Measurer: gfx.DefaultMeasurer, Classic: classic.Values(el, ctx)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var walk func(p *scene.Placed)
+		walk = func(p *scene.Placed) {
+			for _, k := range p.Kids {
+				if k.Src != nil && k.Src.Kind == scene.KItem && math.Abs(k.W-want.Width) > 0.01 {
+					t.Errorf("item %q is %.2f wide, go/render says %.2f", k.Src.Name, k.W, want.Width)
 				}
 				walk(k)
 			}

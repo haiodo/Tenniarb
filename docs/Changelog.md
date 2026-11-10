@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* A picture in a classic title keeps the advance of the `@` that names it, as the old renderer counted it:
+  without that space every item with a picture in its title was five points narrower than before. `Circle
+  image` of `docs/Example.tenn` now matches the old width exactly (213 points) and its mean is 1.4 where it
+  was 5.0; `General info` goes from 0.84 to 0.27.
 * The title of a classic item written as a block, `title %{` on its own line, is drawn without the newlines
   and the indentation of the block edges, as the old renderer drew it: they made an empty line above the
   text and one below it, so an item with a picture in its title was a line taller than before. `Circle
