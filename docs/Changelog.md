@@ -16,9 +16,20 @@
 * A text of a `.pen` that grows of itself (`textGrowth: auto`) does not take the width of the sample it is
   a component of any more: the instance says `width hug`, so a tagline of the footer stays inside its column
   instead of standing 640 points wide in a 300 point brand block.
-* A `.pen` file that uses a component of a type the converter does not build - an `icon` of a library, for
-  one - leaves a placeholder the size of that component instead of a point, so the layout around it stays as
-  it was drawn, and the warning names the type rather than claiming the component is missing.
+* `libraries/icons.tenn` is the icons of the lucide set as a library of the format: 2350 items, one per
+  icon, with its path and view box, so a document mounts it with `--from-file` and takes a glyph by name -
+  `use icons.zap as Bolt { width 24; height 24; border-color #0b1411 }`. `make icons` refreshes it from the
+  `lucide-static` package and rewrites the licence notice beside it; the generator is `go/cmd/tennicons`, a
+  tool of the repository, not generated code. The icons are ISC, and the ones derived from Feather are MIT:
+  `libraries/LICENSES/lucide.txt`.
+* A `.pen` icon of a library is imported as a vector, not as an empty box: the glyph becomes the `path` of
+  an item with `view-box 0 0 24 24`, the pen fill colours the stroke (`border-color`) and the stroke of the
+  library is scaled to the size of the icon, so a design with icons no longer leaves 314 placeholders of the
+  right size. The glyph of an instance overrides the one of its component - the size presets of a design
+  show different icons - and a name the library has not is a warning, with the item keeping its room.
+* A `.pen` file that uses a component of a type the converter does not build - a `group`, for one - leaves a
+  placeholder the size of that component instead of a point, so the layout around it stays as it was drawn,
+  and the warning names the type rather than claiming the component is missing.
 * A banner that names a diagnostic the fixer repairs - `title Gap and padding` instead of `title "Gap and
   padding"` - carries a **Fix** button: it quotes the words as one undo step and the banner goes away with
   it. A reader of the picture is not at a terminal, so the repair that only `tenniarb check -fix` knew about
