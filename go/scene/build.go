@@ -28,6 +28,10 @@ type Screen struct {
 	// links and anchors are the links and the headings of the bodies, where they are drawn.
 	links   []BodyLink
 	anchors []BodyAnchor
+	// linkBoxes is where the line of a diagram link is drawn, by the node that writes it: the box of its
+	// two ends together. A link has no Placed of its own, and this is the box the canvas needs to select
+	// one, to aim a popover at it or to scroll it into view.
+	linkBoxes map[*Node]gfx.Rect
 
 	tree *RNode
 	p    *prep
@@ -177,7 +181,7 @@ func (t *Tree) build(tx *gfx.Tx, parent *gfx.Node, o Options, expand func() *RNo
 	lay.Layout()
 	p.warnOutside(rn)
 	p.warnBodyFit(rn)
-	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p}
+	sc := &Screen{Name: rn.Name, W: lay.RW, H: lay.RH, tree: rn, p: p, linkBoxes: p.linkBoxes()}
 	sc.collectBodies()
 	b := &builder{p: p, tx: tx, next: p.opts.FirstID, made: map[*RNode]*gfx.Node{}}
 	sc.Root = b.emit(rn, parent, true)
@@ -863,4 +867,14 @@ func (p *prep) radii(pr *Prop) [4]float64 {
 		p.t.warn(pr.Pos, "corner-radius: takes 1 or 4 radii (top left, top right, bottom right, bottom left), the first value is used")
 	}
 	return out
+}
+
+// LinkBox is where the line of the link written for n is drawn: the box of its two ends together, in the
+// coordinates of the item that holds them. False for a node that writes no link.
+func (s *Screen) LinkBox(n *Node) (gfx.Rect, bool) {
+	if s == nil || n == nil {
+		return gfx.Rect{}, false
+	}
+	r, ok := s.linkBoxes[n]
+	return r, ok
 }

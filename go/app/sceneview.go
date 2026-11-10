@@ -489,11 +489,30 @@ func (v *Viewer) syncMap(sv *sceneView) bool {
 // drawnRect is where the canvas draws a classic item of the element on it; false when the scene does
 // not draw that item, a hidden one or a link.
 func (v *Viewer) drawnRect(it *model.DiagramItem) (gfx.Rect, bool) {
-	pl := v.classicPlaced(it)
-	if pl == nil {
+	if pl := v.classicPlaced(it); pl != nil {
+		return gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H), true
+	}
+	if b, ok := v.drawnLinkRect(it); ok {
+		return b, true
+	}
+	return gfx.Rect{}, false
+}
+
+// drawnLinkRect is where the line of a classic link is drawn: the box of its two ends, which the scene
+// reports for the node that writes the link.
+func (v *Viewer) drawnLinkRect(it *model.DiagramItem) (gfx.Rect, bool) {
+	if v.sv == nil || v.sv.screen == nil || v.state.Current == nil || it == nil || it.Kind != model.ItemKindLink {
 		return gfx.Rect{}, false
 	}
-	return gfx.R(pl.X+v.sv.off.X, pl.Y+v.sv.off.Y, pl.W, pl.H), true
+	for _, c := range v.sv.node.Content {
+		if c.Kind != scene.KLink || classic.LinkAt(v.state.Current, c) != it {
+			continue
+		}
+		if b, ok := v.sv.screen.LinkBox(c); ok {
+			return gfx.R(b.Min.X+v.sv.off.X, b.Min.Y+v.sv.off.Y, b.W(), b.H()), true
+		}
+	}
+	return gfx.Rect{}, false
 }
 
 // drawnCovers is editor.Options.Covers of a classic diagram: the session's boxes come from go/render and

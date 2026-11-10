@@ -341,6 +341,22 @@ func (p *prep) evaluated(rn *RNode, pr *Prop) *Prop {
 
 // A link end is the n-th sibling with that NFC name (source-index/target-index, default 0),
 // the same rule as PrepareItemRefs in go/model.
+// linkBoxes is the box of every link, by the node that writes it: its two ends together.
+func (p *prep) linkBoxes() map[*Node]gfx.Rect {
+	out := make(map[*Node]gfx.Rect, len(p.ends))
+	for k, ends := range p.ends {
+		if k.Src == nil || ends[0] == nil || ends[1] == nil {
+			continue
+		}
+		a, b := p.frames[ends[0]], p.frames[ends[1]]
+		if a == nil || b == nil {
+			continue
+		}
+		out[k.Src] = gfx.R(a.RX, a.RY, a.RW, a.RH).Union(gfx.R(b.RX, b.RY, b.RW, b.RH))
+	}
+	return out
+}
+
 func (p *prep) links(parent *RNode) {
 	byName := map[string][]*RNode{}
 	for _, k := range parent.Kids {
