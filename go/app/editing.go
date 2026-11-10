@@ -153,6 +153,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		pressed := v.press
 		v.press = press{}
 		v.dragAt = geometry.Point{} // the preview is over; the commit rebuilds the scene
+		v.previewBoxes = nil        // and the boxes are the model's again
 		v.view.SetCursor(view.CursorArrow)
 		if v.session != nil {
 			v.session.MouseUp(ev)
