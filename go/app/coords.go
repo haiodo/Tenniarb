@@ -35,6 +35,11 @@ func (m SceneMap) RectToGfx(r render.Rect) gfx.Rect {
 	return gfx.R(r.X+m.TX, m.TY-(r.Y+r.Height), r.Width, r.Height)
 }
 
+// RectToScene is RectToGfx backwards: the rectangle of the editor scene whose Y is the bottom edge.
+func (m SceneMap) RectToScene(r gfx.Rect) render.Rect {
+	return render.Rect{X: r.Min.X - m.TX, Y: m.TY - r.Max.Y, Width: r.W(), Height: r.H()}
+}
+
 // Shift is how far the content moved on the gfx scene from old to m.
 func (m SceneMap) Shift(old SceneMap) gfx.Point {
 	return gfx.Point{X: m.TX - old.TX, Y: m.TY - old.TY}

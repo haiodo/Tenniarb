@@ -365,12 +365,15 @@ func (v *Viewer) qaState() map[string]any {
 			}
 		}
 		out["links"] = links
-		// items: name -> [x, y, width, height] in the editor scene
+		// items: name -> [x, y, width, height] of the picture the canvas draws, in canvas coordinates
 		items := map[string][]float64{}
-		for _, i := range v.session.Scene().Items() {
-			if d := v.session.Scene().Drawables[i]; d != nil && i.Name != "" {
-				b := d.Bounds()
-				items[i.Name] = []float64{b.X, b.Y, b.Width, b.Height}
+		for _, i := range v.state.Current.Items {
+			if i.Name == "" || i.IsLink() {
+				continue
+			}
+			if b, ok := v.drawnRect(i); ok {
+				r := v.smap.RectToScene(b)
+				items[i.Name] = []float64{r.X, r.Y, r.Width, r.Height}
 			}
 		}
 		out["items"] = items
@@ -379,7 +382,7 @@ func (v *Viewer) qaState() map[string]any {
 		screen := map[string][]float64{}
 		for name, b := range items {
 			r := v.smap.RectToGfx(render.Rect{X: b[0], Y: b[1], Width: b[2], Height: b[3]})
-			screen[name] = []float64{(r.Min.X - cam.Origin.X) * cam.Zoom, (r.Min.Y - cam.Origin.Y) * cam.Zoom, (r.Max.X - r.Min.X) * cam.Zoom, (r.Max.Y - r.Min.Y) * cam.Zoom}
+			screen[name] = []float64{(r.Min.X - cam.Origin.X) * cam.Zoom, (r.Min.Y - cam.Origin.Y) * cam.Zoom, r.W() * cam.Zoom, r.H() * cam.Zoom}
 		}
 		out["screen"] = screen
 		out["pivot"] = []float64{v.session.Pivot().X, v.session.Pivot().Y}
