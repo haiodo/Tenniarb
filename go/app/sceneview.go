@@ -607,30 +607,7 @@ func (v *Viewer) classicPlaced(it *model.DiagramItem) *scene.Placed {
 
 // classicItemAt is the model item of a drawn classic item: both keep file order, so the n-th drawn item
 // of its parent is the n-th item of the element, a mounted element's file included.
-func classicItemAt(e *model.Element, n *scene.Node) *model.DiagramItem {
-	if e == nil || n == nil || n.Parent == nil {
-		return nil
-	}
-	k := 0
-	for _, c := range n.Parent.Content {
-		if c == n {
-			break
-		}
-		if c.Kind == scene.KItem {
-			k++
-		}
-	}
-	for _, it := range e.Items {
-		if it.Kind != model.ItemKindItem {
-			continue
-		}
-		if k == 0 {
-			return it
-		}
-		k--
-	}
-	return nil
-}
+func classicItemAt(e *model.Element, n *scene.Node) *model.DiagramItem { return classic.ItemAt(e, n) }
 
 // classicNamed is where the scene draws the classic item with the model name name, the way a comment or a
 // mark names an item.
