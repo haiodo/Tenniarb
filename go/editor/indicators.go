@@ -111,9 +111,13 @@ func IndicatorDots(bounds []render.Rect, visible render.Rect) []Dot {
 // view of k pixels per unit shows. The picture is in view pixels, y down, from the top-left corner
 // of the view.
 func (s *Session) Indicators(visible render.Rect, k float64, dark bool) *gfx.Picture {
-	bounds := make([]render.Rect, 0, len(s.scene.Items()))
-	for _, i := range s.scene.Items() {
-		b := s.scene.Drawables[i].Bounds()
+	items := s.geom().Items()
+	bounds := make([]render.Rect, 0, len(items))
+	for _, i := range items {
+		b, ok := s.geom().PaintBox(i)
+		if !ok {
+			continue
+		}
 		bounds = append(bounds, render.Rect{
 			X:      (b.X - visible.X) * k,
 			Y:      (b.Y - visible.Y) * k,

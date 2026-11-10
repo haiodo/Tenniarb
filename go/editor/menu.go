@@ -85,10 +85,10 @@ func (s *Session) StyleEntries() []Entry {
 // CanvasEntries is Swift menu(for:): p is the right-click point (scene space). Call Pick(p) first.
 func (s *Session) CanvasEntries(p render.Point, host MenuHost) []Entry {
 	sel := s.selection
-	under := s.covered(pointRect(p), s.scene.Find(p, true))
+	under := s.covered(pointRect(p), s.geom().Find(p, true))
 	// Overlapping items to pick from; not offered when the plain hit test finds the same single one.
 	var pickEntries []Entry
-	if plain := s.covered(pointRect(p), s.scene.Find(p, false)); len(under) != len(plain) || len(under) > 1 {
+	if plain := s.covered(pointRect(p), s.geom().Find(p, false)); len(under) != len(plain) || len(under) > 1 {
 		pickEntries = []Entry{separator}
 		sub := Entry{Label: "Select"}
 		for _, i := range under {

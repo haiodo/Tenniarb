@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The edit session asks the canvas where its items are - one interface, `editor.Geom` - instead of reading
+  the drawables of the old renderer. The canvas answers from what it draws; a session without one still
+  asks the boxes go/render built for it, so nothing changes for a caller that has no canvas yet.
 * The canvas draws the line of a link being drawn from the boxes it draws itself, not from the line the old
   renderer kept for it: the application no longer asks go/render for anything of a diagram that is on
   screen.

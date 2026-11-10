@@ -25,8 +25,8 @@ import (
 type Redraw struct {
 	// Rebuilt: Scene is a new scene, realize it again.
 	Rebuilt bool
-	// Moved lists drawables of the current scene whose picture changed (a drag preview).
-	Moved []render.Drawable
+	// Moved lists the items whose drawn box moved (a drag preview).
+	Moved []*model.DiagramItem
 }
 
 // Options configure a Session.
@@ -34,6 +34,10 @@ type Options struct {
 	// Render builds the scene. Its Exec is the expression engine; when nil the session makes one
 	// (render.NewExecContext) unless NoEvaluate is set. Items and FirstID are ignored.
 	Render render.Options
+	// Geom is where the session finds the items and their boxes: the canvas, which draws them with
+	// go/scene, answers it. Nil: the session builds a scene of its own with Render and asks that, which is
+	// what it did before the canvas could answer.
+	Geom Geom
 	// Readonly: no selection and no edits.
 	Readonly bool
 	// PCKeys is the TS mapping for other systems: Ctrl toggles the selection, Ctrl+Alt draws a
@@ -127,7 +131,7 @@ type Session struct {
 	editing  *editing
 
 	rebuilt bool
-	dirty   []render.Drawable
+	dirty   []*model.DiagramItem
 	batch   int
 	err     error
 }
@@ -282,7 +286,7 @@ func (s *Session) rebuild() {
 	s.rebuilt = true
 	kept := s.selection[:0:0]
 	for _, i := range s.selection {
-		if _, ok := s.scene.Drawables[i]; ok {
+		if _, ok := s.geom().Box(i); ok {
 			kept = append(kept, i)
 		}
 	}
@@ -293,7 +297,7 @@ func (s *Session) rebuild() {
 	}
 	s.selection = kept
 	if s.editing != nil {
-		if _, ok := s.scene.Drawables[s.editing.item]; !ok {
+		if _, ok := s.geom().Box(s.editing.item); !ok {
 			s.editing = nil
 		}
 	}
@@ -361,8 +365,8 @@ func (s *Session) Reveal(item *model.DiagramItem) {
 
 func (s *Session) pivotRightOf(item *model.DiagramItem) {
 	width := 90.0
-	if d, ok := s.scene.Drawables[item]; ok {
-		width = d.Bounds().Width
+	if b, ok := s.geom().PaintBox(item); ok {
+		width = b.Width
 	}
 	s.pivot = render.Point{X: item.X + width + 10, Y: item.Y}
 }
@@ -437,8 +441,7 @@ func (s *Session) PropsValues(t Target, text string) map[int]string {
 	var evalTarget model.EvalTarget = t.Element
 	if t.Item != nil {
 		evalTarget = t.Item
-		if d, ok := s.scene.Drawables[t.Item]; ok {
-			b := d.SelectorBounds()
+		if b, ok := s.geom().Box(t.Item); ok {
 			size = &model.DrawableSize{Width: b.Width, Height: b.Height}
 		}
 	}

@@ -268,7 +268,7 @@ func (s *Session) MoveBy(dx, dy float64) {
 	if s.opts.Readonly {
 		return
 	}
-	g := s.scene.Style.GridSpan
+	g := s.geom().Grid()
 	// Swift drops the remainder of the truncated value, so negative coordinates snap toward zero.
 	snap := func(v, grid float64) float64 {
 		r := roundf(v)
@@ -301,12 +301,7 @@ func (s *Session) ResizeBy(key string, fromCenter bool) {
 	}
 	item := s.selection[0]
 	var bw, bh float32 = 100, 50
-	if d, ok := s.scene.Drawables[item]; ok {
-		b := d.SelectorBounds()
-		if rb, isBox := d.(*render.RoundBox); isBox {
-			lw := rb.Style.LineWidth
-			b = render.Rect{X: b.X + lw, Y: b.Y + lw, Width: b.Width - 2*lw, Height: b.Height - 2*lw}
-		}
+	if b, ok := s.geom().Box(item); ok {
 		bw, bh = float32(b.Width), float32(b.Height)
 	}
 	w, h := bw, bh
@@ -316,7 +311,8 @@ func (s *Session) ResizeBy(key string, fromCenter bool) {
 	if v, ok := propFloat(item, "height"); ok {
 		h = v
 	}
-	gx, gy := float32(s.scene.Style.GridSpan.X), float32(s.scene.Style.GridSpan.Y)
+	grid := s.geom().Grid()
+	gx, gy := float32(grid.X), float32(grid.Y)
 	nw, nh, nx, ny := w, h, item.X, item.Y
 	switch key {
 	case "ArrowLeft":
@@ -394,8 +390,8 @@ func (s *Session) Align(edge string) {
 	}
 	var list []entry
 	for _, i := range s.selection {
-		if d, ok := s.scene.Drawables[i]; ok && i.Kind == model.ItemKindItem {
-			list = append(list, entry{i, d.Bounds()})
+		if b, ok := s.geom().PaintBox(i); ok && i.Kind == model.ItemKindItem {
+			list = append(list, entry{i, b})
 		}
 	}
 	horizontal := edge == "leading" || edge == "trailing"

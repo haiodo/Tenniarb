@@ -65,8 +65,8 @@ func (s *Session) setActive(items []*model.DiagramItem) {
 // itemsInRect are the selectable items whose bounds meet rect, in scene order.
 func (s *Session) itemsInRect(rect render.Rect) []*model.DiagramItem {
 	var out []*model.DiagramItem
-	for _, i := range s.scene.Items() {
-		if d := s.scene.Drawables[i]; d.Selectable() && rect.Intersects(d.Bounds()) {
+	for _, i := range s.geom().Items() {
+		if b, ok := s.geom().PaintBox(i); ok && s.geom().Selectable(i) && rect.Intersects(b) {
 			out = append(out, i)
 		}
 	}
@@ -75,7 +75,7 @@ func (s *Session) itemsInRect(rect render.Rect) []*model.DiagramItem {
 
 // Hit is the items under p as a click finds them (Swift find): boxes before lines, in scene order.
 func (s *Session) Hit(p render.Point) []*model.DiagramItem {
-	return s.covered(pointRect(p), s.scene.Find(p, false))
+	return s.covered(pointRect(p), s.geom().Find(p, false))
 }
 
 // pointRect is the rectangle a press covers, for the checks that take a rectangle.
@@ -118,16 +118,16 @@ func (s *Session) MouseDown(e MouseEvent) bool {
 		return true
 	}
 
-	hits := s.covered(pointRect(e.P), s.scene.Find(e.P, false))
+	hits := s.covered(pointRect(e.P), s.geom().Find(e.P, false))
 	// A selected item under the pointer wins over the others, so a selection can be dragged.
 	var under []*model.DiagramItem
 	if e.Clicks <= 1 {
 		for _, a := range s.selection {
-			d, ok := s.scene.Drawables[a]
-			if !ok || !d.Bounds().Contains(e.P) {
+			b, ok := s.geom().PaintBox(a)
+			if !ok {
 				continue
 			}
-			if l, isLine := d.(*render.DrawableLine); !isLine || l.Find(e.P) {
+			if b.Contains(e.P) || s.geom().HitLine(a, e.P) {
 				under = append(under, a)
 			}
 		}
@@ -222,10 +222,10 @@ func (s *Session) moveTo(p render.Point) {
 		source := s.selection[0]
 		s.lineTarget = nil
 		// Not the source itself: Swift would add a self-link there.
-		if hits := s.covered(pointRect(p), s.scene.Find(p, false)); len(hits) > 0 && hits[0].Kind == model.ItemKindItem && hits[0] != source {
+		if hits := s.covered(pointRect(p), s.geom().Find(p, false)); len(hits) > 0 && hits[0].Kind == model.ItemKindItem && hits[0] != source {
 			s.lineTarget = hits[0]
 		}
-		s.scene.UpdateLineTo(source, p, s.lineTarget)
+		// The canvas draws the preview line from the boxes it has; the session only names the target.
 	case modeDrag:
 		s.dragTo(p)
 	default:
@@ -241,9 +241,9 @@ func (s *Session) dragTo(p render.Point) {
 	for _, st := range s.starts {
 		positions[st.item] = render.Point{X: st.pos.X + dx, Y: st.pos.Y + dy}
 	}
-	for _, d := range s.scene.UpdateLayout(positions) {
-		if !slices.Contains(s.dirty, d) {
-			s.dirty = append(s.dirty, d)
+	for _, it := range s.geom().Move(positions) {
+		if !slices.Contains(s.dirty, it) {
+			s.dirty = append(s.dirty, it)
 		}
 	}
 }
@@ -273,7 +273,7 @@ func (s *Session) MouseUp(e MouseEvent) {
 		if !e.Cancel && source != nil && s.lineTarget != nil && slices.Contains(s.element.Items, s.lineTarget) {
 			s.fail(s.store.AddLink(s.element, source, s.lineTarget, s.um, s.refresh, nil))
 		}
-		s.scene.RemoveLineTo()
+		// nothing to drop: the preview line belongs to the canvas
 		s.lineTarget = nil
 	case modeDrag:
 		if s.moved {
@@ -323,7 +323,7 @@ func (s *Session) Pick(p render.Point) {
 	if s.opts.Readonly {
 		return
 	}
-	hits := s.covered(pointRect(p), s.scene.Find(p, false))
+	hits := s.covered(pointRect(p), s.geom().Find(p, false))
 	if !slices.ContainsFunc(hits, func(i *model.DiagramItem) bool { return slices.Contains(s.selection, i) }) {
 		if len(hits) > 0 {
 			s.setActive([]*model.DiagramItem{hits[0]})

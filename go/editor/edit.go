@@ -79,15 +79,11 @@ func fontSizeOf(d render.Drawable) float64 {
 // EditTarget gives the editor of item its box, text and font. False: readonly, or item is not in
 // the scene.
 func (s *Session) EditTarget(item *model.DiagramItem, mode EditMode) (EditTarget, bool) {
-	d, ok := s.scene.Drawables[item]
+	b, ok := s.geom().LabelBox(item)
 	if s.opts.Readonly || !ok {
 		return EditTarget{}, false
 	}
-	b := d.SelectorBounds()
-	if l, isLine := d.(*render.DrawableLine); isLine {
-		b = l.LabelBounds()
-	}
-	size := fontSizeOf(d)
+	size := s.geom().FontSize(item)
 	if mode != EditName {
 		size -= 2
 	}

@@ -611,12 +611,12 @@ func TestCtrlDragAddsLink(t *testing.T) {
 	f := newFixture(t)
 	f.s.MouseDown(MouseEvent{P: f.centre(f.a), Mods: ModCtrl})
 	f.s.MouseMove(MouseEvent{P: f.centre(f.c), Mods: ModCtrl})
-	if f.s.Scene().LineTo == nil {
-		t.Error("preview line expected")
+	if !f.s.DrawingLine() || f.s.LineTarget() == nil {
+		t.Errorf("a link must be drawn to the item under the pointer: drawing %v, target %v", f.s.DrawingLine(), f.s.LineTarget())
 	}
 	f.s.MouseUp(MouseEvent{P: f.centre(f.c), Mods: ModCtrl})
-	if f.s.Scene().LineTo != nil {
-		t.Error("preview must be gone")
+	if f.s.DrawingLine() || f.s.LineTarget() != nil {
+		t.Error("the preview must be gone")
 	}
 	eq(t, "links", f.links(), 3)
 	l := f.s.element.Items[len(f.s.element.Items)-1]

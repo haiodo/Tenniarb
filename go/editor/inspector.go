@@ -143,8 +143,7 @@ func (s *Session) argsOf(t propTarget, args []*tenn.Node) []Arg {
 	}
 	var size *model.DrawableSize
 	if t.item != nil {
-		if d, ok := s.scene.Drawables[t.item]; ok {
-			b := d.SelectorBounds()
+		if b, ok := s.geom().Box(t.item); ok {
 			size = &model.DrawableSize{Width: b.Width, Height: b.Height}
 		}
 	}
