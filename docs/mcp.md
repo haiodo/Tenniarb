@@ -86,7 +86,7 @@ library lists them.
 **Renderer rule** (`model.SceneElement`, the app's rule, spec 5a.17). An element with a `use`, or an item with
 children, a `slot` or `auto-layout`, written directly in it is a UI scene (`go/scene`); the file root follows
 the same rule. A `slot` written directly in an element is a plain property, as go/scene reads it. Any other
-element is a classic diagram (`go/render`, as the app canvas: `pos`, links, styles, element layouts, `${...}`
+element is a classic diagram (`classic` profile of `go/scene`, as the app canvas: `pos`, links, styles, element layouts, `${...}`
 evaluated).
 
 **Routing.** When the app has the file open:
