@@ -25,6 +25,10 @@ import (
 //
 // TENNIARB_COMPARE is a folder path, absolute or relative to go/app. TENNIARB_COMPARE_FILES narrows the
 // files (space separated, relative to go/app).
+//
+// Two differences are wanted: a body of escaped expressions shows its ${...} (the old renderer drops it),
+// and a link label in a body is drawn as its label (the old renderer draws the raw `[label](url)`, cut at
+// the `#` of the url as a heading). Both are bugs of the old renderer, not parity to keep.
 func TestCompareStand(t *testing.T) {
 	dir := os.Getenv("TENNIARB_COMPARE")
 	if dir == "" {
