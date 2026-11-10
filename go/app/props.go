@@ -112,8 +112,9 @@ func (v *Viewer) applyProps(target editor.Target, text string) {
 		v.props.text.Unwrap().Redraw()
 	}
 	if len(editor.ParseDiagnostics(text)) == 0 && propsOnly(text) {
-		if v.propsApply(target, text) {
-			v.props.want = v.session.PropsText(target)
+		// The pane shows a stub in place of the data of a classic image: the document gets it whole.
+		if v.propsApply(target, restoreImageData(text, v.session.PropsText(target))) {
+			v.props.want = hideImageData(v.session.PropsText(target))
 		}
 	}
 }
@@ -153,7 +154,7 @@ func (v *Viewer) refreshProps() {
 	}
 	v.props.sceneKey = ""
 	target := v.session.PropsTarget()
-	want := v.session.PropsText(target)
+	want := hideImageData(v.session.PropsText(target))
 	if propsKeepDraft(v.propsFocused(), target == v.props.target, v.props.applying, want, v.props.want) {
 		return
 	}

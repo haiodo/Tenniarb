@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* The Code section hides the data of a classic `image "name" @(base64)` of an old diagram: a picture of
+  megabytes shows as `@(image data 2.4 MB, hidden <digest>)`, a stub that parses and prints as tenn, and
+  the bytes go back untouched when the pane, undo or autosave writes the document. The same stub is in
+  the properties of a classic diagram and in the code of a scene element; an image from a file has no
+  data and is shown as written.
 * An item may carry several `path` commands, as it carries several `shadow`: each is a shape with the ink
   of its own command (`color` fills it, `border-color` and `line-width` stroke it, `fill-rule` sets the
   rule), the first is drawn under the rest, and a command that names no ink takes the one of the item. A

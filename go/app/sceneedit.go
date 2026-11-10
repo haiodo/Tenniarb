@@ -567,7 +567,7 @@ func OwnText(text string, n *scene.Node) string {
 		at = k.Range.End
 	}
 	b.WriteString(text[at:n.Range.End])
-	return dedent(b.String(), indentAt(text, n.Range.Start))
+	return hideImageData(dedent(b.String(), indentAt(text, n.Range.Start)))
 }
 
 // Stub is a kid command of the Code section text that stands for a kid of the node: a command of the
@@ -708,10 +708,14 @@ type kidEdit struct {
 // before it; a command typed in full is a new kid. Deleting a kid is done in the item tree.
 func ReplaceOwnEdit(text string, n *scene.Node, panel string) TextEdit {
 	code := strings.TrimRight(panel, "\n")
+	if n.Range.Start >= 0 && n.Range.Start <= n.Range.End && n.Range.End <= len(text) {
+		// The pane shows a stub in place of the data of a classic image: the document gets it whole.
+		code = restoreImageData(code, text[n.Range.Start:n.Range.End])
+	}
 	kids := sceneKids(n)
 	stubs, root := findStubs(n, code)
 	if root == nil || len(kids) == 0 {
-		return ReplaceNodeEdit(text, n, panel)
+		return ReplaceNodeEdit(text, n, code)
 	}
 	if len(stubs) == 0 { // no stub left to hold places by: bring the heads back in the block first
 		heads := make([]string, len(kids))
