@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* Undo puts the properties pane back on the code: a pane with the keyboard kept its draft from every
+  redraw, so a Cmd+Z changed the model and left the old text on screen. The draft is kept only while the
+  code echoes the edit the pane itself made; an undo, a redo or a control of the inspector says something
+  else and the pane follows it.
+* The test of an agent edit takes its offsets from the text the window holds, not from the bytes of the
+  file: the window keeps the printed text, whose positions are rounded to two places, so a file offset
+  landed in the middle of a command and the edit was refused.
 * The pixel test of a title in the middle of a tall box asks for `Inter` by name, as the other one does: it
   fell back to whatever font the runner had, and failed on the Linux CI runner where that font is not the
   one of a Mac. The test environment registers Inter from files, so the metrics are the same everywhere.

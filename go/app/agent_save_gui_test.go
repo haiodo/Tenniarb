@@ -35,8 +35,14 @@ func TestAgentEditAutosaved(t *testing.T) {
 	a.Settle()
 	defer h.open(fixture)
 
-	text := string(data)
+	// The edit is addressed by the text of the window, not by the bytes on disk: a classic document
+	// keeps the Swift printer's text, so a position reads here to a hundredth of a point
+	// (model.roundPos) and the offsets of the file no longer point at the same characters.
+	text := h.text()
 	item := strings.Index(text, `item "Big yellow item"`)
+	if item < 0 || strings.Index(text[item:], "font-size 30") < 0 {
+		t.Fatalf("no font-size 30 of \"Big yellow item\" in the text of the window:\n%s", text)
+	}
 	at := item + strings.Index(text[item:], "font-size 30") + len("font-size ")
 	a.State("edit", "path", file, "start", at, "end", at+2, "new", "24")
 	a.Settle()

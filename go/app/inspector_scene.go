@@ -841,17 +841,15 @@ func (v *Viewer) sceneCodeNode() (*scene.Node, *scene.Placed) {
 func (v *Viewer) refreshSceneCode() {
 	n, pl := v.sceneCodeNode()
 	key := v.sceneCodeKey()
-	// The keyboard is in the pane: its text is the draft, and the redraw inside the edit arrives before
-	// props.want records the edit, so replacing the text here would move the caret after every keystroke.
-	if v.propsFocused() && key == v.props.sceneKey {
-		return
-	}
 	want := ""
 	switch {
 	case n != nil:
 		want = OwnText(v.fileText(v.ownFileOf(n)), n)
 	case pl != nil:
 		want = EffectiveText(pl)
+	}
+	if propsKeepDraft(v.propsFocused(), key == v.props.sceneKey, v.props.applying, want, v.props.want) {
+		return
 	}
 	if key == v.props.sceneKey && v.props.text.Text() == want {
 		return
@@ -864,6 +862,14 @@ func (v *Viewer) refreshSceneCode() {
 	v.setPropsText(want, editor.Target{})
 	v.props.sceneKey = key
 	v.props.values = nil
+}
+
+// sceneApply applies the edit of the Code pane with props.applying set: the session redraws inside it,
+// and that redraw must not take the pane's draft for a change of the code.
+func (v *Viewer) sceneApply(n *scene.Node, e TextEdit) bool {
+	v.props.applying = true
+	defer func() { v.props.applying = false }()
+	return v.sceneEdit(n, e)
 }
 
 // applySceneCode puts the text of the Code section in place of the node it was opened for; the kids stay
@@ -900,7 +906,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 	}
 	start := n.Range.Start
 	at, length := v.props.text.Selection()
-	if !v.sceneEdit(n, e) {
+	if !v.sceneApply(n, e) {
 		return
 	}
 	// A renamed node keeps the selection: it starts where the old one did.

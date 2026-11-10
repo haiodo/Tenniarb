@@ -31,6 +31,7 @@ type props struct {
 	changes int           // counts edits; a timer applies only the last one
 	applied int           // the edit the last timer applied: the user is typing while changes differs
 	loading bool          // the text is being set by code
+	applying bool         // the session is applying the text of the pane: its redraw is the echo of it
 	want    string        // the text the code last put in: a draft that does not parse stays until this changes
 	// menuSelection is the selection before the code context menu opened.
 	menuSelection *swt.Point
@@ -111,10 +112,26 @@ func (v *Viewer) applyProps(target editor.Target, text string) {
 		v.props.text.Unwrap().Redraw()
 	}
 	if len(editor.ParseDiagnostics(text)) == 0 && propsOnly(text) {
-		if v.session.ApplyProps(target, text) {
+		if v.propsApply(target, text) {
 			v.props.want = v.session.PropsText(target)
 		}
 	}
+}
+
+// propsApply hands the text of the pane to the session with props.applying set: the session redraws
+// inside the edit, and that redraw must not take the pane's draft for a change of the code.
+func (v *Viewer) propsApply(target editor.Target, text string) bool {
+	v.props.applying = true
+	defer func() { v.props.applying = false }()
+	return v.session.ApplyProps(target, text)
+}
+
+// propsKeepDraft says the pane keeps the text the user typed: it has the keyboard, it shows the same
+// target, and the code has not changed behind the draft. The session redraws inside the edit it applies,
+// before props.want records it, so that echo is the draft too; an undo, a redo or a control of the
+// inspector says something else, and the pane follows it.
+func propsKeepDraft(focused, sameTarget, applying bool, want, shown string) bool {
+	return focused && sameTarget && (applying || want == shown)
 }
 
 // refreshProps shows the current target in the panel. The text is replaced only when it means
@@ -136,13 +153,10 @@ func (v *Viewer) refreshProps() {
 	}
 	v.props.sceneKey = ""
 	target := v.session.PropsTarget()
-	// The keyboard is in the pane: its text is the draft. The session redraws inside ApplyProps, before
-	// props.want records the edit, so a refresh here would take the draft for a change of the code and
-	// put the caret back at the start after every keystroke.
-	if v.propsFocused() && target == v.props.target {
+	want := v.session.PropsText(target)
+	if propsKeepDraft(v.propsFocused(), target == v.props.target, v.props.applying, want, v.props.want) {
 		return
 	}
-	want := v.session.PropsText(target)
 	cur := v.props.text.Text()
 	// What the user typed stays on screen, valid or not, until the code changes its text.
 	if target == v.props.target && cur != "" && want == v.props.want {
