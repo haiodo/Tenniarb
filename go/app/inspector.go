@@ -387,10 +387,6 @@ func (v *Viewer) itemSize() (w, h float64) {
 		if b, ok := v.drawnRect(it); ok {
 			return b.W(), b.H()
 		}
-		if d, ok := v.session.Scene().Drawables[it]; ok {
-			b := d.Bounds()
-			return b.Width, b.Height
-		}
 	}
 	return 0, 0
 }

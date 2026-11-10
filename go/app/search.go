@@ -53,11 +53,7 @@ func (v *Viewer) gotoItem(item *model.DiagramItem) {
 	v.session.Reveal(item)
 	b, ok := v.drawnRect(item)
 	if !ok {
-		d := v.session.Scene().Drawables[item]
-		if d == nil {
-			return
-		}
-		b = v.smap.RectToGfx(d.Bounds())
+		return
 	}
 	c := gfx.Point{X: b.Min.X + b.W()/2, Y: b.Min.Y + b.H()/2}
 	w, h := v.view.Canvas().Size()

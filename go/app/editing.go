@@ -279,13 +279,8 @@ func (v *Viewer) showOperation() {
 func (v *Viewer) popoverAt(p *g.Popover, item *model.DiagramItem) {
 	b, ok := v.drawnRect(item)
 	if !ok {
-		// Not drawn by the scene: the box of the old renderer, which no scene element has.
-		d := v.session.Scene().Drawables[item]
-		if d == nil {
-			p.ShowAt(v.view.Canvas(), g.PopoverBelow)
-			return
-		}
-		b = v.smap.RectToGfx(d.SelectorBounds())
+		p.ShowAt(v.view.Canvas(), g.PopoverBelow)
+		return
 	}
 	cam := v.view.Compositor().Camera()
 	top := gfx.Point{X: b.Min.X + b.W()/2, Y: b.Min.Y}

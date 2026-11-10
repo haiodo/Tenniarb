@@ -14,6 +14,7 @@ import (
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/update"
 )
 
@@ -414,15 +415,31 @@ func (v *Viewer) qaBodyLinks() []qaBodyLink {
 	return out
 }
 
+// qaScene is where the canvas draws what it indexes, in canvas coordinates: the items by their path, and
+// in a classic diagram the lines of the links too - a link has no path, and a test needs a point on it to
+// right-click one.
 func (v *Viewer) qaScene() map[string]qaNode {
 	out := map[string]qaNode{}
-	if !v.sceneMode() {
+	if v.sv == nil || v.view == nil {
 		return out
 	}
 	cam := v.view.Compositor().Camera()
+	box := func(x, y, w, h float64) []float64 {
+		return []float64{(x + v.sv.off.X - cam.Origin.X) * cam.Zoom, (y + v.sv.off.Y - cam.Origin.Y) * cam.Zoom,
+			w * cam.Zoom, h * cam.Zoom}
+	}
 	for p, pl := range v.sv.byPath {
-		x, y := (pl.X+v.sv.off.X-cam.Origin.X)*cam.Zoom, (pl.Y+v.sv.off.Y-cam.Origin.Y)*cam.Zoom
-		out[p] = qaNode{[]float64{x, y, pl.W * cam.Zoom, pl.H * cam.Zoom}, pl.Src.Kind.String(), len(sceneKids(pl.Src))}
+		out[p] = qaNode{box(pl.X, pl.Y, pl.W, pl.H), pl.Src.Kind.String(), len(sceneKids(pl.Src))}
+	}
+	if !v.sceneMode() && v.sv.screen != nil && v.sv.node != nil {
+		for _, c := range v.sv.node.Content {
+			if c.Kind != scene.KLink {
+				continue
+			}
+			if b, ok := v.sv.screen.LinkBox(c); ok {
+				out["link:"+c.From+"->"+c.To] = qaNode{box(b.Min.X, b.Min.Y, b.W(), b.H()), "link", 0}
+			}
+		}
 	}
 	return out
 }
