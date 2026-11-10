@@ -98,3 +98,36 @@ func sceneViewOf(t *testing.T, dir string, el *model.Element) *sceneView {
 	})
 	return sv
 }
+
+// The comment mode asks the same boxes: the smallest item under the pointer, from the picture the canvas
+// draws.
+func TestItemAtUsesTheDrawnBoxes(t *testing.T) {
+	const text = `element "Old" {
+  item A { pos 0 0; width 80; height 40; title "A" }
+  item B { pos 20 10; width 40; height 20; title "B" }
+  link A B
+}`
+	dir := t.TempDir()
+	file := filepath.Join(dir, "m.tenn")
+	if err := os.WriteFile(file, []byte(text), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	v := newDoc(t, &Shell{}, file, text)
+	el := Resolve(&v.session.Root().Element, []string{"Old"})
+	if el == nil {
+		t.Fatal("no element Old")
+	}
+	v.state.Current = el
+	v.sv = sceneViewOf(t, dir, el)
+
+	// a classic pos is the bottom left and y goes up: A covers y 0..40, B covers y -10..10
+	if name, _ := v.itemAt(gfx.Point{X: 40, Y: 0}); name != "B" {
+		t.Errorf("inside the small item: %q, want B", name)
+	}
+	if name, _ := v.itemAt(gfx.Point{X: 70, Y: 30}); name != "A" {
+		t.Errorf("inside the big item only: %q, want A", name)
+	}
+	if name, _ := v.itemAt(gfx.Point{X: 500, Y: 500}); name != "" {
+		t.Errorf("outside everything: %q", name)
+	}
+}

@@ -332,17 +332,19 @@ func (v *Viewer) commentPointer(p *view.Pointer) bool {
 	return true
 }
 
-// itemAt is the classic item under the gfx point at, the smallest one when they overlap.
+// itemAt is the classic item under the gfx point at, the smallest one when they overlap: the boxes are the
+// ones the canvas draws, not the ones go/render would have drawn.
 func (v *Viewer) itemAt(at gfx.Point) (string, gfx.Rect) {
 	name, best := "", gfx.Rect{}
-	ds := v.session.Scene()
-	for _, it := range ds.Items() {
-		d := ds.Drawables[it]
-		if d == nil || it.IsLink() || it.Name == "" {
+	if v.state.Current == nil {
+		return name, best
+	}
+	for _, it := range v.state.Current.Items {
+		if it.IsLink() || it.Name == "" {
 			continue
 		}
-		r := v.smap.RectToGfx(d.Bounds())
-		if at.X < r.Min.X || at.X > r.Max.X || at.Y < r.Min.Y || at.Y > r.Max.Y {
+		r, ok := v.drawnRect(it)
+		if !ok || at.X < r.Min.X || at.X > r.Max.X || at.Y < r.Min.Y || at.Y > r.Max.Y {
 			continue
 		}
 		if name == "" || r.W()*r.H() < best.W()*best.H() {
