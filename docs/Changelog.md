@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The ink of a `path` command is the whole ink of its shape: a shape that names a `color` is filled and not
+  stroked, one that names a `border-color` is stroked and not filled, and only a shape that names no ink
+  takes the one of the item. Taking the pieces one by one drew the dot of a tag twice - filled, then a ring
+  in the colour of the item.
 * The inspector scrolls again: `relayout` held the scrollable content to the width of the panel by
   writing `0` for its height too, and that threw away the height `Fit` had just measured, so a long
   inspector - Layout, Fill, Text, Border, Shape, Effects and the item defaults of an item - had nothing

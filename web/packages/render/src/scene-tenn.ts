@@ -5075,19 +5075,27 @@ function iconsOf(prep: Prep, rn: RNode): Icon[] {
     const ownFill = argAfter(p, "color");
     const ownStroke = argAfter(p, "border-color");
     const ownWidth = argAfter(p, "line-width");
+    // The ink of the command is the whole ink of its shape: a shape that names a fill is filled and not
+    // stroked, one that names a stroke is stroked and not filled. Only a shape that names no ink at all
+    // takes the one of the item, as a shadow without a colour takes the alpha of the fill.
     let fill: Color = noColor;
     let stroke: Color = noColor;
-    if (ownFill !== null) {
-      fill = sceneColor(argText(ownFill)) ?? noColor;
-    } else if (ownStroke === null && p === list[0] && !itemFill && !itemStroke) {
+    if (ownFill !== null || ownStroke !== null) {
+      if (ownFill !== null) {
+        fill = sceneColor(argText(ownFill)) ?? noColor;
+      }
+      if (ownStroke !== null) {
+        stroke = sceneColor(argText(ownStroke)) ?? noColor;
+      }
+    } else if (p === list[0] && !itemFill && !itemStroke) {
       fill = look?.text ?? colorBlack;
-    } else if (itemFill) {
-      fill = sceneColor(propText(propOf(prep, rn, "color")!, 0)) ?? noColor;
-    }
-    if (ownStroke !== null) {
-      stroke = sceneColor(argText(ownStroke)) ?? noColor;
-    } else if (itemStroke) {
-      stroke = sceneColor(propText(propOf(prep, rn, "border-color")!, 0)) ?? noColor;
+    } else {
+      if (itemFill) {
+        fill = sceneColor(propText(propOf(prep, rn, "color")!, 0)) ?? noColor;
+      }
+      if (itemStroke) {
+        stroke = sceneColor(propText(propOf(prep, rn, "border-color")!, 0)) ?? noColor;
+      }
     }
     let width = ownWidth !== null ? Number(argText(ownWidth)) : (itemWidth ?? 1);
     if (!Number.isFinite(width) || width < 0) {

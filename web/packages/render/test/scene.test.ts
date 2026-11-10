@@ -596,9 +596,9 @@ test("several paths of one item draw in file order with their own ink", () => {
     fills.some((s) => s.includes("255,0,0")),
     `no red fill, fills ${JSON.stringify(fills)}`,
   );
-  // The first path names no ink and takes the border of the item: it is stroked with it.
-  assert.ok(
-    strokes.some((s) => s.includes("17,34,51")),
-    `no stroke of the item, strokes ${JSON.stringify(strokes)}`,
-  );
+  // The first path names no ink and takes the border of the item: it is stroked with it, once. The dot
+  // names a fill of its own, so it is filled and not stroked - a stroke of the item there would draw the
+  // dot twice, once as a ring over the fill.
+  const own = strokes.filter((s) => s.includes("17,34,51")).length;
+  assert.equal(own, 1, `the stroke of the item drew ${own} shapes, strokes ${JSON.stringify(strokes)}`);
 });
