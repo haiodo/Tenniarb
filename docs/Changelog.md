@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A classic diagram works out the `width` and `height` an expression reads from the picture the canvas
+  draws, not from a second drawing by the old renderer: the two pictures of the stand agree in 60 of 125
+  elements now, against 56 before, and in 88 within a point, against 82.
 * Ctrl and a drag of an item onto another item of a scene draws a link between them, as it always did in a
   classic diagram: the line follows the pointer, the item under it is framed green, and the drop writes
   `link A B` in the item that holds both. The line takes the style of the element, so a document whose lines

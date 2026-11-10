@@ -206,12 +206,24 @@ func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
 		var vals func(scene.ClassicRef, string) ([]string, bool)
 		o.Classic = func(at scene.ClassicRef, prop string) ([]string, bool) {
 			if vals == nil {
-				vals = classic.Values(e, render.NewExecContext(e, render.Options{FontFamily: "Helvetica, Arial, sans-serif"}))
+				vals = classic.Values(e, v.classicContext(e))
 			}
 			return vals(at, prop)
 		}
 	}
 	return o
+}
+
+// classicContext is the evaluator of a classic diagram: what it asks for the size of an item is
+// answered by the scene, so the picture no longer depends on go/render. Text is still measured by the old
+// framesetter, through the measure the caller gives it.
+func (v *Viewer) classicContext(e *model.Element) model.IExecutionContext {
+	path := strings.Join(PathOf(e), ".")
+	return classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
+		func(text string, fontSize float64) model.DrawableSize {
+			sz := render.MeasureTextSize(render.Options{Measurer: gfx.DefaultMeasurer}, text, fontSize)
+			return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+		})(e)
 }
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.
