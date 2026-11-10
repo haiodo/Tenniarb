@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* `go/render` is gone, and `go/scene` is the one engine that draws and answers for a diagram. The tests
+  that compared the two pictures go with it: the comparison stand did its work - the blank lines of a block
+  title, the advance of the `@` before a picture, the width of a body line - and there is nothing left to
+  compare against. What stays from it are assertions about the picture itself: every element of
+  docs/Example.tenn builds and every item it places has a box, an item's size follows its text, and the
+  export of an item carries its words.
 * Nothing of the application, the edit session or the tools asks `go/render` for anything any more: the
   session takes its geometry through `go/geom` - answered by the canvas, or by `go/scenegeom` over the scene
   tree where no window draws - and builds its expression engine from that geometry. The old renderer is

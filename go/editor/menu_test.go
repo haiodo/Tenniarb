@@ -3,8 +3,8 @@ package editor
 import (
 	"testing"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 func labels(es []Entry) []string {
@@ -30,10 +30,10 @@ func find(es []Entry, label string) *Entry {
 
 func TestCanvasEntriesNothingSelected(t *testing.T) {
 	f := newFixture(t)
-	f.s.Pick(render.Point{X: 500, Y: 500})
-	got := f.s.CanvasEntries(render.Point{X: 500, Y: 500}, MenuHost{Layout: func() {}})
+	f.s.Pick(geometry.Point{X: 500, Y: 500})
+	got := f.s.CanvasEntries(geometry.Point{X: 500, Y: 500}, MenuHost{Layout: func() {}})
 	eq(t, "labels", labels(got), []string{"New item", "Test layout", "-", "Style", "Global Styles"})
-	got = f.s.CanvasEntries(render.Point{X: 500, Y: 500}, MenuHost{})
+	got = f.s.CanvasEntries(geometry.Point{X: 500, Y: 500}, MenuHost{})
 	eq(t, "no layout host", labels(got), []string{"New item", "-", "Style", "Global Styles"})
 	find(got, "New item").Run()
 	eq(t, "item added", len(f.s.element.Items), 6)

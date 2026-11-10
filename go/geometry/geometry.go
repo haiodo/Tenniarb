@@ -1,6 +1,6 @@
 // Package geometry is the flat geometry the editor and the old renderer share: a point and a rectangle in
 // the coordinates of a diagram, y up. It is its own package so the editor stops importing a renderer for
-// two types; go/render aliases them, so both sides speak the same ones.
+// two types, so a package that places a point does not import a renderer for it.
 package geometry
 
 // Padding is the room the canvas leaves around the diagram: the classic one had fifteen points.

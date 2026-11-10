@@ -10,8 +10,8 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 func eq[T any](t *testing.T, what string, got, want T) {
@@ -26,8 +26,8 @@ func TestHitTestBoxLineEmpty(t *testing.T) {
 	eq(t, "box", f.s.Hit(f.centre(f.a)), []*model.DiagramItem{f.a})
 	link := f.s.element.Items[3]
 	ca, cb := f.centre(f.a), f.centre(f.b)
-	eq(t, "line", f.s.Hit(render.Point{X: (ca.X + cb.X) / 2, Y: (ca.Y + cb.Y) / 2}), []*model.DiagramItem{link})
-	eq(t, "empty", len(f.s.Hit(render.Point{X: 5000, Y: 5000})), 0)
+	eq(t, "line", f.s.Hit(geometry.Point{X: (ca.X + cb.X) / 2, Y: (ca.Y + cb.Y) / 2}), []*model.DiagramItem{link})
+	eq(t, "empty", len(f.s.Hit(geometry.Point{X: 5000, Y: 5000})), 0)
 }
 
 func TestClickToggleClearBand(t *testing.T) {
@@ -43,20 +43,20 @@ func TestClickToggleClearBand(t *testing.T) {
 	eq(t, "cmd-click removes", f.s.Selection(), []*model.DiagramItem{f.b})
 
 	// Empty space: not grabbed (the window pans), the selection survives the pan and goes on a click.
-	far := render.Point{X: 5000, Y: 5000}
+	far := geometry.Point{X: 5000, Y: 5000}
 	if f.s.MouseDown(MouseEvent{P: far}) {
 		t.Error("empty space must not be grabbed")
 	}
-	f.s.MouseMove(MouseEvent{P: render.Point{X: 5100, Y: 5000}})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: 5100, Y: 5000}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: 5100, Y: 5000}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: 5100, Y: 5000}})
 	eq(t, "pan keeps", len(f.s.Selection()), 1)
 	f.s.MouseDown(MouseEvent{P: far})
 	f.s.MouseUp(MouseEvent{P: far})
 	eq(t, "click on empty clears", len(f.s.Selection()), 0)
 
 	bc := f.box(f.c)
-	from := render.Point{X: bc.X - 20, Y: bc.Y - 20}
-	to := render.Point{X: bc.X + bc.Width + 20, Y: bc.Y + bc.Height + 20}
+	from := geometry.Point{X: bc.X - 20, Y: bc.Y - 20}
+	to := geometry.Point{X: bc.X + bc.Width + 20, Y: bc.Y + bc.Height + 20}
 	f.s.MouseDown(MouseEvent{P: from, Mods: ModShift})
 	f.s.MouseMove(MouseEvent{P: to, Mods: ModShift})
 	if !slices.Contains(f.s.Selection(), f.c) || slices.Contains(f.s.Selection(), f.a) {
@@ -69,7 +69,7 @@ func TestClickToggleClearBand(t *testing.T) {
 	if !slices.Contains(f.s.Selection(), f.c) || f.s.Band() != nil {
 		t.Errorf("after band: %v, %v", f.s.Selection(), f.s.Band())
 	}
-	all := f.s.itemsInRect(render.Rect{X: -1e4, Y: -1e4, Width: 2e4, Height: 2e4})
+	all := f.s.itemsInRect(geometry.Rect{X: -1e4, Y: -1e4, Width: 2e4, Height: 2e4})
 	eq(t, "all in rect", len(all), 5)
 }
 
@@ -77,10 +77,10 @@ func TestBandReleasedWithoutShiftRestoresSelection(t *testing.T) {
 	f := newFixture(t)
 	f.click(f.centre(f.b), 0)
 	bc := f.box(f.c)
-	f.s.MouseDown(MouseEvent{P: render.Point{X: bc.X - 20, Y: bc.Y - 20}, Mods: ModShift})
+	f.s.MouseDown(MouseEvent{P: geometry.Point{X: bc.X - 20, Y: bc.Y - 20}, Mods: ModShift})
 	eq(t, "band start clears", len(f.s.Selection()), 0)
-	f.s.MouseMove(MouseEvent{P: render.Point{X: bc.X + 50, Y: bc.Y + 50}, Mods: ModShift})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: bc.X + 50, Y: bc.Y + 50}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: bc.X + 50, Y: bc.Y + 50}, Mods: ModShift})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: bc.X + 50, Y: bc.Y + 50}})
 	eq(t, "restored", f.s.Selection(), []*model.DiagramItem{f.b})
 }
 
@@ -98,8 +98,8 @@ func TestDragIsOneUndoStep(t *testing.T) {
 	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{f.a, f.b})
 	p := f.centre(f.a)
 	f.s.MouseDown(MouseEvent{P: p})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: p.X + 20, Y: p.Y + 10}})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X + 50, Y: p.Y + 30}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: p.X + 20, Y: p.Y + 10}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: p.X + 50, Y: p.Y + 30}})
 	eq(t, "moved", pos(f.a, f.b), []float64{50, 30, 250, 30})
 	eq(t, "changes", len(f.changes), 1)
 	contains(t, f.changes[0], "pos 50.0 30.0")
@@ -118,7 +118,7 @@ func TestClickAndHomeDragLeaveNoUndo(t *testing.T) {
 	p := f.centre(f.a)
 	f.click(p, 0)
 	f.s.MouseDown(MouseEvent{P: p})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: p.X + 40, Y: p.Y}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: p.X + 40, Y: p.Y}})
 	f.s.MouseUp(MouseEvent{P: p})
 	if f.s.UndoManager().CanUndo() || len(f.changes) != 0 {
 		t.Errorf("undo %v, changes %d", f.s.UndoManager().CanUndo(), len(f.changes))
@@ -130,7 +130,7 @@ func TestAttachedLinesFollowDrag(t *testing.T) {
 	ab0, bc0 := f.ends(3), f.ends(4)
 	p := f.centre(f.a)
 	f.s.MouseDown(MouseEvent{P: p})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: p.X, Y: p.Y + 100}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: p.X, Y: p.Y + 100}})
 	live := f.ends(3)
 	if live == ab0 {
 		t.Error("A-B must follow A")
@@ -139,7 +139,7 @@ func TestAttachedLinesFollowDrag(t *testing.T) {
 	if len(f.redraws) == 0 || len(f.redraws[len(f.redraws)-1].Moved) == 0 {
 		t.Errorf("drag preview must report the moved drawables: %v", f.redraws)
 	}
-	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X, Y: p.Y + 100}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: p.X, Y: p.Y + 100}})
 	eq(t, "after commit", f.ends(3), live)
 }
 
@@ -147,11 +147,11 @@ func TestDragLinkChangesControl(t *testing.T) {
 	f := newFixture(t)
 	link := f.s.element.Items[3]
 	r := f.paint(link)
-	p := render.Point{X: r.X + r.Width/2, Y: r.Y + r.Height/2}
+	p := geometry.Point{X: r.X + r.Width/2, Y: r.Y + r.Height/2}
 	f.s.MouseDown(MouseEvent{P: p})
 	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{link})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: p.X + 30, Y: p.Y + 40}})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X + 30, Y: p.Y + 40}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: p.X + 30, Y: p.Y + 40}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: p.X + 30, Y: p.Y + 40}})
 	if math.Abs(link.X-30) > 1e-9 || math.Abs(link.Y-40) > 1e-9 {
 		t.Errorf("control = %v %v, want 30 40", link.X, link.Y)
 	}
@@ -162,8 +162,8 @@ func TestReadonlyPointer(t *testing.T) {
 	if f.s.MouseDown(MouseEvent{P: f.centre(f.a)}) {
 		t.Error("readonly must not grab")
 	}
-	f.s.MouseMove(MouseEvent{P: render.Point{X: 100, Y: 100}})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: 100, Y: 100}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: 100, Y: 100}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: 100, Y: 100}})
 	eq(t, "selection", len(f.s.Selection()), 0)
 	eq(t, "x", f.a.X, 0.0)
 	eq(t, "changes", len(f.changes), 0)
@@ -582,7 +582,7 @@ func TestEditValue(t *testing.T) {
 func TestTestLayout(t *testing.T) {
 	f := newFixture(t)
 	before := pos(f.a, f.b, f.c)
-	f.s.TestLayout(render.Rect{X: -500, Y: -400, Width: 1000, Height: 800})
+	f.s.TestLayout(geometry.Rect{X: -500, Y: -400, Width: 1000, Height: 800})
 	if reflect.DeepEqual(pos(f.a, f.b, f.c), before) {
 		t.Error("positions must change")
 	}
@@ -601,7 +601,7 @@ func TestReadonlyCommands(t *testing.T) {
 	f.s.Order(true)
 	f.s.PasteAsItem("x")
 	f.s.PasteAsItemSet("x")
-	f.s.TestLayout(render.Rect{Width: 100, Height: 100})
+	f.s.TestLayout(geometry.Rect{Width: 100, Height: 100})
 	f.s.PasteImage("a.png", "QUJD")
 	f.s.AttachImage("a.png", "QUJD")
 	eq(t, "changes", len(f.changes), 0)
@@ -633,13 +633,13 @@ func TestCtrlDragAddsLink(t *testing.T) {
 
 func TestCtrlDragDroppedElsewhereAddsNothing(t *testing.T) {
 	f := newFixture(t)
-	far := render.Point{X: 5000, Y: 5000}
+	far := geometry.Point{X: 5000, Y: 5000}
 	f.s.MouseDown(MouseEvent{P: f.centre(f.a), Mods: ModCtrl})
 	f.s.MouseMove(MouseEvent{P: far})
 	f.s.MouseUp(MouseEvent{P: far})
 	// On the source itself (Swift would add a self-link).
 	f.s.MouseDown(MouseEvent{P: f.centre(f.a), Mods: ModCtrl})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: f.centre(f.a).X + 3, Y: f.centre(f.a).Y}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: f.centre(f.a).X + 3, Y: f.centre(f.a).Y}})
 	f.s.MouseUp(MouseEvent{P: f.centre(f.a)})
 	// Cancelled.
 	f.s.MouseDown(MouseEvent{P: f.centre(f.a), Mods: ModCtrl})
@@ -657,8 +657,8 @@ func TestOptionDragMovesLinkedItems(t *testing.T) {
 	p := f.centre(f.b)
 	f.s.MouseDown(MouseEvent{P: p, Mods: ModAlt})
 	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{f.b, f.c})
-	f.s.MouseMove(MouseEvent{P: render.Point{X: p.X + 10, Y: p.Y + 10}})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X + 10, Y: p.Y + 10}})
+	f.s.MouseMove(MouseEvent{P: geometry.Point{X: p.X + 10, Y: p.Y + 10}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: p.X + 10, Y: p.Y + 10}})
 	eq(t, "positions", pos(f.a, f.b, f.c), []float64{0, 0, 210, 10, 10, -140})
 	if !f.s.UndoManager().CanUndo() {
 		t.Error("must be undoable")
@@ -672,7 +672,7 @@ func TestOptionDragMovesWholeSubtree(t *testing.T) {
 	p := f.centre(f.a)
 	f.s.MouseDown(MouseEvent{P: p, Mods: ModAlt})
 	eq(t, "selection", f.s.Selection(), []*model.DiagramItem{f.a, f.b, f.c})
-	f.s.MouseUp(MouseEvent{P: render.Point{X: p.X + 10, Y: p.Y + 10}})
+	f.s.MouseUp(MouseEvent{P: geometry.Point{X: p.X + 10, Y: p.Y + 10}})
 	eq(t, "positions", pos(f.a, f.b, f.c), []float64{10, 10, 210, 10, 10, -140})
 }
 

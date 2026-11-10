@@ -18,7 +18,7 @@ import (
 )
 
 // Context builds the evaluator of el. The caller decides where the expressions run: the expression engine
-// with the item sizes of go/render today, the one of go/scene once the old renderer is gone (E7).
+// with the item sizes the scene gives the box it draws.
 type Context func(el *model.Element) model.IExecutionContext
 
 // Values gives the values of classic diagram el for scene.Options.Classic: the text of every argument of

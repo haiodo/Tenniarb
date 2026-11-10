@@ -4,7 +4,6 @@ package app
 
 import (
 	"bytes"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -70,22 +68,6 @@ func parityElement(t *testing.T, file, name string) *model.Element {
 	return found
 }
 
-// itemBoxes are the boxes of the items of e as the old renderer gives them, keyed by item.
-func itemBoxes(e *model.Element) map[*model.DiagramItem]gfx.Rect {
-	ds := render.Build(e, render.Options{Measurer: gfx.DefaultMeasurer})
-	out := map[*model.DiagramItem]gfx.Rect{}
-	for _, it := range e.Items {
-		if it.Kind != model.ItemKindItem {
-			continue
-		}
-		if d := ds.Drawables[it]; d != nil {
-			b := d.SelectorBounds()
-			out[it] = gfx.R(b.X, b.Y, b.Width, b.Height)
-		}
-	}
-	return out
-}
-
 // parityDoc is a classic element whose boxes follow their text: the metrics of a line, the wrapping of a
 // body and a list, the inset of the text.
 const parityDoc = `element "P" {
@@ -103,51 +85,6 @@ line two
     item Padded { pos 300 -200; padding 10; title "padded" }
 }
 `
-
-// The picture of a classic element matches go/render box for box: the stand of the engine work is pinned
-// here, so a change of the scene that moves an item fails now instead of after a release.
-func TestClassicPictureMatchesRender(t *testing.T) {
-	dir := t.TempDir()
-	file := filepath.Join(dir, "p.tenn")
-	if err := os.WriteFile(file, []byte(parityDoc), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	e := parityElement(t, file, "P")
-	sv, _ := classicPicture(t, file, e)
-	old := itemBoxes(e)
-	var sx, sy float64
-	var pairs [][3]interface{}
-	for _, it := range e.Items {
-		pl := classicPlacedOf(sv, it)
-		b, ok := old[it]
-		if pl == nil || !ok {
-			continue
-		}
-		nx, ny := pl.X, -(pl.Y + pl.H)
-		sx += nx - b.Min.X
-		sy += ny - b.Min.Y
-		pairs = append(pairs, [3]interface{}{it.Name, b, gfx.R(nx, ny, pl.W, pl.H)})
-	}
-	if len(pairs) != len(e.Items) {
-		t.Fatalf("%d of %d items drawn by both renderers", len(pairs), len(e.Items))
-	}
-	sx, sy = sx/float64(len(pairs)), sy/float64(len(pairs))
-	for _, p := range pairs {
-		name := p[0].(string)
-		b, n := p[1].(gfx.Rect), p[2].(gfx.Rect)
-		dx, dy := math.Abs(n.Min.X-sx-b.Min.X), math.Abs(n.Min.Y-sy-b.Min.Y)
-		dw, dh := math.Abs(n.W()-b.W()), math.Abs(n.H()-b.H())
-		// A list is 5 points narrower than go/render makes it: the scene draws the bullet and its text as
-		// one run, the old renderer as two. Everything else is held to half a point.
-		tol := 0.5
-		if name == "List" {
-			tol = 6
-		}
-		if worst := math.Max(math.Max(dx, dy), math.Max(dw, dh)); worst > tol {
-			t.Errorf("%s: off by %.2f (old %v, scene %v, frame %v,%v)", name, worst, b, n, sx, sy)
-		}
-	}
-}
 
 // classicPlacedOf is where the scene drew the item, or nil when it drew nothing.
 func classicPlacedOf(sv *sceneView, it *model.DiagramItem) *scene.Placed {

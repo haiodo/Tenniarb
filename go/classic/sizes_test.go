@@ -10,13 +10,13 @@ import (
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// Sizes answer the size of every item the way go/render did: the evaluator asks for `width` and `height`,
-// and moving it off the old renderer must not move a box.
-func TestSizesMatchRender(t *testing.T) {
+// Sizes answer the size of every item of the element: the evaluator reads `width` and `height` through it,
+// and the box it gives must follow the text - a bigger font makes an item taller, more words make it
+// wider. Absolute numbers are the font's, so only the relations are held.
+func TestSizesFollowTheText(t *testing.T) {
 	const text = `element "E" {
     item "plain" { pos 0 0; title "plain" }
     item "tall" { pos 0 100; title "tall"; font-size 30 }
@@ -37,26 +37,29 @@ with two lines} }
 	ctx := exec.NewExecutionContext(exec.Options{ItemSize: sizes})
 	ctx.SetElement(el)
 
-	n := 0
+	got := map[string]*model.DrawableSize{}
 	for _, it := range el.Items {
 		if it.Kind != model.ItemKindItem {
 			continue
 		}
-		n++
-		want, err := render.ItemSize(it, render.Options{Measurer: gfx.DefaultMeasurer})
-		if err != nil {
-			t.Fatalf("%s: %v", it.Name, err)
-		}
-		got := sizes(it, ctx)
-		if got == nil {
+		sz := sizes(it, ctx)
+		if sz == nil {
 			t.Fatalf("%s: no size", it.Name)
 		}
-		if got.Width != want.Width || got.Height != want.Height {
-			t.Errorf("%s: %gx%g, go/render says %gx%g", it.Name, got.Width, got.Height, want.Width, want.Height)
+		if sz.Width <= 0 || sz.Height <= 0 {
+			t.Fatalf("%s: %gx%g", it.Name, sz.Width, sz.Height)
 		}
+		got[it.Name] = sz
 	}
-	if n != 3 {
-		t.Fatalf("%d items compared, want 3", n)
+	if len(got) != 3 {
+		t.Fatalf("%d items sized, want 3", len(got))
+	}
+	if got["tall"].Height <= got["plain"].Height {
+		t.Errorf("a bigger font must make a taller item: %g, %g", got["tall"].Height, got["plain"].Height)
+	}
+	if got["wide"].Width <= got["plain"].Width || got["wide"].Height <= got["plain"].Height {
+		t.Errorf("a body of two lines must make a bigger item: %gx%g, %gx%g",
+			got["wide"].Width, got["wide"].Height, got["plain"].Width, got["plain"].Height)
 	}
 }
 

@@ -8,8 +8,9 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/classic"
+	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -23,9 +24,20 @@ func parseDiagram(t *testing.T, src string) *model.Element {
 	return m.Elements[0]
 }
 
-// evalCtx is the evaluator of the old renderer with the measuring of the tests.
+// evalCtx is the evaluator of the tests: it measures text with the estimating measurer and reads the size
+// of an item from the model, which is all these tests ask of it.
 func evalCtx(el *model.Element) model.IExecutionContext {
-	return render.NewExecContext(el, render.Options{Measurer: gfx.EstimateText{}})
+	ctx := exec.NewExecutionContext(exec.Options{MeasureText: measureTextOf(gfx.EstimateText{})})
+	ctx.SetElement(el)
+	return ctx
+}
+
+// measureTextOf is the size of a text as the given measurer reads it.
+func measureTextOf(m gfx.TextMeasurer) func(string, float64) model.DrawableSize {
+	return func(text string, fontSize float64) model.DrawableSize {
+		w, h := scene.MeasureText(m, text, fontSize)
+		return model.DrawableSize{Width: w, Height: h}
+	}
 }
 
 // TestValues: the values a classic diagram reads, by item name and index, by a template string and by a
@@ -102,7 +114,7 @@ func TestHook(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	hook := classic.Hook(tree, root, "e.tenn", "E", render.ClassicContext)
+	hook := classic.Hook(tree, root, "e.tenn", "E", classic.SceneContext(tree, "E", gfx.EstimateText{}, measureTextOf(gfx.EstimateText{})))
 	if hook == nil {
 		t.Fatal("no hook for the element E")
 	}
@@ -111,7 +123,7 @@ func TestHook(t *testing.T) {
 		t.Errorf("A|width = %v %v, want 42", got, ok)
 	}
 	for _, path := range []string{"", "Gone"} {
-		if hook := classic.Hook(tree, root, "e.tenn", path, render.ClassicContext); hook != nil {
+		if hook := classic.Hook(tree, root, "e.tenn", path, classic.SceneContext(tree, path, gfx.EstimateText{}, measureTextOf(gfx.EstimateText{}))); hook != nil {
 			t.Errorf("path %q has a hook", path)
 		}
 	}
@@ -144,7 +156,7 @@ func TestValuesAgreeWithRender(t *testing.T) {
 		if !ok || len(got) != 1 {
 			t.Fatalf("%s = %v %v", prop, got, ok)
 		}
-		if want := render.ValueString(evalExpr(t, el, prop)); got[0] != want {
+		if want := jsval.String(evalExpr(t, el, prop)); got[0] != want {
 			t.Errorf("%s: %q, go/render writes %q", prop, got[0], want)
 		}
 	}

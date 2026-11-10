@@ -7,7 +7,7 @@ Tenniarb - редактор диаграмм и экранов в формате
 `Tenniarb.xcodeproj`) остаётся в дереве как история: CI её не собирает, новые фичи идут в Go.
 
 - Язык/платформа: Go, модуль `github.com/haiodo/tenniarb/go`; UI - `gowt` (AppKit под капотом)
-- Вычисления: `goja`; рендер - `go/scene` + `go/render`
+- Вычисления: `goja`; рендер - `go/scene` (один движок: `go/render` удалён, классическая диаграмма — его профиль рисования в сцене)
 - Формат: `go/tenn` (lexer, parser, printer), спецификация - `docs/spec/tenn-scene.md`
 
 ## Структура репозитория

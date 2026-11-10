@@ -28,7 +28,7 @@ func walkElements(e *model.Element, f func(*model.Element)) {
 	}
 }
 
-// The classic fixtures stay on go/render: no element of them is a scene element.
+// The classic fixtures stay classic: no element of them is a scene element.
 func TestSceneElementRuleKeepsFixturesClassic(t *testing.T) {
 	files, _ := filepath.Glob("../../web/fixtures/*.tenn")
 	docs, _ := filepath.Glob("../../docs/*.tenn")

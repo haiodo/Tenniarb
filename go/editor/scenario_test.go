@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
 
@@ -87,7 +87,7 @@ link "A" "Untitled 1"`)
 func TestScenarioTabWithoutSelectionAddsItemAtPivot(t *testing.T) {
 	scenario(t, func(f *fixture) string { return doc(`item "Untitled 1" { pos 300 -300 }`) }, func(f *fixture) {
 		// A click on empty space moves the pivot there.
-		p := render.Point{X: 300, Y: -300}
+		p := geometry.Point{X: 300, Y: -300}
 		f.s.MouseDown(MouseEvent{P: p})
 		f.s.MouseUp(MouseEvent{P: p})
 		f.key("Tab", 0)
@@ -150,7 +150,7 @@ func TestScenarioDragMove(t *testing.T) {
 		return doc("", `item "A" { pos 0 0 }`, `item "A" { pos 40 -25 }`)
 	}, func(f *fixture) {
 		p := f.centre(f.a)
-		f.drag(p, render.Point{X: p.X + 40, Y: p.Y - 25}, 0)
+		f.drag(p, geometry.Point{X: p.X + 40, Y: p.Y - 25}, 0)
 	})
 }
 
@@ -165,7 +165,7 @@ func TestScenarioOptionDragMovesSubtree(t *testing.T) {
 		return doc("", `item "B" { pos 200 0 }`, `item "B" { pos 230 10 }`, `item "C" { pos 0 -150 }`, `item "C" { pos 30 -140 }`)
 	}, func(f *fixture) {
 		p := f.centre(f.b)
-		f.drag(p, render.Point{X: p.X + 30, Y: p.Y + 10}, ModAlt)
+		f.drag(p, geometry.Point{X: p.X + 30, Y: p.Y + 10}, ModAlt)
 	})
 }
 

@@ -3,7 +3,6 @@
 package app
 
 import (
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -43,7 +41,7 @@ func TestClassicTitleEdgesAreTrimmed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := render.NewExecContext(el, render.Options{Measurer: gfx.DefaultMeasurer})
+	ctx := execContextOf(el)
 	sc := gfx.NewScene()
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err := tree.Build(tx, nil, "Doc.E", scene.Options{
@@ -92,11 +90,7 @@ func TestClassicPictureInTitleKeepsItsSpace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := render.NewExecContext(el, render.Options{Measurer: gfx.DefaultMeasurer})
-	want, err := render.ItemSize(el.Items[0], render.Options{Measurer: gfx.DefaultMeasurer})
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := execContextOf(el)
 	sc := gfx.NewScene()
 	sc.Update(func(tx *gfx.Tx) {
 		screen, err := tree.Build(tx, nil, "Doc.E", scene.Options{
@@ -107,8 +101,18 @@ func TestClassicPictureInTitleKeepsItsSpace(t *testing.T) {
 		var walk func(p *scene.Placed)
 		walk = func(p *scene.Placed) {
 			for _, k := range p.Kids {
-				if k.Src != nil && k.Src.Kind == scene.KItem && math.Abs(k.W-want.Width) > 0.01 {
-					t.Errorf("item %q is %.2f wide, go/render says %.2f", k.Src.Name, k.W, want.Width)
+				if k.Src != nil && k.Src.Kind == scene.KItem {
+					// The title is one line of two pictures: the box is as wide as the wider of them plus
+					// the padding of the item, and no wider - the blank edges of a block title are gone.
+					lines := screen.TitleLines(k.Src, 0)
+					if len(lines) != 1 {
+						t.Errorf("%q: %d title lines, want one", k.Src.Name, len(lines))
+						walk(k)
+						continue
+					}
+					if lines[0].W > k.W {
+						t.Errorf("%q: the title is %g wide, the item %g", k.Src.Name, lines[0].W, k.W)
+					}
 				}
 				walk(k)
 			}

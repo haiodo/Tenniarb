@@ -3,31 +3,21 @@
 package app
 
 import (
-	"fmt"
-	"math"
 	"os"
-	"sort"
 	"strings"
 	"testing"
 
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/classic"
+	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// TestSceneSizesItemsLikeRender is the gate of the step that moves the evaluator off go/render: the
-// expression engine asks how big an item is (`width` and `height` in an expression), and go/render answers
-// by building a throwaway drawable scene. The scene must answer the same, or moving the evaluator would
-// change the picture of an item.
-//
-// It measures every item of docs/Example.tenn through both, and holds the number that agree: the ones that
-// do not are the body layouts the parity stand also reports (a list, an emphasis that spans lines, a code
-// span the scene draws in `mono` while go/render never read that property), so the ratio may only grow. It
-// is 97% now.
-func TestSceneSizesItemsLikeRender(t *testing.T) {
+// Every element of docs/Example.tenn builds a scene, and every item it places has a box: the diagram the
+// window shows is the one engine's, so an element that fails to build would be a hole on the canvas.
+func TestEveryElementOfTheExampleBuilds(t *testing.T) {
 	const file = "../../docs/Example.tenn" // from the go directory, as the other tests read it
 	const rel = "docs/Example.tenn"        // from the workspace root, as scene.Load wants it
 	data, err := os.ReadFile(file)
@@ -49,8 +39,7 @@ func TestSceneSizesItemsLikeRender(t *testing.T) {
 	}
 	walk(&m.Element)
 
-	compared, agree := 0, 0
-	var worst []string
+	built, placed, items := 0, 0, 0
 	for _, el := range all {
 		if len(el.Items) == 0 {
 			continue
@@ -59,7 +48,7 @@ func TestSceneSizesItemsLikeRender(t *testing.T) {
 		if len(keys) < 2 {
 			continue // the root itself is not a path of the scene
 		}
-		ctx := render.NewExecContext(el, render.Options{Measurer: gfx.DefaultMeasurer})
+		ctx := execContextOf(el)
 		sc := gfx.NewScene()
 		var screen *scene.Screen
 		var buildErr error
@@ -68,58 +57,40 @@ func TestSceneSizesItemsLikeRender(t *testing.T) {
 				Measurer: gfx.DefaultMeasurer, Classic: classic.Values(el, ctx)})
 		})
 		if buildErr != nil || screen == nil {
+			t.Errorf("%s: %v", el.Name, buildErr)
 			continue
 		}
-		sizes := map[*model.DiagramItem]*scene.Placed{}
+		built++
 		var find func(p *scene.Placed)
 		find = func(p *scene.Placed) {
 			for _, k := range p.Kids {
 				if k.Src != nil && k.Src.Kind == scene.KItem {
-					if it := classicItemAt(el, k.Src); it != nil {
-						sizes[it] = k
+					placed++
+					if k.W <= 0 || k.H <= 0 {
+						t.Errorf("%s: item %q has the box %gx%g", el.Name, k.Src.Name, k.W, k.H)
 					}
 				}
 				find(k)
 			}
 		}
 		find(screen.Placed())
-		for _, it := range el.Items {
-			if it.Kind != model.ItemKindItem {
-				continue
-			}
-			pl := sizes[it]
-			if pl == nil {
-				continue
-			}
-			sz, err := render.ItemSize(it, render.Options{Measurer: gfx.DefaultMeasurer, Exec: ctx})
-			if err != nil {
-				continue
-			}
-			compared++
-			d := math.Max(math.Abs(pl.W-sz.Width), math.Abs(pl.H-sz.Height))
-			if d <= 0.5 {
-				agree++
-				continue
-			}
-			worst = append(worst, fmt.Sprintf("%s/%s off %.2f", el.Name, it.Name, d))
-		}
+		items += len(el.Items)
 	}
-	if compared < 1000 {
-		t.Fatalf("only %d items compared; the file or the walk changed", compared)
+	// A top-level element of a file is a scene, not a classic diagram, so the walk leaves it out: thirty
+	// elements of this file are diagrams, and they place the eleven hundred items the canvas draws.
+	if built < 25 || placed < 1000 {
+		t.Fatalf("%d elements built, %d items placed of %d: the walk or the file changed", built, placed, items)
 	}
-	ratio := float64(agree) / float64(compared)
-	t.Logf("%d of %d items agree (%.2f%%), %d differ", agree, compared, ratio*100, len(worst))
-	sort.Slice(worst, func(i, j int) bool { return worst[i] < worst[j] })
-	for i, w := range worst {
-		if i == 8 {
-			break
-		}
-		t.Logf("  %s", w)
-	}
-	if ratio < 0.95 {
-		t.Errorf("%.2f%% of the items agree, want at least 95%%: the scene and go/render size items differently",
-			ratio*100)
-	}
+}
+
+// execContextOf is the evaluator of an element, measuring as the window does.
+func execContextOf(el *model.Element) model.IExecutionContext {
+	ctx := exec.NewExecutionContext(exec.Options{MeasureText: func(text string, fontSize float64) model.DrawableSize {
+		w, h := scene.MeasureText(gfx.DefaultMeasurer, text, fontSize)
+		return model.DrawableSize{Width: w, Height: h}
+	}})
+	ctx.SetElement(el)
+	return ctx
 }
 
 // pathKeys is the dotted key path of el from the root of the model.

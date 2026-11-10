@@ -37,7 +37,7 @@ func ItemAt(e *model.Element, n *scene.Node) *model.DiagramItem {
 	return nil
 }
 
-// Sizes is the go/render ItemSize without go/render: how big an item is, read from the box the scene draws
+// Sizes is how big an item is, read from the box the scene draws
 // it in. The evaluator asks at every round with the values of the round before, so one build of the element
 // answers every item of that round and the next round builds again.
 func Sizes(tree *scene.Tree, path string, el *model.Element, measure gfx.TextMeasurer) func(*model.DiagramItem, model.IExecutionContext) *model.DrawableSize {
@@ -90,8 +90,8 @@ func collectSizes(el *model.Element, p *scene.Placed, out map[*model.DiagramItem
 }
 
 // SceneContext is Context with the item sizes of the scene: what the evaluator asks for `width` and
-// `height` is answered by the box the scene draws, and measureText is the frame size of a text the caller
-// still measures with (the CTFramesetter of go/render while it is there).
+// `height` is answered by the box the scene draws, and measureText is the size of a text the caller
+// measures with - the same measurer the canvas draws it with.
 func SceneContext(tree *scene.Tree, path string, measure gfx.TextMeasurer, measureText func(string, float64) model.DrawableSize) Context {
 	return func(el *model.Element) model.IExecutionContext {
 		ctx := exec.NewExecutionContext(exec.Options{
