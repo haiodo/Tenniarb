@@ -280,9 +280,13 @@ func (s *Session) fallback() *model.Element {
 }
 
 func (s *Session) rebuild() {
-	o := s.opts.Render
-	o.Exec, o.Items = s.exec, nil
-	s.scene = render.Build(s.element, o)
+	if s.opts.Geom == nil {
+		// A session without geometry of its own builds the scene of go/render and asks that. A session the
+		// canvas answers needs no scene: the diagram on the screen is the diagram.
+		o := s.opts.Render
+		o.Exec, o.Items = s.exec, nil
+		s.scene = render.Build(s.element, o)
+	}
 	s.rebuilt = true
 	kept := s.selection[:0:0]
 	for _, i := range s.selection {

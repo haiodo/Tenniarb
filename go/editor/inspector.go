@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/haiodo/gowt/gfx"
+
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/palette"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
@@ -423,69 +427,122 @@ func (s *Session) SetStyleProp(group, name string, args ...string) bool {
 }
 
 // Effective is the value the first selected item is drawn with, set by the item or not. Colors are
-// #rrggbb; empty is unknown.
+// #rrggbb; empty is unknown. It reads the model - the property of the item, else the style of the element -
+// and the drawn box for a size, so it needs no picture of the old renderer.
 func (s *Session) Effective(name string) string {
 	if len(s.selection) == 0 {
 		return ""
 	}
 	item := s.selection[0]
-	d, ok := s.scene.Drawables[item]
-	if !ok {
-		return ""
+	switch name {
+	case "width", "height":
+		b, ok := s.geom().Box(item)
+		if !ok {
+			return ""
+		}
+		if name == "width" {
+			return trimFloat(b.Width)
+		}
+		return trimFloat(b.Height)
 	}
-	var st *render.DrawableStyle
-	switch b := d.(type) {
-	case *render.RoundBox:
-		st = &b.Style.DrawableStyle
-	case *render.CircleBox:
-		st = b.Style
-	case *render.EmptyBox:
-		st = b.Style
-	case *render.DrawableLine:
-		st = &b.Style.DrawableStyle
-	default:
-		return ""
+	text, ok := styleValue(item, name)
+	if !ok {
+		// The element sets a default for a group of items: the one the item belongs to.
+		group := "item"
+		if item.Kind == model.ItemKindLink {
+			group = "line"
+		}
+		if pr := s.StyleProp(group, name); pr.Set && len(pr.Args) > 0 {
+			text, ok = pr.Arg(0).Text, true
+		}
+	}
+	if !ok {
+		text, ok = styleValue(s.element, name)
 	}
 	switch name {
-	case "color":
-		return hexOf(st.Color)
-	case "border-color":
-		return hexOf(st.BorderColor)
-	case "text-color":
-		return hexOf(st.TextColor())
+	case "color", "border-color", "text-color":
+		if ok {
+			if c, good := palette.Parse(text); good {
+				return hexOfPalette(c)
+			}
+		}
+		return ""
 	case "font-size":
-		return trimFloat(st.FontSize)
+		if ok {
+			return trimFloat(atof(text, 18))
+		}
+		return trimFloat(18)
 	case "line-width":
-		return trimFloat(st.LineWidth)
+		if ok {
+			return trimFloat(atof(text, 1))
+		}
+		return trimFloat(1)
+	case "padding":
+		if ok {
+			return text
+		}
+		return "0"
 	case "line-style":
-		if st.LineStyle != nil {
-			return *st.LineStyle
+		if ok {
+			return text
 		}
 		return "solid"
 	case "display":
-		if st.Display != nil {
-			return *st.Display
+		if ok {
+			return text
 		}
 		if item.Kind == model.ItemKindLink {
 			return "solid"
 		}
 		return "rect"
 	case "layer":
-		if st.Layer != nil {
-			return *st.Layer
+		if ok {
+			return text
 		}
 		return "default"
-	case "width":
-		return trimFloat(d.SelectorBounds().Width)
-	case "height":
-		return trimFloat(d.SelectorBounds().Height)
 	}
 	return ""
 }
 
-func hexOf(c render.Color) string {
+// atof is a number written as text, with the default the classic renderer used.
+func atof(text string, def float64) float64 {
+	if v, err := strconv.ParseFloat(text, 64); err == nil {
+		return v
+	}
+	return def
+}
+
+// hexOfPalette is a colour as #rrggbb.
+func hexOfPalette(c gfx.Color) string {
 	to8 := func(f float64) int { return int(math.Round(math.Max(0, math.Min(1, f)) * 255)) }
 	return fmt.Sprintf("#%02x%02x%02x", to8(c.R), to8(c.G), to8(c.B))
+}
+
+// styleValue is the argument of a style property written on an item or on an element: the item first, the
+// element as the fallback of everything the item does not set.
+func styleValue(t any, name string) (string, bool) {
+	var props *model.ModelProperties
+	switch v := t.(type) {
+	case *model.DiagramItem:
+		if v == nil {
+			return "", false
+		}
+		props = v.Properties
+	case *model.Element:
+		if v == nil {
+			return "", false
+		}
+		props = v.Properties
+	}
+	if props == nil || name == "" {
+		return "", false
+	}
+	p := props.Get(name)
+	if p == nil || len(p.Children) < 2 {
+		return "", false
+	}
+	text, ok := p.Children[1].GetIdentText()
+	return text, ok
 }
 
 // trimFloat is a computed number as Swift prints a Double, cut to 2 decimals: measured sizes carry

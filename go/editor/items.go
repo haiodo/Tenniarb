@@ -458,7 +458,7 @@ func (s *Session) TestLayout(bounds render.Rect) {
 	if s.opts.Readonly {
 		return
 	}
-	ctx := model.NewLayoutContext(s.element, s.scene, s.store, model.Rect{X: bounds.X, Y: bounds.Y, Width: bounds.Width, Height: bounds.Height})
+	ctx := model.NewLayoutContext(s.element, layoutScene{s}, s.store, model.Rect{X: bounds.X, Y: bounds.Y, Width: bounds.Width, Height: bounds.Height})
 	ops, err := model.NewSpringLayout(nil, nil).Apply(ctx, true)
 	s.fail(err)
 	s.commit(ops)
@@ -494,4 +494,21 @@ func valueNode(value string) *tenn.Node {
 		return tenn.NewNode(tenn.KindFloatLit, tenn.NewToken(tenn.TokFloatLit, value))
 	}
 	return tenn.NewNode(tenn.KindIntLit, tenn.NewToken(tenn.TokIntLit, value))
+}
+
+// layoutScene is model.LayoutScene over the geometry the session works with: the layout arranges the items
+// in the diagram the canvas draws.
+type layoutScene struct{ s *Session }
+
+func (l layoutScene) GetBounds() model.Rect {
+	b := l.s.geom().Bounds()
+	return model.Rect{X: b.X, Y: b.Y, Width: b.Width, Height: b.Height}
+}
+
+func (l layoutScene) GetItemBounds(it *model.DiagramItem) (model.Rect, bool) {
+	b, ok := l.s.geom().Box(it)
+	if !ok {
+		return model.Rect{}, false
+	}
+	return model.Rect{X: b.X, Y: b.Y, Width: b.Width, Height: b.Height}, true
 }

@@ -33,6 +33,8 @@ type Geom interface {
 	HitLine(it *model.DiagramItem, p render.Point) bool
 	// Grid is the step the canvas moves an item by.
 	Grid() render.Point
+	// Bounds is the extent of the diagram, for the layout that arranges the items in it.
+	Bounds() render.Rect
 }
 
 // sceneGeom is Geom over the drawables of go/render: what the session built for itself before the canvas
@@ -109,6 +111,8 @@ func (g sceneGeom) HitLine(it *model.DiagramItem, p render.Point) bool {
 }
 
 func (g sceneGeom) Grid() render.Point { return g.scene.Style.GridSpan }
+
+func (g sceneGeom) Bounds() render.Rect { return g.scene.Bounds() }
 
 // geom is the geometry the session works with: the one its caller gave it, else the boxes of the scene it
 // built for itself.

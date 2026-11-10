@@ -195,3 +195,12 @@ func propNum(t any, name string) (float64, bool) {
 	}
 	return n, true
 }
+
+// Bounds is the extent of the diagram the canvas draws, in the coordinates of the editor scene.
+func (g canvasGeom) Bounds() render.Rect {
+	if g.v == nil || g.v.sv == nil {
+		return render.Rect{}
+	}
+	g.v.sv.bounds()
+	return render.Rect{Width: g.v.sv.w, Height: g.v.sv.h}
+}

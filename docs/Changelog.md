@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A document opened in the window no longer builds a second engine: the session takes its boxes from the
+  canvas, and the readout of an item's style (its colour, size, line width) comes from the model and the
+  drawn box. What the old renderer is still asked for is nothing of the diagram on screen.
 * The edit session of a classic diagram works on the boxes the canvas draws: `canvasGeom` answers
   `editor.Geom` from go/scene - the frame of an item, the line of a link as the distance to the segment
   between its ends, the drag preview, the step of the grid. The canvas is the one engine that draws the
