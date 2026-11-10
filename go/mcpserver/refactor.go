@@ -236,22 +236,28 @@ func (s *Server) moveNode(tree *scene.Tree, n *scene.Node, parent, name string, 
 		block = spliceName(block, n, name)
 	}
 	unit := indentUnitOf(dstText)
-	ind := unit
+	ind := "" // the root has no indent: a node written there sits flush left
 	if dst.Kind != scene.KFile {
 		ind = indentOf(dstText, dst.Range.Start) + unit
 	}
 	block = reindent(block, indentOf(src, n.Range.Start), ind)
-	at, ok := blockEnd(dst)
-	if !ok {
-		if dst.Mount != nil {
-			return nil, fmt.Errorf("%s mounts %s: name an item inside it as the new parent", nameOf(dst), dst.Mount.Pos.File)
+	from, at := 0, 0
+	if dst.Kind == scene.KFile { // the root has no block: the text of the file is the block
+		from, at = len(strings.TrimRight(dstText, " \t\r\n")), len(dstText)
+	} else {
+		var ok bool
+		at, ok = blockEnd(dst)
+		if !ok {
+			if dst.Mount != nil {
+				return nil, fmt.Errorf("%s mounts %s: name an item inside it as the new parent", nameOf(dst), dst.Mount.Pos.File)
+			}
+			return nil, errors.New("the new parent has no block to move the node into")
 		}
-		return nil, errors.New("the new parent has no block to move the node into")
-	}
-	// The closing brace keeps a line of its own: the white space that sat before it goes.
-	from := at
-	for from > dst.Body.Start+1 && strings.ContainsRune(" \t\n", rune(dstText[from-1])) {
-		from--
+		// The closing brace keeps a line of its own: the white space that sat before it goes.
+		from = at
+		for from > dst.Body.Start+1 && strings.ContainsRune(" \t\n", rune(dstText[from-1])) {
+			from--
+		}
 	}
 	parentInd := ""
 	if dst.Kind != scene.KFile {

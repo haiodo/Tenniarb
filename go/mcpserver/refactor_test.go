@@ -55,6 +55,23 @@ func TestRefactorRenameTaken(t *testing.T) {
 	}
 }
 
+// TestRefactorMoveToRoot: "." is the file root, which has no block but its text; the node lands flush
+// left at the end of the file and a use of it is written again.
+func TestRefactorMoveToRoot(t *testing.T) {
+	root := tempRoot(t, map[string]string{
+		"m.tenn": "element S {\n\titem A {\n\t\titem B { width 10 }\n\t}\n}\n",
+	})
+	cs := memSession(t, root)
+	if got := mustOK(t, cs, "refactor", map[string]any{"file": "m.tenn", "node": "S.A.B", "parent": "."}); !strings.Contains(got, "moved to .") {
+		t.Fatalf("answer:\n%s", got)
+	}
+	got := fileText(t, root, "m.tenn")
+	if !strings.HasSuffix(got, "\nitem B { width 10 }\n") {
+		t.Fatalf("the node did not land at the root:\n%s", got)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "m.tenn"})
+}
+
 // TestRefactorMove: the node leaves its parent, takes the indentation of the new one, and a use of it
 // in another file is written from the entry document again.
 func TestRefactorMove(t *testing.T) {

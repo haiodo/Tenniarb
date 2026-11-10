@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* `design` writes a node into a block without taking the closing brace of the parent with it: `insert` and
+  `set` of a new property put the command on a line of its own, so the next `delete` of a sibling no longer
+  fails with `Wrong statements terminator` on a file whose `validate` was clean. `insert` takes the root of
+  a file as its parent and a `use` that has a block, the two cases that answered "the parent has no block to
+  insert into" and "insert takes an item or an element as its parent"; `refactor` moves a node into the root
+  too. `replace_all` with a `node` searches that node only - without one it searches the whole file, as
+  before, and now says so instead of finding the text in another frame.
 * The ink of a `path` command is the whole ink of its shape: a shape that names a `color` is filled and not
   stroked, one that names a `border-color` is stroked and not filled, and only a shape that names no ink
   takes the one of the item. Taking the pieces one by one drew the dot of a tag twice - filled, then a ring

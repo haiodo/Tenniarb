@@ -16,7 +16,7 @@ import (
 // DesignOp is one operation of the design tool: an edit of a node by its path, not by the text around it.
 type DesignOp struct {
 	Op      string  `json:"op" jsonschema:"set, move, insert, delete or replace_all"`
-	Node    string  `json:"node,omitempty" jsonschema:"dotted path of the node from the file root, as get_state prints it"`
+	Node    string  `json:"node,omitempty" jsonschema:"dotted path of the node from the file root, as get_state prints it; replace_all searches only this node"`
 	Parent  string  `json:"parent,omitempty" jsonschema:"insert: dotted path of the parent; empty for the file root"`
 	Name    string  `json:"name,omitempty" jsonschema:"set: the property name"`
 	Value   string  `json:"value,omitempty" jsonschema:"set: the arguments of the property as written after the name; empty removes it"`
@@ -137,25 +137,23 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 			if err := inFile(n, rel); err != nil {
 				return span{}, "", err
 			}
-			if n.Kind != scene.KItem && n.Kind != scene.KElement && n.Kind != scene.KFile {
-				return span{}, "", errors.New("insert takes an item or an element as its parent")
+			if n.Kind != scene.KItem && n.Kind != scene.KElement && n.Kind != scene.KUse && n.Kind != scene.KFile {
+				return span{}, "", errors.New("insert takes an item, an element or a use as its parent")
 			}
 			parent = n
-		}
-		at, ok := blockEnd(parent)
-		if !ok {
-			return span{}, "", errors.New("the parent has no block to insert into")
 		}
 		cmd := strings.TrimSpace(op.Text)
 		if cmd == "" {
 			return span{}, "", errors.New("text is empty")
 		}
-		ind, unit := indentOf(text, parent.Range.Start), indentUnitOf(text)
-		if parent.Kind == scene.KFile {
-			ind, unit = "", indentUnitOf(text)
+		sp, ok := blockInsert(text, parent, cmd)
+		if !ok {
+			if parent.Kind == scene.KUse {
+				return span{}, "", errors.New("the use has no block to insert into: write { } after it first")
+			}
+			return span{}, "", errors.New("the parent has no block to insert into")
 		}
-		body := strings.ReplaceAll(cmd, "\n", "\n"+ind+unit)
-		return span{at, at, "\n" + ind + unit + body}, "into " + nameOf(parent), nil
+		return sp, "into " + nameOf(parent), nil
 	case "set", "move":
 		n, err := nodeAt(tree, rel, op.Node)
 		if err != nil {
@@ -172,10 +170,6 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 		if name == "" {
 			return span{}, "", errors.New("name is empty")
 		}
-		at, ok := blockEnd(n)
-		if !ok {
-			return span{}, "", errors.New("the node has no block to set a property in")
-		}
 		cmd := strings.TrimSpace(name + " " + value)
 		if pr := ownPropOf(n, name); pr != nil {
 			if strings.TrimSpace(value) == "" {
@@ -190,8 +184,11 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 		if strings.TrimSpace(value) == "" {
 			return span{}, "", errors.New("the node has no property " + name)
 		}
-		ind, unit := indentOf(text, n.Range.Start), indentUnitOf(text)
-		return span{at, at, "\n" + ind + unit + cmd}, name + " of " + nameOf(n) + " added", nil
+		sp, ok := blockInsert(text, n, cmd)
+		if !ok {
+			return span{}, "", errors.New("the node has no block to set a property in")
+		}
+		return sp, name + " of " + nameOf(n) + " added", nil
 	case "delete":
 		n, err := nodeAt(tree, rel, op.Node)
 		if err != nil {
@@ -209,11 +206,23 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 		if op.Find == "" {
 			return span{}, "", errors.New("find is empty")
 		}
-		at := strings.Index(text, op.Find)
-		if at < 0 {
-			return span{}, "", errors.New("find text not found")
+		area, from, where := text, 0, "the file"
+		if op.Node != "" { // the node bounds the search: a plain find would change every frame
+			n, err := nodeAt(tree, rel, op.Node)
+			if err != nil {
+				return span{}, "", err
+			}
+			if err := inFile(n, rel); err != nil {
+				return span{}, "", err
+			}
+			area, from, where = text[n.Range.Start:n.Range.End], n.Range.Start, nameOf(n)
 		}
-		return span{at, at + len(op.Find), op.Replace}, fmt.Sprintf("%d places", strings.Count(text, op.Find)), nil
+		at := strings.Index(area, op.Find)
+		if at < 0 {
+			return span{}, "", fmt.Errorf("find text not found in %s", where)
+		}
+		return span{from + at, from + at + len(op.Find), op.Replace},
+			fmt.Sprintf("%d places in %s", strings.Count(area, op.Find), where), nil
 	}
 	return span{}, "", fmt.Errorf("unknown op %q", op.Op)
 }
@@ -243,6 +252,31 @@ func blockEnd(n *scene.Node) (int, bool) {
 		return 0, false
 	}
 	return n.Body.End - 1, true
+}
+
+// blockInsert is the span that adds cmd as the last lines of the block of n; the closing brace keeps a
+// line of its own, or a delete of a sibling would take it along with the line.
+func blockInsert(text string, n *scene.Node, cmd string) (span, bool) {
+	unit := indentUnitOf(text)
+	if n.Kind == scene.KFile { // the root has no block: the text of the file is the block
+		at := len(strings.TrimRight(text, " \t\r\n"))
+		lead := ""
+		if at > 0 {
+			lead = "\n"
+		}
+		return span{at, len(text), lead + strings.ReplaceAll(cmd, "\n", "\n"+unit) + "\n"}, true
+	}
+	at, ok := blockEnd(n)
+	if !ok {
+		return span{}, false
+	}
+	ind := indentOf(text, n.Range.Start)
+	body := strings.ReplaceAll(cmd, "\n", "\n"+ind+unit)
+	from, lead := at, "\n"
+	if lineStart := strings.LastIndexByte(text[:at], '\n') + 1; strings.TrimLeft(text[lineStart:at], " \t") == "" {
+		from, lead = lineStart, ""
+	}
+	return span{from, at, lead + ind + unit + body + "\n" + ind}, true
 }
 
 // ownPropOf is the property command of name written on n itself: in its own arguments, or in the block

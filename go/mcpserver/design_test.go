@@ -171,3 +171,113 @@ func TestDesignRefusesStaleSnapshot(t *testing.T) {
 		t.Fatalf("user edit lost: %s", got)
 	}
 }
+
+// TestDesignInsertThenDelete: an insert leaves the closing brace of the parent on its own line, so the
+// delete of a node in that block does not take the brace with the line.
+func TestDesignInsertThenDelete(t *testing.T) {
+	root := tempRoot(t, map[string]string{"s.tenn": designDoc})
+	cs := memSession(t, root)
+	mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "insert", "parent": "S", "text": "item C { width 10; height 10 }"},
+	}})
+	if got := fileText(t, root, "s.tenn"); strings.Contains(got, "}}") {
+		t.Fatalf("the insert glued the brace of S to the new node:\n%s", got)
+	}
+	mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "delete", "node": "S.B"},
+	}})
+	if got := mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "delete", "node": "S.C"},
+	}}); !strings.Contains(got, "C deleted") {
+		t.Fatalf("delete of the last node of the block: %s", got)
+	}
+	got := fileText(t, root, "s.tenn")
+	if strings.Contains(got, "item B") || strings.Contains(got, "item C") || !strings.HasSuffix(got, "}\n") {
+		t.Fatalf("the block lost a line or its brace:\n%s", got)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "s.tenn"})
+}
+
+// TestDesignInsertAtRoot: an empty parent is the file root, which has no block but its text.
+func TestDesignInsertAtRoot(t *testing.T) {
+	root := tempRoot(t, map[string]string{"s.tenn": designDoc})
+	cs := memSession(t, root)
+	if out := mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "insert", "parent": "", "text": "element T {\n\titem x { width 1 }\n}"},
+	}}); !strings.Contains(out, "into s.tenn") {
+		t.Fatalf("insert at the root: %s", out)
+	}
+	got := fileText(t, root, "s.tenn")
+	if !strings.HasSuffix(got, "}\n") || strings.Contains(got, "}\n\n") {
+		t.Fatalf("the root insert left the end of the file wrong:\n%s", got)
+	}
+	mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "delete", "node": "T"},
+	}})
+	if got := fileText(t, root, "s.tenn"); strings.Contains(got, "element T") {
+		t.Fatalf("T was not deleted:\n%s", got)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "s.tenn"})
+}
+
+// TestDesignSetThenRemove: a property added at the end of a block does not glue the brace either, or
+// removing it deletes the brace and the file stops parsing.
+func TestDesignSetThenRemove(t *testing.T) {
+	root := tempRoot(t, map[string]string{"s.tenn": "element S {\n\titem A {\n\t\twidth 40\n\t}\n}\n"})
+	cs := memSession(t, root)
+	mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "corner-radius", "value": "6"},
+	}})
+	mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "corner-radius", "value": ""},
+	}})
+	got := fileText(t, root, "s.tenn")
+	if strings.Contains(got, "corner-radius") || !strings.Contains(got, "width 40\n\t}\n}") {
+		t.Fatalf("the block of A is not whole:\n%s", got)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "s.tenn"})
+}
+
+// TestDesignReplaceAllInNode: a node bounds the search, so the same text in another frame stays.
+func TestDesignReplaceAllInNode(t *testing.T) {
+	doc := "element S {\n\titem A { title Card }\n\titem B { title Card }\n}\n"
+	root := tempRoot(t, map[string]string{"s.tenn": doc})
+	cs := memSession(t, root)
+	out := mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "replace_all", "node": "S.A", "find": "title Card", "replace": "title Board"},
+	}})
+	if !strings.Contains(out, "1 places in A") {
+		t.Fatalf("replace_all does not name the node it searched: %s", out)
+	}
+	got := fileText(t, root, "s.tenn")
+	if !strings.Contains(got, "item A { title Board }") || !strings.Contains(got, "item B { title Card }") {
+		t.Fatalf("replace_all left its node:\n%s", got)
+	}
+	mustFail(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "replace_all", "node": "S.A", "find": "item B", "replace": "item Z"},
+	}}, "not found in A")
+	if fileText(t, root, "s.tenn") != got {
+		t.Fatal("a refused call wrote the file")
+	}
+}
+
+// TestDesignInsertIntoUse: the block of a use holds overrides and the nodes of the default slot, so a
+// use is an insert parent like an item.
+func TestDesignInsertIntoUse(t *testing.T) {
+	root := tempRoot(t, map[string]string{"s.tenn": "element Kit {\n\titem Row { width 40; slot { } }\n}\n" +
+		"element Screen {\n\tuse Kit.Row as r {\n\t\twidth 50\n\t}\n\tuse Kit.Row as bare\n}\n"})
+	cs := memSession(t, root)
+	if out := mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "insert", "parent": "Screen.r", "text": "item Extra { width 5 }"},
+	}}); !strings.Contains(out, "into r") {
+		t.Fatalf("insert into a use: %s", out)
+	}
+	got := fileText(t, root, "s.tenn")
+	if !strings.Contains(got, "\t\twidth 50\n\t\titem Extra { width 5 }\n\t}") {
+		t.Fatalf("the node went elsewhere:\n%s", got)
+	}
+	mustOK(t, cs, "validate", map[string]any{"file": "s.tenn"})
+	mustFail(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "insert", "parent": "Screen.bare", "text": "item Extra { width 5 }"},
+	}}, "write { } after it first")
+}

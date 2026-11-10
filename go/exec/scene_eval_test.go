@@ -43,3 +43,15 @@ func TestSceneEvalVars(t *testing.T) {
 		t.Errorf("SceneEvalVars of an unknown name = %q, true", got)
 	}
 }
+
+// TestSceneEvalColorBranch: a branch of an expression gives back every #rrggbbaa as it is written, so the
+// colour of the picture is the branch the variables choose and nothing about the digits.
+func TestSceneEvalColorBranch(t *testing.T) {
+	for _, c := range []string{"#2e7cc726", "#2e7cc71f", "#79797c26", "#a5bdff0d", "#ffffff17"} {
+		code := `theme === "dark" ? "` + c + `" : "#ffffff"`
+		if got, ok := exec.SceneEvalVars(code, map[string]string{"theme": "dark"}); !ok || got != c {
+			t.Errorf("SceneEvalVars(%q) = %q, %v; want %q, true", code, got, ok, c)
+		}
+	}
+}
+
