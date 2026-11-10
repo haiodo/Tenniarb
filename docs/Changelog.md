@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* The inspector scrolls again: `relayout` held the scrollable content to the width of the panel by
+  writing `0` for its height too, and that threw away the height `Fit` had just measured, so a long
+  inspector - Layout, Fill, Text, Border, Shape, Effects and the item defaults of an item - had nothing
+  to scroll and showed its head only. Only the width is clamped now. A window test, `TestInspectorScrolls`,
+  checks both halves: the content is taller than the pane and moves when the pane scrolls, and it stays
+  inside the panel width the inspector is fixed to.
 * The icons of `libraries/icons.tenn` are the icons lucide draws: the ends and corners of their strokes are
   `round`, which the set asks for `libraries/icons.tenn` in one line per icon, and the thirteen glyphs with a
   filled detail (`tag`, `key-round`, `vault` and ten more) write that detail as a second path with a

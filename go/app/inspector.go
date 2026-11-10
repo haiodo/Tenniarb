@@ -965,7 +965,9 @@ func (in *inspector) build() g.Option {
 				return strings.Join(out, ", ")
 			})),
 		in.sceneSections())
-	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.NoHScroll(), g.Ref(&in.scroll), body)
+	// insp-scroll names the pane for the QA driver: a window test reads the geometry of what it scrolls,
+	// the only place the scrollable height shows.
+	return g.Scroll(g.Grow(), g.Padding(0), g.Gap(0), g.NoHScroll(), g.ID("insp-scroll"), g.Ref(&in.scroll), body)
 }
 
 func (in *inspector) relayout() {
@@ -974,10 +976,13 @@ func (in *inspector) relayout() {
 	}
 	in.scroll.Content().Unwrap().LayoutOverload1(true)
 	in.scroll.Fit()
-	// Fit asks the content how wide it wants to be, and the pane takes that as its own width - about 390
-	// points for the item inspector - so the content is held to the panel instead.
+	// Fit leaves the scrollable size at the natural size of the content. Its height is what the vertical
+	// bar scrolls over and must stay: SetMinSizeWidthHeight(w, 0) threw the measured height away and a
+	// long inspector had nothing to scroll - 8e826d5 clamped the width that way and lost the scroll.
+	// Only the width is held to the room the panel gives it, so a row that cannot wrap is cut instead of
+	// the pane growing past the fixed width of the inspector.
 	if c := in.scroll.Unwrap(); c != nil && !c.IsDisposed() {
-		c.SetMinSizeWidthHeight(int32(inspectorWidth()-2*g.Scaled(8)), 0)
+		c.SetMinWidth(int32(inspectorWidth() - 2*g.Scaled(8)))
 	}
 	look.SetInspectorWidth(in.v.win, inspectorWidth())
 }
