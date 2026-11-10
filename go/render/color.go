@@ -110,9 +110,3 @@ func parseColor(hex string, alpha float64) (Color, bool) {
 	}
 	return Color{}, false
 }
-
-// ParseColor reads a colour name or 6/8 hex digits as plain sRGB, for backgrounds (no Generic RGB conversion).
-func ParseColor(s string) (gfx.Color, bool) {
-	c, ok := parseColor(strings.ToLower(s), 1)
-	return gfx.Color{R: c.R, G: c.G, B: c.B, A: c.A}, ok
-}

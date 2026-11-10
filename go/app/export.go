@@ -12,6 +12,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/palette"
 	"github.com/haiodo/tenniarb/go/render"
 )
 
@@ -32,7 +33,7 @@ func (p Prefs) exportBackground() gfx.Color {
 	if !p.ExportBackground {
 		return gfx.Color{}
 	}
-	c, _ := render.ParseColor(p.Background)
+	c, _ := palette.Parse(p.Background)
 	return c
 }
 

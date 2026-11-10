@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/haiodo/tenniarb/go/comments"
-	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/palette"
 )
 
 // Environment variables that point the application at another config directory. The QA driver
@@ -101,10 +101,10 @@ func (p Prefs) sane() Prefs {
 	if p.ExpandLevel < 0 || p.ExpandLevel > 20 {
 		p.ExpandLevel = d.ExpandLevel
 	}
-	if _, ok := render.ParseColor(p.Background); !ok {
+	if _, ok := palette.Parse(p.Background); !ok {
 		p.Background = d.Background
 	}
-	if _, ok := render.ParseColor(p.BackgroundDark); !ok {
+	if _, ok := palette.Parse(p.BackgroundDark); !ok {
 		p.BackgroundDark = d.BackgroundDark
 	}
 	p.ExportSelScale = clampExportScale(p.ExportSelScale)

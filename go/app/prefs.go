@@ -9,7 +9,7 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/swt"
 
-	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/palette"
 )
 
 type prefsWindow struct {
@@ -41,7 +41,7 @@ func (sh *Shell) showPrefs() {
 		return g.HBox(g.Padding(0), g.Gap(6),
 			g.Text(g.ID(id), g.Value(val), g.Ref(ref), g.Size(110, 0), g.Init(func(t *g.TextView) {
 				t.OnChange(func(s string) {
-					if _, ok := render.ParseColor(s); ok && s != "" {
+					if _, ok := palette.Parse(s); ok && s != "" {
 						change(func(p *Prefs) { set(p, s) })
 					}
 				})

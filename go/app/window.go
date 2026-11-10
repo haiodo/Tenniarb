@@ -23,6 +23,7 @@ import (
 	"github.com/haiodo/tenniarb/go/diff"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
+	"github.com/haiodo/tenniarb/go/palette"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
@@ -195,8 +196,8 @@ func (v *Viewer) saveFrame() {
 
 // canvasColors are the light and dark background of the canvas.
 func canvasColors(p Prefs) (light, dark g.RGB) {
-	l, _ := render.ParseColor(p.Background)
-	d, _ := render.ParseColor(p.BackgroundDark)
+	l, _ := palette.Parse(p.Background)
+	d, _ := palette.Parse(p.BackgroundDark)
 	to8 := func(f float64) uint8 { return uint8(f*255 + 0.5) }
 	return g.RGB{R: to8(l.R), G: to8(l.G), B: to8(l.B)}, g.RGB{R: to8(d.R), G: to8(d.G), B: to8(d.B)}
 }

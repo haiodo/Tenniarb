@@ -13,7 +13,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
+	"github.com/haiodo/tenniarb/go/palette"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -446,7 +446,7 @@ func (in *inspector) sizeModes(caption, id, name string, idx int, when func(selK
 
 // colorOf parses the text of a colour; false for an expression or a name it does not know.
 func colorOf(text string) (g.RGB, bool) {
-	c, ok := render.ParseColor(text)
+	c, ok := palette.Parse(text)
 	if !ok {
 		return g.RGB{}, false
 	}
