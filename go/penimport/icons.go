@@ -27,9 +27,31 @@ const defaultStroke = 2
 
 // glyph is the drawing of one item of the icons library.
 type glyph struct {
-	path    string
+	// paths are the shapes of the glyph in the order the library writes them: the contour stroked, and a
+	// filled detail - the dot of tag or key-round - as a path of its own with filled set.
+	paths   []glyphPath
 	viewBox [4]float64
 	stroke  float64
+}
+
+// glyphPath is one shape of a glyph: filled means the library fills it instead of stroking it.
+type glyphPath struct {
+	d      string
+	filled bool
+}
+
+// cmdHasWord reports whether a command names the word among its arguments: `path "M…" color #000` fills
+// its shape instead of stroking it.
+func cmdHasWord(args []*tenn.Node, word string) bool {
+	for _, a := range args {
+		if a == nil {
+			continue
+		}
+		if w, ok := a.GetIdentText(); ok && w == word {
+			return true
+		}
+	}
+	return false
 }
 
 // iconTable is libraries/icons.tenn read once: its glyphs, the view box and stroke of the set, and the
@@ -111,7 +133,9 @@ func parseIcons(src string) (map[string]glyph, error) {
 			pargs, _ := splitCommand(p)
 			switch pname {
 			case "path":
-				g.path, _ = argIdentAt(pargs, 0)
+				if d, ok := argIdentAt(pargs, 0); ok {
+					g.paths = append(g.paths, glyphPath{d: d, filled: cmdHasWord(pargs, "color")})
+				}
 			case "view-box":
 				for i := 0; i < 4; i++ {
 					if v, ok := argNumAt(pargs, i); ok {
@@ -124,7 +148,7 @@ func parseIcons(src string) (map[string]glyph, error) {
 				}
 			}
 		}
-		if item != "" && g.path != "" {
+		if item != "" && len(g.paths) > 0 {
 			glyphs[item] = g
 		}
 	}
@@ -180,6 +204,7 @@ func (c *conv) iconProps(f *File, m map[string]any, x pctx) []Prop {
 	name, _ := m["icon"].(string)
 	var ps []Prop
 	box, stroke := set.viewBox, set.stroke
+	fill, hasFill := "", false
 	if name != "" {
 		g, ok := set.glyphs[name]
 		if !ok {
@@ -187,11 +212,28 @@ func (c *conv) iconProps(f *File, m map[string]any, x pctx) []Prop {
 			return nil
 		}
 		box, stroke = g.viewBox, g.stroke
-		ps = append(ps, prop("path", strArg(g.path)),
-			prop("view-box", numArg(box[0]), numArg(box[1]), numArg(box[2]), numArg(box[3])))
+		fill, hasFill = c.paint(f, m["fill"], x.mode, nil)
+		width, hasWidth := iconStroke(box, stroke, m, x)
+		ps = append(ps, prop("view-box", numArg(box[0]), numArg(box[1]), numArg(box[2]), numArg(box[3])))
+		// The contour is stroked in the colour of the pen fill - lucide draws every icon with
+		// stroke=currentColor and no fill - and a filled detail takes that colour as a fill.
+		for _, gp := range g.paths {
+			if gp.filled {
+				if hasFill {
+					ps = append(ps, prop("path", strArg(gp.d)), prop("color", wordArg(fill)))
+				}
+				continue
+			}
+			ps = append(ps, prop("path", strArg(gp.d)))
+			if hasFill {
+				ps = append(ps, prop("border-color", wordArg(fill)))
+			}
+			if hasWidth {
+				ps = append(ps, prop("line-width", numArg(width)))
+			}
+		}
+		return ps
 	}
-	// The pen fill is the colour of the glyph: lucide draws every icon with stroke=currentColor and no
-	// fill, so the value goes to the stroke, as go/scene draws a path icon.
 	if fill, ok := c.paint(f, m["fill"], x.mode, nil); ok {
 		ps = append(ps, prop("border-color", wordArg(fill)))
 	}

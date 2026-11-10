@@ -54,7 +54,7 @@ func TestIconRefCarriesItsOwnGlyphAndSize(t *testing.T) {
 	out := res.Tenn(f)
 	plus, check := iconPath(t, "plus"), iconPath(t, "check")
 	for _, want := range []string{
-		"use UI___Icon___20 as Plus { path \"" + plus + "\"; view-box 0 0 24 24 }",
+		"use UI___Icon___20 as Plus { view-box 0 0 24 24; path \"" + plus + "\"",
 		`path "` + check + `"`,
 		"width 12; height 12", "line-width 1",
 	} {
@@ -145,7 +145,7 @@ func iconPath(t *testing.T, name string) string {
 	if !ok {
 		t.Fatalf("the icons library has no %s", name)
 	}
-	return g.path
+	return g.paths[0].d
 }
 
 // The glyphs are the items of the shipped libraries/icons.tenn, not a table of the binary: the file is
@@ -158,8 +158,12 @@ func TestIconsComeFromTheLibrary(t *testing.T) {
 	if len(set.glyphs) < 2000 {
 		t.Errorf("%d icons in the library, want the whole set", len(set.glyphs))
 	}
-	if g, ok := set.glyphs["zap"]; !ok || !strings.HasPrefix(g.path, "M") {
+	if g, ok := set.glyphs["zap"]; !ok || len(g.paths) == 0 || !strings.HasPrefix(g.paths[0].d, "M") {
 		t.Errorf("zap = %+v, %v; want a path of the library", g, ok)
+	}
+	// A glyph with a filled detail keeps it as a path of its own, and the contour stays stroked.
+	if g, ok := set.glyphs["tag"]; !ok || len(g.paths) != 2 || g.paths[0].filled || !g.paths[1].filled {
+		t.Errorf("tag = %+v, %v; want a contour and a filled dot", g, ok)
 	}
 	if set.viewBox != [4]float64{0, 0, 24, 24} || set.stroke != 2 {
 		t.Errorf("the set is drawn in %v with stroke %g, want 0 0 24 24 and 2", set.viewBox, set.stroke)

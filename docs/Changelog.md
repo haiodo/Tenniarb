@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* The icons of `libraries/icons.tenn` are the icons lucide draws: the ends and corners of their strokes are
+  `round`, which the set asks for `libraries/icons.tenn` in one line per icon, and the thirteen glyphs with a
+  filled detail (`tag`, `key-round`, `vault` and ten more) write that detail as a second path with a
+  `color`, since one path is either filled or stroked. A dot is a dot now, not a ring. The converter of
+  `.pen` takes both, so the designs that use those glyphs show them as designed.
 * `go/scene` reads the several `path` commands of an item and the `line-cap`/`line-join` of a stroke, as
   the web renderer does: a glyph of a shape library that draws a contour and a filled dot is two paths, and
   a library of outline icons asks for `round` ends and corners. The ink of a command is the whole ink of

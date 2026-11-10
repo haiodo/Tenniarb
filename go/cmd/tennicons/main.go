@@ -78,9 +78,10 @@ func defaultIcons() string {
 type table struct {
 	names   []string // icon names, sorted
 	paths   map[string]string
-	solid   map[string]bool // icons that fill a shape with the color instead of stroking it
-	viewBox [4]float64      // the view box every icon is drawn in
-	stroke  float64         // the stroke width of every icon, in the units of the view box
+	fills   map[string]string // the shapes the file fills, joined: a second path of the item
+	solid   map[string]bool   // icons that fill a shape with the color instead of stroking it
+	viewBox [4]float64        // the view box every icon is drawn in
+	stroke  float64           // the stroke width of every icon, in the units of the view box
 }
 
 // readVersion reads the version of the npm package the icons belong to; the folder is <pkg>/icons.
@@ -134,7 +135,7 @@ func readIcons(dir string) (*table, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w (see the comment at the top for the npm command)", dir, err)
 	}
-	t := &table{paths: map[string]string{}, solid: map[string]bool{}}
+	t := &table{paths: map[string]string{}, fills: map[string]string{}, solid: map[string]bool{}}
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".svg") {
 			continue
@@ -155,20 +156,33 @@ func readIcons(dir string) (*table, error) {
 			// needs a table that keeps them per icon.
 			return nil, fmt.Errorf("%s: view box %v and stroke %g, the set has %v and %g", e.Name(), vb, sw, t.viewBox, t.stroke)
 		}
-		parts, solid, err := iconParts(b)
+		parts, err := iconParts(b)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", e.Name(), err)
 		}
 		if len(parts) == 0 {
 			return nil, fmt.Errorf("%s: no shapes", e.Name())
 		}
-		d, err := joinParts(parts)
+		var stroked, filled []string
+		for _, pt := range parts {
+			if pt.filled {
+				filled = append(filled, pt.path)
+			} else {
+				stroked = append(stroked, pt.path)
+			}
+		}
+		d, err := joinParts(stroked)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", e.Name(), err)
 		}
 		t.names = append(t.names, name)
 		t.paths[name] = d
-		if solid {
+		if len(filled) > 0 {
+			f, err := joinParts(filled)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", e.Name(), err)
+			}
+			t.fills[name] = f
 			t.solid[name] = true
 		}
 	}
@@ -200,10 +214,17 @@ func iconFrame(b []byte) (vb [4]float64, stroke float64, err error) {
 
 // iconParts is every shape of one icon as path commands, in the order the file writes them, and
 // whether one of them is filled instead of stroked.
-func iconParts(b []byte) (parts []string, solid bool, err error) {
+// part is one shape of an icon and whether the file fills it instead of stroking it: lucide draws a
+// contour with strokes and the dot of a tag with a fill, and the two cannot share one path.
+type part struct {
+	path   string
+	filled bool
+}
+
+func iconParts(b []byte) (parts []part, err error) {
 	var root svg
 	if err := xml.Unmarshal(b, &root); err != nil {
-		return nil, false, fmt.Errorf("not an SVG: %w", err)
+		return nil, fmt.Errorf("not an SVG: %w", err)
 	}
 	var walk func(e *svg)
 	walk = func(e *svg) {
@@ -216,15 +237,16 @@ func iconParts(b []byte) (parts []string, solid bool, err error) {
 		case "title", "desc", "defs", "style", "metadata":
 			return
 		}
+		filled := false
 		if f := e.attr("fill"); f != "" && f != "none" && f != "transparent" {
-			solid = true
+			filled = true
 		}
 		if s := shapePath(e); s != "" {
-			parts = append(parts, s)
+			parts = append(parts, part{path: s, filled: filled})
 		}
 	}
 	walk(&root)
-	return parts, solid, nil
+	return parts, nil
 }
 
 // joinParts puts the shapes of an icon into one path. A shape written in its own <path> starts at the
@@ -232,6 +254,9 @@ func iconParts(b []byte) (parts []string, solid bool, err error) {
 // begins with a relative moveto has that moveto made absolute; the pairs after it stay relative. The
 // result is checked against the shapes: every point of the joined path must be a point of a shape.
 func joinParts(parts []string) (string, error) {
+	if len(parts) == 0 {
+		return "", nil // an icon of filled shapes only has no contour to stroke
+	}
 	abs := make([]string, len(parts))
 	for i, p := range parts {
 		a, err := absoluteStart(strings.TrimSpace(p))
@@ -467,9 +492,20 @@ func renderTenn(version string, t *table) ([]byte, error) {
 	sb.WriteString("// license: see ../LICENSES/lucide.txt.\n\n")
 	for _, name := range t.names {
 		fmt.Fprintf(&sb, "item %q {\n", name)
-		fmt.Fprintf(&sb, "\twidth %s; height %s; path %q\n", num(t.viewBox[2]), num(t.viewBox[3]), t.paths[name])
-		fmt.Fprintf(&sb, "\tview-box %s %s %s %s; border-color #000000; line-width %s\n",
-			num(t.viewBox[0]), num(t.viewBox[1]), num(t.viewBox[2]), num(t.viewBox[3]), num(t.stroke))
+		fmt.Fprintf(&sb, "\twidth %s; height %s\n", num(t.viewBox[2]), num(t.viewBox[3]))
+		fmt.Fprintf(&sb, "\tview-box %s %s %s %s\n",
+			num(t.viewBox[0]), num(t.viewBox[1]), num(t.viewBox[2]), num(t.viewBox[3]))
+		// The contour is stroked, in the ends and corners the set draws with; a filled detail is a second
+		// path of the same item, since one path is either filled or stroked.
+		if d := t.paths[name]; d != "" {
+			fmt.Fprintf(&sb, "\tpath %q border-color #000000 line-width %s\n", d, num(t.stroke))
+		}
+		if d := t.fills[name]; d != "" {
+			fmt.Fprintf(&sb, "\tpath %q color #000000\n", d)
+		}
+		if d := t.paths[name]; d != "" {
+			sb.WriteString("\tline-cap round; line-join round\n")
+		}
 		sb.WriteString("}\n")
 	}
 	return []byte(sb.String()), nil

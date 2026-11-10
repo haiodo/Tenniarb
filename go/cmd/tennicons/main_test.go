@@ -63,21 +63,21 @@ func TestShapeShapesBecomePaths(t *testing.T) {
 		{"polyline", `<svg><polyline points="1,2 3,4 5,6"/></svg>`, "M1 2 L3 4 L5 6"},
 		{"polygon", `<svg><polygon points="1 2 3 4 5 6"/></svg>`, "M1 2 L3 4 L5 6 Z"},
 	} {
-		parts, _, err := iconParts([]byte(tc.svg))
+		parts, err := iconParts([]byte(tc.svg))
 		if err != nil {
 			t.Errorf("%s: %v", tc.name, err)
 			continue
 		}
-		if got := strings.Join(parts, " "); got != tc.want {
+		if got := strings.Join(partPaths(parts), " "); got != tc.want {
 			t.Errorf("%s: got %q, want %q", tc.name, got, tc.want)
 		}
 	}
 	// A rounded rectangle is four arcs; the corners are inside the box.
-	parts, _, err := iconParts([]byte(`<svg><rect x="0" y="0" width="10" height="10" rx="2"/></svg>`))
+	parts, err := iconParts([]byte(`<svg><rect x="0" y="0" width="10" height="10" rx="2"/></svg>`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	d, err := joinParts(parts)
+	d, err := joinParts(partPaths(parts))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,19 +86,28 @@ func TestShapeShapesBecomePaths(t *testing.T) {
 	}
 }
 
-// A filled shape is marked, because one path is either filled or stroked and the converter counts the
-// difference instead of drawing a solid dot as an outline.
+// A filled shape is marked per part, because one path is either filled or stroked: the dot of a tag is a
+// path of its own, and the contour of the icon keeps the stroke.
 func TestFilledShapeIsMarked(t *testing.T) {
-	parts, solid, err := iconParts([]byte(`<svg><circle cx="4" cy="4" r="1" fill="currentColor"/><path d="M0 0h2"/></svg>`))
+	parts, err := iconParts([]byte(`<svg><circle cx="4" cy="4" r="1" fill="currentColor"/><path d="M0 0h2"/></svg>`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !solid || len(parts) != 2 {
-		t.Errorf("solid %v, parts %v", solid, parts)
+	if len(parts) != 2 {
+		t.Fatalf("parts %v", parts)
 	}
-	_, solid, err = iconParts([]byte(`<svg><path d="M0 0h2"/></svg>`))
-	if err != nil || solid {
-		t.Errorf("solid %v, err %v", solid, err)
+	filled := 0
+	for _, pt := range parts {
+		if pt.filled {
+			filled++
+		}
+	}
+	if filled != 1 {
+		t.Errorf("%d filled parts of %v, want one", filled, parts)
+	}
+	plain, err := iconParts([]byte(`<svg><path d="M0 0h2"/></svg>`))
+	if err != nil || len(plain) != 1 || plain[0].filled {
+		t.Errorf("plain %v, err %v", plain, err)
 	}
 }
 
@@ -138,7 +147,9 @@ func TestRenderTennWritesOneItemPerIcon(t *testing.T) {
 		`item "arrow-left" {`,
 		`item "zap" {`,
 		`path "M12 19L5 12 12 5"`,
-		"view-box 0 0 24 24; border-color #000000; line-width 2",
+		"view-box 0 0 24 24",
+		`path "M12 19L5 12 12 5" border-color #000000 line-width 2`,
+		"line-cap round; line-join round",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("the library has no %q:\n%s", want, text)
@@ -151,4 +162,13 @@ func TestRenderTennWritesOneItemPerIcon(t *testing.T) {
 	if _, p := tenn.Parse(text); p.Errors.HasErrors() {
 		t.Fatalf("the library does not parse: %v", p.Errors.Errors)
 	}
+}
+
+// partPaths is the d of every part, in order: the tests of the shapes care about the path, not the ink.
+func partPaths(parts []part) []string {
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		out = append(out, p.path)
+	}
+	return out
 }
