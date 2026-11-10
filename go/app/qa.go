@@ -359,7 +359,7 @@ func (v *Viewer) qaState() map[string]any {
 		}
 		out["selection"] = sel
 		var links []string
-		for _, i := range v.session.Scene().Items() {
+		for _, i := range v.session.Element().Items { // the ends of a link are of the model, not of a picture
 			if i.IsLink() && i.Source != nil && i.Target != nil {
 				links = append(links, i.Source.Name+" -> "+i.Target.Name)
 			}
@@ -374,7 +374,7 @@ func (v *Viewer) qaState() map[string]any {
 			}
 		}
 		out["items"] = items
-		out["itemCount"] = len(v.session.Scene().Items())
+		out["itemCount"] = len(v.session.Element().Items)
 		// screen: name -> [x, y, width, height] in view points, the place of the item in the window
 		screen := map[string][]float64{}
 		for name, b := range items {
