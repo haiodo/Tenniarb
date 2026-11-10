@@ -41,7 +41,11 @@ type sceneView struct {
 	band     *gfx.Rect
 	line     *[2]gfx.Point
 	dragBase map[*scene.Placed]gfx.Point
-	moved    bool // a drag put the drawn items somewhere the model has not written yet
+
+	// A link drawn in the scene with Ctrl held: the item it leaves and the one under the pointer.
+	lineFrom, lineTarget *scene.Placed
+	nodeOf               map[*scene.Placed]*scene.Node // the node of an item written in the element
+	moved                bool                          // a drag put the drawn items somewhere the model has not written yet
 
 	// what the gfx tree was built from; a cached view is reused only while all of it holds
 	tree *scene.Tree
@@ -236,7 +240,8 @@ func (sv *sceneView) bounds() {
 
 func newSceneView(el *model.Element, node *scene.Node) *sceneView {
 	return &sceneView{el: el, node: node, byNode: map[*scene.Node]*scene.Placed{},
-		byPath: map[string]*scene.Placed{}, pathOf: map[*scene.Placed]string{}, inst: map[*scene.Placed]instRef{}}
+		byPath: map[string]*scene.Placed{}, pathOf: map[*scene.Placed]string{}, inst: map[*scene.Placed]instRef{},
+		nodeOf: map[*scene.Placed]*scene.Node{}}
 }
 
 // index finds the items one can select: those written in the element, and inside an instance only what
@@ -256,7 +261,7 @@ func (sv *sceneView) add(k *scene.Placed) {
 	if p := NodePath(sv.node, k.Src); p != "" && (owner == nil || sv.written(owner) && under(k.Src, owner.Src)) {
 		if _, dup := sv.byNode[k.Src]; !dup {
 			sv.byNode[k.Src] = k
-			sv.byPath[p], sv.pathOf[k] = k, p
+			sv.byPath[p], sv.pathOf[k], sv.nodeOf[k] = k, p, k.Src
 		}
 		return
 	}
@@ -500,6 +505,11 @@ func (v *Viewer) sceneMode() bool { return v.sv != nil && !v.sv.classic }
 // of a classic diagram drawn by the scene.
 func (v *Viewer) canvasSelection() []string {
 	if v.sceneMode() {
+		if t := v.sv.lineTarget; t != nil {
+			if p, ok := v.sv.pathOf[t]; ok && !slices.Contains(v.selNodes, p) {
+				return append(slices.Clone(v.selNodes), p)
+			}
+		}
 		return v.selNodes
 	}
 	sel := map[*model.DiagramItem]bool{}
@@ -840,7 +850,7 @@ func (v *Viewer) drawSceneOverlay() {
 	v.syncMarks() // the marks sit on the nodes, so they move with the camera
 	pic := gfx.NewRecorder().Finish()
 	if v.sceneDrawn() {
-		pic = v.sv.selectionPicture(v.canvasSelection(), v.editingPath())
+		pic = v.sv.selectionPicture(v.canvasSelection(), v.greenPath())
 	}
 	if v.selHUD != nil || pic.Len() > 0 {
 		v.scene.Update(func(tx *gfx.Tx) {
@@ -911,6 +921,16 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		if hit != nil {
 			hit = sv.pick(hit, cur, p.Count)
 		}
+		// Ctrl draws a link, as Swift does: the line leaves the item under the pointer and the item it is
+		// released on is the other end.
+		if p.Mods.Ctrl && sv.linkable(hit) {
+			sv.lineFrom, sv.lineTarget = hit, nil
+			sv.line = &[2]gfx.Point{sv.contentToGfx(plCentre(hit)), sv.contentToGfx(at)}
+			v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
+			v.view.SetCursor(view.CursorCrosshair)
+			v.drawSceneOverlay()
+			return
+		}
 		switch {
 		case hit != nil && hit == cur && hit.Free && hit.Gfx != nil:
 			t := hit.Gfx.Transform()
@@ -937,6 +957,15 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			}
 			return
 		}
+		if sv.lineFrom != nil {
+			sv.line = &[2]gfx.Point{sv.contentToGfx(plCentre(sv.lineFrom)), sv.contentToGfx(at)}
+			sv.lineTarget = nil
+			if t := sv.hitScene(at); sv.linkable(t) && t != sv.lineFrom && t.Parent == sv.lineFrom.Parent {
+				sv.lineTarget = t
+			}
+			v.drawSceneOverlay()
+			return
+		}
 		if v.press.pan {
 			v.panView(p.Pos.X-v.press.pos.X, p.Pos.Y-v.press.pos.Y)
 			v.press.pos = p.Pos
@@ -959,6 +988,15 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		}
 		v.press = press{}
 		v.view.SetCursor(view.CursorArrow)
+		if from := sv.lineFrom; from != nil {
+			to := sv.lineTarget
+			sv.lineFrom, sv.lineTarget, sv.line = nil, nil, nil
+			v.drawSceneOverlay()
+			if p.Kind != view.PointerCancel && to != nil {
+				v.insertSceneLink(from, to)
+			}
+			return
+		}
 		d := sv.drag
 		sv.drag = sceneDrag{}
 		if d.pl == nil || !d.moved {
@@ -1256,4 +1294,69 @@ func (v *Viewer) zoomToSelection() {
 	c := gfx.Point{X: pl.X + pl.W/2 + v.sv.off.X, Y: pl.Y + pl.H/2 + v.sv.off.Y}
 	v.setCamera(CenterOn(gfx.Camera{Zoom: z}, c, float64(w), float64(h)))
 	v.drawSceneOverlay()
+}
+
+// plCentre is the middle of an item, in content coordinates.
+func plCentre(pl *scene.Placed) gfx.Point {
+	return gfx.Point{X: pl.X + pl.W/2, Y: pl.Y + pl.H/2}
+}
+
+// linkable reports whether a link can end at pl: only an item written in the element can, not a part of a
+// component and not the box of the element itself.
+func (sv *sceneView) linkable(pl *scene.Placed) bool {
+	if pl == nil || pl.W <= 0 || pl.H <= 0 {
+		return false
+	}
+	n := sv.nodeOf[pl]
+	return n != nil && n.Kind == scene.KItem
+}
+
+// contentToGfx puts a point of the content where the selection picture expects it, which is the gfx scene
+// and carries the offset of the padding.
+func (sv *sceneView) contentToGfx(p gfx.Point) gfx.Point {
+	return gfx.Point{X: p.X + sv.off.X, Y: p.Y + sv.off.Y}
+}
+
+// insertSceneLink writes a link from one item to the other, in the item that holds both of them: the file
+// takes `link A B`, and the indexes only when a name is written twice among the children of that item.
+func (v *Viewer) insertSceneLink(from, to *scene.Placed) {
+	sv := v.sv
+	a, b := sv.nodeOf[from], sv.nodeOf[to]
+	if a == nil || b == nil || a.Parent == nil || a.Parent != b.Parent {
+		return
+	}
+	owner := a.Parent
+	cmd := CommandText("link", a.Name, b.Name)
+	if i, j, ok := linkIndexes(owner, a, b); ok {
+		cmd += " { " + CommandText("source-index", strconv.Itoa(i)) + "; " +
+			CommandText("target-index", strconv.Itoa(j)) + " }"
+	}
+	v.insertAndSelect(owner, cmd, cmd)
+}
+
+// linkIndexes are the indexes a link carries when a name is written more than once among the children of
+// owner: the place of a and of b among the children of that name. False when both names are unique there.
+func linkIndexes(owner, a, b *scene.Node) (int, int, bool) {
+	same := func(name string) []*scene.Node {
+		var out []*scene.Node
+		for _, c := range owner.Content {
+			if c.Kind == scene.KItem && c.Key == name {
+				out = append(out, c)
+			}
+		}
+		return out
+	}
+	as, bs := same(a.Key), same(b.Key)
+	if len(as) < 2 && len(bs) < 2 {
+		return 0, 0, false
+	}
+	return slices.Index(as, a), slices.Index(bs, b), true
+}
+
+// greenPath is the frame drawn green: the item of the text being edited, or the item a link is dropped on.
+func (v *Viewer) greenPath() string {
+	if v.sv != nil && v.sv.lineTarget != nil {
+		return v.sv.pathOf[v.sv.lineTarget]
+	}
+	return v.editingPath()
 }

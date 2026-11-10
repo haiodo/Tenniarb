@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Ctrl and a drag of an item onto another item of a scene draws a link between them, as it always did in a
+  classic diagram: the line follows the pointer, the item under it is framed green, and the drop writes
+  `link A B` in the item that holds both. The line takes the style of the element, so a document whose lines
+  are arrows gets an arrow. Two items of the same name get `source-index` and `target-index`, as the format
+  asks.
 * A message about a title with spaces shows the line to write instead of an example: a file that writes
   `title Gap and padding` used to be told `title "Sign in"`, which reads as if that were the value in it, and
   the file was told `title "Gap and padding"` would be right only by the shape of the sentence.
