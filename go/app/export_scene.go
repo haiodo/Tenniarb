@@ -12,7 +12,6 @@ import (
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -30,8 +29,8 @@ func (v *Viewer) exportScene(e *model.Element) (*gfx.Scene, *scene.Screen, error
 		path := strings.Join(PathOf(e), ".")
 		vals = classic.Hook(v.stree, v.root, v.rel(), path, classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
 			func(text string, fontSize float64) model.DrawableSize {
-				sz := render.MeasureTextSize(render.Options{Measurer: gfx.DefaultMeasurer}, text, fontSize)
-				return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+				w, h := scene.MeasureText(gfx.DefaultMeasurer, text, fontSize)
+				return model.DrawableSize{Width: w, Height: h}
 			}))
 	}
 	sc := gfx.NewScene()

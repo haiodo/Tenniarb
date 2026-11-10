@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The application speaks the geometry of `go/geometry` and measures the text of a classic diagram with the
+  engine that draws it: what it still takes from `go/render` is a padding constant, the options of a session
+  no window builds and a comment.
 * A document opened in the window no longer builds a second engine: the session takes its boxes from the
   canvas, and the readout of an item's style (its colour, size, line width) comes from the model and the
   drawn box. What the old renderer is still asked for is nothing of the diagram on screen.

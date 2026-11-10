@@ -15,6 +15,7 @@ import (
 	"github.com/haiodo/tenniarb/go/classic"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/exec"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
@@ -221,8 +222,8 @@ func (v *Viewer) classicContext(e *model.Element) model.IExecutionContext {
 	path := strings.Join(PathOf(e), ".")
 	return classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
 		func(text string, fontSize float64) model.DrawableSize {
-			sz := render.MeasureTextSize(render.Options{Measurer: gfx.DefaultMeasurer}, text, fontSize)
-			return model.DrawableSize{Width: sz.Width, Height: sz.Height}
+			w, h := scene.MeasureText(gfx.DefaultMeasurer, text, fontSize)
+			return model.DrawableSize{Width: w, Height: h}
 		})(e)
 }
 
@@ -517,7 +518,7 @@ func (v *Viewer) drawnLinkRect(it *model.DiagramItem) (gfx.Rect, bool) {
 
 // drawnCovers is editor.Options.Covers of a classic diagram: the session's boxes come from go/render and
 // the picture from go/scene, so a press where nothing is drawn must not grab the item.
-func (v *Viewer) drawnCovers(r render.Rect, it *model.DiagramItem) bool {
+func (v *Viewer) drawnCovers(r geometry.Rect, it *model.DiagramItem) bool {
 	if v.sv == nil || !v.sv.classic {
 		return true
 	}
@@ -601,7 +602,7 @@ func (v *Viewer) linePreview() (gfx.Point, gfx.Point, bool) {
 		return gfx.Point{}, gfx.Point{}, false
 	}
 	mid := gfx.Point{X: from.Min.X + from.W()/2, Y: from.Min.Y + from.H()/2}
-	end := v.smap.ToGfx(render.Point{X: v.dragAt.X, Y: v.dragAt.Y})
+	end := v.smap.ToGfx(geometry.Point{X: v.dragAt.X, Y: v.dragAt.Y})
 	var target gfx.Rect
 	if t := v.session.LineTarget(); t != nil {
 		if r, ok := v.drawnRect(t); ok {
@@ -656,7 +657,7 @@ func crossSegments(a, b, c, d gfx.Point) (gfx.Point, bool) {
 // dragPreview moves the drawn items of a classic diagram by the pointer from to to, both in session
 // coordinates: every item lands where the drop rounds its position, so the picture under the pointer is
 // where the commit writes it.
-func (v *Viewer) dragPreview(from, to render.Point, tx *gfx.Tx) {
+func (v *Viewer) dragPreview(from, to geometry.Point, tx *gfx.Tx) {
 	sv := v.sv
 	if sv.dragBase == nil {
 		// The drawn place of an item moves with the pointer, so the start is kept once per press.

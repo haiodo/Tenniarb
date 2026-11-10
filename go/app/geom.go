@@ -8,8 +8,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // canvasGeom is editor.Geom over the scene the canvas drew: the session asks where an item is and the
@@ -42,19 +42,19 @@ func (g canvasGeom) Items() []*model.DiagramItem {
 }
 
 // Box is the drawn frame of the item in the coordinates of the editor scene, the shadow left out.
-func (g canvasGeom) Box(it *model.DiagramItem) (render.Rect, bool) {
+func (g canvasGeom) Box(it *model.DiagramItem) (geometry.Rect, bool) {
 	b, ok := g.v.drawnRect(it)
 	if !ok {
-		return render.Rect{}, false
+		return geometry.Rect{}, false
 	}
 	return g.v.smap.RectToScene(b), true
 }
 
 // PaintBox is the same box: the scene draws the frame, and the shadow of an item is not a separate box.
-func (g canvasGeom) PaintBox(it *model.DiagramItem) (render.Rect, bool) { return g.Box(it) }
+func (g canvasGeom) PaintBox(it *model.DiagramItem) (geometry.Rect, bool) { return g.Box(it) }
 
 // LabelBox is where the text of the item lies: the label of a link sits in the same box.
-func (g canvasGeom) LabelBox(it *model.DiagramItem) (render.Rect, bool) { return g.Box(it) }
+func (g canvasGeom) LabelBox(it *model.DiagramItem) (geometry.Rect, bool) { return g.Box(it) }
 
 // FontSize is the size the item draws its text with.
 func (g canvasGeom) FontSize(it *model.DiagramItem) float64 {
@@ -71,7 +71,7 @@ func (g canvasGeom) FontSize(it *model.DiagramItem) float64 {
 func (g canvasGeom) Selectable(it *model.DiagramItem) bool { return it != nil }
 
 // Find is the items under p, the boxes of an item before the lines of a link.
-func (g canvasGeom) Find(p render.Point, over bool) []*model.DiagramItem {
+func (g canvasGeom) Find(p geometry.Point, over bool) []*model.DiagramItem {
 	var boxes, lines []*model.DiagramItem
 	for _, it := range g.Items() {
 		if it.IsLink() {
@@ -91,7 +91,7 @@ func (g canvasGeom) Find(p render.Point, over bool) []*model.DiagramItem {
 }
 
 // HitLine reports whether p is on the line of a link: the segment between the middles of its two ends.
-func (g canvasGeom) HitLine(it *model.DiagramItem, p render.Point) bool {
+func (g canvasGeom) HitLine(it *model.DiagramItem, p geometry.Point) bool {
 	if it == nil || !it.IsLink() || it.Source == nil || it.Target == nil {
 		return false
 	}
@@ -104,16 +104,16 @@ func (g canvasGeom) HitLine(it *model.DiagramItem, p render.Point) bool {
 }
 
 // centre is the middle of the drawn box of an item, in the coordinates of the editor scene.
-func (g canvasGeom) centre(it *model.DiagramItem) (render.Point, bool) {
+func (g canvasGeom) centre(it *model.DiagramItem) (geometry.Point, bool) {
 	b, ok := g.Box(it)
 	if !ok {
-		return render.Point{}, false
+		return geometry.Point{}, false
 	}
-	return render.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}, true
+	return geometry.Point{X: b.X + b.Width/2, Y: b.Y + b.Height/2}, true
 }
 
 // distanceToSegment is how far p lies from the segment a-b.
-func distanceToSegment(p, a, b render.Point) float64 {
+func distanceToSegment(p, a, b geometry.Point) float64 {
 	dx, dy := b.X-a.X, b.Y-a.Y
 	if dx == 0 && dy == 0 {
 		return math.Hypot(p.X-a.X, p.Y-a.Y)
@@ -125,7 +125,7 @@ func distanceToSegment(p, a, b render.Point) float64 {
 
 // Move puts the drawn boxes of the items where a drag takes them, in the coordinates of the editor scene,
 // and answers the items that moved.
-func (g canvasGeom) Move(positions map[*model.DiagramItem]render.Point) []*model.DiagramItem {
+func (g canvasGeom) Move(positions map[*model.DiagramItem]geometry.Point) []*model.DiagramItem {
 	v := g.v
 	if v.sv == nil {
 		return nil
@@ -143,7 +143,7 @@ func (g canvasGeom) Move(positions map[*model.DiagramItem]render.Point) []*model
 			}
 			// Scene coordinates are y up and the drawn box is the top left in y down: the frame of the
 			// layout takes the corner the box keeps, without the offset of the canvas.
-			gfxBox := v.smap.RectToGfx(render.Rect{X: pos.X, Y: pos.Y, Width: b.Width, Height: b.Height})
+			gfxBox := v.smap.RectToGfx(geometry.Rect{X: pos.X, Y: pos.Y, Width: b.Width, Height: b.Height})
 			if v.sv.screen.MoveItem(tx, pl, gfxBox.Min.X-v.sv.off.X, gfxBox.Min.Y-v.sv.off.Y) {
 				moved = append(moved, it)
 			}
@@ -154,13 +154,13 @@ func (g canvasGeom) Move(positions map[*model.DiagramItem]render.Point) []*model
 }
 
 // Grid is the step the canvas snaps to: the grid of the element, or five points as the classic one had.
-func (g canvasGeom) Grid() render.Point {
+func (g canvasGeom) Grid() geometry.Point {
 	if g.v != nil && g.v.state.Current != nil {
 		if n, ok := propNum(g.v.state.Current, "grid"); ok && n > 0 {
-			return render.Point{X: n, Y: n}
+			return geometry.Point{X: n, Y: n}
 		}
 	}
-	return render.Point{X: 5, Y: 5}
+	return geometry.Point{X: 5, Y: 5}
 }
 
 // propNum is the first argument of a numeric property of an item or of an element.
@@ -197,10 +197,10 @@ func propNum(t any, name string) (float64, bool) {
 }
 
 // Bounds is the extent of the diagram the canvas draws, in the coordinates of the editor scene.
-func (g canvasGeom) Bounds() render.Rect {
+func (g canvasGeom) Bounds() geometry.Rect {
 	if g.v == nil || g.v.sv == nil {
-		return render.Rect{}
+		return geometry.Rect{}
 	}
 	g.v.sv.bounds()
-	return render.Rect{Width: g.v.sv.w, Height: g.v.sv.h}
+	return geometry.Rect{Width: g.v.sv.w, Height: g.v.sv.h}
 }

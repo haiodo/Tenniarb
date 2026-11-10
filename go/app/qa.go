@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"math"
 	"os"
 	"slices"
@@ -13,7 +14,6 @@ import (
 	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/swt"
 
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/update"
 )
@@ -381,7 +381,7 @@ func (v *Viewer) qaState() map[string]any {
 		// screen: name -> [x, y, width, height] in view points, the place of the item in the window
 		screen := map[string][]float64{}
 		for name, b := range items {
-			r := v.smap.RectToGfx(render.Rect{X: b[0], Y: b[1], Width: b[2], Height: b[3]})
+			r := v.smap.RectToGfx(geometry.Rect{X: b[0], Y: b[1], Width: b[2], Height: b[3]})
 			screen[name] = []float64{(r.Min.X - cam.Origin.X) * cam.Zoom, (r.Min.Y - cam.Origin.Y) * cam.Zoom, r.W() * cam.Zoom, r.H() * cam.Zoom}
 		}
 		out["screen"] = screen

@@ -15,9 +15,9 @@ import (
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/comments"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/link"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 	"github.com/haiodo/tenniarb/go/servicewire"
 )
 
@@ -663,4 +663,4 @@ func (v *Viewer) jumpToComment(id string) {
 	})
 }
 
-func renderPoint(p comments.Point) render.Point { return render.Point{X: p.X, Y: p.Y} }
+func renderPoint(p comments.Point) geometry.Point { return geometry.Point{X: p.X, Y: p.Y} }

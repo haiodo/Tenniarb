@@ -22,6 +22,7 @@ import (
 
 	"github.com/haiodo/tenniarb/go/diff"
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/palette"
 	"github.com/haiodo/tenniarb/go/render"
@@ -83,7 +84,7 @@ type Viewer struct {
 	animOff    bool          // the playback is paused by the scrub of the inspector
 
 	press      press
-	dragAt     render.Point // the pointer of the move in flight, in session coordinates, for the classic drag preview
+	dragAt     geometry.Point // the pointer of the move in flight, in session coordinates, for the classic drag preview
 	inline     *view.Editor
 	inlineMode editor.EditMode
 	activeText *swt.Text // a text field of the window that has the keyboard: clipboard commands go to it
@@ -103,7 +104,7 @@ type Viewer struct {
 	undoItem, redoItem *g.MenuItem
 	canvasMenu         *g.Menu
 	menuOverride       []editor.Entry // entries for the next opening of the canvas menu
-	rightClick         render.Point   // where the canvas menu was asked for
+	rightClick         geometry.Point // where the canvas menu was asked for
 	recentMenu         *g.Menu
 	autoQuick          bool // show the quick style panel after a click on an item
 
@@ -728,12 +729,12 @@ func (v *Viewer) resetZoom() {
 }
 
 // visibleScene is the part of the editor scene the canvas shows now.
-func (v *Viewer) visibleScene() render.Rect {
+func (v *Viewer) visibleScene() geometry.Rect {
 	w, h := v.view.Canvas().Size()
 	cam := v.view.Compositor().Camera()
 	a := v.smap.ToScene(ViewToScene(cam, gfx.Point{}))
 	b := v.smap.ToScene(ViewToScene(cam, gfx.Point{X: float64(w), Y: float64(h)}))
-	return render.Rect{X: a.X, Y: b.Y, Width: b.X - a.X, Height: a.Y - b.Y}
+	return geometry.Rect{X: a.X, Y: b.Y, Width: b.X - a.X, Height: a.Y - b.Y}
 }
 
 // outlineKeys is Swift's keyDown of the outline: Tab adds an item to the canvas and moves the focus there.

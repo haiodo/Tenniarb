@@ -8,8 +8,8 @@ import (
 	"github.com/haiodo/gowt/gfx/view"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/render"
 )
 
 // overlayZ keeps the selection node above every drawable.
@@ -20,9 +20,9 @@ type press struct {
 	active bool
 	pan    bool // the window pans: the session refused the press, or the middle button
 	cam    gfx.Camera
-	pos    gfx.Point    // view point of the last event
-	from   gfx.Point    // view point of the press
-	scene  render.Point // the press in the session coordinates, for the classic drag preview
+	pos    gfx.Point      // view point of the last event
+	from   gfx.Point      // view point of the press
+	scene  geometry.Point // the press in the session coordinates, for the classic drag preview
 }
 
 // realize puts the element on the canvas through go/scene and draws the selection over it.
@@ -152,7 +152,7 @@ func (v *Viewer) onPointer(p *view.Pointer) {
 		ev.Cancel = p.Kind == view.PointerCancel
 		pressed := v.press
 		v.press = press{}
-		v.dragAt = render.Point{} // the preview is over; the commit rebuilds the scene
+		v.dragAt = geometry.Point{} // the preview is over; the commit rebuilds the scene
 		v.view.SetCursor(view.CursorArrow)
 		if v.session != nil {
 			v.session.MouseUp(ev)
