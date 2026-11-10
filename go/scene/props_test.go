@@ -224,9 +224,11 @@ func TestPaddingInsetsLeafText(t *testing.T) {
 }
 
 // A bare title with spaces is several arguments in a scene; a classic diagram drops them, as go/render did.
+// The message shows the line to write, not an example: a file that writes `title Gap and padding` has to
+// read `title "Gap and padding"` back, and a canned example made it look like the value in the file.
 func TestTitleWithSpacesRejected(t *testing.T) {
-	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { auto-layout column; title Sign in } }`)
-	if err == nil || !strings.Contains(err.Error(), `title takes one value; quote a text with spaces: title "Sign in"`) {
+	_, err := scene.LoadSource(t.TempDir(), "a.tenn", `element "E" { item A { auto-layout column; title Gap and padding } }`)
+	if err == nil || !strings.Contains(err.Error(), `title takes one value; quote a text with spaces: title "Gap and padding"`) {
 		t.Fatalf("error %v", err)
 	}
 	if !strings.Contains(err.Error(), "a.tenn:1:44") {

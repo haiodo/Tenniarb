@@ -675,6 +675,18 @@ func (p *prep) leaf(rn *RNode, n *layout.Node, inCtx bool) {
 	}
 }
 
+// quotedTitle is the title as the file should write it: every argument in one quoted text, so a message
+// about a title with spaces shows the line to write instead of an example that looks like the value.
+func quotedTitle(pr *Prop) string {
+	words := make([]string, 0, len(pr.Args))
+	for i := range pr.Args {
+		if t, ok := pr.text(i); ok && t != "" {
+			words = append(words, t)
+		}
+	}
+	return `title "` + strings.Join(words, " ") + `"`
+}
+
 // evalText is the text of a title with the ${...} written in it replaced by its value. A classic diagram
 // asks the element model for the whole title, the way go/render and Swift evaluated it; a scene asks the
 // expression engine about each piece and keeps the text as written where an expression has no value.
@@ -718,7 +730,7 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 		// A bare text with spaces is several arguments, and only the first would be drawn: name the
 		// mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
 		if len(pr.Args) > 1 && !p.classic {
-			p.t.fail(pr.Pos, `title takes one value; quote a text with spaces: title "Sign in"`)
+			p.t.fail(pr.Pos, "title takes one value; quote a text with spaces: %s", quotedTitle(pr))
 		}
 	}
 	if m := p.styles[rn].marker; m != "" {

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* A message about a title with spaces shows the line to write instead of an example: a file that writes
+  `title Gap and padding` used to be told `title "Sign in"`, which reads as if that were the value in it, and
+  the file was told `title "Gap and padding"` would be right only by the shape of the sentence.
 * The inspector keeps its width when the selection changes: `Fit` sized its content to the natural width of
   the widest row, the pane took that as the width it wanted (about 390 points instead of 272) and the window
   cut the right of every field - the third segment of `Fixed | Hug | Fill` and the `Y`/`H` of a pair were

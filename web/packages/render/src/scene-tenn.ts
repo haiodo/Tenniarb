@@ -4563,7 +4563,12 @@ function textOf(prep: Prep, rn: RNode, inCtx: boolean): TextInfo | null {
     title = propText(p, 0);
     // A bare text with spaces is several arguments, and only the first would be drawn.
     if (p.args.length > 1) {
-      prep.diag.fail(p.pos ?? rn.src ?? { line: 0, col: 0 }, `title takes one value; quote a text with spaces: title "Sign in"`);
+      // The message shows the line to write, not an example that looks like the value in the file.
+      const words = p.args.map((_, i) => propText(p, i)).filter((w) => w !== "");
+      prep.diag.fail(
+        p.pos ?? rn.src ?? { line: 0, col: 0 },
+        `title takes one value; quote a text with spaces: title "${words.join(" ")}"`,
+      );
     }
   }
   const marker = prep.looks.get(rn)?.marker ?? "";
