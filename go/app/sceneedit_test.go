@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -68,11 +69,11 @@ func TestStubRoundTrip(t *testing.T) {
 			if got := merge(t, text, path, OwnText(text, n)); got != text {
 				t.Errorf("%s:\n%s", path, got)
 			}
-			for _, k := range sceneKids(n) {
+			for _, k := range editor.SceneKids(n) {
 				walk(NodePath(tree, k))
 			}
 		}
-		for _, k := range sceneKids(tree) {
+		for _, k := range editor.SceneKids(tree) {
 			walk(NodePath(tree, k))
 		}
 	}
@@ -137,7 +138,7 @@ func TestStubMergeDeletedAll(t *testing.T) {
 			t.Errorf("lost %q:\n%s", kid, got)
 		}
 	}
-	if n := len(sceneKids(nodeOf(t, got, "Page"))); n != 4 {
+	if n := len(editor.SceneKids(nodeOf(t, got, "Page"))); n != 4 {
 		t.Errorf("%d kids:\n%s", n, got)
 	}
 }

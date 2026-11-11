@@ -9,6 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -122,7 +123,7 @@ func (d *docCore) checkRename() error {
 // planNode takes the references to n for the plan; the name is checked against the siblings first.
 func (d *docCore) planNode(p *renamePlan, n *scene.Node) error {
 	p.node = n
-	if key := scene.NormalizeName(p.name); key != n.Key && (keyTaken(n, key) || slices.ContainsFunc(sceneKids(n.Parent), func(c *scene.Node) bool { return c != n && c.Key == key })) {
+	if key := scene.NormalizeName(p.name); key != n.Key && (keyTaken(n, key) || slices.ContainsFunc(editor.SceneKids(n.Parent), func(c *scene.Node) bool { return c != n && c.Key == key })) {
 		return fmt.Errorf("There is something named %q here already.", p.name)
 	}
 	p.own = fileEdit{n.Pos.File, TextEdit{n.NameArg.Start, n.NameArg.End, argText(p.name)}}

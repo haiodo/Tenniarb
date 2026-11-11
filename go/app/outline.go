@@ -99,7 +99,7 @@ func (v *Viewer) hasContent(e *model.Element) bool {
 		return false
 	}
 	n := v.elementNode(e)
-	return n != nil && len(sceneKids(n)) > 0
+	return n != nil && len(editor.SceneKids(n)) > 0
 }
 
 // hiddenMounts are the mounted elements the outline does not show: a file keeps the row of its first

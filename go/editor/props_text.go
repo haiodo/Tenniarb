@@ -1,9 +1,8 @@
-package app
+package editor
 
 import (
 	"slices"
 
-	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 )
 
@@ -11,7 +10,7 @@ import (
 // does; the editor package counts bytes.
 type PropSpan struct {
 	Start, Length int
-	Class         editor.HighlightClass
+	Class         HighlightClass
 	// Error marks a parse error instead of a token class.
 	Error bool
 }
@@ -38,11 +37,11 @@ func runeIndex(text string) func(byteOff int) int {
 func PropSpans(text string) []PropSpan {
 	idx := runeIndex(text)
 	var out []PropSpan
-	for _, r := range editor.HighlightRanges(text) {
+	for _, r := range HighlightRanges(text) {
 		out = append(out, PropSpan{Start: idx(r.From), Length: idx(r.To) - idx(r.From), Class: r.Class})
 	}
 	slices.SortStableFunc(out, func(a, b PropSpan) int { return a.Start - b.Start })
-	for _, d := range editor.ParseDiagnostics(text) {
+	for _, d := range ParseDiagnostics(text) {
 		out = append(out, PropSpan{Start: idx(d.From), Length: idx(d.To) - idx(d.From), Error: true})
 	}
 	return out

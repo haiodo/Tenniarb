@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -53,7 +54,7 @@ func GroupEdit(text string, items []GroupItem, name string) (e TextEdit, at int,
 	}
 	b.WriteString("\n" + ind + "}")
 	// What lies between the wrapped items stays in the parent, after the group.
-	for _, k := range sceneKids(parent) {
+	for _, k := range editor.SceneKids(parent) {
 		if k.Range.Start < first.Range.Start || k.Range.End > last.Range.End || inside[k] {
 			continue
 		}
@@ -68,7 +69,7 @@ func UngroupEdit(text string, n *scene.Node) (e TextEdit, at int, ok bool) {
 	if n == nil || n.Kind != scene.KItem {
 		return TextEdit{}, 0, false
 	}
-	kids := sceneKids(n)
+	kids := editor.SceneKids(n)
 	if len(kids) == 0 {
 		return TextEdit{}, 0, false
 	}
@@ -135,7 +136,7 @@ func (v *Viewer) ungroupSelection() {
 		return
 	}
 	n, pl := v.selectedScene()
-	if n == nil || pl == nil || n.Kind != scene.KItem || len(sceneKids(n)) == 0 || pl.Inst || v.inInstance() {
+	if n == nil || pl == nil || n.Kind != scene.KItem || len(editor.SceneKids(n)) == 0 || pl.Inst || v.inInstance() {
 		v.setBanner("Select an item with items inside it to ungroup.")
 		return
 	}

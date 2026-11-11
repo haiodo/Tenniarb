@@ -104,7 +104,7 @@ func TestNodePathRoundTrip(t *testing.T) {
 		count := 0
 		var each func(el, n *scene.Node)
 		each = func(el, n *scene.Node) {
-			for _, k := range sceneKids(n) {
+			for _, k := range editor.SceneKids(n) {
 				p := NodePath(el, k)
 				if got := NodeAt(el, p); got != k {
 					t.Errorf("%s: %q gives %v", f, p, got)

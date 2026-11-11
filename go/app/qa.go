@@ -14,6 +14,7 @@ import (
 	"github.com/haiodo/gowt/qa"
 	"github.com/haiodo/gowt/swt"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/update"
 )
@@ -432,7 +433,7 @@ func (v *Viewer) qaScene() map[string]qaNode {
 			w * cam.Zoom, h * cam.Zoom}
 	}
 	for p, pl := range v.sv.byPath {
-		out[p] = qaNode{box(pl.X, pl.Y, pl.W, pl.H), pl.Src.Kind.String(), len(sceneKids(pl.Src))}
+		out[p] = qaNode{box(pl.X, pl.Y, pl.W, pl.H), pl.Src.Kind.String(), len(editor.SceneKids(pl.Src))}
 	}
 	if !v.sceneMode() && v.sv.screen != nil && v.sv.node != nil {
 		for _, c := range v.sv.node.Content {

@@ -8,6 +8,7 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 )
 
@@ -49,13 +50,13 @@ func (v *Viewer) dropElement() {
 	}
 	x, y := v.dropAt[0], v.dropAt[1]
 	n, _ := v.tree.CellAt(x, y)
-	zone := DropInto
+	zone := editor.DropInto
 	if n != nil {
 		b := n.Unwrap().GetBounds()
-		zone = ZoneAt(y, int(b.Y), int(b.Height))
+		zone = editor.ZoneAt(y, int(b.Y), int(b.Height))
 	}
 	root := &v.state.Doc.Model.Element
-	if parent, index, ok := DropPlace(root, dragged, elementOf(n), zone); ok {
+	if parent, index, ok := editor.DropPlace(root, dragged, elementOf(n), zone); ok {
 		v.session.MoveElement(dragged, parent, index)
 	}
 }

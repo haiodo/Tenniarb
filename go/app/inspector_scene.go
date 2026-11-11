@@ -115,7 +115,7 @@ func (in *inspector) sceneSections() g.Option {
 		case scene.KSlot:
 			return "Slot"
 		case scene.KItem:
-			if len(sceneKids(n)) > 0 {
+			if len(editor.SceneKids(n)) > 0 {
 				return "Frame"
 			}
 		}
@@ -929,7 +929,7 @@ func (v *Viewer) applySceneCode(key, text string) {
 }
 
 func nodeStartingAt(n *scene.Node, start int) *scene.Node {
-	for _, k := range sceneKids(n) {
+	for _, k := range editor.SceneKids(n) {
 		if k.Range.Start == start {
 			return k
 		}

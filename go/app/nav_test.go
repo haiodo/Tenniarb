@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
 )
@@ -109,8 +110,8 @@ func TestDuplicateEdit(t *testing.T) {
 	if cp == nil || cp.Name != "Home 3" || !strings.Contains(got, `item "Home 3" { pos 500 0; width 100`) {
 		t.Fatalf("copy %v at %d:\n%s", cp, starts, got)
 	}
-	if NodePath(after.File("a.tenn"), cp) != "Home_3" || len(sceneKids(cp)) != 3 {
-		t.Errorf("copy path %q, %d kids", NodePath(after.File("a.tenn"), cp), len(sceneKids(cp)))
+	if NodePath(after.File("a.tenn"), cp) != "Home_3" || len(editor.SceneKids(cp)) != 3 {
+		t.Errorf("copy path %q, %d kids", NodePath(after.File("a.tenn"), cp), len(editor.SceneKids(cp)))
 	}
 
 	// nested: in the same parent, no pos; two at once are one edit
@@ -120,7 +121,7 @@ func TestDuplicateEdit(t *testing.T) {
 	after = loadText(t, dir, got)
 	h := NodeAt(after.File("a.tenn"), "Home")
 	var names []string
-	for _, k := range sceneKids(h) {
+	for _, k := range editor.SceneKids(h) {
 		names = append(names, k.Name)
 	}
 	if !slices.Equal(names, []string{"Title", "Title 2", "Row", "Row 2", "Row"}) || len(starts) != 3 {

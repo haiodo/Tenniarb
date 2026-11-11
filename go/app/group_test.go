@@ -3,6 +3,7 @@ package app
 import (
 	"testing"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
@@ -63,8 +64,8 @@ func TestGroupEdit(t *testing.T) {
 	}
 	text := groupDoc[:e.Start] + e.New + groupDoc[e.End:]
 	_, el2 := parseGroupDoc(t, text)
-	if len(sceneKids(el2)) != 2 {
-		t.Fatalf("the element holds %d nodes:\n%s", len(sceneKids(el2)), text)
+	if len(editor.SceneKids(el2)) != 2 {
+		t.Fatalf("the element holds %d nodes:\n%s", len(editor.SceneKids(el2)), text)
 	}
 	g := nodeIn(t, el2, "Group")
 	if x, y := posIn(t, g); x != 10 || y != 10 {

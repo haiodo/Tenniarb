@@ -188,22 +188,22 @@ func TestHiddenImageDataIsNoTrap(t *testing.T) {
 		"item X { title %{@(p.png|100)} }",
 	}
 	for _, text := range cases {
-		hidden := hideImageData(text)
-		if back := restoreImageData(hidden, text); back != text {
+		hidden := editor.HideImageData(text)
+		if back := editor.RestoreImageData(hidden, text); back != text {
 			t.Errorf("hide and restore of %q gave %q", text, back)
 		}
-		if again := hideImageData(hidden); again != hidden {
+		if again := editor.HideImageData(hidden); again != hidden {
 			t.Errorf("hiding hid a stub again: %q -> %q", hidden, again)
 		}
 	}
 	// a stub whose digest was retyped pairs by name and order when the numbers agree
 	stub := "item X { image \"p.png\" @(image data 2.0 KB, hidden 0badf00d) }"
-	if got, want := restoreImageData(stub, "item X { image \"p.png\" @(AAAA) }"), "item X { image \"p.png\" @(AAAA) }"; got != want {
+	if got, want := editor.RestoreImageData(stub, "item X { image \"p.png\" @(AAAA) }"), "item X { image \"p.png\" @(AAAA) }"; got != want {
 		t.Errorf("a stub of the same name did not pair: %q", got)
 	}
 	// but it does not take a picture of another name
 	stranger := "item X { image \"q.png\" @(image data 2.0 KB, hidden 0badf00d) }"
-	if got := restoreImageData(stranger, "item X { image \"p.png\" @(AAAA) }"); got != stranger {
+	if got := editor.RestoreImageData(stranger, "item X { image \"p.png\" @(AAAA) }"); got != stranger {
 		t.Errorf("a stub found a stranger's data: %q", got)
 	}
 }
@@ -287,11 +287,11 @@ func TestFixtureImageLine(t *testing.T) {
 		t.Fatal(err)
 	}
 	full := itemProps(t, string(raw), "Main Window")
-	hiddenProps := hideImageData(full)
+	hiddenProps := editor.HideImageData(full)
 	if len(hiddenProps) > 400 || base64Run(hiddenProps) > 200 {
 		t.Fatalf("the fixture props still hold data (%d bytes):\n%s", len(hiddenProps), hiddenProps)
 	}
-	if back := restoreImageData(hiddenProps, full); back != full {
+	if back := editor.RestoreImageData(hiddenProps, full); back != full {
 		t.Fatal("the fixture props round trip lost the data")
 	}
 	t.Logf("fixture props: %d bytes -> %d bytes", len(full), len(hiddenProps))
@@ -321,11 +321,11 @@ func TestRealImageLine(t *testing.T) {
 	}
 	it := model.ParseTenn(ast).Elements[0].Items[0]
 	full := tenn.ToStr(model.ItemToTennAsProps(it, tenn.KindStatements, false), 0, false)
-	hidden := hideImageData(full)
+	hidden := editor.HideImageData(full)
 	if strings.Contains(hidden, line[strings.Index(line, "@(")+2:]) {
 		t.Fatal("the props text still holds the data")
 	}
-	if back := restoreImageData(hidden, full); back != full {
+	if back := editor.RestoreImageData(hidden, full); back != full {
 		t.Fatal("the props text round trip lost the data")
 	}
 	t.Logf("classic props: %d bytes -> %d bytes", len(full), len(hidden))
@@ -380,12 +380,12 @@ func TestClassicPropsImageEditUndo(t *testing.T) {
 	item := v.session.Root().Elements[0].Items[0]
 	target := editor.Target{Item: item}
 	full := v.session.PropsText(target)
-	hidden := hideImageData(full)
+	hidden := editor.HideImageData(full)
 	if len(hidden) > 300 || strings.Contains(hidden, data) {
 		t.Fatalf("the props text still holds the data (%d bytes):\n%s", len(hidden), hidden)
 	}
 	edited := strings.Replace(hidden, "title Hi", "title Yo", 1)
-	if !v.session.ApplyProps(target, restoreImageData(edited, full)) {
+	if !v.session.ApplyProps(target, editor.RestoreImageData(edited, full)) {
 		t.Fatal("the props edit was refused")
 	}
 	if !strings.Contains(v.text, data) || !strings.Contains(v.text, "title Yo") || !v.isDirty() {

@@ -26,13 +26,13 @@ const valueMinX = 250
 // props is the properties panel: the text of the selected item, or of the element when nothing is
 // selected, edited in place.
 type props struct {
-	text    *g.StyledTextView
-	target  editor.Target // what the text on screen belongs to
-	changes int           // counts edits; a timer applies only the last one
-	applied int           // the edit the last timer applied: the user is typing while changes differs
-	loading bool          // the text is being set by code
-	applying bool         // the session is applying the text of the pane: its redraw is the echo of it
-	want    string        // the text the code last put in: a draft that does not parse stays until this changes
+	text     *g.StyledTextView
+	target   editor.Target // what the text on screen belongs to
+	changes  int           // counts edits; a timer applies only the last one
+	applied  int           // the edit the last timer applied: the user is typing while changes differs
+	loading  bool          // the text is being set by code
+	applying bool          // the session is applying the text of the pane: its redraw is the echo of it
+	want     string        // the text the code last put in: a draft that does not parse stays until this changes
 	// menuSelection is the selection before the code context menu opened.
 	menuSelection *swt.Point
 	// values are the evaluated expressions by 0-based line, drawn at the line ends.
@@ -113,8 +113,8 @@ func (v *Viewer) applyProps(target editor.Target, text string) {
 	}
 	if len(editor.ParseDiagnostics(text)) == 0 && propsOnly(text) {
 		// The pane shows a stub in place of the data of a classic image: the document gets it whole.
-		if v.propsApply(target, restoreImageData(text, v.session.PropsText(target))) {
-			v.props.want = hideImageData(v.session.PropsText(target))
+		if v.propsApply(target, editor.RestoreImageData(text, v.session.PropsText(target))) {
+			v.props.want = editor.HideImageData(v.session.PropsText(target))
 		}
 	}
 }
@@ -154,7 +154,7 @@ func (v *Viewer) refreshProps() {
 	}
 	v.props.sceneKey = ""
 	target := v.session.PropsTarget()
-	want := hideImageData(v.session.PropsText(target))
+	want := editor.HideImageData(v.session.PropsText(target))
 	if propsKeepDraft(v.propsFocused(), target == v.props.target, v.props.applying, want, v.props.want) {
 		return
 	}
@@ -205,7 +205,7 @@ func (v *Viewer) styleProps(text string) {
 		mode = "dark"
 	}
 	red := g.RGB{R: 220, G: 40, B: 40}
-	for _, s := range PropSpans(text) {
+	for _, s := range editor.PropSpans(text) {
 		style := g.TextStyle{Foreground: &red, Underline: true}
 		if !s.Error {
 			c, ok := parseHex(editor.Colors[mode][s.Class])

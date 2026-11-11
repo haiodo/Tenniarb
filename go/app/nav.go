@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -42,7 +43,7 @@ func SceneRows(n *scene.Node, prefix string) []ItemRow {
 }
 
 func sceneRows(n *scene.Node, prefix string) ([]ItemRow, []*scene.Node) {
-	kids := sceneKids(n)
+	kids := editor.SceneKids(n)
 	out := make([]ItemRow, 0, len(kids))
 	seen := map[string]int{}
 	for _, k := range kids {
@@ -55,7 +56,7 @@ func sceneRows(n *scene.Node, prefix string) ([]ItemRow, []*scene.Node) {
 			seg = prefix + "." + seg
 		}
 		out = append(out, ItemRow{Label: nodeLabel(k), Kind: k.Kind.String(), Path: seg,
-			Kids: len(sceneKids(k)) > 0, Component: k.Type == scene.TypeComponent || len(k.Params) > 0})
+			Kids: len(editor.SceneKids(k)) > 0, Component: k.Type == scene.TypeComponent || len(k.Params) > 0})
 	}
 	return out, kids
 }

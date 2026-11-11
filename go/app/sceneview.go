@@ -310,7 +310,7 @@ func (sv *sceneView) instRows(pl *scene.Placed) []ItemRow {
 		if !ok {
 			continue
 		}
-		kids := len(k.Kids) > 0 || sv.written(k) && len(sceneKids(k.Src)) > 0
+		kids := len(k.Kids) > 0 || sv.written(k) && len(editor.SceneKids(k.Src)) > 0
 		out = append(out, ItemRow{Label: nodeLabel(k.Src), Kind: k.Src.Kind.String(), Path: p, Kids: kids})
 	}
 	return out

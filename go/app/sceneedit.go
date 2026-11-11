@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
 )
@@ -440,7 +441,7 @@ func MoveNodeEdit(text string, n *scene.Node, delta int) (e TextEdit, at int, ok
 	if n == nil || n.Parent == nil {
 		return TextEdit{}, 0, false
 	}
-	sibs := sceneKids(n.Parent)
+	sibs := editor.SceneKids(n.Parent)
 	i := slices.Index(sibs, n)
 	j := i + delta
 	if i < 0 || j < 0 || j >= len(sibs) {
@@ -467,7 +468,7 @@ func MoveNodeIntoEdit(text string, n *scene.Node, delta int) (e TextEdit, at int
 	if n == nil || n.Parent == nil || delta == 0 {
 		return TextEdit{}, 0, false
 	}
-	sibs := sceneKids(n.Parent)
+	sibs := editor.SceneKids(n.Parent)
 	i := slices.Index(sibs, n)
 	j := i + delta
 	if i < 0 || j < 0 || j >= len(sibs) {
@@ -554,12 +555,12 @@ func OwnText(text string, n *scene.Node) string {
 	}
 	var b strings.Builder
 	at := n.Range.Start
-	for _, k := range sceneKids(n) {
+	for _, k := range editor.SceneKids(n) {
 		if k.Range.Start < at || k.Range.End > n.Range.End {
 			continue
 		}
 		b.WriteString(text[at:k.Range.Start])
-		if len(sceneKids(k)) == 0 {
+		if len(editor.SceneKids(k)) == 0 {
 			b.WriteString(text[k.Range.Start:k.Range.End])
 		} else {
 			b.WriteString(kidHead(text, k))
@@ -567,7 +568,7 @@ func OwnText(text string, n *scene.Node) string {
 		at = k.Range.End
 	}
 	b.WriteString(text[at:n.Range.End])
-	return hideImageData(dedent(b.String(), indentAt(text, n.Range.Start)))
+	return editor.HideImageData(dedent(b.String(), indentAt(text, n.Range.Start)))
 }
 
 // Stub is a kid command of the Code section text that stands for a kid of the node: a command of the
@@ -640,7 +641,7 @@ func findStubs(n *scene.Node, code string) ([]Stub, *tenn.Node) {
 	if p.Errors.HasErrors() || len(ast.Children) == 0 || ast.Children[0].Token == nil {
 		return nil, nil
 	}
-	root, kids := ast.Children[0], sceneKids(n)
+	root, kids := ast.Children[0], editor.SceneKids(n)
 	type name struct {
 		kind scene.Kind
 		key  string
@@ -710,9 +711,9 @@ func ReplaceOwnEdit(text string, n *scene.Node, panel string) TextEdit {
 	code := strings.TrimRight(panel, "\n")
 	if n.Range.Start >= 0 && n.Range.Start <= n.Range.End && n.Range.End <= len(text) {
 		// The pane shows a stub in place of the data of a classic image: the document gets it whole.
-		code = restoreImageData(code, text[n.Range.Start:n.Range.End])
+		code = editor.RestoreImageData(code, text[n.Range.Start:n.Range.End])
 	}
-	kids := sceneKids(n)
+	kids := editor.SceneKids(n)
 	stubs, root := findStubs(n, code)
 	if root == nil || len(kids) == 0 {
 		return ReplaceNodeEdit(text, n, code)

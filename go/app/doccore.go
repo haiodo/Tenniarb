@@ -403,23 +403,6 @@ func splitIndex(seg string) (string, int) {
 	return seg, 0
 }
 
-// sceneKids are the nodes a node path goes through under n: the items and uses of an element, the
-// items, uses and slots of an item, everything a use passes in its block. Links have no name to go by.
-func sceneKids(n *scene.Node) []*scene.Node {
-	var out []*scene.Node
-	for _, c := range n.Content {
-		switch c.Kind {
-		case scene.KItem, scene.KUse:
-			out = append(out, c)
-		case scene.KSlot:
-			if n.Kind == scene.KItem {
-				out = append(out, c)
-			}
-		}
-	}
-	return out
-}
-
 // nodeSeg is the segment of n among the kids of its parent: its key, with "#n" for the n-th repeat.
 func nodeSeg(kids []*scene.Node, n *scene.Node) string {
 	k := 0
@@ -450,7 +433,7 @@ func NodePath(el, n *scene.Node) string {
 		if c == nil || c.Parent == nil {
 			return ""
 		}
-		segs = append(segs, nodeSeg(sceneKids(c.Parent), c))
+		segs = append(segs, nodeSeg(editor.SceneKids(c.Parent), c))
 	}
 	slices.Reverse(segs)
 	return strings.Join(segs, ".")
@@ -469,7 +452,7 @@ func NodeAt(el *scene.Node, path string) *scene.Node {
 	for _, seg := range segs {
 		var next *scene.Node
 		if seg.Quoted {
-			for _, c := range sceneKids(cur) {
+			for _, c := range editor.SceneKids(cur) {
 				if seg.Matches(c) {
 					next = c
 					break
@@ -477,7 +460,7 @@ func NodeAt(el *scene.Node, path string) *scene.Node {
 			}
 		} else {
 			key, k := splitIndex(seg.Name)
-			for _, c := range sceneKids(cur) {
+			for _, c := range editor.SceneKids(cur) {
 				if c.Key == key {
 					if k == 0 {
 						next = c
@@ -502,7 +485,7 @@ func nodeAtKeys(el *scene.Node, path string) *scene.Node {
 	for _, seg := range strings.Split(path, ".") {
 		key, k := splitIndex(seg)
 		var next *scene.Node
-		for _, c := range sceneKids(cur) {
+		for _, c := range editor.SceneKids(cur) {
 			if c.Key == key {
 				if k == 0 {
 					next = c

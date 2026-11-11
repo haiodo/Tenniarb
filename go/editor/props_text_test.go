@@ -1,4 +1,4 @@
-package app
+package editor
 
 import (
 	"strings"
@@ -55,7 +55,7 @@ func TestZoneAt(t *testing.T) {
 }
 
 func TestDropPlace(t *testing.T) {
-	m := ParseText("element \"A\" {\n element \"A1\" {}\n element \"A2\" {}\n}\nelement \"B\" {}\nelement \"C\" {}\n").Model
+	m := model.ReadTenn("element \"A\" {\n element \"A1\" {}\n element \"A2\" {}\n}\nelement \"B\" {}\nelement \"C\" {}\n")
 	root := &m.Element
 	a, b, c := m.Elements[0], m.Elements[1], m.Elements[2]
 	a1 := a.Elements[0]

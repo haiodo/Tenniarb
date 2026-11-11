@@ -1,4 +1,4 @@
-package app
+package editor
 
 import (
 	"fmt"
@@ -24,11 +24,11 @@ type imageLit struct {
 	data       string
 }
 
-// hideImageData replaces the base64 of every classic inline image of text by a short stub, so the
+// HideImageData replaces the base64 of every classic inline image of text by a short stub, so the
 // Code section shows that a picture of so many bytes is there and does not hold it. An image from a
 // file has no data and stays. A text that does not parse is left as typed, so a draft is never
 // mangled.
-func hideImageData(text string) string {
+func HideImageData(text string) string {
 	if !strings.Contains(text, "image") || !strings.Contains(text, "@(") {
 		return text // no image command, no literal: the common case does not parse
 	}
@@ -58,11 +58,11 @@ func hideImageData(text string) string {
 	return b.String()
 }
 
-// restoreImageData puts the data of the inline images of src back in place of the stubs of text, so
+// RestoreImageData puts the data of the inline images of src back in place of the stubs of text, so
 // a thing the Code section hid is written to the document whole. A stub that finds neither its data
 // nor a picture of its name is left as typed: the text of the pane is the user's, and it stays
 // visible instead of silently taking a neighbour's data.
-func restoreImageData(text, src string) string {
+func RestoreImageData(text, src string) string {
 	if !strings.Contains(text, imageDataMark) {
 		return text
 	}
