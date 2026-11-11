@@ -88,6 +88,43 @@ func TestWriteLeavesOnlyTheDocument(t *testing.T) {
 	}
 }
 
+// A stroke the file cannot draw as pen draws it is counted, and one that comes out the same is not: a
+// width the same on all four sides is a plain border, zero width and a colour of no alpha draw nothing,
+// and a path is stroked along its geometry, where pen centers the stroke too.
+func TestStrokesThatComeOutTheSame(t *testing.T) {
+	res, dir := convert(t, "strokes")
+	f := fileNamed(res, "strokes")
+	wantFidelity(t, f, dir)
+	out := res.Tenn(f)
+	for _, want := range []string{
+		`item Uniform { width 40; height 12; color #ffffff; border-color #ff0000; line-width 2 }`,
+		`item Zero { width 40; height 12; color #ffffff; border-color #0000ff; line-width 0 }`,
+		`item NoWidth { width 40; height 12; color #ffffff; border-color #0000ff; line-width 0 }`,
+		`path "M0 0L40 12"; view-box 0 0 40 12; color #ffffff; border-color #ff0000; line-width 2`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("no %q in\n%s", want, out)
+		}
+	}
+	want := map[string]int{
+		"per-side stroke width (a 1 point border on all four sides is drawn)": 1,
+		"stroke alignment center (.tenn draws the stroke inside the box)":     3,
+		"stroke alignment outer (.tenn draws the stroke inside the box)":      1,
+	}
+	found := 0
+	for k, n := range want {
+		if f.Unsupported[k] != n {
+			t.Errorf("%q is counted %d times, want %d", k, f.Unsupported[k], n)
+		}
+		if n > 0 {
+			found++
+		}
+	}
+	if len(f.Unsupported) != found {
+		t.Errorf("more is counted than the strokes that are lost: %v", f.Unsupported)
+	}
+}
+
 // A pen fill that is a picture is the picture of the box: .tenn has an image on an item and no paint that
 // is one, so the fill becomes `image ... fit`. A fill mode the format does not know keeps a warning.
 func TestFillImageBecomesTheImageOfTheItem(t *testing.T) {
@@ -107,4 +144,3 @@ func TestFillImageBecomesTheImageOfTheItem(t *testing.T) {
 		t.Errorf("the unknown fill mode is not reported: %v", f.Unsupported)
 	}
 }
-

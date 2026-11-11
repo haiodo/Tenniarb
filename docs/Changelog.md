@@ -17,8 +17,8 @@
   (`themes` plus `theme` on a node or an instance) becomes `context <axis> <value>`, and a variable the file
   writes per theme becomes `${ctx.<axis> === "v" ? "..." : "..."}`, so every instance keeps the colors of its
   own theme; a fill image becomes `image "<url>" fit cover|contain|fill`, the picture of the box. The warnings
-  that stay say what is lost: the stroke is drawn inside the box, a per-side stroke width is drawn as a 1 point
-  border on all four sides, and a shader fill names the `.glsl` file it would need.
+  that stay say what is lost: the stroke is drawn inside the box, per-side widths that differ are drawn as a
+  1 point border on all four sides, and a shader fill names the `.glsl` file it would need.
 
 * A library mounted by scheme (`--from-file "tenniarb-library://icons"`) is read-only: its text comes from
   the application folder or an installed copy, so an edit of its content is refused with a message instead

@@ -252,6 +252,24 @@ func padArgs(v any) []Arg {
 	return nil
 }
 
+// perSideWidth is the width a per-side pen stroke gives each of the four sides, a side the file leaves out
+// counting as 0: that width when it is the same on every side (0 for none), and false when the sides differ
+// or one is not a number.
+func perSideWidth(m map[string]any) (w float64, same bool) {
+	for i, k := range [...]string{"top", "right", "bottom", "left"} {
+		v, has := m[k]
+		n, ok := v.(float64)
+		if has && !ok {
+			return 0, false
+		}
+		if i > 0 && n != w {
+			return 0, false
+		}
+		w = n
+	}
+	return w, true
+}
+
 func alignWord(f *File, key string, v any) (string, bool) {
 	switch v {
 	case "center", "end":
@@ -424,16 +442,22 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	if grad != nil {
 		fillArgs = grad
 	}
-	sw, _ := m["strokeWidth"].(float64)
-	if _, perSide := m["strokeWidth"].(map[string]any); perSide {
-		// .tenn draws a border on all four sides of the box or none, so the sides the file leaves out get
-		// a line too
-		f.unsup("per-side stroke width (a 1 point border on all four sides is drawn)")
+	sw, hasWidth := m["strokeWidth"].(float64)
+	if sides, perSide := m["strokeWidth"].(map[string]any); perSide {
+		if w, same := perSideWidth(sides); same {
+			sw, hasWidth = w, true // the same width on every side is a plain border
+		} else {
+			// .tenn draws a border on all four sides of the box or none, so the sides the file leaves out
+			// get a line too
+			f.unsup("per-side stroke width (a 1 point border on all four sides is drawn)")
+		}
 	}
-	if hasStroke && sw == 0 {
+	if hasStroke && !hasWidth {
 		sw = 1
 	}
-	if hasStroke {
+	// A colour of no alpha draws nothing, and a path is stroked along its geometry, centered as pen draws it:
+	// neither loses the alignment.
+	if hasStroke && sw > 0 && typ != "path" && (len(stroke) != 9 || stroke[7:] != "00") {
 		// .tenn draws the stroke inside the box; pen puts it on the edge, so half of a centered stroke and
 		// all of an outer one move into the box
 		al := toStr(m["strokeAlignment"])
