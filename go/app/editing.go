@@ -86,6 +86,17 @@ func (v *Viewer) onChange() {
 	v.sh.publish(DocEvent{Path: v.state.Doc.Path, Kind: EventChange, Version: v.version})
 }
 
+// showStoreError puts a refusal of the store in the banner. An edit of a built-in library was refused by
+// mountWritable, which left the reason in libErr: "edit the source file" is not the advice there.
+func (v *Viewer) showStoreError(err error) {
+	if v.libErr != nil {
+		v.setBanner(v.libErr.Error())
+		v.libErr = nil
+		return
+	}
+	v.setBanner(err.Error())
+}
+
 func (v *Viewer) sceneEvent(p *view.Pointer, at gfx.Point) editor.MouseEvent {
 	return editor.MouseEvent{P: v.smap.ToScene(at), Mods: ModsOf(p.Mods), Clicks: p.Count}
 }

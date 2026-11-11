@@ -602,6 +602,12 @@ func (l *loader) mountFile(n *Node, rel string) {
 // reserved path: a document file of the same name never stands in for it.
 const libraryMountDir = ".tenniarb-library"
 
+// IsLibraryMount reports whether file, a path below the workspace root, is where a library named by a
+// scheme is mounted: its text comes from the overlay, not from a file the workspace holds.
+func IsLibraryMount(file string) bool {
+	return file == libraryMountDir || strings.HasPrefix(file, libraryMountDir+"/")
+}
+
 // mountLibrary reads the library of a tenniarb-library:// path and puts its text into the overlay. It
 // returns the relative path to mount it under, ok false when the name is bad or the library is missing.
 func (l *loader) mountLibrary(scheme string, pos Pos) (string, bool) {

@@ -141,6 +141,24 @@ func (f Finder) dirs() []string {
 	return out
 }
 
+// Contains reports whether path is a file of one of the folders: a library the application ships or has
+// installed, which a document reads but does not write.
+func (f Finder) Contains(path string) bool {
+	if path == "" {
+		return false
+	}
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+	for _, dir := range f.dirs() {
+		if rel, err := filepath.Rel(dir, abs); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return true
+		}
+	}
+	return false
+}
+
 // Resolve finds the file of p, an absolute path, or an error that names what was looked for and where.
 func (f Finder) Resolve(p Path) (string, error) {
 	if err := p.valid(); err != nil {

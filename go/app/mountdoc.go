@@ -102,8 +102,19 @@ func (d *docCore) adoptMounts(ms []model.Mounted) {
 	d.mounts = next
 }
 
-// mountWritable: the mounting element shows a file this document can write.
-func (d *docCore) mountWritable(m *model.Element) bool { return d.mounts[m] != nil }
+// mountWritable: the mounting element shows a file this document can write. A library mounted by scheme
+// is not one: its text comes from the application folder, not from the workspace.
+func (d *docCore) mountWritable(m *model.Element) bool {
+	md := d.mounts[m]
+	if md == nil {
+		return false
+	}
+	if scene.IsLibraryMount(md.file) {
+		d.libErr = errLibraryReadOnly(md.file)
+		return false
+	}
+	return true
+}
 
 // mountEdited runs after a classic edit, undo or redo inside m: the text of its file follows the
 // elements. The edited element is not read again from that text.
@@ -186,6 +197,9 @@ func (d *docCore) applyFileText(file string, start, end int, repl string) error 
 
 // applyLibText is applyFileText of a mounted file the caller knows to be part of the document.
 func (d *docCore) applyLibText(file string, start, end int, repl string) error {
+	if scene.IsLibraryMount(file) {
+		return errLibraryReadOnly(file)
+	}
 	cur := d.libText(file)
 	if start < 0 || end < start || end > len(cur) {
 		return fmt.Errorf("range %d..%d is outside the text of %d bytes", start, end, len(cur))

@@ -115,3 +115,19 @@ func TestFinderNoDuplicateDirs(t *testing.T) {
 		t.Fatalf("Resolve = %q, %v; want %q", got, err, want)
 	}
 }
+
+// Contains tells a file of a library folder from a file of the workspace, including the folders that
+// sit beside it.
+func TestFinderContains(t *testing.T) {
+	root := t.TempDir()
+	lib := touchLib(t, root, "haiodo/c4.tenn")
+	f := Finder{Shipped: []string{root}}
+	if !f.Contains(lib) {
+		t.Errorf("Contains(%q) = false", lib)
+	}
+	for _, p := range []string{filepath.Join(root, "..", "main.tenn"), filepath.Join(t.TempDir(), "c4.tenn"), ""} {
+		if f.Contains(p) {
+			t.Errorf("Contains(%q) = true", p)
+		}
+	}
+}

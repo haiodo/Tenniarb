@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* A library mounted by scheme (`--from-file "tenniarb-library://icons"`) is read-only: its text comes from
+  the application folder or an installed copy, so an edit of its content is refused with a message instead
+  of landing in a `.tenniarb-library` file of the workspace that the next load ignores. A library file
+  opened as a document reads and pans, its window says why, and Save writes nothing; whether a file of the
+  document can be written is one answer, not a check repeated in each menu handler.
 * A scene has a context: `context <key> <value>` on an item, an element, a file or in the block of a `use`
   passes a value down the subtree, `context <key> ?= <value>` is its default, and an expression reads it as
   `ctx.<key>` - the way a theme or a radius is set once for a frame instead of being passed as a parameter

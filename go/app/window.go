@@ -622,7 +622,7 @@ func (v *Viewer) startSession() {
 		OnElement:     v.onElement,
 		OnEdit:        v.onEdit,
 		OnOperation:   v.showOperation,
-		OnError:       func(err error) { v.setBanner(err.Error()) },
+		OnError:       v.showStoreError,
 		// The picture has the last word on what a press finds: the canvas knows what it drew there.
 		Covers: v.drawnCovers,
 		// The session asks the canvas where the items are: one engine draws and answers for the diagram.

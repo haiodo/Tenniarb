@@ -88,6 +88,9 @@ func (v *Viewer) writeTo(path string) bool {
 }
 
 func (v *Viewer) writeFile(path string) error {
+	if v.libraryFile(path) {
+		return errLibraryReadOnly(path)
+	}
 	text := v.text
 	data := []byte(text)
 	if IsCanvas(path) {
@@ -106,6 +109,10 @@ func (v *Viewer) writeFile(path string) error {
 	if r := WorkspaceRoot(path); r != v.root || path != oldPath {
 		v.root = r
 		v.loadScene()
+	}
+	v.builtin = v.libraryFile(path)
+	if v.session != nil {
+		v.session.SetReadonly(v.builtin)
 	}
 	v.tracker.Saved(text)
 	v.conflict = false

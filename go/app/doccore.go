@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/haiodo/tenniarb/go/editor"
+	tennlib "github.com/haiodo/tenniarb/go/library"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
 	"github.com/haiodo/tenniarb/go/tenn"
@@ -44,6 +45,7 @@ type docCore struct {
 	entry    string      // the entry document the file is loaded in the context of, "" when alone
 	libs     map[string]Stamp
 	selNodes []string // selected scene nodes of the current element, by node path
+	builtin  bool     // the document is a file of a library the app ships or has installed: read-only
 
 	// Mounted files (mountdoc.go): the text held for each by relative path, the mounting elements, the
 	// ones edited since the tree was read, and the error of the last write to a window that has the file.
@@ -100,6 +102,24 @@ func (d *docCore) rel() string {
 	return filepath.ToSlash(r)
 }
 
+// libraryFile reports whether path is a file of a library the application ships or has installed: the
+// text lives outside the workspace, so a write here lands nowhere the next load reads. The folder a
+// scheme mounts under is not the workspace's either.
+func (d *docCore) libraryFile(path string) bool {
+	if path == "" {
+		return false
+	}
+	if rel, err := filepath.Rel(d.root, path); err == nil && scene.IsLibraryMount(filepath.ToSlash(rel)) {
+		return true
+	}
+	return tennlib.Default(d.root).Contains(path)
+}
+
+// errLibraryReadOnly is the refusal of an edit or a save of a built-in library.
+func errLibraryReadOnly(file string) error {
+	return fmt.Errorf("%s is a library of Tenniarb, not a file of the workspace: read-only", filepath.Base(file))
+}
+
 // adopt takes the text of a document that was just read into a new session. A diagram document keeps
 // the text of the session, as before: the file is written by the Swift printer from the first edit on.
 func (d *docCore) adopt(raw string) {
@@ -117,7 +137,9 @@ func (d *docCore) adopt(raw string) {
 	d.tracker = NewTracker(d.text)
 	d.version++
 	d.session.Store().MountWritable, d.session.Store().OnMountEdit = d.mountWritable, d.mountEdited
+	d.builtin = d.libraryFile(d.state.Doc.Path)
 	d.loadScene()
+	d.session.SetReadonly(d.builtin)
 	debug.FreeOSMemory() // the parse of a big document leaves garbage the runtime would hold for a while
 }
 
@@ -309,6 +331,9 @@ func sceneErrors(es scene.Errors) string {
 func (d *docCore) bannerText() string {
 	if d.state.Error != "" {
 		return d.state.Error
+	}
+	if d.builtin {
+		return errLibraryReadOnly(d.state.Doc.Path).Error()
 	}
 	return d.sceneErr
 }
@@ -502,6 +527,9 @@ var ErrStale = errors.New("the document changed since that version")
 func (d *docCore) applyText(start, end int, repl string) error {
 	if d.session == nil {
 		return errors.New("no document")
+	}
+	if d.builtin {
+		return errLibraryReadOnly(d.state.Doc.Path)
 	}
 	if start < 0 || end < start || end > len(d.text) {
 		return fmt.Errorf("range %d..%d is outside the text of %d bytes", start, end, len(d.text))
