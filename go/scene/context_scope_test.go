@@ -2,6 +2,8 @@ package scene_test
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -125,4 +127,65 @@ func contextClassicBuild(t *testing.T, src string, valu func(scene.ClassicRef, s
 		t.Fatal(err)
 	}
 	return screen, out.String()
+}
+
+// TestContextFileRootDefault: a `?=` on the root of the file a component is written in travels with it to
+// another file, and the place of the insertion still wins (spec 5f).
+func TestContextFileRootDefault(t *testing.T) {
+	tree := contextTwoFiles(t, `context tone ?= light
+item Chip { width 20; height 10; title ${ctx.tone} }
+`, `element "lib" --from-file "lib.tenn"
+element "Screen" {
+  item Plain { use lib.Chip as plain }
+  item Dark { context tone dark; use lib.Chip as dark }
+}`)
+	screen, _ := paramsBuild(t, tree, "Screen")
+	m := boxMap(screen)
+	if l := m["Plain.plain"].Lines; len(l) != 1 || l[0] != "light" {
+		t.Errorf("Plain title %v, want the ?= default of the component file", l)
+	}
+	if l := m["Dark.dark"].Lines; len(l) != 1 || l[0] != "dark" {
+		t.Errorf("Dark title %v, want the place of the insertion", l)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}
+
+// TestContextFileRootHardStaysInFile: a declaration without `?=` on the root of a file binds the content of
+// that file, not the component used in another one: the key is missing, which is a diagnostic (spec 5f).
+func TestContextFileRootHardStaysInFile(t *testing.T) {
+	tree := contextTwoFiles(t, `context tone dark
+item Chip { width 20; height 10; title ${ctx.tone} }
+`, `element "lib" --from-file "lib.tenn"
+element "Screen" { item Plain { use lib.Chip as plain } }`)
+	screen, _ := paramsBuild(t, tree, "Screen")
+	if l := boxMap(screen)["Plain.plain"].Lines; len(l) == 1 && l[0] == "dark" {
+		t.Errorf("Plain title %v: a hard declaration on the file root crossed into another file", l)
+	}
+	reported := false
+	for _, w := range screen.Warnings {
+		if strings.Contains(w.Msg, "is not evaluated") {
+			reported = true
+		}
+	}
+	if !reported {
+		t.Errorf("warnings %v, want the missing ctx.tone reported", screen.Warnings)
+	}
+}
+
+// contextTwoFiles writes lib and main into one folder and loads main, which mounts lib as an element.
+func contextTwoFiles(t *testing.T, lib, main string) *scene.Tree {
+	t.Helper()
+	root := t.TempDir()
+	for name, text := range map[string]string{"lib.tenn": lib, "main.tenn": main} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tree, err := scene.Load(root, "main.tenn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tree
 }

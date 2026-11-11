@@ -34,9 +34,10 @@
   through every component and every `use`. The place of insertion, the definition of the component and the
   block of the use apply in that order, a nearer declaration wins, and the values cross `use` and the content
   of a slot. `go/scene`, `go/exec` and the web renderer read it; the parity fixture `context` draws the three
-  layers and the slot, so a divergence is a picture that differs. A `ctx.<key>` that nothing set, and any
-  expression that comes out `undefined` or `NaN` (`${digits[0]}`), is now a diagnostic with the position of
-  the node instead of that word in the picture.
+  layers and the slot, so a divergence is a picture that differs; a `?=` on the root of the file a component is
+  written in travels with it to another file, while a hard declaration stays in its own file. A `ctx.<key>` that
+  nothing set, and any expression that comes out `undefined` or `NaN` (`${digits[0]}`), is now a diagnostic with
+  the position of the node instead of that word in the picture.
 * `design` writes a node into a block without taking the closing brace of the parent with it: `insert` and
   `set` of a new property put the command on a line of its own, so the next `delete` of a sibling no longer
   fails with `Wrong statements terminator` on a file whose `validate` was clean. `insert` takes the root of

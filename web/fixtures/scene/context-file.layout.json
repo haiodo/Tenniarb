@@ -1,0 +1,168 @@
+{
+  "element": "Screen",
+  "height": 140,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Screen",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 140,
+        "w": 188,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": "#f6f7fb",
+      "gradient": null,
+      "name": "canvas",
+      "opacity": 1,
+      "path": "canvas",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 140,
+        "w": 188,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Default",
+      "opacity": 1,
+      "path": "canvas.Default",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 140,
+        "x": 24,
+        "y": 24
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#e4e7ee",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#eef1f7",
+      "gradient": null,
+      "name": "light",
+      "opacity": 1,
+      "path": "canvas.Default.light",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 140,
+        "x": 24,
+        "y": 24
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "box light"
+      ],
+      "textColor": "#3c4149"
+    },
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Dark",
+      "opacity": 1,
+      "path": "canvas.Dark",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 40,
+        "w": 140,
+        "x": 24,
+        "y": 76
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff1a",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#131925",
+      "gradient": null,
+      "name": "dark",
+      "opacity": 1,
+      "path": "canvas.Dark.dark",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 40,
+        "w": 140,
+        "x": 24,
+        "y": 76
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "box dark"
+      ],
+      "textColor": "#c1c9d6"
+    }
+  ],
+  "width": 188
+}

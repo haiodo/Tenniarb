@@ -1,0 +1,15 @@
+// The root of the file a component is written in holds its defaults (spec 5f): a `?=` here travels with
+// Chip to the file that uses it, a hard declaration would stay inside this one.
+context tone ?= light
+
+item Chip {
+    width 140
+    height 40
+    corner-radius 8
+    title "box ${ctx.tone}"
+    font-size 13
+    color ${ctx.tone === "dark" ? "#131925" : "#eef1f7"}
+    border-color ${ctx.tone === "dark" ? "#ffffff1a" : "#e4e7ee"}
+    text-color ${ctx.tone === "dark" ? "#c1c9d6" : "#3c4149"}
+    line-width 1
+}

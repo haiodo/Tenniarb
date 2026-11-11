@@ -112,6 +112,30 @@ func ctxEnv(vars map[string]string) map[string]string {
 	return out
 }
 
+// fileRoot is the root of the file n is written in: the node above every element of it (spec 5f).
+func fileRoot(n *Node) *Node {
+	for n.Parent != nil {
+		n = n.Parent
+	}
+	return n
+}
+
+// fileDefaults is the `?=` context of the file a definition is written in, evaluated in the place of the
+// use: a default travels with the component, a hard declaration binds its own file (spec 5f).
+func (x *expander) fileDefaults(target *Node, inherited map[string]string) []ctxDecl {
+	file := fileRoot(target)
+	if file == target {
+		return nil
+	}
+	var out []ctxDecl
+	for _, d := range x.ctxDecls(file.Props, x.scopeOf(nil, inherited)) {
+		if d.soft {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
 // ctxName is the object an expression reads context through (spec 5f): a bare name, not `$ctx` or `a.ctx`.
 var ctxName = regexp.MustCompile(`(^|[^.\w$])ctx\b`)
 

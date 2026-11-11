@@ -1143,8 +1143,16 @@ class Expander {
     const callerCtx = this.ctx;
     const { values, used } = this.params(target, n, caller);
     this.vars = values ?? caller;
+    // The `?=` context of the file the definition is written in travels with it to this file; a hard
+    // declaration binds its own file (spec 5f).
+    const defFile = fileRoot(target);
+    if (defFile !== target) {
+      const defaults = ctxDecls(defFile.props, null, this.ctx, this.diag).filter((d) => d.soft);
+      this.ctx = applyCtx(this.ctx, defaults);
+    }
     const inst = this.instance(target, n);
     this.vars = caller;
+    this.ctx = callerCtx;
     this.leave();
     if (inst === null) {
       return null;

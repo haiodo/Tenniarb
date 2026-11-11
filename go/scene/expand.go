@@ -231,6 +231,7 @@ func (x *expander) use(n *Node, asTarget bool, env map[string]string, overlay []
 		instEnv = applyCtx(callerEnv, x.ctxDecls(target.Props, scope))
 		instEnv = applyCtx(instEnv, block)
 		instEnv = applyCtx(instEnv, overlay)
+		instEnv = applyCtx(instEnv, x.fileDefaults(target, callerEnv))
 		inst = x.instance(target, n, instEnv, nil)
 	}
 	x.ctx, x.vars = ctx, caller

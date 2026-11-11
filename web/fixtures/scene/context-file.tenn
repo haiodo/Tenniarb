@@ -1,0 +1,19 @@
+// A `?=` on the root of the file a component is written in travels with the component: the same Chip is
+// light where nothing says otherwise and dark under a dark provider (spec 5f).
+element "lib" --from-file "lib/context-default.tenn"
+
+element "Screen" {
+    item canvas {
+        auto-layout column
+        gap 12
+        padding 24
+        color #f6f7fb
+        item Default {
+            use lib.Chip as light
+        }
+        item Dark {
+            context tone dark
+            use lib.Chip as dark
+        }
+    }
+}
