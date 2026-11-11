@@ -34,6 +34,10 @@ editor or any code: a `.tenn` is data.
 
 - The same card, row or dialog appears twice → make a component in a library and `use` it
   (`components.md`); two copies drift apart on the first change.
+- A feature or a flow, not one screen → list its steps and only the states where the screen differs (empty,
+  loading, no results, error, success); one element per screen, side by side from `pos 0 0`. The frame
+  stays: a state changes the content area, not the window, toolbar and sidebar. A loading state is a
+  skeleton of the content or a local indicator, never an invented percentage.
 - The content flows along one axis → `auto-layout row|column`; it overlaps or sits at a point → `pos`
   under a parent without auto-layout.
 - Two boxes are joined → `link` with `display arrow`; a hub or a C4 picture → `route elbow` (see

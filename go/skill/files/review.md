@@ -26,6 +26,12 @@ and `validate` do the same.
    `at` path names another node; `get_state {file, path: <component>, depth: 3}` shows the parts.
 9. **Look.** Clean is not designed: `direction.md` lists the tells a screen falls into and the order to fix
    them in.
+10. **Scaled content.** One row or card carries the longest real name, the largest number and an empty
+    optional field; a layout built for the average breaks on the first real record.
+
+A render shows one state at one moment: not hover, focus, the next step or what a control does. Say what the
+picture confirms and what you did not check; absence from the frame is not proof. An error, an empty screen
+or a disabled control carries a word or an icon: colour alone is not a state.
 
 ## Typical mistakes
 

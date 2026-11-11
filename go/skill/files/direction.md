@@ -51,6 +51,7 @@ where it sits. Motion last.
 | 8 | Motion | only motion that explains a change | `animation` |
 
 - Text with a width aligns `layout left`; centred text is for one or two short lines.
+- A button names its action and its object: `Delete 3 files`, not `OK` or `Submit`.
 - Accent under white text reaches 4.5 to 1, or the text is dark.
 - An inner `corner-radius` is the outer one minus the padding between them.
 - Sizes, gaps and padding cannot animate: a spinner is `rotate` on a path, a pulse is `opacity`.
@@ -82,7 +83,7 @@ An empty audit is an answer: the file needs no edit. Never change a good screen 
 | a toolbar of `title` leaves, no icons | an icon-less row that reads as a paragraph | 16 `path` icons, `gap 8` to the label |
 | "Lorem ipsum", "Text", "Item 1" | filler copy | the words the product really shows |
 | `title "Welcome to Acme"` | a greeting as a heading | the context: `Inbox`, `October 2026`, `Settings` |
-| a 320 x 240 empty box and nothing else | an empty state with no action | a 13 line saying what goes here and one primary button |
+| a 320 x 240 empty box, or one CTA for every cause | an empty state with no action, or the wrong one | a 13 line naming the cause and its own action: create, clear the filter, retry |
 | three cards of equal width in a row | the generated feature grid | different widths, or one card and a list |
 | "Supercharge", "Seamless", "All in one" | stock copy | what the feature does, in the product's words |
 
