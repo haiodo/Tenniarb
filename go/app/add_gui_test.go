@@ -129,7 +129,9 @@ func TestItemsAddRowHover(t *testing.T) {
 	if len(s.ItemsAdd) != 2 {
 		t.Fatalf("no + on the row A: %+v", s.ItemsAdd)
 	}
-	tree.ClickAt(float64(s.ItemsAdd[0]), float64(s.ItemsAdd[1]))
+	// The "+" is drawn at the right edge of the row, past the end of its column: a click on the glyph
+	// itself must count too.
+	tree.ClickAt(float64(s.ItemsAdd[0]+12), float64(s.ItemsAdd[1]))
 	restWait(a)
 	if got := h.text(); !strings.Contains(got, "item Frame") {
 		t.Fatalf("the row + wrote nothing:\n%s", got)

@@ -9,6 +9,9 @@
 * A click on a scene reaches what a transparent layer covers: the full-size overlay a mockup lays over a
   window no longer takes every press, and the selected node drags from anywhere on its box - a node with no
   `pos` of its own moving the nearest ancestor that has one.
+* The "+" that a row of the Items pane shows on hover takes a click on the whole glyph: it is drawn at the
+  right edge of the row, past the end of the column that holds it, and the pixels beyond that column used to
+  count as no row at all.
 * `penimport` reads what it used to only report: a `descendants` key of a node inside a nested instance
   (`outer/inner`) reaches that node instead of being counted as an id the file does not have; a pen theme
   (`themes` plus `theme` on a node or an instance) becomes `context <axis> <value>`, and a variable the file

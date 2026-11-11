@@ -106,13 +106,15 @@ func (v *Viewer) itemsPane() g.Option {
 					}
 				}
 			})
-			// A click in the "+" column adds a frame into that row, in its content or slot.
+			// A click in the "+" column adds a frame into that row, in its content or slot. The glyph sits
+			// at the right edge of the row, where the column it lives in already ends: any click right of
+			// the name counts.
 			tree.AddMouseListener(swt.MouseListenerMouseUpAdapter(func(e *swt.MouseEvent) {
 				if e.Button != 1 {
 					return
 				}
 				n, col := t.CellAt(int(e.X), int(e.Y))
-				if col != 1 || !v.rowAdds(n) {
+				if n == nil || (col != 1 && int(e.X) < l.firstW) || !v.rowAdds(n) {
 					return
 				}
 				if sel := t.Selected(); len(sel) != 1 || sel[0].Data() != n.Data() {
