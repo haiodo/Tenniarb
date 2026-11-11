@@ -87,3 +87,24 @@ func TestWriteLeavesOnlyTheDocument(t *testing.T) {
 		t.Fatalf("with the sidecars there are %d files, want three", len(entries))
 	}
 }
+
+// A pen fill that is a picture is the picture of the box: .tenn has an image on an item and no paint that
+// is one, so the fill becomes `image ... fit`. A fill mode the format does not know keeps a warning.
+func TestFillImageBecomesTheImageOfTheItem(t *testing.T) {
+	res, _, f := convertJSON(t, `{"version":"2.22","children":[
+	 {"type":"frame","id":"ph","name":"Photo","width":200,"height":100,
+	  "fill":{"type":"image","enabled":true,"url":"assets/photo.png","mode":"cover"}},
+	 {"type":"rectangle","id":"tp","name":"Tiled","width":100,"height":100,
+	  "fill":{"type":"image","enabled":true,"url":"assets/a.png","mode":"tile"}}]}`)
+	out := res.Tenn(f)
+	if !strings.Contains(out, `image "assets/photo.png" fit cover`) {
+		t.Errorf("the picture fill is not the image of the item:\n%s", out)
+	}
+	if strings.Contains(out, `item Photo { width 200; height 100; color`) {
+		t.Errorf("the picture fill also became a color:\n%s", out)
+	}
+	if f.Unsupported["fill image mode tile"] != 1 {
+		t.Errorf("the unknown fill mode is not reported: %v", f.Unsupported)
+	}
+}
+

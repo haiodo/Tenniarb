@@ -144,7 +144,10 @@ func TestImportsFidelity(t *testing.T) {
 	if lib.Variables["accent"] == 0 || lib.Variables["bg"] == 0 {
 		t.Errorf("variables %v", lib.Variables)
 	}
-	if !strings.Contains(res.Tenn(lib), "color #3366ff") || !strings.Contains(res.Tenn(lib), "text-color #ffffff") {
+	// a value the file writes per theme stays a switch on the context; the first value of the axis is the
+	// one a node outside a theme sees, so the light theme keeps its color and the dark one is reachable
+	if !strings.Contains(res.Tenn(lib), "color #3366ff") ||
+		!strings.Contains(res.Tenn(lib), `text-color ${ctx.mode === "dark" ? "#111111" : "#ffffff"}`) {
 		t.Errorf("variables are not resolved to the light theme:\n%s", res.Tenn(lib))
 	}
 	if f.Unsupported["override of an id that is not in the file or library"] != 1 {
@@ -409,5 +412,61 @@ func TestInstanceIgnoresPosOfComponent(t *testing.T) {
 	out := res.Tenn(f)
 	if strings.Contains(out, "use Comp as Inst { pos") || strings.Contains(out, "pos 0 0") {
 		t.Errorf("the instance must not say pos 0 0:\n%s", out)
+	}
+}
+
+// Pen addresses a node inside a nested instance by the path "outer/inner": the bare id would not say
+// which instance it belongs to. Reading the path as an id lost the override and counted a reference to
+// a node the file holds as a reference to one it does not.
+func TestNestedOverrideByPath(t *testing.T) {
+	res, _, f := convertJSON(t, `{"version":"2.22","children":[
+	 {"type":"frame","id":"cap","name":"Cap","reusable":true,"width":100,"height":20,"children":[
+	  {"type":"text","id":"label","name":"Label","content":"Button","fontSize":14,"fill":"#000000"}]},
+	 {"type":"frame","id":"card","name":"Card","reusable":true,"layout":"vertical","width":120,"height":40,"children":[
+	  {"type":"ref","id":"chip","name":"Chip","ref":"cap"}]},
+	 {"type":"ref","id":"inst","name":"Instance","ref":"card","x":0,"y":0,"descendants":{"chip/label":{"content":"nested"}}}]}`)
+	out := res.Tenn(f)
+	if !strings.Contains(out, "at Chip.Label {") || !strings.Contains(out, "title nested") {
+		t.Errorf("the override of the nested node is not written:\n%s", out)
+	}
+	if n := f.Unsupported["override of an id that is not in the file or library"]; n != 0 {
+		t.Errorf("the path of a nested node is read as an id of the file: %v", f.Unsupported)
+	}
+}
+
+// A pen theme is the context of .tenn: a node names the value for its subtree, and a variable the file
+// writes per theme reads it back, so an instance keeps the colors of its theme instead of the ones of the
+// file's first. Writing one frozen set lost the other themes of every instance.
+func TestThemeBecomesContext(t *testing.T) {
+	res, _, f := convertJSON(t, `{"version":"2.22","themes":{"direction":["home","app"]},
+	 "variables":{"accent":{"type":"color","value":[
+	  {"value":"#c6f24e","theme":{"direction":"home"}},{"value":"#5b6cff","theme":{"direction":"app"}}]}},
+	 "children":[
+	  {"type":"frame","id":"card","name":"Card","reusable":true,"width":100,"height":40,"fill":"$accent"},
+	  {"type":"ref","id":"i1","name":"App card","ref":"card","x":0,"y":0,"theme":{"direction":"app"}}]}`)
+	out := res.Tenn(f)
+	for _, want := range []string{
+		"context direction home",
+		`use Card as "App card" { context direction app }`,
+		`color ${ctx.direction === "app" ? "#5b6cff" : "#c6f24e"}`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("no %q in\n%s", want, out)
+		}
+	}
+	if n := f.Unsupported["theme on an instance (colors stay light)"]; n != 0 {
+		t.Errorf("the theme of the instance was dropped: %v", f.Unsupported)
+	}
+}
+
+// The axes of an imported library are declared at the root of the file too: a variable declared there is
+// written into this file as an expression, and ctx has to exist for it to read.
+func TestLibraryAxesReachTheRootContext(t *testing.T) {
+	lib := &File{Name: "lib", raw: map[string]any{"themes": map[string]any{"mode": []any{"light", "dark"}}}}
+	f := &File{Name: "app", raw: map[string]any{}, Imports: map[string]*File{"K": lib}}
+	got := f.rootContext()
+	if len(got) != 1 || got[0].Name != "context" || len(got[0].Args) != 2 ||
+		got[0].Args[0].S != "mode" || got[0].Args[1].S != "light" {
+		t.Fatalf("the axis of the library is not declared at the root: %+v", got)
 	}
 }

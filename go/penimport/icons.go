@@ -212,7 +212,7 @@ func (c *conv) iconProps(f *File, m map[string]any, x pctx) []Prop {
 			return nil
 		}
 		box, stroke = g.viewBox, g.stroke
-		fill, hasFill = c.paint(f, m["fill"], x.mode, nil)
+		fill, hasFill = c.paint(f, m["fill"], x.mode, nil, true)
 		width, hasWidth := iconStroke(box, stroke, m, x)
 		ps = append(ps, prop("view-box", numArg(box[0]), numArg(box[1]), numArg(box[2]), numArg(box[3])))
 		// The contour is stroked in the colour of the pen fill - lucide draws every icon with
@@ -234,7 +234,7 @@ func (c *conv) iconProps(f *File, m map[string]any, x pctx) []Prop {
 		}
 		return ps
 	}
-	if fill, ok := c.paint(f, m["fill"], x.mode, nil); ok {
+	if fill, ok := c.paint(f, m["fill"], x.mode, nil, true); ok {
 		ps = append(ps, prop("border-color", wordArg(fill)))
 	}
 	if w, ok := iconStroke(box, stroke, m, x); ok {

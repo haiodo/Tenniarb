@@ -185,9 +185,8 @@ func (c *conv) finish(u *Node) {
 	}
 	u.Props = append(hiddenProp(u.Pen, false), c.props(u.res, rest, u.Typ, pctx{mode: u.b.mode, explicit: true, eff: effPen(u)})...)
 	u.Props = append(u.Props, posProps(u.Pen, u.b)...)
-	if th := u.Pen["theme"]; th != nil {
-		u.File.unsup("theme on an instance (colors stay light)")
-	}
+	// the theme of an instance is a context declaration in its block
+	u.Props = append(u.Props, themeProps(u.Pen)...)
 	c.buildBlock(u)
 }
 
@@ -232,13 +231,16 @@ func replaces(pen map[string]any, id string, val map[string]any) bool {
 	return t != pen["type"] || val["ref"] != pen["ref"] || oid != "" && oid != id
 }
 
-// keyTarget resolves a key of a descendants map written in f to the file and the id of the pen node.
-func keyTarget(f *File, key string) (*File, string) {
-	alias, id := splitRef(key)
+// keyTarget resolves a key of a descendants map written in f to the file and the ids of its path: pen
+// names a node of the instance by its id, and one inside a nested instance by the instance's id and the
+// id of the node, "outer/inner", because a bare id would not say which instance it belongs to.
+func keyTarget(f *File, key string) (*File, []string) {
+	alias, rest := splitRef(key)
+	g := f
 	if alias != "" {
-		return f.Imports[alias], id
+		g = f.Imports[alias]
 	}
-	return f, id
+	return g, strings.Split(rest, "/")
 }
 
 // collect reads a descendants map of u. The nested maps of an instance come first, because the
@@ -278,24 +280,44 @@ func (c *conv) collectOne(u *Node, e *enode, val map[string]any, pass int, acc *
 }
 
 func (c *conv) matches(u *Node, scope *enode, key string) []*enode {
-	g, id := keyTarget(u.res, key)
+	g, ids := keyTarget(u.res, key)
 	if g == nil {
 		return nil
 	}
-	return locate(scope, g, id)
+	return locatePath(scope, g, ids)
+}
+
+// locatePath follows the ids of a descendants key from scope down: the first one is found anywhere in
+// the instance, every next one inside the subtree of the one before it.
+func locatePath(scope *enode, f *File, ids []string) []*enode {
+	found := locate(scope, f, ids[0])
+	for _, id := range ids[1:] {
+		var next []*enode
+		for _, e := range found {
+			next = append(next, locate(e, f, id)...)
+		}
+		found = next
+	}
+	return found
 }
 
 func (c *conv) missingTarget(u *Node, key string, val map[string]any) {
-	g, id := keyTarget(u.res, key)
-	if g != nil && g.dropped[id] {
-		if val["enabled"] == true {
-			u.File.unsup("enabling a disabled node inside a nested instance (not reachable)")
-		}
-		return
-	}
-	if g == nil || g.rawIdx[id] == nil {
+	g, ids := keyTarget(u.res, key)
+	if g == nil {
 		u.File.unsup("override of an id that is not in the file or library")
 		return
+	}
+	for _, id := range ids {
+		if g.dropped[id] {
+			if val["enabled"] == true {
+				u.File.unsup("enabling a disabled node inside a nested instance (not reachable)")
+			}
+			return
+		}
+		if g.rawIdx[id] == nil {
+			u.File.unsup("override of an id that is not in the file or library")
+			return
+		}
 	}
 	u.File.unsup("override target not found in the instance")
 }

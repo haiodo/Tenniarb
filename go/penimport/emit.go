@@ -154,6 +154,9 @@ func (r *Result) Tenn(f *File) string {
 	for _, lib := range imports {
 		stmts.Add(tenn.NewCommand("element", tenn.NewStrNode(f.mountAlias(lib)), tenn.NewIdent(scene.FromFileFlag), tenn.NewStrNode(lib.Name+".tenn")))
 	}
+	for _, p := range f.rootContext() {
+		stmts.Add(propNode(p))
+	}
 	for _, n := range f.Root.Kids {
 		stmts.Add(r.emitNode(n))
 	}

@@ -86,7 +86,7 @@ func report(f *penimport.File, tenn string) {
 		for _, c := range f.Variables {
 			n += c
 		}
-		fmt.Fprintf(os.Stderr, "  variables resolved to light: %d names, %d uses\n", len(f.Variables), n)
+		fmt.Fprintf(os.Stderr, "  variables: %d names, %d uses\n", len(f.Variables), n)
 	}
 }
 

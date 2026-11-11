@@ -137,9 +137,6 @@ func (c *conv) buildItem(f *File, m map[string]any, typ string, parent *Node, b 
 	}
 	n.Props = append(hiddenProp(m, false), c.props(f, m, typ, pctx{mode: b.mode})...)
 	n.Props = append(n.Props, posProps(m, b)...)
-	if th := m["theme"]; th != nil && typ != "frame" {
-		f.unsup("theme on a leaf")
-	}
 	cb := bctx{mode: b.mode, parentAbs: m["layout"] == "none", noIndex: b.noIndex, res: b.res, layout: typ == "frame"}
 	holder := n
 	if _, isSlot := m["slot"].([]any); isSlot && typ == "frame" {

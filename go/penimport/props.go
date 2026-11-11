@@ -2,6 +2,7 @@ package penimport
 
 import (
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -66,8 +67,9 @@ func parseHex(s string) (string, bool) {
 	return "#" + strings.ToLower(s), true
 }
 
-// color resolves a hex literal or a $variable to #rrggbb[aa] for the mode.
-func (c *conv) color(f *File, s, mode string) (string, bool) {
+// color resolves a hex literal or a $variable to #rrggbb[aa] for the mode. themed says the place holds an
+// expression, so a variable the file writes per theme stays switchable through the context.
+func (c *conv) color(f *File, s, mode string, themed bool) (string, bool) {
 	if !strings.HasPrefix(s, "$") {
 		return parseHex(s)
 	}
@@ -75,15 +77,20 @@ func (c *conv) color(f *File, s, mode string) (string, bool) {
 	if i := strings.IndexByte(name, ':'); i >= 0 {
 		name = name[i+1:]
 	}
-	v := c.variable(f, name)
+	owner, v := c.variable(f, name)
 	if v == nil {
 		f.unsup("unknown variable")
 		return "", false
 	}
 	f.Variables[name]++
+	if _, list := v["value"].([]any); list && themed {
+		if expr, ok := c.themedColor(owner, v); ok {
+			return expr, true
+		}
+	}
 	switch val := v["value"].(type) {
 	case string:
-		return c.color(f, val, mode)
+		return c.color(f, val, mode, themed)
 	case []any:
 		pick := ""
 		for _, it := range val {
@@ -99,39 +106,49 @@ func (c *conv) color(f *File, s, mode string) (string, bool) {
 				}
 			}
 		}
-		return c.color(f, pick, mode)
+		return c.color(f, pick, mode, themed)
 	}
 	return "", false
 }
 
-// variable looks the name up in the file and in its libraries.
-func (c *conv) variable(f *File, name string) map[string]any {
+// variable looks the name up in the file and in its libraries, and returns the file that declares it.
+func (c *conv) variable(f *File, name string) (*File, map[string]any) {
 	if v := f.vars[name]; v != nil {
-		return v
+		return f, v
 	}
-	for _, g := range f.Imports {
-		if v := g.vars[name]; v != nil {
-			return v
+	aliases := make([]string, 0, len(f.Imports))
+	for a := range f.Imports {
+		aliases = append(aliases, a)
+	}
+	sort.Strings(aliases)
+	for _, a := range aliases {
+		if v := f.Imports[a].vars[name]; v != nil {
+			return f.Imports[a], v
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 // paint returns the color of a fill or stroke value; gradients give their first stop. With grad set
 // (the fill of an item) a linear gradient is also stored there as the value of color, in full.
-func (c *conv) paint(f *File, v any, mode string, grad *[]Arg) (string, bool) {
+func (c *conv) paint(f *File, v any, mode string, grad *[]Arg, themed bool) (string, bool) {
 	switch x := v.(type) {
 	case string:
-		return c.color(f, x, mode)
+		return c.color(f, x, mode, themed)
 	case []any:
 		if len(x) > 1 {
 			f.unsup("several fills (first used)")
 		}
 		if len(x) > 0 {
-			return c.paint(f, x[0], mode, grad)
+			return c.paint(f, x[0], mode, grad, themed)
 		}
 	case map[string]any:
 		if en, ok := x["enabled"].(bool); ok && !en {
+			return "", false
+		}
+		if x["type"] == "shader" {
+			// the shader program and its uniforms have no counterpart: the url names what to draw by hand
+			f.unsup("fill shader " + toStr(x["url"]))
 			return "", false
 		}
 		if x["type"] != "gradient" {
@@ -149,7 +166,7 @@ func (c *conv) paint(f *File, v any, mode string, grad *[]Arg) (string, bool) {
 		for _, ci := range cols {
 			cm, _ := ci.(map[string]any)
 			cs, _ := cm["color"].(string)
-			if col, ok := c.color(f, cs, mode); ok {
+			if col, ok := c.color(f, cs, mode, false); ok {
 				return col, true
 			}
 		}
@@ -186,7 +203,7 @@ func (c *conv) linearGradient(f *File, m map[string]any, mode string) ([]Arg, bo
 		cm, _ := ci.(map[string]any)
 		cs, _ := cm["color"].(string)
 		pos, okp := cm["position"].(float64)
-		col, okc := c.color(f, cs, mode)
+		col, okc := c.color(f, cs, mode, false)
 		if !okp || !okc {
 			return nil, false
 		}
@@ -352,12 +369,41 @@ func (c *conv) shadowProp(f *File, v any, mode string) []Prop {
 	blur, _ := m["blur"].(float64)
 	col := "#00000040"
 	if cs, ok := m["color"].(string); ok {
-		if cc, ok := c.color(f, cs, mode); ok {
+		if cc, ok := c.color(f, cs, mode, false); ok {
 			col = cc
 		}
 	}
 	// Y is up in .tenn as in pos, pen's offset is down.
 	return []Prop{prop("shadow", numArg(dx), numArg(-dy), numArg(blur), wordArg(col))}
+}
+
+// imageFill is the picture a pen fill names, as the image property of the item: .tenn has a picture on an
+// item, not among its paints, so a fill image becomes the content of the box and the item keeps no fill
+// color. A text or a path takes its fill as ink, and a fill mode the format does not know keeps the
+// warning.
+func (c *conv) imageFill(f *File, m map[string]any, typ string) []Prop {
+	if typ == "text" || typ == "path" {
+		return nil
+	}
+	fill, _ := m["fill"].(map[string]any)
+	if fill == nil || fill["type"] != "image" {
+		return nil
+	}
+	if en, ok := fill["enabled"].(bool); ok && !en {
+		return nil
+	}
+	url, _ := fill["url"].(string)
+	if url == "" {
+		return nil
+	}
+	// The url is written as the .pen has it, relative to the design, so a .tenn written beside its design
+	// reads the picture; elsewhere the path names no file and the scene warns when it loads.
+	fit, ok := map[string]string{"fill": "fill", "cover": "cover", "fit": "contain", "": "fill"}[toStr(fill["mode"])]
+	if !ok {
+		f.unsup("fill image mode " + toStr(fill["mode"]))
+		return nil
+	}
+	return []Prop{prop("image", strArg(url), wordArg("fit"), wordArg(fit))}
 }
 
 // lookProps are the fill and the border of an item. go/scene reads display only on a link, so none is written.
@@ -367,24 +413,39 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	if typ != "text" && typ != "path" { // a text color and an icon fill are one color
 		gp = &grad
 	}
-	fill, hasFill := c.paint(f, m["fill"], x.mode, gp)
-	stroke, hasStroke := c.paint(f, m["stroke"], x.mode, nil)
+	img := c.imageFill(f, m, typ)
+	fillVal := any(m["fill"])
+	if img != nil {
+		fillVal = nil
+	}
+	fill, hasFill := c.paint(f, fillVal, x.mode, gp, true)
+	stroke, hasStroke := c.paint(f, m["stroke"], x.mode, nil, true)
 	fillArgs := []Arg{wordArg(fill)}
 	if grad != nil {
 		fillArgs = grad
 	}
 	sw, _ := m["strokeWidth"].(float64)
 	if _, perSide := m["strokeWidth"].(map[string]any); perSide {
-		f.unsup("per-side stroke width")
+		// .tenn draws a border on all four sides of the box or none, so the sides the file leaves out get
+		// a line too
+		f.unsup("per-side stroke width (a 1 point border on all four sides is drawn)")
 	}
 	if hasStroke && sw == 0 {
 		sw = 1
 	}
-	if hasStroke && m["strokeAlignment"] != "inner" {
-		f.unsup("stroke alignment other than inner")
+	if hasStroke {
+		// .tenn draws the stroke inside the box; pen puts it on the edge, so half of a centered stroke and
+		// all of an outer one move into the box
+		al := toStr(m["strokeAlignment"])
+		if al == "" {
+			al = "center"
+		}
+		if al != "inner" {
+			f.unsup("stroke alignment " + al + " (.tenn draws the stroke inside the box)")
+		}
 	}
 	if x.explicit {
-		return explicitLook(typ, m, x.eff, fillArgs, stroke, sw, hasFill, hasStroke)
+		return append(explicitLook(typ, m, x.eff, fillArgs, stroke, sw, hasFill, hasStroke), img...)
 	}
 	switch typ {
 	case "text":
@@ -415,7 +476,7 @@ func (c *conv) lookProps(f *File, m map[string]any, typ string, x pctx) []Prop {
 	} else if hasFill || typ == "ellipse" {
 		ps = append(ps, prop("line-width", numArg(0)))
 	}
-	return ps
+	return append(ps, img...)
 }
 
 // viewBoxProp maps the pen viewBox onto the box. Without one pen draws the path unscaled, which is a
@@ -582,6 +643,9 @@ func (c *conv) textProps(f *File, m map[string]any, x pctx) []Prop {
 func (c *conv) props(f *File, m map[string]any, typ string, x pctx) []Prop {
 	countIgnored(f, m)
 	var ps []Prop
+	if !x.explicit {
+		ps = append(ps, themeProps(m)...)
+	}
 	if typ == "frame" {
 		ps = append(ps, c.layoutProps(f, m, x)...)
 	}
