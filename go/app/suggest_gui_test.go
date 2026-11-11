@@ -97,7 +97,7 @@ func TestSuggest(t *testing.T) {
 	if st.Findings == 0 {
 		t.Fatal("no finding in the list")
 	}
-	a.ShotTitle("suggest-1-list", h.title(file))
+	shotTitle(a, "suggest-1-list", h.title(file))
 
 	a.Find(qa.ID("suggest-preview-0")).Click()
 	a.Settle()
@@ -108,7 +108,7 @@ func TestSuggest(t *testing.T) {
 	listed := suggestion(t, a).Findings
 	a.Find(qa.ID("suggest-apply-0")).Click()
 	a.Settle()
-	a.ShotTitle("suggest-2-applied", h.title(file))
+	shotTitle(a, "suggest-2-applied", h.title(file))
 	applied := h.text()
 	if applied == before || !strings.Contains(applied, "use-style") || !strings.Contains(applied, "styles {") {
 		t.Fatalf("after apply:\n%s", applied)
@@ -152,7 +152,7 @@ func TestSuggestRepeat(t *testing.T) {
 	if st := suggestion(t, a); st.Findings == 0 {
 		t.Fatal("no finding in the list")
 	}
-	a.ShotTitle("suggest-repeat-1-list", h.title(file))
+	shotTitle(a, "suggest-repeat-1-list", h.title(file))
 
 	a.Find(qa.ID("suggest-preview-0")).Click()
 	a.Settle()
@@ -162,7 +162,7 @@ func TestSuggestRepeat(t *testing.T) {
 
 	a.Find(qa.ID("suggest-apply-0")).Click()
 	a.Settle()
-	a.ShotTitle("suggest-repeat-2-applied", h.title(file))
+	shotTitle(a, "suggest-repeat-2-applied", h.title(file))
 	applied := h.text()
 	for _, want := range []string{`element "CardOne-2" {`, "export let color", "export let title"} {
 		if !strings.Contains(applied, want) {

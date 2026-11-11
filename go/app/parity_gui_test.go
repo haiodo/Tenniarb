@@ -603,7 +603,7 @@ func TestParityPrefs(t *testing.T) {
 	// the canvas takes the colour of the settings
 	app.Find(qa.ID("background")).Type("#102030")
 	app.Settle()
-	path := app.ShotTitle("parity-bg", "Example.tenn")
+	path := shotTitle(app, "parity-bg", "Example.tenn")
 	if r, g, b := pixelOf(t, path, 0.4, 0.3); r > 0x20 || g < 0x18 || g > 0x28 || b < 0x28 || b > 0x38 {
 		t.Errorf("the canvas corner is %02x%02x%02x, the setting is 102030", r, g, b)
 	}

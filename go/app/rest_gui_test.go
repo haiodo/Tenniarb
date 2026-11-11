@@ -109,7 +109,7 @@ func TestItemsAdd(t *testing.T) {
 	if s := readRest(t, a); len(s.Nodes) != 1 || s.Nodes[0] != "Frame" {
 		t.Fatalf("the header + selected %v", s.Nodes)
 	}
-	a.ShotTitle("items-1-header", h.title(file))
+	shotTitle(a, "items-1-header", h.title(file))
 	a.Find(qa.ID("canvas")).Focus()
 	a.Key("Mod+Z")
 	restWait(a)
@@ -183,7 +183,7 @@ func TestSceneMoveNodes(t *testing.T) {
 	if s := readRest(t, a); len(s.Nodes) != 1 || s.Nodes[0] != "B" {
 		t.Fatalf("Move Up selected %v", s.Nodes)
 	}
-	a.ShotTitle("move-1-up", h.title(file))
+	shotTitle(a, "move-1-up", h.title(file))
 	key("Mod+Z")
 	if got := text(); got != before {
 		t.Fatalf("Move Up took more than one undo step:\n%s", got)
@@ -213,7 +213,7 @@ func TestSceneMoveNodes(t *testing.T) {
 	if s := readRest(t, a); len(s.Nodes) != 1 || s.Nodes[0] != "Flow.B" {
 		t.Fatalf("Move Right selected %v", s.Nodes)
 	}
-	a.ShotTitle("move-2-into", h.title(file))
+	shotTitle(a, "move-2-into", h.title(file))
 	key("Mod+Z")
 	if got := text(); got != before {
 		t.Fatalf("Move Right took more than one undo step:\n%s", got)
@@ -326,7 +326,7 @@ func TestAddLibrary(t *testing.T) {
 	if s := readRest(t, a); s.Banner != "" {
 		t.Fatalf("Add Library: %q", s.Banner)
 	}
-	a.ShotTitle("library-1-added", h.title(file))
+	shotTitle(a, "library-1-added", h.title(file))
 	a.Find(qa.ID("canvas")).Focus()
 	a.Key("Mod+Z")
 	restWait(a)
@@ -344,5 +344,5 @@ func TestAddLibrary(t *testing.T) {
 	if got := h.text(); !strings.Contains(got, "use Kit.Parts.Card as Card") {
 		t.Fatalf("Insert Component from the added library:\n%s", got)
 	}
-	a.ShotTitle("library-2-inserted", h.title(file))
+	shotTitle(a, "library-2-inserted", h.title(file))
 }

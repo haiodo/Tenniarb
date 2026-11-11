@@ -106,7 +106,7 @@ func TestAgentMarks(t *testing.T) {
 	if !slices.Equal(st.Nodes, []string{"Card.Title"}) || st.CanUndo {
 		t.Fatalf("select: %+v", st)
 	}
-	a.ShotTitle("01-select-mark", h.title(file))
+	shotTitle(a, "01-select-mark", h.title(file))
 
 	// the user selects the card again, the mark of the agent stays
 	x, y = spot()
@@ -129,7 +129,7 @@ func TestAgentMarks(t *testing.T) {
 	if !slices.Equal(st.Nodes, []string{"Card"}) || !st.Dirty || !strings.Contains(h.text(), "width 260") {
 		t.Fatalf("edit: %+v", st)
 	}
-	a.ShotTitle("02-edit-mark", h.title(file))
+	shotTitle(a, "02-edit-mark", h.title(file))
 	// one undo step puts the text back: the marks made none
 	canvas().Focus()
 	a.Key("Mod+Z")
@@ -145,7 +145,7 @@ func TestAgentMarks(t *testing.T) {
 	if pulse == nil || pulse.Left <= 0 || pulse.Left > 1200 {
 		t.Fatalf("pulse: %+v", st)
 	}
-	a.ShotTitle("03-pulse", h.title(file))
+	shotTitle(a, "03-pulse", h.title(file))
 	a.Key("Mod+Z")
 
 	// the marks go after their time, with no message from anyone

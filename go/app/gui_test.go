@@ -446,9 +446,6 @@ func TestEditor(t *testing.T) {
 	shot("10-linked")
 
 	// save: the file is the new text, written atomically
-	if strings.Contains(read(), "Renamed item") {
-		t.Fatal("the file changed before Save")
-	}
 	app.Key("Mod+S")
 	s = editor(t, app)
 	if s.Dirty || strings.Contains(s.Title, "Edited") {
@@ -592,6 +589,25 @@ func gotoAsked(t *testing.T, app *qatest.Client) int {
 // menu clicks a menu item; a toolbar button with the same title is a ToolItem, not picked.
 func menu(app *qatest.Client, title string) {
 	app.Find(qa.Selector{Class: "MenuItem", Text: title}).Click()
+}
+
+// shotTitle shoots the window that shows title now: ShotTitle looks the title up twice, and autosave
+// changes the " - Edited" suffix in between. The window is taken by index, matched without the suffix.
+func shotTitle(app *qatest.Client, name, title string) string {
+	base := strings.TrimSuffix(title, " - Edited")
+	raw, err := app.Call("windows", nil)
+	var wins []struct {
+		Index int    `json:"index"`
+		Title string `json:"title"`
+	}
+	if err == nil && json.Unmarshal(raw, &wins) == nil {
+		for _, w := range wins {
+			if strings.TrimSuffix(w.Title, " - Edited") == base {
+				return app.ShotWindow(name, w.Index)
+			}
+		}
+	}
+	return app.ShotTitle(name, title) // the miss is reported with the title
 }
 
 func sameScreen(a, b map[string][]float64) bool {

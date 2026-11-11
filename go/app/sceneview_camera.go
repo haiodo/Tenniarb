@@ -12,16 +12,18 @@ import (
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// setCamera moves the camera; the selection frames are part of the scene and follow it.
+// setCamera moves the camera; the selection frames and the edge dots follow it.
 func (v *Viewer) setCamera(cam gfx.Camera) {
 	v.view.Compositor().SetCamera(cam)
 	v.drawSceneOverlay()
+	v.syncIndicators()
 }
 
-// panView pans the canvas; the selection frames are part of the scene and follow it.
+// panView pans the canvas; the selection frames and the edge dots follow it.
 func (v *Viewer) panView(dx, dy float64) {
 	v.view.Pan(dx, dy)
 	v.drawSceneOverlay()
+	v.syncIndicators()
 }
 
 // onScroll pans the canvas sideways with Shift+wheel. GTK reports the wheel on one axis only, so

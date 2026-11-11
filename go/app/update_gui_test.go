@@ -110,7 +110,7 @@ func TestUpdateCheck(t *testing.T) {
 	if notes := app.Find(qa.ID("update-notes")).Node().Value; !strings.Contains(notes, "notes from the test server") {
 		t.Fatalf("the dialog does not show the release notes: %q", notes)
 	}
-	app.ShotTitle("30-update-available", "Update Available")
+	shotTitle(app, "30-update-available", "Update Available")
 	app.Find(qa.ID("update-later")).Click()
 	waitFor(t, "the dialog to close", func() bool {
 		_, open := updateOf(t, app)

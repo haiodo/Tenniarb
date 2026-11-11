@@ -104,7 +104,7 @@ func TestScene(t *testing.T) {
 		t.Fatalf("open: %+v", st)
 	}
 	before := qa.text()
-	a.ShotTitle("01-screen", qa.title(screen))
+	shotTitle(a, "01-screen", qa.title(screen))
 
 	// a click on the biggest top node selects it or the deepest node written in the file under the click
 	nodes := qa.scene()
@@ -129,12 +129,12 @@ func TestScene(t *testing.T) {
 	if r := qa.scene()[picked].Box; x < r[0] || y < r[1] || x > r[0]+r[2] || y > r[1]+r[3] {
 		t.Fatalf("selected %s at %v is not under the click %v,%v", picked, r, x, y)
 	}
-	a.ShotTitle("02-selected", qa.title(screen))
+	shotTitle(a, "02-selected", qa.title(screen))
 	a.State("select", "path", screen, "nodes", []string{top})
 	a.Find(inWindow(qa.menuItem("Zoom to Selection"), qa.title(screen))).Click()
 	a.Settle()
 	time.Sleep(300 * time.Millisecond)
-	a.ShotTitle("02-zoomed-"+top, qa.title(screen))
+	shotTitle(a, "02-zoomed-"+top, qa.title(screen))
 	a.State("select", "path", screen, "nodes", []string{picked})
 	a.Settle()
 
@@ -147,14 +147,14 @@ func TestScene(t *testing.T) {
 	if st = qa.state(); !st.CanUndo || len(st.Nodes) != 1 || st.Nodes[0] != picked {
 		t.Fatalf("after edit: %+v", st)
 	}
-	a.ShotTitle("03-colored", qa.title(screen))
+	shotTitle(a, "03-colored", qa.title(screen))
 	canvas().Focus()
 	a.Key("Mod+Z")
 	a.Settle()
 	if qa.text() != before {
 		t.Fatal("undo did not give the text back")
 	}
-	a.ShotTitle("04-undone", qa.title(screen))
+	shotTitle(a, "04-undone", qa.title(screen))
 
 	// the library in a second window: its unsaved edit redraws the screen
 	tree, _ := scene.Load(dir, screenTitle)
@@ -167,7 +167,7 @@ func TestScene(t *testing.T) {
 	a.State("select", "path", lib, "nodes", []string{compPath})
 	a.Settle()
 	builds := qa.doc(screen).Builds
-	a.ShotTitle("05-library", qa.title(lib))
+	shotTitle(a, "05-library", qa.title(lib))
 	qa.enter("scene-color", "#ffd0d0")
 	if d := qa.doc(screen); d.Builds <= builds || d.Dirty {
 		t.Fatalf("the screen did not follow the library: %+v (builds before %d)", d, builds)
@@ -181,12 +181,12 @@ func TestScene(t *testing.T) {
 	a.Find(inWindow(qa.menuItem("Zoom to Selection"), qa.title(screen))).Click()
 	a.Settle()
 	time.Sleep(300 * time.Millisecond)
-	a.ShotTitle("06-screen-after-library", qa.title(screen))
+	shotTitle(a, "06-screen-after-library", qa.title(screen))
 	// The "- Edited" of the title follows the edit after a redraw, and a loaded runner reports it late.
 	for i := 0; i < 60 && qa.doc(lib).Title != app.Title(lib, true); i++ {
 		time.Sleep(50 * time.Millisecond)
 	}
-	a.ShotTitle("06-library-edited", qa.title(lib))
+	shotTitle(a, "06-library-edited", qa.title(lib))
 
 	// New Screen and Insert Component in the screen window
 	a.State("activate", "path", screen)
@@ -197,7 +197,7 @@ func TestScene(t *testing.T) {
 		t.Fatalf("new screen: %+v", st)
 	}
 	frame := st.Nodes[0]
-	a.ShotTitle("07-new-screen", qa.title(screen))
+	shotTitle(a, "07-new-screen", qa.title(screen))
 
 	// Insert Component... asks for the component: the frame stays the target
 	a.Find(menuBarItem(qa.title(screen), "Element", "Insert Component...")).Click()
@@ -208,7 +208,7 @@ func TestScene(t *testing.T) {
 	if len(st.Nodes) != 1 || !strings.HasPrefix(st.Nodes[0], frame+".") || strings.Count(qa.text(), "use ui_kit.")+strings.Count(qa.text(), "use lib.") <= strings.Count(before, "use ui_kit.")+strings.Count(before, "use lib.") || st.Error != "" {
 		t.Fatalf("insert %s into %s: %+v", name, frame, st)
 	}
-	a.ShotTitle("08-inserted", qa.title(screen))
+	shotTitle(a, "08-inserted", qa.title(screen))
 }
 
 func qaSel(id string) qa.Selector { return qa.ID(id) }

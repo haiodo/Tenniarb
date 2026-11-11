@@ -85,7 +85,7 @@ func TestSceneStyles(t *testing.T) {
 	if !strings.Contains(before, "use-style primary medium") {
 		t.Fatalf("the fixture:\n%s", before)
 	}
-	a.ShotTitle("styles-1-groups", h.title(file))
+	shotTitle(a, "styles-1-groups", h.title(file))
 
 	// a group one-of: the switch takes one of its styles, in place of the default it replaces
 	a.State("style", "group", "kind", "value", "secondary")
@@ -110,7 +110,7 @@ func TestSceneStyles(t *testing.T) {
 	if got := h.text(); !strings.Contains(got, "use-style primary medium outlined") {
 		t.Fatalf("after the check box:\n%s", got)
 	}
-	a.ShotTitle("styles-2-outlined", h.title(file))
+	shotTitle(a, "styles-2-outlined", h.title(file))
 	canvas.Focus()
 	a.Key("Mod+Z")
 	wait()

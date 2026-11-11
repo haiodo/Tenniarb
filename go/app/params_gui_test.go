@@ -85,7 +85,7 @@ func TestSceneParams(t *testing.T) {
 		}
 	}
 	before := h.text()
-	a.ShotTitle("params-1-form", h.title(file))
+	shotTitle(a, "params-1-form", h.title(file))
 
 	// a parameter that is no style group: a field, the value written as the declaration writes it
 	h.enter("scene-param-title", "Save")
@@ -93,7 +93,7 @@ func TestSceneParams(t *testing.T) {
 	if got := h.text(); !strings.Contains(got, `title "Save"`) {
 		t.Fatalf("after the field:\n%s", got)
 	}
-	a.ShotTitle("params-2-title", h.title(file))
+	shotTitle(a, "params-2-title", h.title(file))
 	canvas.Focus()
 	a.Key("Mod+Z")
 	wait()
@@ -122,7 +122,7 @@ func TestSceneParams(t *testing.T) {
 	if got := h.text(); !strings.Contains(got, "extras outlined rounded") {
 		t.Fatalf("after the check box:\n%s", got)
 	}
-	a.ShotTitle("params-3-extras", h.title(file))
+	shotTitle(a, "params-3-extras", h.title(file))
 	canvas.Focus()
 	a.Key("Mod+Z")
 	wait()

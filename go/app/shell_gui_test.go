@@ -72,7 +72,7 @@ func TestShell(t *testing.T) {
 		t.Fatalf("New: %+v", s)
 	}
 	t.Logf("export scale %v", s.Scale)
-	app.ShotTitle("30-new", s.Title)
+	shotTitle(app, "30-new", s.Title)
 	stash := filepath.Join(cfgDir, "untitled", s.Stash+".tenn")
 
 	// an edit is kept in the stash 2 s later; the title says it is edited meanwhile
@@ -286,7 +286,7 @@ func TestPrefsAndHelp(t *testing.T) {
 		time.Sleep(1500 * time.Millisecond) // the page loads
 		if runtime.GOOS == "darwin" {
 			// WebKit under X11 draws into a surface of its own: the capture of its window can be empty.
-			app.ShotTitle("34-help", "Tenniarb Help")
+			shotTitle(app, "34-help", "Tenniarb Help")
 		}
 		app.Find(qa.Selector{Class: "Shell", Text: "Tenniarb Help"}).Close()
 		if s := shell(t, app); s.HelpOpen {
