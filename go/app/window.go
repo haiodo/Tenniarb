@@ -282,6 +282,8 @@ func (v *Viewer) build() {
 	look.SetBottomPanel(v.win, content, codePane, g.Scaled(200))
 	look.SetInspector(v.win, content, v.insp.panel, inspectorWidth())
 	look.SetInspectorFixed(v.win, true)
+	// macOS 26: the scene runs the whole width under the glass of the side panes.
+	look.SetPanesOverlay(v.win, true)
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)

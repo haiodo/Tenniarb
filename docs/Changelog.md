@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* The scene is drawn under the side panes on macOS 26 (`look.SetPanesOverlay`): the canvas keeps the full
+  window width and the outline and inspector float above it as glass, with the bottom code panel still below.
+* gowt 0.15.7: toolbar image items draw as bare icons instead of the AppKit 26 bordered glass capsules, so
+  they are small; every gfx window shares one display frame clock, and a hidden or covered window paints one
+  catch-up frame when it shows again.
+
 * The Add menu of the Items pane runs what it offers: its entries were emptied as the menu closed, and macOS
   sends the click of an item after that, so every entry did nothing. The menu is filled anew on each press.
   A classic diagram is offered the items and a scene the node kinds; a node added to the element takes a free
