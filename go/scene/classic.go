@@ -54,6 +54,9 @@ func (p *prep) modelVals(rn *RNode, pr *Prop) ([]string, bool) {
 	if p.opts.Classic == nil {
 		return nil, false
 	}
+	if usesCtx(pr) {
+		return nil, false
+	}
 	at, ok := p.classicAt[rn]
 	if !ok {
 		return nil, false

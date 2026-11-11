@@ -1,0 +1,62 @@
+{
+  "element": "Classic",
+  "height": 80,
+  "links": [],
+  "nodes": [
+    {
+      "border": null,
+      "borderWidth": null,
+      "clip": false,
+      "fill": null,
+      "gradient": null,
+      "name": "Classic",
+      "opacity": 1,
+      "path": "",
+      "radius": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rect": {
+        "h": 80,
+        "w": 200,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": null,
+      "textColor": null
+    },
+    {
+      "border": "#ffffff1a",
+      "borderWidth": 1,
+      "clip": false,
+      "fill": "#131925",
+      "gradient": null,
+      "name": "Box",
+      "opacity": 1,
+      "path": "Box",
+      "radius": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "rect": {
+        "h": 80,
+        "w": 200,
+        "x": 0,
+        "y": 0
+      },
+      "rotate": 0,
+      "shadows": [],
+      "text": [
+        "dark"
+      ],
+      "textColor": "#c1c9d6"
+    }
+  ],
+  "width": 200
+}

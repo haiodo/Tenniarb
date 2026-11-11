@@ -1,6 +1,11 @@
 package scene
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+
+	"github.com/haiodo/tenniarb/go/tenn"
+)
 
 // ctxDecl is one "context <key> <value>" or "context <key> ?= <value>" (spec 5f).
 type ctxDecl struct {
@@ -105,4 +110,28 @@ func ctxEnv(vars map[string]string) map[string]string {
 		}
 	}
 	return out
+}
+
+// ctxName is the object an expression reads context through (spec 5f): a bare name, not `$ctx` or `a.ctx`.
+var ctxName = regexp.MustCompile(`(^|[^.\w$])ctx\b`)
+
+// usesCtx reports whether pr names ctx in an expression. The element model of a classic diagram has no ctx,
+// so such a property is the scene's to evaluate (spec 5f, 6).
+//
+// shortcut: the code is scanned as text, so a property that mentions ctx inside a string or mixes it with
+// the model scope (sum, items) is left unevaluated; give the model the context when such a file turns up.
+func usesCtx(pr *Prop) bool {
+	for _, a := range pr.Args {
+		if a.Kind != tenn.KindExpression && a.Kind != tenn.KindExpressionBlock && a.Kind != tenn.KindStringLit {
+			continue
+		}
+		code, _ := a.GetIdentText()
+		if a.Kind == tenn.KindStringLit && !strings.Contains(code, "${") {
+			continue
+		}
+		if ctxName.MatchString(code) {
+			return true
+		}
+	}
+	return false
 }

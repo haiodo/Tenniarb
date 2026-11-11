@@ -1,7 +1,10 @@
 // Context (spec 5f): a provider sets values for its whole subtree, a component reads them as ctx.* and
 // keeps a default with ?=, so the same component stands alone, inside a dark frame, and with one value
 // overridden at the place of insertion. Slot content is written at the use site and still inherits the
-// context of the provider it lands in.
+// context of the provider it lands in. The root of the file and the element itself can be the provider
+// too, not only an item.
+context origin "the root of the file"
+
 element "Card" {
     kind Component
     context tone ?= light
@@ -36,11 +39,18 @@ element "Frame" {
 }
 
 element "Context" {
+    context heading "the element provides"
     item canvas {
         auto-layout column
         gap 16
         padding 24
         color #f6f7fb
+
+        item Heading {
+            title "${ctx.origin} / ${ctx.heading}"
+            font-size 13
+            text-color #3c4149
+        }
 
         // no provider above: the ?= default of the component gives light
         item Light {

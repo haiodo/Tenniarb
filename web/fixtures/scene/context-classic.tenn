@@ -1,0 +1,20 @@
+// Context (spec 5f) in a classic diagram: the root of the file and the element are providers, and a
+// property that names ctx is evaluated by the scene, not by the element model, which has no ctx: without
+// that the title is drawn as "ReferenceError: ctx is not defined" and the colour falls back to the
+// classic white.
+context tone dark
+
+element "Classic" {
+    context ink #c1c9d6
+    item Box {
+        pos 0 0
+        width 200
+        height 80
+        color ${ctx.tone === "dark" ? "#131925" : "#ffffff"}
+        border-color ${ctx.tone === "dark" ? "#ffffff1a" : "#e4e7ee"}
+        line-width 1
+        corner-radius 8
+        title ${ctx.tone}
+        text-color ${ctx.ink}
+    }
+}

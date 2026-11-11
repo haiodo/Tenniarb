@@ -874,6 +874,15 @@ function outward(a: SceneNode): SceneNode | null {
   return a.parent !== null ? a.parent : a.mountAt;
 }
 
+/** The root of the file the node is written in: a node above every element of it (spec 5f). */
+function fileRoot(n: SceneNode): SceneNode {
+  let root = n;
+  while (root.parent !== null) {
+    root = root.parent;
+  }
+  return root;
+}
+
 function lookup(scope: SceneNode | null, path: string): { node: SceneNode | null; message: string } {
   const segs = splitPath(path);
   if (segs === null) {
@@ -1234,6 +1243,11 @@ class Expander {
   }
 
   expandElement(n: SceneNode): RNode | null {
+    // The root of the file is a node above every element in it, so its context is inherited (spec 5f).
+    const file = fileRoot(n);
+    if (file !== n) {
+      this.ctx = applyCtx(this.ctx, ctxDecls(file.props, null, this.ctx, this.diag));
+    }
     this.vars = this.defaults(n);
     const r = this.container(n);
     if (r !== null) {
@@ -4478,8 +4492,13 @@ function fileTree(element: Element, diag: Diagnostics, options: SceneLoadOptions
   const file = newNode("file", "", null, null);
   file.file = loader.main;
   file.src = options.source ?? null;
-  const seen = new Set<Element>();
-  addElement(file, root, loader, diag, seen);
+  const seen = new Set<Element>([root]);
+  // The model keeps the commands and the elements of the file on an element named Root: the file node
+  // holds them, as go/scene's file node does and as a mounted file is built below (spec 5f).
+  fill(file, orderedEntries(root), diag);
+  for (const child of root.elements) {
+    addElement(file, child, loader, diag, seen);
+  }
   return file;
 }
 
@@ -4586,6 +4605,32 @@ function hasExpr(p: SceneProp): boolean {
       return true;
     }
     if ((a.kind === "StringLit" || a.kind === "MarkdownLit") && (a.getIdentText() ?? "").includes("${")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** The object an expression reads context through (spec 5f): a bare name, not `$ctx` or `a.ctx`. */
+const ctxName = /(?:^|[^.\w$])ctx\b/;
+
+/**
+ * Go's scene.usesCtx: the element model of a classic diagram has no ctx, so a property that names it is the
+ * scene's to evaluate (spec 5f, 6).
+ *
+ * shortcut: the code is scanned as text, so a property that mentions ctx inside a string or mixes it with
+ * the model scope (sum, items) is left unevaluated; give the model the context when such a file turns up.
+ */
+function usesCtx(p: SceneProp): boolean {
+  for (const a of p.args) {
+    if (a.kind !== "Expression" && a.kind !== "ExpressionBlock" && a.kind !== "StringLit") {
+      continue;
+    }
+    const code = a.getIdentText() ?? "";
+    if (a.kind === "StringLit" && !code.includes("${")) {
+      continue;
+    }
+    if (ctxName.test(code)) {
       return true;
     }
   }
@@ -5770,7 +5815,7 @@ export function buildTennScene(element: Element, options: SceneLoadOptions = {})
     if (options.context == null) {
       context.setElement(element);
     }
-    classicValues(expanded, context);
+    classicValues(expanded, context, diag);
   } else {
     evalTree(expanded, diag);
   }
@@ -5994,12 +6039,17 @@ function sceneRoot(rn: RNode): boolean {
 }
 
 /** The arguments of a classic diagram as the element model evaluates them: the value, else its text. */
-function classicValues(rn: RNode, context: IExecutionContext): void {
+function classicValues(rn: RNode, context: IExecutionContext, diag: Diagnostics): void {
   const target = rn.src === null ? null : (rn.src.model ?? rn.src.item);
   const ev = target === null ? null : context.getEvaluated(target);
   for (let i = 0; i < rn.props.length; i += 1) {
     const p = rn.props[i]!;
     if (!hasExpr(p)) {
+      continue;
+    }
+    if (usesCtx(p)) {
+      // The element model has no ctx: such a property is the scene's to evaluate (spec 5f).
+      rn.props[i] = evaluate(diag, rn, p) ?? p;
       continue;
     }
     const val = p.args.map((a) => {
@@ -6009,7 +6059,7 @@ function classicValues(rn: RNode, context: IExecutionContext): void {
     rn.props[i] = { ...p, val };
   }
   for (const k of rn.kids) {
-    classicValues(k, context);
+    classicValues(k, context, diag);
   }
 }
 
@@ -6608,8 +6658,7 @@ export function renderTemplate(element: Element, options: RenderTemplateOptions 
   let use: SceneNode | null = null;
   let target: SceneNode | null;
   if (options.path !== undefined && options.path !== "") {
-    // The model's file root is an element ("Root"); go/scene's file node holds the top-level elements.
-    const found = lookup(file.elems[0] ?? file, options.path);
+    const found = lookup(file, options.path);
     if (found.node === null) {
       errors.push({ message: found.message, line: 0, col: 0, file: file.file });
       return { text: "", errors };

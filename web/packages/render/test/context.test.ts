@@ -6,6 +6,7 @@ import { readTenn } from "@tenniarb/core";
 import type { Element } from "@tenniarb/core";
 import { buildTennScene, evalCode } from "../src/scene-tenn.ts";
 import type { TennScene } from "../src/scene-tenn.ts";
+import type { Canvas2D } from "../src/canvas-types.ts";
 import "./helpers.ts";
 
 function scene(text: string, name = "Screen"): { scene: TennScene; element: Element } {
@@ -210,3 +211,79 @@ test("a classic diagram keeps context as an ordinary property", () => {
   assert.deepEqual(s.diagnostics, []);
   assert.deepEqual([box(s, "A").width, box(s, "A").height], [10, 20]);
 });
+
+test("a context on the root of the file reaches an element built on its own", () => {
+  const { scene: s } = scene(`context page 40
+element "Screen" {
+    item A { auto-layout row; width \${ctx.page}; height 10 }
+}`);
+  assert.deepEqual(s.diagnostics, []);
+  assert.equal(box(s, "A").width, 40);
+});
+
+test("?= does not overrule a key the root of the file declares", () => {
+  const { scene: s } = scene(`context tone 10
+element "Screen" {
+    context tone ?= 20
+    item A { auto-layout row; width \${ctx.tone}; height 10 }
+}`);
+  assert.equal(box(s, "A").width, 10);
+});
+
+test("a classic diagram evaluates a property that names ctx in the scene, not in the model", () => {
+  const { scene: s } = scene(`context tone dark
+element "Screen" {
+    context ink #c1c9d6
+    item A {
+        pos 0 0
+        width \${ctx.tone === "dark" ? 30 : 10}
+        height 20
+        title \${ctx.tone}
+        text-color \${ctx.ink}
+    }
+}`);
+  assert.deepEqual(s.diagnostics, []);
+  assert.equal(box(s, "A").width, 30);
+  assert.deepEqual(texts(s), ["dark"]);
+});
+
+/** The strings the scene paints: the title a classic diagram used to take from the model shows up here. */
+function texts(s: TennScene): string[] {
+  const out: string[] = [];
+  const ctx = {
+    save() {},
+    restore() {},
+    translate() {},
+    scale() {},
+    rotate() {},
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    arcTo() {},
+    quadraticCurveTo() {},
+    closePath() {},
+    rect() {},
+    ellipse() {},
+    clip() {},
+    fill() {},
+    stroke() {},
+    fillRect() {},
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    lineDashOffset: 0,
+    setLineDash() {},
+    globalAlpha: 1,
+    shadowColor: "",
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    font: "",
+    textBaseline: "",
+    fillText: (text: string) => out.push(text),
+    measureText: (text: string) => ({ width: [...text].length * 10 }),
+    drawImage() {},
+  };
+  s.draw(ctx as unknown as Canvas2D);
+  return out;
+}
