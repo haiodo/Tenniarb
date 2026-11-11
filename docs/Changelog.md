@@ -7,6 +7,9 @@
   of landing in a `.tenniarb-library` file of the workspace that the next load ignores. A library file
   opened as a document reads and pans, its window says why, and Save writes nothing; whether a file of the
   document can be written is one answer, not a check repeated in each menu handler.
+* `design {op: "set"}` takes `index` for a property written more than once (`path`, `shadow`): 0-based,
+  default the last one, an index the node does not have fails with the count of that property, and the
+  answer names the index it changed. Deleting one of them with an empty `value` takes the same index.
 * A scene has a context: `context <key> <value>` on an item, an element, a file or in the block of a `use`
   passes a value down the subtree, `context <key> ?= <value>` is its default, and an expression reads it as
   `ctx.<key>` - the way a theme or a radius is set once for a frame instead of being passed as a parameter

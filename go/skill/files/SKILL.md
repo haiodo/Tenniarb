@@ -183,6 +183,8 @@ The workaround belongs in the file, not in a comment about the missing feature.
   `{op: "replace_all", find, replace}`. The parent of an insert is an item, an element or a use; empty is
   the file root. `replace_all` with a `node` searches only that node, without one the whole file.
   One call is one undo step; an edit and a delete of the same node in one call is refused - split it.
+- A property written more than once (`path`, `shadow`) is the last one unless `set` takes `index`: 0-based,
+  and an index outside the list fails saying how many the node has. The answer names the index it changed.
 - `read {file, path: "Lib.Forms"}` follows `--from-file`: a path that ends on a mounting element gives the
   content of the mounted file, not its one-line declaration.
 - `layout` and `render {inspect: true}` report the same geometry; the first draws no picture.

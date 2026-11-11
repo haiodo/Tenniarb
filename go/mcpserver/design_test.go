@@ -127,6 +127,50 @@ func TestDesignOnPart(t *testing.T) {
 	}
 }
 
+// TestDesignSetIndex: a property written twice (shadow here) is the last one unless index names another;
+// an index the node does not have fails with the count, and nothing is written.
+func TestDesignSetIndex(t *testing.T) {
+	const doc = "element S {\n\titem A { width 40; height 20; shadow 1 1 2 #000000; shadow 4 4 8 #111111 }\n}\n"
+	root := tempRoot(t, map[string]string{"s.tenn": doc})
+	cs := memSession(t, root)
+	out := mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "shadow", "value": "2 2 3 #ff0000", "index": 0},
+	}})
+	if !strings.Contains(out, "shadow of A (index 0 of 2)") {
+		t.Fatalf("the answer does not name the index: %s", out)
+	}
+	got := fileText(t, root, "s.tenn")
+	if !strings.Contains(got, "shadow 2 2 3 #ff0000; shadow 4 4 8 #111111") {
+		t.Fatalf("the first shadow was not the one changed:\n%s", got)
+	}
+	out = mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "shadow", "value": "9 9 9"},
+	}})
+	if !strings.Contains(out, "(index 1 of 2)") {
+		t.Fatalf("without index the last shadow must be the one: %s", out)
+	}
+	if got := fileText(t, root, "s.tenn"); !strings.Contains(got, "shadow 2 2 3 #ff0000; shadow 9 9 9") {
+		t.Fatalf("the last shadow was not the one changed:\n%s", got)
+	}
+	before := fileText(t, root, "s.tenn")
+	mustFail(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "shadow", "value": "0 0 0", "index": 5},
+	}}, "has 2 properties named shadow: no index 5")
+	if fileText(t, root, "s.tenn") != before {
+		t.Fatal("a refused index wrote the file")
+	}
+	// an empty value removes the shadow at that index, not the last one
+	out = mustOK(t, cs, "design", map[string]any{"file": "s.tenn", "ops": []map[string]any{
+		{"op": "set", "node": "S.A", "name": "shadow", "value": "", "index": 0},
+	}})
+	if !strings.Contains(out, "(index 0 of 2) removed") {
+		t.Fatalf("the removal does not name the index: %s", out)
+	}
+	if got := fileText(t, root, "s.tenn"); strings.Contains(got, "shadow 2 2 3") || !strings.Contains(got, "shadow 9 9 9") {
+		t.Fatalf("the removal took the wrong shadow:\n%s", got)
+	}
+}
+
 func TestDesignUsesUnsavedLibraries(t *testing.T) {
 	dir := serviceDir(t)
 	startService(t, dir, "v1", nil, 0)

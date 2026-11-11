@@ -20,6 +20,7 @@ type DesignOp struct {
 	Parent  string  `json:"parent,omitempty" jsonschema:"insert: dotted path of the parent; empty for the file root"`
 	Name    string  `json:"name,omitempty" jsonschema:"set: the property name"`
 	Value   string  `json:"value,omitempty" jsonschema:"set: the arguments of the property as written after the name; empty removes it"`
+	Index   *int    `json:"index,omitempty" jsonschema:"set: which of the properties of that name to change, 0-based, since path and shadow repeat; default the last one"`
 	Text    string  `json:"text,omitempty" jsonschema:"insert: the commands to add, one or more lines"`
 	Dx      float64 `json:"dx,omitempty" jsonschema:"move: change of pos x"`
 	Dy      float64 `json:"dy,omitempty" jsonschema:"move: change of pos y, y up"`
@@ -171,15 +172,21 @@ func designSpan(tree *scene.Tree, rel, text string, op DesignOp) (span, string, 
 			return span{}, "", errors.New("name is empty")
 		}
 		cmd := strings.TrimSpace(name + " " + value)
-		if pr := ownPropOf(n, name); pr != nil {
+		props := ownPropsOf(n, name)
+		pr, at, err := pickProp(n, name, props, op.Index)
+		if err != nil {
+			return span{}, "", err
+		}
+		where := fmt.Sprintf("%s of %s (index %d of %d)", name, nameOf(n), at, len(props))
+		if pr != nil {
 			if strings.TrimSpace(value) == "" {
 				from, to := lineSpan(text, pr.Range.Start, pr.Range.End)
 				if to-from == len(text[from:to]) && !strings.Contains(text[from:to], ";") {
-					return span{from, to, ""}, name + " of " + nameOf(n) + " removed", nil
+					return span{from, to, ""}, where + " removed", nil
 				}
-				return span{pr.Range.Start, pr.Range.End, ""}, name + " of " + nameOf(n) + " removed", nil
+				return span{pr.Range.Start, pr.Range.End, ""}, where + " removed", nil
 			}
-			return span{pr.Range.Start, pr.Range.End, cmd}, name + " of " + nameOf(n), nil
+			return span{pr.Range.Start, pr.Range.End, cmd}, where, nil
 		}
 		if strings.TrimSpace(value) == "" {
 			return span{}, "", errors.New("the node has no property " + name)
@@ -279,21 +286,45 @@ func blockInsert(text string, n *scene.Node, cmd string) (span, bool) {
 	return span{from, at, lead + ind + unit + body + "\n" + ind}, true
 }
 
-// ownPropOf is the property command of name written on n itself: in its own arguments, or in the block
-// of a use, where an override of the root instance is written.
-func ownPropOf(n *scene.Node, name string) *scene.Prop {
-	var found *scene.Prop
+// ownPropsOf is every property command of name written on n itself, in the order they stand: the own
+// arguments, then the overrides in the block of a use.
+func ownPropsOf(n *scene.Node, name string) []*scene.Prop {
+	var out []*scene.Prop
 	for _, p := range n.Props {
 		if p.Name == name {
-			found = p
+			out = append(out, p)
 		}
 	}
 	for _, ov := range n.Block {
 		if ov.Kind == scene.OvProp && ov.Prop != nil && ov.Prop.Name == name {
-			found = ov.Prop
+			out = append(out, ov.Prop)
 		}
 	}
-	return found
+	return out
+}
+
+// ownPropOf is the last property command of name written on n itself: the one in effect.
+func ownPropOf(n *scene.Node, name string) *scene.Prop {
+	if props := ownPropsOf(n, name); len(props) > 0 {
+		return props[len(props)-1]
+	}
+	return nil
+}
+
+// pickProp is the property an op addresses: the one at index, or the last one when index is nil. An index
+// outside the list is an error that says how many properties of the name the node has.
+func pickProp(n *scene.Node, name string, props []*scene.Prop, index *int) (*scene.Prop, int, error) {
+	i := len(props) - 1
+	if index != nil {
+		i = *index
+	}
+	if i < 0 || i >= len(props) {
+		if index == nil {
+			return nil, -1, nil // set adds the property
+		}
+		return nil, i, fmt.Errorf("%s has %d properties named %s: no index %d", nameOf(n), len(props), name, i)
+	}
+	return props[i], i, nil
 }
 
 // propNums reads the two numbers of a property, zero when it has none.
