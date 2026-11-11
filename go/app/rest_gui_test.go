@@ -98,7 +98,8 @@ func TestItemsAdd(t *testing.T) {
 
 	// the header "+": the Add menu, a new node at the end of the element
 	a.Find(qa.ID("items-add")).Click()
-	a.Find(qa.Text("Frame").In(qa.ID("items-add"))).Click()
+	a.Settle()
+	addEntry(t, a, "Frame")
 	restWait(a)
 	a.Key("Esc") // the new node opens for renaming
 	restWait(a)

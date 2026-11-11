@@ -10,6 +10,7 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/icons"
+	"github.com/haiodo/gowt/look"
 	"github.com/haiodo/gowt/swt"
 
 	"github.com/haiodo/tenniarb/go/editor"
@@ -28,11 +29,14 @@ type itemsList struct {
 	comps      []Component         // what the browser lists, kept for the drag of a row
 	previews   map[string]*g.Image // the picture of a component row, by use path
 	itemsBtn   *g.ButtonView       // the two modes of the pane; the pressed one is the one shown
-	compsBtn   *g.ButtonView
+	addBtn     *g.ButtonView       // Add, greyed out while the document takes no item
+	addOn      bool                // what the last syncItemsAdd set
+	addSet     bool
 	tree       *g.TreeView
 	open       map[string]bool // expanded scene rows by path, for the canvas of canvasOf
 	canvas     any
 	sig        string // what the rows show, so a redraw that changes none of them keeps them
+	force      bool   // the rows must be made again even when their signature is the same, as on a mode switch
 	syncing    bool
 	grey       *swt.Color // the colour of instance rows in the theme greyDark
 	greyDark   bool
@@ -56,21 +60,24 @@ func (v *Viewer) itemsPane() g.Option {
 	l := &v.itemsUI
 	return g.VBox(g.Ref(&l.box), g.Grow(), g.Padding(0), g.Gap(0),
 		g.HBox(g.GrowX(), g.Padding(4), g.Gap(g.Scaled(4)),
-			g.HBox(g.GrowX(), g.Gap(g.Scaled(2)),
-				v.itemsModeButton("menu", "The items of this element", "items-mode-items", &l.itemsBtn, false),
-				v.itemsModeButton("copy", "What the libraries offer: drag one onto the canvas, or double click it",
-					"items-mode-components", &l.compsBtn, true)),
-			g.Button("+", g.Small(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
-				g.ID("items-add"), g.Tooltip("Add an item"),
+			g.HBox(g.GrowX(), v.itemsModeButton()),
+			g.Button("", look.GlassButton(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
+				g.ID("items-add"), g.Ref(&l.addBtn), g.Tooltip("Add an item"),
 				g.Init(func(b *g.ButtonView) {
+					b.SetImage(icons.Get(v.app, "add", icons.Size(12)))
 					m := g.PopupMenu(b)
-					// The entries are made for the opening and gone when it closes, so the Add menu of
-					// the menu bar stays the one a test finds by its label.
 					b.OnClick(func() {
-						fillMenu(m, v.addEntries())
+						entries := v.addEntries()
+						labels := make([]string, 0, len(entries))
+						for _, e := range entries {
+							labels = append(labels, e.Label)
+						}
+						uilog("items-add click: enabled=%v scene=%v current=%q entries=%v", b.Enabled(), v.sceneMode(), PathOf(v.state.Current), labels)
+						fillMenu(m, entries)
 						m.Show()
 					})
-					m.Unwrap().AddMenuListener(swt.MenuListenerMenuHiddenAdapter(func(*swt.MenuEvent) { fillMenu(m, nil) }))
+					// The items outlive the opening: macOS sends the click of an item after the menu has
+					// closed, and a menu emptied in between runs nothing. The next opening fills it anew.
 				}))),
 		g.Tree(g.NoBorder(), g.Grow(), g.ID("items"), g.Init(func(t *g.TreeView) {
 			l.tree = t
@@ -205,6 +212,7 @@ func (v *Viewer) rebuildItems() {
 	if l.tree == nil {
 		return
 	}
+	v.syncItemsAdd()
 	if c := v.canvasOf(); c != l.canvas || l.open == nil {
 		l.canvas, l.open = c, map[string]bool{}
 	}
@@ -213,10 +221,11 @@ func (v *Viewer) rebuildItems() {
 	for p := range l.open {
 		sig += "\x01" + p + rowsSig(v.rowsAt(p))
 	}
-	if sig == l.sig {
+	if sig == l.sig && !l.force {
 		v.syncItems()
 		return
 	}
+	l.force = false
 	l.sig = sig
 	l.syncing = true
 	l.hover = nil
@@ -227,6 +236,21 @@ func (v *Viewer) rebuildItems() {
 	l.syncing = false
 	v.sizeItemsAdd()
 	v.syncItems()
+}
+
+// syncItemsAdd greys out Add while nothing can take an item: no document, or a readonly one. The document
+// itself is a diagram of items, so its root takes them like an element.
+func (v *Viewer) syncItemsAdd() {
+	l := &v.itemsUI
+	if l.addBtn == nil {
+		return
+	}
+	on := v.session != nil && !v.session.Readonly()
+	if !l.addSet || l.addOn != on {
+		l.addOn, l.addSet = on, true
+		uilog("items-add enabled=%v session=%v current=%q", on, v.session != nil, PathOf(v.state.Current))
+	}
+	l.addBtn.SetEnabled(on)
 }
 
 func rowsSig(rows []ItemRow) string {
@@ -244,14 +268,31 @@ func rowsSig(rows []ItemRow) string {
 	return b.String()
 }
 
-// itemsModeButton is one mode of the pane, an icon the width of a control, so the header stays narrow.
-func (v *Viewer) itemsModeButton(icon, tip, id string, ref **g.ButtonView, components bool) g.Option {
-	return g.Button("", g.Small(), g.Toggle(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
-		g.ID(id), g.Ref(ref), g.Tooltip(tip),
+// itemsModeButton switches the pane between the items of the canvas and the browser of what the
+// libraries offer, as one toggle; the icon names what the pane shows now.
+func (v *Viewer) itemsModeButton() g.Option {
+	l := &v.itemsUI
+	return g.Button("", look.GlassButton(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
+		g.ID("items-mode"), g.Ref(&l.itemsBtn), g.Tooltip("Items of the element; click for the components of the libraries"),
 		g.Init(func(b *g.ButtonView) {
-			b.SetImage(icons.Get(v.app, icon, icons.Size(12)))
-			b.OnClick(func() { v.setItemsMode(components) })
+			b.SetImage(v.itemsModeIcon())
+			b.OnClick(func() {
+				v.setItemsMode(!l.components)
+				b.SetImage(v.itemsModeIcon())
+				b.SetTooltip(map[bool]string{true: "Components of the libraries; click for the items of the element",
+					false: "Items of the element; click for the components of the libraries"}[l.components])
+			})
 		}))
+}
+
+// itemsModeIcon is the icon of the mode button: the pile of documents for the component browser, the
+// list for the items of the canvas.
+func (v *Viewer) itemsModeIcon() *g.Image {
+	icon := "menu"
+	if v.itemsUI.components {
+		icon = "copy"
+	}
+	return icons.Get(v.app, icon, icons.Size(12))
 }
 
 // setItemsMode switches the pane between the rows of the canvas and the browser of what the libraries

@@ -318,10 +318,7 @@ func (v *Viewer) toolbar() {
 		}},
 		look.ToolbarItem{Title: "Reset Zoom", Text: v.zoomText, Small: true, OnClick: v.resetZoom},
 		look.ToolbarItem{Title: "Comment Mode (C)", Symbol: "text.bubble", Small: true, ID: "comment-mode", OnClick: v.toggleCommentMode},
-		look.ToolbarItem{Title: "Item", Inspector: true, Small: true, Group: []look.ToolbarItem{
-			{Title: "New Item", Symbol: "plus", OnClick: v.newItem},
-			{Title: "Delete Item", Symbol: "minus", OnClick: v.deleteItems},
-		}},
+		look.ToolbarItem{Space: true, Inspector: true},
 		searchItem,
 		look.ToolbarItem{Title: "Hide Code", Symbol: "rectangle.bottomthird.inset.filled", Inspector: true, Small: true, OnClick: v.toggleCode},
 		look.ToolbarItem{Title: "Hide Inspector", Symbol: "sidebar.right", Inspector: true, Small: true, OnClick: v.toggleInspector},
@@ -610,6 +607,7 @@ func (v *Viewer) startSession() {
 	v.session, v.tracker, v.shownElem, v.docElem = nil, nil, nil, nil
 	v.cmp = nil // the comparison was of the document that was open
 	v.agentEdits = false
+	v.syncItemsAdd()
 	if v.state.Doc.Model == nil || v.state.Current == nil {
 		v.clearCanvas()
 		v.updateTitle()

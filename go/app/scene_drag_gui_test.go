@@ -61,3 +61,45 @@ func TestSceneDragCoveredItem(t *testing.T) {
 		t.Fatalf("the child moved:\n%s", got)
 	}
 }
+
+// TestSceneDragUnderLayer: an item under a transparent full-size layer takes the click, and the selected
+// item drags from anywhere on its box, even where a layer above covers it. A transparent layer swallows
+// nothing: a toolbar laid over a window would otherwise take every press of the element.
+func TestSceneDragUnderLayer(t *testing.T) {
+	if os.Getenv("GOWT_GUI_TEST") == "" {
+		t.Skip("set GOWT_GUI_TEST=1 to open windows")
+	}
+	h := qaHelpers{t: t, app: qatest.App(t)}
+	a := h.app
+	file := filepath.Join(t.TempDir(), "layer.tenn")
+	text := "element Screen {\n" +
+		"\tauto-layout abs\n" +
+		"\titem Under { pos 0 0; width 100; height 60; color #cccccc }\n" +
+		"\titem Layer { pos -10 -10; auto-layout abs; width 300; height 300 }\n" +
+		"}\n"
+	if err := os.WriteFile(file, []byte(text), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		h.open(fixture)
+		a.State("command", "name", "close-others")
+	})
+	h.open(file)
+	a.State("command", "name", "close-others")
+	a.Settle()
+	a.State("select", "path", file, "element", []string{"Screen"}, "nodes", []string{})
+	a.Settle()
+
+	under := h.scene()["Under"].Box
+	x, y := under[0]+under[2]/2, under[1]+under[3]/2
+	a.Find(qa.ID("canvas")).ClickAt(x, y)
+	a.Settle()
+	if st := h.state(); len(st.Nodes) != 1 || st.Nodes[0] != "Under" {
+		t.Fatalf("a click through the layer selected %v, want Under", st.Nodes)
+	}
+	a.Find(qa.ID("canvas")).DragTo(x, y, x+30, y+15)
+	restWait(a)
+	if got := h.text(); !strings.Contains(got, "item Under { pos 30 -15;") {
+		t.Fatalf("Under did not move:\n%s", got)
+	}
+}

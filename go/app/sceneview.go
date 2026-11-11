@@ -407,9 +407,15 @@ func under(n, owner *scene.Node) bool {
 
 // hitScene is the deepest item one can select under the content point p, nil on empty space.
 func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
+	// A transparent layer yields to what it covers: the click goes to the node that draws something.
+	if h := sv.paintedAt(p); h != nil {
+		return h
+	}
+	// Nothing draws there: the deepest node whose box holds the point, as a layer with no fill of its own
+	// still selects.
 	var found *scene.Placed
-	var walk func(pl *scene.Placed) bool
-	walk = func(pl *scene.Placed) bool {
+	var walk func(pl *scene.Placed)
+	walk = func(pl *scene.Placed) {
 		for i := len(pl.Kids) - 1; i >= 0; i-- {
 			k := pl.Kids[i]
 			if p.X < k.X || p.Y < k.Y || p.X > k.X+k.W || p.Y > k.Y+k.H {
@@ -419,14 +425,49 @@ func (sv *sceneView) hitScene(p gfx.Point) *scene.Placed {
 				found = k
 			}
 			walk(k)
-			return true
+			return
 		}
-		return false
 	}
 	if sv.placed != nil {
 		walk(sv.placed)
 	}
 	return found
+}
+
+// paintedAt is the deepest node at p that draws something of its own or holds one that does: what a press
+// finds before a transparent layer over it.
+func (sv *sceneView) paintedAt(p gfx.Point) *scene.Placed {
+	var walk func(pl *scene.Placed) *scene.Placed
+	walk = func(pl *scene.Placed) *scene.Placed {
+		for i := len(pl.Kids) - 1; i >= 0; i-- {
+			k := pl.Kids[i]
+			if p.X < k.X || p.Y < k.Y || p.X > k.X+k.W || p.Y > k.Y+k.H {
+				continue
+			}
+			if h := walk(k); h != nil {
+				return h
+			}
+			if _, ok := sv.pathOf[k]; ok && painted(k) {
+				return k
+			}
+		}
+		return nil
+	}
+	if sv.placed == nil {
+		return nil
+	}
+	return walk(sv.placed)
+}
+
+// painted reports whether the node draws something of its own: a fill, a border, an icon path, an image,
+// a title or a shadow. Its children are the caller's business.
+func painted(pl *scene.Placed) bool {
+	for _, name := range [...]string{"color", "border-color", "path", "image", "title", "shadow"} {
+		if pl.Prop(name) != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // pick is what a click on hit selects. An instance is selected whole first: the outermost one above hit.
@@ -456,14 +497,17 @@ func (sv *sceneView) pick(hit, cur *scene.Placed, clicks int) *scene.Placed {
 	return chain[top]
 }
 
-// isInside reports whether n is below ancestor in the placed tree.
-func isInside(n, ancestor *scene.Placed) bool {
-	for p := n.Parent; p != nil; p = p.Parent {
-		if p == ancestor {
-			return true
+// movable is pl when its place comes from pos, else the nearest ancestor that has one: a click on a node
+// inside an auto-layout moves the container it sits in, not the node.
+func (sv *sceneView) movable(pl *scene.Placed) *scene.Placed {
+	for n := pl; n != nil; n = n.Parent {
+		if n.Free && n.Gfx != nil {
+			if _, ok := sv.pathOf[n]; ok {
+				return n
+			}
 		}
 	}
-	return false
+	return nil
 }
 
 // sceneDrawn reports whether the canvas draws the element through go/scene: a scene, or a classic
@@ -984,12 +1028,18 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 		v.press = press{active: true, cam: v.view.Compositor().Camera(), pos: p.Pos, from: p.Pos}
 		_, cur := v.selectedScene()
 		hit := sv.hitScene(at)
-		// A press inside the selected item moves it, even where a child covers all of it: otherwise an
-		// item made of one instance could not be dragged at all. A second click goes into the child.
-		if hit != nil && cur != nil && hit != cur && cur.Free && cur.Gfx != nil && p.Count < 2 && isInside(hit, cur) {
-			hit = cur
+		// A press on the selected item moves it, wherever on it the press lands, even where a child or
+		// a layer above covers all of it: otherwise an item made of one instance could not be dragged
+		// at all. A node with no place of its own moves the nearest ancestor that has one. A second
+		// click still goes into the child.
+		var move *scene.Placed
+		if cur != nil && p.Count < 2 && cur.X <= at.X && at.X <= cur.X+cur.W && cur.Y <= at.Y && at.Y <= cur.Y+cur.H {
+			move = sv.movable(cur)
+			if move != nil {
+				hit = move
+			}
 		}
-		if hit != nil {
+		if hit != nil && move == nil {
 			hit = sv.pick(hit, cur, p.Count)
 		}
 		// Ctrl draws a link, as Swift does: the line leaves the item under the pointer and the item it is
@@ -1003,9 +1053,9 @@ func (v *Viewer) scenePointer(p *view.Pointer) {
 			return
 		}
 		switch {
-		case hit != nil && hit == cur && hit.Free && hit.Gfx != nil:
-			t := hit.Gfx.Transform()
-			sv.drag = sceneDrag{pl: hit, from: at, ox: t[4], oy: t[5]}
+		case move != nil:
+			t := move.Gfx.Transform()
+			sv.drag = sceneDrag{pl: move, from: at, ox: t[4], oy: t[5]}
 		case hit != nil:
 			v.selectScene([]string{sv.pathOf[hit]})
 			v.press.pan = true
