@@ -31,6 +31,7 @@ element "Screens" {
 ```
 
 - `element` is the tree of the document: one element is one canvas. Put each screen in its own element.
+- A nested element is a screen of its own: an element inside an element is not drawn into the parent.
 - Inside an element: `item`, `use` (an instance of a component) and `link`.
 - An `item` with children or `auto-layout` is a container; an item without children is a leaf:
   text, a box or an icon.
@@ -276,3 +277,25 @@ element "Compact" {
 
 A block with child blocks has one command per line; a block of plain commands goes on one line
 while it stays under 160 characters.
+
+## Context
+
+`context <key> <value>` on an item, an element, a file or in a `use` block passes a value down the
+subtree; `context <key> ?= <value>` is its default, and the place of the use wins. Read it as
+`ctx.<key>` in an expression (`${ctx.radius * 2}`); a bare key is no variable. `export let` stays the
+instance contract, styles do not set context, and a missing `ctx.<key>` is a bad expression, not the
+text `undefined`.
+
+## Limits
+
+The workaround belongs in the file, not in a comment about the missing feature.
+
+- `blur`, `backdrop-filter`, `filter` - none of them. Bake the effect into a PNG and draw it with `image`.
+- One `shadow` per item: a second one is a copy of the shape behind it, offset, with a transparent fill.
+- `color` gradients are linear only; there is no radial one.
+- `text-transform` - write the text in the case you want.
+- `clip` is the item's own rounded box; no arbitrary `clip-path` and no ellipse.
+- `line-style` dashes a frame and a `link`, not a stroked `path`.
+- `image` takes a path written in the text; a `${...}` in it is not evaluated.
+- `align` is `start|center|end`, there is no `stretch`: equal heights are a number or `height fill` in
+  a row.

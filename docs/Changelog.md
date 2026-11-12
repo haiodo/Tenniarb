@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* The design skill keeps `SKILL.md` under 2000 words: the tool notes moved to `tools.md`, the limits and
+  `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
+  characters.
+
 * gowt 0.15.7: toolbar image items draw as bare icons instead of the AppKit 26 bordered glass capsules, so
   they are small; every gfx window shares one display frame clock, and a hidden or covered window paints one
   catch-up frame when it shows again.

@@ -13,11 +13,12 @@ reference, read it only when the task needs that part:
 
 | File | Read it when |
 |---|---|
-| `format.md` | you need a property this file does not list: gradients, shadows, `body` markdown, `path` icons, animations, compact form |
+| `format.md` | you need a property this file does not list: gradients, shadows, `body` markdown, `path` icons, animations, compact form, `context`, or what the scene cannot do |
 | `platforms.md` | you are picking a font size, gap, padding, row or control height, or a window and panel width, and want the number instead of a guess |
 | `direction.md` | before drawing a screen: the audit, the direction and the passes that stop it looking generated |
 | `components.md` | the library has the screen you need and you fill its slots; or the file is a library itself |
-| `layout.md` | you want the full recipe of an app window, a settings page, a list or a dialog, not the short one here |
+| `layout.md` | you are drawing an app window, a settings page, a list or a dialog and want the full recipe |
+| `tools.md` | `design`, `read`, `layout` or `refactor` does something you did not expect |
 | `diagrams.md` | drawing a brain map, flow or other diagram with links |
 | `review.md` | after the first render, to check what you drew against the usual mistakes |
 
@@ -132,39 +133,6 @@ style; the ones a `styles` block lists as `one-of` or `any-of` become the inspec
 **Colors**: `#rrggbb`, `#rrggbbaa` or a palette name (`gray-400`, `blue`, `red`). Three-digit `#fff` is
 not a color.
 
-## Recipes
-
-Short versions; `layout.md` has the full ones.
-
-**App window**: `item Window { width 1512; height 982; auto-layout row; color #fff }` with `item Rail
-{ width 48; auto-layout column; ... }`, `item Side { width 240; auto-layout column; padding 12; gap 4 }`,
-`item Main { width fill; auto-layout column }`, `item Inspector { width 280; auto-layout column }`.
-
-**List**: a column of rows, each `auto-layout row; width fill; height 44; padding 0 12; align center`, a
-title with `width fill` and cells with fixed widths.
-
-**Dialog over a screen**: two top-level items - the screen, then `item scrim { pos 0 0; width
-<scene>; height <scene>; color #00000066 }`, then `item Dialog { pos X Y; width 560; auto-layout column;
-corner-radius 12; color #ffffff; shadow 0 -8 24 }` with a header row, a body with `padding 24`, a
-footer row (`justify end`, `gap 8`).
-
-**Mobile**: `item Phone { width 390; height 844; auto-layout column; padding 16; gap 12; corner-radius
-40; clip yes }`.
-
-## What the scene cannot do
-
-The workaround belongs in the file, not in a comment about the missing feature.
-
-- `blur`, `backdrop-filter`, `filter` - none of them. Bake the effect into a PNG and draw it with `image`.
-- One `shadow` per item: a second one is a copy of the shape behind it, offset, with a transparent fill.
-- `color` gradients are linear only; there is no radial one.
-- `text-transform` - write the text in the case you want.
-- `clip` is the item's own rounded box; no arbitrary `clip-path` and no ellipse.
-- `line-style` dashes a frame and a `link`, not a stroked `path`.
-- `image` takes a path written in the text; a `${...}` in it is not evaluated.
-- `align` is `start|center|end`, there is no `stretch`: equal heights are a number or `height fill` in
-  a row.
-
 ## Cheap habits
 
 - Never `read` a whole library or a large file: list it with `get_state` and read one node.
@@ -180,28 +148,10 @@ The workaround belongs in the file, not in a comment about the missing feature.
   of the pixels. Ask for `layout` before the first render: it finds the overflow that the image would
   only show you.
 
-## Facts that cost a round
+## Tool quirks
 
-- `design {file, ops: [...]}` changes nodes by path: `{op: "set", node: "S.Button", name: "color", value: "#1f2129"}`,
-  `{op: "move", node, dx, dy}`, `{op: "insert", parent, text}`, `{op: "delete", node}`,
-  `{op: "replace_all", find, replace}`. The parent of an insert is an item, an element or a use; empty is
-  the file root. `replace_all` with a `node` searches only that node, without one the whole file.
-  One call is one undo step; an edit and a delete of the same node in one call is refused - split it.
-- A property written more than once (`path`, `shadow`) is the last one unless `set` takes `index`: 0-based,
-  and an index outside the list fails saying how many the node has. The answer names the index it changed.
-- `read {file, path: "Lib.Forms"}` follows `--from-file`: a path that ends on a mounting element gives the
-  content of the mounted file, not its one-line declaration.
-- `layout` and `render {inspect: true}` report the same geometry; the first draws no picture.
-- `refactor {file, node, rename: "NewName"}` renames a node and every `use`, `at` and `replace` path that
-  names it, in every file that mounts it; `parent` moves it into an item, an element or `.` (the file
-  root), and the paths are written again from the entry document. A move refuses when the node is named
-  inside a `use` by an `at` or `replace` path: those are relative to the instance, not to the file.
-- A nested element is a screen of its own: an element inside an element is not drawn into the parent.
-- `context <key> <value>` on an item, element, file or in a `use` block passes a value down the subtree;
-  `context <key> ?= <value>` is its default, and the place of the use wins. Read it as `ctx.<key>` in an
-  expression (`${ctx.radius * 2}`); a bare key is no variable. `export let` stays the instance contract,
-  styles do not set context, and a missing `ctx.<key>` is a bad expression, not the text `undefined`.
-- `color linear 90 #ffffff #000000` - the angle is CSS (0 up, 90 right), positions are 0..1 on the stops.
+`design` ops, repeated properties, mounted-file reads, inspect geometry and `refactor`: read
+`tools.md` when one of them does something you did not expect.
 
 ## Two things to remember
 
@@ -227,12 +177,10 @@ not a step of the loop; `select {file, nodes, reveal: true}` points at nodes you
 
 ## Comments from the user
 
-The user leaves comments on nodes of a design in the app. After you finish a task call `comments {file}`: each
-open comment has an `id`, the `text`, the anchor (`link_text` goes to `select`) and the replies. Fix what it asks,
-then `reply {file, id, text}` or `resolve {file, id, text}`; the user sees it in the thread at once. To stay on
-duty loop `wait_comment {timeout_s}`: it returns the new comments and replies, or `[]` after the timeout, and you
-call it again.
+After a task call `comments {file}`: each open comment has an `id`, `text`, the anchor (`link_text` for
+`select`) and replies. Fix it, then `reply {file, id, text}` or `resolve {file, id, text}`; the thread
+updates at once. Loop `wait_comment {timeout_s}` to stay on duty: new events, or `[]` after the timeout.
 
-A comment with a `file` field is not on this document but on a file it mounts (`element X --from-file`): answer it
-with `reply {file: <that file>, id, text}`, and edit that file, not this one. Comments live in the app, not in the
-`.tenn` text: a `//` line is a code comment, not a note from the user.
+A comment with a `file` field is on a file the document mounts (`element X --from-file`): reply and edit
+that file, not this one. Comments live in the app, not in the `.tenn` text: a `//` line is a code
+comment, not a note from the user.
