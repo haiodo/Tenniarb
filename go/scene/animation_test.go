@@ -42,6 +42,10 @@ func TestAnimationKeyframesInSVG(t *testing.T) {
 	if n := strings.Count(svg, "animation:fade "); n != 1 {
 		t.Errorf("animation:fade on %d groups, want 1", n)
 	}
+	// The rules name the groups by id, written into the defs, not by their order in the document.
+	if !strings.Contains(svg, `<style>`) || !strings.Contains(svg, `id="tenniarb-anim-`) {
+		t.Errorf("the CSS or the group ids are missing:\n%s", svg)
+	}
 	// Every item keeps its transform: the animation is a style on the group, not a replacement of it.
 	if !strings.Contains(svg, `transform="matrix(1 0 0 1 36 8)"`) {
 		t.Errorf("the group of Icon lost its place:\n%s", svg)
