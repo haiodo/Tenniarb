@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 200x100 frame at 0 0 with auto-layout abs"
+  },
+  {
+   "name": "expression",
+   "expect": "the box width is written as an expression such as ${40 * 3}, not the literal 120"
+  },
+  {
+   "name": "size",
+   "expect": "layout reports the box 120 wide and 60 high"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a 120x60 lavender box inside the frame, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "an item with pos 0 0, width 320, height 200 inside element Empty"
+  },
+  {
+   "name": "style",
+   "expect": "that item has color #ffffff, corner-radius 12 and padding 16"
+  },
+  {
+   "name": "title",
+   "expect": "a child text item with title Hello, font-size 20, font-weight 700"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty at 320x200: the card fills it, the title sits inside with the 16 padding, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

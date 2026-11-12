@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a 360 wide item at 0 0, white, corner-radius 12, padding 24, column gap 16"
+  },
+  {
+   "name": "title",
+   "expect": "a bold 20 pt Profile title inside"
+  },
+  {
+   "name": "fields",
+   "expect": "two Field uses with effective labels Email and Password and the values given"
+  },
+  {
+   "name": "button",
+   "expect": "a primary Save button after the fields"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues and the fields do not leave the 360 width"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a form card 360 wide with two labeled fields and a button, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

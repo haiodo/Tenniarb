@@ -25,6 +25,20 @@ jq -s 'map(.out) | add' /tmp/run.log            # the whole context cost of the 
 jq -s '[.[] | select(.tool != "read")][0]' /tmp/run.log   # the first call that is not a read: the start of work
 ```
 
+## The scenario bench
+
+[`bench/`](../bench/README.md) holds the scenario set: a small fixture workspace (`bench/workspace`) and one
+directory per task with `task.md` and `check.json`. `bench/run.sh <id> [model]` copies the fixture out of the
+repository (so the repository's `AGENTS.md` does not reach the agent), runs `opencode run` on the task and
+keeps the JSON trace of the agent, the MCP call log filtered by the run's root, the result workspace and
+`stats.json`. `bench/verify.sh <run>` gives the task and the criteria to a second agent that answers with
+JSON; `bench/report.py` prints the pass rate, calls, bytes and tokens per model.
+
+The criteria are written for the tools, not for a diff: a path from `get_state`, a property from `read`, a
+number from `layout`, a picture from `render`. Two runs of `deepseek-v4.1-flash` on `b01-card` and
+`t01-preserve` passed; the first showed the mount level (`Empty` versus `Empty.Empty`) costing a failed
+`design` call and two failed `edit` calls.
+
 ## The tasks
 
 All four are on the platform design, and each has a check that needs no judgement call.

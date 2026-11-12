@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "row",
+   "expect": "a row item at 0 0 with gap 8, padding 24, auto-layout row"
+  },
+  {
+   "name": "buttons",
+   "expect": "three uses of Libraries.ui_kit.Button inside that row"
+  },
+  {
+   "name": "labels",
+   "expect": "their effective titles are Save, Cancel, Delete, in that order"
+  },
+  {
+   "name": "kinds",
+   "expect": "Save keeps the default primary look; Cancel and Delete get the secondary look (kind secondary), visible in the render as a white fill with a border"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three buttons in a row with 8 gaps and 24 padding, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

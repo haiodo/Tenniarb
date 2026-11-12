@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "style",
+   "expect": "element Empty has a styles block with accent color #6b3ad3"
+  },
+  {
+   "name": "box",
+   "expect": "a 120x60 box in the frame with use-style accent and no color of its own"
+  },
+  {
+   "name": "property",
+   "expect": "read shows the box inherits color #6b3ad3 through the style"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a purple 120x60 box, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "column",
+   "expect": "a 360 wide column at 0 0 with gap 8 and three text children"
+  },
+  {
+   "name": "sizes",
+   "expect": "the texts are 32 pt bold, 20 pt, 13 pt, in that order"
+  },
+  {
+   "name": "colors",
+   "expect": "the last text is #6b7280"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three lines of decreasing size, the body grey, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

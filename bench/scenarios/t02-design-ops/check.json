@@ -1,0 +1,29 @@
+{
+ "file": "apps/home.tenn",
+ "element": "Home.Home",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "title",
+   "expect": "the Card Gamma use now shows Gamma archive"
+  },
+  {
+   "name": "width",
+   "expect": "that same use has width 280"
+  },
+  {
+   "name": "others",
+   "expect": "the other cards and lib/ui_kit.tenn are unchanged against ../baseline"
+  },
+  {
+   "name": "tools",
+   "expect": "the MCP trace shows a design call whose ops set the title and the width; no Edit/Write on the .tenn"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the third card is narrower and says Gamma archive, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

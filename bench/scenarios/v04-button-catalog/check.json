@@ -1,0 +1,15 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 20, "min_match": 0.6},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is 608x448"},
+  {"name": "grid", "expect": "the same rows and columns of buttons with the same labels"},
+  {"name": "style", "expect": "the same kinds: primary, secondary, outline, disabled, with the same corner radii and colors"},
+  {"name": "visual", "expect": "compare.json: mae <= 20 and match >= 0.6"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

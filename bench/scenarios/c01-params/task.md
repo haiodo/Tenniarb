@@ -1,0 +1,1 @@
+On `Home`, in the row of cards, add two more cards from `Libraries.ui_kit.Card`. The first one gets the title `Open issues` as a parameter. The second one is titled `Closed issues` by overriding its `Title` part with `at`, without passing the `title` parameter. Do not change `lib/ui_kit.tenn`. Change nothing else on the screen.

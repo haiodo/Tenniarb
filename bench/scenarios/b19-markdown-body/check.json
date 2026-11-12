@@ -1,0 +1,20 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "element",
+   "expect": "a second element Notes in apps/empty.tenn (or a mounted file), rendered as a classic diagram"
+  },
+  {
+   "name": "item",
+   "expect": "item Note at pos 0 0 with a body containing the markdown"
+  },
+  {
+   "name": "render",
+   "expect": "render Notes: Bold is bold and italic is italic in the body, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

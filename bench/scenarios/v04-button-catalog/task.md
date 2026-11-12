@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 608x448 catalog of buttons. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces it 1:1: the same grid of buttons, labels, sizes, colors and corner radii. The checker compares your render pixel by pixel with the reference.

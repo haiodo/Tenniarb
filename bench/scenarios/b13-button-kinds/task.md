@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 220 wide column at `pos 0 0` with gap 8: a `Libraries.ui_kit.Button` `Continue` with the default kind and a `Back` with `kind secondary`, both `width fill`. Change nothing else.

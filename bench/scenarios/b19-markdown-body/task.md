@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, add a classic diagram element `Notes` (no auto-layout) at the top of the file after the entry, with one item `Note` at `pos 0 0` whose `body` is `**Bold** and _italic_ text`. The element must render as a classic diagram, not a scene. Change nothing else.

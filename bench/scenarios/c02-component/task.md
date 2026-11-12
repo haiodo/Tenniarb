@@ -1,0 +1,1 @@
+Add a `Stat` component to `lib/ui_kit.tenn`: parameters `label` and `value`; a column with gap 4, the label 12 pt in `#6b7280`, the value 28 pt bold in `#201240`. Then use it twice on `Home`, in a row under the header: `Open` = `12` and `Done` = `48`. Keep the entry and the other components valid.

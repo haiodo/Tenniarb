@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "row",
+   "expect": "a row at 0 0 with gap 8 and three children"
+  },
+  {
+   "name": "swatches",
+   "expect": "each child is 64x64 with corner-radius 12"
+  },
+  {
+   "name": "colors",
+   "expect": "the fills are #6b3ad3, #f3e5f5, #201240 in that order"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three square swatches in a row with 8 gaps, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

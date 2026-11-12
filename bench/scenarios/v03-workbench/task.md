@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 1920x1080 platform workbench screen. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces it as closely as you can: the shell, the sidebar, the header, the content columns and the type hierarchy. Work from the picture; the checker renders your element and compares it with the reference.

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "window",
+   "expect": "a top-level item 1200x760 at pos 0 0 with auto-layout row"
+  },
+  {
+   "name": "widths",
+   "expect": "rail width 48, sidebar width 240, main width fill, inspector width 280"
+  },
+  {
+   "name": "height",
+   "expect": "the four areas take the full 760 height (fill or explicit), no item leaves the window"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty at 1200x760: four vertical areas side by side, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

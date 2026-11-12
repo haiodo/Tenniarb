@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "box",
+   "expect": "a 24x24 item at 0 0 in a row with padding 24"
+  },
+  {
+   "name": "path",
+   "expect": "the item draws a check mark with the path command in view-box 0 0 24 24"
+  },
+  {
+   "name": "color",
+   "expect": "the path is #6b3ad3"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a purple check mark, 24x24, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

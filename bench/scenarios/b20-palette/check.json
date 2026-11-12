@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 320x100 frame at 0 0 with auto-layout abs"
+  },
+  {
+   "name": "boxes",
+   "expect": "three 80x60 boxes inside, inset 12, gap 12"
+  },
+  {
+   "name": "palette",
+   "expect": "the fills are written as the palette names gray-400, blue, red"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three grey, blue and red swatches, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

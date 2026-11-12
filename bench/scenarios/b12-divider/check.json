@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 360x40 frame at 0 0 with auto-layout abs"
+  },
+  {
+   "name": "divider",
+   "expect": "inside, inset 20 from the top-left a 320x1 item"
+  },
+  {
+   "name": "color",
+   "expect": "color #e5e7eb and no corner-radius"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a thin grey line inside the frame, no name labels, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

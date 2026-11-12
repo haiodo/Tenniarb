@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 360x40 frame at `pos 0 0` with `auto-layout abs` and a white fill. Inside it, 20 points below its top-left corner, add a horizontal divider 320 wide, 1 high, color `#e5e7eb`, no corner radius. Change nothing else.

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 200x80 frame at 0 0 with auto-layout abs"
+  },
+  {
+   "name": "image",
+   "expect": "inside, 20 from the left and 16 from the top an item that draws the logo (path relative to apps/, such as ../assets/logo.png), width 160, height 48"
+  },
+  {
+   "name": "fit",
+   "expect": "the image uses fit contain"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: the logo inside 160x48 without stretching and no name label over it, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

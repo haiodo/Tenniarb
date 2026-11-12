@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, add two styles to element `Empty`: `accent` with `color #6b3ad3` and `muted` with `color #f3e5f5`. Add a 200x100 frame with `auto-layout abs` at `pos 0 0` holding two 80x60 boxes side by side at the top-left inset 10, one with `use-style accent` and one with `use-style muted`. Change nothing else.

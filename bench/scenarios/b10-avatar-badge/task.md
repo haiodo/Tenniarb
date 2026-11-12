@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a row at `pos 0 0`, gap 8, align center: a `Libraries.ui_kit.Avatar` with initials `MC` and a `Libraries.ui_kit.Badge` with text `Owner`. Change nothing else.

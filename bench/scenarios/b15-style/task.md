@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, add a `styles { accent { color #6b3ad3 } }` block to element `Empty`, then a 120x60 box at `pos 0 0` using `use-style accent`, inside a 200x100 frame with `auto-layout abs`. Change nothing else.

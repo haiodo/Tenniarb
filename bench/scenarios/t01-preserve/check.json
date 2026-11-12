@@ -1,0 +1,25 @@
+{
+ "file": "apps/home.tenn",
+ "element": "Home.Home",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "text",
+   "expect": "the heading reads Workspaces"
+  },
+  {
+   "name": "only_one",
+   "expect": "diff against ../baseline shows exactly one changed line, in apps/home.tenn; no other file changed"
+  },
+  {
+   "name": "tools",
+   "expect": "the MCP trace (../mcp.jsonl) has no write of a .tenn through a non-tenniarb tool"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the header reads Workspaces, the rest looks as before"
+  }
+ ],
+ "ctx": 50000
+}

@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 240x160 frame at `pos 0 0` with `auto-layout abs` and a white fill. Inside it, 20 points below its top-left corner, add a 200x120 box with no fill, a `#d9dee6` border 2 points wide and corner radius 8. Change nothing else.

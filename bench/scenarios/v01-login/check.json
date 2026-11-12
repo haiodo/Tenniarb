@@ -1,0 +1,36 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "visual": {
+  "file": "apps/empty.tenn",
+  "element": "Screen",
+  "reference": "reference.png",
+  "max_mae": 6,
+  "min_match": 0.9
+ },
+ "criteria": [
+  {
+   "name": "size",
+   "expect": "render Screen is exactly 360x420"
+  },
+  {
+   "name": "content",
+   "expect": "the same texts as the picture: Welcome back, Sign in to continue to Acme., Email, demo@example.com, Password, the masked value, Sign in, Forgot password?, No account? Create one"
+  },
+  {
+   "name": "style",
+   "expect": "the house colors: dark #201240 text, purple #6b3ad3 button and link, grey #6b7280 hints, white fields with #d9dee6 border and radius 8"
+  },
+  {
+   "name": "visual",
+   "expect": "compare.json: mae <= 8 and match >= 0.85 against the reference at 360x420"
+  },
+  {
+   "name": "render",
+   "expect": "render Screen: the picture reproduced, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

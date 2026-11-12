@@ -1,0 +1,1 @@
+Using the `design` operations on `apps/home.tenn` (not find/replace), rename the third card in the Body row from `Gamma` to `Gamma archive` and set that card's width to 280. Do not touch the component or any other card.

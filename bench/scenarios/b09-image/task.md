@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 200x80 frame at `pos 0 0` with `auto-layout abs` and a white fill. Inside it, 20 points from the left and 16 below its top-left corner, add the picture `assets/logo.png`, 160 wide and 48 high, with `fit contain`. Change nothing else.

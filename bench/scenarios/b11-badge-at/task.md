@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a row at `pos 0 0`, gap 8, with three `Libraries.ui_kit.Badge` uses reading `New`, `Doing`, `Done`. The last two must colour their Label text pink `#cf13a2` by overriding the Label part with `at`; do not change the component. Change nothing else.

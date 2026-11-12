@@ -1,0 +1,24 @@
+{
+ "file": "apps/flow.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts the file as element Flow, and get_state shows its items"
+  },
+  {
+   "name": "items",
+   "expect": "items Start, Review and Done exist at pos 0 0, 240 0, 480 0"
+  },
+  {
+   "name": "links",
+   "expect": "two links Start->Review and Review->Done, drawn with an arrow"
+  },
+  {
+   "name": "render",
+   "expect": "render Flow: from start to done left to right with an arrow on each link, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

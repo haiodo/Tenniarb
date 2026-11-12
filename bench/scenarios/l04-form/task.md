@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 360 wide settings card at `pos 0 0`: white, corner radius 12, padding 24, column with gap 16. Put a bold 20 pt title `Profile`, two `Libraries.forms.Field` uses with labels `Email` and `Password` and values `demo@example.com` and `********`, and a primary `Save` button at the end. Change nothing else.

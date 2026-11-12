@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "window",
+   "expect": "a 1200x760 item at pos 0 0"
+  },
+  {
+   "name": "rows",
+   "expect": "five row items, each width fill, height 44, padding 0 12, in a column with gap 0"
+  },
+  {
+   "name": "badges",
+   "expect": "five Badge uses on the right of the rows: New, Done, Done, Done, Done"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues: nothing leaves the window or overlaps"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: five equal rows with titles left and badges right, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

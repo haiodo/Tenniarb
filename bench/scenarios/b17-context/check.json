@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "context",
+   "expect": "element Empty declares context radius with the default 8"
+  },
+  {
+   "name": "box",
+   "expect": "a 120x60 purple box with corner-radius written as ${ctx.radius}"
+  },
+  {
+   "name": "radius",
+   "expect": "the effective corner radius is 8"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a purple box with rounded 8 corners, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

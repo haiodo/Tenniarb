@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 320x100 frame at `pos 0 0` with `auto-layout abs` and a white fill, holding three 80x60 boxes at the top-left inset 12, gap 12, filled with the palette names `gray-400`, `blue` and `red`. Change nothing else.

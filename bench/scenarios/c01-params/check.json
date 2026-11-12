@@ -1,0 +1,29 @@
+{
+ "file": "apps/home.tenn",
+ "element": "Home.Home",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "two_cards",
+   "expect": "two added uses of Libraries.ui_kit.Card in the Body row"
+  },
+  {
+   "name": "param",
+   "expect": "the first passes title Open issues as a parameter"
+  },
+  {
+   "name": "at",
+   "expect": "the second overrides its Title part with at Title { title \"Closed issues\" } and passes no title parameter"
+  },
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn is unchanged (diff against ../baseline shows no change there)"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: five cards in the row, the two new titles read Open issues and Closed issues"
+  }
+ ],
+ "ctx": 200000
+}

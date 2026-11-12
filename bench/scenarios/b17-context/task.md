@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, element `Empty`, set `context radius ?= 8` and add a 200x100 frame with `auto-layout abs` at `pos 0 0`, holding a 120x60 box whose `corner-radius` is `${ctx.radius}` and color `#6b3ad3`. Change nothing else.

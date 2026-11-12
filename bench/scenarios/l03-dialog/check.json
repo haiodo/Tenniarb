@@ -1,0 +1,29 @@
+{
+ "file": "apps/home.tenn",
+ "element": "Home.Home",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "scrim",
+   "expect": "a 1200x760 item at pos 0 0 with color #00000066, drawn above the window content"
+  },
+  {
+   "name": "dialog",
+   "expect": "one Libraries.forms.Dialog use at 480 wide, centered on the screen, above the scrim"
+  },
+  {
+   "name": "text",
+   "expect": "its title is Delete project and its body is This cannot be undone."
+  },
+  {
+   "name": "buttons",
+   "expect": "a footer row with a primary Delete button and a secondary Cancel button"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the screen dimmed by the scrim, a white dialog on top, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 400x280 frame at 0 0 with auto-layout abs and a white fill"
+  },
+  {
+   "name": "card",
+   "expect": "inside the frame, inset 16 from the top-left a 320x200 card, white, corner-radius 12"
+  },
+  {
+   "name": "shadow",
+   "expect": "the card has a shadow with offset 0 -8 and blur 24"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a white card with a shadow below it inside the frame, no name labels over the card, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

@@ -1,0 +1,36 @@
+entry "../PlatformDesign.tenn"
+
+item Button {
+	context tone ?= light
+	export let text = Button
+	export let kind = primary
+	auto-layout row; align center; justify center; padding 0 16; height 36; corner-radius 8
+	color ${kind === "primary" ? "#6b3ad3" : "#ffffff"}
+	border-color ${kind === "primary" ? "#6b3ad3" : "#d9dee6"}
+	item Label { title ${text}; font-size 14; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color ${kind === "primary" ? "#ffffff" : "#201240"} }
+}
+
+item Card {
+	export let title = Card
+	auto-layout column; gap 12; padding 16; width 320; color #ffffff; border-color #e5e7eb; corner-radius 12; clip yes
+	item Title { title ${title}; font-size 16; font-weight 600; font-family "IBM Plex Sans"; text-color #201240 }
+}
+
+item Avatar {
+	export let initials = MC
+	auto-layout row; align center; justify center; width 40; height 40; corner-radius 20; clip yes; color #a5bdff
+	item Label { title ${initials}; font-size 14; font-weight 600; font-family "IBM Plex Sans"; text-color #201240 }
+}
+
+item Badge {
+	export let text = New
+	auto-layout row; align center; justify center; padding 2 8; height 22; corner-radius 11; color #f3e5f5
+	item Label { title ${text}; font-size 12; font-weight 600; font-family "IBM Plex Sans"; text-color #6b3ad3 }
+}
+
+item Panel {
+	export let title = Panel
+	auto-layout column; gap 12; padding 20; width 400; color #ffffff; border-color #e5e7eb; corner-radius 12; clip yes
+	item Title { title ${title}; font-size 16; font-weight 600; font-family "IBM Plex Sans"; text-color #201240 }
+	slot content { }
+}

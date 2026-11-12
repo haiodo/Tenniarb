@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 360x420 login screen. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces the picture 1:1: same size, text, colors, font sizes and spacing. Use the library components where they fit. The checker renders your element and compares it pixel by pixel with the reference, so measure the picture rather than guess.

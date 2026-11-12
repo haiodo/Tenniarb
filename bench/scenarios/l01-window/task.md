@@ -1,0 +1,1 @@
+Replace the empty element in `apps/empty.tenn` with a 1200x760 app window at `pos 0 0`: a 48 wide rail, a 240 wide sidebar, a main area that fills the rest and a 280 wide inspector, all in one row and full height. Use a light background for the window and a white surface for the three panels. Change nothing else.

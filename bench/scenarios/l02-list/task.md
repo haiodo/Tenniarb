@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 1200x760 window with a list of five rows, `width fill`, height 44, padding 0 12, in a column with gap 0. Each row has a title that fills the row and a badge on the right: `New` on the first row and `Done` on the other four, using `Libraries.ui_kit.Badge`. Change nothing else.

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "column",
+   "expect": "a 220 wide column at 0 0 with gap 8 and two buttons"
+  },
+  {
+   "name": "buttons",
+   "expect": "Continue is primary (purple fill, white text) and Back is secondary (white fill, border)"
+  },
+  {
+   "name": "width",
+   "expect": "both buttons fill the 220 width (width fill or an instance width)"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a wide purple button over a wide white button, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

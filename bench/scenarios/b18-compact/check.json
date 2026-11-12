@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a 240x120 frame with a 200x80 white card inset 12, radius 8, inside element Empty"
+  },
+  {
+   "name": "title",
+   "expect": "the card holds the title Compact"
+  },
+  {
+   "name": "compact",
+   "expect": "the added block uses two-space indentation and one-line blocks under 160 characters (not one command per line)"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: the Compact card, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

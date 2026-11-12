@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "styles",
+   "expect": "styles accent and muted with colors #6b3ad3 and #f3e5f5"
+  },
+  {
+   "name": "boxes",
+   "expect": "two 80x60 boxes in the frame, one use-style accent, one use-style muted"
+  },
+  {
+   "name": "colors",
+   "expect": "the boxes resolve to purple and lavender"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: two swatches of the two colours in a frame, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

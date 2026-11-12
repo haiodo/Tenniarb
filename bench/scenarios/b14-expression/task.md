@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 200x100 frame at `pos 0 0` with `auto-layout abs` and a white fill. Inside it, 10 points below the top-left corner, add a box whose `width` is the expression `${40 * 3}`, height 60 and color `#f3e5f5`. Change nothing else.

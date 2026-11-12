@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "row",
+   "expect": "a row at 0 0 with gap 8 and align center"
+  },
+  {
+   "name": "avatar",
+   "expect": "one Avatar use with initials MC"
+  },
+  {
+   "name": "badge",
+   "expect": "one Badge use with text Owner"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a round avatar and a pill badge side by side, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

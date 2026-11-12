@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frames",
+   "expect": "three top-level items 390x844 at pos 0 0, 400 0, 800 0"
+  },
+  {
+   "name": "empty",
+   "expect": "the first has muted No projects yet and no rows or button"
+  },
+  {
+   "name": "loading",
+   "expect": "the second has three grey rounded rows 48 high and no text or button"
+  },
+  {
+   "name": "error",
+   "expect": "the third has Could not load projects and a primary Retry button"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues in any of the three"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three phone frames in a row, each state readable, no warnings"
+  }
+ ],
+ "ctx": 200000
+}

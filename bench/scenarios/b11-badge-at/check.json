@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "badges",
+   "expect": "three Badge uses with effective texts New, Doing, Done"
+  },
+  {
+   "name": "at",
+   "expect": "Doing and Done override Label via at with text-color #cf13a2; New keeps the component colour"
+  },
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn is unchanged against ../baseline"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three pills, the last two with pink text, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

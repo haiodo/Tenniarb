@@ -1,0 +1,29 @@
+element "Screen" {
+	item Card {
+		auto-layout column; gap 16; padding 32; width 360; height 420; color #ffffff; corner-radius 16; clip yes
+		item Title { title "Welcome back"; font-size 28; line-height 34; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+		item Subtitle { title "Sign in to continue to Acme."; font-size 14; line-height 20; font-family "IBM Plex Sans"; text-color #6b7280 }
+		item Email {
+			auto-layout column; gap 6; width fill
+			item Label { title Email; font-size 12; line-height 16; font-family "IBM Plex Sans"; text-color #6b7280 }
+			item Box {
+				auto-layout row; align center; padding 0 12; width fill; height 44; corner-radius 8; color #ffffff; border-color #d9dee6
+				item Value { title "demo@example.com"; font-size 14; font-family "IBM Plex Sans"; text-color #201240 }
+			}
+		}
+		item Password {
+			auto-layout column; gap 6; width fill
+			item Label { title Password; font-size 12; line-height 16; font-family "IBM Plex Sans"; text-color #6b7280 }
+			item Box {
+				auto-layout row; align center; padding 0 12; width fill; height 44; corner-radius 8; color #ffffff; border-color #d9dee6
+				item Value { title "••••••••"; font-size 14; font-family "IBM Plex Sans"; text-color #201240 }
+			}
+		}
+		item SignIn {
+			auto-layout row; align center; justify center; width fill; height 44; corner-radius 8; color #6b3ad3
+			item Label { title "Sign in"; font-size 14; font-family "IBM Plex Sans"; font-weight 600; text-color #ffffff }
+		}
+		item Forgot { title "Forgot password?"; font-size 13; line-height 18; font-family "IBM Plex Sans"; text-color #6b3ad3 }
+		item Footer { title "No account? Create one"; font-size 13; line-height 18; font-family "IBM Plex Sans"; text-color #6b7280 }
+	}
+}

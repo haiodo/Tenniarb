@@ -1,0 +1,20 @@
+entry "../PlatformDesign.tenn"
+element "Home" {
+	item Window {
+		width 1200; height 760; auto-layout column; color #f7f8fa; clip yes
+		item Header {
+			auto-layout row; align center; justify space-between; padding 16 24; width fill; height 64
+			item Heading { title "Projects"; font-size 24; line-height 32; font-weight 700; font-family "IBM Plex Sans"; text-color #201240 }
+			item Actions {
+				auto-layout row; gap 8; align center
+				use Libraries.ui_kit.Button as "Button New" { text "New project" }
+			}
+		}
+		item Body {
+			auto-layout row; gap 16; padding 0 24 24 24; width fill; height fill; align start
+			use Libraries.ui_kit.Card as "Card Alpha" { title Alpha }
+			use Libraries.ui_kit.Card as "Card Beta" { title Beta }
+			use Libraries.ui_kit.Card as "Card Gamma" { title Gamma }
+		}
+	}
+}

@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a row at `pos 0 0` with `gap 8` and `padding 24`, holding three buttons from `Libraries.ui_kit.Button`: one saying `Save` with the default kind, and `Cancel` and `Delete` with `kind secondary`. Change nothing else.

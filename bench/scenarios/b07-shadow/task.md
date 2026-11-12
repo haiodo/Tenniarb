@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 400x280 frame at `pos 0 0` with `auto-layout abs` and a white fill. Inside it, 16 points below its top-left corner, add a white card 320x200, corner radius 12, with a soft shadow written `shadow 0 -8 24`. Change nothing else.

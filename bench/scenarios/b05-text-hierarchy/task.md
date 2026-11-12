@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 360 wide column at `pos 0 0` with `gap 8`: a bold 32 pt title `Design system`, a 20 pt subtitle `Screens, components and styles`, and a 13 pt body `One place for every screen of the platform.` in grey `#6b7280`. Change nothing else.

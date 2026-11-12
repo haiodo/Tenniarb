@@ -1,0 +1,1 @@
+In `apps/empty.tenn`, inside element `Empty`, add a 24x24 check icon at `pos 0 0`, inside a row with padding 24. Draw the check as a `path` in a 24x24 `view-box`, color `#6b3ad3`; there is no icon component for it. Change nothing else.

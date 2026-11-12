@@ -1,0 +1,1 @@
+Create `apps/flow.tenn` and mount it in `PlatformDesign.tenn` as element `Flow`: a classic diagram with three items `Start`, `Review`, `Done` at `pos 0 0`, `pos 240 0` and `pos 480 0`, and links `Start` -> `Review` and `Review` -> `Done`, both with `display arrow`.

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 240x160 frame at 0 0 with auto-layout abs"
+  },
+  {
+   "name": "box",
+   "expect": "inside, inset 20 from the top-left a 200x120 box"
+  },
+  {
+   "name": "style",
+   "expect": "no fill, border-color #d9dee6, line-width 2, corner-radius 8"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: an outlined rounded box, no fill, no name labels, no warnings"
+  }
+ ],
+ "ctx": 50000
+}

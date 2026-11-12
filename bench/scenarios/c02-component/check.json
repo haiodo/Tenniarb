@@ -1,0 +1,28 @@
+{
+ "file": "lib/ui_kit.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "criteria": [
+  {
+   "name": "component",
+   "expect": "item Stat in lib/ui_kit.tenn with params label and value, column gap 4"
+  },
+  {
+   "name": "style",
+   "expect": "label 12 pt #6b7280, value 28 pt bold #201240"
+  },
+  {
+   "name": "uses",
+   "expect": "two Stat uses in apps/home.tenn with labels Open and Done and values 12 and 48"
+  },
+  {
+   "name": "layout",
+   "expect": "layout on Home reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: two stats under the header showing 12 and 48, no warnings"
+  }
+ ],
+ "ctx": 200000
+}
