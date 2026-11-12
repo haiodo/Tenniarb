@@ -8,8 +8,8 @@ import (
 	"github.com/haiodo/tenniarb/go/scene"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // applyText replaces text[start:end) by repl as one undo step of the session; the model follows the

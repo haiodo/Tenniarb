@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // roundf is Swift roundf of a Float: the value goes through float32, halves round away from zero.

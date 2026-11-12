@@ -10,8 +10,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/markdown"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // The body of an item is the text under its title, as in go/render (spec 5d): markdown, 2 points

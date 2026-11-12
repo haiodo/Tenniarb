@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Rules, most valuable first: a component removes structure, a style removes a look, a dead command

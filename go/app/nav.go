@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // ItemRow is a row of the Items list: a node of a scene canvas (Path, as NodePath writes it) or an

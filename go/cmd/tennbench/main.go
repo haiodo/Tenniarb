@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 //go:embed bench.swift

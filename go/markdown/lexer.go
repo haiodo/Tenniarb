@@ -3,7 +3,7 @@ package markdown
 import (
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Lexer works on Characters like the Swift lexer. Token Pos/Size and errorHandler positions are

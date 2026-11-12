@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Edits inside an element with --from-file go to the file it shows. The document keeps the text of

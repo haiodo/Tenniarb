@@ -1,4 +1,4 @@
-package tenn
+package tenncorpus
 
 import (
 	"encoding/json"
@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	tenn "github.com/haiodo/tenn/go"
 )
 
 const fixturesDir = "../../web/fixtures"
@@ -17,19 +19,19 @@ const fixturesDir = "../../web/fixtures"
 // Col in UTF-8 bytes, like Swift, so only Size (Swift: Characters in the literal) and Pos
 // (Swift: UTF-8 offset of the lexer position at add time minus Size) are converted here.
 // This is the same conversion as web/packages/core/test/swift-units.ts.
-func toSwiftToken(t Token) map[string]any {
+func toSwiftToken(t tenn.Token) map[string]any {
 	end := t.Pos + t.Size
-	if t.Type == TokSemiColon && t.Literal == ";" {
+	if t.Type == tenn.TokSemiColon && t.Literal == ";" {
 		end = t.Pos // Swift adds ";" before consuming it
 	}
-	size := graphemeCount(t.Literal)
+	size := tenn.GraphemeCount(t.Literal)
 	return map[string]any{
 		"type": string(t.Type), "literal": t.Literal, "line": t.Line, "col": t.Col,
 		"pos": end - size, "size": size,
 	}
 }
 
-func nodeJSON(n *Node) map[string]any {
+func nodeJSON(n *tenn.Node) map[string]any {
 	out := map[string]any{"kind": string(n.Kind)}
 	if n.Token != nil {
 		out["token"] = toSwiftToken(*n.Token)
@@ -45,12 +47,12 @@ func nodeJSON(n *Node) map[string]any {
 }
 
 func buildGolden(source string) map[string]any {
-	lexer := NewLexer(source)
+	lexer := tenn.NewLexer(source)
 	tokens := []any{}
 	for t := lexer.GetToken(); t != nil; t = lexer.GetToken() {
 		tokens = append(tokens, toSwiftToken(*t))
 	}
-	parser := NewParser(nil)
+	parser := tenn.NewParser(nil)
 	tree := parser.Parse(source)
 	errs := []any{}
 	for _, e := range parser.Errors.Errors {
@@ -61,8 +63,8 @@ func buildGolden(source string) map[string]any {
 	return map[string]any{
 		"tokens":       tokens,
 		"tree":         nodeJSON(tree),
-		"printed":      ToStr(tree, 0, false),
-		"printedClean": ToStr(tree, 0, true),
+		"printed":      tenn.ToStr(tree, 0, false),
+		"printedClean": tenn.ToStr(tree, 0, true),
 		"errors":       errs,
 	}
 }

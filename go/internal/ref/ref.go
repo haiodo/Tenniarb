@@ -1,7 +1,7 @@
 // Package ref builds the same JSON document as web/packages/core/fuzz/main.swift.
 package ref
 
-import "github.com/haiodo/tenniarb/go/tenn"
+import "github.com/haiodo/tenn/go"
 
 func token(t tenn.Token) map[string]any {
 	end := t.Pos + t.Size

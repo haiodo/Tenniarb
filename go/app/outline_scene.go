@@ -12,9 +12,9 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/swt"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // library is a file of components the document mounts with --from-file.

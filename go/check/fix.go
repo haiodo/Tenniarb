@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // edit is one replacement in the text: start is inclusive, end exclusive, both are UTF-8 bytes of the

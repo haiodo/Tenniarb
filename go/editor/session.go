@@ -15,11 +15,11 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Redraw says what changed on the way to a repaint. The selection overlay is always to be drawn

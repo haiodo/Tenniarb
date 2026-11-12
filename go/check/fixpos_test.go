@@ -3,7 +3,7 @@ package check
 import (
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // FixTitles rounds a pos value with more than two decimals, so a scene imported from a `.pen` reads a

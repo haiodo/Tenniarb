@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/text/unicode/norm"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // NormalizeName is convertNameJS of web/packages/core/src/execution.ts: a rune that is not a letter,

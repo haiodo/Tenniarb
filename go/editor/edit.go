@@ -3,9 +3,9 @@ package editor
 import (
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // BodyText is SceneDrawView.getBodyText: `body "text"` or `body { text "..." }`, unprocessed.

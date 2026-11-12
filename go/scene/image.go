@@ -18,8 +18,8 @@ import (
 	"sync"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/markdown"
-	"github.com/haiodo/tenniarb/go/tenn"
 	_ "golang.org/x/image/tiff" // a classic inline picture of an old file is often a TIFF, as CG drew it
 	_ "golang.org/x/image/webp"
 )

@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // ToTenn converts a canvas to the text of a .tenn file: one element named name holds an item per

@@ -12,9 +12,9 @@ import (
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/swt"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // propsDelay is how long the properties text rests before it is applied (Swift: 300 ms).

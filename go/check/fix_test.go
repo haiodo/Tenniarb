@@ -3,7 +3,7 @@ package check
 import (
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // quoteTitles is the fix a reader of the error is told to make: the words of a title in one quoted text.

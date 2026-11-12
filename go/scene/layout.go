@@ -7,8 +7,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/markdown"
-	"github.com/haiodo/tenniarb/go/tenn"
 	"golang.org/x/text/unicode/norm"
 )
 

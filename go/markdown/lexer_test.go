@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 func expectToken(t *testing.T, tokens []Token, i int, typ TokenType, literal string, pos int) {

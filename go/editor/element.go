@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // The commands of the outline (ViewController handleAddElement, duplicate, copy, paste, delete,

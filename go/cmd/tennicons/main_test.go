@@ -6,7 +6,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // A shape written in its own <path> starts at the origin of the icon. Joined into one path its commands

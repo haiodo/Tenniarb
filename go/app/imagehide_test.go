@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // pictureData is base64 of n bytes: neither the parser nor the Code section reads the picture, so a

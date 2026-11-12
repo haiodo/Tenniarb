@@ -9,10 +9,10 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/jsval"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/palette"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // The typed side of the properties panel: one command read across the selection (the element when

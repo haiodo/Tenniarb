@@ -8,7 +8,7 @@ Tenniarb - редактор диаграмм и экранов в формате
 
 - Язык/платформа: Go, модуль `github.com/haiodo/tenniarb/go`; UI - `gowt` (AppKit под капотом)
 - Вычисления: `goja`; рендер - `go/scene` (один движок: `go/render` удалён, классическая диаграмма — его профиль рисования в сцене)
-- Формат: `go/tenn` (lexer, parser, printer), спецификация - `docs/spec/tenn-scene.md`
+- Формат: `github.com/haiodo/tenn/go` (lexer, parser, printer; отдельный репозиторий), спецификация - `docs/spec/tenn-scene.md`
 
 ## Структура репозитория
 
@@ -18,7 +18,7 @@ Tenniarb - редактор диаграмм и экранов в формате
 - `Tenniarb/document/tenn/` - lexer/parser Tenn (`TennLexer`, `TennParser`)
 - `Tenniarb/views/` + `ViewController.swift` + `SceneDrawView.swift` - UI и взаимодействие
 - `Tenniarb/ElementScene.swift` - рендер диаграмм/текста
-- `go/` - живое приложение. `go/tenn` - lexer, parser, printer; golden-тест на общих `web/fixtures`.
+- `go/` - живое приложение. `go/tenncorpus` - golden-тест и round-trip на общих `web/fixtures`; сам формат - в `github.com/haiodo/tenn/go`.
 - `go/app` - окна, контур, сцены, правки агента в живом документе
 - `go/mcpserver` - MCP-инструменты и сервис, который их держит
 - `go/cmd/tenniarb` - приложение и CLI (`check`, `suggest`, `bundle`, `gen`, `install`);

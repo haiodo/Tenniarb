@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 type ElementKind string

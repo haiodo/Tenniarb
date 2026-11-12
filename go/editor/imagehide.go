@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // imageDataMark starts the literal the Code section shows in place of the base64 of a classic

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // ParseError is one parser message with its position in the file.

@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/geometry"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // canonical is what go/model persistence writes for a document: the expected text of a scenario is written

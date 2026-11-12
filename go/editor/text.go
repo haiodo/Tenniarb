@@ -4,7 +4,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // prepareBodyText is the text of a body as the editor shows it: escaped newlines expanded, tabs as blanks,

@@ -10,7 +10,7 @@ import (
 	"github.com/haiodo/gowt/gfx"
 
 	"github.com/haiodo/gowt/gfx/layout"
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // pathCache keeps the parsed icon paths by their text: every load validates every element again.

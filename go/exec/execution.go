@@ -18,8 +18,8 @@ import (
 	"unicode/utf16"
 
 	"github.com/dop251/goja"
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 var _ model.IExecutionContext = (*ExecutionContext)(nil)

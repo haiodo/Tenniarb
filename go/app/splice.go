@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // A classic edit outside a Swift-printed document reprints only the elements whose own content changed;

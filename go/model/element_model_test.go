@@ -3,7 +3,7 @@ package model
 import (
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 func TestCloneRemapsLinks(t *testing.T) {

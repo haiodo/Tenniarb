@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Port of web/packages/core/src/element-operations.ts (ElementOperations.swift). Listeners run synchronously.

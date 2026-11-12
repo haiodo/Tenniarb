@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // convert converts the fixtures (names without the extension) into a temp dir and returns the result

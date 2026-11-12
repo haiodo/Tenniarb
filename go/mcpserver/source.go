@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // parseError returns the first syntax error of text, if any.

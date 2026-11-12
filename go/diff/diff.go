@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Status is what happened to a node between the two versions.

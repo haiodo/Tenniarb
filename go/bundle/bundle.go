@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Text is the text of a document the caller already holds with its mounts expanded; abs names the file

@@ -3,7 +3,7 @@ package penimport
 import (
 	"strconv"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Properties that repeat what go/scene assumes are dropped. Inside a layout (an auto-layout on the item

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // TextEdit replaces Text[Start:End) of a document by New. Offsets are bytes.

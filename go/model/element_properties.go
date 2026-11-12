@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // The TS toTennAsProps/fromTennProps take Element | DiagramItem; Go has one function per type.

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // EntryProp is the top-level property that names the entry document of a part file: entry "../Design.tenn".

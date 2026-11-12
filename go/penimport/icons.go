@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/library"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // A pen icon node names an icon of a library and carries no geometry of its own: the drawing is the

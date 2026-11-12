@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Built straight from go/tenn nodes. Ceiling: once go/model carries the scene-graph format, an

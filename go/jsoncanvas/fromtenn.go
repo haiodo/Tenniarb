@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/haiodo/gowt/gfx"
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // FromTree converts a loaded .tenn file: the items of the file root, then every top level element as

@@ -3,7 +3,7 @@ package scene
 import (
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // evalFunc evaluates the code of an expression (spec 6) with variables in scope: the parameters of the

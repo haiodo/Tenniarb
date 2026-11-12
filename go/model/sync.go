@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Port of web/packages/core/src/sync.ts (SyncExtension.swift toSyncJson).

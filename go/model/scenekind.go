@@ -1,6 +1,6 @@
 package model
 
-import "github.com/haiodo/tenniarb/go/tenn"
+import "github.com/haiodo/tenn/go"
 
 // SceneElement picks the renderer of an element, the rule of spec 5a.17: go/scene when its own content
 // uses a scene feature, go/render (Swift parity) otherwise.

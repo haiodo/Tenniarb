@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Edit replaces Text[Start:End) of the main file by New. Offsets are bytes of the text of that file, as

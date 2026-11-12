@@ -3,7 +3,7 @@ package scene
 import (
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // TestUsesCtx: a property names ctx only as a bare name. A classic variable $ctx or a member a.ctx is not

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Port of web/packages/core/test/execution.test.ts.

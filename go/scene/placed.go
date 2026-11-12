@@ -5,7 +5,7 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/layout"
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Placed is an item of a built screen: where it is drawn and the command written for it.

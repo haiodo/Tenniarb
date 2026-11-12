@@ -11,10 +11,10 @@ import (
 
 	"golang.org/x/text/unicode/norm"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/exec"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Context builds the evaluator of el. The caller decides where the expressions run: the expression engine

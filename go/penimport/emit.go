@@ -8,8 +8,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // Result is a converted set of files, libraries first.

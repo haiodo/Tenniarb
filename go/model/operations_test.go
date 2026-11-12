@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // Port of web/packages/core/test/operations.test.ts.

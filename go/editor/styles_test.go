@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 const stylesSrc = `element "D" {

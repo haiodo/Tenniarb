@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/library"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // FromFileFlag is the argument of an element command that takes the content of the element from a file.

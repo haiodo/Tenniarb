@@ -9,10 +9,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // errRenameScene is the refusal of a rename whose result has scene errors the document did not have.

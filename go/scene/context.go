@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // ctxDecl is one "context <key> <value>" or "context <key> ?= <value>" (spec 5f).

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/haiodo/gowt/gfx"
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // animatedProps are the properties a keyframe may set (spec 13): appearance only, so the layout never

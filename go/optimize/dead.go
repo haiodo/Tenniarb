@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // dead reports the commands that change nothing (rule 4): a style nobody names, a group nobody chooses

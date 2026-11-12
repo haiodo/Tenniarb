@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/editor"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // paramUse is the use the Parameters section describes: the selected node when it is the root of an

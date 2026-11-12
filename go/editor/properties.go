@@ -3,7 +3,7 @@ package editor
 import (
 	"strings"
 
-	"github.com/haiodo/tenniarb/go/tenn"
+	"github.com/haiodo/tenn/go"
 )
 
 // The text-only part of the properties panel: token colors and parse diagnostics (Swift

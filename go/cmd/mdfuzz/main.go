@@ -15,8 +15,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/markdown"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 var colors = []string{"red", "#ff0000", "#abc", "grey-200", "gray-200", "amber", "amber-500", "deeppurple", "bluegrey", "blue-grey-500", "#EEEEEE", "#FFC107", "clear", "transparent", "#0xff", "# ff", "0xff", "#ffffffffffffffffffff", "#12345678", "#", "RED", "constructor", "__proto__", "zz"}

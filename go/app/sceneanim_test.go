@@ -10,8 +10,8 @@ import (
 
 	"github.com/haiodo/gowt/gfx"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // frame is a keyframe at offset with the properties name value.

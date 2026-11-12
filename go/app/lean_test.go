@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
 	"github.com/haiodo/tenniarb/go/scene"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 const leanDoc = "element \"S\" {\n  item A { pos 0 0; width 40; item B { title Hi } }\n}\nelement \"T\" {\n  item C { pos 1 1; item E { width 3 } }\n}\n"

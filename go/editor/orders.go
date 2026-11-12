@@ -3,8 +3,8 @@ package editor
 import (
 	"slices"
 
+	"github.com/haiodo/tenn/go"
 	"github.com/haiodo/tenniarb/go/model"
-	"github.com/haiodo/tenniarb/go/tenn"
 )
 
 // The order of the items of a classic diagram is the order they are drawn in: the last one is on top. The
