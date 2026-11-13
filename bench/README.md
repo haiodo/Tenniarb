@@ -70,9 +70,10 @@ pictures, 500k for a 1920x1080 page rebuilt from a picture. The runner records t
 ## Baselines
 
 `bash bench/batch.sh <model>` runs and verifies every scenario that has a `check.json`, `JOBS` agents at
-a time (default 2), and copies the verdict, stats, picture and diff into `bench/baselines/<model>/`.
-An existing baseline is skipped; `FORCE=1` runs the whole set again. `bench/report.py` prints the table
-and `summary.txt` is the same for the last batch.
+a time (default 2); the traces and verdicts stay in `runs/` (gitignored). The committed record is
+`bench/baselines/<model>.md`: the pass rate, a table of peak context per scenario, and the deviations —
+the failed criteria and the runs that went over their `ctx` budget. A scenario whose `verdict.json` is
+already in `runs/` is skipped; `FORCE=1` runs the whole set again.
 
 ## Model list
 
