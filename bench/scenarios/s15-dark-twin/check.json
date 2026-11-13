@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "two",
+   "expect": "two 360x220 items at pos 0 0 and pos 380 0, both radius 12, padding 16"
+  },
+  {
+   "name": "content",
+   "expect": "both show the title Card and the line Body in the same places"
+  },
+  {
+   "name": "light",
+   "expect": "the first card is white with a #e5e7eb border, #201240 title and #6b7280 line"
+  },
+  {
+   "name": "dark",
+   "expect": "the second is #201240 with a #3a3357 border, white title and #c9c2e0 line"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: the same card twice, light and dark, no warnings"
+  }
+ ]
+}

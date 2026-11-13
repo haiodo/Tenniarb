@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 1584x432 pair of settings screens. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces the picture as closely as you can: the two panels, the left rail, the navigation lists and the rows of controls. Work from the picture; the checker renders your element and compares it with the reference at the same size.

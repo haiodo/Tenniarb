@@ -1,0 +1,21 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "answer",
+   "expect": "apps/answer.txt holds 0 12 and nothing else"
+  },
+  {
+   "name": "files",
+   "expect": "no .tenn file changed against ../baseline"
+  },
+  {
+   "name": "read",
+   "expect": "the mounted library was read through its mounting element or its file, not guessed"
+  }
+ ],
+ "element": "Empty.Empty"
+}

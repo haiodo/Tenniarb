@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "page",
+   "expect": "a top-level item 900x700 at pos 0 0, row layout with a 240 wide nav and a content area that fills the rest"
+  },
+  {
+   "name": "nav",
+   "expect": "the nav column is white and holds the title Settings and four rows at 44 high with padding 0 16"
+  },
+  {
+   "name": "active",
+   "expect": "the Account row has background #f3e5f5 and text #6b3ad3; the other rows have no such fill"
+  },
+  {
+   "name": "content",
+   "expect": "the content area is white and shows the 24 pt title Account"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues: nothing leaves the page"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a settings page with a 240 nav and a white content area, no warnings"
+  }
+ ]
+}

@@ -19,7 +19,9 @@ TMP="$(mktemp -d "${TMPDIR:-/tmp}/tenniarb-bench.XXXXXX")"
 WORK="$TMP/workspace"
 trap 'rm -rf "$TMP"' EXIT
 WORK_REAL="$(mkdir -p "$WORK" && cd "$WORK" && pwd -P)"
-MCP_LOG="${TENNIARB_MCP_LOG:-$HOME/Library/Logs/Tenniarb/mcp-calls.log}"
+# The shared service fixes its log path at start; a bench-owned one always logs where the run looks.
+SERVICE_DIR="$BENCH/.service"
+MCP_LOG="$BENCH/.mcp-calls.log"
 BEFORE=0
 [ -f "$MCP_LOG" ] && BEFORE="$(wc -l < "$MCP_LOG" | tr -d ' ')"
 
@@ -41,7 +43,8 @@ cat > "$WORK/.opencode/opencode.json" <<JSON
     "servers": {
       "tenniarb": {
         "type": "local",
-        "command": ["$MCP_BIN"]
+        "command": ["$MCP_BIN", "-dir", "$SERVICE_DIR"],
+        "environment": { "TENNIARB_MCP_LOG": "$MCP_LOG" }
       }
     }
   }

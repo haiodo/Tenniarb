@@ -1,0 +1,29 @@
+{
+ "file": "apps/profile.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "file",
+   "expect": "apps/profile.tenn exists with the entry line and element Profile"
+  },
+  {
+   "name": "mount",
+   "expect": "PlatformDesign.tenn mounts it as element Profile"
+  },
+  {
+   "name": "window",
+   "expect": "a 1200x760 window with a 240 wide sidebar titled Profile"
+  },
+  {
+   "name": "card",
+   "expect": "a 320 wide Card use titled Overview in the content area"
+  },
+  {
+   "name": "render",
+   "expect": "render Profile.Profile: a window with a sidebar and one card, no warnings"
+  }
+ ],
+ "element": "Profile.Profile"
+}

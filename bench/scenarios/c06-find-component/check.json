@@ -1,0 +1,21 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "answer",
+   "expect": "apps/answer.txt holds 22 and nothing else"
+  },
+  {
+   "name": "tools",
+   "expect": "the run used a find on get_state rather than reading the whole library"
+  },
+  {
+   "name": "files",
+   "expect": "no .tenn file changed against ../baseline"
+  }
+ ],
+ "element": "Empty.Empty"
+}

@@ -1,0 +1,24 @@
+{
+ "file": "apps/hub.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/hub.tenn as element Hub"
+  },
+  {
+   "name": "items",
+   "expect": "Center, Left, Right and Top at the given positions"
+  },
+  {
+   "name": "routes",
+   "expect": "three links out of Center, each with route elbow and display arrow"
+  },
+  {
+   "name": "render",
+   "expect": "render Hub: three elbows out of the centre box, no warnings"
+  }
+ ]
+}

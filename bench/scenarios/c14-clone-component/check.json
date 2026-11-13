@@ -1,0 +1,29 @@
+{
+ "file": "lib/ui_kit.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "items",
+   "expect": "lib/ui_kit.tenn has both item Button and item IconButton"
+  },
+  {
+   "name": "size",
+   "expect": "IconButton is 36x36 with padding 0, radius 8 and an 18 pt + label"
+  },
+  {
+   "name": "use",
+   "expect": "an IconButton use sits in the header of Home"
+  },
+  {
+   "name": "button",
+   "expect": "item Button keeps its 36 height and its label"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: a square + button beside New project, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

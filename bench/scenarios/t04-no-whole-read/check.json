@@ -1,0 +1,21 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "answer",
+   "expect": "apps/answer.txt holds 17 and nothing else"
+  },
+  {
+   "name": "trace",
+   "expect": "../mcp.jsonl has no read call on lib/big.tenn without a node path"
+  },
+  {
+   "name": "files",
+   "expect": "lib/big.tenn is unchanged against ../baseline"
+  }
+ ],
+ "element": "Empty.Empty"
+}

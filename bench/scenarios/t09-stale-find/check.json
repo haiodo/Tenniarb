@@ -1,0 +1,21 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "heading",
+   "expect": "the heading reads Workspaces"
+  },
+  {
+   "name": "diff",
+   "expect": "the diff against ../baseline is exactly one changed line in apps/home.tenn"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the header reads Workspaces, no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

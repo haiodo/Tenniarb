@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a 200x48 frame at pos 0 0 with auto-layout abs"
+  },
+  {
+   "name": "avatars",
+   "expect": "four Avatar uses with initials MC, JD, AK, RS"
+  },
+  {
+   "name": "positions",
+   "expect": "the avatars sit at x 0, 32, 64 and 96, so each pair overlaps by 8 points"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues and no avatar leaves the 200x48 frame"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: four overlapping circular avatars in a row, no warnings"
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+element "Empty" {
+	item Page {
+		auto-layout column; padding 16; width 400; height 320; color #ffffff
+		item Card {
+			auto-layout column; gap 8; padding 12; width 480; color #ffffff; border-color #e5e7eb; corner-radius 8
+			item Title { title "Too wide"; font-size 16; font-weight 600 }
+		}
+	}
+}

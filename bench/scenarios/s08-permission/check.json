@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "icon",
+   "expect": "the image assets/logo.png 96x96 with fit contain at the top of the content"
+  },
+  {
+   "name": "texts",
+   "expect": "a 24 pt bold Allow notifications and a 14 pt #6b7280 explanation, centered"
+  },
+  {
+   "name": "buttons",
+   "expect": "a primary Allow and a secondary Not now, both filling the width"
+  },
+  {
+   "name": "bottom",
+   "expect": "the two buttons sit at the bottom of the 844 height"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a permission screen with a logo, a title and two full-width buttons, no warnings"
+  }
+ ]
+}

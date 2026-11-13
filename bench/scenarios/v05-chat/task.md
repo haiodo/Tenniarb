@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 1920x1080 chat screen. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces it as closely as you can: the icon rail, the channel sidebar, the channel header, the message list with its date separators and the input box. Work from the picture; the checker renders your element and compares it with the reference at the same size.

@@ -1,0 +1,17 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 10, "min_match": 0.8},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is exactly 390x844"},
+  {"name": "header", "expect": "a 56 high white header with the back chevron and the title Profile"},
+  {"name": "identity", "expect": "a 96 circle avatar reading MC, the name Maria Chen, the handle @maria"},
+  {"name": "stats", "expect": "three stat columns 12 Projects, 48 Followers, 7 Following"},
+  {"name": "actions", "expect": "a primary Follow and a secondary Message button side by side"},
+  {"name": "visual", "expect": "compare.json: mae <= 10 and match >= 0.8 against the reference at 390x844"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

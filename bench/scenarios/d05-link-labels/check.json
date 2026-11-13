@@ -1,0 +1,24 @@
+{
+ "file": "apps/decision.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/decision.tenn as element Decision"
+  },
+  {
+   "name": "items",
+   "expect": "Ask, Yes and No at the given positions"
+  },
+  {
+   "name": "titles",
+   "expect": "the link to Yes is titled yes and the link to No is titled no"
+  },
+  {
+   "name": "render",
+   "expect": "render Decision: a question with two labelled arrows, no warnings"
+  }
+ ]
+}

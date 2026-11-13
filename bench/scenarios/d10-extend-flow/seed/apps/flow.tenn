@@ -1,0 +1,7 @@
+element "Flow" {
+	item Start { pos 0 0 }
+	item Review { pos 240 0 }
+	item Done { pos 480 0 }
+	link Start Review { display arrow }
+	link Review Done { display arrow }
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "second",
+   "expect": "the second card reads Different"
+  },
+  {
+   "name": "first",
+   "expect": "the first card still reads Same"
+  },
+  {
+   "name": "diff",
+   "expect": "the diff against ../baseline is exactly one changed line in apps/empty.tenn"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: two cards, Same then Different, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

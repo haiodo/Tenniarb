@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "cards",
+   "expect": "three 320 wide cards in a row with 24 points between them, white, radius 12, padding 24"
+  },
+  {
+   "name": "texts",
+   "expect": "titles Starter, Team, Scale with the prices $0, $12, $48 and one muted feature line each"
+  },
+  {
+   "name": "middle",
+   "expect": "the middle card has a 2 px #6b3ad3 border and a Popular badge"
+  },
+  {
+   "name": "buttons",
+   "expect": "a Choose button on every card: primary on the middle, secondary on the other two"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: three pricing cards, the middle one highlighted, no warnings"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "dialog",
+   "expect": "a top-level item 480x600 at pos 0 0, white, corner-radius 12"
+  },
+  {
+   "name": "header",
+   "expect": "a 64 high header with the 18 pt bold title Invite people"
+  },
+  {
+   "name": "body",
+   "expect": "the body fills the height between the header and the footer, padded 24, with the fields Email and Role"
+  },
+  {
+   "name": "footer",
+   "expect": "a 72 high footer at the bottom of the dialog, padded 0 24, with Cancel and Send invite at the end"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues; the footer sits at the bottom edge of the 600 height"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a dialog with a header, two fields and buttons pinned to the bottom, no warnings"
+  }
+ ]
+}

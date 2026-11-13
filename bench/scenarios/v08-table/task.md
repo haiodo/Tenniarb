@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 900x620 issues table page. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces it as closely as you can: the header with the search field and the New issue button, the column header and the five rows with their status colors. Work from the picture; the checker renders your element and compares it with the reference.

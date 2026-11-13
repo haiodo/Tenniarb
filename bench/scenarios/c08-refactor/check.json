@@ -1,0 +1,25 @@
+{
+ "file": "lib/ui_kit.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "rename",
+   "expect": "lib/ui_kit.tenn declares item Tile and no item Card"
+  },
+  {
+   "name": "uses",
+   "expect": "the three uses on Home now name Tile"
+  },
+  {
+   "name": "errors",
+   "expect": "check reports no errors and the home screen renders"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the three cards still show Alpha, Beta, Gamma, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

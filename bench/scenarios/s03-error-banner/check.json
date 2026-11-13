@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "banner",
+   "expect": "a 64 high banner at the top of the phone, filled #fde8e8, padding 0 16, row align center, gap 12"
+  },
+  {
+   "name": "text",
+   "expect": "a 14 pt #b42318 text Something went wrong that fills the row"
+  },
+  {
+   "name": "retry",
+   "expect": "a secondary Retry button at the right of the banner"
+  },
+  {
+   "name": "list",
+   "expect": "five 56 high white rows below the banner, in order"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a red banner over a five-row list, no warnings"
+  }
+ ]
+}

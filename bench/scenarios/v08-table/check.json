@@ -1,0 +1,16 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 15, "min_match": 0.7},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is exactly 900x620"},
+  {"name": "header", "expect": "a 64 high white header with the title Issues, a 240 wide search field and a primary New issue button"},
+  {"name": "table", "expect": "a 44 high column header Name, Status, Assignee, Updated and five 56 high rows below it"},
+  {"name": "rows", "expect": "the five rows carry the same titles, statuses and people as the picture, each status in its color"},
+  {"name": "visual", "expect": "compare.json: mae <= 15 and match >= 0.7"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

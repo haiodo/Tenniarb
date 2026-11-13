@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "hero",
+   "expect": "a top-level item 1200x480 at pos 0 0 filled #6b3ad3"
+  },
+  {
+   "name": "title",
+   "expect": "a 40 pt bold white title Build faster"
+  },
+  {
+   "name": "subtitle",
+   "expect": "a 16 pt #e9e2ff subtitle One workspace for every project."
+  },
+  {
+   "name": "button",
+   "expect": "a Get started button with a white fill and #6b3ad3 text below the subtitle"
+  },
+  {
+   "name": "centered",
+   "expect": "the column is align center and justify center: the group is centered both ways"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a purple hero with a centered title, subtitle and button, no warnings"
+  }
+ ]
+}

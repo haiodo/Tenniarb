@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "panel",
+   "expect": "one Panel use, 400 wide, parameter title This week"
+  },
+  {
+   "name": "slot",
+   "expect": "two Card uses inside the Panel's slot content"
+  },
+  {
+   "name": "titles",
+   "expect": "the cards read Alpha and Beta"
+  },
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn is unchanged against ../baseline"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a panel holding two cards, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

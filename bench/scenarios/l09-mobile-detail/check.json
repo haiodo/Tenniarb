@@ -1,0 +1,37 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a top-level item 390x844 at pos 0 0"
+  },
+  {
+   "name": "header",
+   "expect": "a 56 high header with a back icon and the title Project"
+  },
+  {
+   "name": "hero",
+   "expect": "a 220 high #6b3ad3 block with the white title Website redesign"
+  },
+  {
+   "name": "body",
+   "expect": "the body fills the height between the hero and the footer, padded 16, with two text blocks"
+  },
+  {
+   "name": "footer",
+   "expect": "a 72 high footer with a primary Open button that fills the width"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues inside the 390x844 frame"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a phone screen with a header, a purple hero and a footer button, no warnings"
+  }
+ ]
+}

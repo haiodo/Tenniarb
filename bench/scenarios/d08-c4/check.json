@@ -1,0 +1,24 @@
+{
+ "file": "apps/c4.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/c4.tenn as element C4"
+  },
+  {
+   "name": "boxes",
+   "expect": "three 220x110 boxes with titles User, App, DB and a one-line body each"
+  },
+  {
+   "name": "links",
+   "expect": "two arrows titled uses and reads"
+  },
+  {
+   "name": "render",
+   "expect": "render C4: three labelled boxes with arrows, no warnings"
+  }
+ ]
+}

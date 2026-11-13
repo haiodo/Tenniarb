@@ -1,0 +1,16 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 500000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 30, "min_match": 0.5},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is exactly 1920x1080"},
+  {"name": "shell", "expect": "the 56 wide icon rail, the 280 wide channel sidebar, the channel header and the input box are in the same places as the picture"},
+  {"name": "content", "expect": "the visible texts match: general, Threads, Saved, Browser, Channels & DMs, random, DIRECT MESSAGES, the messages and the composer hint"},
+  {"name": "messages", "expect": "the avatars SA, CM, PI sit left of their messages, and the date separators Tuesday March 29 and Wednesday May 08 are drawn across the list"},
+  {"name": "visual", "expect": "compare.json: mae <= 30 and match >= 0.5; structure matters more than exact glyphs"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "heading",
+   "expect": "the heading reads Workspaces"
+  },
+  {
+   "name": "card",
+   "expect": "the first card reads Portfolio"
+  },
+  {
+   "name": "trace",
+   "expect": "../mcp.jsonl has exactly one edit call and its args carry both replacements"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: Workspaces in the header and Portfolio on the first card, no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

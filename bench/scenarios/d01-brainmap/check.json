@@ -1,0 +1,24 @@
+{
+ "file": "apps/brain.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/brain.tenn as element Brain"
+  },
+  {
+   "name": "items",
+   "expect": "seven items: Idea in the middle, One to Six around it at the given positions"
+  },
+  {
+   "name": "links",
+   "expect": "six links from Idea to One..Six, each with display arrow"
+  },
+  {
+   "name": "render",
+   "expect": "render Brain: a hub with six branches and arrows, no warnings"
+  }
+ ]
+}

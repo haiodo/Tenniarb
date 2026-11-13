@@ -1,0 +1,49 @@
+element "Screen" {
+	item Frame {
+		auto-layout column; width 390; height 844; color #f7f8fa; clip yes
+		item Header {
+			auto-layout row; align center; gap 12; padding 0 16; width fill; height 56; color #ffffff; border-color #e5e7eb
+			item Back { title "‹"; font-size 28; line-height 32; font-family "IBM Plex Sans"; text-color #201240 }
+			item Title { title Profile; font-size 18; font-family "IBM Plex Sans"; font-weight 600; text-color #201240 }
+		}
+		item Body {
+			auto-layout column; align center; gap 12; padding 24; width fill; height fill
+			item Avatar {
+				auto-layout row; align center; justify center; width 96; height 96; corner-radius 48; color #a5bdff
+				item Initials { title MC; font-size 32; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+			}
+			item Name { title "Maria Chen"; font-size 24; line-height 32; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+			item Handle { title "@maria"; font-size 14; line-height 20; font-family "IBM Plex Sans"; text-color #6b7280 }
+			item Stats {
+				auto-layout row; gap 40; padding 16 0; justify center
+				item P {
+					auto-layout column; align center; gap 2
+					item Value { title 12; font-size 18; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+					item Label { title Projects; font-size 12; font-family "IBM Plex Sans"; text-color #6b7280 }
+				}
+				item F {
+					auto-layout column; align center; gap 2
+					item Value { title 48; font-size 18; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+					item Label { title Followers; font-size 12; font-family "IBM Plex Sans"; text-color #6b7280 }
+				}
+				item G {
+					auto-layout column; align center; gap 2
+					item Value { title 7; font-size 18; font-family "IBM Plex Sans"; font-weight 700; text-color #201240 }
+					item Label { title Following; font-size 12; font-family "IBM Plex Sans"; text-color #6b7280 }
+				}
+			}
+			item Bio { title "Designing calm interfaces for busy teams."; font-size 14; line-height 20; font-family "IBM Plex Sans"; text-color #333333; width 300; layout center }
+			item Buttons {
+				auto-layout row; gap 12; width fill; justify center
+				item Follow {
+					auto-layout row; align center; justify center; width 150; height 44; corner-radius 8; color #6b3ad3
+					item Label { title Follow; font-size 14; font-family "IBM Plex Sans"; font-weight 600; text-color #ffffff }
+				}
+				item Message {
+					auto-layout row; align center; justify center; width 150; height 44; corner-radius 8; color #ffffff; border-color #d9dee6
+					item Label { title Message; font-size 14; font-family "IBM Plex Sans"; font-weight 600; text-color #201240 }
+				}
+			}
+		}
+	}
+}

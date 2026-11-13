@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "header",
+   "expect": "a 64 high header with the 18 pt semibold title Projects"
+  },
+  {
+   "name": "field",
+   "expect": "a 40 high search field, width fill, white with a #d9dee6 border, radius 8, holding the muted text Search projects"
+  },
+  {
+   "name": "empty",
+   "expect": "centered below the field: a 16 pt semibold Nothing matches \"api\", a 13 pt #6b7280 line and a Clear button"
+  },
+  {
+   "name": "button",
+   "expect": "the Clear button is a secondary one"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a search field over a centered empty state, no warnings"
+  }
+ ]
+}

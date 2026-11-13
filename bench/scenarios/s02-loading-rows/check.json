@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a top-level item 390x844 at pos 0 0, white, padding 16, column gap 8"
+  },
+  {
+   "name": "rows",
+   "expect": "six rows, each width fill, 48 high, corner-radius 8"
+  },
+  {
+   "name": "colors",
+   "expect": "the rows and the title block are #eef0f3"
+  },
+  {
+   "name": "no_text",
+   "expect": "nothing inside the rows: no labels, titles or other text"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a skeleton list of six grey rows, no warnings"
+  }
+ ]
+}

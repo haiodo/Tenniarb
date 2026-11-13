@@ -1,0 +1,24 @@
+{
+ "file": "apps/styles.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/styles.tenn as element Styles"
+  },
+  {
+   "name": "links",
+   "expect": "three links A->B, B->C and A->C with display arrow"
+  },
+  {
+   "name": "styles",
+   "expect": "B->C is dashed, A->C is dotted, A->B has no line-style override"
+  },
+  {
+   "name": "render",
+   "expect": "render Styles: a solid, a dashed and a dotted arrow, no warnings"
+  }
+ ]
+}

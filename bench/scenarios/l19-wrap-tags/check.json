@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "wrap",
+   "expect": "the row has wrap yes, line-gap 8 and gap 8, and is 320 wide"
+  },
+  {
+   "name": "badges",
+   "expect": "eight Badge uses reading One, Two, Three, Four, Five, Six, Seven, Eight"
+  },
+  {
+   "name": "lines",
+   "expect": "the badges wrap into more than one line inside the 320 width"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues; no badge leaves the 320 width"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: eight pills in a wrapped row, no warnings"
+  }
+ ]
+}

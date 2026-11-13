@@ -1,0 +1,24 @@
+{
+ "file": "apps/tree.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/tree.tenn as element Tree"
+  },
+  {
+   "name": "levels",
+   "expect": "Root, two children and four grandchildren at the given positions"
+  },
+  {
+   "name": "links",
+   "expect": "six arrows: Root->A, Root->B and four to the leaves"
+  },
+  {
+   "name": "render",
+   "expect": "render Tree: a three-level tree with arrows, no warnings"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a top-level item 800x480 at pos 0 0, white, corner-radius 12"
+  },
+  {
+   "name": "tabs",
+   "expect": "a 48 high tab bar with three equal tabs reading Overview, Members, Settings"
+  },
+  {
+   "name": "active",
+   "expect": "Overview has #201240 text and a 2 px #6b3ad3 underline; Members and Settings are #6b7280 without one"
+  },
+  {
+   "name": "panel",
+   "expect": "a panel below the bar fills the remaining height, padded 24, with the title Overview and a 320x120 #f7f8fa block"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a card with three tabs, the first underlined, no warnings"
+  }
+ ]
+}

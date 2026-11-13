@@ -21,11 +21,13 @@ verify.sh <run> [model]  run the verifier over a finished run
 
 1. copies `workspace/` to `runs/<model>/<id>/workspace/`;
 2. writes `.bench/task.md`, `.bench/check.json` and a project `opencode.json` that keeps only the
-   tenniarb MCP and logs its calls to `runs/<model>/<id>/mcp.jsonl`;
+   tenniarb MCP, pinned to `bench/.service` so the bench owns the service and its call log
+   (`bench/.mcp-calls.log`); the run's slice of that log lands in `runs/<model>/<id>/mcp.jsonl`;
 3. runs `opencode run -m <model> --format json "<task>"` in the workspace and keeps the JSON stream in
    `agent.jsonl` (text, tool calls, tokens, cost);
 4. runs `tenniarb check -json` on the file of the scenario and keeps the result in `check.json`;
-5. leaves the result workspace as the agent left it.
+5. renders the result and compares it with `reference.png` for a picture scenario, then leaves the
+   workspace as the agent left it.
 
 `bench/verify.sh <run-dir>` starts a second agent in the result workspace, gives it the task and the
 criteria and asks for only JSON:
@@ -64,6 +66,13 @@ image. The thresholds are in `check.json` under `visual`. The first one, a 360x4
 Every `check.json` has a `ctx` budget: 50k for the fixture-only tiers, 200k for library work and simple
 pictures, 500k for a 1920x1080 page rebuilt from a picture. The runner records the peak request size in
 `stats.json` and sets `ctx_over` when the run went past it.
+
+## Baselines
+
+`bash bench/batch.sh <model>` runs and verifies every scenario that has a `check.json`, `JOBS` agents at
+a time (default 2), and copies the verdict, stats, picture and diff into `bench/baselines/<model>/`.
+An existing baseline is skipped; `FORCE=1` runs the whole set again. `bench/report.py` prints the table
+and `summary.txt` is the same for the last batch.
 
 ## Model list
 

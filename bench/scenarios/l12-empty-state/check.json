@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a top-level item 1200x760 at pos 0 0, white"
+  },
+  {
+   "name": "centered",
+   "expect": "the content is a column with align center and justify center: the group is centered horizontally and vertically"
+  },
+  {
+   "name": "icon",
+   "expect": "a 48x48 rounded #f3e5f5 block"
+  },
+  {
+   "name": "texts",
+   "expect": "the texts No projects yet (20 pt semibold) and Create your first project to get started. (14 pt #6b7280)"
+  },
+  {
+   "name": "button",
+   "expect": "a primary New project button below the texts"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: an empty state centered on a white page, no warnings"
+  }
+ ]
+}

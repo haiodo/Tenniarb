@@ -4,6 +4,7 @@ set -euo pipefail
 BENCH="$(cd "$(dirname "$0")" && pwd)"
 MODEL="${1:-opencode-go/deepseek-v4.1-flash}"
 JOBS="${JOBS:-2}"
+FORCE="${FORCE:-0}"
 OUT="$BENCH/baselines/${MODEL//\//_}"
 mkdir -p "$OUT"
 LOG="$OUT/log.txt"
@@ -26,6 +27,7 @@ running=0
 for d in "$BENCH"/scenarios/*/; do
   sid="$(basename "$d")"
   [ -f "$d/check.json" ] || continue
+  if [ "$FORCE" = 0 ] && [ -f "$OUT/$sid/verdict.json" ]; then continue; fi
   run_one "$sid" &
   running=$((running + 1))
   if [ "$running" -ge "$JOBS" ]; then

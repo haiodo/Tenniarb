@@ -1,0 +1,15 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 8, "min_match": 0.85},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is exactly 360x420"},
+  {"name": "content", "expect": "the same texts as the picture: Welcome back, Sign in to continue to Acme., Email, demo@example.com, Password, the masked value, Sign in, Forgot password?, No account? Create one"},
+  {"name": "palette", "expect": "dark surfaces #1e1b29 and #2a2638, light text #f4f1ff, #a9a4bd hints, the #8b5cf6 button and #b9a2f7 link"},
+  {"name": "visual", "expect": "compare.json: mae <= 8 and match >= 0.85 against the reference at 360x420"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "sidebar",
+   "expect": "a top-level item 280x760 at pos 0 0, white, column gap 2, padding 12"
+  },
+  {
+   "name": "rows",
+   "expect": "a muted Workspace title and eight rows 40 high with padding 0 12 in the order Home, Inbox, My issues, Projects, Docs, Chat, Reports, Settings"
+  },
+  {
+   "name": "active",
+   "expect": "My issues has a #f3e5f5 fill and #6b3ad3 text; the other rows are transparent with #201240 text"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a 280 wide sidebar with eight rows, one highlighted, no warnings"
+  }
+ ]
+}

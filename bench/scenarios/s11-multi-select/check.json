@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "rows",
+   "expect": "six 56 high rows reading One to Six, padded 0 12"
+  },
+  {
+   "name": "selected",
+   "expect": "rows 1, 3 and 5 (One, Three, Five) are filled #f3e5f5 with #6b3ad3 text"
+  },
+  {
+   "name": "checkboxes",
+   "expect": "the selected rows have a 20x20 #6b3ad3 square; the others a white square with a #d9dee6 border"
+  },
+  {
+   "name": "others",
+   "expect": "the remaining three rows are white with #201240 text"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a multi-select list with three selected rows, no warnings"
+  }
+ ]
+}

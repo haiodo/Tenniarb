@@ -1,0 +1,1 @@
+Attached is `reference.png`, a 390x844 mobile profile screen. In `apps/empty.tenn`, add a top-level element `Screen` that reproduces it 1:1: the same size, header, avatar, stats row, texts and buttons. Work from the picture; the checker renders your element and compares it pixel by pixel with the reference.

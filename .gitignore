@@ -27,3 +27,5 @@ plans
 Tenniarb/web/
 
 bench/runs/
+bench/.service/
+bench/.mcp-calls.log*

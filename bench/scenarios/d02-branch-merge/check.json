@@ -1,0 +1,28 @@
+{
+ "file": "apps/branch.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "mounted",
+   "expect": "PlatformDesign.tenn mounts apps/branch.tenn as element Branch"
+  },
+  {
+   "name": "items",
+   "expect": "five items at the given positions"
+  },
+  {
+   "name": "links",
+   "expect": "five links with display arrow"
+  },
+  {
+   "name": "styles",
+   "expect": "Check->Yes and Check->No carry line-style dashed; the other links do not"
+  },
+  {
+   "name": "render",
+   "expect": "render Branch: a decision that forks and merges, no warnings"
+  }
+ ]
+}

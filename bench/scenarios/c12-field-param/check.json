@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a 360 wide white card at pos 0 0, radius 12, padding 24"
+  },
+  {
+   "name": "field",
+   "expect": "a Field use inside it with label Email and value maria@acme.dev"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues; the field stays inside the 360 width"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a card with one labeled field reading maria@acme.dev, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

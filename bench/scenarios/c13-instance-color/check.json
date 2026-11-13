@@ -1,0 +1,29 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "button",
+   "expect": "a second primary Button use in the header reading Import"
+  },
+  {
+   "name": "color",
+   "expect": "that instance's root color is #cf13a2"
+  },
+  {
+   "name": "other",
+   "expect": "the New project instance keeps #6b3ad3"
+  },
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn is unchanged against ../baseline"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: two filled buttons, one purple and one pink, no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

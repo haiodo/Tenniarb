@@ -1,0 +1,24 @@
+{
+ "file": "apps/flow.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "node",
+   "expect": "an item Archive at pos 720 0"
+  },
+  {
+   "name": "link",
+   "expect": "a link Done->Archive with display arrow"
+  },
+  {
+   "name": "keep",
+   "expect": "Start, Review, Done and the two existing links are unchanged against ../baseline"
+  },
+  {
+   "name": "render",
+   "expect": "render Flow: three steps and a new Archive at the end, no warnings"
+  }
+ ]
+}

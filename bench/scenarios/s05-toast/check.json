@@ -1,0 +1,29 @@
+{
+ "file": "apps/home.tenn",
+ "element": "Home.Home",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "toast",
+   "expect": "a 320x64 item at pos 856 24 in Home.Home, white, corner-radius 12, with shadow 0 -8 24"
+  },
+  {
+   "name": "content",
+   "expect": "a 20x20 #16a34a circle, the text Project archived and the text Undo, 12 points apart"
+  },
+  {
+   "name": "above",
+   "expect": "the toast is the last child under the window, so it draws above the content"
+  },
+  {
+   "name": "home",
+   "expect": "the window content, the header and the cards are unchanged"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: a toast at the bottom right, no warnings"
+  }
+ ]
+}

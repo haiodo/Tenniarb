@@ -1,0 +1,25 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "heading",
+   "expect": "the heading reads Workspaces"
+  },
+  {
+   "name": "trace",
+   "expect": "../mcp.jsonl has one edit call whose args carry the render argument Home.Home"
+  },
+  {
+   "name": "norender",
+   "expect": "../mcp.jsonl has no separate render tool call"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: the header reads Workspaces, no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

@@ -1,0 +1,25 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "clean",
+   "expect": "layout reports no problems: nothing leaves its parent"
+  },
+  {
+   "name": "width",
+   "expect": "the card fits inside the column that holds it"
+  },
+  {
+   "name": "trace",
+   "expect": "../mcp.jsonl has a layout call before any render call"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: one card inside its column, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

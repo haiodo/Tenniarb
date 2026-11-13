@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "grid",
+   "expect": "six Card uses in two rows of three"
+  },
+  {
+   "name": "width",
+   "expect": "each card is 300 wide"
+  },
+  {
+   "name": "gaps",
+   "expect": "16 points between the cards in a row and 16 between the rows"
+  },
+  {
+   "name": "titles",
+   "expect": "the titles read One, Two, Three, Four, Five, Six in that order"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues; no card leaves the 1200 width"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a 2x3 grid of cards, no warnings"
+  }
+ ]
+}

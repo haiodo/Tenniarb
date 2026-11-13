@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frame",
+   "expect": "a top-level item 390x844 at pos 0 0, white"
+  },
+  {
+   "name": "body",
+   "expect": "the body between header and footer is centered both ways with a 120x120 #f3e5f5 block, a 24 pt bold title and a 14 pt muted line"
+  },
+  {
+   "name": "steps",
+   "expect": "three 8x8 circles 8 points apart; the middle is #6b3ad3, the other two #d9dee6"
+  },
+  {
+   "name": "footer",
+   "expect": "a 72 high footer with a primary Continue button filling the width"
+  },
+  {
+   "name": "header",
+   "expect": "a 56 high header with the muted Skip at the end"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a three-step onboarding screen with the middle step active, no warnings"
+  }
+ ]
+}

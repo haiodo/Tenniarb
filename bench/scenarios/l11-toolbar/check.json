@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "toolbar",
+   "expect": "a top-level item 1200x56 at pos 0 0, white, with a 1 px #e5e7eb bottom border"
+  },
+  {
+   "name": "height",
+   "expect": "the toolbar is 56 high and padded 0 16"
+  },
+  {
+   "name": "title",
+   "expect": "an 18 pt semibold title Projects that takes the free space"
+  },
+  {
+   "name": "buttons",
+   "expect": "a secondary Filter and a primary New at the right end of the row, 8 points apart"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a toolbar 1200 wide with the title left and two buttons right, no warnings"
+  }
+ ]
+}

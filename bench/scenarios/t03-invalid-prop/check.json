@@ -1,0 +1,21 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "files",
+   "expect": "every .tenn file is byte-identical to ../baseline"
+  },
+  {
+   "name": "answer",
+   "expect": "apps/answer.txt says the tool refused or reported the unknown property shadow-depth"
+  },
+  {
+   "name": "check",
+   "expect": "check still reports no errors and no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

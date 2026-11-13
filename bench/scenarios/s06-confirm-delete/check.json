@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "list",
+   "expect": "a 900x600 list at pos 0 0 with five 56 high rows"
+  },
+  {
+   "name": "scrim",
+   "expect": "a 900x600 scrim at pos 0 0 with color #00000066 above the list"
+  },
+  {
+   "name": "dialog",
+   "expect": "a 420 wide Libraries.forms.Dialog titled Delete 3 items? with the body This cannot be undone., centered and above the scrim"
+  },
+  {
+   "name": "buttons",
+   "expect": "a footer row at the end with a secondary Cancel and a #b42318 Delete button with white text"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a dimmed list with a white confirmation dialog on top, no warnings"
+  }
+ ]
+}

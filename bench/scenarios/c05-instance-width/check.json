@@ -1,0 +1,25 @@
+{
+ "file": "apps/home.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "uses",
+   "expect": "two Card uses in the Body row with the titles Small and Large"
+  },
+  {
+   "name": "widths",
+   "expect": "the first instance is 280 wide and the second 360 wide"
+  },
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn is unchanged against ../baseline, Card still declares 320"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: five cards of different widths in the row, no warnings"
+  }
+ ],
+ "element": "Home.Home"
+}

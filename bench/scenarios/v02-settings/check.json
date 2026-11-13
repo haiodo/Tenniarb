@@ -1,0 +1,16 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Screen",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 25, "min_match": 0.55},
+ "criteria": [
+  {"name": "size", "expect": "render Screen is exactly 1584x432"},
+  {"name": "panels", "expect": "two settings panels side by side, each with a left rail, a navigation column and a content area at the same positions as the picture"},
+  {"name": "content", "expect": "the visible texts match the picture: Settings, Workspace settings, Account settings, Workspace, Password aging rule, Calendar, Access control, Import documents, Reports, Danger zone, Members"},
+  {"name": "controls", "expect": "the rows of toggles, input fields, buttons and the red Delete workspace button are present in the same places"},
+  {"name": "visual", "expect": "compare.json: mae <= 25 and match >= 0.55"},
+  {"name": "render", "expect": "render Screen: no errors or warnings"}
+ ]
+}

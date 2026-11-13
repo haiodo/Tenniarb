@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a 400 wide card at pos 0 0, white, radius 12, padding 24, column gap 12, with the title Payment method"
+  },
+  {
+   "name": "field",
+   "expect": "a 40 high field with a 2 px #b42318 border and radius 8 holding 4242 4242 4242 4242, with the label Card number above"
+  },
+  {
+   "name": "error",
+   "expect": "a 13 pt #b42318 text This card was declined. directly under the field"
+  },
+  {
+   "name": "button",
+   "expect": "a primary Pay button filling the width at the end"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a payment card with one red-bordered field and an error line, no warnings"
+  }
+ ]
+}

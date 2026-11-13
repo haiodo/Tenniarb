@@ -1,0 +1,7 @@
+element Libraries {
+	element ui_kit --from-file "lib/ui_kit.tenn"
+	element forms --from-file "lib/forms.tenn"
+	element big --from-file "lib/big.tenn"
+}
+element Home --from-file "apps/home.tenn"
+element Empty --from-file "apps/empty.tenn"

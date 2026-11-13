@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "card",
+   "expect": "a 320x200 card at pos 0 0, white, radius 12, with auto-layout abs and the title Releases"
+  },
+  {
+   "name": "badge",
+   "expect": "a Badge use reading New, positioned with pos like the title"
+  },
+  {
+   "name": "corner",
+   "expect": "the badge's right edge is 8 points from the card's right edge and its top edge 8 points from the card's top edge"
+  },
+  {
+   "name": "inside",
+   "expect": "the badge stays inside the card bounds"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a card with a New badge in its top-right corner, no warnings"
+  }
+ ]
+}

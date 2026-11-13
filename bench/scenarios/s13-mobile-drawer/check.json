@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "phone",
+   "expect": "a 390x844 page with a 56 high header and five 56 high rows"
+  },
+  {
+   "name": "drawer",
+   "expect": "a 280 wide, 844 high white drawer at pos 0 0 with the title Menu and six 44 high rows"
+  },
+  {
+   "name": "scrim",
+   "expect": "a 110x844 scrim at pos 280 0 with color #00000066"
+  },
+  {
+   "name": "order",
+   "expect": "the drawer draws above the page and the scrim between them"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a phone with an open drawer and a dimmed strip on the right, no warnings"
+  }
+ ]
+}

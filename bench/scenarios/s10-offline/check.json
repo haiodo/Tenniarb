@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "banner",
+   "expect": "a 40 high banner at the top, filled #fff4e5, padded 0 12, with 13 pt #b45309 text You are offline. Showing saved data."
+  },
+  {
+   "name": "list",
+   "expect": "five 56 high full-width rows below the banner in the order Inbox, Docs, Chat, Projects, Reports"
+  },
+  {
+   "name": "lines",
+   "expect": "the rows are separated by 1 px #e5e7eb lines"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: an offline banner above a five-row list, no warnings"
+  }
+ ]
+}

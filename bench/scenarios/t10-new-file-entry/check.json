@@ -1,0 +1,25 @@
+{
+ "file": "apps/reports.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {
+   "name": "file",
+   "expect": "apps/reports.tenn exists with the entry line and element Reports"
+  },
+  {
+   "name": "mount",
+   "expect": "PlatformDesign.tenn mounts it as element Reports"
+  },
+  {
+   "name": "screen",
+   "expect": "a 1200x760 white window with the 24 pt title Reports and a 320 wide card"
+  },
+  {
+   "name": "render",
+   "expect": "render Reports.Reports: a window with the title and one card, no warnings"
+  }
+ ],
+ "element": "Reports.Reports"
+}

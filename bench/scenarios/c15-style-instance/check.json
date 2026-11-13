@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "style",
+   "expect": "element Empty has a styles block with accent color #6b3ad3"
+  },
+  {
+   "name": "row",
+   "expect": "a row with gap 16 holding two Card uses titled Plain and Accented"
+  },
+  {
+   "name": "applied",
+   "expect": "the Accented card has use-style accent and resolves its surface to #6b3ad3"
+  },
+  {
+   "name": "plain",
+   "expect": "the Plain card stays white"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: two cards, one white and one purple, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

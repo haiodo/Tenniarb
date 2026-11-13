@@ -1,0 +1,29 @@
+{
+ "file": "lib/stats.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "file",
+   "expect": "lib/stats.tenn exists with item Stat, params label and value, column gap 4"
+  },
+  {
+   "name": "style",
+   "expect": "the label is 12 pt #6b7280 and the value 24 pt bold #201240"
+  },
+  {
+   "name": "mount",
+   "expect": "PlatformDesign.tenn mounts the file as element stats"
+  },
+  {
+   "name": "uses",
+   "expect": "two Stat uses on Home with Open 12 and Done 48 in a row gap 24"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: two stats under the header, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

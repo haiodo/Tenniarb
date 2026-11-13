@@ -1,0 +1,62 @@
+element "Screen" {
+	item Frame {
+		auto-layout column; width 900; height 620; color #f7f8fa; clip yes
+		item Header {
+			auto-layout row; align center; gap 12; padding 0 24; width fill; height 64; color #ffffff; border-color #e5e7eb
+			item Title { title Issues; font-size 24; line-height 32; font-family "IBM Plex Sans"; font-weight 700; text-color #201240; width fill; layout left }
+			item Search {
+				auto-layout row; align center; padding 0 12; width 240; height 36; corner-radius 8; color #ffffff; border-color #d9dee6
+				item Hint { title Search; font-size 14; font-family "IBM Plex Sans"; text-color #6b7280 }
+			}
+			item New {
+				auto-layout row; align center; justify center; width 108; height 36; corner-radius 8; color #6b3ad3
+				item Label { title "New issue"; font-size 14; font-family "IBM Plex Sans"; font-weight 600; text-color #ffffff }
+			}
+		}
+		item Table {
+			auto-layout column; padding 0 24 24 24; width fill; height fill
+			item Head {
+				auto-layout row; align center; height 44; width fill
+				item C1 { title Name; width 340; font-size 12; font-family "IBM Plex Sans"; font-weight 600; text-color #6b7280; layout left }
+				item C2 { title Status; width 120; font-size 12; font-family "IBM Plex Sans"; font-weight 600; text-color #6b7280; layout left }
+				item C3 { title Assignee; width 160; font-size 12; font-family "IBM Plex Sans"; font-weight 600; text-color #6b7280; layout left }
+				item C4 { title Updated; width fill; font-size 12; font-family "IBM Plex Sans"; font-weight 600; text-color #6b7280; layout left }
+			}
+			item Row1 {
+				auto-layout row; align center; height 56; width fill; color #ffffff; border-color #e5e7eb
+				item C1 { title "Login screen overflows on small phones"; width 340; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C2 { title "In progress"; width 120; font-size 13; font-family "IBM Plex Sans"; font-weight 600; text-color #6b3ad3; layout left }
+				item C3 { title "Maria Chen"; width 160; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C4 { title "Today"; width fill; font-size 13; font-family "IBM Plex Sans"; text-color #6b7280; layout left }
+			}
+			item Row2 {
+				auto-layout row; align center; height 56; width fill; color #ffffff; border-color #e5e7eb
+				item C1 { title "Add keyboard shortcuts to the editor"; width 340; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C2 { title "Review"; width 120; font-size 13; font-family "IBM Plex Sans"; font-weight 600; text-color #b45309; layout left }
+				item C3 { title "Ivan Petrov"; width 160; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C4 { title "Yesterday"; width fill; font-size 13; font-family "IBM Plex Sans"; text-color #6b7280; layout left }
+			}
+			item Row3 {
+				auto-layout row; align center; height 56; width fill; color #ffffff; border-color #e5e7eb
+				item C1 { title "The billing page shows the wrong total"; width 340; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C2 { title "Blocked"; width 120; font-size 13; font-family "IBM Plex Sans"; font-weight 600; text-color #b42318; layout left }
+				item C3 { title "Anna Smith"; width 160; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C4 { title "May 08"; width fill; font-size 13; font-family "IBM Plex Sans"; text-color #6b7280; layout left }
+			}
+			item Row4 {
+				auto-layout row; align center; height 56; width fill; color #ffffff; border-color #e5e7eb
+				item C1 { title "Search finds archived documents"; width 340; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C2 { title "Done"; width 120; font-size 13; font-family "IBM Plex Sans"; font-weight 600; text-color #16a34a; layout left }
+				item C3 { title "Maria Chen"; width 160; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C4 { title "May 02"; width fill; font-size 13; font-family "IBM Plex Sans"; text-color #6b7280; layout left }
+			}
+			item Row5 {
+				auto-layout row; align center; height 56; width fill; color #ffffff; border-color #e5e7eb
+				item C1 { title "Import drops the last row"; width 340; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C2 { title "Done"; width 120; font-size 13; font-family "IBM Plex Sans"; font-weight 600; text-color #16a34a; layout left }
+				item C3 { title "Ivan Petrov"; width 160; font-size 14; font-family "IBM Plex Sans"; text-color #201240; layout left }
+				item C4 { title "Apr 27"; width fill; font-size 13; font-family "IBM Plex Sans"; text-color #6b7280; layout left }
+			}
+		}
+	}
+}

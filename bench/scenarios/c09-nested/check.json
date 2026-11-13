@@ -1,0 +1,29 @@
+{
+ "file": "lib/ui_kit.tenn",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "component",
+   "expect": "lib/ui_kit.tenn has item Person: row, align center, gap 8, params name and role"
+  },
+  {
+   "name": "nested",
+   "expect": "Person uses Avatar at 32x32 with initials from name and uses Badge with text from role"
+  },
+  {
+   "name": "use",
+   "expect": "a Person use on Home with MC and Owner"
+  },
+  {
+   "name": "layout",
+   "expect": "layout on Home reports no issues"
+  },
+  {
+   "name": "render",
+   "expect": "render Home.Home: an avatar with the Owner badge in the Body row, no warnings"
+  }
+ ],
+ "element": "Empty.Empty"
+}

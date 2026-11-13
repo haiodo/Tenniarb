@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "row",
+   "expect": "a top-level item 1200x700 at pos 0 0 with a row layout, gap 16, padding 16"
+  },
+  {
+   "name": "widths",
+   "expect": "the main column fills the width and the panel is 280 wide"
+  },
+  {
+   "name": "main",
+   "expect": "the main column is white with the 24 pt title Document and three body lines"
+  },
+  {
+   "name": "panel",
+   "expect": "the panel is white with the 16 pt semibold title Comments and three 48 high rows"
+  },
+  {
+   "name": "layout",
+   "expect": "layout reports no issues; nothing leaves the 1200 width"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a document with a 280 comments panel on the right, no warnings"
+  }
+ ]
+}

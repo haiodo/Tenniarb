@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "frames",
+   "expect": "two 390x844 items at pos 0 0 and pos 400 0"
+  },
+  {
+   "name": "tabs",
+   "expect": "each frame has a 48 high bar with three equal tabs Overview, Members, Settings"
+  },
+  {
+   "name": "first",
+   "expect": "in the first frame Overview is active and the panel reads Overview"
+  },
+  {
+   "name": "second",
+   "expect": "in the second frame Members is active and the panel reads Members"
+  },
+  {
+   "name": "style",
+   "expect": "the active tab is #201240 with a 2 px #6b3ad3 underline, the others #6b7280"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: two phone frames, each with a different active tab, no warnings"
+  }
+ ]
+}

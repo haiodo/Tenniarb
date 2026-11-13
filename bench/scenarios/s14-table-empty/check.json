@@ -1,0 +1,29 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "table",
+   "expect": "a 900x400 item at pos 0 0 with a 48 high header and one 64 high row"
+  },
+  {
+   "name": "header",
+   "expect": "the header is #f7f8fa with the titles Name and Status in columns 240 and fill"
+  },
+  {
+   "name": "empty",
+   "expect": "the only data row is white and holds the 14 pt #6b7280 text No results, centered"
+  },
+  {
+   "name": "nothing",
+   "expect": "the data row has no other text or badges"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a table with a header and a single empty row, no warnings"
+  }
+ ]
+}

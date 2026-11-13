@@ -1,0 +1,33 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 200000,
+ "criteria": [
+  {
+   "name": "table",
+   "expect": "a top-level item 1200x500 at pos 0 0 with a 48 high header and four rows below it"
+  },
+  {
+   "name": "columns",
+   "expect": "the header row has three columns of 240, fill and 120, and the four data rows repeat those widths"
+  },
+  {
+   "name": "rows",
+   "expect": "four 56 high rows with the names Alpha, Beta, Gamma, Delta and a description each"
+  },
+  {
+   "name": "badges",
+   "expect": "a Badge in the last column of every row: New on the first, Done on the other three"
+  },
+  {
+   "name": "lines",
+   "expect": "the header is #f7f8fa and the rows are separated by 1 px #e5e7eb lines"
+  },
+  {
+   "name": "render",
+   "expect": "render Empty.Empty: a table with a header and four rows, no warnings"
+  }
+ ]
+}
