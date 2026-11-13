@@ -1,0 +1,64 @@
+[11:11:04] start b01-card
+[11:11:04] start b02-buttons
+[11:12:47] done  b02-buttons True
+[11:12:47] start b03-icon
+[11:13:45] done  b01-card True
+[11:13:45] start b04-flow
+[11:16:20] done  b03-icon True
+[11:16:20] start b05-text-hierarchy
+[11:16:29] done  b04-flow True
+[11:16:29] start b06-swatches
+[11:18:13] done  b05-text-hierarchy True
+[11:18:13] start b07-shadow
+[11:18:38] done  b06-swatches True
+[11:18:38] start b08-outline
+[11:19:36] done  b08-outline no-verdict
+[11:19:36] start b09-image
+[11:19:44] done  b07-shadow True
+[11:19:44] start b10-avatar-badge
+[11:22:16] done  b10-avatar-badge True
+[11:22:16] start b11-badge-at
+[11:22:43] done  b09-image True
+[11:22:43] start b12-divider
+[11:24:20] done  b11-badge-at True
+[11:24:20] start b13-button-kinds
+[11:25:23] done  b12-divider True
+[11:25:23] start b14-expression
+[11:26:12] done  b13-button-kinds True
+[11:26:13] start b15-style
+[11:26:57] done  b14-expression True
+[11:26:57] start b16-two-styles
+[11:27:57] done  b15-style True
+[11:27:57] start b17-context
+[11:30:42] done  b17-context True
+[11:30:42] start b18-compact
+[11:31:46] done  b16-two-styles True
+[11:31:46] start b19-markdown-body
+[11:36:17] done  b19-markdown-body True
+[11:36:17] start b20-palette
+[11:38:05] done  b18-compact False
+[11:38:05] start c01-params
+[11:40:24] done  c01-params False
+[11:40:24] start c02-component
+[11:40:49] done  b20-palette True
+[11:40:49] start l01-window
+[11:42:21] done  c02-component True
+[11:42:21] start l02-list
+[11:43:04] done  l01-window True
+[11:43:04] start l03-dialog
+[11:44:04] done  l02-list True
+[11:44:04] start l04-form
+[11:46:05] done  l03-dialog True
+[11:46:05] start s01-states
+[11:46:36] done  l04-form True
+[11:46:36] start t01-preserve
+[11:47:53] done  t01-preserve True
+[11:47:53] start t02-design-ops
+[11:49:40] done  t02-design-ops True
+[11:49:40] start v01-login
+[11:49:51] done  s01-states True
+[11:49:51] start v03-workbench
+[12:01:26] done  v01-login True
+[12:01:26] start v04-button-catalog
+[12:14:13] done  v03-workbench False
+[12:37:34] done  v04-button-catalog True

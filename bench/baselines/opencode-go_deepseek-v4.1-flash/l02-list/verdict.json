@@ -1,0 +1,31 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "window",
+   "pass": true,
+   "note": "layout: Window 0 0 1200x760 in element Empty"
+  },
+  {
+   "name": "rows",
+   "pass": true,
+   "note": "five rows 1200x44 (width fill, height 44, padding 0 12) at y 0/44/88/132/176 \u2192 column with gap 0"
+  },
+  {
+   "name": "badges",
+   "pass": true,
+   "note": "five Libraries.ui_kit.Badge uses, texts New, Done\u00d74, right edge at x 1188 = 1200-12 padding"
+  },
+  {
+   "name": "layout",
+   "pass": true,
+   "note": "layout: 'ok: nothing leaves its parent or its plate', no overlap reported, geometry 1200x760"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Empty: 1200x760 scene, 0 warnings; image shows five equal rows, titles left, badges right"
+  }
+ ],
+ "notes": "tenniarb check returns [] (0 errors, 0 warnings, confirmed by CLI); baseline diff shows only apps/empty.tenn changed. Element path in check.json resolves as 'Empty'."
+}

@@ -1,0 +1,31 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "title",
+   "pass": true,
+   "note": "get_state shows Home.Window.Body.\"Card Gamma\" args=title=\"Gamma archive\"; render draws 'Gamma archive' on the third card"
+  },
+  {
+   "name": "width",
+   "pass": true,
+   "note": "that use carries width=280; layout: Card_Gamma 280x51 at x=696 vs Card_Alpha/Beta 320x51"
+  },
+  {
+   "name": "others",
+   "pass": true,
+   "note": "diff against ../baseline touches only apps/home.tenn line 17; lib/ui_kit.tenn and all other files identical, other cards keep title/width"
+  },
+  {
+   "name": "tools",
+   "pass": true,
+   "note": "mcp.jsonl has one design call on apps/home.tenn with two set ops (Home.Window.Body.Card_Gamma title, width); trace shows no edit/write on the .tenn"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Home.Home: 0 warnings, third card visibly narrower and labelled 'Gamma archive', nothing leaves its parent"
+  }
+ ],
+ "notes": "tenniarb check returned no diagnostics (0 errors, 0 warnings) for Home in PlatformDesign context, so no_errors/no_warnings hold. Skipped: pixel comparison (no compare.json and no visual block in check.json)."
+}

@@ -1,0 +1,26 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "pass": true,
+   "note": "item Frame at pos 0 0, width 320, height 100, auto-layout abs, color #ffffff; layout prints Frame 0 0 320x100"
+  },
+  {
+   "name": "boxes",
+   "pass": true,
+   "note": "Box1/2/3 80x60 at layout 12 12, 104 12, 196 12 \u2014 top inset 12, gap 12, all inside the frame"
+  },
+  {
+   "name": "palette",
+   "pass": true,
+   "note": "fills written as gray-400, blue, red; rendered 189,189,189 / 0000FF / FF0000"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "terminalEmpty.Empty via the master renders 320x100, 0 warnings, three grey/blue/red swatches on a white frame"
+  }
+ ],
+ "notes": "check -json returns [] and get_state reports 0 errors, 0 warnings; only apps/empty.tenn changed (baseline body was empty). The frame carries inert gap/padding for an abs layout, harmless. Path Empty.Empty resolves in the master context (PlatformDesign.tenn), not directly in apps/empty.tenn \u2014 that is the fixture's convention, not a defect. No compare.json exists and the scenario has no visual block, so the render criterion is judged from the rendered image itself."
+}

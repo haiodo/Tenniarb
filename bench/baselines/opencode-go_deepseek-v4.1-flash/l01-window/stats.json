@@ -1,0 +1,21 @@
+{
+ "mcp_calls": 14,
+ "mcp_failed": 0,
+ "mcp_out_bytes": 77360,
+ "tokens": 42154,
+ "peak_tokens": 41009,
+ "ctx": 200000,
+ "ctx_over": false,
+ "cost_micro_usd": 0,
+ "tools": {
+  "execute": 13,
+  "tenniarb.guide": 5,
+  "read": 1,
+  "tenniarb.read_skill": 3,
+  "tenniarb.get_state": 2,
+  "search": 1,
+  "tenniarb.edit": 2,
+  "tenniarb.render": 1,
+  "tenniarb.comments": 1
+ }
+}

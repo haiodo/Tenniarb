@@ -1,0 +1,36 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "frame",
+   "pass": true,
+   "note": "layout gives Frame 0 0 200x80, source has `auto-layout abs` and `color #ffffff` inside element Empty"
+  },
+  {
+   "name": "image",
+   "pass": true,
+   "note": "Empty.Frame.Logo box is 20 16 160x48 inside the 200x80 frame, image \"../assets/logo.png\""
+  },
+  {
+   "name": "fit",
+   "pass": true,
+   "note": "`fit contain` in the item's image property; the render letterboxes instead of stretching"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Empty.Empty: 0 warnings, logo drawn at 20,16 160x48, nothing leaves its parent, no name label visible"
+  },
+  {
+   "name": "no_errors",
+   "pass": true,
+   "note": "tenniarb check returned [] and get_state reports 0 errors in every workspace file"
+  },
+  {
+   "name": "no_warnings",
+   "pass": true,
+   "note": "0 warnings in get_state for all files and in both renders"
+  }
+ ],
+ "notes": "Only apps/empty.tenn differs from baseline (frame plus logo item); the rest of the workspace is untouched. Rendered element resolves as Empty.Empty from PlatformDesign.tenn with 0 warnings and the logo contained 160x48. No compare.json and no visual block, so no picture criterion applies."
+}

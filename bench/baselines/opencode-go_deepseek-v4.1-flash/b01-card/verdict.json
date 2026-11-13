@@ -1,0 +1,26 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "card",
+   "pass": true,
+   "note": "apps/empty.tenn has item Card with pos 0 0, width 320, height 200; layout reports Card 0 0 320x200 as the only top-level item in element Empty"
+  },
+  {
+   "name": "style",
+   "pass": true,
+   "note": "Card carries color #ffffff, corner-radius 12, padding 16; no warnings, so they parse"
+  },
+  {
+   "name": "title",
+   "pass": true,
+   "note": "Child item Title with title \"Hello\", font-size 20, font-weight 700; layout gives Title 16 16 49x20"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "Rendered Empty.Empty (entry doc) at 320x200: white card fills the frame, bold Hello at 16,16 padding, 0 warnings"
+  }
+ ],
+ "notes": "Baseline diff is limited to apps/empty.tenn; tenniarb check returned [] (no errors/warnings), layout reports no overflow and the render matches the geometry. Not checked: whether the card's corner-radius is visible, since a white card on the white canvas background hides its corners."
+}

@@ -1,0 +1,31 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "row",
+   "pass": true,
+   "note": "item Row with pos 0 0; auto-layout row; gap 8; padding 24; layout box 279x84 at 0 0"
+  },
+  {
+   "name": "buttons",
+   "pass": true,
+   "note": "three uses Libraries.ui_kit.Button as Save/Cancel/Delete inside Empty.Row, resolved (labels drawn)"
+  },
+  {
+   "name": "labels",
+   "pass": true,
+   "note": "render and state show Save, Cancel, Delete left-to-right in that order"
+  },
+  {
+   "name": "kinds",
+   "pass": true,
+   "note": "Save purple fill #6b3ad3 (kind default primary); Cancel and Delete white with #d9dee6 border, dark text"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Empty: 0 warnings, 24 padding and 8 gaps measured (24\u219288, 96\u2192173, 181\u2192255)"
+  }
+ ],
+ "notes": "tenniarb check for apps/empty.tenn in PlatformDesign.tenn context returned no diagnostics; validate: 0 errors, 0 warnings; diff against baseline shows only empty.tenn changed (nothing else). No compare.json and no visual block, so no pixel criterion; the picture itself confirms fills, borders, labels and spacing."
+}

@@ -1,0 +1,36 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "card",
+   "pass": true,
+   "note": "Card 0 0 360x276, color #ffffff, corner-radius 12, padding 24, column gap 16 (24\u219244\u219260\u2192122\u2192138\u2192200\u2192216 by layout)"
+  },
+  {
+   "name": "title",
+   "pass": true,
+   "note": "Title inside card at 24 24, 63x20, font-size 20 font-weight 700; rendered bold 'Profile'"
+  },
+  {
+   "name": "fields",
+   "pass": true,
+   "note": "Two Libraries.forms.Field uses (Email, Password), 312 wide, labels and values demo@example.com / ******** shown in render"
+  },
+  {
+   "name": "button",
+   "pass": true,
+   "note": "Save button last in column at 24 216, kind primary, rendered as filled purple button"
+  },
+  {
+   "name": "layout",
+   "pass": true,
+   "note": "layout: ok, nothing leaves its parent; fields 24..336 within 360 width, no overlaps"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Empty: 360x276 card with title, two labeled fields and button, 0 warnings"
+  }
+ ],
+ "notes": "get_state/validate/check report 0 errors and 0 warnings; layout and render agree with the spec (gap 16, padding 24, bottom padding 24). No compare.json and no visual block in check.json, so no visual criterion. Nothing outside apps/empty.tenn was touched."
+}

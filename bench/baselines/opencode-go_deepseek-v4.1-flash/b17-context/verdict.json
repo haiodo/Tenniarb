@@ -1,0 +1,26 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "context",
+   "pass": true,
+   "note": "line 3: `context radius ?= 8` inside element Empty; 0 errors, 0 warnings"
+  },
+  {
+   "name": "box",
+   "pass": true,
+   "note": "Box is 120x60 (layout: Box 0 0 120x60), `corner-radius ${ctx.radius}`, `color #6b3ad3`, inside a 200x100 abs frame at pos 0 0"
+  },
+  {
+   "name": "radius",
+   "pass": true,
+   "note": "no override of ctx.radius, so 8; render at scale 4 shows ~32px arcs (=8 units) and validate/check report no warnings"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render of Empty draws a purple rounded box, 0 warnings; ../check.json is empty, so no diagnostics"
+  }
+ ],
+ "notes": "Only apps/empty.tenn changed versus baseline (diff clean apart from runner files); no compare.json for this scenario, so the render criterion was judged from the actual render (purple box, rounded corners, correct 120x60 size, 0 warnings)."
+}

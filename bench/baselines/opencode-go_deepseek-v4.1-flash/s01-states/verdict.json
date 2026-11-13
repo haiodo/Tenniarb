@@ -1,0 +1,36 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "frames",
+   "pass": true,
+   "note": "layout: Phone_empty 0 0 390x844, Phone_loading 400 0 390x844, Phone_error 800 0 390x844; each has padding 16, column gap 12 and a white Surface"
+  },
+  {
+   "name": "empty",
+   "pass": true,
+   "note": "Empty title 'No projects yet' in #6b7280, centered in the surface (420..461 in a 54..828 box); no rows, no button, validate is clean"
+  },
+  {
+   "name": "loading",
+   "pass": true,
+   "note": "Skeleton 1/2/3: width fill 326, height 48, corner-radius 8, grey #eef0f4; no state text or button"
+  },
+  {
+   "name": "error",
+   "pass": true,
+   "note": "'Could not load projects' plus Retry from ui_kit.Button (kind defaults to primary: #6b3ad3 fill, white label, width fill, height 44), rendered purple"
+  },
+  {
+   "name": "layout",
+   "pass": true,
+   "note": "'ok: nothing leaves its parent or its plate', no overlapping siblings, no issues in any of the three frames"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "render Empty: 1190x844 scene, three phone frames in a row, each state visible and legible, 0 warnings; check CLI reports 0 errors, 0 warnings"
+  }
+ ],
+ "notes": "All six criteria hold: exact frame geometry, correct per-state content, clean layout and render with no errors or warnings. The agent added an unrequested/repeated 'Projects' header and hint lines, but they are frame-level and break no criterion."
+}

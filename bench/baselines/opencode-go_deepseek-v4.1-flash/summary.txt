@@ -1,0 +1,35 @@
+model                              scenario         pass calls     KB  tokens    peak    ctx  failed
+opencode-go_deepseek-v4.1-flash    b01-card         yes      5      3   27581   27066  50000  
+opencode-go_deepseek-v4.1-flash    b02-buttons      yes      3      7   55118   29295  50000  
+opencode-go_deepseek-v4.1-flash    b03-icon         yes      9      5   38407   37002  50000  
+opencode-go_deepseek-v4.1-flash    b04-flow         yes     12      7   36107   34852  50000  
+opencode-go_deepseek-v4.1-flash    b05-text-hierarchy yes      6     36   27568   26833  50000  
+opencode-go_deepseek-v4.1-flash    b06-swatches     yes      1      1   27054   26124  50000  
+opencode-go_deepseek-v4.1-flash    b07-shadow       yes      4      6   41043   40571  50000  
+opencode-go_deepseek-v4.1-flash    b08-outline      yes      6      5   53888   31191  50000  
+opencode-go_deepseek-v4.1-flash    b09-image        yes      4     16   30212   29522  50000  
+opencode-go_deepseek-v4.1-flash    b10-avatar-badge yes     17     55   28289   30992  50000  
+opencode-go_deepseek-v4.1-flash    b11-badge-at     yes      7     19   15874   29378  50000  
+opencode-go_deepseek-v4.1-flash    b12-divider      yes      6      2   34069   32632  50000  
+opencode-go_deepseek-v4.1-flash    b13-button-kinds yes      7      6   15400   29103  50000  
+opencode-go_deepseek-v4.1-flash    b14-expression   yes     11     18   30157   29235  50000  
+opencode-go_deepseek-v4.1-flash    b15-style        yes      3     11   24614   24526  50000  
+opencode-go_deepseek-v4.1-flash    b16-two-styles   yes     13      8   25433   28449  50000  
+opencode-go_deepseek-v4.1-flash    b17-context      yes     12     15   17876   31432  50000  
+opencode-go_deepseek-v4.1-flash    b18-compact      NO      15     22   38570   36220  50000  compact
+opencode-go_deepseek-v4.1-flash    b19-markdown-body yes      9     11   44885   54970  50000   OVER
+opencode-go_deepseek-v4.1-flash    b20-palette      yes     10     10   36848   35029  50000  
+opencode-go_deepseek-v4.1-flash    c01-params       NO       6     10   29193   28301 200000  render
+opencode-go_deepseek-v4.1-flash    c02-component    yes      7     33   19824   33657 200000  
+opencode-go_deepseek-v4.1-flash    l01-window       yes     14     75   42154   41009 200000  
+opencode-go_deepseek-v4.1-flash    l02-list         yes      7     64   14908   27811 200000  
+opencode-go_deepseek-v4.1-flash    l03-dialog       yes     14    127   29387   41565 200000  
+opencode-go_deepseek-v4.1-flash    l04-form         yes     11     35   17937   30402 200000  
+opencode-go_deepseek-v4.1-flash    s01-states       yes      8     84   44158   41439 200000  
+opencode-go_deepseek-v4.1-flash    t01-preserve     yes      4      1   25566   24881  50000  
+opencode-go_deepseek-v4.1-flash    t02-design-ops   yes      6     31   26106   23771  50000  
+opencode-go_deepseek-v4.1-flash    v01-login        yes      7     18   77193   68930 200000  
+opencode-go_deepseek-v4.1-flash    v03-workbench    NO       8    415  180834  151009 500000  visual
+opencode-go_deepseek-v4.1-flash    v04-button-catalog yes     52    526  364353  306026 200000   OVER
+
+opencode-go_deepseek-v4.1-flash: 29/32 pass, 9.5 calls and 47519 tokens per run on average

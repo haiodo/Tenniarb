@@ -1,0 +1,31 @@
+{
+ "pass": true,
+ "criteria": [
+  {
+   "name": "scrim",
+   "pass": true,
+   "note": "item Scrim pos 0 0, 1200x760, color #00000066; third top-level node so it covers Window, and the render shows the content dimmed"
+  },
+  {
+   "name": "dialog",
+   "pass": true,
+   "note": "one use Libraries.forms.Dialog, width 480, geometry 360 301 480x157 \u2192 centered both axes on the 1200x760 screen; above the scrim in the render"
+  },
+  {
+   "name": "text",
+   "pass": true,
+   "note": "title \"Delete project\", body \"This cannot be undone.\", both fully drawn in the dialog"
+  },
+  {
+   "name": "buttons",
+   "pass": true,
+   "note": "Footer row (justify end, gap 8) holds Delete (default kind=primary, purple) and Cancel (kind=secondary, white/bordered)"
+  },
+  {
+   "name": "render",
+   "pass": true,
+   "note": "rendered Home as a 1200x760 scene with 0 warnings; dimmed screen, white dialog with title, body and both buttons on top"
+  }
+ ],
+ "notes": "check reports 1 file, 0 errors, 0 warnings; diff against baseline is additions only. Only unverified detail: the Footer row is a plain item placed in the Dialog slot rather than a named library footer, which matches the format's slot use."
+}

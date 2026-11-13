@@ -1,0 +1,1 @@
+{"reference": "reference.png", "render": "render.png", "reference_size": [608, 448], "render_size": [608, 448], "mae": 1.1, "match": 0.975, "tolerance": 12, "worst_block": {"col": 11, "row": 3, "distance": 1.0}, "diff_png": "diff.png"}
