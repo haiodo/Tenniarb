@@ -1,1 +1,1 @@
-In `apps/empty.tenn`, inside element `Empty`, add a 240x120 frame with `auto-layout abs` at `pos 0 0` and a 200x80 card inside it, inset 12, white with radius 8, holding the title `Compact`. Write the added block in the compact form: two spaces per level, one-line blocks under 160 characters. Change nothing else.
+In `apps/empty.tenn`, inside element `Empty`, add a 240x120 frame with `auto-layout abs` at `pos 0 0` and a 200x80 card inside it, inset 12, white with radius 8, holding the title `Compact`. Indent with two spaces, one command per line. Change nothing else.

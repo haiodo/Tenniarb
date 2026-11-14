@@ -6,7 +6,7 @@
  "ctx": 500000,
  "visual": {"file": "apps/empty.tenn", "element": "Screen", "reference": "reference.png", "max_mae": 30, "min_match": 0.5},
  "criteria": [
-  {"name": "size", "expect": "render Screen is 1920x1080"},
+  {"name": "size", "expect": "render Screen is 1980x540"},
   {"name": "shell", "expect": "the left rail, the navigation sidebar, the top header and the main content columns are present in the same places as the picture"},
   {"name": "content", "expect": "the visible titles, rows and cards carry the same text as the picture"},
   {"name": "visual", "expect": "compare.json: mae <= 30 and match >= 0.5; structure matters more than exact glyphs"},

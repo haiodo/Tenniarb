@@ -13,8 +13,8 @@
    "expect": "the card holds the title Compact"
   },
   {
-   "name": "compact",
-   "expect": "the added block uses two-space indentation and one-line blocks under 160 characters (not one command per line)"
+   "name": "indent",
+   "expect": "the added block uses two-space indentation, one command per line, and check reports no errors or warnings"
   },
   {
    "name": "render",

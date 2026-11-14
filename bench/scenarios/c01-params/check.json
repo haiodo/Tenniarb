@@ -22,7 +22,7 @@
   },
   {
    "name": "render",
-   "expect": "render Home.Home: five cards in the row, the two new titles read Open issues and Closed issues"
+   "expect": "render Home.Home: five cards in the row, all inside the 1200 window, the two new titles read Open issues and Closed issues"
   }
  ],
  "ctx": 200000

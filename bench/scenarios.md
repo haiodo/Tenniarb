@@ -83,8 +83,8 @@ Tiers: **b** basic syntax (20), **l** layout (20), **c** components (15), **s** 
 | s15-dark-twin | light and dark twin of a card | two frames/colors | done |
 | d01-brainmap | hub + 6 branches | items/links/render | done |
 | d02-branch-merge | decision, two branches, merge | links/items/render | done |
-| d03-legend | diagram with a legend plate | plate/items/labels | todo |
-| d04-plates | two plates, items inside each | parent/plate/inside | todo |
+| d03-legend | diagram with a legend plate | plate/items/labels | done |
+| d04-plates | two plates, items inside each | parent/plate/inside | done |
 | d05-link-labels | links with titles | link titles/render | done |
 | d06-line-styles | solid, dashed, dotted links | line-style/render | done |
 | d07-hub-elbow | `route elbow` hub | route/render | done |
@@ -114,7 +114,7 @@ Tiers: **b** basic syntax (20), **l** layout (20), **c** components (15), **s** 
 
 | v01-login | reproduce a 360x420 login from a picture | 1:1 compare/mae/match | done |
 | v02-settings | reproduce a 1584x432 pair of settings screens from a picture | compare/structure | done |
-| v03-workbench | reproduce a 1920x1080 platform workbench | compare/structure | done |
+| v03-workbench | reproduce a 1980x540 platform workbench | compare/structure | done |
 | v04-button-catalog | reproduce a 608x448 button catalog | 1:1 compare | done |
 | v05-chat | reproduce a 1920x1080 chat channel | compare/structure | done |
 | v06-dark-login | reproduce the login in the dark theme | compare/colors | done |
@@ -141,8 +141,8 @@ Measured on flash: b/t/d runs peak at 25-38k, the login reproduction at 102k.
 | l | 20 | 20 | 0 |
 | c | 15 | 15 | 0 |
 | s | 15 | 15 | 0 |
-| d | 10 | 8 | 2 |
+| d | 10 | 10 | 0 |
 | t | 10 | 10 | 0 |
 | r | 10 | 0 | 10 |
 | v | 8 | 8 | 0 |
-| **all** | **108** | **96** | **12** |
+| **all** | **108** | **98** | **10** |
