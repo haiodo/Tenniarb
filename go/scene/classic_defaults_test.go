@@ -58,6 +58,56 @@ func TestClassicDefaultRadius(t *testing.T) {
 	}
 }
 
+// TestClassicLinkLabel draws the label of a link as text at the midpoint of its ends, in the border
+// colour, when the link writes one; the arrow is still drawn.
+func TestClassicLinkLabel(t *testing.T) {
+	sc := buildScreen(t, `element "E" {
+  item A { pos 0 0; width 40; height 20 }
+  item B { pos 100 0; width 40; height 20 }
+  link A B { label "yes"; display arrow }
+}`, Options{})
+	var lk *RNode
+	for _, k := range sc.tree.Kids {
+		if k.Kind == RLink {
+			lk = k
+		}
+	}
+	if lk == nil {
+		t.Fatal("no link")
+	}
+	pic := sc.gfx[lk].Picture()
+	if pic == nil {
+		t.Fatal("link draws nothing")
+	}
+	var text string
+	var tx, ty float64
+	col := gfx.Color{}
+	var it gfx.Iter
+	it.Reset(pic)
+	for it.Next() {
+		op := it.Op()
+		switch op.Kind {
+		case gfx.OpTranslate:
+			tx, ty = op.A, op.B
+		case gfx.OpText:
+			text, col = op.Text, op.Color
+		}
+	}
+	if text != "yes" {
+		t.Fatalf("label %q, want yes", text)
+	}
+	// The label box sits at the midpoint of the ends (y=10 between x=40 and x=100), 5 points along x.
+	if tx < 40 || tx > 100 {
+		t.Errorf("label x %v, want between the two boxes", tx)
+	}
+	if ty < 5 || ty > 30 {
+		t.Errorf("label y %v, want near the line", ty)
+	}
+	if col.A == 0 {
+		t.Errorf("label colour %+v, want an opaque border colour", col)
+	}
+}
+
 func TestClassicLinkDrawsUnderItems(t *testing.T) {
 	sc := buildScreen(t, `element "E" {
   item A { pos 0 0; width 40; height 20 }

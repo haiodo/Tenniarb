@@ -692,7 +692,28 @@ func (b *builder) linkPicture(parent, lk *RNode) (*gfx.Picture, bool) {
 			r.FillPath(arrowHead(from, to, 6+stroke.Width), col)
 		}
 	}
+	if ti := b.p.linkLabel(lk); ti != nil {
+		b.drawLinkLabel(r, ti, from, to, b.p.color(lk, "border-color", black))
+	}
 	return r.Finish(), true
+}
+
+// drawLinkLabel draws the markdown label of a link at the midpoint of its ends: left by half its width
+// when horizontal, up by half its height when vertical, and 5 points along x, as go/render placed it.
+func (b *builder) drawLinkLabel(r *gfx.Recorder, ti *textInfo, from, to gfx.Point, col gfx.Color) {
+	w, h := ti.natural(), ti.height(math.Inf(1))
+	x := (from.X + to.X) / 2
+	if math.Abs(from.Y-to.Y) < 10 {
+		x -= w / 2
+	}
+	y := (from.Y + to.Y) / 2
+	if math.Abs(from.X-to.X) < 10 {
+		y -= h / 2
+	}
+	r.Save()
+	r.Translate(x+5, y)
+	ti.draw(r, w, h, true, col, nil, nil)
+	r.Restore()
 }
 
 // linkControl is the control point a link's pos gives: the middle of its two boxes plus the offset. The

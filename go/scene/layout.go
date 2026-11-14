@@ -803,6 +803,34 @@ func (p *prep) textOf(rn *RNode, inCtx bool) *textInfo {
 	return ti
 }
 
+// linkLabel is the markdown text of a link's label, ready to measure and draw; nil when the link writes
+// none. The font is the link's font-size (12 as in go/render), the text its label with \n as a newline.
+func (p *prep) linkLabel(lk *RNode) *textInfo {
+	pr := p.prop(lk, "label")
+	if pr == nil {
+		return nil
+	}
+	text, _ := pr.text(0)
+	if text == "" {
+		return nil
+	}
+	if p.classic {
+		text = strings.ReplaceAll(text, `\n`, "\n")
+	}
+	size := 12.0
+	if fs := p.prop(lk, "font-size"); fs != nil {
+		if v, ok := fs.num(0); ok && v > 0 {
+			size = v
+		}
+	}
+	ti := &textInfo{font: p.fontOf(lk, size), text: text, m: p.opts.Measurer, p: p}
+	if p.classic {
+		ti.parts = p.titleMarkupParts(lk, ti)
+	}
+	ti.asc, ti.desc, ti.lineH = p.lineBox(ti.font)
+	return ti
+}
+
 // titleMarkupParts cuts a classic title at the !(colour), &(size) and @(picture) of the markdown markup;
 // nil when the title writes none of them, so its text stays as written. The colours and sizes are the ones
 // go/render gives the runs of a title, and everything the markup does not cover keeps its characters.
