@@ -1,0 +1,15 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {"name": "frame", "expect": "a 900x500 white frame at pos 0 0 with auto-layout abs"},
+  {"name": "plates", "expect": "two items named \"§ Inputs\" and \"§ Actions\", both 380x220, at pos 24 24 and pos 440 24"},
+  {"name": "style", "expect": "both plates are white with a #e5e7eb border and radius 8, with the 13 pt titles Inputs and Actions"},
+  {"name": "boxes", "expect": "three 48x32 #f3e5f5 boxes inside each plate, 16 from its left edge, 48 below the title, 40 apart"},
+  {"name": "inside", "expect": "every box sits inside its own plate; layout reports no item leaving its parent"},
+  {"name": "render", "expect": "render Empty.Empty: two labelled plates with three boxes each, no warnings"}
+ ]
+}

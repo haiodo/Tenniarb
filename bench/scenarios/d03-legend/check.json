@@ -1,0 +1,15 @@
+{
+ "file": "apps/empty.tenn",
+ "element": "Empty.Empty",
+ "no_errors": true,
+ "no_warnings": true,
+ "ctx": 50000,
+ "criteria": [
+  {"name": "frame", "expect": "a 600x400 white frame at pos 0 0 with auto-layout abs"},
+  {"name": "plate", "expect": "an item named \"§ Legend\", 240x140 at pos 24 20, #f7f8fa, border #e5e7eb, radius 8, inside the frame"},
+  {"name": "title", "expect": "the plate shows the 13 pt semibold title Legend"},
+  {"name": "rows", "expect": "three 20 high rows, each with a 32x4 bar and a label: #6b3ad3 Primary, #b42318 Danger, #16a34a Success"},
+  {"name": "inside", "expect": "every row sits inside the plate; layout reports no item leaving its parent"},
+  {"name": "render", "expect": "render Empty.Empty: a legend plate with three colored samples, no warnings"}
+ ]
+}
