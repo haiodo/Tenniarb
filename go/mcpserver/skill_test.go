@@ -94,7 +94,7 @@ func checkSkillFile(t *testing.T, srv *Server, rel string) {
 	if runtime.GOOS != "darwin" {
 		return
 	}
-	for _, el := range skillElements(tree.File(rel), "") {
+	for _, el := range skillElements(tree.File(rel), rel, "") {
 		r, err := srv.render(rel, el, 1, false)
 		if err != nil {
 			t.Errorf("render %s %q: %v", rel, el, err)
@@ -113,15 +113,19 @@ func checkSkillFile(t *testing.T, srv *Server, rel string) {
 	}
 }
 
-// skillElements lists the dotted paths of the elements under n that have content.
-func skillElements(n *scene.Node, prefix string) []string {
+// skillElements lists the dotted paths of the elements under n that have content; elements of a
+// mounted file are that file's own, not the example's.
+func skillElements(n *scene.Node, file, prefix string) []string {
 	var out []string
 	for _, e := range n.Elems {
+		if e.Pos.File != file {
+			continue
+		}
 		p := prefix + e.Key
 		if hasContent(e) {
 			out = append(out, p)
 		}
-		out = append(out, skillElements(e, p+".")...)
+		out = append(out, skillElements(e, file, p+".")...)
 	}
 	return out
 }

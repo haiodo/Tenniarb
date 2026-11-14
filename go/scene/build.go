@@ -236,7 +236,7 @@ func (t *Tree) expandElement(target *Node, ctx *mountCtx, eval evalFunc) *RNode 
 	x := &expander{t: t, ctx: ctx, eval: eval}
 	// The root of the file is a node above every element in it, so its context is inherited (spec 5f).
 	if file := fileRoot(target); file != target {
-		x.env = x.context(file.Props, nil)
+		x.env = x.context(file, file.Props, nil)
 	}
 	x.vars = x.defaults(target) // a component on its own shows its defaults (spec 5c)
 	rn := x.container(target, nil)

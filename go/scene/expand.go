@@ -116,7 +116,7 @@ func (x *expander) container(n *Node, env map[string]string) *RNode {
 	if env != nil { // an instance: the declarations of the definition root are already in env
 		x.env = env
 	} else {
-		x.env = x.context(n.Props, x.env)
+		x.env = x.context(n, n.Props, x.env)
 	}
 	defer func() { x.env = savedEnv }()
 	r := x.newR(RItem, n)
@@ -176,7 +176,7 @@ func (x *expander) itemBody(n *Node, env map[string]string) *RNode {
 	if env != nil {
 		x.env = env
 	} else {
-		x.env = x.context(n.Props, x.env)
+		x.env = x.context(n, n.Props, x.env)
 	}
 	defer func() { x.env = saved }()
 	r := x.newR(RItem, n)
@@ -216,7 +216,7 @@ func (x *expander) use(n *Node, asTarget bool, env map[string]string, overlay []
 	// The order of the context is: the place of the use, the definition root, the block of the use
 	// (spec 5f). A use as target keeps its own block below the block that inserts it, so the nested use
 	// applies the two itself.
-	block := x.ctxDecls(blockProps(n.Block), scope)
+	block := x.ctxDecls(n, blockProps(n.Block), scope)
 	var inst *RNode
 	var instEnv map[string]string
 	x.ctx = tctx // the component's names resolve in its own file, the block's in this one
@@ -228,7 +228,7 @@ func (x *expander) use(n *Node, asTarget bool, env map[string]string, overlay []
 		passed = append(append(passed, block...), overlay...)
 		inst = x.instance(target, n, callerEnv, passed)
 	} else {
-		instEnv = applyCtx(callerEnv, x.ctxDecls(target.Props, scope))
+		instEnv = applyCtx(callerEnv, x.ctxDecls(target, target.Props, scope))
 		instEnv = applyCtx(instEnv, block)
 		instEnv = applyCtx(instEnv, overlay)
 		instEnv = applyCtx(instEnv, x.fileDefaults(target, callerEnv))

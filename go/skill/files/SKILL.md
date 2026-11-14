@@ -17,6 +17,7 @@ reference, read it only when the task needs that part:
 | `platforms.md` | you are picking a font size, gap, padding, row or control height, or a window and panel width, and want the number instead of a guess |
 | `direction.md` | before drawing a screen: the audit, the direction and the passes that stop it looking generated |
 | `components.md` | the library has the screen you need and you fill its slots; or the file is a library itself |
+| `native.md` | the screen should look like a native desktop app: one library, a `Theme` wrapper for macOS/Windows/Linux and light/dark, surfaces, control sizes, capitalization and recipes |
 | `layout.md` | you are drawing an app window, a settings page, a list or a dialog and want the full recipe |
 | `tools.md` | `design`, `read`, `layout` or `refactor` does something you did not expect |
 | `diagrams.md` | drawing a brain map, flow or other diagram with links |
@@ -45,6 +46,8 @@ editor or any code: a `.tenn` is data.
   `examples/hub-demo.tenn`), not hand-placed `path` items.
 - A raster is content → `image "assets/x.png" fit cover`; an icon → `path` with `view-box`.
 - A control height, gap or window width exists → take the number from `platforms.md`, do not invent it.
+- The screen should read as a native desktop app → mount `tenniarb-library://native`, wrap the screen
+  in `Theme` with `osName` and `theme`, and follow `native.md`; do not mix it with the modern numbers.
 
 ## The loop
 

@@ -267,6 +267,7 @@ func (t *Tree) loadFile(abs string, at *Pos) *Node {
 	l := &loader{t: t, file: rel}
 	l.fill(root, ast.Children)
 	l.joinedBlocks(ast.Children)
+	l.checkExpressions(ast.Children)
 	t.stack = t.stack[:len(t.stack)-1]
 	t.files[abs] = root
 	t.order = append(t.order, root)

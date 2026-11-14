@@ -1,0 +1,331 @@
+// Native desktop components for macOS, Windows 11 and Linux, light and dark.
+// One library: wrap a screen in Theme and name the system and the theme; components read the tokens as ctx.*.
+// A theme item holds what the three systems share, a system item only what it changes.
+
+item Light {
+    field #ffffff; text #000000; onAccent #ffffff; font 13; fontSmall 11; cardBg #ffffff; pageBg #ffffff
+    item Macos { surface #ececec; panel #f5f5f5; button #f5f5f5; border #d0d0d0; borderDisabled #e3e3e3; divider #dcdcdc; textSecondary #6e6e73; textDisabled #a0a0a0; accent #0a84ff; selection #cfe4ff; selectionText #000000; headerBg #f5f5f5; group #f5f5f5; tabOff #e8e8e8; shadowColor #00000033; radius 6; radiusSmall 4; radiusPanel 8; windowRadius 10; sidebarBg #f5f5f5; tabRule #00000000 }
+    item Windows { surface #f3f3f3; panel #ffffff; button #ffffff; border #d1d1d1; borderDisabled #e5e5e5; divider #e5e5e5; textSecondary #5f5f5f; textDisabled #9d9d9d; accent #0067c0; selection #cce4f7; selectionText #000000; headerBg #ffffff; group #f3f3f3; tabOff #f3f3f3; shadowColor #00000033; radius 4; radiusSmall 2; radiusPanel 4; windowRadius 8; sidebarBg #f3f3f3; tabRule #00000000 }
+    item Linux { surface #f6f5f4; panel #fafafa; button #ffffff; border #c0bfbc; borderDisabled #e0dedb; divider #d4d2cf; textSecondary #77767b; textDisabled #9a9996; accent #3584e4; selection #3584e4; selectionText #ffffff; headerBg #f6f5f4; group #f6f5f4; tabOff #e8e6e3; shadowColor #00000040; radius 6; radiusSmall 4; radiusPanel 8; windowRadius 0; sidebarBg #fafafa; tabRule #3584e4 }
+}
+
+item Dark {
+    text #ffffff; selectionText #ffffff; shadowColor #00000080; font 13; fontSmall 11
+    item Macos { surface #1e1e1e; panel #2c2c2e; field #1e1e1e; button #3a3a3c; border #48484a; borderDisabled #2c2c2e; divider #38383a; textSecondary #98989d; textDisabled #6e6e73; accent #0a84ff; selection #244a73; onAccent #ffffff; headerBg #2c2c2e; group #2c2c2e; tabOff #2c2c2e; radius 6; radiusSmall 4; radiusPanel 8; windowRadius 10; cardBg #2c2c2e; pageBg #1e1e1e; sidebarBg #2c2c2e; tabRule #00000000 }
+    item Windows { surface #202020; panel #2b2b2b; field #2d2d2d; button #2d2d2d; border #3f3f3f; borderDisabled #2b2b2b; divider #3a3a3a; textSecondary #a0a0a0; textDisabled #6a6a6a; accent #60cdff; selection #264f78; onAccent #000000; headerBg #2b2b2b; group #2b2b2b; tabOff #202020; radius 4; radiusSmall 2; radiusPanel 4; windowRadius 8; cardBg #2b2b2b; pageBg #2b2b2b; sidebarBg #202020; tabRule #00000000 }
+    item Linux { surface #242424; panel #2b2b2b; field #363636; button #363636; border #4a4a4a; borderDisabled #303030; divider #3a3a3a; textSecondary #b0b0b0; textDisabled #777777; accent #3584e4; selection #3584e4; onAccent #ffffff; headerBg #363636; group #2b2b2b; tabOff #2b2b2b; radius 6; radiusSmall 4; radiusPanel 8; windowRadius 0; cardBg #2b2b2b; pageBg #2b2b2b; sidebarBg #2b2b2b; tabRule #3584e4 }
+}
+
+context --from-item Light
+context --from-item Light.Macos
+
+element "Theme" {
+    kind Component
+    export let osName = Macos
+    export let theme = Light
+    context --from-item ${theme}
+    context --from-item ${theme + '.' + osName}
+    item Box { auto-layout column; slot content }
+}
+
+element "Button" {
+    kind Component
+    export let text = OK
+    export let kind = normal
+    item Box {
+        auto-layout row; align center; justify center
+        height 24; padding 0 10; corner-radius ${ctx.radius}; line-width 1
+        color ${kind === "default" ? ctx.accent : ctx.button}
+        border-color ${kind === "default" ? ctx.accent : (kind === "disabled" ? ctx.borderDisabled : ctx.border)}
+        text-color ${kind === "disabled" ? ctx.textDisabled : (kind === "default" ? ctx.onAccent : ctx.text)}
+        item Label { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "TextField" {
+    kind Component
+    export let value = ""
+    export let kind = normal
+    export let fieldWidth = 180
+    item Box {
+        auto-layout row; align center
+        width ${fieldWidth}; height 24; padding 0 6; line-width 1; corner-radius ${ctx.radius}
+        color ${kind === "readonly" || kind === "disabled" ? ctx.panel : ctx.field}
+        border-color ${kind === "disabled" ? ctx.borderDisabled : (kind === "readonly" ? ctx.divider : ctx.border)}
+        text-color ${kind === "disabled" ? ctx.textDisabled : ctx.text}
+        item Value { title ${value}; font-size ${ctx.font}; layout left }
+    }
+}
+
+element "Checkbox" {
+    kind Component
+    export let text = Option
+    export let checked = no
+    export let enabled = yes
+    item Box {
+        auto-layout row; align center; gap 6; height 20
+        item Box1 {
+            auto-layout abs; width 16; height 16; corner-radius ${ctx.radiusSmall}
+            color ${checked === "yes" ? ctx.accent : ctx.field}
+            border-color ${enabled === "yes" ? (checked === "yes" ? ctx.accent : ctx.border) : ctx.borderDisabled}
+            line-width 1
+            item Mark {
+                pos 1 -1; width 12; height 12; view-box 0 0 12 12
+                path "M2.5 6 L5 8.5 L9.5 3"
+                border-color ${checked === "yes" ? ctx.onAccent : "#00000000"}; line-width 1.6
+            }
+        }
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${enabled === "yes" ? ctx.text : ctx.textDisabled} }
+    }
+}
+
+element "Radio" {
+    kind Component
+    export let text = Option
+    export let checked = no
+    export let enabled = yes
+    item Box {
+        auto-layout row; align center; gap 6; height 20
+        item Circle {
+            auto-layout abs; width 16; height 16; corner-radius 8
+            color ${checked === "yes" ? ctx.accent : ctx.field}
+            border-color ${enabled === "yes" ? (checked === "yes" ? ctx.accent : ctx.border) : ctx.borderDisabled}
+            line-width 1
+            item Dot {
+                pos 5 -5; width 6; height 6; corner-radius 3
+                color ${checked === "yes" ? ctx.onAccent : "#00000000"}
+            }
+        }
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${enabled === "yes" ? ctx.text : ctx.textDisabled} }
+    }
+}
+
+element "Combo" {
+    kind Component
+    export let value = ""
+    export let comboWidth = 180
+    export let enabled = yes
+    item Box {
+        auto-layout row; align center; justify space-between
+        width ${comboWidth}; height 24; padding 0 6; corner-radius ${ctx.radius}
+        color ${ctx.field}
+        border-color ${enabled === "yes" ? ctx.border : ctx.borderDisabled}; line-width 1
+        item Value { title ${value}; font-size ${ctx.font}; layout left; text-color ${enabled === "yes" ? ctx.text : ctx.textDisabled} }
+        item Arrow { width 14; height 14; view-box 0 0 14 14; path "M3 5 L7 9 L11 5"; border-color ${ctx.textSecondary}; line-width 1.5 }
+    }
+}
+
+element "Tab" {
+    kind Component
+    export let text = Tab
+    export let active = no
+    export let tabWidth = 90
+    item Box {
+        auto-layout column; align center
+        width ${tabWidth}; height 27; corner-radius ${ctx.radius}
+        color ${active === "yes" ? ctx.field : ctx.tabOff}
+        border-color ${ctx.border}; line-width 1
+        item Label { title ${text}; width fill; font-size ${ctx.font}; layout center; text-color ${active === "yes" ? ctx.text : ctx.textSecondary}; padding 0 5 0 0 }
+        item Rule { width fill; height 2; color ${active === "yes" ? ctx.tabRule : "#00000000"} }
+        pos 1 -3
+        padding 5
+    }
+}
+
+element "ToolItem" {
+    kind Component
+    export let icon = "M3 3 h8 v8 h-8 Z"
+    export let enabled = yes
+    item Box {
+        auto-layout row; align center; justify center; width 26; height 24; corner-radius ${ctx.radiusSmall}
+        item Icon { width 16; height 16; view-box 0 0 14 14; path ${icon}; border-color ${enabled === "yes" ? ctx.textSecondary : ctx.textDisabled}; line-width 1.2 }
+    }
+}
+
+element "MenuBarItem" {
+    kind Component
+    export let text = File
+    export let active = no
+    item Box {
+        auto-layout row; align center; height 24; padding 0 9; corner-radius ${ctx.radiusSmall}
+        color ${active === "yes" ? ctx.selection : "#00000000"}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${active === "yes" ? ctx.selectionText : ctx.text} }
+    }
+}
+
+element "MenuItem" {
+    kind Component
+    export let text = Item
+    export let shortcut = ""
+    export let checked = no
+    export let enabled = yes
+    export let itemWidth = 220
+    item Box {
+        auto-layout row; align center; height 22; padding 0 24 0 4; width ${itemWidth}
+        item Check {
+            width 14; height 14; view-box 0 0 12 12
+            path "M2.5 6 L5 8.5 L9.5 3"
+            border-color ${checked === "yes" ? ctx.accent : "#00000000"}; line-width 1.6
+        }
+        item Label { title ${text}; font-size ${ctx.font}; layout left; width fill; text-color ${enabled === "yes" ? ctx.text : ctx.textDisabled} }
+        item Keys { title ${shortcut}; font-size ${ctx.font}; text-color ${ctx.textSecondary} }
+    }
+}
+
+element "MenuSeparator" {
+    kind Component
+    export let itemWidth = 220
+    item Line { auto-layout row; width ${itemWidth}; height 1; color ${ctx.divider} }
+}
+
+element "Menu" {
+    kind Component
+    export let menuWidth = 220
+    item Box {
+        auto-layout column; width ${menuWidth}; padding 4 0; color ${ctx.panel}
+        border-color ${ctx.border}; line-width 1; corner-radius ${ctx.radiusPanel}
+        shadow 0 -4 12 ${ctx.shadowColor}
+        slot content { }
+    }
+}
+
+element "TreeItem" {
+    kind Component
+    export let text = Item
+    export let depth = 0
+    export let selected = no
+    export let expanded = no
+    export let sidebar = no
+    export let rowWidth = 260
+    item Box {
+        auto-layout row; align center; gap 4; width ${rowWidth}; height 20
+        padding 0 4 0 ${4 + depth * 14}
+        color ${selected === "yes" ? ctx.selection : (sidebar === "yes" ? ctx.sidebarBg : ctx.field)}
+        item Twisty { title ${expanded === "yes" ? "▾" : "▸"}; font-size 10; text-color ${selected === "yes" ? ctx.selectionText : ctx.textSecondary} }
+        item Label { title ${text}; font-size ${ctx.font}; layout left; text-color ${selected === "yes" ? ctx.selectionText : ctx.text} }
+    }
+}
+
+element "TableHeader" {
+    kind Component
+    export let rowWidth = 480
+    item Box {
+        auto-layout row; align center; width ${rowWidth}; height 22; color ${ctx.headerBg}
+        border-color ${ctx.divider}; line-width 1
+        item C1 { title Name; width 200; font-size ${ctx.font}; font-weight 600; layout left; padding 0 6; text-color ${ctx.textSecondary} }
+        item C2 { title Status; width fill; font-size ${ctx.font}; font-weight 600; layout left; padding 0 6; text-color ${ctx.textSecondary} }
+        item C3 { title Updated; width 110; font-size ${ctx.font}; font-weight 600; layout left; padding 0 6; text-color ${ctx.textSecondary} }
+    }
+}
+
+element "TableRow" {
+    kind Component
+    export let name = ""
+    export let status = ""
+    export let updated = ""
+    export let selected = no
+    export let rowWidth = 480
+    item Box {
+        auto-layout row; align center; width ${rowWidth}; height 20
+        color ${selected === "yes" ? ctx.selection : ctx.field}
+        item C1 { title ${name}; width 200; font-size ${ctx.font}; layout left; padding 0 6; text-color ${selected === "yes" ? ctx.selectionText : ctx.text} }
+        item C2 { title ${status}; width fill; font-size ${ctx.font}; layout left; padding 0 6; text-color ${selected === "yes" ? ctx.selectionText : ctx.text} }
+        item C3 { title ${updated}; width 110; font-size ${ctx.font}; layout left; padding 0 6; text-color ${selected === "yes" ? ctx.selectionText : ctx.textSecondary} }
+    }
+}
+
+element "Group" {
+    kind Component
+    export let title = Group
+    export let groupWidth = 480
+    item Box {
+        auto-layout column; gap 8; width ${groupWidth}; padding 18 12 12 12; color ${ctx.group}
+        border-color ${ctx.divider}; line-width 1; corner-radius ${ctx.radiusPanel}
+        item Caption { title ${title}; font-size ${ctx.font}; layout left; text-color ${ctx.text}; pos 10 -6 }
+        slot content { }
+    }
+}
+
+element "Separator" {
+    kind Component
+    export let lineWidth = 360
+    export let vertical = no
+    item Line {
+        auto-layout row
+        width ${vertical === "yes" ? 1 : lineWidth}
+        height ${vertical === "yes" ? lineWidth : 1}
+        color ${ctx.divider}
+    }
+}
+
+element "StatusBar" {
+    kind Component
+    export let message = Ready
+    export let barWidth = 480
+    item Box {
+        auto-layout row; align center; gap 2; width ${barWidth}; height 22; padding 0 6; color ${ctx.surface}
+        border-color ${ctx.divider}; line-width 1
+        item Text { title ${message}; font-size ${ctx.fontSmall}; layout left; width fill; text-color ${ctx.textSecondary} }
+        item Size { title "240 x 180"; font-size ${ctx.fontSmall}; text-color ${ctx.textSecondary} }
+    }
+}
+
+element "Dialog" {
+    kind Component
+    export let title = Dialog
+    export let dialogWidth = 420
+    item Box {
+        auto-layout column; width ${dialogWidth}; color ${ctx.surface}; text-color ${ctx.text}
+        border-color ${ctx.border}; line-width 1; corner-radius ${ctx.radiusPanel}
+        item Header {
+            auto-layout row; align center; width fill; height 28; padding 0 8
+            color ${ctx.panel}; border-color ${ctx.divider}; line-width 1
+            item Title { title ${title}; font-size ${ctx.font}; font-weight 600; layout left }
+        }
+        item Body {
+            auto-layout column; gap 10; padding 12; width fill; color ${ctx.surface}
+            slot content { }
+        }
+        item Footer {
+            auto-layout row; align center; justify end; gap 6; width fill; height 36; padding 0 10
+            color ${ctx.surface}; border-color ${ctx.divider}; line-width 1
+            slot footer { }
+        }
+    }
+}
+
+element "Window" {
+    kind Component
+    export let winWidth = 560
+    export let winHeight = 470
+    item Box {
+        auto-layout column; align center; width ${winWidth}; height ${winHeight}
+        color ${ctx.surface}; text-color ${ctx.text}; border-color ${ctx.border}; line-width 1; corner-radius ${ctx.windowRadius}
+        slot content { }
+    }
+}
+
+element "Page" {
+    kind Component
+    export let pageWidth = 534
+    export let pageHeight = 380
+    export let kind = card
+    item Box {
+        auto-layout column; width ${pageWidth}; height ${pageHeight}; text-color ${ctx.text}
+        color ${kind === "sidebar" ? ctx.sidebarBg : (kind === "card" ? ctx.cardBg : ctx.pageBg)}
+        border-color ${kind === "card" ? ctx.divider : "#00000000"}; line-width 1
+        corner-radius ${kind === "card" ? ctx.radiusPanel : 0}
+        slot content { }
+    }
+}
+
+element "Panel" {
+    kind Component
+    export let panelWidth = 480
+    export let panelHeight = 28
+    item Box {
+        auto-layout row; align center; width ${panelWidth}; height ${panelHeight}
+        color ${ctx.surface}; text-color ${ctx.text}
+        slot content { }
+    }
+}

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+* `libraries/native.tenn`: one native desktop library for macOS, Windows 11 and Linux, light and dark.
+  A theme item holds what the three systems share and a system item only what it changes, so `Theme`
+  takes `osName` and `theme` over two `--from-item` lines and there is no per-platform copy of the file;
+  the components read `ctx.*`, and `Skins` in the demo shows all six variants of one screen.
+
+* `context --from-item <path>` reads the properties of an item as context keys: a theme or any
+  palette is data, and the path is a value, so `context --from-item ${theme + '.' + osName}` picks the
+  item by parameters. A path that names nothing is an error where the context is written.
+
+* `check` and `validate` compile every `${...}` with the same JS engine that runs it and report a
+  broken one at the file, line and column: a file with `${1 + }` used to pass and leave `render` with
+  "the element has nothing to draw". That message now lists the warnings that kept the element empty.
+
 * The design skill keeps `SKILL.md` under 2000 words: the tool notes moved to `tools.md`, the limits and
   `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
   characters.

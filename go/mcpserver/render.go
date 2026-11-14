@@ -130,7 +130,13 @@ func (s *Server) render(file, element string, scale float64, view bool) (*render
 	sc.Commit()
 	sc.Read(func() { bounds = screen.Root.SubtreeBounds() })
 	if bounds.Empty() {
-		return nil, errors.New("the element has nothing to draw")
+		// The warnings say why nothing was painted: a color that did not resolve, an empty text.
+		var b strings.Builder
+		b.WriteString("the element has nothing to draw")
+		for _, w := range screen.Warnings {
+			b.WriteString("\n" + w.Error())
+		}
+		return nil, errors.New(b.String())
 	}
 	if px := bounds.W() * scale * bounds.H() * scale; px > maxPixels {
 		return nil, fmt.Errorf("image would be %.0f pixels (limit %d): lower scale or render a smaller element", px, maxPixels)

@@ -1,0 +1,529 @@
+element "native" --from-file "../libraries/native.tenn"
+// The native component library in use: a preferences dialog, a workbench window and a popup menu.
+// Element Skins shows all six skins side by side; the other screens use the first mount.
+// The palette items of the library (Light.Macos … Dark.Linux) hold the tokens; Theme selects one.
+
+element "Preferences" {
+    use native.Theme as skin {
+        osName Macos
+        theme Light
+        slot content {
+        use native.Window as window {
+            winWidth 560
+            winHeight 470
+            slot content {
+                item Tabs {
+                    auto-layout row; gap 0; padding 6 8 0 8; width fill; align end
+                    use native.Tab as general { text General; active yes }
+                    use native.Tab as editors { text Editors }
+                    use native.Tab as keys { text Keys }
+                    item Filler { width fill }
+                }
+                use native.Page as page {
+                    pageWidth 534
+                    pageHeight 390
+                    slot content {
+                        item Body {
+                            auto-layout column; gap 10; padding 12; width fill
+                            use native.Group as appearance {
+                                title Appearance
+                                groupWidth 508
+                                slot content {
+                                    use native.Checkbox as c1 { text "Show text editors"; checked yes }
+                                    use native.Checkbox as c2 { text "Show whitespace characters" }
+                                }
+                            }
+                            use native.Group as font {
+                                title "Text font"
+                                groupWidth 508
+                                slot content {
+                                    item FontRow {
+                                        auto-layout row; align center; gap 8
+                                        use native.TextField as face { value "Consolas"; fieldWidth 200 }
+                                        use native.Combo as size { value 12; comboWidth 80 }
+                                    }
+                                }
+                            }
+                            item Table {
+                                auto-layout column; width 508
+                                use native.TableHeader as head { rowWidth 506 }
+                                use native.TableRow as r1 { rowWidth 506; name Platform; status Active; updated Today; selected yes }
+                                use native.TableRow as r2 { rowWidth 506; name Website; status Closed; updated Yesterday }
+                                use native.TableRow as r3 { rowWidth 506; name Mobile; status Active; updated May 08 }
+                            }
+                        }
+                    }
+                }
+                item Buttons {
+                    auto-layout row; align center; justify end; gap 6; width fill; height 40; padding 0 10
+                    use native.Button as ok { text OK; kind default }
+                    use native.Button as cancel { text Cancel }
+                }
+            }
+        }
+        }
+    }
+}
+
+element "Workbench" {
+    use native.Theme as skin {
+        osName Macos
+        theme Light
+        slot content {
+        use native.Window as window {
+            winWidth 900
+            winHeight 600
+            slot content {
+                item MenuBar {
+                    auto-layout row; align center; padding 0 2; width fill; height 24
+                    use native.MenuBarItem as file { text File }
+                    use native.MenuBarItem as edit { text Edit }
+                    use native.MenuBarItem as source { text Source }
+                    use native.MenuBarItem as runMenu { text Run }
+                    use native.MenuBarItem as windowMenu { text Window }
+                    use native.MenuBarItem as help { text Help }
+                }
+                use native.Panel as toolbar {
+                    panelWidth 898
+                    panelHeight 28
+                    slot content {
+                        item Left {
+                            auto-layout row; align center; padding 0 4; gap 0
+                            use native.ToolItem as newFile { icon "M3 2 h5 l3 3 v9 h-8 Z" }
+                            use native.ToolItem as save { icon "M2 2 h8 l2 2 v8 h-10 Z M6 2 v4 h4" }
+                            use native.ToolItem as run { icon "M4 2 L11 7 L4 12 Z" }
+                            use native.ToolItem as stop { icon "M4 4 h6 v6 h-6 Z"; enabled no }
+                        }
+                    }
+                }
+                item Main {
+                    auto-layout row; width 898; height 524
+                    use native.Page as treePage {
+                        pageWidth 280
+                        pageHeight 524
+                        kind sidebar
+                        slot content {
+                            item Tree { auto-layout column; padding 2 0
+                                use native.TreeItem as t1 { text Platform; expanded yes; rowWidth 276; sidebar yes }
+                                use native.TreeItem as t2 { sidebar yes; text Apps; depth 1; expanded yes; rowWidth 276 }
+                                use native.TreeItem as t3 { sidebar yes; text Workbench.tenn; depth 2; selected yes; rowWidth 276 }
+                                use native.TreeItem as t4 { sidebar yes; text Preferences.tenn; depth 2; rowWidth 276 }
+                                use native.TreeItem as t5 { sidebar yes; text Libraries; depth 1; expanded yes; rowWidth 276 }
+                                use native.TreeItem as t6 { sidebar yes; text native.tenn; depth 2; rowWidth 276 }
+                                use native.TreeItem as t7 { sidebar yes; text icons.tenn; depth 2; rowWidth 276 }
+                            }
+                        }
+                    }
+                    use native.Separator as divider { lineWidth 524; vertical yes }
+                    use native.Page as editorPage {
+                        pageWidth 617
+                        pageHeight 524
+                        kind flat
+                        slot content {
+                            item Editor {
+                                auto-layout column; gap 8; padding 12; width 616
+                                item Tools {
+                                    auto-layout row; align center; gap 6
+                                    use native.Combo as filter { value "All issues"; comboWidth 160 }
+                                    use native.TextField as search { value "Search"; fieldWidth 180 }
+                                }
+                                item Table {
+                                    auto-layout column; width 592
+                                    use native.TableHeader as head { rowWidth 589 }
+                                    use native.TableRow as r1 { rowWidth 589; name "Login overflows"; status "In progress"; updated Today; selected yes }
+                                    use native.TableRow as r2 { rowWidth 589; name "Shortcuts"; status Review; updated Yesterday }
+                                    use native.TableRow as r3 { rowWidth 589; name "Billing total"; status Blocked; updated May 08 }
+                                }
+                            }
+                        }
+                    }
+                }
+                use native.StatusBar as bar { message "Ready"; barWidth 898 }
+            }
+        }
+        }
+    }
+}
+
+element "MenuDemo" {
+    use native.Theme as skin {
+        osName Macos
+        theme Light
+        slot content {
+        use native.Window as window {
+            winWidth 480
+            winHeight 320
+            slot content {
+                item Stage {
+                    auto-layout abs; width 478; height 318
+                    use native.Page as page {
+                        pageWidth 476
+                        pageHeight 316
+                        kind flat
+                        slot content {
+                            item Body {
+                                auto-layout column; gap 10; padding 12; width 474; height 314
+                                use native.Button as open { text "Open menu..." }
+                            }
+                        }
+                    }
+                    item MenuBox {
+                        pos 16 -52
+                        use native.Menu as menu {
+                            menuWidth 220
+                            slot content {
+                                use native.MenuItem as mi1 { text "New Project"; shortcut "Ctrl+N"; itemWidth 216 }
+                                use native.MenuItem as mi2 { text "Open Project"; shortcut "Ctrl+O"; itemWidth 216 }
+                                use native.MenuSeparator as sep { itemWidth 216 }
+                                use native.MenuItem as mi3 { text "Save"; shortcut "Ctrl+S"; checked yes; itemWidth 216 }
+                                use native.MenuItem as mi4 { text Exit; enabled no; itemWidth 216 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }
+}
+element "Skins" {
+    item Board {
+        auto-layout abs; width 1360; height 620; color #e9e9e9
+
+        item Card1 {
+            auto-layout abs; width 430; height 284
+            pos 0 0
+            item Caption { pos 0 0; title "macOS · Light"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t1 {
+                pos 0 -22
+                osName Macos
+                theme Light
+                slot content {
+                    use native.Window as w1 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t1a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t1b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p1 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g1 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c1 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f1 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b1 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h1 { rowWidth 380 }
+                                            use native.TableRow as r1 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok1 { text OK; kind default }
+                                use native.Button as ca1 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item Card2 {
+            auto-layout abs; width 430; height 284
+            pos 460 0
+            item Caption { pos 0 0; title "Windows · Light"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t2 {
+                pos 0 -22
+                osName Windows
+                theme Light
+                slot content {
+                    use native.Window as w2 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t2a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t2b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p2 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g2 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c2 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f2 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b2 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h2 { rowWidth 380 }
+                                            use native.TableRow as r2 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok2 { text OK; kind default }
+                                use native.Button as ca2 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item Card3 {
+            auto-layout abs; width 430; height 284
+            pos 920 0
+            item Caption { pos 0 0; title "Linux · Light"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t3 {
+                pos 0 -22
+                osName Linux
+                theme Light
+                slot content {
+                    use native.Window as w3 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t3a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t3b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p3 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g3 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c3 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f3 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b3 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h3 { rowWidth 380 }
+                                            use native.TableRow as r3 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok3 { text OK; kind default }
+                                use native.Button as ca3 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item Card4 {
+            auto-layout abs; width 430; height 284
+            pos 0 -320
+            item Caption { pos 0 0; title "macOS · Dark"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t4 {
+                pos 0 -22
+                osName Macos
+                theme Dark
+                slot content {
+                    use native.Window as w4 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t4a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t4b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p4 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g4 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c4 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f4 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b4 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h4 { rowWidth 380 }
+                                            use native.TableRow as r4 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok4 { text OK; kind default }
+                                use native.Button as ca4 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item Card5 {
+            auto-layout abs; width 430; height 284
+            pos 460 -320
+            item Caption { pos 0 0; title "Windows · Dark"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t5 {
+                pos 0 -22
+                osName Windows
+                theme Dark
+                slot content {
+                    use native.Window as w5 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t5a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t5b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p5 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g5 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c5 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f5 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b5 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h5 { rowWidth 380 }
+                                            use native.TableRow as r5 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok5 { text OK; kind default }
+                                use native.Button as ca5 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item Card6 {
+            auto-layout abs; width 430; height 284
+            pos 920 -320
+            item Caption { pos 0 0; title "Linux · Dark"; font-size 13; font-weight 600; text-color #000000 }
+            use native.Theme as t6 {
+                pos 0 -22
+                osName Linux
+                theme Dark
+                slot content {
+                    use native.Window as w6 {
+                        winWidth 430
+                        winHeight 260
+                        slot content {
+                            item Tabs {
+                                auto-layout row; padding 6 8 0 8; width fill; align end
+                                use native.Tab as t6a { text General; active yes; tabWidth 80 }
+                                use native.Tab as t6b { text Editors; tabWidth 80 }
+                                item Filler { width fill }
+                            }
+                            use native.Page as p6 {
+                                pageWidth 404
+                                pageHeight 190
+                                slot content {
+                                    item Body {
+                                        auto-layout column; gap 8; padding 10; width fill
+                                        use native.Group as g6 {
+                                            title Appearance
+                                            groupWidth 382
+                                            slot content {
+                                                use native.Checkbox as c6 { text "Show text editors"; checked yes }
+                                            }
+                                        }
+                                        item Row {
+                                            auto-layout row; gap 8
+                                            use native.TextField as f6 { value Consolas; fieldWidth 180 }
+                                            use native.Combo as b6 { value 12; comboWidth 70 }
+                                        }
+                                        item Table {
+                                            auto-layout column; width 382
+                                            use native.TableHeader as h6 { rowWidth 380 }
+                                            use native.TableRow as r6 { rowWidth 380; name Platform; status Active; updated Today; selected yes }
+                                        }
+                                    }
+                                }
+                            }
+                            item Buttons {
+                                auto-layout row; align center; justify end; gap 6; width fill; height 34; padding 0 10
+                                use native.Button as ok6 { text OK; kind default }
+                                use native.Button as ca6 { text Cancel }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

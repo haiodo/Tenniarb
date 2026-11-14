@@ -286,6 +286,45 @@ subtree; `context <key> ?= <value>` is its default, and the place of the use win
 instance contract, styles do not set context, and a missing `ctx.<key>` is a bad expression, not the
 text `undefined`.
 
+A theme is a component that declares context for its slot; the screen wraps in it, and a nested theme
+switches one subtree:
+
+```tenn
+element "Theme" {
+  kind Component
+  export let mode = light
+  context surface ${mode === "dark" ? "#1e1e1e" : "#ffffff"}
+  item Box { auto-layout column; slot content { item Fill { width 200; height 60; color ${ctx.surface} } } }
+}
+element "Screen" {
+  use Theme as theme {
+    mode dark
+    slot content {
+      item Card { width 200; height 100; color ${ctx.surface} }
+    }
+  }
+}
+```
+
+A palette is data, not a component: `context --from-item <path>` reads every property of an item as a
+context key, and the path is a value, so parameters pick the item. Several lines layer: a later one
+wins on the keys it names, the rest stay from the line above.
+
+```tenn
+item Light { item Macos { surface #ececec; accent #0a84ff } }
+item Dark { item Macos { surface #1e1e1e; accent #0a84ff } }
+element "Skin" {
+  export let theme = Light
+  export let osName = Macos
+  context --from-item ${theme + '.' + osName}
+  item Box { width 120; height 40; color ${ctx.surface}; slot content }
+}
+```
+
+`libraries/native.tenn` is the full case: a shared item and a system item per theme, `Theme` with
+`osName` and `theme`, and
+`ctx.surface`, `ctx.accent`, `ctx.radius` and the rest inside.
+
 ## Limits
 
 The workaround belongs in the file, not in a comment about the missing feature.

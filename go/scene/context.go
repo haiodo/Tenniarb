@@ -7,6 +7,18 @@ import (
 	"github.com/haiodo/tenn/go"
 )
 
+// isExprArg reports whether the argument is an expression: an expression node, or a string with ${...}.
+func isExprArg(a *tenn.Node) bool {
+	if a.Kind == tenn.KindExpression || a.Kind == tenn.KindExpressionBlock {
+		return true
+	}
+	if a.Kind == tenn.KindStringLit {
+		code, _ := a.GetIdentText()
+		return strings.Contains(code, "${")
+	}
+	return false
+}
+
 // ctxDecl is one "context <key> <value>" or "context <key> ?= <value>" (spec 5f).
 type ctxDecl struct {
 	key, val string
@@ -33,20 +45,49 @@ func (x *expander) scopeOf(vars, env map[string]string) map[string]string {
 
 // context is env with the context commands of a node's own properties applied, their values evaluated
 // in the parameters and the inherited context.
-func (x *expander) context(props []*Prop, env map[string]string) map[string]string {
+func (x *expander) context(n *Node, props []*Prop, env map[string]string) map[string]string {
 	if env == nil {
 		env = x.env
 	}
-	return applyCtx(env, x.ctxDecls(props, x.scopeOf(x.vars, env)))
+	return applyCtx(env, x.ctxDecls(n, props, x.scopeOf(x.vars, env)))
 }
 
 // ctxDecls reads the context commands of props in file order; the value is the rest of the arguments,
-// expressions evaluated in scope.
-func (x *expander) ctxDecls(props []*Prop, scope map[string]string) []ctxDecl {
+// expressions evaluated in scope. --from-item reads the properties of an item as context keys.
+func (x *expander) ctxDecls(n *Node, props []*Prop, scope map[string]string) []ctxDecl {
 	var out []ctxDecl
 	for _, pr := range props {
 		if pr.Name != "context" {
 			continue
+		}
+		if len(pr.Args) > 0 {
+			if s, _ := pr.Args[0].GetIdentText(); s == "--from-item" {
+				if len(pr.Args) < 2 {
+					x.t.warn(pr.Pos, "context is written: context --from-item <path>")
+					continue
+				}
+				// The load-time validation has no evaluator: a path expression is the build's to resolve.
+				if x.eval == nil && isExprArg(pr.Args[1]) {
+					continue
+				}
+				path := x.value(&Prop{Name: "context", Args: pr.Args[1:], Pos: pr.Pos}, scope)
+				item, err := x.t.Resolve(n, path)
+				if err != nil {
+					x.t.fail(pr.Pos, "context --from-item %q: %v", path, err)
+					continue
+				}
+				if item.Kind != KItem {
+					x.t.fail(pr.Pos, "context --from-item %q names a %s, not an item", path, item.Kind)
+					continue
+				}
+				for _, pp := range item.Props {
+					if pp.Name == "context" || len(pp.Args) == 0 {
+						continue
+					}
+					out = append(out, ctxDecl{key: pp.Name, val: x.value(pp, scope)})
+				}
+				continue
+			}
 		}
 		if len(pr.Args) < 2 {
 			x.t.warn(pr.Pos, "context is written: context <key> [?=] <value>")
@@ -128,7 +169,7 @@ func (x *expander) fileDefaults(target *Node, inherited map[string]string) []ctx
 		return nil
 	}
 	var out []ctxDecl
-	for _, d := range x.ctxDecls(file.Props, x.scopeOf(nil, inherited)) {
+	for _, d := range x.ctxDecls(file, file.Props, x.scopeOf(nil, inherited)) {
 		if d.soft {
 			out = append(out, d)
 		}

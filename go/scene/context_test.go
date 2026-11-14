@@ -201,3 +201,49 @@ func TestContextAbsent(t *testing.T) {
 		t.Errorf("warnings: %v", screen.Warnings)
 	}
 }
+
+// TestContextFromItem: --from-item reads the properties of an item as context keys, evaluated in the
+// parameters of the node that writes it.
+func TestContextFromItem(t *testing.T) {
+	screen, svg := paramsBuild(t, paramsTree(t, "fromitem.tenn", `item MacosLight { surface "#123456"; accent "#abcdef" }
+element "Screen" {
+  export let osName = Macos
+  export let theme = Light
+  context --from-item ${osName + theme}
+  item Box { width 10; height 10; color ${ctx.accent}; title ${ctx.surface} }
+}`), "Screen")
+	if l := boxMap(screen)["Box"].Lines; len(l) != 1 || l[0] != "#123456" {
+		t.Errorf("Box title %v, want the item's surface", l)
+	}
+	if !strings.Contains(svg, "rgb(171,205,239)") {
+		t.Errorf("Box is not painted from the item's accent:\n%s", svg)
+	}
+	if len(screen.Warnings) != 0 {
+		t.Errorf("warnings: %v", screen.Warnings)
+	}
+}
+
+// TestContextFromItemPath: the value of --from-item is a path, so items may be nested.
+func TestContextFromItemPath(t *testing.T) {
+	screen, _ := paramsBuild(t, paramsTree(t, "fromitem.tenn", `item Light { item Macos { surface "#234567" } }
+element "Screen" {
+  export let osName = Macos
+  export let theme = Light
+  context --from-item ${theme + '.' + osName}
+  item Box { width 10; height 10; title ${ctx.surface} }
+}`), "Screen")
+	if l := boxMap(screen)["Box"].Lines; len(l) != 1 || l[0] != "#234567" {
+		t.Errorf("Box title %v, want the nested item's surface", l)
+	}
+}
+
+// TestContextFromItemMissing: a path that names nothing is reported where the context is written.
+func TestContextFromItemMissing(t *testing.T) {
+	_, err := tenner(t, "fromitem.tenn", `element "Screen" {
+  context --from-item Nope
+  item Box { width 10; height 10; title ${ctx.surface} }
+}`)
+	if err == nil || !strings.Contains(err.Error(), "--from-item") {
+		t.Errorf("error %v, want the missing --from-item path reported", err)
+	}
+}

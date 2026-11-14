@@ -164,6 +164,119 @@ element "Map" {
   но не обходит другие плитки.
 - Иконки — заливка одним путём; контурные иконки требуют `border-color`, а не `color`.
 
+# Библиотека native
+
+`native.tenn` — одна библиотека нативных десктопных компонентов: macOS, Windows 11 и Linux, каждая в
+светлой и тёмной теме. Внешний вид выбирается обёрткой `Theme`, а не отдельным файлом:
+
+```tenn
+element "native" --from-file "tenniarb-library://native"
+
+element "Settings" {
+    use native.Theme as skin {
+        osName Macos
+        theme Light
+        slot content {
+            use native.Window as window {
+                winWidth 560
+                winHeight 470
+                slot content {
+                    use native.Button as ok { text OK; kind default }
+                }
+            }
+        }
+    }
+}
+```
+
+`osName` — `Macos`, `Windows` или `Linux`, `theme` — `Light` или `Dark`; по умолчанию `Macos` и `Light`.
+Слова совпадают с именами item-палитр, поэтому регистр важен: `theme dark` — ошибка, `theme Dark` —
+нужный вид. Слот наследует вид целиком, включая компоненты глубоко в дереве; вложенный `Theme`
+переключает одну ветку. Демо: `examples/native-demo.tenn`. Элемент `Skins` показывает все шесть
+вариантов рядом, а `Preferences`, `Workbench`, `MenuDemo` — полные экраны на `Macos` / `Light`.
+Путь `tenniarb-library://native` работает в любом воркспейсе: библиотека ставится вместе с приложением.
+
+## Как устроена тема
+
+Каждый вид — это `item` библиотеки: в item темы лежит то, что у трёх систем общее, в item системы —
+только отличия:
+
+```tenn
+item Light {
+    field #ffffff; text #000000; onAccent #ffffff; font 13; /* общее для трёх */
+    item Macos { surface #ececec; accent #0a84ff; radius 6; /* … */ }
+    item Windows { surface #f3f3f3; accent #0067c0; radius 4; /* … */ }
+    item Linux { surface #f6f5f4; accent #3584e4; radius 6; /* … */ }
+}
+item Dark { /* общее для трёх и те же три item */ }
+```
+
+`Theme` накладывает их на контекст двумя строками:
+
+```tenn
+context --from-item ${theme}
+context --from-item ${theme + '.' + osName}
+```
+
+`--from-item <путь>` читает каждое свойство item как ключ контекста. Первая строка приносит общее,
+вторая — отличия системы: последняя строка побеждает, а ключ, который она не называет, остаётся от
+предыдущей. Выражений в палитре нет, поэтому компоненты читают обычные `ctx.surface`, `ctx.accent`,
+`ctx.radius`. Отсюда два правила:
+
+- Экран должен лежать внутри `Theme`; без неё ключей нет и `render` перечислит предупреждения. Корень
+  самой библиотеки повторяет те же две строки для её элементов, поэтому открытый `libraries/native.tenn`
+  показывает вид macOS.
+- Поверхности не красят вручную: сырой `color #ffffff` останется белым в тёмной теме. Для этого есть
+  `Window`, `Page` (`kind` = `card` `flat` `sidebar`) и `Panel`; они рисуют `ctx.surface`, `ctx.cardBg`
+  и остальное.
+
+Токены — свойства item в начале `libraries/native.tenn`: `surface`, `panel`, `field`, `button`,
+`border`, `borderDisabled`, `divider`, `text`, `textSecondary`, `textDisabled`, `accent`, `selection`,
+`selectionText`, `onAccent`, `headerBg`, `group`, `tabOff`, `shadowColor`, `radius`, `radiusSmall`,
+`radiusPanel`, `windowRadius`, `font`, `fontSmall`, `cardBg`, `pageBg`, `sidebarBg`, `tabRule`.
+Правка item меняет вид всех компонентов сразу. Новая система — это item в `Light` и `Dark` и её имя
+в `osName`.
+
+## Компоненты
+
+| Компонент | Параметры | Что рисует |
+|---|---|---|
+| `Button` | `text`, `kind` = `normal` `default` `disabled` | кнопка 24 px; `default` залита акцентом |
+| `TextField` | `value`, `kind`, `fieldWidth` | поле с рамкой 1 px |
+| `Checkbox` | `text`, `checked`, `enabled` | квадрат 16 px, отмеченный залит акцентом |
+| `Radio` | `text`, `checked`, `enabled` | круг 16 px с точкой акцента |
+| `Combo` | `value`, `comboWidth`, `enabled` | поле с шевроном |
+| `Tab` | `text`, `active`, `tabWidth` | вкладка 27 px; синяя линия только у Linux |
+| `ToolItem` | `icon` (SVG-путь 14×14), `enabled` | кнопка тулбара 26×24 |
+| `MenuBarItem` | `text`, `active` | пункт строки меню 24 px |
+| `MenuItem` | `text`, `shortcut`, `checked`, `enabled`, `itemWidth` | строка меню 22 px: галочка, подпись, сочетание |
+| `Menu` | `menuWidth`, слот `content` | всплывающая панель с тенью |
+| `MenuSeparator` | `itemWidth` | линия 1 px |
+| `TreeItem` | `text`, `depth`, `selected`, `expanded`, `sidebar`, `rowWidth` | строка дерева 20 px; `sidebar yes` — фон колонки |
+| `TableHeader` | `rowWidth` | шапка 22 px: Name / Status / Updated |
+| `TableRow` | `name`, `status`, `updated`, `selected`, `rowWidth` | строка 20 px с теми же колонками |
+| `Group` | `title`, `groupWidth`, слот `content` | рамка с подписью |
+| `Separator` | `lineWidth`, `vertical` | линия 1 px, горизонтальная или вертикальная |
+| `StatusBar` | `message`, `barWidth` | полоса 22 px: сообщение слева, размер справа |
+| `Dialog` | `title`, `dialogWidth`, слоты `content` и `footer` | заголовок, тело, футер с кнопками справа |
+| `Window` | `winWidth`, `winHeight`, слот `content` | рамка экрана с фоном темы |
+| `Page` | `pageWidth`, `pageHeight`, `kind`, слот `content` | область содержимого |
+| `Panel` | `panelWidth`, `panelHeight`, слот `content` | полоса тулбара |
+
+## Ширины
+
+Строки, таблицы, группы, страницы и статус-бар принимают ширину параметром (`rowWidth`, `groupWidth`,
+`pageWidth`, `barWidth`), а не тянутся `fill`: внутри компонента, у которого размер по содержимому,
+`fill` схлопывается. Шапке и всем строкам одной таблицы передаётся одно и то же число — ширина страницы
+минус её отступы и рамки.
+
+## Ограничения
+
+- Оконного хрома нет: заголовок окна, кнопки закрытия и ресайза — нативное окружение, не `.tenn`.
+- Фокус, hover, нажатие, скроллбары не рисуются: видны только выбранная строка и кнопка по умолчанию.
+- `TableHeader` и `TableRow` жёстко трёхколоночные (200, fill, 110); другая таблица собирается из item.
+- Подпись `Group` стоит внутри верхней рамки: наложить текст на линию движок не умеет.
+
 # Библиотека иконок
 
 `icons.tenn` — набор lucide: **2350 иконок**, по одному `item` на иконку, форма та же, что у
