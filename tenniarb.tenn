@@ -1,4 +1,7 @@
 element "Tenniarb" {
+    item "Untitled 1" {
+        pos -354.0 171.0
+    }
     element "Naming" {
         styles {
             item {
@@ -6,7 +9,7 @@ element "Tenniarb" {
             }
         }
         item "Product naming" {
-            pos -262.0 170.0
+            pos -404.88 230.42
         }
         link "Product naming" "Net" {
             pos -21.0 -4.0
@@ -40,6 +43,10 @@ element "Tenniarb" {
             pos -130.86 -23.0
         }
         link "Ten" "10"
+        item "Untitled 1" {
+            pos -186.8 332.82
+        }
+        link "Product naming" "Untitled 1"
     }
     element "MVP" {
         styles {
@@ -2237,55 +2244,58 @@ diagram"
         }
         element "Overview" {
             item "App UI" {
-                pos -120 20
+                pos -120.0 20.0
             }
             item "Main window - classic" {
-                pos -380 170
+                pos -380.0 170.0
             }
             link "App UI" "Main window - classic"
             item "Main window - scene" {
-                pos -380 60
+                pos -380.0 60.0
             }
             link "App UI" "Main window - scene"
             item "Mounted library" {
-                pos -380 -50
+                pos -380.0 -50.0
             }
             link "App UI" "Mounted library"
             item "Popovers" {
-                pos -380 -160
+                pos -380.0 -160.0
             }
             link "App UI" "Popovers"
             item "Menus" {
-                pos -120 -160
+                pos -120.0 -160.0
             }
             link "App UI" "Menus"
             item "Comments and agent" {
-                pos -120 -50
+                pos -120.0 -50.0
             }
             link "App UI" "Comments and agent"
             item "Windows" {
-                pos 140 -160
+                pos 140.0 -160.0
             }
             link "App UI" "Windows"
             item "Dark appearance" {
-                pos 140 60
+                pos 140.0 60.0
             }
             link "App UI" "Dark appearance"
             item "Components" {
-                pos 140 170
+                pos 140.0 170.0
             }
             link "App UI" "Components"
             item "Inspector concept" {
-                pos -120 170
+                pos -120.0 170.0
             }
             link "App UI" "Inspector concept"
             link "Main window - scene" "Inspector concept"
             link "Inspector concept" "Components"
             item "Source: go/app window.go, outline.go, items.go, inspector.go, inspector_scene.go, props.go, navpanel.go, colorpicker.go, prefs.go, menus.go, agent.go, comments_ui.go, links_ui.go, rename_ui.go, add_scene.go" {
-                pos -380 -260
+                pos -380.0 -260.0
             }
             item "Light and dark variants are separate components (suffix dark); icons are Lucide paths" {
-                pos 140 -60
+                pos 140.0 -60.0
+            }
+            item "Untitled 1" {
+                pos 232.05 242.0
             }
         }
         element "Main window - classic" {
@@ -4223,6 +4233,7 @@ diagram"
                     }
                 }
             }
+            item Box { pos 1870 -0; width 100; height 100; color #ffffff; item Frame { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff; item Frame { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff }; item Frame_2 { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff }; item Frame_3 { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff } } }
         }
         element "Mounted library" {
             use Components.Window_frame.App_window as mounted_lib {
@@ -4883,6 +4894,7 @@ diagram"
                     }
                 }
             }
+            item Frame { pos 1507 265; width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff }
         }
         element "Comments and agent" {
             item "Comment mode and pins" {
@@ -4976,6 +4988,7 @@ diagram"
                 item Toolbar2 { auto-layout row; width fill; height 38; padding 0 10; gap 10; align center; color #f6f6f6; border-color #d1d5db; corner-radius 7; item Title { title tenniarb.tenn; width fill; font-size 13; layout center }; item Status { title "○ kimi-code (2)"; font-size 12; text-color #3a3a3c }; use Components.Popover.Light.Push_button as following { at Label { title Following } } }
                 item Note { width fill; title "Filled dot: active for 10 seconds; count appears with several agents"; font-size 12; text-color #6b7280 }
             }
+            item Frame { width 200; height 120; auto-layout column; gap 8; padding 8 }
         }
         element "Windows" {
             use Components.Dialogs.Light.Mac_window as preferences {
@@ -5284,6 +5297,49 @@ diagram"
                         at Title { title "Styles" }
                         use Components.Inspector.Dark.Row_info_dark as r658 { at Caption { title "Named" }; at Val { title "None" } }
                     }
+                }
+            }
+        }
+        element "Window - toolbar draft" {
+            item window {
+                pos 0 0
+                auto-layout abs
+                width 1600
+                height 1008
+                color #ffffff
+                corner-radius 12
+                border-color #00000026
+                line-width 1
+                clip yes
+                item titlebar { pos 0 0; width 1600; height 60; color #ffffff }
+                item sidebar { pos 0 0; width 300; height 1008; color #f6f6f7 }
+                item traffic { pos 18 -24; width 60; height 12; auto-layout row; gap 8; item r { width 12; height 12; corner-radius 6; color #ff5f57 }; item y { width 12; height 12; corner-radius 6; color #febc2e }; item g { width 12; height 12; corner-radius 6; color #28c840 } }
+                item title { pos 392 -20; width 280; height 26; item t { title Untitled; font-size 13; font-weight 600 } }
+                item "sidebar rule" { pos 300 0; width 1; height 1008; color #0000001a }
+                item "element title" { pos 18 -100; width 260; height 26; item t { title "Unnamed diagram"; font-size 14; text-color #1d1d1f } }
+                item "items rule" { pos 0 -584; width 300; height 1; color #0000001a }
+                item canvas { pos 301 -60; width 899; height 680; color #e7e9eb }
+                item code { pos 301 -740; width 899; height 268; color #ffffff }
+                item "code rule" { pos 301 -740; width 899; height 1; color #0000001a }
+                item inspector { pos 1201 0; width 399; height 1008; color #fafafa }
+                item toolbar {
+                    pos -0 -1
+                    auto-layout abs
+                    width 1600
+                    height 1008
+                    item b_sidebar { pos 257 -16; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Sidebar as ib1 { width 20; height 20 } }
+                    item b_plus { pos 307 -697; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Plus as ib2 { width 20; height 20 } }
+                    item b_list { pos 258 -542; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.List as ib4 { width 20; height 20 } }
+                    item b_zoomin { pos 1068 -20; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Zoom_in as ib6 { width 20; height 20 } }
+                    item b_zoomout { pos 1108 -17; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Zoom_out as ib7 { width 20; height 20 } }
+                    item b_fit { pos 1155 -17; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Fit as ib8 { width 20; height 20 } }
+                    item b_zoomtext { pos 1010 -22; width 52; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; item t { title "100%"; font-size 13; font-weight 500 } }
+                    item b_comment { pos 1161 -701; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Comment as ib9 { width 20; height 20 } }
+                    item b_search2 { pos 219 -17; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Search as ib10 { width 20; height 20 } }
+                    item b_code { pos 1162 -741; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Code_panel as ib11 { width 20; height 20 } }
+                    item b_inspector { pos 1552 -15; width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Inspector as ib12 { width 20; height 20 } }
+                    item "element buttons" { pos 7 -545; width 100; height 36; auto-layout row; gap 4; item b_eladd { width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Plus as ib13 { width 20; height 20 } }; item b_elremove { width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Minus as ib14 { width 20; height 20 } } }
+                    item "items buttons" { pos 12 -957; width 268; height 36; auto-layout row; gap 4; item b_items { width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.List as ib15 { width 20; height 20 } }; item b_copy { width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Copy as ib16 { width 20; height 20 } }; item gap { width fill; height 1 }; item b_itemadd { width 36; height 36; color #0000000f; corner-radius 8; auto-layout row; align center; justify center; use Components.Icons.Plus as ib17 { width 20; height 20 } } }
                 }
             }
         }

@@ -75,6 +75,7 @@ func (sh *Shell) showPrefs() {
 			check("export-background", "Render background", p.ExportBackground, func(p *Prefs, v bool) { p.ExportBackground = v }),
 			check("export-native", "Use native resolution", p.ExportNativeScale, func(p *Prefs, v bool) { p.ExportNativeScale = v })),
 		g.Group("UI", g.Gap(6),
+			check("panes-glass", "Glass panels over the scene", p.PanesGlass, func(p *Prefs, v bool) { p.PanesGlass = v }),
 			check("quick-panel", "Show popup quick panel", p.QuickPanel, func(p *Prefs, v bool) { p.QuickPanel = v }),
 			check("check-updates", "Check for updates", p.CheckUpdates, func(p *Prefs, v bool) { p.CheckUpdates = v }),
 			check("open-agent-edits", "Open files an agent edits", p.OpenAgentEdits, func(p *Prefs, v bool) { p.OpenAgentEdits = v })))

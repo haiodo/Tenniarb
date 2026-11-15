@@ -20,17 +20,15 @@ func (v *Viewer) toolbar() {
 	}
 	items := []look.ToolbarItem{
 		{Title: "Element", Sidebar: true, Small: true, Group: []look.ToolbarItem{
-			{Title: "New Element", Symbol: "plus", OnClick: func() { v.addElement(v.state.Current) }},
-			{Title: "Delete Element", Symbol: "minus", OnClick: v.removeElement},
+			{Title: "New Element", Symbol: "plus", Small: true, OnClick: func() { v.addElement(v.state.Current) }},
+			{Title: "Delete Element", Symbol: "minus", Small: true, OnClick: v.removeElement},
 		}},
 		look.ToolbarItem{Title: "Items", Symbol: "list.bullet", Sidebar: true, Small: true, OnClick: v.toggleItems},
 		look.ToolbarItem{Title: "Hide Sidebar", Symbol: "sidebar.left", Sidebar: true, Small: true, OnClick: v.toggleSidebar},
 		look.ToolbarItem{Space: true},
-		look.ToolbarItem{Title: "Zoom", Small: true, Group: []look.ToolbarItem{
-			{Title: "Zoom Out", Symbol: "minus.magnifyingglass", OnClick: func() { v.zoomBy(1 / ZoomStep) }},
-			{Title: "Zoom In", Symbol: "plus.magnifyingglass", OnClick: func() { v.zoomBy(ZoomStep) }},
-			{Title: "Fit to Window", Symbol: "arrow.up.left.and.arrow.down.right", OnClick: v.fitCommand},
-		}},
+		look.ToolbarItem{Title: "Zoom Out", Symbol: "minus.magnifyingglass", Small: true, OnClick: func() { v.zoomBy(1 / ZoomStep) }},
+		look.ToolbarItem{Title: "Zoom In", Symbol: "plus.magnifyingglass", Small: true, OnClick: func() { v.zoomBy(ZoomStep) }},
+		look.ToolbarItem{Title: "Fit to Window", Symbol: "arrow.up.left.and.arrow.down.right", Small: true, OnClick: v.fitCommand},
 		look.ToolbarItem{Title: "Reset Zoom", Text: v.zoomText, Small: true, OnClick: v.resetZoom},
 		look.ToolbarItem{Title: "Comment Mode (C)", Symbol: "text.bubble", Small: true, ID: "comment-mode", OnClick: v.toggleCommentMode},
 		look.ToolbarItem{Space: true, Inspector: true},
@@ -40,10 +38,10 @@ func (v *Viewer) toolbar() {
 	}
 	// The agent items sit next to the title, before the zoom controls.
 	agents := v.agentItems()
-	items = slices.Insert(items, 3, agents...)
+	items = slices.Insert(items, 4, agents...)
 	// A pages export long enough to show progress gets the button after the zoom controls.
 	if v.exporting.active {
-		items = slices.Insert(items, 6+len(agents), look.ToolbarItem{
+		items = slices.Insert(items, 7+len(agents), look.ToolbarItem{
 			Title: "Export pages in progress; click for what is left", Text: v.exporting.text, Small: true,
 			ID: "export-progress", OnClick: v.showExportProgress,
 		})

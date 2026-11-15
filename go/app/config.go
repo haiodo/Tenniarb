@@ -52,6 +52,9 @@ type Prefs struct {
 	BackgroundDark string `json:"backgroundDark"`
 	// QuickPanel shows the quick style panel after a click on an item.
 	QuickPanel bool `json:"quickPanel"`
+	// PanesGlass draws the scene under the side and bottom panes, which float above it as tinted glass;
+	// off puts the panes beside the scene in the plain layout.
+	PanesGlass bool `json:"panesGlass"`
 	// CheckUpdates asks GitHub for a newer release at a start, once a day; Help > Check for Updates
 	// always asks.
 	CheckUpdates bool `json:"checkUpdates"`
@@ -72,7 +75,7 @@ func DefaultPrefs() Prefs {
 	return Prefs{
 		AutoExpand: true, ExpandLevel: 2,
 		Background: "#e7e9ebff", BackgroundDark: "#2e2e2eff",
-		QuickPanel: true, CheckUpdates: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
+		QuickPanel: true, PanesGlass: true, CheckUpdates: true, ExportBackground: true, ExportNativeScale: true, ExportSelScale: defaultExportScale,
 		Appearance: AppearanceSystem, OpenAgentEdits: true,
 	}
 }

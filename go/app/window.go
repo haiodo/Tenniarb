@@ -77,6 +77,7 @@ type Viewer struct {
 	agent       agentUI
 	marks       markUI
 	cm          commentUI
+	glassPanes  []*g.Panel // the sidebar, code and inspector panes that carry the canvas glass tint
 
 	animFrom   time.Time     // the clock of the animations of the shown scene
 	animScreen *scene.Screen // the screen whose animations play
@@ -213,6 +214,40 @@ func (v *Viewer) applyBackground() {
 		c = dark
 	}
 	v.view.Canvas().Unwrap().SetBackgroundWithColor(swt.NewColorRedGreenBlue(int32(c.R), int32(c.G), int32(c.B)))
+	v.applyGlassTint()
+}
+
+// applyGlassTint mutes the glass of the panes with the canvas colour: the scene under them shows
+// through less. It runs again when the theme or the canvas colour changes.
+func (v *Viewer) applyGlassTint() {
+	if len(v.glassPanes) == 0 {
+		return
+	}
+	if !v.sh.prefs.PanesGlass {
+		for _, p := range v.glassPanes {
+			look.SetGlassTint(p, g.RGBA{})
+		}
+		return
+	}
+	light, dark := canvasColors(v.sh.prefs)
+	c := light
+	if v.app.Dark() {
+		c = dark
+	}
+	tint := g.RGBA{R: c.R, G: c.G, B: c.B, A: 205}
+	for _, p := range v.glassPanes {
+		look.SetGlassTint(p, tint)
+	}
+}
+
+// applyPanesGlass switches the scene-under-glass layout: the panes float over the scene in tinted
+// glass, or sit beside it in the plain layout.
+func (v *Viewer) applyPanesGlass() {
+	on := v.sh.prefs.PanesGlass
+	look.SetPanesOverlay(v.win, on)
+	look.SetInspectorFullHeight(v.win, on)
+	look.SetBottomPanelFloating(v.win, !on)
+	v.applyGlassTint()
 }
 
 func (v *Viewer) themeChanged() {
@@ -228,11 +263,12 @@ func (v *Viewer) themeChanged() {
 	v.syncIndicators()
 }
 
-// prefsChanged applies new settings: the canvas colour and the quick panel at once, the outline
-// expansion the next time the outline is built.
+// prefsChanged applies new settings: the canvas colour, the glass panes and the quick panel at once,
+// the outline expansion the next time the outline is built.
 func (v *Viewer) prefsChanged() {
 	v.autoQuick = v.sh.prefs.QuickPanel
 	v.applyBackground()
+	v.applyPanesGlass()
 }
 
 func (v *Viewer) build() {
@@ -277,6 +313,10 @@ func (v *Viewer) build() {
 	look.SetBottomPanel(v.win, content, codePane, g.Scaled(200))
 	look.SetInspector(v.win, content, v.insp.panel, inspectorWidth())
 	look.SetInspectorFixed(v.win, true)
+	// macOS 26: the scene runs the whole width under the glass of the side panes. The side panes run
+	// to the window edges, and the bottom panel fills the column between them from the bottom edge.
+	v.glassPanes = []*g.Panel{sidebar, codePane, v.insp.panel}
+	v.applyPanesGlass()
 	v.toolbar()
 	v.win.SetSize(1180, 760)
 	v.win.SetMinSize(820, 440)

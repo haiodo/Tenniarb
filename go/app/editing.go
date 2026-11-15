@@ -3,6 +3,8 @@
 package app
 
 import (
+	"math"
+
 	g "github.com/haiodo/gowt"
 	"github.com/haiodo/gowt/gfx"
 	"github.com/haiodo/gowt/gfx/view"
@@ -218,11 +220,13 @@ func (v *Viewer) onEdit(item *model.DiagramItem, mode editor.EditMode) {
 		return
 	}
 	s := v.session
+	r := v.inlineRect(item, t)
 	ed := v.view.Edit(view.EditOptions{
-		Rect:      v.smap.RectToGfx(t.Rect),
+		Rect:      r,
 		Text:      t.Text,
 		Font:      g.Font{Px: t.FontSize},
 		Multiline: mode == editor.EditBody,
+		Opts:      v.inlineOpts(item, r),
 		OnCommit: func(text string) {
 			v.inline, v.activeText = nil, nil
 			s.FinishEdit(text, true)
@@ -264,7 +268,41 @@ func (v *Viewer) moveInline() {
 		return
 	}
 	if t, ok := v.session.EditTarget(item, v.inlineMode); ok {
-		v.inline.SetRect(v.smap.RectToGfx(t.Rect))
+		v.inline.SetRect(v.inlineRect(item, t))
+	}
+}
+
+// inlineRect is where the editor goes: the box the canvas draws for the item, so the field sits in the
+// control rather than the 100-point minimum the session gives a text field.
+func (v *Viewer) inlineRect(item *model.DiagramItem, t editor.EditTarget) gfx.Rect {
+	if b, ok := v.drawnRect(item); ok && b.W() > 0 && b.H() > 0 {
+		return b
+	}
+	return v.smap.RectToGfx(t.Rect)
+}
+
+// inlineOpts draw the editor as the control it covers: rounded like the item and filled, so the item's
+// own text does not show through the bare native field.
+func (v *Viewer) inlineOpts(item *model.DiagramItem, r gfx.Rect) []g.Option {
+	radius := 8.0
+	if n, ok := propNum(item, "corner-radius"); ok && n > 0 {
+		radius = n
+	}
+	zoom := v.view.Compositor().Camera().Zoom
+	round := int(math.Round(radius * zoom))
+	if h := int(math.Round(r.H() * zoom)); h > 0 && round > h/2 {
+		round = h / 2
+	}
+	if round < 2 {
+		round = 2
+	}
+	return []g.Option{
+		g.FieldFill(g.Adaptive{
+			Light: g.RGB{R: 0xFF, G: 0xFF, B: 0xFF},
+			Dark:  g.RGB{R: 0x1C, G: 0x1C, B: 0x1E},
+		}),
+		g.FieldStroke(g.RGB{R: 0x80, G: 0x80, B: 0x80}.Alpha(0x40)),
+		g.Radius(round),
 	}
 }
 

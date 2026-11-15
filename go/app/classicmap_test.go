@@ -108,3 +108,21 @@ func TestClassicPressInsideTheDrawnBoxGrabs(t *testing.T) {
 	}
 	v.session.MouseUp(editor.MouseEvent{P: at})
 }
+
+// The inline editor sits in the box the canvas draws for the item, not in the 100-point minimum the
+// session gives a text field: a wide minimum left the field outside the control.
+func TestInlineRectIsTheDrawnBox(t *testing.T) {
+	v, _, el := classicView(t, classicDriftDoc)
+	it := el.Items[0]
+	target, ok := v.session.EditTarget(it, editor.EditName)
+	if !ok {
+		t.Fatal("no edit target")
+	}
+	b, ok := v.drawnRect(it)
+	if !ok {
+		t.Fatal("the item is not drawn")
+	}
+	if got := v.inlineRect(it, target); got != b {
+		t.Errorf("editor box %+v, drawn item %+v", got, b)
+	}
+}

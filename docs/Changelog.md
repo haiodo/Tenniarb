@@ -19,6 +19,14 @@
   `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
   characters.
 
+* The inline editor over a classic item takes the item's drawn box and corner radius, instead of the
+  session's 100x20 minimum with a bare square native field.
+
+* The scene is drawn under all panes on macOS 26 (`look.SetPanesOverlay`): the outline and inspector run
+  full height to the window edges as glass, and the code panel fills the column between them from the
+  bottom edge. The glass is tinted with the canvas colour, so the scene under it reads as muted, not clear.
+  Settings > UI has "Glass panels over the scene" to put the panes beside the scene instead.
+
 * gowt 0.15.7: toolbar image items draw as bare icons instead of the AppKit 26 bordered glass capsules, so
   they are small; every gfx window shares one display frame clock, and a hidden or covered window paints one
   catch-up frame when it shows again.
