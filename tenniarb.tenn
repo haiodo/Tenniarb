@@ -587,7 +587,7 @@ Engine" "expr dsl"
         }
         link "Export options" "Draw background"
         item "Documentation" {
-            pos 4.33 251.0
+            pos 11.58 242.76
             use-style required
             color green-200
         }
@@ -4233,7 +4233,6 @@ diagram"
                     }
                 }
             }
-            item Box { pos 1870 -0; width 100; height 100; color #ffffff; item Frame { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff; item Frame { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff }; item Frame_2 { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff }; item Frame_3 { width 200; height 120; auto-layout column; gap 8; padding 8; color #ffffff } } }
         }
         element "Mounted library" {
             use Components.Window_frame.App_window as mounted_lib {
