@@ -331,8 +331,9 @@ func SlotCommand(slot, cmd string) string {
 	return CommandText("slot", slot) + " { " + cmd + " }"
 }
 
-// UsePath is the path a use of n writes from the file that mounts n's file as the element alias. False when n
-// cannot be used: not an element, an item or a use, or inside an instance or a slot.
+// UsePath is the path a use of n writes from the file that mounts n's file as the element alias, or from
+// the root of its own file when alias is "". False when n cannot be used: not an element, an item or a use,
+// or inside an instance or a slot.
 func UsePath(alias string, n *scene.Node) (string, bool) {
 	if n == nil || n.Kind != scene.KElement && n.Kind != scene.KItem && n.Kind != scene.KUse {
 		return "", false
@@ -347,7 +348,11 @@ func UsePath(alias string, n *scene.Node) (string, bool) {
 	for i, j := 0, len(segs)-1; i < j; i, j = i+1, j-1 {
 		segs[i], segs[j] = segs[j], segs[i]
 	}
-	return alias + "." + strings.Join(segs, "."), true
+	p := strings.Join(segs, ".")
+	if alias != "" {
+		p = alias + "." + p
+	}
+	return p, true
 }
 
 // Component is a node of a library one can insert: the label the picker shows and the use path.
@@ -423,7 +428,7 @@ func componentOf(alias string, k *scene.Node, where, q string) (Component, bool)
 	return Component{Label: label, Path: p, Name: k.Name, Node: k}, true
 }
 
-// declaresComponents reports whether a library says which nodes are components:// declaresComponents reports whether a library says which nodes are components: "kind Component", or the
+// declaresComponents reports whether a library says which nodes are components: "kind Component", or the
 // parameters a component declares. A library that says nothing yet keeps the older rule.
 func declaresComponents(root *scene.Node) bool {
 	var walk func(n *scene.Node) bool

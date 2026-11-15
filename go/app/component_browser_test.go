@@ -137,6 +137,58 @@ func TestComponentBrowserWithoutLibrary(t *testing.T) {
 	}
 }
 
+// A document that reuses its own nodes offers them like a library's: the browser lists what its use
+// statements target, by a path from the root, and a double click inserts one into another element.
+func TestOwnComponentsOfTheDocument(t *testing.T) {
+	dir := t.TempDir()
+	v := newDoc(t, &Shell{dir: dir}, filepath.Join(dir, "own.tenn"),
+		"element Kit {\n"+
+			"    item Icons {\n"+
+			"        item Plus { width 10; height 10 }\n"+
+			"        item Minus { width 10; height 10 }\n"+
+			"    }\n"+
+			"}\n"+
+			"element Screen {\n"+
+			"    item Frame { use Kit.Icons.Plus as plus }\n"+
+			"}\n")
+	if v.stree == nil {
+		t.Fatal("the document has no scene tree")
+	}
+	comps := v.components("", 100)
+	if len(comps) != 1 {
+		t.Fatalf("own components: %+v", comps)
+	}
+	if c := comps[0]; c.Path != "Kit.Icons.Plus" || c.Label != "Plus - Icons" || c.Name != "Plus" {
+		t.Fatalf("own component: %+v", c)
+	}
+
+	for _, e := range v.state.Doc.Model.Elements {
+		if e.Name != "Screen" {
+			continue
+		}
+		v.session.SetElement(e)
+		sv := newSceneView(e, v.elementNode(e))
+		v.scene = gfx.NewScene()
+		if err := v.buildSceneView(sv); err != nil {
+			t.Fatal(err)
+		}
+		v.sv = sv
+	}
+	v.setItemsMode(true)
+	rows := v.itemRows()
+	if len(rows) != 1 || !rows[0].Component {
+		t.Fatalf("rows: %+v", rows)
+	}
+	v.activateItemRow(rows[0], nil)
+	text := v.fileText("own.tenn")
+	if !strings.Contains(text, "use Kit.Icons.Plus as Plus") {
+		t.Errorf("a double click did not insert the document's own component:\n%s", text)
+	}
+	if v.sceneErr != "" {
+		t.Errorf("the inserted use does not resolve: %s", v.sceneErr)
+	}
+}
+
 // A double click on a component row puts the component on the canvas, at the free spot the button picks.
 func TestComponentRowActivateInserts(t *testing.T) {
 	v := importC4(t)

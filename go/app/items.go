@@ -23,7 +23,7 @@ type itemsList struct {
 	box    *g.Panel
 	hidden bool // collapsed by the Items button
 	// components shows the component browser in the pane instead of the rows of the canvas: the rows are
-	// then what the libraries offer, and a drag of one of them puts it on the canvas.
+	// then the components to insert, and a drag of one of them puts it on the canvas.
 	components bool
 	comps      []Component         // what the browser lists, kept for the drag of a row
 	previews   map[string]*g.Image // the picture of a component row, by use path
@@ -269,19 +269,19 @@ func rowsSig(rows []ItemRow) string {
 	return b.String()
 }
 
-// itemsModeButton switches the pane between the items of the canvas and the browser of what the
-// libraries offer, as one toggle; the icon names what the pane shows now.
+// itemsModeButton switches the pane between the items of the canvas and the browser of what can be
+// inserted, as one toggle; the icon names what the pane shows now.
 func (v *Viewer) itemsModeButton() g.Option {
 	l := &v.itemsUI
 	return g.Button("", look.GlassButton(), g.Size(g.Spacing.ControlHeight, g.Spacing.ControlHeight),
-		g.ID("items-mode"), g.Ref(&l.itemsBtn), g.Tooltip("Items of the element; click for the components of the libraries"),
+		g.ID("items-mode"), g.Ref(&l.itemsBtn), g.Tooltip("Items of the element; click for the components to insert"),
 		g.Init(func(b *g.ButtonView) {
 			b.SetImage(v.itemsModeIcon())
 			b.OnClick(func() {
 				v.setItemsMode(!l.components)
 				b.SetImage(v.itemsModeIcon())
-				b.SetTooltip(map[bool]string{true: "Components of the libraries; click for the items of the element",
-					false: "Items of the element; click for the components of the libraries"}[l.components])
+				b.SetTooltip(map[bool]string{true: "Components to insert; click for the items of the element",
+					false: "Items of the element; click for the components to insert"}[l.components])
 			})
 		}))
 }
@@ -296,8 +296,8 @@ func (v *Viewer) itemsModeIcon() *g.Image {
 	return icons.Get(v.app, icon, icons.Size(12))
 }
 
-// setItemsMode switches the pane between the rows of the canvas and the browser of what the libraries
-// offer. The browser is a list to drag from: a row carries the use path of its component.
+// setItemsMode switches the pane between the rows of the canvas and the browser of what can be inserted.
+// The browser is a list to drag from: a row carries the use path of its component.
 func (v *Viewer) setItemsMode(components bool) {
 	l := &v.itemsUI
 	if l.components == components {
@@ -311,8 +311,8 @@ func (v *Viewer) setItemsMode(components bool) {
 	v.rebuildItems()
 }
 
-// componentRows are the rows of the browser: one per component of the mounted libraries, labelled as the
-// picker labels them.
+// componentRows are the rows of the browser: one per component of the mounted libraries and of the document
+// itself, labelled as the picker labels them.
 func (v *Viewer) componentRows() []ItemRow {
 	l := &v.itemsUI
 	l.comps = v.components("", componentBrowserLimit)
@@ -322,7 +322,7 @@ func (v *Viewer) componentRows() []ItemRow {
 	}
 	if len(rows) == 0 {
 		// A hint instead of an empty list: the pane is where a reader looks when nothing can be inserted.
-		hint := "The document mounts no library: add one with Element > Add Library..."
+		hint := "No component to insert: add a library with Element > Add Library..."
 		if len(v.libraries()) > 0 {
 			hint = "The libraries mount no component"
 		}

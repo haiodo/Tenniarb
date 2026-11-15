@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Insert Component lists the nodes the document itself reuses, by a path from the root, next to the
+  components of its libraries: a file that keeps its design system inline (tenniarb.tenn) now has
+  something to insert instead of "the document mounts no library". The Items browser shows them too,
+  and a drop writes the use. A node no `use` names is not listed.
+
 * `libraries/native.tenn`: one native desktop library for macOS, Windows 11 and Linux, light and dark.
   A theme item holds what the three systems share and a system item only what it changes, so `Theme`
   takes `osName` and `theme` over two `--from-item` lines and there is no per-platform copy of the file;

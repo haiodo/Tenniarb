@@ -80,7 +80,7 @@ func (v *Viewer) insertFromMount(m *model.Element, r *ItemRow) {
 	}
 }
 
-// components are what the imported libraries offer for the query.
+// components are what the imported libraries offer for the query, then what the document itself reuses.
 func (v *Viewer) components(q string, limit int) []Component {
 	var out []Component
 	for _, r := range v.libraries() {
@@ -88,6 +88,53 @@ func (v *Viewer) components(q string, limit int) []Component {
 			out = append(out, Components(r.lib, n, q, limit-len(out))...)
 		}
 	}
+	return append(out, v.ownComponents(q, limit-len(out))...)
+}
+
+// ownComponents are the nodes the document's own use statements target: a path from the root names them
+// wherever the insertion goes. A node the file never uses is not offered, as nothing tells it apart from a
+// part of a screen.
+func (v *Viewer) ownComponents(q string, limit int) []Component {
+	f := v.file()
+	if f == nil || v.stree == nil || limit <= 0 {
+		return nil
+	}
+	q = strings.ToLower(q)
+	seen := map[*scene.Node]bool{}
+	var out []Component
+	var walk func(n *scene.Node)
+	walk = func(n *scene.Node) {
+		for _, k := range n.Nodes() {
+			if len(out) >= limit {
+				return
+			}
+			if k.Mount != nil {
+				continue // a mounted file is a library: its own list covers it
+			}
+			if k.Kind != scene.KUse {
+				walk(k)
+				continue
+			}
+			target, err := v.stree.Resolve(k.Parent, k.Path)
+			if err != nil || seen[target] || v.fileOf(target) != v.rel() {
+				continue
+			}
+			seen[target] = true
+			p, ok := UsePath("", target)
+			if !ok || target.Name == "" {
+				continue
+			}
+			if !strings.Contains(strings.ToLower(target.Name), q) && !strings.Contains(strings.ToLower(target.Key), q) {
+				continue
+			}
+			label := target.Name
+			if target.Parent != nil && target.Parent.Kind != scene.KFile && target.Parent.Name != target.Name {
+				label += " - " + target.Parent.Name
+			}
+			out = append(out, Component{Label: label, Path: p, Name: target.Name, Node: target})
+		}
+	}
+	walk(f)
 	return out
 }
 
@@ -174,11 +221,11 @@ func (v *Viewer) addLibraryFile(path string) error {
 	return v.applyText(at, at, pre+cmd+"\n")
 }
 
-// showComponentPicker is Insert Component...: a filtered list of the components of the libraries and a
-// preview of the one chosen; Return or a double click inserts it.
+// showComponentPicker is Insert Component...: a filtered list of the components of the libraries and of the
+// document itself, and a preview of the one chosen; Return or a double click inserts it.
 func (v *Viewer) showComponentPicker() {
-	if len(v.libraries()) == 0 {
-		v.setBanner("The document mounts no library: add one with Element > Add Library...")
+	if len(v.components("", 1)) == 0 {
+		v.setBanner("No component to insert: add a library with Element > Add Library...")
 		return
 	}
 	if !v.leaveMount() {
