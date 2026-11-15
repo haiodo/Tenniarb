@@ -196,10 +196,17 @@ func (v *Viewer) restyleProps() {
 	v.insp.refresh()
 }
 
+// maxStyledBytes caps the highlighted code: the widget reads the whole text for every span, so a
+// pass costs the text times the spans, and the 7 MB code of a huge classic diagram never finished.
+const maxStyledBytes = 64 << 10
+
 // styleProps colors the text as Swift highlight() does: tokens by class, parse errors in red.
 func (v *Viewer) styleProps(text string) {
 	t := v.props.text
 	t.ClearStyles()
+	if len(text) > maxStyledBytes {
+		return
+	}
 	mode := "light"
 	if v.app.Dark() {
 		mode = "dark"

@@ -19,6 +19,9 @@
   `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
   characters.
 
+* A classic diagram of a few megabytes opens again: the code pane read the whole text once per
+  highlighted span, so 235k spans of 7 MB never finished; above 64 KB it draws the text plain.
+
 * A pair of inspector fields, Position and Size, names its values beside the fields: a letter inside
   a field counts into its width on Linux, and two such fields ran past the panel edge.
 
