@@ -19,6 +19,12 @@
   `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
   characters.
 
+* A pair of inspector fields, Position and Size, names its values beside the fields: a letter inside
+  a field counts into its width on Linux, and two such fields ran past the panel edge.
+
+* The `+` of an Items row adds into that row on Linux too: the tree kept its old row selected after
+  the selection had moved, so the click added the frame to the element.
+
 * The inline editor over a classic item takes the item's drawn box and corner radius, instead of the
   session's 100x20 minimum with a bare square native field.
 

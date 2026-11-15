@@ -116,10 +116,10 @@ func (v *Viewer) itemsPane() g.Option {
 				if n == nil || (col != 1 && int(e.X) < l.firstW) || !v.rowAdds(n) {
 					return
 				}
-				if sel := t.Selected(); len(sel) != 1 || sel[0].Data() != n.Data() {
-					t.Select(n)
-					v.onItemSelect(n)
-				}
+				// The clicked row wins: a selection made elsewhere can leave the row the tree reports
+				// selected out of step with the model.
+				t.Select(n)
+				v.onItemSelect(n)
 				v.addSceneItem("Frame")
 			}))
 			v.sizeItemsAdd()

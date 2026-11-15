@@ -63,9 +63,7 @@ jobs:
   # (Xvfb + openbox).
   gui-linux:
     name: GUI tests (Linux, Xvfb)
-    # ubuntu-26.04 brings GTK scrollbars and fonts of its own, and the window gates measure both; gowt's
-    # Linux gate runs on 24.04, so this one follows it.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7

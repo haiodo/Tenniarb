@@ -169,12 +169,16 @@ func (in *inspector) text(caption string, when func(selKind) bool, cfg entryCfg)
 	return in.row(caption, when, func(selKind) { e.refresh() }, e.option())
 }
 
-// pair adds a row with two entries prefixed a and b.
+// pair adds a row with two entries, a beside the first and b beside the second. The letter sits
+// beside the field: GTK counts a field's own prefix in its minimum width, and two of those no
+// longer fit the panel.
 func (in *inspector) pair(caption, a, b string, when func(selKind) bool, c1, c2 entryCfg) func() g.Option {
-	c1.prefix, c2.prefix = a, b
 	e1, e2 := in.newEntry(c1), in.newEntry(c2)
+	letter := func(s string) g.Option {
+		return g.Label(s, faint(), g.Size(g.Scaled(10), 0), g.Place(g.AlignStart, g.AlignCenter))
+	}
 	return in.row(caption, when, func(selKind) { e1.refresh(); e2.refresh() },
-		e1.option(), e2.option())
+		letter(a), e1.option(), letter(b), e2.option())
 }
 
 // segmentTexts turns words into segments of a Segmented control.
