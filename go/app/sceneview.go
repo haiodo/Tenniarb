@@ -214,11 +214,11 @@ func (v *Viewer) sceneOptions(e *model.Element) scene.Options {
 // answered by the scene, and the text is measured by the caller's measurer, as the scene measures it.
 func (v *Viewer) classicContext(e *model.Element) model.IExecutionContext {
 	path := strings.Join(PathOf(e), ".")
-	return classic.SceneContext(v.stree, path, gfx.DefaultMeasurer,
+	return classic.SceneContextLimit(v.stree, path, gfx.DefaultMeasurer,
 		func(text string, fontSize float64) model.DrawableSize {
 			w, h := scene.MeasureText(gfx.DefaultMeasurer, text, fontSize)
 			return model.DrawableSize{Width: w, Height: h}
-		})(e)
+		}, v.sh.evalRoundLimit)(e)
 }
 
 // bounds is the extent of the drawn items with the padding of the classic canvas around.

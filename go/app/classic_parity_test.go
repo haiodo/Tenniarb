@@ -27,7 +27,9 @@ func classicPicture(t *testing.T, file string, e *model.Element) (*sceneView, *g
 	if err := os.WriteFile(path, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	v := newDoc(t, &Shell{dir: dir}, path, string(data))
+	// The values are what this test reads, not how fast the runner is: no round limit, as a loaded runner
+	// can spend the default second on this element.
+	v := newDoc(t, &Shell{dir: dir, evalRoundLimit: -1}, path, string(data))
 	v.session.SetElement(e)
 	v.state.Current = e
 	sv := newSceneView(e, v.elementNode(e))

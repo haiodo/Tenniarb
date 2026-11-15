@@ -1,6 +1,8 @@
 package classic
 
 import (
+	"time"
+
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/haiodo/gowt/gfx"
@@ -93,10 +95,18 @@ func collectSizes(el *model.Element, p *scene.Placed, out map[*model.DiagramItem
 // `height` is answered by the box the scene draws, and measureText is the size of a text the caller
 // measures with - the same measurer the canvas draws it with.
 func SceneContext(tree *scene.Tree, path string, measure gfx.TextMeasurer, measureText func(string, float64) model.DrawableSize) Context {
+	return SceneContextLimit(tree, path, measure, measureText, 0)
+}
+
+// SceneContextLimit is SceneContext with the round limit of the evaluator: zero takes exec.DefaultRoundLimit,
+// negative lifts it. A test that reads values sets a negative limit, since a loaded runner can spend the
+// whole second on a big element and get the interrupt instead of the values.
+func SceneContextLimit(tree *scene.Tree, path string, measure gfx.TextMeasurer, measureText func(string, float64) model.DrawableSize, limit time.Duration) Context {
 	return func(el *model.Element) model.IExecutionContext {
 		ctx := exec.NewExecutionContext(exec.Options{
 			ItemSize:    Sizes(tree, path, el, measure),
 			MeasureText: measureText,
+			RoundLimit:  limit,
 		})
 		ctx.SetElement(el)
 		return ctx

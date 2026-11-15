@@ -31,6 +31,9 @@ type Shell struct {
 	dir   string
 	exe   string
 	prefs Prefs
+	// evalRoundLimit is the round limit of the classic evaluator: zero is the product default, negative
+	// lifts it, which a test that reads values does on a loaded runner.
+	evalRoundLimit time.Duration
 	// agentAt is the time of the last agent action handled per file: one action opens a window only once.
 	agentAt map[string]int64
 	recent  []string
