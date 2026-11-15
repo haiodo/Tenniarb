@@ -27,6 +27,7 @@ type itemsList struct {
 	components bool
 	comps      []Component         // what the browser lists, kept for the drag of a row
 	previews   map[string]*g.Image // the picture of a component row, by use path
+	previewVer int                 // the document version the pictures were drawn from
 	itemsBtn   *g.ButtonView       // the two modes of the pane; the pressed one is the one shown
 	addBtn     *g.ButtonView       // Add, greyed out while the document takes no item
 	addOn      bool                // what the last syncItemsAdd set
@@ -316,9 +317,12 @@ func (v *Viewer) setItemsMode(components bool) {
 func (v *Viewer) componentRows() []ItemRow {
 	l := &v.itemsUI
 	l.comps = v.components("", componentBrowserLimit)
-	rows := make([]ItemRow, 0, len(l.comps))
-	for _, c := range l.comps {
-		rows = append(rows, ItemRow{Label: c.Label, Kind: "component", Path: c.Path, Component: true})
+	rows := make([]ItemRow, 0, len(l.comps)+8)
+	for i, c := range l.comps {
+		if c.Group != "" && (i == 0 || c.Group != l.comps[i-1].Group) {
+			rows = append(rows, ItemRow{Label: c.Group, Kind: "group"})
+		}
+		rows = append(rows, ItemRow{Label: c.Name, Kind: "component", Path: c.Path, Component: true})
 	}
 	if len(rows) == 0 {
 		// A hint instead of an empty list: the pane is where a reader looks when nothing can be inserted.
@@ -388,8 +392,10 @@ func (v *Viewer) addItemRows(parent func(string) *g.Node, rows []ItemRow) {
 		r := &rows[i]
 		n := parent(r.Label)
 		n.SetData(r)
-		n.SetImage(v.rowImage(r))
-		if instanceRow(r) {
+		if r.Kind != "group" {
+			n.SetImage(v.rowImage(r))
+		}
+		if instanceRow(r) || r.Kind == "group" {
 			n.Unwrap().SetForeground(v.greyColor())
 		}
 		if !r.Kids {
@@ -443,8 +449,13 @@ func (v *Viewer) rowImage(r *ItemRow) *g.Image {
 		return v.itemImage(r)
 	}
 	l := &v.itemsUI
-	if l.previews == nil {
+	if l.previews == nil || l.previewVer != v.version {
+		// A text edit rebuilds the rows after Clear, so no row shows the old pictures any more.
+		for _, img := range l.previews {
+			img.Dispose()
+		}
 		l.previews = map[string]*g.Image{}
+		l.previewVer = v.version
 	}
 	if img, ok := l.previews[r.Path]; ok {
 		return img
@@ -453,9 +464,13 @@ func (v *Viewer) rowImage(r *ItemRow) *g.Image {
 	if c == nil || c.Node == nil {
 		return v.itemImage(r)
 	}
-	img, err := v.componentImage(c.Node, componentRowW, componentRowH)
+	img, err := v.componentPreviewImage(c.Node, componentRowW, componentRowH, 1)
 	if err != nil || img == nil {
-		return v.itemImage(r)
+		p := placeholderPreview(componentRowW, componentRowH, 1)
+		if p == nil {
+			return v.itemImage(r)
+		}
+		img = v.app.ImageFromProvider(p)
 	}
 	l.previews[r.Path] = img
 	return img

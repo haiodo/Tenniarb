@@ -80,7 +80,8 @@ func (v *Viewer) insertFromMount(m *model.Element, r *ItemRow) {
 	}
 }
 
-// components are what the imported libraries offer for the query, then what the document itself reuses.
+// components are what the imported libraries offer for the query, then what the document itself reuses:
+// grouped by the branch they are defined in, the order of the branches as the files write them.
 func (v *Viewer) components(q string, limit int) []Component {
 	var out []Component
 	for _, r := range v.libraries() {
@@ -88,7 +89,25 @@ func (v *Viewer) components(q string, limit int) []Component {
 			out = append(out, Components(r.lib, n, q, limit-len(out))...)
 		}
 	}
-	return append(out, v.ownComponents(q, limit-len(out))...)
+	return byGroup(append(out, v.ownComponents(q, limit-len(out))...))
+}
+
+// byGroup puts the components of one group side by side, the groups in the order they first appear: the
+// browser and the picker draw a heading where the group changes.
+func byGroup(in []Component) []Component {
+	var order []string
+	members := map[string][]Component{}
+	for _, c := range in {
+		if _, ok := members[c.Group]; !ok {
+			order = append(order, c.Group)
+		}
+		members[c.Group] = append(members[c.Group], c)
+	}
+	out := make([]Component, 0, len(in))
+	for _, g := range order {
+		out = append(out, members[g]...)
+	}
+	return out
 }
 
 // ownComponents are the nodes the document's own use statements target: a path from the root names them
@@ -99,15 +118,11 @@ func (v *Viewer) ownComponents(q string, limit int) []Component {
 	if f == nil || v.stree == nil || limit <= 0 {
 		return nil
 	}
-	q = strings.ToLower(q)
 	seen := map[*scene.Node]bool{}
-	var out []Component
+	var nodes []*scene.Node
 	var walk func(n *scene.Node)
 	walk = func(n *scene.Node) {
 		for _, k := range n.Nodes() {
-			if len(out) >= limit {
-				return
-			}
 			if k.Mount != nil {
 				continue // a mounted file is a library: its own list covers it
 			}
@@ -119,23 +134,71 @@ func (v *Viewer) ownComponents(q string, limit int) []Component {
 			if err != nil || seen[target] || v.fileOf(target) != v.rel() {
 				continue
 			}
+			if _, ok := UsePath("", target); !ok || target.Name == "" {
+				continue
+			}
 			seen[target] = true
-			p, ok := UsePath("", target)
-			if !ok || target.Name == "" {
-				continue
-			}
-			if !strings.Contains(strings.ToLower(target.Name), q) && !strings.Contains(strings.ToLower(target.Key), q) {
-				continue
-			}
-			label := target.Name
-			if target.Parent != nil && target.Parent.Kind != scene.KFile && target.Parent.Name != target.Name {
-				label += " - " + target.Parent.Name
-			}
-			out = append(out, Component{Label: label, Path: p, Name: target.Name, Node: target})
+			nodes = append(nodes, target)
 		}
 	}
 	walk(f)
+	root := commonAncestor(nodes)
+	q = strings.ToLower(q)
+	var out []Component
+	for _, n := range nodes {
+		if !strings.Contains(strings.ToLower(n.Name), q) && !strings.Contains(strings.ToLower(n.Key), q) {
+			continue
+		}
+		p, _ := UsePath("", n)
+		out = append(out, Component{Path: p, Name: n.Name, Group: branchOf(root, n), Node: n})
+		if len(out) >= limit {
+			break
+		}
+	}
 	return out
+}
+
+// commonAncestor is the deepest node that holds every one of nodes; nil for none.
+func commonAncestor(nodes []*scene.Node) *scene.Node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	for a := nodes[0].Parent; a != nil; a = a.Parent {
+		all := true
+		for _, n := range nodes[1:] {
+			held := false
+			for p := n.Parent; p != nil; p = p.Parent {
+				if p == a {
+					held = true
+					break
+				}
+			}
+			if !held {
+				all = false
+				break
+			}
+		}
+		if all {
+			return a
+		}
+	}
+	return nil
+}
+
+// branchOf is the name of the child of root that n sits in: the top branch under the shared root.
+func branchOf(root, n *scene.Node) string {
+	if root == nil {
+		return ""
+	}
+	for p := n; p != nil; p = p.Parent {
+		if p.Parent == root {
+			if p == n {
+				return "" // the component is the branch itself: a heading over one row says nothing
+			}
+			return p.Name
+		}
+	}
+	return ""
 }
 
 // addLibrary is Element > Add Library...: a file of components becomes a top-level element of the
@@ -238,19 +301,21 @@ func (v *Viewer) showComponentPicker() {
 	var shot *g.Image
 	var box *g.CanvasView
 	var shown []Component
-	preview := func(i int) {
+	var rows []int // the component of each row of the list, or -1 for a heading
+	preview := func(row int) {
 		if shot != nil {
 			shot.Dispose()
 			shot = nil
 		}
-		if i >= 0 && i < len(shown) {
-			img, err := v.componentImage(shown[i].Node, previewW, previewH)
+		if row >= 0 && row < len(rows) && rows[row] >= 0 {
+			img, err := v.componentPreviewImage(shown[rows[row]].Node, previewW, previewH, 4)
 			if err != nil {
-				v.setBanner("preview: " + err.Error())
+				// A component of slots is empty until it is filled: show the sign it is a component.
+				if p := placeholderPreview(previewW, previewH, 4); p != nil {
+					img = v.app.ImageFromProvider(p)
+				}
 			}
-			if err == nil {
-				shot = img
-			}
+			shot = img
 		}
 		if box != nil {
 			box.Redraw()
@@ -258,21 +323,35 @@ func (v *Viewer) showComponentPicker() {
 	}
 	fill := func(q string) {
 		shown = v.components(q, 200)
-		labels := make([]string, len(shown))
+		labels := make([]string, 0, len(shown)+8)
+		rows = rows[:0]
 		for i, c := range shown {
-			labels[i] = c.Label
+			if c.Group != "" && (i == 0 || c.Group != shown[i-1].Group) {
+				labels = append(labels, c.Group)
+				rows = append(rows, -1)
+			}
+			labels = append(labels, c.Name)
+			rows = append(rows, i)
 		}
 		list.SetItems(labels)
-		if len(labels) > 0 {
-			list.Select(0)
+		first := -1
+		for i, c := range rows {
+			if c >= 0 {
+				first = i
+				break
+			}
 		}
-		preview(0)
+		if first >= 0 {
+			list.Select(first)
+			list.Unwrap().SetTopIndex(0)
+		}
+		preview(first)
 	}
-	pick := func(i int) {
-		if i < 0 || i >= len(shown) {
+	pick := func(row int) {
+		if row < 0 || row >= len(rows) || rows[row] < 0 {
 			return
 		}
-		c := shown[i]
+		c := shown[rows[row]]
 		p.Close()
 		v.insertComponent(c.Path, c.Name)
 	}
@@ -301,28 +380,38 @@ func (v *Viewer) showComponentPicker() {
 	fill("")
 	// The filter holds the focus, so the arrows would move its caret: they move the selection instead.
 	field.Unwrap().AddKeyListener(swt.KeyListenerKeyPressedAdapter(func(e *swt.KeyEvent) {
-		i := list.Index()
+		step := 0
 		switch e.KeyCode {
 		case int32(swt.ARROW_UP):
-			i--
+			step = -1
 		case int32(swt.ARROW_DOWN):
-			i++
+			step = 1
 		case int32(swt.PAGE_UP):
-			i -= 10
+			step = -10
 		case int32(swt.PAGE_DOWN):
-			i += 10
+			step = 10
 		case int32(swt.HOME):
-			i = 0
+			step = -len(rows)
 		case int32(swt.END):
-			i = len(shown) - 1
+			step = len(rows)
 		default:
 			return
 		}
 		e.Doit = false
-		if len(shown) == 0 {
+		if len(rows) == 0 {
 			return
 		}
-		i = max(0, min(i, len(shown)-1))
+		i := max(0, min(list.Index()+step, len(rows)-1))
+		dir := 1
+		if step < 0 {
+			dir = -1
+		}
+		for i >= 0 && i < len(rows) && rows[i] < 0 {
+			i += dir // a heading is not a choice: the next component in the way
+		}
+		if i < 0 || i >= len(rows) {
+			return
+		}
 		list.Select(i)
 		list.Unwrap().ShowSelection()
 		preview(i)

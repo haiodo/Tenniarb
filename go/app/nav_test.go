@@ -227,7 +227,7 @@ func TestUsePathAndComponents(t *testing.T) {
 	comps := Components("kit", root, "", 10)
 	var got []string
 	for _, c := range comps {
-		got = append(got, c.Label+"="+c.Path)
+		got = append(got, c.Name+"="+c.Path)
 	}
 	if !slices.Equal(got, []string{"Panel=kit.Panel", "Group=kit.Group"}) {
 		t.Errorf("components %q", got)
@@ -244,9 +244,9 @@ func TestComponentsPublicSurface(t *testing.T) {
 	root := loadText(t, t.TempDir(), text).File("a.tenn")
 	var got []string
 	for _, c := range Components("kit", root, "", 20) {
-		got = append(got, c.Label+"="+c.Path)
+		got = append(got, c.Name+"="+c.Path)
 	}
-	if !slices.Equal(got, []string{"Card=kit.Card", "Chip - Extra=kit.Extra.Chip"}) {
+	if !slices.Equal(got, []string{"Card=kit.Card", "Chip=kit.Extra.Chip"}) {
 		t.Errorf("components %q", got)
 	}
 }

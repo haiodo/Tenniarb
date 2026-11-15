@@ -7,6 +7,12 @@
   something to insert instead of "the document mounts no library". The Items browser shows them too,
   and a drop writes the use. A node no `use` names is not listed.
 
+* Insert Component and the Items browser group the list by the branch a component is defined in
+  (`Icons`, `Chrome`, `Code` in tenniarb.tenn), with a heading row where the branch changes. A preview
+  is drawn at the screen density on one canvas size for every row: the tree draws each picture into the
+  bounds of the first one, so a wide component came out stretched and every preview was soft on a
+  Retina screen. A small component is blown up to four times in the picker's preview pane.
+
 * `libraries/native.tenn`: one native desktop library for macOS, Windows 11 and Linux, light and dark.
   A theme item holds what the three systems share and a system item only what it changes, so `Theme`
   takes `osName` and `theme` over two `--from-item` lines and there is no per-platform copy of the file;

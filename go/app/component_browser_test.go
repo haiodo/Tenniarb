@@ -137,8 +137,8 @@ func TestComponentBrowserWithoutLibrary(t *testing.T) {
 	}
 }
 
-// A document that reuses its own nodes offers them like a library's: the browser lists what its use
-// statements target, by a path from the root, and a double click inserts one into another element.
+// A document that reuses its own nodes offers them like a library's: the browser groups them by the branch
+// they are defined in, names them by a path from the root, and a double click inserts one into another element.
 func TestOwnComponentsOfTheDocument(t *testing.T) {
 	dir := t.TempDir()
 	v := newDoc(t, &Shell{dir: dir}, filepath.Join(dir, "own.tenn"),
@@ -147,18 +147,27 @@ func TestOwnComponentsOfTheDocument(t *testing.T) {
 			"        item Plus { width 10; height 10 }\n"+
 			"        item Minus { width 10; height 10 }\n"+
 			"    }\n"+
+			"    item Chrome {\n"+
+			"        item Check { width 10; height 10 }\n"+
+			"    }\n"+
 			"}\n"+
 			"element Screen {\n"+
-			"    item Frame { use Kit.Icons.Plus as plus }\n"+
+			"    item Frame {\n"+
+			"        use Kit.Icons.Plus as plus\n"+
+			"        use Kit.Chrome.Check as check\n"+
+			"    }\n"+
 			"}\n")
 	if v.stree == nil {
 		t.Fatal("the document has no scene tree")
 	}
 	comps := v.components("", 100)
-	if len(comps) != 1 {
+	if len(comps) != 2 {
 		t.Fatalf("own components: %+v", comps)
 	}
-	if c := comps[0]; c.Path != "Kit.Icons.Plus" || c.Label != "Plus - Icons" || c.Name != "Plus" {
+	if c := comps[0]; c.Path != "Kit.Icons.Plus" || c.Group != "Icons" || c.Name != "Plus" {
+		t.Fatalf("own component: %+v", c)
+	}
+	if c := comps[1]; c.Path != "Kit.Chrome.Check" || c.Group != "Chrome" {
 		t.Fatalf("own component: %+v", c)
 	}
 
@@ -176,10 +185,11 @@ func TestOwnComponentsOfTheDocument(t *testing.T) {
 	}
 	v.setItemsMode(true)
 	rows := v.itemRows()
-	if len(rows) != 1 || !rows[0].Component {
+	if len(rows) != 4 || rows[0].Kind != "group" || rows[0].Label != "Icons" || rows[1].Path != "Kit.Icons.Plus" ||
+		rows[2].Label != "Chrome" || rows[3].Path != "Kit.Chrome.Check" {
 		t.Fatalf("rows: %+v", rows)
 	}
-	v.activateItemRow(rows[0], nil)
+	v.activateItemRow(rows[1], nil)
 	text := v.fileText("own.tenn")
 	if !strings.Contains(text, "use Kit.Icons.Plus as Plus") {
 		t.Errorf("a double click did not insert the document's own component:\n%s", text)

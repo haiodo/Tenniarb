@@ -355,10 +355,11 @@ func UsePath(alias string, n *scene.Node) (string, bool) {
 	return p, true
 }
 
-// Component is a node of a library one can insert: the label the picker shows and the use path.
+// Component is a node of a library one can insert: its name, the use path and the branch it is defined in.
 type Component struct {
-	Label, Path, Name string
-	Node              *scene.Node // the element or item itself, for a preview
+	Path, Name string
+	Group      string      // the branch the browser and the picker group it under; "" for none
+	Node       *scene.Node // the element or item itself, for a preview
 }
 
 // Components lists what a library file offers, depth first in file order, those whose name or key
@@ -421,11 +422,7 @@ func componentOf(alias string, k *scene.Node, where, q string) (Component, bool)
 	if !ok || k.Name == "" || !hit {
 		return Component{}, false
 	}
-	label := k.Name
-	if where != "" && where != k.Name {
-		label += " - " + where
-	}
-	return Component{Label: label, Path: p, Name: k.Name, Node: k}, true
+	return Component{Path: p, Name: k.Name, Group: where, Node: k}, true
 }
 
 // declaresComponents reports whether a library says which nodes are components: "kind Component", or the
