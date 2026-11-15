@@ -215,7 +215,11 @@ func TestLagComp(t *testing.T) {
 	A, B := pick(os.Getenv("LAGA")), pick(os.Getenv("LAGB"))
 
 	r := &lagRig{t: t, d: d, sc: gfx.NewScene(), host: &fakeHost{}, t0: time.Now()}
-	r.comp = gfx.NewCompositor(r.sc, cg.NewRenderer(cg.Options{TextCache: true, ShadowSprite: true, LOD: true}), r.host, gfx.Options{})
+	compOpts := gfx.Options{}
+	if os.Getenv("LAGDIRECT") != "" {
+		compOpts.Direct = true
+	}
+	r.comp = gfx.NewCompositor(r.sc, cg.NewRenderer(cg.Options{TextCache: true, ShadowSprite: true, LOD: true}), r.host, compOpts)
 	defer r.comp.Close()
 	r.comp.SetViewport(lvw, lvh, ldpr)
 	t.Logf("workers=%d", r.comp.Workers())

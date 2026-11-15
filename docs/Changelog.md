@@ -19,6 +19,10 @@
   `context` to `format.md`, the short recipes to `layout.md`. The MCP server instructions are 555
   characters.
 
+* The canvas draws the scene in gowt's Direct mode: the visible part in one pass per frame at
+  exactly zoom×dpr, so a shadow keeps its size at every zoom and a camera move shows its own frame,
+  not scaled tiles of the old one. A very large classic diagram costs more per frame than tiles did.
+
 * A classic diagram of a few megabytes opens again: the code pane read the whole text once per
   highlighted span, so 235k spans of 7 MB never finished; above 64 KB it draws the text plain.
 

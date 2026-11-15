@@ -304,7 +304,9 @@ func (v *Viewer) build() {
 				g.Button("Copy", g.Small(), g.Ref(&v.bannerCopy), g.Init(func(b *g.ButtonView) {
 					b.OnClick(func() { v.setClipboard(v.banner.Text()) })
 				}))),
-			view.New(v.scene, v.initView, g.Grow(), g.ID("canvas"),
+			// Direct: one pass of the visible scene per frame at exactly zoom*dpr, so a shadow keeps
+			// its size at every zoom and a camera move shows its frame at once.
+			view.NewWithOptions(v.scene, view.Options{Direct: true}, v.initView, g.Grow(), g.ID("canvas"),
 				g.Background(g.Adaptive{Light: light, Dark: dark}))),
 		v.codePane(&codePane),
 		v.inspectorPane())
