@@ -77,7 +77,13 @@ extension Scene {
         var justify: Align = .start
 
         var kids: [LayoutNode] = []
-        var node: Node?  // the scene node the box was made for
+        weak var parent: LayoutNode?
+        var node: RNode?  // the resolved node the box was made for (Tag of gowt layout)
+        var text: TextInfo?  // the title the box draws; a leaf, or a container over its kids
+
+        // The content size of a leaf, its text: LeafW and LeafH of gowt layout.
+        var leafW: (() -> Double)?
+        var leafH: ((Double) -> Double)?
 
         // Results, relative to the parent's top left corner.
         private(set) var rx = 0.0
@@ -127,7 +133,7 @@ extension Scene {
             let kids = dir == .abs ? self.kids : flow()
             switch true {
             case kids.isEmpty:
-                w = 0  // text and body sizes arrive with the painter
+                w = leafW?() ?? 0
             case dir == .abs:
                 for k in kids {
                     w = max(w, k.x + k.intrinsicWidth())
@@ -167,6 +173,9 @@ extension Scene {
             rw = w
             if kids.isEmpty {
                 rh = max(h, 0)
+                if h < 0, let leafH {
+                    rh = clampH(leafH(w))
+                }
             } else if dir == .abs {
                 layoutAbs(w: w, h: h)
             } else {
@@ -351,187 +360,5 @@ extension Scene {
                 off += main + gap
             }
         }
-    }
-
-    /// Turns a loaded element into layout boxes: reads the same properties go/scene/layout.go does.
-    final class LayoutEngine {
-        private let tree: Tree
-
-        init(tree: Tree) {
-            self.tree = tree
-        }
-
-        /// The layout of an element: its content at their own positions.
-        func layout(_ element: Node) -> LayoutNode {
-            let n = LayoutNode()
-            n.node = element
-            n.dir = .abs
-            if let pr = element.prop("width"), let v = pr.num(0) {
-                n.width = .fixed(v)
-            }
-            if let pr = element.prop("height"), let v = pr.num(0) {
-                n.height = .fixed(v)
-            }
-            for k in element.content where k.kind == .item {
-                n.kids.append(item(k, parentAuto: false))
-            }
-            return n
-        }
-
-        private func item(_ node: Node, parentAuto: Bool) -> LayoutNode {
-            let n = LayoutNode()
-            n.node = node
-            let auto = prop(node, "auto-layout") != nil
-            let inCtx = auto || parentAuto
-            if let pr = prop(node, "pos") {
-                n.x = pr.num(0) ?? 0
-                n.y = 0 - (pr.num(1) ?? 0)  // .tenn has y up, pos is the top left corner
-            }
-            n.width = size(node, "width", inCtx: inCtx, parentAuto: parentAuto)
-            n.height = size(node, "height", inCtx: inCtx, parentAuto: parentAuto)
-            if inCtx {
-                limits(node, n)
-                n.absolute = flag(node, "absolute")
-            }
-            n.padding = padding(node)
-            if auto {
-                container(node, n)
-            } else {
-                n.dir = .abs
-            }
-            for k in node.content where k.kind == .item {
-                n.kids.append(item(k, parentAuto: auto))
-            }
-            return n
-        }
-
-        /// Reads the properties that only an item with auto-layout has.
-        private func container(_ node: Node, _ n: LayoutNode) {
-            if let word = word(node, "auto-layout", ["row", "column", "abs"]) {
-                switch word {
-                case "row": n.dir = .row
-                case "column": n.dir = .column
-                default: n.dir = .abs
-                }
-            }
-            n.gap = num(node, "gap") ?? 0
-            if let word = word(node, "align", ["start", "center", "end"]) {
-                n.align = align(word)
-            }
-            if let word = word(node, "justify", ["start", "center", "end", "space-between"]) {
-                n.justify = align(word)
-            }
-        }
-
-        private func limits(_ node: Node, _ n: LayoutNode) {
-            n.minWidth = num(node, "min-width") ?? 0
-            n.maxWidth = num(node, "max-width") ?? 0
-            n.minHeight = num(node, "min-height") ?? 0
-            n.maxHeight = num(node, "max-height") ?? 0
-        }
-
-        private func padding(_ node: Node) -> Insets {
-            guard let pr = prop(node, "padding") else { return Insets() }
-            var values: [Double] = []
-            for i in 0..<pr.args.count {
-                guard let value = pr.num(i) else {
-                    tree.fail(pr.pos, "padding takes numbers")
-                    return Insets()
-                }
-                values.append(value)
-            }
-            switch values.count {
-            case 1:
-                return Insets(top: values[0], right: values[0], bottom: values[0], left: values[0])
-            case 2:  // vertical, horizontal
-                return Insets(top: values[0], right: values[1], bottom: values[0], left: values[1])
-            case 4:
-                return Insets(top: values[0], right: values[1], bottom: values[2], left: values[3])
-            default:
-                tree.fail(pr.pos, "padding takes 1, 2 or 4 numbers, got \(values.count)")
-                return Insets()
-            }
-        }
-
-        /// Reads width or height: a number, or hug and fill where an auto-layout is at work.
-        private func size(_ node: Node, _ name: String, inCtx: Bool, parentAuto: Bool) -> Size {
-            guard let pr = prop(node, name), !pr.args.isEmpty else { return .hug }
-            if let value = pr.num(0) {
-                return .fixed(value)
-            }
-            let word = pr.text(0) ?? ""
-            switch true {
-            case word == "hug" || word == "fill":
-                return sizeWord(pr, word, inCtx: inCtx, parentAuto: parentAuto)
-            case word.hasSuffix("%"):
-                tree.warn(pr.pos, "\(name): percentages are not supported, the size is hug")
-            default:
-                tree.fail(pr.pos, "\(name) takes a number, hug or fill, got \"\(word)\"")
-            }
-            return .hug
-        }
-
-        private func sizeWord(_ pr: Prop, _ word: String, inCtx: Bool, parentAuto: Bool) -> Size {
-            guard inCtx else {
-                tree.fail(pr.pos, "\(pr.name) \(word) needs auto-layout on the item or on its parent")
-                return .hug
-            }
-            if pr.args.count > 1 {
-                tree.warn(pr.pos, "\(pr.name) fill with a fallback value is not supported")
-            }
-            if word == "fill" {
-                guard parentAuto else {
-                    tree.warn(pr.pos, "\(pr.name) fill needs auto-layout on the parent, the size is hug")
-                    return .hug
-                }
-                return .fill
-            }
-            return .hug
-        }
-
-        private func num(_ node: Node, _ name: String) -> Double? {
-            guard let pr = prop(node, name) else { return nil }
-            guard let value = pr.num(0) else {
-                tree.fail(pr.pos, "\(name) takes a number")
-                return nil
-            }
-            return value
-        }
-
-        private func flag(_ node: Node, _ name: String) -> Bool {
-            guard let pr = prop(node, name) else { return false }
-            switch pr.text(0) ?? "" {
-            case "yes", "true": return true
-            case "no", "false": return false
-            default:
-                tree.fail(pr.pos, "\(name) takes yes or no")
-                return false
-            }
-        }
-
-        private func word(_ node: Node, _ name: String, _ allowed: [String]) -> String? {
-            guard let pr = prop(node, name) else { return nil }
-            let s = pr.text(0) ?? ""
-            if allowed.contains(s) {
-                return s
-            }
-            if s == "space-around" {
-                tree.warn(pr.pos, "\(name) space-around is not supported by the layout")
-            } else if name != "auto-layout" || !s.isEmpty {
-                tree.fail(pr.pos, "\(name) takes one of \(allowed.joined(separator: ", ")), got \"\(s)\"")
-            }
-            return nil
-        }
-
-        private func align(_ word: String) -> Align {
-            switch word {
-            case "center": return .center
-            case "end": return .end
-            case "space-between": return .spaceBetween
-            default: return .start
-            }
-        }
-
-        private func prop(_ node: Node, _ name: String) -> Prop? { node.prop(name) }
     }
 }

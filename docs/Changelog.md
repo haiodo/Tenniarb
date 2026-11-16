@@ -4,8 +4,8 @@
 
 * Swift: the scene engine starts in `Tenniarb/scene` with the file tree and its `--from-file` mounts
   (paths relative to the mounting file), `export let` parameters, styles, kinds, and row/column
-  auto-layout with gap, padding, align, justify and fill/hug sizes. Rows of the port live in
-  `docs/swift-parity-map.md`.
+  auto-layout with gap, padding, align, justify and fill/hug sizes; text items take the size of their
+  title and an expanded element comes out placed. Rows of the port live in `docs/swift-parity-map.md`.
 
 * `.tenn` is read with `github.com/haiodo/tenn` in both versions: the Swift app takes the parser as a
   package instead of its embedded copy, on v1.0.3 where the lexer, the token, `SlowLexer` and the

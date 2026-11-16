@@ -19,6 +19,9 @@
 		AE02EC00000000000000001A /* SceneResolveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000A /* SceneResolveTests.swift */; };
 		AE02EC00000000000000001B /* SceneExpandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000B /* SceneExpandTests.swift */; };
 		AE02EC00000000000000001C /* SceneStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000C /* SceneStyleTests.swift */; };
+		AE02EC00000000000000001D /* SceneText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000D /* SceneText.swift */; };
+		AE02EC00000000000000001E /* SceneBuild.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000E /* SceneBuild.swift */; };
+		AE02EC00000000000000001F /* SceneBuildTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000000F /* SceneBuildTests.swift */; };
 		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
@@ -186,6 +189,9 @@
 		AE02EC00000000000000000A /* SceneResolveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneResolveTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000000B /* SceneExpandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneExpandTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000000C /* SceneStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneStyleTests.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000000D /* SceneText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneText.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000000E /* SceneBuild.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneBuild.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000000F /* SceneBuildTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneBuildTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
@@ -561,6 +567,7 @@
 				AE02EC00000000000000000A /* SceneResolveTests.swift */,
 				AE02EC00000000000000000B /* SceneExpandTests.swift */,
 				AE02EC00000000000000000C /* SceneStyleTests.swift */,
+				AE02EC00000000000000000F /* SceneBuildTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
 				0CC4D3531F930F5500875F9E /* PersistenceTests.swift */,
@@ -635,6 +642,8 @@
 				AE02EC000000000000000007 /* SceneExpand.swift */,
 				AE02EC000000000000000008 /* SceneParams.swift */,
 				AE02EC000000000000000009 /* SceneStyles.swift */,
+				AE02EC00000000000000000D /* SceneText.swift */,
+				AE02EC00000000000000000E /* SceneBuild.swift */,
 			);
 			path = scene;
 			sourceTree = "<group>";
@@ -875,6 +884,8 @@
 				AE02EC000000000000000017 /* SceneExpand.swift in Sources */,
 				AE02EC000000000000000018 /* SceneParams.swift in Sources */,
 				AE02EC000000000000000019 /* SceneStyles.swift in Sources */,
+				AE02EC00000000000000001D /* SceneText.swift in Sources */,
+				AE02EC00000000000000001E /* SceneBuild.swift in Sources */,
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
@@ -915,6 +926,7 @@
 				AE02EC00000000000000001A /* SceneResolveTests.swift in Sources */,
 				AE02EC00000000000000001B /* SceneExpandTests.swift in Sources */,
 				AE02EC00000000000000001C /* SceneStyleTests.swift in Sources */,
+				AE02EC00000000000000001F /* SceneBuildTests.swift in Sources */,
 				AE01EC01000000000000005 /* ModelCoreTests.swift in Sources */,
 				AE01EC01000000000000006 /* DrawableStyleTests.swift in Sources */,
 				AE01EC01000000000000007 /* DrawableLineTests.swift in Sources */,

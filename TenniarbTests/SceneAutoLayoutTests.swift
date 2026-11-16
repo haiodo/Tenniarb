@@ -28,9 +28,7 @@ final class SceneAutoLayoutTests: XCTestCase {
         try text.write(to: file, atomically: true, encoding: .utf8)
 
         let tree = try SceneLoader(root: root).load("board.tenn")
-        let screen = try XCTUnwrap(tree.main?.elems.first)
-        let box = Scene.LayoutEngine(tree: tree).layout(screen)
-        box.layout()
+        let box = try XCTUnwrap(tree.layout("Screen"))
         return (tree, box)
     }
 

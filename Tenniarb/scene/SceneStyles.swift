@@ -49,7 +49,7 @@ func applyStyles(_ r: Scene.RNode) {
 }
 
 /// Whether an argument is an expression, or a string with one inside.
-private func hasExpr(_ pr: Scene.Prop) -> Bool {
+func hasExpr(_ pr: Scene.Prop) -> Bool {
     if pr.val != nil {  // already evaluated
         return false
     }

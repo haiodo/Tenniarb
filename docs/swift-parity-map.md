@@ -54,17 +54,17 @@
 | `go/scene/params.go:61` `params`, `:92` `defaults` | `SceneParams.swift` `Expander.params`, `defaults`, `value` | есть | значение из блока `use` выше умолчания, остальные - умолчания; обязательный без значения - `element "C" needs "size": set it in the block of the use`; значения доходят до узлов как `RNode.vars`, `${...}` не вычисляется (нет вычислителя); `TenniarbTests/SceneExpandTests.swift` |
 | `go/scene/styles.go:15` `applyStyles`, `:77` `inheritProps` | `SceneStyles.swift` `applyStyles`, `inheritProps`, `styleRefs` | есть | свойства стиля встают сразу после последнего `use-style` (выше - умолчания, ниже - свои), блоки детей как descendant-селектор в обратном порядке, шрифт наследуется item'ом; корень экземпляра берёт стили `Def`, остальные - ближайшего элемента; `classicDefaults` не портирован (нужен классической диаграмме); `TenniarbTests/SceneStyleTests.swift` |
 | `go/scene/context.go:48` `context`, `:23` `ctxDecl` | - | нет | `context`/`ctx` (спека 5f) |
-| `go/scene/layout.go:106` `prep`, `:192` `root`, `:400` `item` | `Tenniarb/scene/SceneLayout.swift` `LayoutEngine` | начат | корень `Abs` и его размер; `pos` - верхний левый угол, экранный `y = -pos.y` (`:405`) |
-| `go/scene/layout.go:494` `container` | `SceneLayout.swift` `container` | начат | `auto-layout row/column/abs`, `gap`, `align`, `justify`; `wrap`, `line-gap` не портированы |
-| `go/scene/layout.go:510` `padding` | `SceneLayout.swift` `padding` | начат | 1 / 2 (вертикаль, горизонталь) / 4 (T R B L) значения |
-| `go/scene/layout.go:583` `size`, `:609` `sizeWord` | `SceneLayout.swift` `size` | начат | число, `hug`, `fill`; `fill` без auto-layout родителя - hug; проценты - предупреждение |
-| `go/scene/layout.go:486` `limits` | `SceneLayout.swift` `limits` | начат | `min/max-width/height`, `0` в max - без предела |
-| `gowt gfx/layout/layout.go:97` `layout.Node`, `:171` `Layout` | `SceneLayout.swift` `LayoutNode`, `layout()` | начат | row/column/abs, fixed/hug/fill, gap/pad/align/justify, absolute, min/max; `Wrap`/`LineGap` нет |
-| `go/scene/layout.go:629` `leaf` | `SceneLayout.swift` `leaf` | начат | размер листа из текста/тела; текста ещё нет, лист без `width`/`height` получает 0 - не проверено |
-| `go/scene/layout.go:734` `textOf` | - | нет | имя/`title`, `font-*`, `line-height`, `layout left/right`, `marker` |
-| `go/scene/layout.go:96` `lineBox`, `:1066` `natural`, `:1082` `height`, `:1094` `layout`, `:1187` `wrap` | - | нет | переносы, базовые линии, метрики шрифта, классические коэффициенты `:47-63` |
-| `go/scene/measure.go:13` `MeasureText` | - | нет | оценка ширины/высоты текста для раскладки |
-| `go/scene/body.go` (1183) `bodyText` | - | нет | тело item: markdown, блоки, ширина, высота |
+| `go/scene/layout.go:106` `prep`, `:192` `root`, `:400` `item` | `Tenniarb/scene/SceneBuild.swift` `Prep`, `root`, `item` | есть | узел `RNode` с детьми, `pos` - верхний левый угол, экранный `y = -pos.y`; `Scene.LayoutNode.node`/`text` - то, что Go держит в `frames`/`texts`; картинка корня и иконка листа не портированы (`image.go`, `icon.go`), тело - `body.go`; `TenniarbTests/SceneBuildTests.swift` |
+| `go/scene/layout.go:494` `container` | `SceneBuild.swift` `container` | начат | `auto-layout row/column/abs`, `gap`, `align`, `justify`; `wrap`/`line-gap` не раскладываются: `layoutWrap` в `SceneLayout` нет, поток идёт одной линией |
+| `go/scene/layout.go:510` `padding` | `SceneBuild.swift` `padding`, `leaf` | есть | 1 / 2 (вертикаль, горизонталь) / 4 (T R B L) значения; в листе `padX = left`, `padY = top`, как `layout.go:646`; `TenniarbTests/SceneBuildTests.swift` `testPaddingInsetsTheTextOfALeafWithinOnePoint` |
+| `go/scene/layout.go:583` `size`, `:609` `sizeWord` | `SceneBuild.swift` `size`, `sizeWord` | есть | число, `hug`, `fill`; `fill` без auto-layout родителя - hug; проценты - предупреждение; `min/max` только в layout-контексте, как в Go |
+| `go/scene/layout.go:486` `limits` | `SceneBuild.swift` `limits` | есть | `min/max-width/height`, `0` в max - без предела; `SceneBuildTests.swift` `testMinAndMaxWidthClampAHugWithinOnePoint` |
+| `gowt gfx/layout/layout.go:97` `layout.Node`, `:171` `Layout` | `SceneLayout.swift` `LayoutNode`, `layout()` | начат | row/column/abs, fixed/hug/fill, gap/pad/align/justify, absolute, min/max, лист по `leafW`/`leafH`; `Wrap`/`LineGap` нет |
+| `go/scene/layout.go:629` `leaf` | `SceneBuild.swift` `leaf` | есть | размер листа из текста (имя/`title`, перенос, округление вверх); тело и иконка не портированы (`body.go`, `icon.go`), лист только с телом hugs 0 - `shortcut` в `item` |
+| `go/scene/layout.go:734` `textOf` | `SceneText.swift` `Prep.textOf`, `TextInfo` | есть | имя/`title`, `font-*`, `line-height`, `line-spacing`, `layout left/right`, `marker` (читается как свойство: объект стиля не портирован); `evalText` возвращает текст как написан - вычислителя нет; части заголовка с `&()`/`!()`/`@()` не портированы |
+| `go/scene/layout.go:96` `lineBox`, `:1066` `natural`, `:1082` `height`, `:1094` `layout`, `:1187` `wrap` | `SceneText.swift` `lineBox`, `natural`, `height`, `wrap` | начат | `lineBox` (метрики `Hg`, округление, классические коэффициенты `:47-63`), `natural`, `height`, `wrap` есть; `layout`/`titleLine` (строки из частей заголовка с `&()`/`!()`/`@()`) нет - нужны classic-разметка и картинки; `TenniarbTests/SceneBuildTests.swift` |
+| `go/scene/measure.go:13` `MeasureText` | `SceneText.swift` `measureText` | есть | `Hg` и строки через CoreText, ширина/высота вверх; `SceneBuildTests.swift` `testMeasureTextRoundsItsLinesUpWithinOnePoint` |
+| `go/scene/body.go` (1183) `bodyText` | - | нет | тело item: markdown, блоки, ширина, высота; до порта лист с `body { ... }` hugs 0 |
 | `go/scene/bodylink.go:10` `BodyLink` | - | нет | ссылки и якоря внутри тела |
 | `go/scene/paint.go:11` `gradient`, `:36` `fill`, `:103` `shadows` | - | нет | заливка, градиент, тени |
 | `go/scene/color.go:14` `parseColor`, `:63` `contrast` | - | нет | синтаксис цвета и контраст текста на заливке |
@@ -169,8 +169,8 @@
 
 | Go | Swift | Статус | Что сверять |
 |---|---|---|---|
-| `go/cmd/tennlayout/main.go:1` печать дерева | - | нет | вывод `layout` до и после порта; голдены `web/fixtures/scene/*.layout.json` |
+| `go/cmd/tennlayout/main.go:1` печать дерева | - | нет | вывод `layout` до и после порта; голдены `web/fixtures/scene/*.layout.json`; дамп читает нарисованные item'ы (`Placed`, `Build`), поэтому сначала нужны `build.go`/`paint.go`, не только `SceneBuild.swift`; размеры текста шести фикстур сверены вручную с `scene.Build` + `gfx.DefaultMeasurer` (Go-приложение), дамп не автоматизирован |
 | `go/cmd/tennlayout/main_test.go:13` `TestGoldensAreCurrent` | - | нет | голден отстал от фикстуры - тест падает |
 | `web/packages/render/test/scene-parity.test.ts:1` сверка web | - | нет | эталон для Swift-сверки, сам тест не трогается |
-| `go/scene/*_test.go` (86 файлов пакета) | `TenniarbTests/SceneLoaderTests.swift`, `SceneAutoLayoutTests.swift`, `SceneResolveTests.swift`, `SceneExpandTests.swift`, `SceneStyleTests.swift` | начат | наборы проходят (545 тестов, 2026-11-16); сценарии переносятся по одному из `go/scene/layout_test.go`, `pathquote_test.go`, `scene_test.go`; сверки картинки нет |
+| `go/scene/*_test.go` (86 файлов пакета) | `TenniarbTests/SceneLoaderTests.swift`, `SceneAutoLayoutTests.swift`, `SceneResolveTests.swift`, `SceneExpandTests.swift`, `SceneStyleTests.swift`, `SceneBuildTests.swift` | начат | наборы проходят (553 теста, 2026-11-16); сценарии переносятся по одному из `go/scene/layout_test.go`, `pathquote_test.go`, `scene_test.go`; сверки картинки нет |
 | `go/tenncorpus` golden/round-trip на `web/fixtures` | `TenniarbTests/TennGoldenTests.swift:1` | есть | тот же текст разбирается и печатается одинаково |
