@@ -19,7 +19,14 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 		return nil
 	}
 	if r.Item != nil {
-		return []editor.Entry{{Label: "Duplicate", Run: v.session.Duplicate}, {Label: "Delete", Run: v.session.DeleteSelection}}
+		return v.withLink([]editor.Entry{{Label: "Duplicate", Run: v.session.Duplicate}, {Label: "Delete", Run: v.session.DeleteSelection}})
+	}
+	if r.Component {
+		// The row of a component is not a node of the canvas: the menu inserts it, as a double click does.
+		return []editor.Entry{{Label: "Insert", Run: func() { v.activateItemRow(*r, nil) }}}
+	}
+	if r.Kind == "group" {
+		return nil
 	}
 	entries := []editor.Entry{
 		{Label: "Add", Sub: []editor.Entry{
@@ -54,5 +61,5 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 	if m := model.MountOf(v.state.Current, false); m != nil {
 		entries = append([]editor.Entry{{Label: "Insert Component", Run: func() { v.insertFromMount(m, r) }}, {Sep: true}}, entries...)
 	}
-	return entries
+	return v.withLink(entries)
 }

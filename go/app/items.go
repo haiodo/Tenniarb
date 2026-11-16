@@ -531,6 +531,8 @@ func (v *Viewer) onItemSelect(n *g.Node) {
 		return
 	}
 	switch {
+	case r.Component || r.Kind == "group":
+		return // not a node of the canvas: selecting the row changes nothing there
 	case r.Path != "" && v.sceneMode():
 		v.selectItemPath(r.Path)
 	case r.Item != nil && v.session != nil:

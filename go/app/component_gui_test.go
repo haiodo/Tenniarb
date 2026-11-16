@@ -76,8 +76,17 @@ func TestComponentsPanelDrag(t *testing.T) {
 	}
 	a.ShotOf("components-panel", qa.ID("items"))
 
+	// A press on a component row selects it and leaves the canvas selection alone: the drag below needs the
+	// row still selected.
+	plus := a.Find(qa.Text("Plus").In(qa.ID("items")))
+	plus.Click()
+	a.Settle()
+	if st := h.state(); st.ItemSelected != "Plus" {
+		t.Fatalf("the row of a component is lost on a click: selected %q", st.ItemSelected)
+	}
+
 	before := h.text()
-	a.Find(qa.Text("Plus").In(qa.ID("items"))).DragDropToAt(a.Find(qa.ID("canvas")), 300, 200)
+	plus.DragDropToAt(a.Find(qa.ID("canvas")), 300, 200)
 	a.Settle()
 	time.Sleep(300 * time.Millisecond)
 	a.Settle()
@@ -89,6 +98,20 @@ func TestComponentsPanelDrag(t *testing.T) {
 		t.Fatalf("the drop left a diagnostic: %s", st.Error)
 	}
 	a.ShotOf("components-dropped", qa.ID("canvas"))
+
+	// The row menu of a component inserts it; the menu of a canvas node has no place there.
+	badge := a.Find(qa.Text("Badge").In(qa.ID("items")))
+	b := h.state().ItemRows["Badge"].Box
+	badge.RightClickAt(float64(b[0]+b[2]/2), float64(b[1]+b[3]/2))
+	a.Settle()
+	// "Insert" exists only on a component row: no other menu item reads exactly that.
+	a.Find(qa.Text("Insert")).Click()
+	a.Settle()
+	time.Sleep(300 * time.Millisecond)
+	a.Settle()
+	if text := h.text(); !strings.Contains(text, "use Kit.Chrome.Badge as ") {
+		t.Fatalf("Insert wrote no use:\n%s", text)
+	}
 
 	// The picker shows the same groups and previews.
 	a.Find(menuBarItem(h.activeTitle(), "Element", "Insert Component...")).Click()

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Dragging a component row of the Items browser onto the canvas works with the mouse again: a click on
+  the row ran the canvas's own selection with the use path, found no node and deselected the row, so the
+  drag never started. The row menu of a component is Insert, as a double click does, not the canvas
+  node's Add/Duplicate/Delete, and a group heading has no menu or Copy Link.
+
 * Insert Component lists the nodes the document itself reuses, by a path from the root, next to the
   components of its libraries: a file that keeps its design system inline (tenniarb.tenn) now has
   something to insert instead of "the document mounts no library". The Items browser shows them too,

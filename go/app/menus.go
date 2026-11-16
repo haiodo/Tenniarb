@@ -260,7 +260,7 @@ func (v *Viewer) contextMenus() {
 	outline.OnShow(func() { fillMenu(outline, v.withLink(v.outlineEntries())) })
 
 	items := g.PopupMenu(v.itemsUI.tree)
-	items.OnShow(func() { fillMenu(items, v.withLink(v.itemsEntries())) })
+	items.OnShow(func() { fillMenu(items, v.itemsEntries()) })
 
 	code := g.PopupMenu(v.props.text)
 	action := func(f func()) func() {
