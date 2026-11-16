@@ -132,7 +132,6 @@ func (c *LayoutContext) FindEdges() []*DiagramItem {
 }
 
 func (c *LayoutContext) IsMovable(_ *DiagramItem) bool {
-	// For now any item are movable.
 	return true
 }
 

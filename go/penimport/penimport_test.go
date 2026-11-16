@@ -11,8 +11,8 @@ import (
 	"github.com/haiodo/tenniarb/go/scene"
 )
 
-// convert converts the fixtures (names without the extension) into a temp dir and returns the result
-// and the dir. The fixture files import each other by their file names.
+// The fixtures (names without the extension) are converted into one temp dir: the fixture files
+// import each other by their file names.
 func convert(t *testing.T, main string) (*Result, string) {
 	t.Helper()
 	res, err := Convert([]string{filepath.Join("testdata", main+".pen")}, Options{})

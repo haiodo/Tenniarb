@@ -71,7 +71,7 @@ func TestLatestErrors(t *testing.T) {
 		name   string
 		status int
 		body   string
-		wantNo bool // errors.Is(err, ErrNoRelease)
+		wantNo bool // errors.Is(err, ErrNoRelease) should hold
 	}{
 		{"not found", http.StatusNotFound, `{"message":"Not Found"}`, true},
 		{"server error", http.StatusInternalServerError, "boom", false},

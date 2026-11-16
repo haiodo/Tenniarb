@@ -109,8 +109,8 @@ func (v *Viewer) animScrub(at float64) {
 	v.animApply(sc, 0, at)
 }
 
-// animApply sets the transform and the opacity of every animated node of sc for now; a frac from 0 to 1
-// takes that part of each animation instead, as the scrub of the inspector does.
+// animApply sets the transform and the opacity of every animated node of sc at time now; a frac
+// from 0 to 1 takes that part of each animation instead, as the scrub of the inspector does.
 func (v *Viewer) animApply(sc *scene.Screen, now time.Duration, frac float64) {
 	v.scene.Update(func(tx *gfx.Tx) {
 		for _, a := range sc.AnimatedNodes() {
