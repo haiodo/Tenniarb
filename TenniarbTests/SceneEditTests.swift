@@ -21,7 +21,7 @@ import XCTest
 /// The edit producers of go/app/sceneedit.go against the strings its tests pin, and the document side
 /// that applies one: the text is what an undo restores and what a save writes.
 @MainActor
-final class SceneEditTests: XCTestCase {
+final class SceneEditTests: SceneDocumentTestCase {
 
     private let repo = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent()
@@ -247,8 +247,7 @@ final class SceneEditTests: XCTestCase {
     func testSceneEditAppliesUndoAndSave() throws {
         let root = try workspace()
         let url = try copy("web/fixtures/scene/scene-text.tenn", to: root)
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let text = try XCTUnwrap(document.sceneText)
         let tree = try XCTUnwrap(document.sceneTree)
@@ -285,8 +284,7 @@ final class SceneEditTests: XCTestCase {
         let url = try copy("web/fixtures/scene/library-screen.tenn", to: root)
         let library = try copy("web/fixtures/scene/design-kit.tenn", to: root)
         let libraryBefore = try Data(contentsOf: library)
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let text = try XCTUnwrap(document.sceneText)
         let tree = try XCTUnwrap(document.sceneTree)
@@ -312,8 +310,7 @@ final class SceneEditTests: XCTestCase {
     func testAnEditThatBreaksTheFileIsRejected() throws {
         let root = try workspace()
         let url = try copy("web/fixtures/scene/scene-text.tenn", to: root)
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let text = try XCTUnwrap(document.sceneText)
         let tree = try XCTUnwrap(document.sceneTree)

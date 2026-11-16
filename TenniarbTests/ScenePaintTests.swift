@@ -20,7 +20,7 @@ import XCTest
 /// The scene canvas paints the values the layout produced: a box of a fixture keeps its fill and the
 /// text of a leaf leaves its pixels on the bitmap.
 @MainActor
-final class ScenePaintTests: XCTestCase {
+final class ScenePaintTests: SceneDocumentTestCase {
 
     private let repo = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent()
@@ -167,8 +167,7 @@ final class ScenePaintTests: XCTestCase {
     func testASceneDocumentShowsTheCanvas() throws {
         let root = try workspace(["web/fixtures/scene/auto-layout-tour.tenn", "web/fixtures/Example.tenn"])
         let scene = root.appendingPathComponent("auto-layout-tour.tenn")
-        let document = Document()
-        try document.read(from: scene, ofType: "tenn")
+        let document = try openTestDocument(scene)
         document.makeWindowControllers()
 
         let vc = try XCTUnwrap(document.vc)
@@ -177,16 +176,13 @@ final class ScenePaintTests: XCTestCase {
         XCTAssertFalse(editor.sceneCanvas.isHidden, "a scene document draws on the scene canvas")
         XCTAssertTrue(editor.sceneView.isHidden, "the classic canvas is not in the way")
         XCTAssertNotNil(editor.sceneCanvas.canvas.screen, "the canvas holds the built screen")
-        document.close()
 
-        let classic = Document()
-        try classic.read(from: root.appendingPathComponent("Example.tenn"), ofType: "tenn")
+        let classic = try openTestDocument(root.appendingPathComponent("Example.tenn"))
         classic.makeWindowControllers()
         let cvc = try XCTUnwrap(classic.vc)
         _ = cvc.view
         let classicEditor = try XCTUnwrap(cvc.editorViewController)
         XCTAssertTrue(classicEditor.sceneCanvas.isHidden, "a classic document keeps the classic canvas")
         XCTAssertFalse(classicEditor.sceneView.isHidden)
-        classic.close()
     }
 }

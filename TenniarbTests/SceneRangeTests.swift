@@ -92,7 +92,8 @@ final class SceneRangeTests: XCTestCase {
         process.executableURL = exe
         process.arguments = args
         if let cwd { process.currentDirectoryURL = cwd }
-        let out = Pipe(), err = Pipe()
+        let out = Pipe()
+        let err = Pipe()
         process.standardOutput = out
         process.standardError = err
         try process.run()

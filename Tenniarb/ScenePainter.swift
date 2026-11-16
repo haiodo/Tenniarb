@@ -35,7 +35,11 @@ final class ScenePainter {
 
     /// Paints the items of the screen in paint order, then the links over them.
     func paint(_ c: CGContext) {
-        let placed = screen.placed()
+        paint(screen.placed(), c)
+    }
+
+    /// Paints a placed tree the caller holds, so the picture and the hit-test share one geometry.
+    func paint(_ placed: Scene.Placed, _ c: CGContext) {
         paint(placed, c, ox: 0, oy: 0, isRoot: true)
         paintLinks(placed, c)
     }

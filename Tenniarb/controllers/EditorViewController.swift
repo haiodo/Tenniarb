@@ -75,6 +75,7 @@ class EditorViewController: NSObject {
     func showScene(_ tree: Scene.Tree?) {
         sceneCanvas?.isHidden = tree == nil
         sceneView?.isHidden = tree != nil
+        sceneCanvas?.canvas.document = viewController?.document
         sceneCanvas?.show(tree)
     }
 

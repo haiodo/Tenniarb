@@ -21,7 +21,7 @@ import XCTest
 /// The document layer with a scene file: go/model/scenekind.go picks the kind on read, and a scene keeps
 /// its text, which an edit changes and a save writes.
 @MainActor
-final class SceneDocumentTests: XCTestCase {
+final class SceneDocumentTests: SceneDocumentTestCase {
 
     private let repo = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent()
@@ -95,8 +95,7 @@ final class SceneDocumentTests: XCTestCase {
         let root = try workspace()
         let url = try copy("web/fixtures/Example.tenn", to: root)
 
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         XCTAssertNil(document.sceneTree)
         let store = try XCTUnwrap(document.store)
@@ -109,8 +108,7 @@ final class SceneDocumentTests: XCTestCase {
         let root = try workspace()
         let url = try copy("web/fixtures/scene/auto-layout-tour.tenn", to: root)
 
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let tree = try XCTUnwrap(document.sceneTree)
         XCTAssertEqual(tree.main?.pos.file, "auto-layout-tour.tenn")
@@ -125,8 +123,7 @@ final class SceneDocumentTests: XCTestCase {
         let url = try copy("web/fixtures/scene/library-screen.tenn", to: root)
         try copy("web/fixtures/scene/design-kit.tenn", to: root)
 
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let tree = try XCTUnwrap(document.sceneTree)
         XCTAssertNotNil(tree.file("design-kit.tenn"))
@@ -141,8 +138,7 @@ final class SceneDocumentTests: XCTestCase {
                 + "element \"Screen\" { item Window { auto-layout row } }\n",
         ])
 
-        let document = Document()
-        try document.read(from: root.appendingPathComponent("apps/part.tenn"), ofType: "tenn")
+        let document = try openTestDocument(root.appendingPathComponent("apps/part.tenn"))
 
         let tree = try XCTUnwrap(document.sceneTree)
         XCTAssertEqual(tree.entry, "design.tenn")
@@ -153,14 +149,12 @@ final class SceneDocumentTests: XCTestCase {
     func testASceneDocumentOpensAWindow() throws {
         let root = try workspace()
         let url = try copy("web/fixtures/scene/auto-layout-tour.tenn", to: root)
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         document.makeWindowControllers()
 
         XCTAssertNotNil(document.vc)
         XCTAssertEqual(document.vc?.elementStore?.model.elements.count, 0, "nothing classic to draw")
-        document.close()
     }
 
     // MARK: - Saving
@@ -172,8 +166,7 @@ final class SceneDocumentTests: XCTestCase {
         let before = try Data(contentsOf: url)
         let libraryBefore = try Data(contentsOf: library)
 
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
         // An edit would set this; the save must not print the empty classic model over the scene.
         try XCTUnwrap(document.store).modified = true
         XCTAssertTrue(document.isDocumentEdited)
@@ -189,8 +182,7 @@ final class SceneDocumentTests: XCTestCase {
         let url = try copy("web/fixtures/scene/auto-layout-tour.tenn", to: root)
         let before = try Data(contentsOf: url)
 
-        let document = Document()
-        try document.read(from: url, ofType: "tenn")
+        let document = try openTestDocument(url)
 
         let saved = expectation(description: "saved")
         document.save(to: url, ofType: "tenn", for: .saveOperation) { error in

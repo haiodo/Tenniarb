@@ -29,8 +29,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     var elementStore: ElementModelStore?
 
-    /// The scene tree of the document in this window; nil for a classic one.
+    /// The tree of the document in this window; nil for a classic one.
     private var sceneTree: Scene.Tree?
+
+    /// The document this window shows, for the scene canvas to write its edits through.
+    weak var document: Document?
 
     var selectedElement: Element?
 

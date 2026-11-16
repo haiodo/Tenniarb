@@ -95,6 +95,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
 
         // Keep a reference to the view controller and wire things up.
         self.vc = contentVC
+        contentVC.document = self
         windowController.window?.delegate = self
 
         // Set contentViewController after window is registered to avoid zero-size constraint conflicts
