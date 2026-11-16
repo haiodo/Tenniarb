@@ -1,0 +1,250 @@
+entry "../PlatformDesign.tenn"
+context --from-item Light
+item "§ Input" {
+	auto-layout abs; width 776; height 176; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 0
+	item title { title Input; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Checkbox" {
+	auto-layout abs; width 114; height 86; color #ffffff; border-color #0000000f; corner-radius 8; pos 780 0
+	item title { title Checkbox; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Toggle" {
+	auto-layout abs; width 134; height 88; color #ffffff; border-color #0000000f; corner-radius 8; pos 942 0
+	item title { title Toggle; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Radio" {
+	auto-layout abs; width 114; height 86; color #ffffff; border-color #0000000f; corner-radius 8; pos 1104 0
+	item title { title Radio; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ EditBox" {
+	auto-layout abs; width 304; height 104; color #ffffff; border-color #0000000f; corner-radius 8; pos 1266 0
+	item title { title EditBox; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item Input {
+	export let label = Label; export let value = Value; export let placeholder = ""; export let layout = single; export let icon = false; export let menu = false
+	export let error = false; export let size = medium; auto-layout column; gap 4
+	clip yes; use-style ${layout} ${size} ${(error === "true") ? "error" : ""}; pos 24 -50
+	styles {
+		layout one-of single multiline
+		single { field { height 32; padding 0 10; align center } }
+		size one-of narrow medium wide
+		narrow { field { width 160 } }
+		wide { field { width 420 } }
+		error { field { border-color ${ctx.errorBorder} } }
+		multiline {
+			field {
+				height 64; padding 8 10; align start
+				Value { width 220 }
+			}
+		}
+	}
+	item Label { font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; text-color ${ctx.onFill60}; title ${label}; hidden ${label === ""} }
+	item field {
+		auto-layout row; gap 6; width 240; clip yes; color ${ctx.fieldSubtle}; border-color ${ctx.fieldSubtle}; corner-radius 6
+		use Icon.kit_PersonCircle as "icon/kit/PersonCircle" { color ${ctx.onFill60}; hidden ${!(icon === "true")} }
+		item Value { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${(value === "") ? ctx.inkPlaceholder : ctx.ink}; title ${(value === "") ? placeholder : value} }
+		item grow { auto-layout abs; width fill; height 1; clip yes; hidden ${!(menu === "true")} }
+		use Icon.chevronD as "icon/chevronD" { width 14; height 14; border-color ${ctx.onFill60}; line-width 1.14; hidden ${!(menu === "true")} }
+	}
+}
+item "Input/variants" {
+	auto-layout row; gap 16; align end; clip yes; pos 24 -110
+	use Input as "Input/narrow" { size narrow; label ""; at field.Value { title APP } }
+	use Input as "Input/error" { label ""; error true; at field.Value { title APP } }
+	use Input as "Input/placeholder" { label ""; value ""; placeholder Name }
+}
+item Checkbox {
+	export let checked = true; export let indeterminate = false; export let label = Label; export let disabled = false; export let error = false
+	export let kind = brand; export let size = medium; export let shape = default; 	auto-layout row; gap 8; align center; clip yes; opacity ${disabled === "true" ? 0.45 : 1}; use-style ${size} ${shape}; pos 804 -44
+	styles {
+		kind one-of primary brand positive negative neutral
+		size one-of medium small
+		small { box { width 12; height 12 }; Label { font-size 12; line-height 15 } }
+		shape one-of default round
+		round { box { corner-radius 8 } }
+	}
+	item box {
+		auto-layout row; align center; justify center; width 16; height 16; clip yes; line-width 0; corner-radius 4
+		color ${checked === "true" || indeterminate === "true" ? (kind === "primary" ? "#6b3ad3" : kind === "positive" ? "#05a05c" : kind === "negative" ? "#d15045" : kind === "neutral" ? "#5a667e" : "#cf13a2") : "none"}
+		border-color ${error === "true" ? "#e34748" : checked === "true" || indeterminate === "true" ? "none" : ctx.controlBorder}
+		use Icon.tick as "icon/tick" { width 12; height 12; border-color #ffffff; line-width 0.98; hidden ${checked !== "true" || indeterminate === "true"} }
+		item dash { width 8; height 2; color #ffffff; hidden ${indeterminate !== "true"} }
+	}
+	item Label { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; title ${label} }
+}
+item Toggle {
+	export let on = true; export let label = Label; export let description = ""; export let disabled = false
+	export let kind = brand; export let size = medium; export let labelPosition = end
+	auto-layout row; gap 8; align center; clip yes; opacity ${disabled === "true" ? 0.45 : 1}; use-style ${size}; pos 966 -44
+	styles {
+		kind one-of brand primary positive negative
+		size one-of large medium small extra-small
+		large { track { width 44; height 24; corner-radius 12; Ellipse { width 20; height 20; corner-radius 10 } } }
+		small { track { width 32; height 18; corner-radius 9; Ellipse { width 14; height 14; corner-radius 7 } } }
+		extra-small { track { width 28; height 16; corner-radius 8; Ellipse { width 12; height 12; corner-radius 6 } } }
+	}
+	item LeadingLabel { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; title ${label}; body ${description}; hidden ${labelPosition !== "start"} }
+	item track {
+		auto-layout row; padding 2; align center; width 36; height 20; clip yes; corner-radius 10
+		color ${on === "true" ? (kind === "primary" ? "#6b3ad3" : kind === "positive" ? "#05a05c" : kind === "negative" ? "#d15045" : "#cf13a2") : "#78788052"}
+		justify ${on === "true" ? "end" : "start"}
+		item Ellipse { width 16; height 16; corner-radius 8; color #ffffff; shadow 0 -3 8 #00000026 }
+	}
+	item Label { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; title ${label}; body ${description}; hidden ${labelPosition === "start"} }
+}
+item Radio {
+	export let on = true; export let label = Label; export let hint = ""; export let disabled = false
+	export let kind = brand; export let size = medium; 	auto-layout row; gap 8; clip yes; opacity ${disabled === "true" ? 0.45 : 1}; use-style ${size}; pos 1148 -44
+	styles {
+		kind one-of primary brand positive negative
+		size one-of medium small
+		small { dot { width 12; height 12; corner-radius 6 }; Label { font-size 12; line-height 15 } }
+	}
+	item dot {
+		auto-layout row; align center; justify center; width 16; height 16; clip yes; corner-radius 8
+		border-color ${on === "true" ? (kind === "primary" ? "#6b3ad3" : kind === "positive" ? "#05a05c" : kind === "negative" ? "#d15045" : "#cf13a2") : ctx.controlBorder}
+		line-width ${on === "true" ? 5 : 1}
+	}
+	item text {
+		auto-layout column; gap 2; clip yes
+		item Label { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; title ${label} }
+		item Hint { font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; text-color ${ctx.inkCaption}; title ${hint}; hidden ${hint === ""} }
+	}
+}
+item EditBox {
+	export let value = Value; export let kind = ghost-large; export let width = 256; auto-layout row; padding 0 8; align center; height 36; clip yes
+	border-color ${ctx.divider}; corner-radius 6; width ${width}; use-style ${kind}; pos 1310 -50
+	styles {
+		kind one-of ghost-large large-style editbox
+		ghost-large {
+			height 36; padding 0 8; border-color ${ctx.divider}
+			Value { font-size 16; font-weight 500 }
+		}
+		large-style {
+			height 26; padding 0; border-color none
+			Value { font-size 20; font-weight 400 }
+		}
+		editbox {
+			height 19; padding 0; border-color none
+			Value { font-size 14; font-weight 400 }
+		}
+	}
+	item Value { font-size 16; line-height 21; font-family "IBM Plex Sans"; font-weight 500; layout left; title ${value} }
+}
+
+item "§ TextInput" {
+	auto-layout abs; width 420; height 170; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -224
+	item title { title TextInput; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ TextArea" {
+	auto-layout abs; width 420; height 230; color #ffffff; border-color #0000000f; corner-radius 8; pos 468 -224
+	item title { title TextArea; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ SelectButton" {
+	auto-layout abs; width 420; height 170; color #ffffff; border-color #0000000f; corner-radius 8; pos 936 -224
+	item title { title SelectButton; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Dropdown" {
+	auto-layout abs; width 420; height 170; color #ffffff; border-color #0000000f; corner-radius 8; pos 1404 -224
+	item title { title Dropdown; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ SearchInput" {
+	auto-layout abs; width 420; height 170; color #ffffff; border-color #0000000f; corner-radius 8; pos 1872 -224
+	item title { title SearchInput; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item TextInput {
+	export let label = ""; export let value = "Mobile app"; export let placeholder = Name; export let icon = false; export let clearable = false
+	export let error = false; export let disabled = false; export let heading = false; export let kind = secondary; export let width = 256; 	auto-layout column; gap 4; width ${width}; opacity ${disabled === "true" ? 0.45 : 1}; pos 24 -274
+	styles {
+		kind one-of primary secondary ghost
+		primary { field { color ${ctx.field}; border-color ${ctx.borderField} } }
+		secondary { field { color ${ctx.fieldSubtle}; border-color ${ctx.fieldSubtle} } }
+		ghost { field { border-color none } }
+		heading { field { border-color none }; Value { font-size 20; line-height 25 } }
+		error { field { border-color ${ctx.errorBorder} } }
+	}
+	item Label { title ${label}; font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; text-color ${ctx.onFill60}; hidden ${label === ""} }
+	item field {
+		auto-layout row; gap 8; padding 0 10; align center; width fill; height 32; clip yes; corner-radius 6
+		use-style ${heading === "true" ? "heading" : kind}; use-style ${error === "true" ? "error" : ""}
+		use Icon.kit_Plus as "icon/kit/Plus" { color ${ctx.onFill60}; hidden ${icon !== "true"} }
+		item Value { title ${value === "" ? placeholder : value}; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width fill; text-color ${value === "" ? ctx.inkPlaceholder : ctx.ink} }
+		use Icon.x as "icon/x" { width 12; height 12; border-color ${ctx.inkCaption}; line-width 1; hidden ${clearable !== "true"} }
+	}
+}
+item TextArea {
+	export let value = ""; export let placeholder = Description; export let rows = 3; export let error = false; export let disabled = false; export let width = 256; 	auto-layout column; width ${width}; opacity ${disabled === "true" ? 0.45 : 1}; pos 492 -274
+	item field {
+		auto-layout row; padding 8 10; width fill; height ${rows * 20 + 16}; clip yes; color ${ctx.fieldSubtle}; border-color ${error === "true" ? ctx.errorBorder : ctx.fieldSubtle}; corner-radius 6
+		item Value { title ${value === "" ? placeholder : value}; font-size 14; line-height 20; font-family "IBM Plex Sans"; layout left; width fill; text-color ${value === "" ? ctx.inkPlaceholder : ctx.ink} }
+	}
+}
+item SelectButton {
+	export let label = "In progress"; export let placeholder = Status; export let icon = false; export let chevron = false
+	export let pressed = false; export let disabled = false; export let kind = secondary; export let field = false; export let width = 240; 	auto-layout row; gap 8; padding 0 10; align center; width ${width}; height 32; clip yes; corner-radius 6
+	color ${pressed === "true" ? ctx.accentTint : field === "true" ? ctx.fieldSubtle : ctx.field}; border-color ${pressed === "true" ? "#6b3ad3" : kind === "secondary" ? ctx.borderField : "none"}
+	opacity ${disabled === "true" ? 0.45 : 1}; pos 960 -274
+	styles { kind one-of primary secondary ghost }
+	use Icon.kit_Plus as "icon/kit/Plus" { color ${ctx.onFill60}; hidden ${icon !== "true"} }
+	item Label { title ${label === "" ? placeholder : label}; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width fill; text-color ${label === "" ? ctx.inkPlaceholder : ctx.ink} }
+	use Icon.chevronD as "icon/chevronD" { width 14; height 14; border-color ${ctx.onFill60}; line-width 1.14; hidden ${chevron !== "true"} }
+}
+item Dropdown {
+	export let values = "In progress"; export let placeholder = Status; export let icon = false; export let chevron = true; export let width = 240; 	auto-layout row; gap 8; padding 0 10; align center; width ${width}; height 32; clip yes; color ${ctx.fieldSubtle}; border-color ${ctx.fieldSubtle}; corner-radius 6; pos 1428 -274
+	use Icon.kit_Plus as "icon/kit/Plus" { color ${ctx.onFill60}; hidden ${icon !== "true"} }
+	item Value { title ${values === "" ? placeholder : values}; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width fill; text-color ${values === "" ? ctx.inkPlaceholder : ctx.ink} }
+	use Icon.chevronD as "icon/chevronD" { width 14; height 14; border-color ${ctx.onFill60}; line-width 1.14; hidden ${chevron !== "true"} }
+}
+item SearchInput {
+	export let value = ""; export let placeholder = "Find an issue"; export let collapsed = false; export let width = 240; 	auto-layout row; width ${width}; use-style ${collapsed === "true" ? "collapsed" : ""}; pos 1896 -274
+	styles {
+		collapsed { width 32; field { width 32; padding 0; justify center } }
+	}
+	item field {
+		auto-layout row; gap 8; padding 0 10; align center; width fill; height 32; clip yes; color ${ctx.fieldSubtle}; border-color ${ctx.fieldSubtle}; corner-radius 6
+		use Icon.kit_Search as "icon/kit/Search" { color ${ctx.onFill60} }
+		item Value { title ${value === "" ? placeholder : value}; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width fill; text-color ${value === "" ? ctx.inkPlaceholder : ctx.ink}; hidden ${collapsed === "true"} }
+	}
+}
+use TextInput as "TextInput/error" { label Identifier; value APP; error true; pos 24 -338 }
+use TextArea as "TextArea/filled" { value "Long description of the project"; rows 3; pos 492 -370 }
+use SelectButton as "SelectButton/pressed" { pressed true; chevron true; pos 960 -344 }
+use Dropdown as "Dropdown/multiselect" { values "Alice, Bob"; pos 1428 -344 }
+use SearchInput as "SearchInput/collapsed" { collapsed true; pos 1896 -344 }
+item "Theme dark" {
+	context --from-item Dark
+	auto-layout column; gap 16; padding 24; width 1400; color #131925; border-color #ffffff0f; corner-radius 8; pos 24 -560
+	item title { title "Dark theme: Forms"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af }
+	item inputs {
+		auto-layout row; gap 24; align center; clip yes
+		use Input as "input dark" { icon true }
+		use Input as "input value" { value "anna@intabia.ru"; menu true }
+		use Input as "input error" { error true }
+		use Checkbox as "checkbox dark" { kind primary }
+		use Checkbox as "checkbox off" { kind primary; checked false }
+		use Toggle as "toggle dark" { kind primary }
+		use Toggle as "toggle off" { kind primary; on false }
+		use Radio as "radio dark" { kind primary }
+		use Radio as "radio off" { kind primary; on false; hint "Only visible to you" }
+	}
+}
+item "Theme dark inputs" {
+	context --from-item Dark
+	auto-layout column; gap 16; padding 24; width 1400; color #131925; border-color #ffffff0f; corner-radius 8; pos 24 -900
+	item title { title "Dark theme: Text inputs"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af }
+	item inputs {
+		auto-layout row; gap 24; align center; clip yes
+		use TextInput as "textinput dark" { label "Name"; icon true }
+		use TextInput as "textinput primary" { kind primary; label "Team"; value "Platform" }
+		use TextInput as "textinput error" { error true; label "Identifier"; value "APP" }
+		use SelectButton as "select dark" { chevron true }
+		use SelectButton as "select pressed" { pressed true; chevron true }
+	}
+	item inputs2 {
+		auto-layout row; gap 24; align center; clip yes
+		use TextArea as "textarea dark" { value "Long description of the project"; rows 3 }
+		use Dropdown as "dropdown dark"
+		use SearchInput as "search dark"
+		use EditBox as "editbox dark" { value "Quarter plan" }
+	}
+}

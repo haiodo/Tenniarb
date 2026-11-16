@@ -1,0 +1,292 @@
+entry "../PlatformDesign.tenn"
+context --from-item Light
+
+item FileCard {
+	export let name = preview.png; export let size = 2,4; export let date = "8 ноя"; export let author = "Анна Смит"; export let initials = AS; export let acolor = #925cb1; export let cover = #e8eaf0
+	auto-layout column; width 240; clip yes; color ${ctx.card}; corner-radius 8; border-color ${ctx.borderCard}; line-width 1
+	item cover { width 240; height 140; color ${cover} }
+	item body {
+		auto-layout column; gap 4; width 240; padding 10 12
+		item name { title ${name}; width fill; height 32; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 500; layout left; text-color ${ctx.ink} }
+		item meta { title "${size}, ${date}"; font-size 12; line-height 16; font-family "IBM Plex Sans"; text-color ${ctx.inkHint} }
+		item author {
+			auto-layout row; gap 6; align center; width fill
+			item avatar { auto-layout row; align center; justify center; width 20; height 20; clip yes; color ${acolor}; corner-radius 5; item ini { title ${initials}; font-size 10; line-height 12; font-family "IBM Plex Sans"; font-weight 500; text-color #ffffff } }
+			item an { title ${author}; width fill; font-size 12; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink60} }
+		}
+	}
+}
+
+item FolderTile {
+	export let name = "Дизайн"; export let contents = "4 папки, 12 файлов"
+	auto-layout column; gap 8; width 200; padding 12; clip yes; color ${ctx.card}; corner-radius 8; border-color ${ctx.borderCard}; line-width 1
+	item glyph {
+		width 48; height 48; clip yes; color #6b3ad31a; corner-radius 8
+		use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { width 24; height 24; color #6b3ad3; pos 12 -12 }
+	}
+	item fname { title ${name}; width fill; font-size 14; line-height 18; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color ${ctx.ink} }
+	item fcontents { title ${contents}; width fill; font-size 12; line-height 16; font-family "IBM Plex Sans"; text-color ${ctx.inkHint} }
+}
+
+element "Files" {
+	element "Сетка" {
+		use Libraries.workbench.Workbench as "Drive screen" {
+			pos 0 0
+			replace Top_bar {
+				use Libraries.workbench.TopBar as "Top bar" {
+					replace tabs.tab.icon_kit_CheckSquare {
+						use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { width 12; height 12; color #000000cc }
+					}
+					at tabs.tab.Tracker { title Drive }
+				}
+			}
+			replace App_rail {
+				use Libraries.workbench.AppRail as "App rail" {
+					pos 0 -36
+					at AppItem_kit_CloudTree { color #e6e6e6; border-color #00000017; line-width 1 }
+					at AppItem_kit_CloudTree.icon_kit_CloudTree { color #000000 }
+				}
+			}
+			replace _Navigator {
+				use Libraries.workbench.Navigator_tools as Navigator {
+					pos 68 -36
+					at Chat { title Drive }
+					slot items {
+						use Libraries.workbench.NavCaption as "NavCaption Диски" {
+							pos 16 -56
+							at icon_kit_CaretDownFill { hidden no }
+							at Channels { title DRIVES }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Мой диск" {
+							selected true; padding 0 8 0 32; pos 13 -88
+							replace icon_kit_CheckSquare {
+								use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #0f121a }
+							}
+							at Issues { title "Мой диск" }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Дизайн" { padding 0 8 0 32; pos 13 -120; at Issues { title Дизайн } }
+						use Libraries.workbench.NavItem as "NavItem/Маркетинг" { padding 0 8 0 32; pos 13 -152; at Issues { title Маркетинг } }
+						use Libraries.workbench.NavItem as "NavItem/Разработка" { padding 0 8 0 32; pos 13 -184; at Issues { title Разработка } }
+						item divider { auto-layout abs; width 279; height 1; clip yes; color #0000001a; pos 1 -220 }
+						use Libraries.workbench.NavCaption as "NavCaption Общий доступ" {
+							pos 16 -246
+							at icon_kit_CaretDownFill { hidden no }
+							at Channels { title SHARED }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Команда" { padding 0 8 0 32; pos 13 -278; at Issues { title Команда } }
+						item "footer line" { auto-layout abs; width 279; height 1; clip yes; color #0000001a; pos 1 -314 }
+					}
+				}
+			}
+			slot Main_panel {
+			use Libraries.workbench.PanelHeader_divided as "Panel header" {
+				width 1515
+				at Panel_header { width 1515 }
+				replace Panel_header.Breadcrumb.avatar.icon_kit_People {
+					use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #5a667e }
+				}
+				at Panel_header.Breadcrumb.Members { title "Мой диск" }
+				at divider { width 1515 }
+				slot actions {
+					use Libraries.ui_kit.Actions.ClassicButton as "ClassicButton/icon/medium" {
+						kind ghost; size medium; shape icon
+						replace icon_kit_PencilLine {
+							use Libraries.ui_kit.Icon.kit_Search as "icon/kit/Search" { color #00000099 }
+						}
+					}
+					use Libraries.ui_kit.Actions.ClassicButton as "ClassicButton/new-folder" {
+						label "Создать папку"; kind regular
+					}
+				use Libraries.ui_kit.Actions.Button as "Button/upload" {
+					label Загрузить
+				}
+				}
+			}
+			item caption1 { title Папки; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #00000099; pos 24 -68 }
+			item folders {
+				auto-layout abs; width 1467; height 132; pos 24 -92
+				use FolderTile as "FolderTile/Дизайн" { pos 0 0 }
+				use FolderTile as "FolderTile/Маркетинг" { name Маркетинг; contents "2 папки, 7 файлов"; pos 216 0 }
+				use FolderTile as "FolderTile/Разработка" { name Разработка; contents "6 папок, 23 файла"; pos 432 0 }
+			}
+			item caption2 { title Файлы; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #00000099; pos 24 -252 }
+			item files {
+				auto-layout abs; width 1467; height 510; pos 24 -276
+				use FileCard as "FileCard/1" { name "release-plan.pdf"; size PDF; date "8 ноя"; author "Анна Смит"; initials AS; acolor #925cb1; cover #f5ecec; pos 0 0 }
+				use FileCard as "FileCard/2" { name "demo-recording.mp4"; size "148 МБ"; date "7 ноя"; author "Иван Петров"; initials PI; acolor #dc85f5; cover #eaf0f5; pos 256 0 }
+				use FileCard as "FileCard/3" { name "board-tokens.png"; size PNG; date "6 ноя"; author "Мария Коул"; initials CM; acolor #758595; cover #e8eaf0; pos 512 0 }
+				use FileCard as "FileCard/4" { name "planner-spec.docx"; size DOCX; date "5 ноя"; author "Анна Смит"; initials AS; acolor #925cb1; cover #f0ecef; pos 768 0 }
+				use FileCard as "FileCard/5" { name "team-photo.jpg"; size JPG; date "3 ноя"; author "Алекс Джонсон"; initials AJ; acolor #4d7fd1; cover #eef0e9; pos 1024 0 }
+				use FileCard as "FileCard/6" { name "q3-report.xlsx"; size XLSX; date "1 ноя"; author "Мария Коул"; initials CM; acolor #758595; cover #ecf0ee; pos 0 -270 }
+			}
+			}
+		}
+	}
+	element "Пустая папка" {
+		use Libraries.workbench.Workbench as "Empty screen" {
+			pos 2040 0
+			replace Top_bar {
+				use Libraries.workbench.TopBar as "Top bar" {
+					replace tabs.tab.icon_kit_CheckSquare {
+						use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { width 12; height 12; color #000000cc }
+					}
+					at tabs.tab.Tracker { title Drive }
+				}
+			}
+			replace App_rail {
+				use Libraries.workbench.AppRail as "App rail" {
+					pos 0 -36
+					at AppItem_kit_CloudTree { color #e6e6e6; border-color #00000017; line-width 1 }
+					at AppItem_kit_CloudTree.icon_kit_CloudTree { color #000000 }
+				}
+			}
+			replace _Navigator {
+				use Libraries.workbench.Navigator_tools as Navigator {
+					pos 68 -36
+					at Chat { title Drive }
+					slot items {
+						use Libraries.workbench.NavCaption as "NavCaption Диски" {
+							pos 16 -56
+							at icon_kit_CaretDownFill { hidden no }
+							at Channels { title DRIVES }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Мой диск" {
+							selected true; padding 0 8 0 32; pos 13 -88
+							replace icon_kit_CheckSquare {
+								use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #0f121a }
+							}
+							at Issues { title "Мой диск" }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Дизайн" { padding 0 8 0 32; pos 13 -120; at Issues { title Дизайн } }
+						use Libraries.workbench.NavItem as "NavItem/Маркетинг" { padding 0 8 0 32; pos 13 -152; at Issues { title Маркетинг } }
+						use Libraries.workbench.NavItem as "NavItem/Разработка" { padding 0 8 0 32; pos 13 -184; at Issues { title Разработка } }
+						item divider { auto-layout abs; width 279; height 1; clip yes; color #0000001a; pos 1 -220 }
+						use Libraries.workbench.NavCaption as "NavCaption Общий доступ" {
+							pos 16 -246
+							at icon_kit_CaretDownFill { hidden no }
+							at Channels { title SHARED }
+						}
+						use Libraries.workbench.NavItem as "NavItem/Команда" { padding 0 8 0 32; pos 13 -278; at Issues { title Команда } }
+						item "footer line" { auto-layout abs; width 279; height 1; clip yes; color #0000001a; pos 1 -314 }
+					}
+				}
+			}
+			slot Main_panel {
+				use Libraries.workbench.PanelHeader_divided as "Panel header" {
+					width 1515
+					at Panel_header { width 1515 }
+					replace Panel_header.Breadcrumb.avatar.icon_kit_People {
+						use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #5a667e }
+					}
+					at Panel_header.Breadcrumb.Members { title "Мой диск / Пустая папка" }
+					at divider { width 1515 }
+				}
+				item "Blank view" {
+					auto-layout column; gap 12; align center; justify center; width 640; height 260; clip yes; border-color #6b3ad3; line-width 1; corner-radius 12; pos 437 -380
+					use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { width 40; height 40; color #6b3ad3 }
+					item hint1 { title "Перетащите файлы сюда"; font-size 16; line-height 20; font-family "IBM Plex Sans"; font-weight 600; text-color #0f121a }
+					item hint2 { title "или нажмите, чтобы выбрать"; font-size 13; line-height 16; font-family "IBM Plex Sans"; text-color #7f7f7f }
+				}
+			}
+		}
+	}
+}
+
+element "Сетка dark" {
+	use Theme as skin {
+		theme Dark
+		slot content {
+			use Libraries.workbench.Workbench as "Drive dark" {
+				pos 0 0
+				replace Top_bar {
+					use Libraries.workbench.TopBar as "Top bar" {
+						replace tabs.tab.icon_kit_CheckSquare {
+							use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { width 12; height 12; color #ffffffcc }
+						}
+						at tabs.tab.Tracker { title Drive }
+					}
+				}
+				replace App_rail {
+					use Libraries.workbench.AppRail as "App rail" {
+						pos 0 -36
+						at AppItem_kit_CloudTree { color #2a3145; border-color #3a4250; line-width 1 }
+						at AppItem_kit_CloudTree.icon_kit_CloudTree { color #ffffff }
+					}
+				}
+				replace _Navigator {
+					use Libraries.workbench.Navigator_tools as Navigator {
+						pos 68 -36
+						at Chat { title Drive }
+						slot items {
+							use Libraries.workbench.NavCaption as "NavCaption Диски" {
+								pos 16 -56
+								at icon_kit_CaretDownFill { hidden no }
+								at Channels { title DRIVES }
+							}
+							use Libraries.workbench.NavItem as "NavItem/Мой диск" {
+								selected true; padding 0 8 0 32; pos 13 -88
+								replace icon_kit_CheckSquare {
+									use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #ffffff }
+								}
+								at Issues { title "Мой диск" }
+							}
+							use Libraries.workbench.NavItem as "NavItem/Дизайн" { padding 0 8 0 32; pos 13 -120; at Issues { title Дизайн } }
+							use Libraries.workbench.NavItem as "NavItem/Маркетинг" { padding 0 8 0 32; pos 13 -152; at Issues { title Маркетинг } }
+							use Libraries.workbench.NavItem as "NavItem/Разработка" { padding 0 8 0 32; pos 13 -184; at Issues { title Разработка } }
+							item divider { auto-layout abs; width 279; height 1; clip yes; color #2c3442; pos 1 -220 }
+							use Libraries.workbench.NavCaption as "NavCaption Общий доступ" {
+								pos 16 -246
+								at icon_kit_CaretDownFill { hidden no }
+								at Channels { title SHARED }
+							}
+							use Libraries.workbench.NavItem as "NavItem/Команда" { padding 0 8 0 32; pos 13 -278; at Issues { title Команда } }
+							item "footer line" { auto-layout abs; width 279; height 1; clip yes; color #2c3442; pos 1 -314 }
+						}
+					}
+				}
+				slot Main_panel {
+					use Libraries.workbench.PanelHeader_divided as "Panel header" {
+						width 1515
+						at Panel_header { width 1515 }
+						replace Panel_header.Breadcrumb.avatar.icon_kit_People {
+							use Libraries.ui_kit.Icon.kit_CloudTree as "icon/kit/CloudTree" { color #8e99af }
+						}
+						at Panel_header.Breadcrumb.Members { title "Мой диск" }
+						at divider { width 1515 }
+						slot actions {
+							use Libraries.ui_kit.Actions.ClassicButton as "ClassicButton/icon/medium" {
+								kind ghost; size medium; shape icon
+								replace icon_kit_PencilLine {
+									use Libraries.ui_kit.Icon.kit_Search as "icon/kit/Search" { color #8e99af }
+								}
+							}
+						use Libraries.ui_kit.Actions.ClassicButton as "ClassicButton/new-folder" {
+							label "Создать папку"; kind regular
+						}
+						use Libraries.ui_kit.Actions.Button as "Button/upload" {
+							label Загрузить
+						}
+					}
+				}
+				item caption1 { title Папки; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af; pos 24 -68 }
+				item folders {
+					auto-layout abs; width 1467; height 132; pos 24 -92
+					use FolderTile as "FolderTile/Дизайн" { pos 0 0 }
+					use FolderTile as "FolderTile/Маркетинг" { name Маркетинг; contents "2 папки, 7 файлов"; pos 216 0 }
+					use FolderTile as "FolderTile/Разработка" { name Разработка; contents "6 папок, 23 файла"; pos 432 0 }
+				}
+				item caption2 { title Файлы; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af; pos 24 -252 }
+				item files {
+					auto-layout abs; width 1467; height 510; pos 24 -276
+					use FileCard as "FileCard/1" { name "release-plan.pdf"; size PDF; date "8 ноя"; author "Анна Смит"; initials AS; acolor #925cb1; cover #f5ecec; pos 0 0 }
+					use FileCard as "FileCard/2" { name "demo-recording.mp4"; size "148 МБ"; date "7 ноя"; author "Иван Петров"; initials PI; acolor #dc85f5; cover #eaf0f5; pos 256 0 }
+					use FileCard as "FileCard/3" { name "board-tokens.png"; size PNG; date "6 ноя"; author "Мария Коул"; initials CM; acolor #758595; cover #e8eaf0; pos 512 0 }
+					use FileCard as "FileCard/4" { name "planner-spec.docx"; size DOCX; date "5 ноя"; author "Анна Смит"; initials AS; acolor #925cb1; cover #f0ecef; pos 768 0 }
+					use FileCard as "FileCard/5" { name "team-photo.jpg"; size JPG; date "3 ноя"; author "Алекс Джонсон"; initials AJ; acolor #4d7fd1; cover #eef0e9; pos 1024 0 }
+					use FileCard as "FileCard/6" { name "q3-report.xlsx"; size XLSX; date "1 ноя"; author "Мария Коул"; initials CM; acolor #758595; cover #ecf0ee; pos 0 -270 }
+				}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,63 @@
+// Palette: the colours components read as ctx.<token>, one item per theme.
+// Light is the default of a file; a dark board declares one line, context --from-item Dark.
+
+item Light {
+    // text and icons
+    ink #0f121a; inkHeading #333333; inkSecondary #5a667e; inkTertiary #7b879e; inkHint #7f7f7f; inkBody #3c4149; inkIcon #3c4149; inkIconSoft #5c6470; inkHero #201240; inkHeroStrong #201240; inkBrand #000061; inkBrandInk #8c267d; inkLoginMuted #333333cc; inkChip gray-900; ink80 #000000cc; ink60 #00000099; ink50 #00000080; ink40 #00000066; ink30 #0000004d; inkCaption #00000066; inkPlaceholder #556178; inkDisabled #9ca3af; icon #000000; iconMuted #000000; onFill80 #000000cc; onFill60 #00000099
+    // surfaces
+    page #ffffff; card #ffffff; panel #ffffff; tile #ffffff; popover #ffffff; field #ffffff; cardProvider #ffffff; surfaceTint #ffffff; rail #fbfbfc; navRow #f7f7f8; row #f7f7f8; sidebar #f7f7fa; loginPage #f1f1f4; loginCardTop #eeeeee; loginCardBottom #ffffff; chipSurface #f2f2f4; codeSurface #f3e5f5; datePill #f0f4ff; switchTrack #f0f0f0; well #00000008; fieldSubtle #1530720d; iconTile #1725470d; tagSurface #e5e5e7; avatarEmpty #e6e6e6; badge #f0f0f0; avatarTint #e0e0e0; navActiveBg #f0f4ff; navActiveBorder #e6eaff; buttonDisabled #f3eafb; selection #a5bdff26; subtabOn #a5bdff40; navSelectedBg #efdcf2; navSelectedInk #7d1f70; groupActive #d1dfee; groupCanceled #dedee1
+    // borders and lines
+    divider #0000000f; dividerSoft #00000012; dividerStrong #0000001a; dividerCool #e6eaff; border #00000017; borderField #00000017; borderFaint #00000014; borderCard #00000014; borderLogin #e5e7eb; controlBorder #00000017; loginSoft #00000066; borderSwatch #00000017; iconTileBorder #1725471a; borderSubtle #00000033; fillFaint #00000008; fillFainter #00000008; fillFaintest #00000004
+    // accents, status and states
+    accentInk #6b3ad3; accentTint #6b3ad31a; brandTint #cf13a21a; tickBorder #205dc2; infoInk #3070dc; warningInk #8a5300; negativeInk #cb4b42; errorBorder #e34748; disabledFill #1725470d; disabledInk #a1abbf; loadingFill #17254726; classicFill #6b3ad31a; secondaryFill #1725470d; secondaryBorder #1725471a; loadingOpacity 0.7
+}
+
+item Dark {
+    // text and icons
+    ink #ffffff; inkHeading #c1c9d6; inkSecondary #8e99af; inkTertiary #8e99af; inkHint #8e99af; inkBody #c1c9d6; inkIcon #8e99af; inkIconSoft #8e99af; inkHero #c1c9d6; inkHeroStrong #ffffff; inkBrand #ffffff; inkBrandInk #ffffff; inkLoginMuted #8e99af; inkChip #ffffffcc; ink80 #c1c9d6; ink60 #8e99af; ink50 #c1c9d6; ink40 #8e99af; ink30 #8e99af; inkCaption #8b97ad; inkPlaceholder #8b97ad; inkDisabled #5a667e; icon #ffffff; iconMuted #8e99af; onFill80 #ffffffcc; onFill60 #ffffff99
+    // surfaces
+    page #1a1a28; card #262f40; panel #1f1f2c; tile #262634; popover #2a2939; field #1b1d2a; cardProvider #1f2430; surfaceTint #a5bdff0d; rail #14141f; navRow #14141f; row #1f1f2c; sidebar #1f1f2c; loginPage #131925; loginCardTop #2b3247; loginCardBottom #23293b; chipSurface #a5bdff0d; codeSurface #a5bdff0d; datePill #a5bdff0d; switchTrack #a5bdff0d; well #a5bdff0d; fieldSubtle #a5bdff0d; iconTile #a5bdff0d; tagSurface #343f49; avatarEmpty #262634; badge #262634; avatarTint #a5bdff1a; navActiveBg #2a2939; navActiveBorder #3a3a47; buttonDisabled #2a3145; selection #ffffff14; subtabOn #a5bdff26; navSelectedBg #562ea9; navSelectedInk #ffffff; groupActive #1f3a5f; groupCanceled #33333c
+    // borders and lines
+    divider #ffffff0f; dividerSoft #ffffff12; dividerStrong #ffffff1a; dividerCool #ffffff1a; border #ffffff17; borderField #ffffff1a; borderFaint #ffffff14; borderCard #3a4250; borderLogin #ffffff1a; controlBorder #d9dee6; loginSoft #d9dee6; borderSwatch #ffffff26; iconTileBorder #a5bdff1a; borderSubtle #ffffff33; fillFaint #ffffff08; fillFainter #ffffff05; fillFaintest #ffffff08
+    // accents, status and states
+    accentInk #a98ee4; accentTint #6b3ad340; brandTint #cf13a240; tickBorder #4d7ff5; infoInk #4d7ff5; warningInk #f2994a; negativeInk #ff6359; errorBorder #fb6863; disabledFill #d1d5de0d; disabledInk #5a667e; loadingFill #d1d5de26; classicFill #ffffff05; secondaryFill #d1d5de0d; secondaryBorder #d1d5de1a; loadingOpacity 1
+}
+
+element "Theme" {
+	kind Component
+	export let theme = Light
+	context --from-item ${theme}
+	item Box { auto-layout column; slot content }
+}
+
+element Libraries {
+	element ui_kit --from-file "ui-kit.lib.tenn"
+	element workbench --from-file "lib/workbench.tenn"
+	element settings_kit --from-file "lib/settings.tenn"
+	element tracker_kit --from-file "lib/tracker.tenn"
+	element chat_kit --from-file "lib/chat.tenn"
+	element login_kit --from-file "lib/login.tenn"
+	element profile_kit --from-file "lib/profile.tenn"
+}
+element Workbench --from-file "apps/workbench.tenn"
+element Tracker --from-file "apps/tracker.tenn"
+element Chat --from-file "apps/chat.tenn"
+element Settings --from-file "apps/settings.tenn"
+element Login --from-file "apps/login.tenn"
+element Notifications --from-file "apps/notifications.tenn"
+element Planner --from-file "apps/planner.tenn"
+element Drive --from-file "apps/drive.tenn"
+element Office --from-file "apps/office.tenn"
+element AI --from-file "apps/ai.tenn"
+element Tasks {
+	element "FUSIO-1613 Доски задач" --from-file "fusio-1613.tenn"
+	element "FUSIO-1621 Настройки проекта" --from-file "fusio-1621.tenn"
+	element "FUSIO-1620 Глобальный профиль" --from-file "fusio-1620.tenn"
+	element "CMP-1620 Старт входа" --from-file "cmp-1620-start.tenn"
+	element "CMP-1620 Регистрация" --from-file "cmp-1620-signup.tenn"
+	element "CMP-1620 Вход с кодом" --from-file "cmp-1620-otp.tenn"
+	element "CMP-1620 После кода" --from-file "cmp-1620-after-otp.tenn"
+	element "CMP-1620 Пространства" --from-file "cmp-1620-workspace.tenn"
+	element "CMP-1620 Landing" --from-file "cmp-1620-landing.tenn"
+	element "CMP-1620 Итоговый флоу" --from-file "final-1620-flow.tenn"
+}

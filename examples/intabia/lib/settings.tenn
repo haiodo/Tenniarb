@@ -1,0 +1,251 @@
+entry "../PlatformDesign.tenn"
+context --from-item Light
+item "§ SectionTitle" {
+	auto-layout abs; width 120; height 88; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 0
+	item title { title SectionTitle; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ FormRow" {
+	auto-layout abs; width 768; height 100; color #ffffff; border-color #0000000f; corner-radius 8; pos 168 0
+	item title { title FormRow; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Table" {
+	auto-layout abs; width 448; height 166; color #ffffff; border-color #0000000f; corner-radius 8; pos 984 0
+	item title { title Table; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ GridRow" {
+	auto-layout abs; width 598; height 103; color #ffffff; border-color #0000000f; corner-radius 8; pos 1480 0
+	item title { title GridRow; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ SettingsLayout" {
+	auto-layout abs; width 1248; height 768; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -214
+	item title { title SettingsLayout; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item SectionTitle {
+	export let title = Title; export let hint = ""; auto-layout column; gap 4; clip yes; pos 24 -44
+	item Title { font-size 16; line-height 20; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color ${ctx.ink}; title ${title} }
+	item "Hint of the section" {
+		font-size 13; line-height 16; font-family "IBM Plex Sans"; layout left; width fill; text-color ${ctx.ink60}; title ${hint}; hidden ${hint === ""}
+	}
+}
+item FormRow {
+	export let label = Label; export let hint = ""; auto-layout row; gap 16; align center; width 720; clip yes; pos 192 -44
+	item label {
+		auto-layout column; gap 2; clip yes
+		item Label { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width 220; text-color ${ctx.ink80}; title ${label} }
+		item Hint { font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; width 220; text-color ${ctx.ink40}; title ${hint}; hidden ${hint === ""} }
+	}
+	item control {
+		auto-layout row
+		slot control {
+			use Libraries.ui_kit.Forms.Input as Input
+		}
+	}
+}
+item Table {
+	auto-layout column; width 400; clip yes; color ${ctx.panel}; border-color ${ctx.divider}; corner-radius 8; text-color ${ctx.ink}; pos 1008 -44
+	item head {
+		auto-layout row; align center; width 400; height 36; clip yes; color ${ctx.navRow}
+		slot head {
+			item th {
+				auto-layout row; padding 0 12; align center; width 240; height 36; clip yes
+				item Name { title Name; font-size 12; line-height 15; font-family "IBM Plex Sans"; font-weight 500; layout left; text-color ${ctx.ink60} }
+			}
+			item "th 2" {
+				auto-layout row; padding 0 12; align center; width 160; height 36; clip yes
+				item Role { title Role; font-size 12; line-height 15; font-family "IBM Plex Sans"; font-weight 500; layout left; text-color ${ctx.ink60} }
+			}
+		}
+	}
+	item body {
+		auto-layout column; width 400
+		slot body {
+			item divider { auto-layout abs; width 400; height 1; clip yes; color ${ctx.divider} }
+			item row {
+				auto-layout row; align center; width 400; clip yes
+				item td {
+					auto-layout row; gap 6; padding 6 12; align center; width 240; clip yes; wrap yes; line-gap 6
+					item Ivan { title Ivan; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left }
+				}
+				item "td 2" {
+					auto-layout row; gap 6; padding 6 12; align center; width 160; clip yes; wrap yes; line-gap 6
+					item Admin { title Admin; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left }
+				}
+			}
+			item "divider 2" { auto-layout abs; width 400; height 1; clip yes; color ${ctx.divider} }
+			item "row 2" {
+				auto-layout row; align center; width 400; clip yes
+				item td {
+					auto-layout row; gap 6; padding 6 12; align center; width 240; clip yes; wrap yes; line-gap 6
+					item Anna { title Anna; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left }
+				}
+				item "td 2" {
+					auto-layout row; gap 6; padding 6 12; align center; width 160; clip yes; wrap yes; line-gap 6
+					item Member { title Member; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left }
+				}
+			}
+		}
+	}
+}
+item GridRow {
+	export let label = Label; export let hint = ""; auto-layout row; padding 0 0 8 0; align center; width 550; clip yes; pos 1504 -44
+	item label {
+		auto-layout column; padding 4 16 4 0; width 240; clip yes
+		item Label { font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; width 224; text-color ${ctx.ink}; title ${label} }
+		item Hint { font-size 12; line-height 16; font-family "IBM Plex Sans"; layout left; width 224; text-color ${ctx.ink50}; title ${hint}; hidden ${hint === ""} }
+	}
+	item control {
+		auto-layout row; padding 4 0; align center; clip yes
+		slot control {
+			use Libraries.ui_kit.Forms.EditBox as EditBox { kind editbox}
+		}
+	}
+}
+item SettingsLayout {
+	auto-layout abs; width 1200; height 700; pos 24 -258
+	item "Settings header" {
+		auto-layout row; padding 0 16; align center; justify space-between; width 1200; height 56; clip yes
+		item left {
+			auto-layout row; gap 8; align center; clip yes
+			use Libraries.ui_kit.Actions.Button as "Button/ghost/small" {
+				kind ghost; size small
+				replace icon_kit_Plus {
+					use Libraries.ui_kit.Icon.chevronL as "icon/chevronL" { border-color ${ctx.inkSecondary}; line-width 1 }
+				}
+				at Button { title Back }
+			}
+			item sep { auto-layout abs; width 1; height 20; clip yes; color ${ctx.divider} }
+			item Settings { title Settings; font-size 16; line-height 20; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color ${ctx.ink} }
+		}
+		item right {
+			auto-layout row; gap 8; align center; clip yes
+			slot right {
+				use Libraries.ui_kit.Actions.Button as "Close settings" {
+					kind tertiary; size small; shape icon
+					replace icon_gear {
+						use Libraries.ui_kit.Icon.x as "icon/x" { border-color ${ctx.inkSecondary}; line-width 1 }
+					}
+				}
+			}
+		}
+	}
+	item divider { auto-layout abs; width 1200; height 1; clip yes; color ${ctx.divider}; pos 0 -56 }
+	item "Settings tabs" {
+		auto-layout column; gap 2; padding 16 12 0 12; width 232; height 643; clip yes; pos 0 -57
+		slot Settings_tabs {
+			use Libraries.workbench.NavItem as "NavItem/General" {
+				selected true; width 208
+				at icon_kit_CheckSquare { hidden yes }
+				at Issues { title General }
+			}
+			use Libraries.workbench.NavItem as "NavItem/Members" {
+				width 208
+				at icon_kit_CheckSquare { hidden yes }
+				at Issues { title Members }
+			}
+		}
+	}
+	item "divider 2" { auto-layout abs; width 1; height 643; clip yes; color ${ctx.divider}; pos 232 -57 }
+	item "Settings subtabs" {
+		hidden yes; auto-layout row; gap 12; padding 0 32; align center; width 967; height 48; clip yes; pos 233 -57
+		slot Settings_subtabs {
+			use Libraries.ui_kit.Actions.Button as "Button/ghost/small" {
+				kind ghost; size small
+				at icon_kit_Plus { hidden yes }
+				at Button { title Board }
+				at icon_chevronD { hidden no }
+			}
+			item sep { auto-layout abs; width 1; height 20; clip yes; color ${ctx.divider} }
+			use Libraries.ui_kit.Actions.Switcher as "Settings subtabs switcher" {
+				slot content {
+					item "element General" {
+						auto-layout row; padding 0 12; align center; justify center; height 32; clip yes; color ${ctx.subtabOn}; corner-radius 6
+						item General { title General; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink} }
+					}
+					item "element Columns" {
+						auto-layout row; padding 0 12; align center; justify center; height 32; clip yes; corner-radius 6
+						item Columns { title Columns; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${ctx.inkSecondary} }
+					}
+				}
+			}
+		}
+	}
+	item "divider 3" { hidden yes; auto-layout abs; width 967; height 1; clip yes; color ${ctx.divider}; pos 233 -105 }
+	item "Settings content" {
+		auto-layout column; gap 16; padding 24 32; width 967; height 594; clip yes; pos 233 -106
+		slot Settings_content
+	}
+}
+
+item "§ SectionTitle/hint" {
+	auto-layout abs; width 420; height 170; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -1030
+	item title { title "SectionTitle hint"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ SettingRow" {
+	auto-layout abs; width 620; height 300; color #ffffff; border-color #0000000f; corner-radius 8; pos 468 -1030
+	item title { title SettingRow; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Section" {
+	auto-layout abs; width 560; height 260; color #ffffff; border-color #0000000f; corner-radius 8; pos 1136 -1030
+	item title { title Section; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item SettingRow {
+	export let label = Label; export let hint = ""; export let control = toggle; export let stacked = false; export let width = 560
+	auto-layout row; gap 24; align center; width ${width}; clip yes; use-style ${control}; use-style ${stacked === "true" ? "stacked" : ""}; pos 492 -1080
+	styles {
+		control one-of toggle input area
+		toggle { control { Input { hidden yes }; Area { hidden yes } } }
+		input { control { Toggle { hidden yes }; Area { hidden yes } } }
+		area { control { Toggle { hidden yes }; Input { hidden yes } } }
+		stacked { auto-layout column; align start; label { width fill }; control { width fill } }
+	}
+	item label {
+		auto-layout column; gap 4; width 240; clip yes
+		item Label { title ${label}; font-size 14; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink} }
+		item Hint { title ${hint}; font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink40}; hidden ${hint === ""} }
+	}
+	item control {
+		auto-layout row; width fill; clip yes
+		use Libraries.ui_kit.Forms.Toggle as Toggle { pos 0 0 }
+		use Libraries.ui_kit.Forms.TextInput as Input { width 280; pos 0 0}
+		use Libraries.ui_kit.Forms.TextArea as Area { width 280; rows 3; pos 0 0}
+	}
+	slot details
+}
+item Section {
+	export let label = Section; export let icon = false; export let level = 2; export let width = 480
+	auto-layout column; gap 12; width ${width}; clip yes; use-style ${"level-" + level}; pos 1160 -1080
+	styles {
+		level one-of 2 3 4
+		level-2 { header.Title { font-size 18; line-height 24; font-weight 600 } }
+		level-3 { header.Title { font-size 16; line-height 20; font-weight 600 } }
+		level-4 { header.Title { font-size 14; line-height 18; font-weight 500 } }
+	}
+	item header {
+		auto-layout row; gap 8; align center; width fill; clip yes
+		use Libraries.ui_kit.Icon.kit_Gear as "icon/kit/Gear" { color #00000099; hidden ${icon !== "true"} }
+		item Title { title ${label}; font-size 18; line-height 24; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink} }
+		item grow { width fill; height 1 }
+		slot actions
+	}
+	slot {
+		item Content { title "Section content"; font-size 13; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${ctx.ink40} }
+	}
+}
+use SectionTitle as "SectionTitle/hint" { title General; hint "Changes are saved immediately."; width 396; pos 24 -1080 }
+use SettingRow as "SettingRow/input" { label Description; hint "Visible to members only"; control area; stacked true; pos 492 -1180 }
+use Section as "Section/level4" { label Advanced; level 4; icon true; pos 1160 -1180 }
+item "Theme dark" {
+context --from-item Dark
+	auto-layout column; gap 16; padding 24; width 1140; color #131925; border-color #ffffff0f; corner-radius 8; pos 24 -1420
+	item title { title "Dark theme: Settings"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af }
+	item examples {
+		auto-layout column; gap 16; width 1092; clip yes
+		use SectionTitle as "SectionTitle dark" { title General; hint "Changes are saved immediately." }
+		use FormRow as "FormRow dark"
+		use Table as "Table dark"
+		use GridRow as "GridRow dark"
+		use SettingRow as "SettingRow dark toggle"
+		use SettingRow as "SettingRow dark input" { control input; label Name; hint "Visible to members only" }
+		use Section as "Section dark" { label Advanced; icon true }
+	}
+}

@@ -1,0 +1,94 @@
+entry "../PlatformDesign.tenn"
+context --from-item Light
+item "§ Avatar" {
+	auto-layout abs; width 420; height 100; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 0
+	item title { title Avatar; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Avatar/dark" {
+	auto-layout abs; width 420; height 100; color #1f2129; border-color #0000000f; corner-radius 8; pos 452 0
+	item title { title "Avatar on dark"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #ffffff99; pos 24 -14 }
+}
+item "Avatar/sizes dark" {
+	auto-layout row; gap 8; align end; clip yes; pos 516 -44
+	use Avatar as "Avatar/dark/24" { size 24; initials MC }
+	use Avatar as "Avatar/dark/32" { size 32; initials MC }
+	use Avatar as "Avatar/dark/40" { size 40; initials MC }
+	use Avatar as "Avatar/dark/empty" { size 40; empty true; at "icon/kit/PersonCircle" { color #ffffff99 } }
+}
+item "Avatar/status dark" {
+	auto-layout row; gap 8; align end; clip yes; pos 700 -44
+	use Avatar as "Avatar/dark/status" { size 32; status true }
+	use Avatar as "Avatar/dark/round" { size 40; round true }
+}
+item Avatar {
+	export let initials = AJ; export let empty = false; export let size = 20; export let status = false; export let round = false
+	auto-layout row; align center; justify center; width ${size}; height ${size}; clip yes
+	color ${(empty === "true") ? ctx.accentTint : "#666ecc"}
+	corner-radius ${(round === "true") ? size : 4}; use-style ${(empty === "true") ? "empty" : ""}; pos 24 -64
+	styles {
+		empty { color ${ctx.accentTint} }
+	}
+	item initials {
+		font-size ${size * 0.4}; line-height ${size * 0.5}; font-family "IBM Plex Sans"; font-weight 500; layout left; text-color #ffffff; title ${initials}; hidden ${empty}
+	}
+	use Icon.kit_PersonCircle as "icon/kit/PersonCircle" { width ${size * 0.6}; height ${size * 0.6}; color ${ctx.onFill60}; hidden ${!(empty === "true")} }
+	item "status marker" {
+		auto-layout abs; width 10; height 10; corner-radius 5; color #05a05c; border-color #ffffff; line-width 2
+		pos ${size - 7} ${7 - size}; hidden ${status !== "true"}
+	}
+}
+item "Avatar/sizes" {
+	auto-layout row; gap 8; align end; clip yes; pos 64 -44
+	use Avatar as "Avatar/24" { size 24; initials MC }
+	use Avatar as "Avatar/32" { size 32; initials MC }
+	use Avatar as "Avatar/40" { size 40; initials MC }
+}
+item "Avatar/status and round" {
+	auto-layout row; gap 8; align end; clip yes; pos 220 -44
+	use Avatar as "Avatar/status" { size 32; status true }
+	use Avatar as "Avatar/round" { size 40; round true }
+}
+item "§ Avatar/people" {
+	auto-layout abs; width 420; height 280; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -148
+	item title { title "Avatar people"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+use Avatar as "Avatar/AS/20" { size 20; initials AS; color #6260c2; pos 24 -198 }
+use Avatar as "Avatar/AS/24" { size 24; initials AS; color #6260c2; pos 64 -198 }
+use Avatar as "Avatar/AS/32" { size 32; initials AS; color #6260c2; pos 108 -198 }
+use Avatar as "Avatar/AS/40" { size 40; initials AS; color #6260c2; pos 156 -198 }
+use Avatar as "Avatar/MK/20" { size 20; initials MK; color #82a93c; pos 24 -258 }
+use Avatar as "Avatar/MK/24" { size 24; initials MK; color #82a93c; pos 64 -258 }
+use Avatar as "Avatar/MK/32" { size 32; initials MK; color #82a93c; pos 108 -258 }
+use Avatar as "Avatar/MK/40" { size 40; initials MK; color #82a93c; pos 156 -258 }
+use Avatar as "Avatar/IP/20" { size 20; initials IP; color #c97e45; pos 24 -318 }
+use Avatar as "Avatar/IP/24" { size 24; initials IP; color #c97e45; pos 64 -318 }
+use Avatar as "Avatar/IP/32" { size 32; initials IP; color #c97e45; pos 108 -318 }
+use Avatar as "Avatar/IP/40" { size 40; initials IP; color #c97e45; pos 156 -318 }
+item "§ Avatar/people dark" {
+	auto-layout abs; width 420; height 280; color #131925; border-color #ffffff0f; corner-radius 8; pos 452 -148
+	item title { title "Avatar people on dark"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #ffffff99; pos 24 -14 }
+}
+item "Avatar/people dark row 1" {
+context --from-item Dark
+	auto-layout row; gap 8; align end; clip yes; pos 476 -198
+	use Avatar as "Avatar/dark/AS/20" { size 20; initials AS; color #7d86e3 }
+	use Avatar as "Avatar/dark/AS/24" { size 24; initials AS; color #7d86e3 }
+	use Avatar as "Avatar/dark/AS/32" { size 32; initials AS; color #7d86e3 }
+	use Avatar as "Avatar/dark/AS/40" { size 40; initials AS; color #7d86e3 }
+}
+item "Avatar/people dark row 2" {
+context --from-item Dark
+	auto-layout row; gap 8; align end; clip yes; pos 476 -258
+	use Avatar as "Avatar/dark/MK/20" { size 20; initials MK; color #6ed3de }
+	use Avatar as "Avatar/dark/MK/24" { size 24; initials MK; color #6ed3de }
+	use Avatar as "Avatar/dark/MK/32" { size 32; initials MK; color #6ed3de }
+	use Avatar as "Avatar/dark/MK/40" { size 40; initials MK; color #6ed3de }
+}
+item "Avatar/people dark row 3" {
+context --from-item Dark
+	auto-layout row; gap 8; align end; clip yes; pos 476 -318
+	use Avatar as "Avatar/dark/IP/20" { size 20; initials IP; color #e1c77a }
+	use Avatar as "Avatar/dark/IP/24" { size 24; initials IP; color #e1c77a }
+	use Avatar as "Avatar/dark/IP/32" { size 32; initials IP; color #e1c77a }
+	use Avatar as "Avatar/dark/IP/40" { size 40; initials IP; color #e1c77a }
+}

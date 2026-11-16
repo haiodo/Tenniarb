@@ -1,0 +1,218 @@
+entry "../PlatformDesign.tenn"
+context --from-item Light
+item "§ StatusIcon" {
+	auto-layout abs; width 113; height 82; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 0
+	item title { title StatusIcon; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ PriorityIcon" {
+	auto-layout abs; width 117; height 82; color #ffffff; border-color #0000000f; corner-radius 8; pos 161 0
+	item title { title PriorityIcon; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ StatusChip" {
+	auto-layout abs; width 143; height 88; color #ffffff; border-color #0000000f; corner-radius 8; pos 326 0
+	item title { title StatusChip; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Count" {
+	auto-layout abs; width 78; height 88; color #ffffff; border-color #0000000f; corner-radius 8; pos 517 0
+	item title { title Count; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Notice" {
+	auto-layout abs; width 188; height 96; color #ffffff; border-color #0000000f; corner-radius 8; pos 643 0
+	item title { title Notice; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item StatusIcon {
+	export let category = active; auto-layout abs; width 14; height 14; pos 24 -44
+	styles { category one-of backlog todo active won lost }
+	item ring {
+		width 12; height 12; corner-radius 6; line-width 1.5; pos 1 -1; hidden ${category === "backlog"}
+		border-color ${category === "todo" ? "#758595" : category === "active" ? "#5195d7" : category === "won" ? "#83af12" : "#939395"}
+	}
+	item wedge { width 14; height 14; path "M7 7L7 3A4 4 0 0 1 11 7Z"; view-box 0 0 14 14; color #5195d7; hidden ${category !== "active"} }
+	item disc {
+		width 12; height 12; corner-radius 6; pos 1 -1; hidden ${category !== "won" && category !== "lost"}; color ${category === "won" ? "#83af12" : "#939395"}
+	}
+	item check { width 14; height 14; path "M4 7.2L6.2 9.4L10 5"; view-box 0 0 14 14; border-color #ffffff; line-width 1.5; hidden ${category !== "won"} }
+	item cross { width 14; height 14; path "M5 5L9 9M9 5L5 9"; view-box 0 0 14 14; border-color #ffffff; line-width 1.5; hidden ${category !== "lost"} }
+	item segments {
+		width 14; height 14
+		path "M7.00 1.00A6 6 0 0 1 7.55 1.03M10.53 2.15A6 6 0 0 1 10.96 2.49M12.71 5.15A6 6 0 0 1 12.85 5.68M12.71 8.85A6 6 0 0 1 12.51 9.37M10.53 11.85A6 6 0 0 1 10.06 12.16M7.00 13.00A6 6 0 0 1 6.45 12.97M3.47 11.85A6 6 0 0 1 3.04 11.51M1.29 8.85A6 6 0 0 1 1.15 8.32M1.29 5.15A6 6 0 0 1 1.49 4.63M3.47 2.15A6 6 0 0 1 3.94 1.84"
+		view-box 0 0 14 14; border-color #a1a1a1; line-width 1.5; hidden ${category !== "backlog"}
+	}
+}
+item PriorityIcon {
+	export let priority = high; auto-layout abs; width 14; height 14; pos 185 -44
+	styles { priority one-of urgent high medium low none }
+	item bar {
+		width 2.4; height 3; corner-radius 0.6; pos 2 -9; hidden ${priority === "urgent" || priority === "none"}
+		color ${priority === "high" ? "#d29840" : priority === "medium" ? "#167b82" : "#a1a1a1"}
+	}
+	item "bar 2" {
+		width 2.4; height 6; corner-radius 0.6; pos 6 -6; hidden ${priority === "urgent" || priority === "none"}
+		color ${priority === "high" ? "#d29840" : priority === "medium" ? "#167b82" : ctx.iconMuted}; opacity ${priority === "low" ? 0.3 : 1}
+	}
+	item "bar 3" {
+		width 2.4; height 9; corner-radius 0.6; pos 10 -3; hidden ${priority === "urgent" || priority === "none"}
+		color ${priority === "high" ? "#d29840" : ctx.iconMuted}; opacity ${priority === "high" ? 1 : 0.3}
+	}
+	item box { width 12; height 12; color #d27540; corner-radius 3; pos 1 -1; hidden ${priority !== "urgent"} }
+	item stem { width 1.6; height 4.5; color #ffffff; pos 6.2 -3.5; hidden ${priority !== "urgent"} }
+	item dot { width 1.6; height 1.6; color #ffffff; pos 6.2 -9; hidden ${priority !== "urgent"} }
+	item dash { width 8; height 1.2; color ${ctx.iconMuted}; opacity 0.6; pos 3 -6.4; hidden ${priority !== "none"} }
+}
+item StatusChip {
+	export let label = "In Progress"; export let count = ""; export let draggable = false; auto-layout row; gap 4; padding 0 6 0 4; align center; height 20
+	clip yes; color ${ctx.badge}; corner-radius 4; pos 350 -44
+	use Icon.drag as "icon/drag" { width 14; height 14; border-color ${ctx.inkCaption}; line-width 1.14; hidden ${!(draggable === "true")} }
+	item "StatusIcon/active" {
+		auto-layout abs; width 12; height 12
+		item ring { width 10; height 10; corner-radius 5; border-color #5195d7; line-width 1.5; pos 1 -1 }
+		item wedge { width 12; height 12; path "M6 6L6 3A3 3 0 0 1 9 6Z"; view-box 0 0 12 12; color #5195d7 }
+	}
+	item "In Progress" { font-size 11; line-height 14; font-family "IBM Plex Sans"; layout left; text-color ${ctx.onFill80}; title ${label} }
+	item _7 { font-size 11; line-height 14; font-family "IBM Plex Sans"; layout left; text-color ${ctx.inkCaption}; title ${count}; hidden ${count === ""} }
+}
+item Count {
+	export let value = 12; auto-layout row; padding 0 6; align center; height 20; clip yes; color ${ctx.badge}; corner-radius 10; pos 541 -44
+	item _12 { font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; text-color ${ctx.onFill60}; title ${value} }
+}
+item Notice {
+	export let text = "Notice text"; export let kind = warning; export let pill = false; export let block = false; auto-layout row; gap 8; padding 6 10
+	align center; clip yes; color #d298401f; border-color #d2984066; corner-radius 6; width ${(block === "true") ? "fill" : "hug"}
+	use-style ${kind} ${(pill === "true") ? "pill" : ""}; pos 667 -44
+	styles {
+		kind one-of warning info negative
+		warning { color #d298401f; border-color #d2984066; text-color ${ctx.warningInk} }
+		info { color #3070dc1a; border-color #3070dc26; text-color ${ctx.infoInk} }
+		negative { color #cb4b4226; border-color #cb4b4226; text-color ${ctx.negativeInk} }
+		pill { corner-radius 14 }
+	}
+	use Icon.warn as "icon/warn" { line-width 1; hidden ${kind === "info"} }
+	item "Notice text" { font-size 12; line-height 15; font-family "IBM Plex Sans"; layout left; title ${text} }
+	use Icon.eye as "icon/eye" { line-width 1; hidden ${kind !== "info"} }
+}
+
+item "§ Callout" {
+	auto-layout abs; width 460; height 190; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -144
+	item title { title Callout; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ KitStatusIcon" {
+	auto-layout abs; width 460; height 190; color #ffffff; border-color #0000000f; corner-radius 8; pos 508 -144
+	item title { title "StatusIcon product"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ Steps" {
+	auto-layout abs; width 460; height 190; color #ffffff; border-color #0000000f; corner-radius 8; pos 1016 -144
+	item title { title Steps; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item "§ EmptyState" {
+	auto-layout abs; width 460; height 320; color #ffffff; border-color #0000000f; corner-radius 8; pos 0 -382
+	item title { title EmptyState; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; pos 24 -14 }
+}
+item Callout {
+	export let text = "Project can be restored from the archive"; export let title = ""; export let tone = info; export let width = 420; 
+	auto-layout row; gap 12; padding 12; width ${width}; clip yes; corner-radius 8; use-style ${tone}; pos 24 -194
+	styles {
+		tone one-of info positive warning error
+		info { color #3070dc1a; border-color #3070dc26; text-color ${ctx.infoInk} }
+		positive { color #05a05c1a; border-color #05a05c26; text-color #05a05c }
+		warning { color #d298401f; border-color #d2984066; text-color ${ctx.warningInk} }
+		error { color #cb4b4226; border-color #cb4b4226; text-color ${ctx.negativeInk} }
+	}
+	use Icon.warn as "icon/warn" { width 16; height 16; line-width 1 }
+	item content {
+		auto-layout column; gap 4; width fill; clip yes
+		item Title { title ${title}; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; hidden ${title === ""} }
+		item Text { title ${text}; font-size 13; line-height 18; font-family "IBM Plex Sans"; layout left; width fill }
+	}
+	slot actions
+}
+item KitStatusIcon {
+	export let tone = positive; export let kind = solid; export let size = small; export let dot = false; 
+	auto-layout row; align center; justify center; width 16; height 16; clip yes; corner-radius 8
+	color ${tone === "positive" ? "#05a05c" : tone === "negative" || tone === "error" ? "#d15045" : tone === "warning" ? "#d29840" : tone === "info" ? "#3070dc" : "#a1a1a1"}
+	border-color ${kind === "outline" ? ctx.borderSubtle : "none"}; opacity ${kind === "outline" ? 0.35 : 1}; use-style ${size} ${dot === "true" ? "dot" : ""}; pos 532 -194
+	styles {
+		tone one-of positive negative error warning info neutral
+		kind one-of solid outline
+		size one-of small medium
+		medium { width 20; height 20; corner-radius 10 }
+		dot { width 8; height 8; corner-radius 4 }
+	}
+}
+item Steps {
+	export let first = "Select file"; export let second = "Map statuses"; export let third = Review; export let selected = 0; 
+	auto-layout row; gap 8; align center; clip yes; pos 1040 -194
+	item first {
+		auto-layout row; gap 6; align center; clip yes
+		item Number { title "1"; font-size 12; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 0 ? "#ffffff" : "#00000099"}; color ${selected === 0 ? "#6b3ad3" : ctx.fillFaint}; corner-radius 8; auto-layout row; align center; justify center; width 20; height 20 }
+		item Label { title ${first}; font-size 13; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 0 ? ctx.accentInk : ctx.onFill60} }
+	}
+	item separator { width 20; height 1; color ${ctx.borderField} }
+	item second {
+		auto-layout row; gap 6; align center; clip yes
+		item Number { title "2"; font-size 12; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 1 ? "#ffffff" : "#00000099"}; color ${selected === 1 ? "#6b3ad3" : ctx.fillFaint}; corner-radius 8; auto-layout row; align center; justify center; width 20; height 20 }
+		item Label { title ${second}; font-size 13; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 1 ? ctx.accentInk : ctx.onFill60} }
+	}
+	item separator2 { width 20; height 1; color ${ctx.borderField} }
+	item third {
+		auto-layout row; gap 6; align center; clip yes
+		item Number { title "3"; font-size 12; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 2 ? "#ffffff" : "#00000099"}; color ${selected === 2 ? "#6b3ad3" : ctx.fillFaint}; corner-radius 8; auto-layout row; align center; justify center; width 20; height 20 }
+		item Label { title ${third}; font-size 13; line-height 16; font-family "IBM Plex Sans"; layout left; text-color ${selected === 2 ? ctx.accentInk : ctx.onFill60} }
+	}
+}
+item EmptyState {
+	export let label = "No issues"; export let description = "Create the first issue"; export let icon = true; export let action = ""; 
+	export let size = large; export let kind = plate; export let width = 420; export let height = 240
+	auto-layout column; gap 12; padding 24; align center; justify center; width ${width}; height ${height}; clip yes; corner-radius 12
+	color ${kind === "brand" ? ctx.accentTint : ctx.fillFaintest}; use-style ${size}; pos 24 -432
+	styles { size one-of large small; kind one-of brand plate; small { height 140; padding 16 } }
+	item icon {
+		auto-layout row; align center; justify center; width 40; height 40; clip yes; color ${ctx.tile}; border-color ${ctx.divider}; corner-radius 20; hidden ${icon !== "true"}
+		use Icon.kit_Plus as "icon/kit/Plus" { color #6b3ad3 }
+	}
+	item Label { title ${label}; font-size 18; line-height 24; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color ${ctx.ink} }
+	item Description { title ${description}; font-size 13; line-height 18; font-family "IBM Plex Sans"; layout left; text-color ${ctx.onFill60}; hidden ${description === ""} }
+	item Action { title ${action}; font-size 13; line-height 16; font-family "IBM Plex Sans"; layout left; text-color #6b3ad3; hidden ${action === ""} }
+}
+use Callout as "Callout/title" { title Archive; tone warning; pos 24 -264 }
+use KitStatusIcon as "KitStatusIcon/outline" { tone info; kind outline; size medium; pos 532 -264 }
+use Steps as "Steps/second" { selected 1; pos 1040 -264 }
+use EmptyState as "EmptyState/action" { label "No applications yet"; description ""; action "Add application"; size small; pos 24 -682 }
+item "Theme dark" {
+context --from-item Dark
+	auto-layout column; gap 16; padding 24; width 1400; color #131925; border-color #ffffff0f; corner-radius 8; pos 24 -1000
+	item title { title "Dark theme: Status"; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; layout left; text-color #8e99af }
+	item row0 {
+		auto-layout row; gap 12; align center; clip yes
+		use StatusIcon as "icon todo" { category todo }
+		use StatusIcon as "icon active" { category active }
+		use StatusIcon as "icon won" { category won }
+		use StatusIcon as "icon lost" { category lost }
+		use PriorityIcon as "priority high"
+		use PriorityIcon as "priority medium" { priority medium }
+		use PriorityIcon as "priority low" { priority low }
+		use PriorityIcon as "priority none" { priority none }
+		use KitStatusIcon as "kitstatus positive"
+		use KitStatusIcon as "kitstatus warning" { tone warning }
+		use KitStatusIcon as "kitstatus outline" { kind outline; tone info }
+	}
+	item row1 {
+		auto-layout row; gap 16; align center; clip yes
+		use StatusChip as "chip dark"
+		use StatusChip as "chip count" { count 7; draggable true }
+		use Count as "count dark"
+		use Notice as "notice warning"
+		use Notice as "notice info" { kind info }
+		use Notice as "notice negative" { kind negative }
+	}
+	item row2 {
+		auto-layout row; gap 16; align start; clip yes
+		use Callout as "callout info"
+		use Callout as "callout warning" { tone warning; title Archive }
+		use Steps as "steps dark" { selected 1 }
+	}
+	item row3 {
+		auto-layout row; gap 16; align start; clip yes
+		use EmptyState as "empty dark"
+		use EmptyState as "empty brand" { kind brand; label "Nothing here"; action "Create one" }
+	}
+}
