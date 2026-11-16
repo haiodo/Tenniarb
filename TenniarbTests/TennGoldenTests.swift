@@ -7,6 +7,7 @@
 //
 
 import JavaScriptCore
+import Tenn
 import XCTest
 
 @testable import Tenniarb

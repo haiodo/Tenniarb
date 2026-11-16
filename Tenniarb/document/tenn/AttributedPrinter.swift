@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 class TennColors {
     public static let symbolColorWhite = NSColor(red: 0x81 / 255.0, green: 0x5f / 255.0, blue: 0x03 / 255.0, alpha: 1)

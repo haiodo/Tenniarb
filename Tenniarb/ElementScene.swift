@@ -19,6 +19,7 @@
 import Cocoa
 import Foundation
 import JavaScriptCore
+import Tenn
 import cmkdown
 
 // Some debug variabes

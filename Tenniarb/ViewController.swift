@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Cocoa
+import Tenn
 
 class ViewController: NSViewController, IElementModelListener, NSMenuItemValidation, NSSplitViewDelegate {
 

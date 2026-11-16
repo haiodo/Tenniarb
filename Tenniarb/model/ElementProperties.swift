@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Foundation
+import Tenn
 
 extension Element {
     /// Convert items to list of properties

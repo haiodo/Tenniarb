@@ -19,6 +19,7 @@
 import Cocoa
 import CoreImage
 import CoreText
+import Tenn
 import UniformTypeIdentifiers
 
 enum SceneMode {

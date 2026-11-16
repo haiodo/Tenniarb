@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* `.tenn` is read with `github.com/haiodo/tenn` v1.0.1 in Go and v1.0.2 in Swift: the Swift app takes the
+  parser as a package instead of its embedded copy, so both versions keep empty literals the same way.
+
 * `tenniarb generate FILE ELEMENT` prints a screen as code from the `template` of its parts: every `use`
   below the element prints the template of its component with the values of its block and the content of
   its slots nested in, and the element's own template, or `-template`, wraps the result. `libraries/ui-sdk.tenn`

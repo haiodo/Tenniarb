@@ -6,6 +6,7 @@
 //  Copyright © 2020 Andrey Sobolev. All rights reserved.
 //
 
+import Tenn
 import XCTest
 
 @testable import Tenniarb

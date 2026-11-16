@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 enum StyleOperation: Int {
     case Apply = 1

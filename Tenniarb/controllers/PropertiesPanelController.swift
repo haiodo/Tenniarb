@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Cocoa
+import Tenn
 
 @MainActor
 class PropertiesPanelController: NSObject {

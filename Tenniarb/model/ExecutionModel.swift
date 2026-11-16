@@ -19,6 +19,7 @@
 import Cocoa
 import Foundation
 import JavaScriptCore
+import Tenn
 
 fileprivate func convertNameJS(_ name: String) -> String? {
     var result = ""

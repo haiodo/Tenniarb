@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Tenn
 
 let storedValue = """
 element "Init screens" {

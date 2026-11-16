@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 class ClipboardUtils {
     static func canPaste() -> Bool {

@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 class OperationTextDelegate: NSObject, NSTextFieldDelegate, NSTextDelegate {
     var controller: OperationController!

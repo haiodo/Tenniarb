@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
+		0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
-		0C00D682230FE2F100ECF221 /* TennLexerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C00D681230FE2F100ECF221 /* TennLexerModel.swift */; };
 		0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07F9541F4151250042C9F5 /* SceneMath.swift */; };
 		0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1155292108C92C007FD827 /* SyncExtension.swift */; };
 		0C16C06B2321328800F77855 /* ImageUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C16C06A2321328800F77855 /* ImageUtils.swift */; };
@@ -24,7 +25,6 @@
 		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
-		0C439D22200335A10031AE78 /* TennModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D21200335A10031AE78 /* TennModel.swift */; };
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
 		0C45B12D22A397BE00640305 /* main_screen.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12A22A397BE00640305 /* main_screen.png */; };
 		0C45B12E22A397BE00640305 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 0C45B12B22A397BE00640305 /* readme.md */; };
@@ -35,7 +35,6 @@
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		AE01EC01000000000000099 /* TennGoldenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000099 /* TennGoldenTests.swift */; };
-		0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D261EFF7D5900714971 /* TennParser.swift */; };
 		0C6375BF263FE9BF00E0BE20 /* corner.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BC263FE9BF00E0BE20 /* corner.png */; };
 		0C6375C0263FE9BF00E0BE20 /* markdown_font_size.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */; };
 		0C6375C1263FE9BF00E0BE20 /* corner-radius.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BE263FE9BF00E0BE20 /* corner-radius.png */; };
@@ -54,7 +53,6 @@
 		0C9EA46E27414A4800B10EB5 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		0CB75C8E2A36F1CB0084BFC7 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 0CB75C8D2A36F1CB0084BFC7 /* LICENSE */; };
 		0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */; };
-		0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */; };
 		0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBF20D31EF98F0200FE17D5 /* WindowController.swift */; };
 		0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */; };
 		0CC4D3541F930F5500875F9E /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC4D3531F930F5500875F9E /* PersistenceTests.swift */; };
@@ -107,7 +105,6 @@
 		0CD170CE22D6571400E217D4 /* TennIco.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0CD170CD22D6571400E217D4 /* TennIco.icns */; };
 		0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD4B31F230D997A002F8D78 /* PerformanceTests.swift */; };
 		0CD5B316282A47B700D2E5A8 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CD5B315282A47B700D2E5A8 /* StoreKit.framework */; };
-		0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */; };
 		0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */; };
 		0CF0C34A2749115D00E3F41D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8902A2133BDD400F1A6EE /* StyleManager.swift */; };
@@ -129,7 +126,6 @@
 		0CFC3DF723D624F10016A7B7 /* quickbar_multiitems.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CFC3DE623D624F10016A7B7 /* quickbar_multiitems.png */; };
 		0CFC3DF823D624F10016A7B7 /* general_info.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CFC3DE723D624F10016A7B7 /* general_info.png */; };
 		1E7CDF0C2394F3FF0005C824 /* Changelog.md in Resources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0B2394F3FF0005C824 /* Changelog.md */; };
-		1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7CDF0D2394FF140005C824 /* SlowLexer.swift */; };
 		FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000004 /* OutlineSidebarController.swift */; };
 		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
 		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
@@ -167,7 +163,6 @@
 
 /* Begin PBXFileReference section */
 		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
-		0C00D681230FE2F100ECF221 /* TennLexerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexerModel.swift; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
 		0C16C06A2321328800F77855 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
@@ -187,7 +182,6 @@
 		0C3E178620FD053A00AB9D3D /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = views/ExportManager.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
-		0C439D21200335A10031AE78 /* TennModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennModel.swift; sourceTree = "<group>"; };
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
 		0C45B12822A397BE00640305 /* examples.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = examples.md; sourceTree = "<group>"; };
 		0C45B12A22A397BE00640305 /* main_screen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = main_screen.png; sourceTree = "<group>"; };
@@ -201,7 +195,6 @@
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000099 /* TennGoldenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennGoldenTests.swift; sourceTree = "<group>"; };
-		0C5C6D261EFF7D5900714971 /* TennParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennParser.swift; sourceTree = "<group>"; };
 		0C6375BC263FE9BF00E0BE20 /* corner.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = corner.png; sourceTree = "<group>"; };
 		0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_font_size.png; sourceTree = "<group>"; };
 		0C6375BE263FE9BF00E0BE20 /* corner-radius.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "corner-radius.png"; sourceTree = "<group>"; };
@@ -220,7 +213,6 @@
 		0C9C9410201F749800E67794 /* ElementOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementOperations.swift; path = model/ElementOperations.swift; sourceTree = "<group>"; };
 		0CB75C8D2A36F1CB0084BFC7 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		0CB9183D1FFA465000725EBC /* SourcePopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourcePopoverViewController.swift; path = views/SourcePopoverViewController.swift; sourceTree = "<group>"; };
-		0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennLexer.swift; sourceTree = "<group>"; };
 		0CBF20D31EF98F0200FE17D5 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		0CC3F381200D07DB0050D7E6 /* TextPropertiesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextPropertiesDelegate.swift; sourceTree = "<group>"; };
 		0CC4D3531F930F5500875F9E /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
@@ -273,7 +265,6 @@
 		0CD170CD22D6571400E217D4 /* TennIco.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = TennIco.icns; sourceTree = "<group>"; };
 		0CD4B31F230D997A002F8D78 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
 		0CD5B315282A47B700D2E5A8 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennPrinter.swift; sourceTree = "<group>"; };
 		0CEA61DB21EDF10800FDA0E1 /* TreeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayout.swift; sourceTree = "<group>"; };
 		0CF8902A2133BDD400F1A6EE /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StyleManager.swift; path = views/StyleManager.swift; sourceTree = "<group>"; };
 		0CFC3DD723D624F00016A7B7 /* markdown_scratches.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_scratches.png; sourceTree = "<group>"; };
@@ -294,7 +285,6 @@
 		0CFC3DE623D624F10016A7B7 /* quickbar_multiitems.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = quickbar_multiitems.png; sourceTree = "<group>"; };
 		0CFC3DE723D624F10016A7B7 /* general_info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = general_info.png; sourceTree = "<group>"; };
 		1E7CDF0B2394F3FF0005C824 /* Changelog.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
-		1E7CDF0D2394FF140005C824 /* SlowLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlowLexer.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000004 /* OutlineSidebarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutlineSidebarController.swift; path = controllers/OutlineSidebarController.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
@@ -308,6 +298,7 @@
 				0CD5B316282A47B700D2E5A8 /* StoreKit.framework in Frameworks */,
 				0CD170BE22D5CF0E00E217D4 /* WebKit.framework in Frameworks */,
 				0C48D4FD2EBE2E4E008582D8 /* cmkdown in Frameworks */,
+				0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */,
 				0C6ED8C0224A931B009145E1 /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -316,6 +307,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,13 +427,7 @@
 		0C439D23200336BB0031AE78 /* tenn */ = {
 			isa = PBXGroup;
 			children = (
-				0C439D21200335A10031AE78 /* TennModel.swift */,
-				0C00D681230FE2F100ECF221 /* TennLexerModel.swift */,
-				0CB9A8891EFA6EA6003E5B58 /* TennLexer.swift */,
-				0C5C6D261EFF7D5900714971 /* TennParser.swift */,
-				0CE5F8691F02C64400F7CB88 /* TennPrinter.swift */,
 				0C7F8995233273FC0098B745 /* AttributedPrinter.swift */,
-				1E7CDF0D2394FF140005C824 /* SlowLexer.swift */,
 			);
 			path = tenn;
 			sourceTree = "<group>";
@@ -730,6 +716,7 @@
 			mainGroup = 0C2375E21ED838D900ECB516;
 			packageReferences = (
 				0C48D4FB2EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "cmkdown" */,
+				0CA11E002EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "Tenn" */,
 			);
 			productRefGroup = 0C2375EC1ED838D900ECB516 /* Products */;
 			projectDirPath = "";
@@ -827,11 +814,9 @@
 				0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */,
 				0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */,
 				0C27F05E1EDC225B006CD2A2 /* ElementModel.swift in Sources */,
-				0C439D22200335A10031AE78 /* TennModel.swift in Sources */,
 				0C3160422242ADC00021E4D9 /* PreferencesController.swift in Sources */,
 				0C4C16081F2E369A000C5410 /* LayoutBase.swift in Sources */,
 				0C7F8996233273FC0098B745 /* AttributedPrinter.swift in Sources */,
-				0C00D682230FE2F100ECF221 /* TennLexerModel.swift in Sources */,
 				0C16C06B2321328800F77855 /* ImageUtils.swift in Sources */,
 				0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
@@ -848,18 +833,14 @@
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
-				0CB9A88A1EFA6EA6003E5B58 /* TennLexer.swift in Sources */,
 				0C86047F1EF040F70009B205 /* SceneDraw3D.swift in Sources */,
 				0C11552A2108C92C007FD827 /* SyncExtension.swift in Sources */,
 				0CC7005C22E2E53300DF2071 /* ClipboardUtils.swift in Sources */,
 				0CBF20D41EF98F0200FE17D5 /* WindowController.swift in Sources */,
-				0CE5F86A1F02C64400F7CB88 /* TennPrinter.swift in Sources */,
-				1E7CDF0E2394FF140005C824 /* SlowLexer.swift in Sources */,
 				0CF8902B2133BDD400F1A6EE /* StyleManager.swift in Sources */,
 				0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */,
 				0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */,
 				0CF0C34A2749115D00E3F41D /* (null) in Sources */,
-				0C5C6D271EFF7D5900714971 /* TennParser.swift in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
 				0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */,
@@ -1270,6 +1251,14 @@
 				kind = branch;
 			};
 		};
+		0CA11E002EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "Tenn" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/haiodo/tenn";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1277,6 +1266,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0C48D4FB2EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "cmkdown" */;
 			productName = cmkdown;
+		};
+		0CA11E012EBE2E4E008582D8 /* Tenn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0CA11E002EBE2E4E008582D8 /* XCRemoteSwiftPackageReference "Tenn" */;
+			productName = Tenn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

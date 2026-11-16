@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 public enum PersistenceItemKind {
     case Item  // A reference to element

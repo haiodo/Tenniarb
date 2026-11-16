@@ -14,6 +14,7 @@
 //  limitations under the License.
 
 import JavaScriptCore
+import Tenn
 import XCTest
 
 @testable import Tenniarb

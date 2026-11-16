@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 
 nonisolated(unsafe) var DEBUG_OPERATION_TRACKING = false
 

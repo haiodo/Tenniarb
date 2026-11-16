@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Foundation
+import Tenn
 
 struct SyncElement: Codable {
     let name: String

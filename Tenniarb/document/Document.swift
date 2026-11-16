@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Cocoa
+import Tenn
 
 class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked Sendable {
     @MainActor var store: ElementModelStore?

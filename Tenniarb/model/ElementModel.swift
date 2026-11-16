@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import Tenn
 import cmkdown
 
 public enum ElementKind {
