@@ -170,6 +170,33 @@ func measureText(_ m: Scene.TextMeasurer, _ text: String, _ fontSize: Double) ->
 }
 
 extension Scene.Prep {
+    /// The text of a title with each ${...} replaced by its value: the element model hands the whole title of a
+    /// classic item, a scene asks the engine about each piece.
+    func evalText(_ rn: Scene.RNode, _ text: String) -> String {
+        if !text.contains("${") {
+            return text
+        }
+        guard let eval else { return text }
+        var out = ""
+        var i = text.startIndex
+        while i < text.endIndex {
+            if text[i...].hasPrefix("${") {
+                let from = text.index(i, offsetBy: 2)
+                if let close = text[from...].firstIndex(of: "}") {
+                    let (v, ok) = evalValue(eval, String(text[from..<close]), rn.vars)
+                    if ok {
+                        out += v
+                        i = text.index(after: close)
+                        continue
+                    }
+                }
+            }
+            out.append(text[i])
+            i = text.index(after: i)
+        }
+        return out
+    }
+
     /// The ascent, the descent and the height of one line: from the measurer in a scene, from the ratios and the
     /// `floor(ascent+descent)+1` rounding of go/render in a classic diagram.
     func lineBox(_ f: Scene.Font) -> (asc: Double, desc: Double, h: Double) {
@@ -191,8 +218,8 @@ extension Scene.Prep {
             title = ""
         }
         if let pr = prop(rn, "title") {
-            // evalText of layout.go returns the text as written without an evaluator.
             title = pr.text(0) ?? ""
+            title = evalText(rn, title)
             // A bare text with spaces is several arguments, and only the first would be drawn: name the
             // mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
             if pr.args.count > 1 && !classic {

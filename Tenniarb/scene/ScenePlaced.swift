@@ -159,27 +159,36 @@ extension Scene.Prep {
 extension Scene.Tree {
     /// Builds the element at path ("" is the content of the file itself): expanded, styled and laid out.
     /// The error holds what is wrong with the element; the screen is nil then.
-    func build(_ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer()) -> Scene.Screen? {
-        build(measurer) { self.element(path) }
+    func build(_ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil)
+        -> Scene.Screen?
+    {
+        build(measurer, eval) { self.element(path, eval: eval) }
     }
 
     /// buildElement is build of an element or file root of the tree, for a caller that holds the node:
     /// a path of names cannot tell elements with one name apart.
-    func buildElement(_ el: Scene.Node, measurer: Scene.TextMeasurer = Scene.TextMeasurer()) -> Scene.Screen? {
-        build(measurer) {
+    func buildElement(_ el: Scene.Node, measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil)
+        -> Scene.Screen?
+    {
+        build(measurer, eval) {
             guard el.isContainer() else {
                 self.fail(el.pos, "a \(el.kind.description) is not an element")
                 return nil
             }
-            return self.expandElement(el, self.ctxOf(el))
+            return self.expandElement(el, self.ctxOf(el), eval: eval)
         }
     }
 
-    private func build(_ measurer: Scene.TextMeasurer, _ expand: () -> Scene.RNode?) -> Scene.Screen? {
+    private func build(_ measurer: Scene.TextMeasurer, _ eval: Scene.EvalFunc?, _ expand: () -> Scene.RNode?) -> Scene.Screen? {
         let failures = diagnostics.filter { !$0.warn }.count
         guard let rn = expand() else { return nil }
+        let p = Scene.Prep(self, measurer: measurer, eval: eval)
+        p.classic = !sceneRoot(rn)
+        // The expressions of the screen come before the styles: use-style ${kind} picks a style by its value.
+        if p.eval != nil {
+            p.evalTree(rn)
+        }
         applyStyles(rn)
-        let p = Scene.Prep(self, measurer: measurer)
         let root = p.root(rn)
         if diagnostics.filter({ !$0.warn }).count > failures {
             return nil

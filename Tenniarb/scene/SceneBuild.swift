@@ -35,15 +35,26 @@ extension Scene {
         let t: Tree
         /// CoreText as the window draws unless a stand asks for gfx.EstimateText.
         let measurer: TextMeasurer
+        /// Options.EvalVars: nil means no expression runs and a ${...} is a warning.
+        let eval: EvalFunc?
         var frames: [ObjectIdentifier: LayoutNode] = [:]
         var texts: [ObjectIdentifier: TextInfo] = [:]
         var styles: [ObjectIdentifier: Look] = [:]
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
+        /// A property with an expression -> its evaluated copy, nil if it failed.
+        private var evals: [EvalKey: Prop?] = [:]
 
-        init(_ t: Tree, measurer: TextMeasurer = TextMeasurer()) {
+        /// One property of one node: the Prop of a scene is shared between instances, so its evaluation is not.
+        private struct EvalKey: Hashable {
+            let node: ObjectIdentifier
+            let prop: ObjectIdentifier
+        }
+
+        init(_ t: Tree, measurer: TextMeasurer = TextMeasurer(), eval: EvalFunc? = nil) {
             self.t = t
             self.measurer = measurer
+            self.eval = eval
         }
 
         /// The layout of an element: its content at their own positions.
@@ -274,15 +285,58 @@ extension Scene {
             }
         }
 
-        /// prop is rn.prop with the expressions of the arguments evaluated; without an evaluator an expression is
-        /// a warning and the property is ignored.
+        /// prop is rn.prop with the expressions of the arguments evaluated (spec 6), in the scope of the instance
+        /// of the node (spec 5c). Without an evaluator an expression is a warning and the property is ignored.
         func prop(_ rn: RNode, _ name: String) -> Prop? {
             let pr = rn.prop(name)
             guard let pr, hasExpr(pr) else { return pr }
-            if !classic {
-                t.warn(pr.pos, "\(name): expressions are not evaluated")
+            if eval == nil {
+                if !classic {
+                    t.warn(pr.pos, "\(name): expressions are not evaluated")
+                }
+                return nil
             }
-            return nil
+            return evalProp(rn, pr)
+        }
+
+        /// pr evaluated in the scope of rn, once per build; nil when an expression failed, which leaves the
+        /// property unset.
+        func evalProp(_ rn: RNode, _ pr: Prop) -> Prop? {
+            let key = EvalKey(node: ObjectIdentifier(rn), prop: ObjectIdentifier(pr))
+            if let cached = evals[key] {
+                return cached
+            }
+            let out = evaluated(rn, pr)
+            evals.updateValue(out, forKey: key)
+            return out
+        }
+
+        /// Evaluates every expression of the tree before the styles: use-style ${kind} has to be a value by then
+        /// (spec 5c). Only the nodes change, not the shared Prop: a node of an instance is its own, its Prop not.
+        func evalTree(_ rn: RNode) {
+            for (i, pr) in rn.props.enumerated() where hasExpr(pr) {
+                if let out = evalProp(rn, pr) {
+                    rn.props[i] = out
+                }
+            }
+            for k in rn.kids {
+                evalTree(k)
+            }
+        }
+
+        /// A copy of pr with every argument evaluated, the plain ones copied as they are; nil when an expression
+        /// failed. The source property is shared between instances, so it is never changed.
+        private func evaluated(_ rn: RNode, _ pr: Prop) -> Prop? {
+            var vals: [String] = []
+            for a in pr.args {
+                let (v, ok) = evalArg(eval, a, rn.vars)
+                if !ok {
+                    t.warn(pr.pos, "\(pr.name): the expression \"\(a.getIdentText() ?? "")\" is not evaluated")
+                    return nil
+                }
+                vals.append(v)
+            }
+            return Prop(name: pr.name, args: pr.args, val: vals, block: pr.block, pos: pr.pos, range: pr.range)
         }
 
         func num(_ rn: RNode, _ name: String) -> Double? {
@@ -346,7 +400,9 @@ func sceneRoot(_ rn: Scene.RNode) -> Bool {
 extension Scene.Tree {
     /// The placed tree of the element at path ("" is the file itself): expanded, styled and laid out; nil when
     /// the element has an error and there is nothing to draw.
-    func layout(_ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer()) -> Scene.LayoutNode? {
-        build(path, measurer: measurer)?.root
+    func layout(
+        _ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil
+    ) -> Scene.LayoutNode? {
+        build(path, measurer: measurer, eval: eval)?.root
     }
 }

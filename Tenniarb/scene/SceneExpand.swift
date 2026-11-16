@@ -69,17 +69,19 @@ extension Scene {
     }
 
     /// Expands use instances and slots into the tree that is drawn.
-    /// shortcut: expressions and context (spec 6, 5f) are not ported, so the parameters reach the nodes as vars only.
     final class Expander {
         let t: Tree
         var stack: [(n: Node, label: String)] = []
         var depth = 0  // uses being expanded; slots stay open until the outermost one is done
         var ctx: MountCtx?  // mount context of the file the node being expanded lives in
+        /// Evaluates the value of a parameter (spec 5c); nil: no expression runs.
+        let eval: EvalFunc?
         var vars: [String: String]?  // parameters of the instance being expanded
 
-        init(t: Tree, ctx: MountCtx?) {
+        init(t: Tree, ctx: MountCtx?, eval: EvalFunc? = nil) {
             self.t = t
             self.ctx = ctx
+            self.eval = eval
         }
     }
 }
@@ -523,7 +525,7 @@ extension Scene.Expander {
 
 extension Scene.Tree {
     /// Expands the element at path ("" is the content of the file itself) into resolved nodes, slots filled.
-    func element(_ path: String) -> Scene.RNode? {
+    func element(_ path: String, eval: Scene.EvalFunc? = nil) -> Scene.RNode? {
         guard let main else { return nil }
         var target = main
         var ctx = ctxOf(main)
@@ -538,14 +540,14 @@ extension Scene.Tree {
                 fail(main.pos, "path \(path) names a \(target.kind), not an element or an item")
                 return nil
             }
-            return Scene.Expander(t: self, ctx: ctx).item(target)
+            return Scene.Expander(t: self, ctx: ctx, eval: eval).item(target)
         }
-        return expandElement(target, ctx)
+        return expandElement(target, ctx, eval: eval)
     }
 
     /// Expands a container in the context of its file, slots filled; a component on its own shows its defaults.
-    func expandElement(_ target: Scene.Node, _ ctx: Scene.MountCtx?) -> Scene.RNode? {
-        let x = Scene.Expander(t: self, ctx: ctx)
+    func expandElement(_ target: Scene.Node, _ ctx: Scene.MountCtx?, eval: Scene.EvalFunc? = nil) -> Scene.RNode? {
+        let x = Scene.Expander(t: self, ctx: ctx, eval: eval)
         x.vars = x.defaults(target)
         let rn = x.container(target)
         if let rn {

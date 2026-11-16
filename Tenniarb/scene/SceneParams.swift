@@ -14,6 +14,47 @@
 //
 
 import Foundation
+import Tenn
+
+/// The text of an argument: as written, or the value of an expression; a string holding ${...} is a template,
+/// run as one. ok is false when an expression failed, or when there is no evaluator.
+func evalArg(_ eval: Scene.EvalFunc?, _ a: TennNode, _ vars: [String: String]?) -> (String, Bool) {
+    var code = a.getIdentText() ?? ""
+    switch a.kind {
+    case .Expression, .ExpressionBlock:
+        break
+    case .StringLit where code.contains("${"):
+        code = "`" + code + "`"  // a template string, as the classic engine runs it
+    default:
+        return (code, true)
+    }
+    guard let eval else { return ("", false) }
+    return evalValue(eval, code, vars)
+}
+
+/// eval with the rule of spec 5f: undefined and NaN are not a value, so the caller reports the expression
+/// instead of drawing their text in the scene.
+func evalValue(_ eval: Scene.EvalFunc, _ code: String, _ vars: [String: String]?) -> (String, Bool) {
+    let (v, ok) = eval(code, vars)
+    if ok && (v == "undefined" || v == "NaN") {
+        return ("", false)
+    }
+    return (v, ok)
+}
+
+/// The arguments of a property as words, each an expression evaluated in vars; ok is false when an expression
+/// could not be evaluated, and the words before it still come back.
+func evalWords(_ eval: Scene.EvalFunc?, _ pr: Scene.Prop, _ vars: [String: String]?) -> (String, Bool) {
+    var words: [String] = []
+    for a in pr.args {
+        let (v, ok) = evalArg(eval, a, vars)
+        if !ok {
+            return (words.joined(separator: " "), false)
+        }
+        words.append(v)
+    }
+    return (words.joined(separator: " "), true)
+}
 
 extension Scene.Expander {
     /// The parameters of instance target in use: a value the use sets by name over the default from the
@@ -64,21 +105,14 @@ extension Scene.Expander {
         return values
     }
 
-    /// The value of one parameter: its arguments as words.
-    /// shortcut: expressions are not evaluated, so a ${...} argument ends the value with the words before it.
+    /// The value of one parameter: its arguments as words, each an expression evaluated in vars. A list of styles
+    /// is written as several words: "extras outlined rounded" (spec 5b, any-of).
     func value(_ pr: Scene.Prop) -> String {
-        var words: [String] = []
-        for a in pr.args {
-            if a.kind == .Expression || a.kind == .ExpressionBlock {
-                break
-            }
-            let code = a.getIdentText() ?? ""
-            if a.kind == .StringLit && code.contains("${") {
-                break
-            }
-            words.append(code)
+        let (v, ok) = evalWords(eval, pr, vars)
+        if !ok && eval != nil {
+            t.warn(pr.pos, "\(pr.name): the expression is not evaluated")
         }
-        return words.joined(separator: " ")
+        return v
     }
 }
 

@@ -130,11 +130,16 @@ extension Scene.Prep {
     func shadows(_ rn: Scene.RNode) -> [Scene.Shadow] {
         var out: [Scene.Shadow] = []
         for pr in rn.props where pr.name == "shadow" {
+            var pr = pr
             if hasExpr(pr) {
-                if !classic {
-                    t.warn(pr.pos, "shadow: expressions are not evaluated")
+                if eval == nil {
+                    if !classic {
+                        t.warn(pr.pos, "shadow: expressions are not evaluated")
+                    }
+                    continue
                 }
-                continue
+                guard let evaluated = evalProp(rn, pr) else { continue }
+                pr = evaluated
             }
             if let sh = shadowOf(pr) {
                 out.append(sh)

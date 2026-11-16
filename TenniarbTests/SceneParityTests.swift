@@ -32,53 +32,42 @@ final class SceneParityTests: XCTestCase {
     /// |-----------------------|-----------------------------------------------------|
     /// | animations            | go/scene/anim.go                                    |
     /// | auto-layout-tour      | go/scene/layout.go wrap/line-gap                    |
-    /// | button-styles         | go/scene/icon.go                                    |
     /// | classic-body          | go/scene/body.go                                    |
     /// | classic-image         | go/scene/image.go                                   |
     /// | classic-link-index    | go/scene/linkroute.go                               |
-    /// | classic-shapes        | go/scene/linkroute.go (and go/exec, classic.go)     |
-    /// | classic-styles        | go/scene/body.go                                    |
-    /// | classic-values        | go/exec (scene/classic.go modelVals)                |
+    /// | classic-shapes        | go/scene/linkroute.go and classic.go                |
+    /// | classic-styles        | go/scene/linkroute.go and go/scene/body.go          |
+    /// | classic-values        | go/scene/classic.go (modelVals)                     |
     /// | context               | go/scene/context.go                                 |
     /// | context-classic       | go/scene/context.go                                 |
     /// | context-file          | go/scene/context.go                                 |
-    /// | design-kit            | go/exec (use-style ${tone})                         |
     /// | doc-body              | go/scene/body.go                                    |
-    /// | fusio-1620            | go/scene/icon.go                                    |
-    /// | hero                  | go/exec                                             |
-    /// | library-screen        | go/exec (mounted design-kit needs ${tone})          |
     /// | link-quad             | go/scene/linkroute.go                               |
     /// | link-routes           | go/scene/linkroute.go                               |
-    /// | onboarding-flow       | go/scene/body.go (and linkroute.go)                 |
-    /// | param-metrics         | go/exec                                             |
+    /// | onboarding-flow       | go/scene/body.go and go/scene/linkroute.go          |
     /// | scene-text            | go/scene/body.go                                    |
     /// | slots-dialog          | go/scene/body.go                                    |
-    /// | theme-styles          | go/exec                                             |
+    ///
+    /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
+    /// the paths an icon draws inside its leaf.
     private let skipped: [String: String] = [
         "animations": "go/scene/anim.go",
         "auto-layout-tour": "go/scene/layout.go wrap/line-gap",
-        "button-styles": "go/scene/icon.go",
         "classic-body": "go/scene/body.go",
         "classic-image": "go/scene/image.go",
         "classic-link-index": "go/scene/linkroute.go",
-        "classic-shapes": "go/scene/linkroute.go and go/exec",
-        "classic-styles": "go/scene/body.go",
-        "classic-values": "go/exec",
+        "classic-shapes": "go/scene/linkroute.go and classic.go",
+        "classic-styles": "go/scene/linkroute.go and go/scene/body.go",
+        "classic-values": "go/scene/classic.go (modelVals)",
         "context": "go/scene/context.go",
         "context-classic": "go/scene/context.go",
         "context-file": "go/scene/context.go",
-        "design-kit": "go/exec",
         "doc-body": "go/scene/body.go",
-        "fusio-1620": "go/scene/icon.go",
-        "hero": "go/exec",
-        "library-screen": "go/exec",
         "link-quad": "go/scene/linkroute.go",
         "link-routes": "go/scene/linkroute.go",
-        "onboarding-flow": "go/scene/body.go",
-        "param-metrics": "go/exec",
+        "onboarding-flow": "go/scene/body.go and go/scene/linkroute.go",
         "scene-text": "go/scene/body.go",
         "slots-dialog": "go/scene/body.go",
-        "theme-styles": "go/exec",
     ]
 
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.
@@ -116,7 +105,10 @@ final class SceneParityTests: XCTestCase {
         let element = golden["element"] as? String ?? ""
 
         let tree = try SceneLoader(root: fixtures).load(name + ".tenn")
-        guard let screen = tree.build(element, measurer: Scene.TextMeasurer(estimated: true)) else {
+        guard
+            let screen = tree.build(
+                element, measurer: Scene.TextMeasurer(estimated: true), eval: sceneEvalVars)
+        else {
             return XCTFail("\(name): the scene does not build: \(tree.diagnostics)")
         }
         var got = dump(screen)
