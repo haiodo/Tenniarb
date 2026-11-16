@@ -163,4 +163,64 @@ final class SceneAutoLayoutTests: XCTestCase {
         XCTAssertEqual(b.rx, 90, accuracy: 1e-9)
         XCTAssertEqual(a.ry, 20, accuracy: 1e-9, "align center: (50 - 10) / 2")
     }
+
+    func testWrapBreaksARowIntoLinesWithLineGap() throws {
+        let (tree, root) = try layout(
+            """
+            element "Screen" {
+                item "Row" {
+                    auto-layout row
+                    wrap yes
+                    width 100
+                    gap 4
+                    line-gap 10
+                    padding 5
+                    item "A" { width 40; height 20 }
+                    item "B" { width 40; height 20 }
+                    item "C" { width 40; height 20 }
+                    item "D" { width 40; height 20 }
+                }
+            }
+            """)
+
+        XCTAssertTrue(tree.diagnostics.isEmpty, "\(tree.diagnostics)")
+        let row = try XCTUnwrap(root.kids.first)
+        // 90 inside the padding fits two 40s and the gap; the third starts the next line.
+        XCTAssertEqual(row.rh, 60, accuracy: 1e-9, "5 + 20 + 10 line-gap + 20 + 5")
+        let c = try XCTUnwrap(row.kids.dropFirst(2).first)
+        XCTAssertEqual(c.rx, 5, accuracy: 1e-9)
+        XCTAssertEqual(c.ry, 35, accuracy: 1e-9, "padding 5 + the first line 20 + line-gap 10")
+        let d = try XCTUnwrap(row.kids.last)
+        XCTAssertEqual(d.rx, 49, accuracy: 1e-9, "5 + 40 + gap 4")
+        XCTAssertEqual(d.ry, 35, accuracy: 1e-9)
+    }
+
+    func testWrappingColumnHugsTheWidthOfItsColumns() throws {
+        let (tree, root) = try layout(
+            """
+            element "Screen" {
+                item "Column" {
+                    auto-layout column
+                    wrap yes
+                    height 100
+                    gap 4
+                    line-gap 6
+                    item "A" { width 30; height 40 }
+                    item "B" { width 30; height 40 }
+                    item "C" { width 30; height 40 }
+                    item "D" { width 30; height 40 }
+                }
+            }
+            """)
+
+        XCTAssertTrue(tree.diagnostics.isEmpty, "\(tree.diagnostics)")
+        let column = try XCTUnwrap(root.kids.first)
+        XCTAssertEqual(column.rw, 66, accuracy: 1e-9, "two 30 columns and the 6 line-gap")
+        XCTAssertEqual(column.rh, 100, accuracy: 1e-9)
+        let c = try XCTUnwrap(column.kids.dropFirst(2).first)
+        XCTAssertEqual(c.rx, 36, accuracy: 1e-9, "the second column at 30 + line-gap 6")
+        XCTAssertEqual(c.ry, 0, accuracy: 1e-9)
+        let d = try XCTUnwrap(column.kids.last)
+        XCTAssertEqual(d.ry, 44, accuracy: 1e-9, "40 + gap 4")
+    }
 }

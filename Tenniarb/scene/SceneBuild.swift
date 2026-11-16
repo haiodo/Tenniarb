@@ -157,7 +157,8 @@ extension Scene {
                 }
             }
             n.gap = num(rn, "gap") ?? 0
-            // shortcut: a wrapping flow is one line until gowt layoutWrap and line-gap are ported.
+            n.lineGap = num(rn, "line-gap") ?? 0
+            n.wrap = flag(rn, "wrap")
             if let word = word(rn, "align", ["start", "center", "end"]) {
                 n.align = align(word)
             }

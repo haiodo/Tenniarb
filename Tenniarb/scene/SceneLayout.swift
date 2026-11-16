@@ -76,6 +76,9 @@ extension Scene {
         var align: Align = .start
         var justify: Align = .start
 
+        var wrap = false  // break children into lines (row, column)
+        var lineGap = 0.0  // between lines of a wrapping node
+
         var kids: [LayoutNode] = []
         weak var parent: LayoutNode?
         var node: RNode?  // the resolved node the box was made for (Tag of gowt layout)
@@ -138,6 +141,8 @@ extension Scene {
                 for k in kids {
                     w = max(w, k.x + k.intrinsicWidth())
                 }
+            case dir == .column && wrap && height.kind == .fixed:
+                w = wrappedColumnsW(kids)
             case dir == .row:
                 w = padding.left + padding.right + gapsOf(gap, kids.count)
                 for k in kids {
@@ -150,6 +155,34 @@ extension Scene {
                 w += padding.left + padding.right
             }
             return clampW(w)
+        }
+
+        /// The width of a wrapping column of fixed height: its columns side by side. It lays the kids out at
+        /// their natural width; the real layout redoes it.
+        private func wrappedColumnsW(_ kids: [LayoutNode]) -> Double {
+            let avail = clampH(height.value) - padding.top - padding.bottom
+            var w = 0.0
+            var colW = 0.0
+            var colH = 0.0
+            var cols = 0
+            for (i, k) in kids.enumerated() {
+                k.layout(w: k.intrinsicWidth(), h: k.height.kind == .fixed ? k.height.value : -1)
+                if i > 0 && colH + gap + k.rh > avail + 1e-9 {
+                    w += colW
+                    colW = 0
+                    colH = 0
+                    cols += 1
+                } else if i > 0 {
+                    colH += gap
+                }
+                colW = max(colW, k.rw)
+                colH += k.rh
+            }
+            if !kids.isEmpty {
+                w += colW
+                cols += 1
+            }
+            return w + lineGap * Double(max(cols - 1, 0)) + padding.left + padding.right
         }
 
         private func kidW(_ avail: Double) -> Double {
@@ -219,9 +252,12 @@ extension Scene {
             }
         }
 
-        // No wrap and no line-gap yet: go/scene reads both, gowt layoutWrap has no Swift port.
         private func layoutFlow(w: Double, h: Double) {
             let kids = flow()
+            if wrap {
+                layoutWrap(kids, w: w, h: h)
+                return
+            }
             let innerW = w - padding.left - padding.right
             let gaps = gapsOf(gap, kids.count)
             var innerH = h - padding.top - padding.bottom
@@ -271,7 +307,7 @@ extension Scene {
                 }
             }
             rh = height
-            place(kids, horiz: true, innerW: innerW, innerH: innerH, gaps: gaps)
+            place(kids, horiz: true, pl: padding.left, pt: padding.top, innerW: innerW, innerH: innerH, gaps: gaps)
         }
 
         private func layoutColumn(_ kids: [LayoutNode], h: Double, innerW: Double, innerH: Double, gaps: Double) {
@@ -304,7 +340,7 @@ extension Scene {
                 innerH = hug.inner
             }
             rh = height
-            place(kids, horiz: false, innerW: innerW, innerH: innerH, gaps: gaps)
+            place(kids, horiz: false, pl: padding.left, pt: padding.top, innerW: innerW, innerH: innerH, gaps: gaps)
         }
 
         /// The height of a node that hugs content, and the room inside its padding.
@@ -317,7 +353,116 @@ extension Scene {
             return (height, inner)
         }
 
-        private func place(_ kids: [LayoutNode], horiz: Bool, innerW: Double, innerH: Double, gaps: Double) {
+        /// One line of a wrapping flow: its kids, and the sizes the line takes on the main and the cross axis.
+        private struct WrapLine {
+            var kids: [LayoutNode] = []
+            var main = 0.0
+            var cross = 0.0
+        }
+
+        /// Lays out a wrapping row or column: kids get their natural main size and are cut into lines, fill
+        /// kids grow into the free space of their line, then each line is placed like a flow.
+        private func layoutWrap(_ kids: [LayoutNode], w: Double, h: Double) {
+            let horiz = dir == .row
+            let innerW = w - padding.left - padding.right
+            var innerH = h - padding.top - padding.bottom
+            if h < 0 {
+                innerH = -1
+            }
+            var mainAvail = horiz ? innerW : innerH
+            if !horiz && innerH < 0 {
+                mainAvail = .infinity
+            }
+            func mainOf(_ k: LayoutNode) -> Double { horiz ? k.rw : k.rh }
+            func crossOf(_ k: LayoutNode) -> Double { horiz ? k.rh : k.rw }
+            func growsMain(_ k: LayoutNode) -> Bool { horiz ? k.width.kind == .fill : k.height.kind == .fill }
+            func fixedH(_ k: LayoutNode) -> Double { k.height.kind == .fixed ? k.height.value : -1 }
+
+            var lines: [WrapLine] = []
+            var cur = WrapLine()
+            for k in kids {
+                k.layout(w: k.intrinsicWidth(), h: fixedH(k))
+                let main = mainOf(k)
+                if !cur.kids.isEmpty && cur.main + gap + main > mainAvail + 1e-9 {
+                    lines.append(cur)
+                    cur = WrapLine()
+                }
+                if !cur.kids.isEmpty {
+                    cur.main += gap
+                }
+                cur.main += main
+                cur.kids.append(k)
+            }
+            if !cur.kids.isEmpty {
+                lines.append(cur)
+            }
+
+            var maxMain = 0.0
+            var total = 0.0
+            for i in lines.indices {
+                var nfill = 0
+                for k in lines[i].kids where growsMain(k) {
+                    nfill += 1
+                }
+                let free = mainAvail - lines[i].main
+                if nfill > 0 && free != 0 && !free.isInfinite {
+                    let share = free / Double(nfill)
+                    lines[i].main = gapsOf(gap, lines[i].kids.count)
+                    for k in lines[i].kids {
+                        if growsMain(k) && horiz {
+                            k.layout(w: max(k.rw + share, 0), h: fixedH(k))
+                        } else if growsMain(k) {
+                            k.layout(w: k.rw, h: max(k.rh + share, 0))
+                        }
+                        lines[i].main += mainOf(k)
+                    }
+                }
+                for k in lines[i].kids {
+                    lines[i].cross = max(lines[i].cross, crossOf(k))
+                }
+                for k in lines[i].kids {
+                    if horiz && k.height.kind == .fill {
+                        k.layout(w: k.rw, h: lines[i].cross)
+                    } else if !horiz && k.width.kind == .fill {
+                        k.layout(w: lines[i].cross, h: fixedH(k))
+                    }
+                }
+                maxMain = max(maxMain, lines[i].main)
+                total += lines[i].cross
+                if i > 0 {
+                    total += lineGap
+                }
+            }
+
+            var height = h
+            if h < 0 {
+                let hug = hugH(horiz ? total : maxMain)
+                height = hug.height
+                innerH = hug.inner
+            }
+            if !horiz {
+                mainAvail = innerH
+            }
+            rh = height
+            var off = 0.0
+            for ln in lines {
+                let gaps = gapsOf(gap, ln.kids.count)
+                if horiz {
+                    place(
+                        ln.kids, horiz: true, pl: padding.left, pt: padding.top + off,
+                        innerW: innerW, innerH: ln.cross, gaps: gaps)
+                } else {
+                    place(
+                        ln.kids, horiz: false, pl: padding.left + off, pt: padding.top,
+                        innerW: ln.cross, innerH: mainAvail, gaps: gaps)
+                }
+                off += ln.cross + lineGap
+            }
+        }
+
+        private func place(
+            _ kids: [LayoutNode], horiz: Bool, pl: Double, pt: Double, innerW: Double, innerH: Double, gaps: Double
+        ) {
             var used = 0.0
             for k in kids {
                 used += horiz ? k.rw : k.rh
@@ -351,11 +496,11 @@ extension Scene {
                     break
                 }
                 if horiz {
-                    k.rx = padding.left + off
-                    k.ry = padding.top + crossOff
+                    k.rx = pl + off
+                    k.ry = pt + crossOff
                 } else {
-                    k.rx = padding.left + crossOff
-                    k.ry = padding.top + off
+                    k.rx = pl + crossOff
+                    k.ry = pt + off
                 }
                 off += main + gap
             }
