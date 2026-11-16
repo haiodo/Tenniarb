@@ -7,6 +7,26 @@ import (
 	"github.com/haiodo/tenniarb/go/model"
 )
 
+// rowEntries is the list menu of an item, component or group row; handled is false for a canvas node,
+// whose commands itemsEntries builds itself.
+func rowEntries(r *ItemRow, duplicate, remove, insert, link func()) (entries []editor.Entry, handled bool) {
+	switch {
+	case r.Item != nil:
+		return []editor.Entry{
+			{Label: "Duplicate", Run: duplicate},
+			{Label: "Delete", Run: remove},
+			{Sep: true},
+			{Label: "Copy Link", Run: link},
+		}, true
+	case r.Component:
+		// The row of a component is not a node of the canvas: the menu inserts it, as a double click does.
+		return []editor.Entry{{Label: "Insert", Run: insert}}, true
+	case r.Kind == "group":
+		return nil, true
+	}
+	return nil, false
+}
+
 // itemsEntries is the context menu of the list: the commands of the selected node, and in a mounted
 // element Insert Component.
 func (v *Viewer) itemsEntries() []editor.Entry {
@@ -18,15 +38,9 @@ func (v *Viewer) itemsEntries() []editor.Entry {
 	if !ok {
 		return nil
 	}
-	if r.Item != nil {
-		return v.withLink([]editor.Entry{{Label: "Duplicate", Run: v.session.Duplicate}, {Label: "Delete", Run: v.session.DeleteSelection}})
-	}
-	if r.Component {
-		// The row of a component is not a node of the canvas: the menu inserts it, as a double click does.
-		return []editor.Entry{{Label: "Insert", Run: func() { v.activateItemRow(*r, nil) }}}
-	}
-	if r.Kind == "group" {
-		return nil
+	if entries, handled := rowEntries(r, v.session.Duplicate, v.session.DeleteSelection,
+		func() { v.activateItemRow(*r, nil) }, v.copyLink); handled {
+		return entries
 	}
 	entries := []editor.Entry{
 		{Label: "Add", Sub: []editor.Entry{

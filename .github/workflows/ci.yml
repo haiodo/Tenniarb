@@ -59,6 +59,10 @@ jobs:
       - name: Vet and test
         run: cd go && go vet ./... && go test ./...
 
+      - name: Check the Intabia example
+        if: runner.os == 'Linux'
+        run: make examples-check
+
   # GUI tests start the app and drive it through gowt's QA server, as gowt runs its own GUI gates
   # (Xvfb + openbox).
   gui-linux:

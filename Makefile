@@ -21,7 +21,7 @@ EMBED_SRC := $(shell find web/packages/core/src web/packages/markdown/src web/pa
 .DEFAULT_GOAL := help
 N ?= 2000
 BLOG ?= ../haiodo.blog
-.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test icons app go-mcp go-mcp-install go-cli-install opencode-mcp codex-mcp claude-mcp agent-install skill-install kill-running install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
+.PHONY: help build test test-only golden swift-png perf lint lint-fix format format-check ci clean web web-test go-test examples-check icons app go-mcp go-mcp-install go-cli-install opencode-mcp codex-mcp claude-mcp agent-install skill-install kill-running install go-fuzz go-pkg-mac go-pkg-win go-pkg-linux go-pkg tenn-bench embed view render tenn-fuzz md-fuzz blog web-demo
 
 help: ## Show available targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -70,6 +70,9 @@ web-test: web/node_modules ## Typecheck and test web packages
 
 go-test: ## Go port (go/): vet + tests
 	cd go && go vet ./... && go test ./...
+
+examples-check: ## Validate every .tenn of the Intabia example, not just its entry
+	cd go && go run ./cmd/tenniarb check -root .. $$(find ../examples/intabia -name '*.tenn' | sort)
 
 ICONS_DIR = /tmp/lucide-static
 
