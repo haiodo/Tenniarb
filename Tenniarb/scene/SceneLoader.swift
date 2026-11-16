@@ -95,6 +95,7 @@ final class SceneLoader {
     private var currentFile = ""
     private var stack: [(abs: String, rel: String)] = []
     private var loaded: [String: Scene.Node] = [:]
+    private var blockEnds: [String: [Int: Int]] = [:]  // closing brace of every block, by file and brace
 
     init(root: URL) {
         self.root = root.standardizedFileURL.resolvingSymlinksInPath()
@@ -114,6 +115,7 @@ final class SceneLoader {
         currentFile = ""
         stack = []
         loaded = [:]
+        blockEnds = [:]
 
         let (abs, inRoot) = inside(absolute(file))
         guard inRoot else {
@@ -178,6 +180,7 @@ final class SceneLoader {
         stack.append((key, rel))
         let file = Scene.Node(kind: .file, pos: Scene.Pos(file: rel, line: 1, col: 1))
         tree.texts[rel] = text
+        blockEnds[rel] = tennBlockEnds(text)
         let parser = TennParser()
         let ast = parser.parse(text)
         if parser.errors.hasErrors() {
@@ -468,21 +471,31 @@ final class SceneLoader {
 
     private func pos(_ c: TennNode) -> Scene.Pos { nodePos(currentFile, c) }
 
-    // The Swift Tenn node keeps no end of a command: the range ends at its last token.
+    // Go's Node.Range: the command starts at its name and ends after its last token, a block counted to
+    // its closing brace (tenn parseCommand keeps End that way).
     private func range(_ c: TennNode) -> Scene.Range {
         guard let token = c.token else { return Scene.Range() }
         var end = Self.endPos(token)
         for k in c.children ?? [] {
-            end = max(end, range(k).end)
+            end = max(end, endOf(k))
         }
         return Scene.Range(start: token.pos, end: end)
     }
 
-    private func body(_ c: TennNode) -> Scene.Range {
-        guard let block = lastBlock(c), let token = block.token else { return Scene.Range() }
-        return Scene.Range(start: token.pos, end: range(block).end)
+    private func endOf(_ k: TennNode) -> Int {
+        if k.kind == .BlockExpr, let open = k.token, let close = blockEnds[currentFile]?[open.pos] {
+            return close
+        }
+        return range(k).end
     }
 
+    private func body(_ c: TennNode) -> Scene.Range {
+        guard let block = lastBlock(c), let token = block.token else { return Scene.Range() }
+        return Scene.Range(start: token.pos, end: endOf(block))
+    }
+
+    // The Tenn lexer counts size in Characters and pos from a byte offset, so the two cancel: pos + size
+    // is the byte just after the token, and the +1 is its closing delimiter.
     private static func endPos(_ token: TennToken) -> Int {
         switch token.type {
         case .stringLit, .expression, .expressionBlock, .markdownLit, .imageData:
