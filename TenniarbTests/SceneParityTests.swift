@@ -20,33 +20,23 @@ import XCTest
 
 /// The Swift side of go/cmd/tennlayout: the same JSON as `web/fixtures/scene/*.layout.json`, made by
 /// go/cmd/tennlayout with gfx.EstimateText, so the scene engine is compared against Go itself.
+///
+/// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not the
+/// paths an icon draws inside its leaf.
 final class SceneParityTests: XCTestCase {
 
     private let fixtures = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("web/fixtures/scene")
 
-    /// The fixtures the stand cannot build yet, with the Go file each one waits for:
-    ///
-    /// | fixture               | missing                          |
-    /// |-----------------------|----------------------------------|
-    /// | animations            | go/scene/anim.go                 |
-    ///
-    /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
-    /// the paths an icon draws inside its leaf.
-    private let skipped: [String: String] = [
-        "animations": "go/scene/anim.go"
-    ]
-
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.
     private let noGolden = ["ui-kit.lib.tenn": "a library, go/cmd/tennlayout makes no golden for it"]
 
     // MARK: - Stand
 
-    func testEveryFixtureIsComparedOrSkipped() throws {
+    func testEveryFixtureHasAGolden() throws {
         let files = try FileManager.default.contentsOfDirectory(atPath: fixtures.path)
         let goldens = Set(files.filter { $0.hasSuffix(".layout.json") }.map { String($0.dropLast(".layout.json".count)) })
-        XCTAssertEqual(Set(skipped.keys).subtracting(goldens), [], "skips without a golden")
         let tenns = Set(files.filter { $0.hasSuffix(".tenn") }.map { String($0.dropLast(".tenn".count)) })
         XCTAssertEqual(
             tenns.subtracting(goldens).subtracting(noGolden.keys.map { $0.replacingOccurrences(of: ".tenn", with: "") }), [],
@@ -60,9 +50,6 @@ final class SceneParityTests: XCTestCase {
             .map { String($0.dropLast(".layout.json".count)) }
             .sorted()
         for name in names {
-            if skipped[name] != nil {
-                continue  // the Go file it waits for is named in the table above
-            }
             try compare(name)
         }
     }

@@ -50,6 +50,8 @@ extension Scene {
         var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
         /// The classic inline pictures of a node, by the name its text draws them with.
         var inlines: [ObjectIdentifier: [String: ItemImage]] = [:]
+        /// The animation a node plays (spec 13).
+        var anim: [ObjectIdentifier: Scene.Animation] = [:]
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
         /// The colours of the markdown markup already reported.
@@ -73,6 +75,7 @@ extension Scene {
         /// The layout of an element: its content at their own positions.
         func root(_ rn: RNode) -> LayoutNode {
             classic = !sceneRoot(rn)
+            animations(rn, nil)  // before the layout: the first frame of an animation is part of the picture
             let n = LayoutNode()
             n.dir = .abs
             n.node = rn
