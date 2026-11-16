@@ -3,12 +3,22 @@
 ## О проекте
 
 Tenniarb - редактор диаграмм и экранов в формате `.tenn`: структура плюс вычисления, всё текстом.
-Живая версия - Go (`go/`, окна на `gowt`). Swift-версия (`Tenniarb/`, `TenniarbTests/`,
-`Tenniarb.xcodeproj`) остаётся в дереве как история: CI её не собирает, новые фичи идут в Go.
+Две версии одного приложения: Go (`go/`, окна на `gowt`) и Swift (`Tenniarb/`, `TenniarbTests/`,
+`Tenniarb.xcodeproj`, AppKit). Версии держим 1:1 по функционалу: расхождение - дефект. Паритет нужен,
+чтобы сравнивать нативное AppKit-приложение с Go по поведению и памяти.
 
 - Язык/платформа: Go, модуль `github.com/haiodo/tenniarb/go`; UI - `gowt` (AppKit под капотом)
 - Вычисления: `goja`; рендер - `go/scene` (один движок: `go/render` удалён, классическая диаграмма — его профиль рисования в сцене)
 - Формат: `github.com/haiodo/tenn/go` (lexer, parser, printer; отдельный репозиторий), спецификация - `docs/spec/tenn-scene.md`
+
+## Паритет версий
+
+- Фича есть в обеих версиях. Пока паритет в этой области не достигнут, фича идёт в Go и строкой в план,
+  после - сразу в обе.
+- Сейчас Swift догоняет Go: первым сценовый движок (`go/scene`), за ним библиотеки и монтирование,
+  Items, структурный инспектор, экспорт, комментарии, меню. План - `../my-tasks/tenniarb/swift-parity.md`.
+- Swift-сборка локальная: `make build` (Debug, ~10 с). В CI она не гоняется, GUI-тесты - по разрешению
+  владельца.
 
 ## Структура репозитория
 
@@ -57,15 +67,15 @@ make agent-install  # скилл и MCP во все три агента (opencod
 make opencode-mcp   # то же в один агент: --opencode | --codex | --claude
 make skill-install  # только скилл, без MCP
 make kill-running   # остановить приложение, прокси и сервис
-make build          # Xcode-сборка Swift-версии (история, не живая версия)
-make test           # Swift-тесты (история)
+make build          # Xcode-сборка Swift-версии
+make test           # Swift-тесты (открывают окна: по разрешению владельца)
 make test-only T=TenniarbTests/LexerTests
 make perf           # только performance-тесты (схема Tenniarb-Performance)
 make lint           # SwiftLint
 make lint-fix       # автокоррекции SwiftLint
 make format         # swift-format --in-place
 make format-check   # падает если код не отформатирован
-make ci             # SwiftLint + Xcode-сборка и тесты (локально, для Swift-истории)
+make ci             # SwiftLint + Xcode-сборка и тесты (локально)
 make clean
 make web            # сборка web/packages
 make web-test       # typecheck + тесты web/
@@ -230,7 +240,7 @@ Performance-тесты исключены из основного прогона
 
 ## CI и релизы
 
-- CI workflow (`.github/workflows/ci.yml`) проверяет Go (vet + тесты на macOS, Linux и Windows), web-пакеты (typecheck + тесты) и гоняет GUI-тесты под Xvfb. Swift-приложение больше не собирается в CI: Xcode-проект остаётся в дереве как история.
+- CI workflow (`.github/workflows/ci.yml`) проверяет Go (vet + тесты на macOS, Linux и Windows), web-пакеты (typecheck + тесты) и гоняет GUI-тесты под Xvfb. Swift-приложение в CI не собирается: `make build` запускается локально.
 - Release workflow (`.github/workflows/release.yml`) запускается по тегу:
   - собирает Release
   - архивирует `Tenniarb.app` в zip
