@@ -1,0 +1,157 @@
+// The UI SDK wireframe kit in use: a settings page, a members list and a dialog below them.
+// Parts keep the ui-sdk names, so `tenniarb generate examples/ui-sdk.tenn Settings` prints the same screen
+// as @ui-sdk/svelte markup; the template of Settings is the export around it.
+
+element "ui" --from-file "../libraries/ui-sdk.tenn"
+
+element "Settings" {
+    template %{
+<script lang="ts">
+  import { Button } from "@ui-sdk/svelte/button"
+  import { Checkbox } from "@ui-sdk/svelte/checkbox"
+  import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@ui-sdk/svelte/dialog"
+  import { FieldDescription, FieldLabel } from "@ui-sdk/svelte/field"
+  import { Input } from "@ui-sdk/svelte/input"
+  import { Listbox, ListboxItem } from "@ui-sdk/svelte/listbox"
+  import { Meter } from "@ui-sdk/svelte/meter"
+  import { Select } from "@ui-sdk/svelte/select"
+  import { Switch } from "@ui-sdk/svelte/switch"
+  import { Toolbar, ToolbarButton, ToolbarLink, ToolbarSeparator } from "@ui-sdk/svelte/toolbar"
+</script>
+
+<slot/>
+    }
+    item Page {
+        auto-layout column
+        gap 20
+        padding 32
+        width 960
+        color #f3f4f6
+
+        item Head {
+            auto-layout row
+            align center
+            justify space-between
+            width fill
+            item Titles {
+                auto-layout column
+                gap 4
+                item Title { title "Workspace settings"; font-size 22; font-weight 700 }
+                item Sub { title "Plan, members and billing"; font-size 13; text-color #6b7280 }
+            }
+            use ui.Button as save { text "Save changes" }
+        }
+
+        item Body {
+            auto-layout row
+            align start
+            gap 20
+            width fill
+
+            item Form {
+                auto-layout column
+                gap 14
+                width 440
+                padding 20
+                corner-radius 10
+                border-color #d1d5db
+                line-width 1
+                color #ffffff
+
+                item FormHead { auto-layout row; width fill; item h { title General; font-size 15; font-weight 600 } }
+
+                use ui.FieldLabel as nameLabel { text "Workspace name" }
+                use ui.Input as name { value "Acme Studio" }
+
+                use ui.FieldLabel as mailLabel { text "Billing email" }
+                use ui.Input as mail { placeholder "billing@acme.com" }
+                use ui.FieldDescription as mailHelp { text "Invoices go here" }
+
+                use ui.Select as plan { }
+
+                item NotifyRow {
+                    auto-layout row
+                    align center
+                    justify space-between
+                    width fill
+                    height 28
+                    item NotifyLabel { title "Email notifications"; font-size 13 }
+                    use ui.Switch as notify { checked yes }
+                }
+
+                item TermsRow {
+                    auto-layout row
+                    align center
+                    gap 8
+                    height 24
+                    use ui.Checkbox as terms { checked yes }
+                    item TermsLabel { title "Send me release notes"; font-size 13 }
+                }
+
+                item FormFoot {
+                    auto-layout row
+                    justify end
+                    gap 8
+                    width fill
+                    use ui.Button as cancel { text Cancel }
+                    use ui.Button as create { text "Create workspace" }
+                }
+            }
+
+            item Side {
+                auto-layout column
+                gap 14
+                width 420
+
+                item MembersHead {
+                    auto-layout row
+                    align center
+                    justify space-between
+                    width fill
+                    item h { title Members; font-size 15; font-weight 600 }
+                    use ui.Button as invite { text Invite }
+                }
+
+                use ui.Listbox as members {
+                    slot content {
+                        use ui.ListboxItem as ada { text "Ada Lovelace (owner)" }
+                        use ui.ListboxItem as grace { text "Grace Hopper (editor)" }
+                        use ui.ListboxItem as alan { text "Alan Turing (viewer)" }
+                        use ui.ListboxItem as edsger { text "Edsger Dijkstra (viewer)" }
+                    }
+                }
+
+                use ui.Meter as seats { }
+
+                use ui.Toolbar as tools {
+                    slot content {
+                        use ui.ToolbarButton as bold { text B }
+                        use ui.ToolbarButton as italic { text I }
+                        use ui.ToolbarSeparator as rule { }
+                        use ui.ToolbarLink as docs { text "Permissions" }
+                    }
+                }
+            }
+        }
+
+        use ui.Dialog as remove {
+            slot content {
+                use ui.DialogTrigger as open { text "Delete workspace" }
+                use ui.DialogContent as panel {
+                    slot content {
+                        use ui.DialogTitle as panelTitle { text "Delete workspace?" }
+                        use ui.DialogDescription as panelNote { text "Members lose access at once. This cannot be undone." }
+                        item PanelFoot {
+                            auto-layout row
+                            justify end
+                            gap 8
+                            width fill
+                            use ui.Button as keep { text Cancel }
+                            use ui.Button as drop { text Delete }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

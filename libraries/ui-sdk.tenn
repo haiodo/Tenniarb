@@ -1,0 +1,3171 @@
+// UI SDK wireframe kit: one element per part of the ui-sdk composition tree, grayscale, no behavior.
+// The `template` of an element is the code of its part, so `tenniarb generate` prints a screen as
+// @ui-sdk/svelte markup: the template of every use, nested by its slots. A part that holds others
+// declares a slot; a composition root fills it with one level of its composition, so a bare
+// `use ui.Select { }` already reads as a select. Every element reads the Wire tokens itself: a screen
+// uses a part anywhere, without a wrapper that declares the palette.
+
+item Wire {
+    ink #111827; muted #6b7280; faint #9ca3af; line #d1d5db; lineStrong #9ca3af; shade #11182733
+    surface #ffffff; fill #f3f4f6; fillStrong #e5e7eb
+    onAccent #ffffff; danger #b91c1c
+    radius 6; radiusSmall 4; radiusPanel 8; font 13; fontSmall 11; fontTitle 15
+}
+context --from-item Wire
+
+element "Accordion" {
+    kind Component
+    context --from-item Wire
+    template %{<Accordion>
+<slot content/>
+</Accordion>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use AccordionItem as accordionItem { text "Item 1" }
+            use AccordionItem as accordionItem2 { text "Item 2" }
+        }
+    }
+}
+
+element "AccordionHeader" {
+    kind Component
+    context --from-item Wire
+    export let text = "Header"
+    template %{<AccordionHeader>${text}</AccordionHeader>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "AccordionItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<AccordionItem>${text}</AccordionItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "AccordionPanel" {
+    kind Component
+    context --from-item Wire
+    template %{<AccordionPanel>
+<slot content/>
+</AccordionPanel>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "AccordionTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<AccordionTrigger${disabled === "yes" ? " disabled" : ""}>${text}</AccordionTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "AlertDialog" {
+    kind Component
+    context --from-item Wire
+    template %{<AlertDialog>
+<slot content/>
+</AlertDialog>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use AlertDialogTrigger as alertDialogTrigger { }
+            use AlertDialogContent as alertDialogContent { }
+        }
+    }
+}
+
+element "AlertDialogBackdrop" {
+    kind Component
+    context --from-item Wire
+    template %{<AlertDialogBackdrop />}
+    item Backdrop { auto-layout column; width 260; height 160; color ${ctx.shade} }
+}
+
+element "AlertDialogClose" {
+    kind Component
+    context --from-item Wire
+    export let text = "Close"
+    export let disabled = no
+    template %{<AlertDialogClose${disabled === "yes" ? " disabled" : ""}>${text}</AlertDialogClose>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "AlertDialogContent" {
+    kind Component
+    context --from-item Wire
+    template %{<AlertDialogContent>
+<slot content/>
+</AlertDialogContent>}
+    item Box {
+        auto-layout column; gap 10; width 360; min-height 140; padding 16
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        shadow 0 -10 28 #00000026
+        slot content {
+            item Hint { title "Dialog body"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "AlertDialogDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Description"
+    template %{<AlertDialogDescription>${text}</AlertDialogDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "AlertDialogTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Title"
+    template %{<AlertDialogTitle>${text}</AlertDialogTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "AlertDialogTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<AlertDialogTrigger${disabled === "yes" ? " disabled" : ""}>${text}</AlertDialogTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Autocomplete" {
+    kind Component
+    context --from-item Wire
+    template %{<Autocomplete>
+<slot content/>
+</Autocomplete>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use AutocompleteLabel as autocompleteLabel { }
+            use AutocompleteInput as autocompleteInput { }
+            use AutocompleteContent as autocompleteContent { }
+        }
+    }
+}
+
+element "AutocompleteContent" {
+    kind Component
+    context --from-item Wire
+    template %{<AutocompleteContent>
+<slot content/>
+</AutocompleteContent>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "AutocompleteEmpty" {
+    kind Component
+    context --from-item Wire
+    export let text = "Empty"
+    template %{<AutocompleteEmpty>${text}</AutocompleteEmpty>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "AutocompleteInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Search"
+    export let disabled = no
+    template %{<AutocompleteInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6; justify space-between
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+        item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "AutocompleteItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<AutocompleteItem>${text}</AutocompleteItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "AutocompleteLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Role"
+    template %{<AutocompleteLabel>${text}</AutocompleteLabel>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "AutocompleteList" {
+    kind Component
+    context --from-item Wire
+    template %{<AutocompleteList>
+<slot content/>
+</AutocompleteList>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Avatar" {
+    kind Component
+    context --from-item Wire
+    export let text = "AB"
+    template %{<Avatar>${text}</Avatar>}
+    item Avatar {
+        auto-layout row; align center; justify center; width 32; height 32; corner-radius 16; color ${ctx.fillStrong}
+        item Initials { title ${text}; font-size ${ctx.fontSmall}; font-weight 600; text-color ${ctx.muted} }
+    }
+}
+
+element "AvatarFallback" {
+    kind Component
+    context --from-item Wire
+    template %{<AvatarFallback />}
+    item Plate { auto-layout row; width 32; height 32; corner-radius 16; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "AvatarImage" {
+    kind Component
+    context --from-item Wire
+    template %{<AvatarImage />}
+    item Plate { auto-layout row; width 32; height 32; corner-radius 16; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Button" {
+    kind Component
+    context --from-item Wire
+    export let text = "Button"
+    export let disabled = no
+    template %{<Button${disabled === "yes" ? " disabled" : ""}>${text}</Button>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Calendar" {
+    kind Component
+    context --from-item Wire
+    template %{<Calendar />}
+    item Calendar {
+        auto-layout column; gap 6; width 240; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Head {
+            auto-layout row; align center; justify space-between; width fill
+            item Prev { auto-layout row; align center; justify center; width 20; height 20; item t { title "<"; font-size ${ctx.font} } }
+            item Title { title "March 2026"; font-size ${ctx.font}; font-weight 600 }
+            item Next { auto-layout row; align center; justify center; width 20; height 20; item t { title ">"; font-size ${ctx.font} } }
+        }
+        item Weekdays {
+            auto-layout row; width fill; gap 2
+            item d1 { title Mo; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d2 { title Tu; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d3 { title We; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d4 { title Th; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d5 { title Fr; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d6 { title Sa; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+            item d7 { title Su; width fill; font-size ${ctx.fontSmall}; layout center; text-color ${ctx.muted} }
+        }
+        item Week1 {
+            auto-layout row; width fill; gap 2
+            item c1 { title 1; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c2 { title 2; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c3 { title 3; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c4 { title 4; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c5 { title 5; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c6 { title 6; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c7 { title 7; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+        }
+        item Week2 {
+            auto-layout row; width fill; gap 2
+            item c1 { title 8; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c2 { title 9; width fill; height 24; font-size ${ctx.fontSmall}; layout center; corner-radius 4; color ${ctx.ink}; text-color ${ctx.onAccent} }
+            item c3 { title 10; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c4 { title 11; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c5 { title 12; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c6 { title 13; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+            item c7 { title 14; width fill; height 24; font-size ${ctx.fontSmall}; layout center }
+        }
+    }
+}
+
+element "CalendarDay" {
+    kind Component
+    context --from-item Wire
+    export let text = "1"
+    template %{<CalendarDay>${text}</CalendarDay>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "CalendarGrid" {
+    kind Component
+    context --from-item Wire
+    template %{<CalendarGrid>
+<slot content/>
+</CalendarGrid>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "CalendarHeading" {
+    kind Component
+    context --from-item Wire
+    export let text = "March 2026"
+    template %{<CalendarHeading>${text}</CalendarHeading>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "CalendarNext" {
+    kind Component
+    context --from-item Wire
+    export let text = ">"
+    template %{<CalendarNext>${text}</CalendarNext>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "CalendarPrevious" {
+    kind Component
+    context --from-item Wire
+    export let text = "<"
+    template %{<CalendarPrevious>${text}</CalendarPrevious>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "CalendarWeekday" {
+    kind Component
+    context --from-item Wire
+    export let text = "Mo"
+    template %{<CalendarWeekday>${text}</CalendarWeekday>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "CalendarWeekdays" {
+    kind Component
+    context --from-item Wire
+    template %{<CalendarWeekdays>
+<slot content/>
+</CalendarWeekdays>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "CalendarWeeks" {
+    kind Component
+    context --from-item Wire
+    template %{<CalendarWeeks>
+<slot content/>
+</CalendarWeeks>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Carousel" {
+    kind Component
+    context --from-item Wire
+    template %{<Carousel />}
+    item Box {
+        auto-layout column; gap 8; width 300
+        item Viewport {
+            auto-layout row; align center; gap 8; width fill
+            item Prev { auto-layout row; align center; justify center; width 28; height 28; corner-radius 14; border-color ${ctx.line}; line-width 1; item t { title "<"; font-size ${ctx.font} } }
+            item Slide {
+                auto-layout column; align center; justify center; width fill; height 120
+                corner-radius ${ctx.radiusPanel}; color ${ctx.fill}; border-color ${ctx.line}; line-width 1
+                item t { title Slide; font-size ${ctx.font}; text-color ${ctx.muted} }
+            }
+            item Next { auto-layout row; align center; justify center; width 28; height 28; corner-radius 14; border-color ${ctx.line}; line-width 1; item t { title ">"; font-size ${ctx.font} } }
+        }
+        item Dots {
+            auto-layout row; align center; justify center; gap 6; width fill
+            item d1 { width 6; height 6; corner-radius 3; color ${ctx.ink} }
+            item d2 { width 6; height 6; corner-radius 3; color ${ctx.line} }
+            item d3 { width 6; height 6; corner-radius 3; color ${ctx.line} }
+        }
+    }
+}
+
+element "CarouselContent" {
+    kind Component
+    context --from-item Wire
+    template %{<CarouselContent>
+<slot content/>
+</CarouselContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "CarouselItem" {
+    kind Component
+    context --from-item Wire
+    template %{<CarouselItem />}
+    item Plate { auto-layout row; width 120; height 90; corner-radius 4; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "CarouselNext" {
+    kind Component
+    context --from-item Wire
+    template %{<CarouselNext />}
+    item Plate { auto-layout row; width 28; height 28; corner-radius 14; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "CarouselPrevious" {
+    kind Component
+    context --from-item Wire
+    template %{<CarouselPrevious />}
+    item Plate { auto-layout row; width 28; height 28; corner-radius 14; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "CarouselViewport" {
+    kind Component
+    context --from-item Wire
+    template %{<CarouselViewport>
+<slot content/>
+</CarouselViewport>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Checkbox" {
+    kind Component
+    context --from-item Wire
+    export let checked = no
+    template %{<Checkbox defaultChecked={${checked === "yes"}} />}
+    item Box {
+        auto-layout row; align center; justify center; width 16; height 16; corner-radius ${ctx.radiusSmall}; line-width 1
+        color ${checked === "yes" ? ctx.ink : ctx.surface}; border-color ${checked === "yes" ? ctx.ink : ctx.lineStrong}
+        item Mark { title ${checked === "yes" ? "x" : ""}; font-size 10; text-color ${ctx.onAccent} }
+    }
+}
+
+element "CheckboxIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<CheckboxIndicator />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Collapsible" {
+    kind Component
+    context --from-item Wire
+    template %{<Collapsible>
+<slot content/>
+</Collapsible>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use CollapsibleTrigger as collapsibleTrigger { }
+            use CollapsiblePanel as collapsiblePanel { }
+        }
+    }
+}
+
+element "CollapsiblePanel" {
+    kind Component
+    context --from-item Wire
+    template %{<CollapsiblePanel>
+<slot content/>
+</CollapsiblePanel>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "CollapsibleTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<CollapsibleTrigger${disabled === "yes" ? " disabled" : ""}>${text}</CollapsibleTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "ColorPicker" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPicker />}
+    item Box {
+        auto-layout column; gap 8; width 240
+        item Area {
+            auto-layout abs; width fill; height 120; corner-radius ${ctx.radiusSmall}
+            color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1
+            item Thumb { pos 150 -40; width 12; height 12; corner-radius 6; color ${ctx.surface}; border-color ${ctx.ink}; line-width 2 }
+        }
+        item SliderRow {
+            auto-layout row; align center; width fill; height 12
+            item Track { auto-layout row; width fill; height 8; corner-radius 4; color ${ctx.fillStrong} }
+        }
+        item Swatches {
+            auto-layout row; align center; gap 6; width fill
+            item s1 { width 20; height 20; corner-radius 4; color ${ctx.ink} }
+            item s2 { width 20; height 20; corner-radius 4; color ${ctx.lineStrong} }
+            item s3 { width 20; height 20; corner-radius 4; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+            item s4 { width 20; height 20; corner-radius 4; color ${ctx.muted} }
+        }
+        item Hex {
+            auto-layout row; align center; width 120; height 28; padding 0 8
+            corner-radius ${ctx.radius}; border-color ${ctx.line}; line-width 1; color ${ctx.surface}
+            item t { title "#111827"; font-size ${ctx.font} }
+        }
+    }
+}
+
+element "ColorPickerArea" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerArea>
+<slot content/>
+</ColorPickerArea>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ColorPickerAreaCanvas" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerAreaCanvas />}
+    item Plate { auto-layout row; width 220; height 120; corner-radius 4; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ColorPickerAreaThumb" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerAreaThumb />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ColorPickerChannelInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "0"
+    export let disabled = no
+    template %{<ColorPickerChannelInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "ColorPickerEyeDropper" {
+    kind Component
+    context --from-item Wire
+    export let text = "o"
+    template %{<ColorPickerEyeDropper>${text}</ColorPickerEyeDropper>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "ColorPickerInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "#000000"
+    export let disabled = no
+    template %{<ColorPickerInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "ColorPickerSlider" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerSlider>
+<slot content/>
+</ColorPickerSlider>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ColorPickerSliderThumb" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerSliderThumb />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ColorPickerSwatch" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerSwatch />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ColorPickerSwatchItem" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerSwatchItem />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ColorPickerSwatches" {
+    kind Component
+    context --from-item Wire
+    template %{<ColorPickerSwatches>
+<slot content/>
+</ColorPickerSwatches>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Combobox" {
+    kind Component
+    context --from-item Wire
+    template %{<Combobox>
+<slot content/>
+</Combobox>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use ComboboxLabel as comboboxLabel { }
+            use ComboboxInput as comboboxInput { }
+            use ComboboxContent as comboboxContent { }
+        }
+    }
+}
+
+element "ComboboxContent" {
+    kind Component
+    context --from-item Wire
+    template %{<ComboboxContent>
+<slot content/>
+</ComboboxContent>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ComboboxInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Search"
+    export let disabled = no
+    template %{<ComboboxInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6; justify space-between
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+        item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "ComboboxItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<ComboboxItem>${text}</ComboboxItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "ComboboxLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Role"
+    template %{<ComboboxLabel>${text}</ComboboxLabel>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "ComboboxList" {
+    kind Component
+    context --from-item Wire
+    template %{<ComboboxList>
+<slot content/>
+</ComboboxList>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Command" {
+    kind Component
+    context --from-item Wire
+    template %{<Command>
+<slot content/>
+</Command>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use CommandInput as commandInput { }
+            use CommandEmpty as commandEmpty { }
+            use CommandList as commandList { }
+        }
+    }
+}
+
+element "CommandEmpty" {
+    kind Component
+    context --from-item Wire
+    export let text = "Empty"
+    template %{<CommandEmpty>${text}</CommandEmpty>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "CommandInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Search"
+    export let disabled = no
+    template %{<CommandInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6; justify space-between
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+        item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "CommandItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<CommandItem>${text}</CommandItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "CommandList" {
+    kind Component
+    context --from-item Wire
+    template %{<CommandList>
+<slot content/>
+</CommandList>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "DateInput" {
+    kind Component
+    context --from-item Wire
+    template %{<DateInput />}
+    item Box {
+        auto-layout row; align center; gap 4
+        item d1 { auto-layout row; align center; justify center; width 34; height 30; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title 03; font-size ${ctx.font} } }
+        item d2 { auto-layout row; align center; justify center; width 34; height 30; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title 16; font-size ${ctx.font} } }
+        item d3 { auto-layout row; align center; justify center; width 46; height 30; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title 2026; font-size ${ctx.font} } }
+    }
+}
+
+element "DateInputSegment" {
+    kind Component
+    context --from-item Wire
+    export let text = "Segment"
+    template %{<DateInputSegment>${text}</DateInputSegment>}
+    item Box {
+        auto-layout row; align center; justify center; width 34; height 30
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "DatePicker" {
+    kind Component
+    context --from-item Wire
+    template %{<DatePicker>
+<slot content/>
+</DatePicker>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use DatePickerInput as datePickerInput { }
+            use DatePickerTrigger as datePickerTrigger { }
+            use DatePickerContent as datePickerContent { }
+        }
+    }
+}
+
+element "DatePickerContent" {
+    kind Component
+    context --from-item Wire
+    template %{<DatePickerContent>
+<slot content/>
+</DatePickerContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "DatePickerHint" {
+    kind Component
+    context --from-item Wire
+    export let text = "Hint"
+    template %{<DatePickerHint>${text}</DatePickerHint>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "DatePickerInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Pick a date"
+    export let disabled = no
+    template %{<DatePickerInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "DatePickerTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<DatePickerTrigger${disabled === "yes" ? " disabled" : ""}>${text}</DatePickerTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Dialog" {
+    kind Component
+    context --from-item Wire
+    template %{<Dialog>
+<slot content/>
+</Dialog>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use DialogTrigger as dialogTrigger { }
+            use DialogContent as dialogContent { }
+        }
+    }
+}
+
+element "DialogBackdrop" {
+    kind Component
+    context --from-item Wire
+    template %{<DialogBackdrop />}
+    item Backdrop { auto-layout column; width 260; height 160; color ${ctx.shade} }
+}
+
+element "DialogClose" {
+    kind Component
+    context --from-item Wire
+    export let text = "Close"
+    export let disabled = no
+    template %{<DialogClose${disabled === "yes" ? " disabled" : ""}>${text}</DialogClose>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "DialogContent" {
+    kind Component
+    context --from-item Wire
+    template %{<DialogContent>
+<slot content/>
+</DialogContent>}
+    item Box {
+        auto-layout column; gap 10; width 360; min-height 140; padding 16
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        shadow 0 -10 28 #00000026
+        slot content {
+            item Hint { title "Dialog body"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "DialogDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Description"
+    template %{<DialogDescription>${text}</DialogDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "DialogTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Title"
+    template %{<DialogTitle>${text}</DialogTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "DialogTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<DialogTrigger${disabled === "yes" ? " disabled" : ""}>${text}</DialogTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Drawer" {
+    kind Component
+    context --from-item Wire
+    template %{<Drawer>
+<slot content/>
+</Drawer>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use DrawerTrigger as drawerTrigger { }
+            use DrawerContent as drawerContent { }
+        }
+    }
+}
+
+element "DrawerBackdrop" {
+    kind Component
+    context --from-item Wire
+    template %{<DrawerBackdrop />}
+    item Backdrop { auto-layout column; width 260; height 160; color ${ctx.shade} }
+}
+
+element "DrawerClose" {
+    kind Component
+    context --from-item Wire
+    export let text = "Close"
+    export let disabled = no
+    template %{<DrawerClose${disabled === "yes" ? " disabled" : ""}>${text}</DrawerClose>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "DrawerContent" {
+    kind Component
+    context --from-item Wire
+    template %{<DrawerContent>
+<slot content/>
+</DrawerContent>}
+    item Box {
+        auto-layout column; gap 10; width 360; min-height 140; padding 16
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        shadow 0 -10 28 #00000026
+        slot content {
+            item Hint { title "Dialog body"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "DrawerDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Description"
+    template %{<DrawerDescription>${text}</DrawerDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "DrawerTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Title"
+    template %{<DrawerTitle>${text}</DrawerTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "DrawerTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<DrawerTrigger${disabled === "yes" ? " disabled" : ""}>${text}</DrawerTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Field" {
+    kind Component
+    context --from-item Wire
+    template %{<Field />}
+    item Box {
+        auto-layout column; gap 6; width 240
+        item Label { title Email; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+        item Input {
+            auto-layout row; align center; width fill; height 32; padding 0 10
+            corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}
+            item t { title "name@example.com"; font-size ${ctx.font} }
+        }
+        item Help { title "We never share it"; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+    }
+}
+
+element "FieldDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Help text"
+    template %{<FieldDescription>${text}</FieldDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "FieldError" {
+    kind Component
+    context --from-item Wire
+    export let text = "This field is required"
+    template %{<FieldError>${text}</FieldError>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.danger}; layout left }
+}
+
+element "FieldLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Label"
+    template %{<FieldLabel>${text}</FieldLabel>}
+    item Text { auto-layout row; auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "FileInput" {
+    kind Component
+    context --from-item Wire
+    template %{<FileInput />}
+    item Box {
+        auto-layout column; gap 8; width 300
+        item Drop {
+            auto-layout column; align center; justify center; gap 4; width fill; height 80
+            corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.fill}
+            item t { title "Drop files here"; font-size ${ctx.font}; text-color ${ctx.muted} }
+            item b { title Choose; font-size ${ctx.fontSmall}; text-color ${ctx.ink} }
+        }
+        item File { auto-layout row; align center; gap 6; width fill; item n { title "report.pdf"; font-size ${ctx.font}; layout left; width fill }; item x { title Remove; font-size ${ctx.fontSmall}; text-color ${ctx.muted} } }
+    }
+}
+
+element "FileInputDropzone" {
+    kind Component
+    context --from-item Wire
+    template %{<FileInputDropzone />}
+    item Plate { auto-layout row; width 300; height 80; corner-radius 8; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "FileInputItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<FileInputItem>${text}</FileInputItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "FileInputItemRemove" {
+    kind Component
+    context --from-item Wire
+    export let text = "Remove"
+    export let disabled = no
+    template %{<FileInputItemRemove${disabled === "yes" ? " disabled" : ""}>${text}</FileInputItemRemove>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "FileInputList" {
+    kind Component
+    context --from-item Wire
+    template %{<FileInputList>
+<slot content/>
+</FileInputList>}
+    item Box {
+        auto-layout column; gap 2; width 220; min-height 40
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "FileInputTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<FileInputTrigger${disabled === "yes" ? " disabled" : ""}>${text}</FileInputTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "HoverCard" {
+    kind Component
+    context --from-item Wire
+    template %{<HoverCard>
+<slot content/>
+</HoverCard>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use HoverCardTrigger as hoverCardTrigger { }
+            use HoverCardContent as hoverCardContent { }
+        }
+    }
+}
+
+element "HoverCardArrow" {
+    kind Component
+    context --from-item Wire
+    template %{<HoverCardArrow />}
+    item Arrow { auto-layout row; width 10; height 5; color ${ctx.surface}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "HoverCardContent" {
+    kind Component
+    context --from-item Wire
+    template %{<HoverCardContent>
+<slot content/>
+</HoverCardContent>}
+    item Box {
+        auto-layout column; gap 4; width 160; min-height 40; padding 6 8
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 10 #0000001f
+        slot content {
+            item Hint { title "Hint"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "HoverCardTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<HoverCardTrigger${disabled === "yes" ? " disabled" : ""}>${text}</HoverCardTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "ImageCropper" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropper />}
+    item Box {
+        auto-layout column; gap 8; width 280
+        item Viewport {
+            auto-layout abs; width fill; height 150; corner-radius ${ctx.radiusSmall}
+            color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1
+            item Selection { pos 40 -30; width 160; height 90; border-color ${ctx.ink}; line-width 1 }
+        }
+        item Tools {
+            auto-layout row; align center; gap 6; width fill
+            item z { auto-layout row; align center; justify center; width 28; height 24; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title -; font-size ${ctx.font} } }
+            item r { auto-layout row; align center; justify center; width 28; height 24; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title R; font-size ${ctx.fontSmall} } }
+            item f { auto-layout row; align center; justify center; width 28; height 24; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title F; font-size ${ctx.fontSmall} } }
+        }
+    }
+}
+
+element "ImageCropperFlip" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperFlip />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ImageCropperGrid" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperGrid />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ImageCropperHandle" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperHandle />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ImageCropperImage" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperImage />}
+    item Plate { auto-layout row; width 240; height 140; corner-radius 4; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ImageCropperRotate" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperRotate />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ImageCropperSelection" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperSelection>
+<slot content/>
+</ImageCropperSelection>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ImageCropperViewport" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperViewport>
+<slot content/>
+</ImageCropperViewport>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ImageCropperZoom" {
+    kind Component
+    context --from-item Wire
+    template %{<ImageCropperZoom />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Input" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Text"
+    export let disabled = no
+    template %{<Input defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "InputClear" {
+    kind Component
+    context --from-item Wire
+    export let text = "x"
+    template %{<InputClear>${text}</InputClear>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "InputGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<InputGroup>
+<slot content/>
+</InputGroup>}
+    item Box {
+        auto-layout row; align center; gap 4
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Label" {
+    kind Component
+    context --from-item Wire
+    export let text = "Label"
+    template %{<Label>${text}</Label>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "Listbox" {
+    kind Component
+    context --from-item Wire
+    template %{<Listbox>
+<slot content/>
+</Listbox>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use ListboxItem as listboxItem { text "Item 1" }
+            use ListboxItem as listboxItem2 { text "Item 2" }
+        }
+    }
+}
+
+element "ListboxItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<ListboxItem>${text}</ListboxItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "ListboxItemIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<ListboxItemIndicator />}
+    item Mark { auto-layout row; width 8; height 8; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Menu" {
+    kind Component
+    context --from-item Wire
+    template %{<Menu>
+<slot content/>
+</Menu>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use MenuTrigger as menuTrigger { }
+            use MenuContent as menuContent { }
+        }
+    }
+}
+
+element "MenuContent" {
+    kind Component
+    context --from-item Wire
+    template %{<MenuContent>
+<slot content/>
+</MenuContent>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "MenuItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<MenuItem>${text}</MenuItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "MenuTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<MenuTrigger${disabled === "yes" ? " disabled" : ""}>${text}</MenuTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Menubar" {
+    kind Component
+    context --from-item Wire
+    template %{<Menubar />}
+    item Menubar {
+        auto-layout row; align center; gap 2; padding 2 6; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item m1 { auto-layout row; align center; height 24; padding 0 8; corner-radius ${ctx.radiusSmall}; item t { title File; font-size ${ctx.font} } }
+        item m2 { auto-layout row; align center; height 24; padding 0 8; corner-radius ${ctx.radiusSmall}; item t { title Edit; font-size ${ctx.font} } }
+        item m3 { auto-layout row; align center; height 24; padding 0 8; corner-radius ${ctx.radiusSmall}; item t { title View; font-size ${ctx.font} } }
+    }
+}
+
+element "Meter" {
+    kind Component
+    context --from-item Wire
+    template %{<Meter />}
+    item Box {
+        auto-layout column; gap 6; width 200
+        item Head {
+            auto-layout row; align center; justify space-between; width fill
+            item Label { title Usage; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+            item Value { title "40%"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+        }
+        item Track { auto-layout row; width fill; height 8; corner-radius 4; color ${ctx.fillStrong}; item Fill { width 80; height 8; corner-radius 4; color ${ctx.ink} } }
+    }
+}
+
+element "MeterIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<MeterIndicator />}
+    item Bar { auto-layout row; width 60; height 6; corner-radius 3; color ${ctx.ink} }
+}
+
+element "MeterLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Usage"
+    template %{<MeterLabel>${text}</MeterLabel>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "MeterTrack" {
+    kind Component
+    context --from-item Wire
+    template %{<MeterTrack>
+<slot content/>
+</MeterTrack>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "MeterValue" {
+    kind Component
+    context --from-item Wire
+    export let text = "40%"
+    template %{<MeterValue>${text}</MeterValue>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "NavigationMenu" {
+    kind Component
+    context --from-item Wire
+    template %{<NavigationMenu>
+<slot content/>
+</NavigationMenu>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use NavigationMenuList as navigationMenuList { }
+        }
+    }
+}
+
+element "NavigationMenuContent" {
+    kind Component
+    context --from-item Wire
+    template %{<NavigationMenuContent>
+<slot content/>
+</NavigationMenuContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "NavigationMenuItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<NavigationMenuItem>${text}</NavigationMenuItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "NavigationMenuLink" {
+    kind Component
+    context --from-item Wire
+    export let text = "Docs"
+    export let disabled = no
+    template %{<NavigationMenuLink${disabled === "yes" ? " disabled" : ""}>${text}</NavigationMenuLink>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "NavigationMenuList" {
+    kind Component
+    context --from-item Wire
+    template %{<NavigationMenuList />}
+    item Box {
+        auto-layout row; align center; gap 4; padding 4
+        item l1 { auto-layout row; align center; height 28; padding 0 10; corner-radius ${ctx.radiusSmall}; item t { title Home; font-size ${ctx.font} } }
+        item l2 { auto-layout row; align center; height 28; padding 0 10; corner-radius ${ctx.radiusSmall}; item t { title Docs; font-size ${ctx.font}; text-color ${ctx.muted} } }
+        item l3 { auto-layout row; align center; height 28; padding 0 10; corner-radius ${ctx.radiusSmall}; item t { title Blog; font-size ${ctx.font}; text-color ${ctx.muted} } }
+    }
+}
+
+element "NavigationMenuTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<NavigationMenuTrigger${disabled === "yes" ? " disabled" : ""}>${text}</NavigationMenuTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "NavigationMenuViewport" {
+    kind Component
+    context --from-item Wire
+    template %{<NavigationMenuViewport>
+<slot content/>
+</NavigationMenuViewport>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "NumberInput" {
+    kind Component
+    context --from-item Wire
+    template %{<NumberInput />}
+    item Box {
+        auto-layout row; align center
+        item Group {
+            auto-layout row; align center; height 32; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}
+            item Dec { auto-layout row; align center; justify center; width 30; height 30; item t { title -; font-size ${ctx.font} } }
+            item Value { title 12; font-size ${ctx.font}; width 48; layout center }
+            item Inc { auto-layout row; align center; justify center; width 30; height 30; item t { title +; font-size ${ctx.font} } }
+        }
+    }
+}
+
+element "NumberInputControl" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "12"
+    export let disabled = no
+    template %{<NumberInputControl defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "NumberInputDecrement" {
+    kind Component
+    context --from-item Wire
+    export let text = "-"
+    template %{<NumberInputDecrement>${text}</NumberInputDecrement>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "NumberInputGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<NumberInputGroup>
+<slot content/>
+</NumberInputGroup>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "NumberInputIncrement" {
+    kind Component
+    context --from-item Wire
+    export let text = "+"
+    template %{<NumberInputIncrement>${text}</NumberInputIncrement>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "NumberInputScrubArea" {
+    kind Component
+    context --from-item Wire
+    template %{<NumberInputScrubArea>
+<slot content/>
+</NumberInputScrubArea>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "NumberInputScrubAreaCursor" {
+    kind Component
+    context --from-item Wire
+    template %{<NumberInputScrubAreaCursor />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "OTPInput" {
+    kind Component
+    context --from-item Wire
+    template %{<OTPInput />}
+    item Box {
+        auto-layout row; align center; gap 6
+        item s1 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}; item t { title 1; font-size ${ctx.fontTitle} } }
+        item s2 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}; item t { title 2; font-size ${ctx.fontTitle} } }
+        item s3 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}; item t { title 3; font-size ${ctx.fontTitle} } }
+        item s4 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface} }
+        item s5 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface} }
+        item s6 { auto-layout row; align center; justify center; width 34; height 40; corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface} }
+    }
+}
+
+element "OTPInputGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<OTPInputGroup>
+<slot content/>
+</OTPInputGroup>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "OTPInputSlot" {
+    kind Component
+    context --from-item Wire
+    template %{<OTPInputSlot />}
+    item Plate { auto-layout row; width 34; height 40; corner-radius 6; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Pagination" {
+    kind Component
+    context --from-item Wire
+    template %{<Pagination />}
+    item Box {
+        auto-layout row; align center; gap 4
+        item Prev { auto-layout row; align center; justify center; width 30; height 30; corner-radius ${ctx.radius}; border-color ${ctx.line}; line-width 1; item t { title "<"; font-size ${ctx.font} } }
+        item p1 { auto-layout row; align center; justify center; width 30; height 30; corner-radius ${ctx.radius}; item t { title 1; font-size ${ctx.font} } }
+        item p2 { auto-layout row; align center; justify center; width 30; height 30; corner-radius ${ctx.radius}; color ${ctx.ink}; item t { title 2; font-size ${ctx.font}; text-color ${ctx.onAccent} } }
+        item p3 { auto-layout row; align center; justify center; width 30; height 30; corner-radius ${ctx.radius}; item t { title 3; font-size ${ctx.font} } }
+        item Next { auto-layout row; align center; justify center; width 30; height 30; corner-radius ${ctx.radius}; border-color ${ctx.line}; line-width 1; item t { title ">"; font-size ${ctx.font} } }
+    }
+}
+
+element "PaginationEllipsis" {
+    kind Component
+    context --from-item Wire
+    export let text = "..."
+    template %{<PaginationEllipsis>${text}</PaginationEllipsis>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "PaginationItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "1"
+    template %{<PaginationItem>${text}</PaginationItem>}
+    item Box {
+        auto-layout row; align center; justify center; height 30; padding 0 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "PaginationLink" {
+    kind Component
+    context --from-item Wire
+    export let text = "2"
+    export let disabled = no
+    template %{<PaginationLink${disabled === "yes" ? " disabled" : ""}>${text}</PaginationLink>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "PaginationList" {
+    kind Component
+    context --from-item Wire
+    template %{<PaginationList>
+<slot content/>
+</PaginationList>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "PaginationNext" {
+    kind Component
+    context --from-item Wire
+    export let text = ">"
+    export let disabled = no
+    template %{<PaginationNext${disabled === "yes" ? " disabled" : ""}>${text}</PaginationNext>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "PaginationPrevious" {
+    kind Component
+    context --from-item Wire
+    export let text = "<"
+    export let disabled = no
+    template %{<PaginationPrevious${disabled === "yes" ? " disabled" : ""}>${text}</PaginationPrevious>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "PasswordInput" {
+    kind Component
+    context --from-item Wire
+    template %{<PasswordInput />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.lineStrong}; color ${ctx.surface}
+        item Value { title "Secret value"; font-size ${ctx.font}; layout left; width fill }
+        item Mark { title "o"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "PasswordInputControl" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Password"
+    export let disabled = no
+    template %{<PasswordInputControl defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "PasswordInputToggle" {
+    kind Component
+    context --from-item Wire
+    export let text = "o"
+    template %{<PasswordInputToggle>${text}</PasswordInputToggle>}
+    item Box {
+        auto-layout row; align center; justify center; width 28; height 28
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "Popover" {
+    kind Component
+    context --from-item Wire
+    template %{<Popover>
+<slot content/>
+</Popover>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use PopoverTrigger as popoverTrigger { }
+            use PopoverContent as popoverContent { }
+        }
+    }
+}
+
+element "PopoverArrow" {
+    kind Component
+    context --from-item Wire
+    template %{<PopoverArrow />}
+    item Arrow { auto-layout row; width 10; height 5; color ${ctx.surface}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "PopoverClose" {
+    kind Component
+    context --from-item Wire
+    export let text = "Close"
+    export let disabled = no
+    template %{<PopoverClose${disabled === "yes" ? " disabled" : ""}>${text}</PopoverClose>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "PopoverContent" {
+    kind Component
+    context --from-item Wire
+    template %{<PopoverContent>
+<slot content/>
+</PopoverContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "PopoverDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Description"
+    template %{<PopoverDescription>${text}</PopoverDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "PopoverTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Title"
+    template %{<PopoverTitle>${text}</PopoverTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "PopoverTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<PopoverTrigger${disabled === "yes" ? " disabled" : ""}>${text}</PopoverTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Preferences" {
+    kind Component
+    context --from-item Wire
+    template %{<Preferences />}
+    item Box {
+        auto-layout column; gap 12; width 320; padding 14
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Title { title Preferences; font-size ${ctx.fontTitle}; font-weight 600; layout left }
+        item Row1 {
+            auto-layout row; align center; justify space-between; width fill; height 28
+            item Label { title "Show line numbers"; font-size ${ctx.font}; layout left }
+            item Switch { auto-layout row; align center; justify end; width 34; height 20; padding 2; corner-radius 10; color ${ctx.ink}; item Thumb { width 14; height 14; corner-radius 7; color ${ctx.surface} } }
+        }
+        item Row2 {
+            auto-layout row; align center; justify space-between; width fill; height 28
+            item Label { title "Font size"; font-size ${ctx.font}; layout left }
+            item Value { title 13; font-size ${ctx.font}; text-color ${ctx.muted} }
+        }
+        item Rule { width fill; height 1; color ${ctx.line} }
+        item Row3 {
+            auto-layout row; align center; justify space-between; width fill; height 28
+            item Label { title Theme; font-size ${ctx.font}; layout left }
+            item Value { title Light; font-size ${ctx.font}; text-color ${ctx.muted} }
+        }
+    }
+}
+
+element "Progress" {
+    kind Component
+    context --from-item Wire
+    template %{<Progress />}
+    item Box {
+        auto-layout column; gap 6; width 200
+        item Head {
+            auto-layout row; align center; justify space-between; width fill
+            item Label { title Upload; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+            item Value { title "40%"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+        }
+        item Track { auto-layout row; width fill; height 6; corner-radius 3; color ${ctx.fillStrong}; item Fill { width fill; height 6; corner-radius 3; color ${ctx.ink} } }
+    }
+}
+
+element "ProgressIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<ProgressIndicator />}
+    item Bar { auto-layout row; width 60; height 6; corner-radius 3; color ${ctx.ink} }
+}
+
+element "ProgressLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Upload"
+    template %{<ProgressLabel>${text}</ProgressLabel>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "ProgressTrack" {
+    kind Component
+    context --from-item Wire
+    template %{<ProgressTrack>
+<slot content/>
+</ProgressTrack>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ProgressValue" {
+    kind Component
+    context --from-item Wire
+    export let text = "40%"
+    template %{<ProgressValue>${text}</ProgressValue>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "Radio" {
+    kind Component
+    context --from-item Wire
+    export let checked = no
+    template %{<Radio defaultChecked={${checked === "yes"}} />}
+    item Box {
+        auto-layout row; align center; justify center; width 16; height 16; corner-radius 8; line-width 1
+        color ${ctx.surface}; border-color ${ctx.lineStrong}
+        item Dot { width 8; height 8; corner-radius 4; color ${checked === "yes" ? ctx.ink : ctx.surface} }
+    }
+}
+
+element "RadioGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<RadioGroup>
+<slot content/>
+</RadioGroup>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use Radio as radio { }
+            use Radio as radio2 { }
+        }
+    }
+}
+
+element "RadioIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<RadioIndicator />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Rating" {
+    kind Component
+    context --from-item Wire
+    template %{<Rating />}
+    item Box {
+        auto-layout row; align center; gap 4
+        item r1 { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.ink} }
+        item r2 { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.ink} }
+        item r3 { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.ink} }
+        item r4 { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+        item r5 { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+    }
+}
+
+element "RatingItem" {
+    kind Component
+    context --from-item Wire
+    template %{<RatingItem />}
+    item Plate { auto-layout row; width 18; height 18; corner-radius 4; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Resizable" {
+    kind Component
+    context --from-item Wire
+    template %{<Resizable />}
+    item Box {
+        auto-layout row; align center; width 320; height 140
+        item Left { auto-layout column; width 140; height fill; padding 10; corner-radius ${ctx.radiusPanel}; border-color ${ctx.line}; line-width 1; color ${ctx.surface}; item t { title Sidebar; font-size ${ctx.font}; text-color ${ctx.muted} } }
+        item Handle { auto-layout row; width 6; height fill; color ${ctx.fillStrong} }
+        item Right { auto-layout column; width 160; height fill; padding 10; corner-radius ${ctx.radiusPanel}; border-color ${ctx.line}; line-width 1; color ${ctx.surface}; item t { title Content; font-size ${ctx.font}; text-color ${ctx.muted} } }
+    }
+}
+
+element "ResizableHandle" {
+    kind Component
+    context --from-item Wire
+    template %{<ResizableHandle />}
+    item Rule { auto-layout row; width 1; height 100; color ${ctx.line} }
+}
+
+element "ResizablePanel" {
+    kind Component
+    context --from-item Wire
+    template %{<ResizablePanel>
+<slot content/>
+</ResizablePanel>}
+    item Box {
+        auto-layout column; gap 8; width 340; min-height 160; padding 12
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Page"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ScrollArea" {
+    kind Component
+    context --from-item Wire
+    template %{<ScrollArea />}
+    item Box {
+        auto-layout row; width 280; height 140; corner-radius ${ctx.radiusPanel}; border-color ${ctx.line}; line-width 1; color ${ctx.surface}
+        item Viewport {
+            auto-layout column; gap 8; width fill; height fill; padding 10
+            item r1 { title "Row 1"; font-size ${ctx.font}; layout left }
+            item r2 { title "Row 2"; font-size ${ctx.font}; layout left }
+            item r3 { title "Row 3"; font-size ${ctx.font}; layout left }
+            item r4 { title "Row 4"; font-size ${ctx.font}; layout left }
+        }
+        item Scrollbar {
+            auto-layout column; align end; width 10; height fill; padding 4 2
+            item Track { auto-layout column; width 4; height fill; corner-radius 2; color ${ctx.fillStrong}; item Thumb { width 4; height 40; corner-radius 2; color ${ctx.lineStrong} } }
+        }
+    }
+}
+
+element "ScrollAreaContent" {
+    kind Component
+    context --from-item Wire
+    template %{<ScrollAreaContent>
+<slot content/>
+</ScrollAreaContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ScrollAreaScrollbar" {
+    kind Component
+    context --from-item Wire
+    template %{<ScrollAreaScrollbar />}
+    item Rule { auto-layout row; width 1; height 20; color ${ctx.line} }
+}
+
+element "ScrollAreaThumb" {
+    kind Component
+    context --from-item Wire
+    template %{<ScrollAreaThumb />}
+    item Plate { auto-layout row; width 10; height 40; corner-radius 5; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "ScrollAreaViewport" {
+    kind Component
+    context --from-item Wire
+    template %{<ScrollAreaViewport>
+<slot content/>
+</ScrollAreaViewport>}
+    item Box {
+        auto-layout column; gap 8; width 340; min-height 160; padding 12
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Page"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "SegmentedControl" {
+    kind Component
+    context --from-item Wire
+    template %{<SegmentedControl />}
+    item Box {
+        auto-layout row; align center; gap 2; padding 2; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.fill}
+        item s1 { auto-layout row; align center; justify center; height 26; padding 0 10; corner-radius ${ctx.radiusSmall}; color ${ctx.surface}; shadow 0 -1 3 #0000001a; item t { title Day; font-size ${ctx.font} } }
+        item s2 { auto-layout row; align center; justify center; height 26; padding 0 10; corner-radius ${ctx.radiusSmall}; item t { title Week; font-size ${ctx.font}; text-color ${ctx.muted} } }
+        item s3 { auto-layout row; align center; justify center; height 26; padding 0 10; corner-radius ${ctx.radiusSmall}; item t { title Month; font-size ${ctx.font}; text-color ${ctx.muted} } }
+    }
+}
+
+element "SegmentedControlIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<SegmentedControlIndicator />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "SegmentedControlItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<SegmentedControlItem>${text}</SegmentedControlItem>}
+    item Box {
+        auto-layout row; align center; justify center; height 30; padding 0 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "Select" {
+    kind Component
+    context --from-item Wire
+    template %{<Select />}
+    item Box {
+        auto-layout column; gap 6; width 240
+        item Label { title Role; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+        item Trigger {
+            auto-layout row; align center; justify space-between; width fill; height 32; padding 0 10
+            corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.lineStrong}; color ${ctx.surface}
+            item Value { title "Select a role"; font-size ${ctx.font}; text-color ${ctx.faint}; layout left }
+            item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+        }
+        item Content {
+            auto-layout column; gap 2; width fill; padding 4; corner-radius ${ctx.radiusPanel}
+            line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+            item Item1 { auto-layout row; align center; width fill; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}; item t { title Viewer; font-size ${ctx.font}; layout left } }
+            item Item2 { auto-layout row; align center; width fill; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}; color ${ctx.fill}; item t { title Editor; font-size ${ctx.font}; layout left } }
+            item Item3 { auto-layout row; align center; width fill; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}; item t { title Owner; font-size ${ctx.font}; layout left } }
+        }
+    }
+}
+
+element "SelectContent" {
+    kind Component
+    context --from-item Wire
+    template %{<SelectContent>
+<slot content/>
+</SelectContent>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "SelectItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Option 1"
+    template %{<SelectItem>${text}</SelectItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "SelectLabel" {
+    kind Component
+    context --from-item Wire
+    export let text = "Role"
+    template %{<SelectLabel>${text}</SelectLabel>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "SelectTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<SelectTrigger${disabled === "yes" ? " disabled" : ""}>${text}</SelectTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "SelectValue" {
+    kind Component
+    context --from-item Wire
+    export let text = "Select..."
+    template %{<SelectValue>${text}</SelectValue>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "Separator" {
+    kind Component
+    context --from-item Wire
+    template %{<Separator />}
+    item Rule { auto-layout row; width 240; height 1; color ${ctx.line} }
+}
+
+element "Slider" {
+    kind Component
+    context --from-item Wire
+    template %{<Slider />}
+    item Box {
+        auto-layout column; gap 8; width 200
+        item Head {
+            auto-layout row; align center; justify space-between; width fill
+            item Label { title Volume; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+            item Value { title 40; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+        }
+        item Control {
+            auto-layout row; align center; width fill; height 16
+            item Track { auto-layout row; width fill; height 4; corner-radius 2; color ${ctx.fillStrong} }
+            item Thumb { width 16; height 16; corner-radius 8; color ${ctx.surface}; border-color ${ctx.lineStrong}; line-width 1 }
+        }
+    }
+}
+
+element "SliderControl" {
+    kind Component
+    context --from-item Wire
+    template %{<SliderControl>
+<slot content/>
+</SliderControl>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "SliderIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<SliderIndicator />}
+    item Bar { auto-layout row; width 60; height 6; corner-radius 3; color ${ctx.ink} }
+}
+
+element "SliderThumb" {
+    kind Component
+    context --from-item Wire
+    template %{<SliderThumb />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "SliderTrack" {
+    kind Component
+    context --from-item Wire
+    template %{<SliderTrack>
+<slot content/>
+</SliderTrack>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "SliderValue" {
+    kind Component
+    context --from-item Wire
+    export let text = "40"
+    template %{<SliderValue>${text}</SliderValue>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "Switch" {
+    kind Component
+    context --from-item Wire
+    export let checked = no
+    template %{<Switch defaultChecked={${checked === "yes"}} />}
+    item Track {
+        auto-layout row; align center; justify ${checked === "yes" ? "end" : "start"}; width 34; height 20; padding 2
+        corner-radius 10; line-width 1; border-color ${ctx.lineStrong}
+        color ${checked === "yes" ? ctx.ink : ctx.fillStrong}
+        item Thumb { width 14; height 14; corner-radius 7; color ${ctx.surface} }
+    }
+}
+
+element "SwitchThumb" {
+    kind Component
+    context --from-item Wire
+    template %{<SwitchThumb />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "Tabs" {
+    kind Component
+    context --from-item Wire
+    template %{<Tabs />}
+    item Box {
+        auto-layout column; gap 8; width 300
+        item List {
+            auto-layout row; align center; gap 4; width fill
+            item t1 { auto-layout row; align center; justify center; height 30; padding 0 10; corner-radius ${ctx.radius}; color ${ctx.fill}; item x { title Overview; font-size ${ctx.font} } }
+            item t2 { auto-layout row; align center; justify center; height 30; padding 0 10; corner-radius ${ctx.radius}; item x { title Activity; font-size ${ctx.font}; text-color ${ctx.muted} } }
+            item t3 { auto-layout row; align center; justify center; height 30; padding 0 10; corner-radius ${ctx.radius}; item x { title Settings; font-size ${ctx.font}; text-color ${ctx.muted} } }
+        }
+        item Panel {
+            auto-layout column; gap 6; width fill; padding 12
+            corner-radius ${ctx.radiusPanel}; border-color ${ctx.line}; line-width 1; color ${ctx.surface}
+            item r1 { title "Overview content"; font-size ${ctx.font}; text-color ${ctx.muted}; layout left }
+        }
+    }
+}
+
+element "TabsList" {
+    kind Component
+    context --from-item Wire
+    template %{<TabsList>
+<slot content/>
+</TabsList>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TabsPanel" {
+    kind Component
+    context --from-item Wire
+    template %{<TabsPanel>
+<slot content/>
+</TabsPanel>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TabsTab" {
+    kind Component
+    context --from-item Wire
+    export let text = "Tab"
+    template %{<TabsTab>${text}</TabsTab>}
+    item Box {
+        auto-layout row; align center; justify center; height 30; padding 0 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "Textarea" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Text"
+    template %{<Textarea defaultValue="${value}" placeholder="${placeholder}" />}
+    item Box {
+        auto-layout column; align start; width 240; height 84; padding 8 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.lineStrong}; color ${ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+    }
+}
+
+element "TimeInput" {
+    kind Component
+    context --from-item Wire
+    template %{<TimeInput />}
+    item Box {
+        auto-layout row; align center; gap 4
+        item d1 { auto-layout row; align center; justify center; width 34; height 30; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title 09; font-size ${ctx.font} } }
+        item d2 { auto-layout row; align center; justify center; width 34; height 30; corner-radius ${ctx.radiusSmall}; border-color ${ctx.line}; line-width 1; item t { title 30; font-size ${ctx.font} } }
+    }
+}
+
+element "TimeInputSegment" {
+    kind Component
+    context --from-item Wire
+    export let text = "Segment"
+    template %{<TimeInputSegment>${text}</TimeInputSegment>}
+    item Box {
+        auto-layout row; align center; justify center; width 34; height 30
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "Timeline" {
+    kind Component
+    context --from-item Wire
+    template %{<Timeline />}
+    item Box {
+        auto-layout column; gap 10; width 260
+        item e1 {
+            auto-layout row; gap 8; width fill
+            item Marker { width 10; height 10; corner-radius 5; color ${ctx.ink} }
+            item Text { auto-layout column; gap 2; width fill; item t { title Deploy; font-size ${ctx.font}; font-weight 600; layout left }; item d { title "12:40"; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left } }
+        }
+        item e2 {
+            auto-layout row; gap 8; width fill
+            item Marker { width 10; height 10; corner-radius 5; color ${ctx.lineStrong} }
+            item Text { auto-layout column; gap 2; width fill; item t { title "Build passed"; font-size ${ctx.font}; layout left }; item d { title "12:31"; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left } }
+        }
+        item e3 {
+            auto-layout row; gap 8; width fill
+            item Marker { width 10; height 10; corner-radius 5; color ${ctx.lineStrong} }
+            item Text { auto-layout column; gap 2; width fill; item t { title "Tests green"; font-size ${ctx.font}; layout left }; item d { title "12:20"; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left } }
+        }
+    }
+}
+
+element "TimelineConnector" {
+    kind Component
+    context --from-item Wire
+    template %{<TimelineConnector />}
+    item Rule { auto-layout row; width 1; height 20; color ${ctx.line} }
+}
+
+element "TimelineDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Released to production"
+    template %{<TimelineDescription>${text}</TimelineDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "TimelineItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<TimelineItem>${text}</TimelineItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "TimelineMarker" {
+    kind Component
+    context --from-item Wire
+    template %{<TimelineMarker />}
+    item Dot { auto-layout row; width 8; height 8; corner-radius 4; color ${ctx.ink} }
+}
+
+element "TimelineTime" {
+    kind Component
+    context --from-item Wire
+    export let text = "12:40"
+    template %{<TimelineTime>${text}</TimelineTime>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.muted}; layout left }
+}
+
+element "TimelineTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Deploy"
+    template %{<TimelineTitle>${text}</TimelineTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "Toast" {
+    kind Component
+    context --from-item Wire
+    template %{<Toast>
+<slot content/>
+</Toast>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ToastAction" {
+    kind Component
+    context --from-item Wire
+    export let text = "Undo"
+    export let disabled = no
+    template %{<ToastAction${disabled === "yes" ? " disabled" : ""}>${text}</ToastAction>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "ToastClose" {
+    kind Component
+    context --from-item Wire
+    export let text = "Close"
+    export let disabled = no
+    template %{<ToastClose${disabled === "yes" ? " disabled" : ""}>${text}</ToastClose>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "ToastDescription" {
+    kind Component
+    context --from-item Wire
+    export let text = "Your changes are live"
+    template %{<ToastDescription>${text}</ToastDescription>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "ToastRegion" {
+    kind Component
+    context --from-item Wire
+    template %{<ToastRegion />}
+    item Box {
+        auto-layout column; width 280; gap 8
+        item Toast {
+            auto-layout row; align start; gap 8; width fill; padding 10
+            corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -6 18 #0000001f
+            item Text {
+                auto-layout column; gap 2; width fill
+                item t { title Saved; font-size ${ctx.font}; font-weight 600; layout left }
+                item d { title "Your changes are live"; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+            }
+            item Close { auto-layout row; align center; item x { title Close; font-size ${ctx.fontSmall}; text-color ${ctx.muted} } }
+        }
+    }
+}
+
+element "ToastTitle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Saved"
+    template %{<ToastTitle>${text}</ToastTitle>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; font-weight 600; text-color ${ctx.ink}; layout left }
+}
+
+element "Toggle" {
+    kind Component
+    context --from-item Wire
+    export let text = "Toggle"
+    template %{<Toggle>${text}</Toggle>}
+    item Box {
+        auto-layout row; align center; justify center; height 30; padding 0 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "ToggleIcon" {
+    kind Component
+    context --from-item Wire
+    template %{<ToggleIcon />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius 8; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "TokenInput" {
+    kind Component
+    context --from-item Wire
+    template %{<TokenInput />}
+    item Box {
+        auto-layout row; align center; gap 4; width 240; padding 4 8; height 32
+        corner-radius ${ctx.radius}; border-color ${ctx.lineStrong}; line-width 1; color ${ctx.surface}
+        item t1 { auto-layout row; align center; height 20; padding 0 6; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; item x { title design; font-size ${ctx.fontSmall} } }
+        item t2 { auto-layout row; align center; height 20; padding 0 6; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; item x { title web; font-size ${ctx.fontSmall} } }
+        item Caret { width 1; height 16; color ${ctx.ink} }
+    }
+}
+
+element "TokenInputEditor" {
+    kind Component
+    context --from-item Wire
+    template %{<TokenInputEditor>
+<slot content/>
+</TokenInputEditor>}
+    item Box {
+        auto-layout row; align center; gap 4
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "Toolbar" {
+    kind Component
+    context --from-item Wire
+    template %{<Toolbar>
+<slot content/>
+</Toolbar>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            use ToolbarButton as toolbarButton { }
+            use ToolbarSeparator as toolbarSeparator { }
+            use ToolbarLink as toolbarLink { }
+            use ToolbarInput as toolbarInput { }
+        }
+    }
+}
+
+element "ToolbarButton" {
+    kind Component
+    context --from-item Wire
+    export let text = "B"
+    template %{<ToolbarButton>${text}</ToolbarButton>}
+    item Box {
+        auto-layout row; align center; justify center; height 30; padding 0 10
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font} }
+    }
+}
+
+element "ToolbarGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<ToolbarGroup>
+<slot content/>
+</ToolbarGroup>}
+    item Box {
+        auto-layout row; align center; gap 6; min-height 32; padding 4; corner-radius ${ctx.radius}
+        line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Actions"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "ToolbarInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Search"
+    export let disabled = no
+    template %{<ToolbarInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6; justify space-between
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+        item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "ToolbarLink" {
+    kind Component
+    context --from-item Wire
+    export let text = "Docs"
+    export let disabled = no
+    template %{<ToolbarLink${disabled === "yes" ? " disabled" : ""}>${text}</ToolbarLink>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "ToolbarSeparator" {
+    kind Component
+    context --from-item Wire
+    template %{<ToolbarSeparator />}
+    item Rule { auto-layout row; width 1; height 20; color ${ctx.line} }
+}
+
+element "Tooltip" {
+    kind Component
+    context --from-item Wire
+    template %{<Tooltip>
+<slot content/>
+</Tooltip>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use TooltipTrigger as tooltipTrigger { }
+            use TooltipContent as tooltipContent { }
+        }
+    }
+}
+
+element "TooltipArrow" {
+    kind Component
+    context --from-item Wire
+    template %{<TooltipArrow />}
+    item Arrow { auto-layout row; width 10; height 5; color ${ctx.surface}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "TooltipContent" {
+    kind Component
+    context --from-item Wire
+    template %{<TooltipContent>
+<slot content/>
+</TooltipContent>}
+    item Box {
+        auto-layout column; gap 4; width 160; min-height 40; padding 6 8
+        corner-radius ${ctx.radiusSmall}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 10 #0000001f
+        slot content {
+            item Hint { title "Hint"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TooltipShortcut" {
+    kind Component
+    context --from-item Wire
+    export let text = "K"
+    template %{<TooltipShortcut>${text}</TooltipShortcut>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+}
+
+element "TooltipTrigger" {
+    kind Component
+    context --from-item Wire
+    export let text = "Open"
+    export let disabled = no
+    template %{<TooltipTrigger${disabled === "yes" ? " disabled" : ""}>${text}</TooltipTrigger>}
+    item Box {
+        auto-layout row; align center; justify center; width 120; height 32; padding 0 12; gap 6
+        corner-radius ${ctx.radius}; line-width 1; border-color ${ctx.line}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Text { title ${text}; font-size ${ctx.font}; text-color ${disabled === "yes" ? ctx.faint : ctx.ink} }
+    }
+}
+
+element "Tree" {
+    kind Component
+    context --from-item Wire
+    template %{<Tree />}
+    item Box {
+        auto-layout column; gap 2; width 240
+        item r1 { auto-layout row; align center; gap 6; height 24; padding 0 6; item x { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }; item t { title src; font-size ${ctx.font} } }
+        item r2 { auto-layout row; align center; gap 6; height 24; padding 0 6 0 22; item t { title app; font-size ${ctx.font} } }
+        item r3 { auto-layout row; align center; gap 6; height 24; padding 0 6 0 22; color ${ctx.fill}; corner-radius ${ctx.radiusSmall}; item x { title v; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }; item t { title components; font-size ${ctx.font} } }
+        item r4 { auto-layout row; align center; gap 6; height 24; padding 0 6 0 38; item t { title "Dialogs.tenn"; font-size ${ctx.font}; text-color ${ctx.muted} } }
+    }
+}
+
+element "TreeGroup" {
+    kind Component
+    context --from-item Wire
+    template %{<TreeGroup>
+<slot content/>
+</TreeGroup>}
+    item Box {
+        auto-layout column; gap 2; width 220; min-height 40
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TreeItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<TreeItem>${text}</TreeItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "TreeItemIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<TreeItemIndicator />}
+    item Dot { auto-layout row; width 8; height 8; corner-radius 4; color ${ctx.ink} }
+}
+
+element "TreeItemLabel" {
+    kind Component
+    context --from-item Wire
+    template %{<TreeItemLabel>
+<slot content/>
+</TreeItemLabel>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TriggerMenu" {
+    kind Component
+    context --from-item Wire
+    template %{<TriggerMenu>
+<slot content/>
+</TriggerMenu>}
+    item Box {
+        auto-layout column; gap 8; width 320
+        slot content {
+            use TriggerMenuInput as triggerMenuInput { }
+            use TriggerMenuStatus as triggerMenuStatus { }
+            use TriggerMenuContent as triggerMenuContent { }
+        }
+    }
+}
+
+element "TriggerMenuContent" {
+    kind Component
+    context --from-item Wire
+    template %{<TriggerMenuContent>
+<slot content/>
+</TriggerMenuContent>}
+    item Box {
+        auto-layout column; gap 6; width 280; min-height 56; padding 10
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}
+        slot content {
+            item Hint { title "Content"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TriggerMenuEmpty" {
+    kind Component
+    context --from-item Wire
+    export let text = "Empty"
+    template %{<TriggerMenuEmpty>${text}</TriggerMenuEmpty>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "TriggerMenuInput" {
+    kind Component
+    context --from-item Wire
+    export let value = ""
+    export let placeholder = "Search"
+    export let disabled = no
+    template %{<TriggerMenuInput defaultValue="${value}" placeholder="${placeholder}"${disabled === "yes" ? " disabled" : ""} />}
+    item Box {
+        auto-layout row; align center; width 240; height 32; padding 0 10; gap 6; justify space-between
+        corner-radius ${ctx.radius}; line-width 1; border-color ${disabled === "yes" ? ctx.line : ctx.lineStrong}
+        color ${disabled === "yes" ? ctx.fill : ctx.surface}
+        item Value { title ${value}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${value === ""} }
+        item Placeholder { title ${placeholder}; font-size ${ctx.font}; text-color ${ctx.faint}; hidden ${value !== ""} }
+        item Chevron { title ">"; font-size ${ctx.fontSmall}; text-color ${ctx.muted} }
+    }
+}
+
+element "TriggerMenuItem" {
+    kind Component
+    context --from-item Wire
+    export let text = "Item"
+    template %{<TriggerMenuItem>${text}</TriggerMenuItem>}
+    item Box {
+        auto-layout row; align center; gap 8; width 240; height 28; padding 0 8; corner-radius ${ctx.radiusSmall}
+        item Label { title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; hidden ${text === ""} }
+        slot content
+    }
+}
+
+element "TriggerMenuList" {
+    kind Component
+    context --from-item Wire
+    template %{<TriggerMenuList>
+<slot content/>
+</TriggerMenuList>}
+    item Box {
+        auto-layout column; gap 2; width 240; min-height 48; padding 4
+        corner-radius ${ctx.radiusPanel}; line-width 1; border-color ${ctx.line}; color ${ctx.surface}; shadow 0 -4 12 #0000001a
+        slot content {
+            item Hint { title "No items"; font-size 11; text-color ${ctx.faint}; layout left }
+        }
+    }
+}
+
+element "TriggerMenuStatus" {
+    kind Component
+    context --from-item Wire
+    export let text = "Status"
+    template %{<TriggerMenuStatus>${text}</TriggerMenuStatus>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "Waterfall" {
+    kind Component
+    context --from-item Wire
+    template %{<Waterfall />}
+    item Box {
+        auto-layout column; gap 4; width 320
+        item head {
+            auto-layout row; align center; gap 4; width fill
+            item h1 { title Task; width 120; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+            item h2 { title Q1; width fill; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout center }
+            item h3 { title Q2; width fill; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout center }
+        }
+        item r1 { auto-layout row; align center; gap 4; width fill; height 22; item t { title Design; width 120; font-size ${ctx.font}; layout left }; item b { width fill; height 14; color ${ctx.ink} } }
+        item r2 { auto-layout row; align center; gap 4; width fill; height 22; item t { title Build; width 120; font-size ${ctx.font}; layout left }; item b { width fill; height 14; color ${ctx.lineStrong} } }
+        item r3 { auto-layout row; align center; gap 4; width fill; height 22; item t { title Ship; width 120; font-size ${ctx.font}; layout left }; item b { width fill; height 14; color ${ctx.fillStrong} } }
+    }
+}
+
+element "WaterfallAxis" {
+    kind Component
+    context --from-item Wire
+    export let text = "Q1"
+    template %{<WaterfallAxis>${text}</WaterfallAxis>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "WaterfallBar" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallBar />}
+    item Mark { auto-layout row; width 60; height 12; corner-radius 2; color ${ctx.lineStrong} }
+}
+
+element "WaterfallCell" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallCell />}
+    item Plate { auto-layout row; width 50; height 12; corner-radius 2; color ${ctx.fill}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "WaterfallColumnHeader" {
+    kind Component
+    context --from-item Wire
+    export let text = "Q1"
+    template %{<WaterfallColumnHeader>${text}</WaterfallColumnHeader>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "WaterfallHeaderRow" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallHeaderRow />}
+    item Box {
+        auto-layout row; align center; gap 6; width 280
+        item h1 { title Task; width 100; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout left }
+        item h2 { title Q1; width fill; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout center }
+        item h3 { title Q2; width fill; font-size ${ctx.fontSmall}; text-color ${ctx.muted}; layout center }
+    }
+}
+
+element "WaterfallIndicator" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallIndicator />}
+    item Mark { auto-layout row; width 16; height 16; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "WaterfallMark" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallMark />}
+    item Mark { auto-layout row; width 8; height 8; corner-radius ${ctx.radiusSmall}; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}
+
+element "WaterfallRow" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallRow />}
+    item Box {
+        auto-layout row; align center; gap 6; width 280; height 22
+        item t { title Task; width 100; font-size ${ctx.font}; layout left }
+        item bar { width fill; height 12; color ${ctx.lineStrong} }
+    }
+}
+
+element "WaterfallRowHeader" {
+    kind Component
+    context --from-item Wire
+    export let text = "Task"
+    template %{<WaterfallRowHeader>${text}</WaterfallRowHeader>}
+    item Text { auto-layout row; title ${text}; font-size ${ctx.font}; text-color ${ctx.ink}; layout left }
+}
+
+element "WaterfallTick" {
+    kind Component
+    context --from-item Wire
+    template %{<WaterfallTick />}
+    item Mark { auto-layout row; width 6; height 1; corner-radius 0; color ${ctx.fillStrong}; border-color ${ctx.line}; line-width 1 }
+}

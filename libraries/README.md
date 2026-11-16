@@ -277,6 +277,72 @@ context --from-item ${theme + '.' + osName}
 - `TableHeader` и `TableRow` жёстко трёхколоночные (200, fill, 110); другая таблица собирается из item.
 - Подпись `Group` стоит внутри верхней рамки: наложить текст на линию движок не умеет.
 
+# Библиотека ui-sdk
+
+`ui-sdk.tenn` — каркасный набор по частям [ui-sdk.dev](https://ui-sdk.dev/md/svelte/components): один
+элемент на каждую часть Svelte-библиотеки, всего 256 (`Button`, `SelectTrigger`, `DialogContent`,
+`TreeItem`). Серые рамки без поведения: набор нужен, чтобы собрать экран из частей так, как их
+вкладывает документация, и отдать экран в код.
+
+```tenn
+element "ui" --from-file "tenniarb-library://ui-sdk"
+
+element "Settings" {
+    use ui.Dialog as remove {
+        slot content {
+            use ui.DialogContent as panel {
+                slot content { use ui.Button as ok { text Delete } }
+            }
+        }
+    }
+}
+```
+
+Путь `tenniarb-library://ui-sdk` находит файл из любого воркспейса; относительный путь в `--from-file`
+считается от файла, который монтирует. Демо — `examples/ui-sdk.tenn`.
+
+## Части
+
+Имя элемента — имя части в документации. Контейнеры объявляют слот `content`; корень композиции
+(`Dialog`, `Menu`, `Combobox`, `Autocomplete`, `Command`, `Tooltip`…) заполняет его одним уровнем
+своего состава, так что `use ui.Dialog { }` уже читается как диалог, а свой `slot content` заменяет
+эту подстановку.
+
+| Что принимает | Части | Параметры |
+|---|---|---|
+| текст | `Label`, `FieldLabel`, `*Title`, `*Description`, `FieldError`, `Button`, `*Trigger`, `*Item` | `text` |
+| поле | `Input`, `Textarea`, `ComboboxInput`, `PasswordInputControl`, `NumberInputControl` | `value`, `placeholder`, `disabled` |
+| флаг | `Checkbox`, `Switch`, `Radio`, `Button`, `*Trigger` | `checked`, `disabled` (`yes`/`no`) |
+| слот | `DialogContent`, `MenuContent`, `Listbox`, `Toolbar`, `Field`, `TreeItem`… | `slot content` |
+
+Нарисованы целиком, без слота: `Select`, `Tabs`, `Field`, `FileInput`, `Calendar`, `ColorPicker`,
+`ImageCropper`, `Waterfall`, `Tree`, `Timeline`, `Carousel`, `ScrollArea`, `Resizable`, `Pagination`,
+`SegmentedControl`, `OTPInput`, `NumberInput`, `PasswordInput`, `TokenInput`, `DateInput`, `TimeInput`,
+`Slider`, `Meter`, `Progress`, `Rating`, `Checkbox`, `Switch`, `Radio`, `Avatar`, `Menubar`,
+`Preferences`, `Input`, `Textarea`.
+
+## Печать кода
+
+Сниппет части — её `template` в этом же файле. `tenniarb generate FILE ELEMENT` печатает экран:
+каждый `use` ниже элемента выводит шаблон своей части со значениями из своего блока, содержимое
+слотов встаёт на место `<slot content/>`, а `template` самого элемента (или `-template`) оборачивает
+всё. У `Settings` в `examples/ui-sdk.tenn` так записаны импорты `@ui-sdk/svelte/*` и `<slot/>`.
+
+Договор имён тоже записан в шаблонах: `text` → дети, `value` поля → `defaultValue`, `checked` →
+`defaultChecked`, `disabled` → атрибут только при `yes`. Живое состояние (`bind:value`,
+`onValueChange`) добавляет приложение: каркас печатает литералы.
+
+## Ограничения
+
+- Поведения нет: фокус, наведение, нажатие, открытие и закрытие не рисуются; диалог — картинка
+  открытого диалога.
+- Таблицы в ui-sdk нет: табличные данные — `Listbox`, `Command` или `Waterfall`.
+- Ширины в частях фиксированные (`Select` 240, `DialogContent` 360, `Listbox` 240) и меняются правкой
+  самой части: `width 420` на экземпляре задаёт место группы, в которой часть стоит, а не её коробку.
+- Подстановка состава — один уровень: вложенный в неё контейнер остаётся пустым.
+- Корневой item текстовой части объявляет `auto-layout row`: элемент без раскладки, `use` и слотов
+  движок считает классической диаграммой, и экземпляр получил бы белую заливку и чёрную рамку.
+
 # Библиотека иконок
 
 `icons.tenn` — набор lucide: **2350 иконок**, по одному `item` на иконку, форма та же, что у

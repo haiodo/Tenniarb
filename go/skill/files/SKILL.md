@@ -18,6 +18,7 @@ reference, read it only when the task needs that part:
 | `direction.md` | before drawing a screen: the audit, the direction and the passes that stop it looking generated |
 | `components.md` | the library has the screen you need and you fill its slots; or the file is a library itself |
 | `native.md` | the screen should look like a native desktop app: one library, a `Theme` wrapper for macOS/Windows/Linux and light/dark, surfaces, control sizes, capitalization and recipes |
+| `ui-sdk.md` | the screen must read as UI SDK parts and become `@ui-sdk/svelte` code |
 | `layout.md` | you are drawing an app window, a settings page, a list or a dialog and want the full recipe |
 | `tools.md` | `design`, `read`, `layout` or `refactor` does something you did not expect |
 | `diagrams.md` | drawing a brain map, flow or other diagram with links |
@@ -29,8 +30,7 @@ whole thing.
 ## When this skill is for
 
 Drawing or changing a screen, a component or a diagram **in a `.tenn` file**, through these tools.
-Not for prose, notes or reports - those are markdown files, not screens - and not for changing the
-editor or any code: a `.tenn` is data.
+Not prose, notes or reports, and not the editor's code: a `.tenn` is data.
 
 ## If / then
 
@@ -148,18 +148,16 @@ not a color.
   text you wrote may no longer match: take `find` from `read`, not from your own edit.
 - The same override on many instances: one edit with `all: true` (`find` a text all of them share).
 - Render one element. A desktop screen of 1920x1080 reads well at `scale 0.5`, which costs a quarter
-  of the pixels. Ask for `layout` before the first render: it finds the overflow that the image would
-  only show you.
+  of the pixels. Ask for `layout` before the first render: it finds the overflow the image
+  would hide.
 
 ## Tool quirks
 
 `design` ops, repeated properties, mounted-file reads, inspect geometry and `refactor`: read
 `tools.md` when one of them does something you did not expect.
 
-## Two things to remember
+## Remember
 
-- **Y axis points up.** `pos 0 -700` is 700 units *below* `pos 0 0`. Screens side by side: `pos 0 0`,
-  `pos 1500 0`; a second row: `pos 0 -1000`.
 - **Scene or diagram.** An element where an item has children, `auto-layout` or a `use` is a UI scene;
   any other element is a classic diagram (items at `pos`, links, styles). `get_state` shows which.
   Keep screens and diagrams in separate elements.
