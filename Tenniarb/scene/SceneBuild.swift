@@ -23,6 +23,8 @@ extension Scene {
     /// The inset go/render gives a text leaf of a classic diagram when `padding` is not written: the picture of
     /// an old file must not move when the canvas draws it through the scene engine.
     static let classicTextPad = 4.0
+    /// The corner radius go/render gives a box of a classic diagram.
+    static let classicRadius = 8.0
     /// The ascent and the descent of a line as go/render takes them, so a classic diagram keeps its old line spacing.
     /// shortcut: the ratios approximate the real metrics of SF; a font with other metrics draws with these, as old files expect.
     static let classicAscentRatio = 1980.0 / 2048
@@ -31,14 +33,17 @@ extension Scene {
     /// Turns resolved nodes into a layout tree and keeps what the drawing needs (prep of layout.go).
     final class Prep {
         let t: Tree
-        let measurer = TextMeasurer()
+        /// CoreText as the window draws unless a stand asks for gfx.EstimateText.
+        let measurer: TextMeasurer
         var frames: [ObjectIdentifier: LayoutNode] = [:]
-        var clips: [ObjectIdentifier: Bool] = [:]  // style clip of a node, which warnOutside reads
+        var texts: [ObjectIdentifier: TextInfo] = [:]
+        var styles: [ObjectIdentifier: Look] = [:]
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
 
-        init(_ t: Tree) {
+        init(_ t: Tree, measurer: TextMeasurer = TextMeasurer()) {
             self.t = t
+            self.measurer = measurer
         }
 
         /// The layout of an element: its content at their own positions.
@@ -56,15 +61,16 @@ extension Scene {
                 n.height = .fixed(v)
             }
             for k in rn.kids where k.kind == .item && !hidden(k) {
-                let kid = item(k, parentAuto: false)
+                let kid = item(k, parentAuto: false, up: Scene.Color.black)
                 kid.parent = n
                 n.kids.append(kid)
             }
             return n
         }
 
-        /// Lays out one node; parentAuto tells that an auto-layout parent decides its hug and fill sizes.
-        func item(_ rn: RNode, parentAuto: Bool) -> LayoutNode {
+        /// Lays out one node; parentAuto tells that an auto-layout parent decides its hug and fill sizes,
+        /// up is the text colour of the parent.
+        func item(_ rn: RNode, parentAuto: Bool, up: Scene.Color) -> LayoutNode {
             let n = LayoutNode()
             n.node = rn
             frames[id(rn)] = n
@@ -81,18 +87,17 @@ extension Scene {
                 limits(rn, n)
                 n.absolute = flag(rn, "absolute")
             }
-            if inCtx || (rn.inst && holdsItems(rn)) {
-                clips[id(rn)] = flag(rn, "clip")
-            }
             n.padding = padding(rn)  // the text inset of a leaf, the children inset of a container
             if auto {
                 container(rn, n)
             } else {
                 n.dir = .abs
             }
+            let st = style(rn, inCtx || (rn.inst && holdsItems(rn)), up)
+            styles[id(rn)] = st
             // shortcut: a body is not laid out: body.go sizes it, so a leaf with a body hugs 0 until then.
             for k in rn.kids where k.kind == .item && !hidden(k) {
-                let kid = item(k, parentAuto: auto)
+                let kid = item(k, parentAuto: auto, up: st.text)
                 kid.parent = n
                 n.kids.append(kid)
             }
@@ -101,6 +106,7 @@ extension Scene {
             } else if !rn.inst {  // the name of an instance is an alias, not its content
                 n.text = textOf(rn, inCtx)
             }
+            texts[id(rn)] = n.text
             return n
         }
 
@@ -239,7 +245,7 @@ extension Scene {
         /// never drawn. Items of a flow that overflow are cut by design and not reported.
         func warnOutside(_ rn: RNode) {
             guard let ln = frames[id(rn)] else { return }
-            let clip = clips[id(rn)] ?? false
+            let clip = styles[id(rn)]?.clip ?? false
             for k in rn.kids {
                 guard k.kind == .item, let kn = frames[id(k)] else { continue }
                 if clip && (ln.dir == .abs || kn.absolute) && kn.rw > 0 && kn.rh > 0
@@ -340,17 +346,7 @@ func sceneRoot(_ rn: Scene.RNode) -> Bool {
 extension Scene.Tree {
     /// The placed tree of the element at path ("" is the file itself): expanded, styled and laid out; nil when
     /// the element has an error and there is nothing to draw.
-    func layout(_ path: String = "") -> Scene.LayoutNode? {
-        let failures = diagnostics.filter { !$0.warn }.count
-        guard let rn = element(path) else { return nil }
-        applyStyles(rn)
-        let p = Scene.Prep(self)
-        let root = p.root(rn)
-        if diagnostics.filter({ !$0.warn }).count > failures {
-            return nil
-        }
-        root.layout()
-        p.warnOutside(rn)
-        return root
+    func layout(_ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer()) -> Scene.LayoutNode? {
+        build(path, measurer: measurer)?.root
     }
 }

@@ -35,7 +35,15 @@ extension Scene {
 
     /// Measures text as the window draws it, one line at a time: gfx.TextMeasurer over a CTLine.
     struct TextMeasurer {
+        /// Estimates from the code points instead of measuring, as gfx.EstimateText: the parity stand and
+        /// the goldens of go/cmd/tennlayout need that, the window keeps CoreText.
+        var estimated = false
+
         func measure(_ s: String, _ f: Font) -> TextMetrics {
+            if estimated {
+                let n = Double(s.unicodeScalars.count)
+                return TextMetrics(width: n * (f.size * 0.6 + f.spacing), ascent: f.size * 0.8, descent: f.size * 0.25)
+            }
             var attrs: [NSAttributedString.Key: Any] = [.font: f.nsFont]
             if f.spacing != 0 {
                 attrs[.kern] = f.spacing
@@ -191,9 +199,9 @@ extension Scene.Prep {
                 t.fail(pr.pos, "title takes one value: quote the words, \(quotedTitle(pr)) (tenniarb check -fix does it)")
             }
         }
-        if let m = prop(rn, "marker"), let text = m.text(0), !text.isEmpty {
+        if let marker = styles[ObjectIdentifier(rn)]?.marker, !marker.isEmpty {
             // A marker is drawn in front of the text, with a space, as go/render does it.
-            title = text + " " + title
+            title = marker + " " + title
         }
         if title.isEmpty {
             return nil
