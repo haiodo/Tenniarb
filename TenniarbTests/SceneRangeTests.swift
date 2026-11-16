@@ -18,42 +18,38 @@ import XCTest
 
 @testable import Tenniarb
 
-/// The Swift side of go/cmd/tennranges: the byte range of every scene node and property, against the
-/// golden that tool writes for every fixture, so a range off by a byte is caught before it eats text.
+/// The Swift side of go/cmd/tennranges: the byte range of every scene node and property, against what
+/// that tool prints for every fixture on this run, so a range off by a byte is caught before it eats text.
 final class SceneRangeTests: XCTestCase {
 
     private let repo = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent()
     private var fixtures: URL { repo.appendingPathComponent("web/fixtures/scene") }
-    private var goldens: URL { repo.appendingPathComponent("TenniarbTests/Golden/scene-ranges") }
+    /// The expected ranges are what go/cmd/tennranges prints now, so nothing expected is kept in the
+    /// repository.
 
     // MARK: - Stand
 
-    /// A .tenn with no golden would be a fixture the stand never reads, so the two lists must be equal.
-    func testEveryFixtureHasAGolden() throws {
-        let files = try FileManager.default.contentsOfDirectory(atPath: fixtures.path)
-        let tenns = Set(files.filter { $0.hasSuffix(".tenn") }.map { String($0.dropLast(".tenn".count)) })
-        let listed = Set(
-            try FileManager.default.contentsOfDirectory(atPath: goldens.path)
-                .filter { $0.hasSuffix(".json") }.map { String($0.dropLast(".json".count)) })
-        XCTAssertEqual(tenns.subtracting(listed), [], "tenn files with no range golden")
-        XCTAssertEqual(listed.subtracting(tenns), [], "range goldens with no tenn file")
-    }
-
-    func testRangesMatchGo() throws {
-        let names = try FileManager.default.contentsOfDirectory(atPath: goldens.path)
-            .filter { $0.hasSuffix(".json") }.map { String($0.dropLast(".json".count)) }.sorted()
+    /// Every fixture in web/fixtures/scene is compared, so a new .tenn cannot slip in unread.
+    func testEveryFixtureMatchesGo() throws {
+        let names = try FileManager.default.contentsOfDirectory(atPath: fixtures.path)
+            .filter { $0.hasSuffix(".tenn") }.map { String($0.dropLast(".tenn".count)) }.sorted()
+        XCTAssertFalse(names.isEmpty, "no fixtures under \(fixtures.path)")
+        // One process for the whole stand: the tool prints every fixture as one array.
+        let data = try run(try rangesTool(), ["-root", fixtures.path, "-dir", fixtures.path])
+        let goldens = try JSONDecoder().decode([RangeGolden].self, from: data)
+        let byName = Dictionary(
+            uniqueKeysWithValues: goldens.map { (String($0.file.dropLast(".tenn".count)), $0) })
+        XCTAssertEqual(Set(byName.keys), Set(names), "the tool has to list every fixture")
         for name in names {
-            try compare(name)
+            try compare(name, try XCTUnwrap(byName[name]))
         }
     }
 
-    private func compare(_ name: String) throws {
-        let data = try Data(contentsOf: goldens.appendingPathComponent(name + ".json"))
-        let golden = try JSONDecoder().decode(RangeGolden.self, from: data)
+    private func compare(_ name: String, _ golden: RangeGolden) throws {
         let tree = try SceneLoader(root: fixtures).load(name + ".tenn")
         let items = dump(tree)
-        XCTAssertEqual(golden.file, name + ".tenn", "\(name): golden names another file")
+        XCTAssertEqual(golden.file, name + ".tenn", "\(name): the tool names another file")
         for i in 0..<max(golden.items.count, items.count) {
             guard i < golden.items.count else {
                 return XCTFail("\(name): Swift lists \(items[i]) at \(i), Go lists nothing")
@@ -66,6 +62,52 @@ final class SceneRangeTests: XCTestCase {
                     "\(name): item \(i) \(items[i].path): Go \(golden.items[i]), Swift \(items[i])")
             }
         }
+    }
+
+    /// go/cmd/tennranges built into the temp directory; the Go build cache keeps this to a moment.
+    private func rangesTool() throws -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("tenniarb-tennranges", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let exe = dir.appendingPathComponent("tennranges")
+        _ = try run(
+            try goExecutable(), ["build", "-o", exe.path, "./cmd/tennranges"],
+            cwd: repo.appendingPathComponent("go"))
+        return exe
+    }
+
+    /// The Go toolchain: the test host starts with a bare PATH, so the usual install places are tried.
+    private func goExecutable() throws -> URL {
+        for path in ["/opt/homebrew/bin/go", "/usr/local/bin/go", "/usr/bin/go"] where FileManager.default.isExecutableFile(atPath: path) {
+            return URL(fileURLWithPath: path)
+        }
+        throw NSError(
+            domain: "SceneRangeTests", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "no go toolchain: the range stand builds go/cmd/tennranges"])
+    }
+
+    /// Runs a tool and returns its stdout; a non-zero status fails the test with the tool's stderr.
+    @discardableResult
+    private func run(_ exe: URL, _ args: [String], cwd: URL? = nil) throws -> Data {
+        let process = Process()
+        process.executableURL = exe
+        process.arguments = args
+        if let cwd { process.currentDirectoryURL = cwd }
+        let out = Pipe(), err = Pipe()
+        process.standardOutput = out
+        process.standardError = err
+        try process.run()
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        let message = err.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw NSError(
+                domain: "SceneRangeTests", code: Int(process.terminationStatus),
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "\(exe.lastPathComponent) \(args.joined(separator: " ")): \(String(decoding: message, as: UTF8.self))"
+                ])
+        }
+        return data
     }
 
     // MARK: - Edge cases

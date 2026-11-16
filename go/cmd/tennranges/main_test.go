@@ -1,39 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
-
-// TestGoldensAreCurrent: every range golden is what this build makes of its fixture, so a change in
-// go/scene that moves a range fails here, not by leaving the Swift stand green against an old one.
-func TestGoldensAreCurrent(t *testing.T) {
-	dir := filepath.Join("..", "..", "..", "web", "fixtures", "scene")
-	fixtures, err := filepath.Glob(filepath.Join(dir, "*.tenn"))
-	if err != nil || len(fixtures) == 0 {
-		t.Fatalf("fixtures under %s: %v", dir, err)
-	}
-	goldens := filepath.Join("..", "..", "..", "TenniarbTests", "Golden", "scene-ranges")
-	for _, fixture := range fixtures {
-		name := filepath.Base(fixture)
-		golden := filepath.Join(goldens, strings.TrimSuffix(name, ".tenn")+".json")
-		want, err := os.ReadFile(golden)
-		if err != nil {
-			t.Fatalf("%s: %v (regenerate it from %s)", golden, err, name)
-		}
-		got, err := ranges(dir, name)
-		if err != nil {
-			t.Fatalf("%s: %v", name, err)
-		}
-		if !bytes.Equal(got, want) {
-			t.Errorf("%s is stale: regenerate it from %s", golden, name)
-		}
-	}
-}
 
 // TestRangesCoverWholeCommands: End is after the last token of a command, the closing brace of its
 // block included, so the text in a range is the command and nothing else.

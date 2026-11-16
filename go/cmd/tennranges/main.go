@@ -2,9 +2,10 @@
 //
 //	tennranges [-root DIR] FILE > out.json
 //
-// It is the Go side of the scene range stand: what it prints is the golden of
-// TenniarbTests/SceneRangeTests.swift. The scene editor replaces text[Start:End) with a new command
-// (go/app/sceneedit.go, TextEdit), so Start and End are the bytes Node.Range and Prop.Range hold.
+// It is the Go side of the scene range stand: TenniarbTests/SceneRangeTests.swift builds it and runs it
+// for every fixture, so the expected ranges are generated on each run and not kept in the repository.
+// The scene editor replaces text[Start:End) with a new command (go/app/sceneedit.go, TextEdit), so Start
+// and End are the bytes Node.Range and Prop.Range hold.
 // The output is stable: keys sorted, two space indent.
 //
 // Every entry is one command of the loaded tree: its kind (file, element, item, link, use, slot, or
@@ -20,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/haiodo/tenniarb/go/scene"
@@ -27,11 +29,21 @@ import (
 
 func main() {
 	root := flag.String("root", ".", "workspace root: mounted files may not leave it")
+	dir := flag.String("dir", "", "print the ranges of every .tenn in DIR as one array")
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: tennranges [-root DIR] FILE > out.json")
+		fmt.Fprintln(os.Stderr, "usage: tennranges [-root DIR] FILE > out.json\n       tennranges [-root DIR] -dir DIR > out.json")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+	if *dir != "" {
+		out, err := all(*root, *dir)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(out)
+		return
+	}
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(2)
@@ -42,6 +54,24 @@ func main() {
 		os.Exit(1)
 	}
 	os.Stdout.Write(out)
+}
+
+// all is the ranges of every .tenn in dir, sorted by name: one process for the whole stand.
+func all(root, dir string) ([]byte, error) {
+	files, err := filepath.Glob(filepath.Join(dir, "*.tenn"))
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(files)
+	out := make([]json.RawMessage, 0, len(files))
+	for _, f := range files {
+		b, err := ranges(root, filepath.Base(f))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", filepath.Base(f), err)
+		}
+		out = append(out, b)
+	}
+	return json.MarshalIndent(out, "", "  ")
 }
 
 func ranges(root, file string) ([]byte, error) {
