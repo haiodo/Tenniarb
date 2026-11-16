@@ -18,6 +18,9 @@ import (
 // first when it holds content itself. A mounted file is the row of its element. expanded is the set of rows to open
 // by path key; nil opens the first ExpandLevel+1 levels when the settings have auto expand, as Swift does.
 func (v *Viewer) rebuildOutline(expanded map[string]bool) {
+	if v.tree == nil {
+		return
+	}
 	if v.cmp != nil {
 		v.paintCompare()
 		return
@@ -247,6 +250,9 @@ func (v *Viewer) expandedRows() map[string]bool {
 func (v *Viewer) syncOutline() {
 	if v.cmp != nil {
 		return // the comparison rows name no element of the model
+	}
+	if v.tree == nil {
+		return
 	}
 	v.syncing = true
 	defer func() { v.syncing = false }()

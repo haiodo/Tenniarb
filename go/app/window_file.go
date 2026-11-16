@@ -146,6 +146,9 @@ func (v *Viewer) updateTitle() {
 
 // setTitle shows the entry document when the file is loaded in its context: "part.tenn - in Design".
 func (v *Viewer) setTitle() {
+	if v.win == nil {
+		return
+	}
 	title := Title(v.state.Doc.Path, v.edited())
 	if v.entry != "" {
 		title += " - in " + strings.TrimSuffix(filepath.Base(v.entry), ".tenn")

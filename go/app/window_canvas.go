@@ -65,6 +65,9 @@ func (v *Viewer) applyInitialCamera() { v.placeCamera(v.pendingFit) }
 // it, else its fit for the first element of a document, else the element centred at the zoom of the one
 // left — a switch then moves the canvas without jumping in scale between elements of different size.
 func (v *Viewer) placeCamera(fit bool) {
+	if v.view == nil {
+		return
+	}
 	w, h := v.view.Canvas().Size()
 	cw, ch, ok := v.contentSize()
 	if !ok {

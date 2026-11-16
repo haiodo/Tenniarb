@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/haiodo/gowt/gfx"
 )
 
 const (
@@ -51,5 +53,40 @@ func TestGoToComponentMountedByEntry(t *testing.T) {
 	}
 	if sh.active != kit {
 		t.Error("the window that shows the component is not the active one")
+	}
+}
+
+// Go to Component of a use in a part file with no library window opens the file that mounts the library in
+// the current window, not in a new one.
+func TestGoToComponentOpensMountInTheSameWindow(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, sub := range []string{"apps", "lib"} {
+		if err := os.Mkdir(filepath.Join(dir, sub), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeTenn(t, dir, "lib/icon.tenn", iconLib)
+	writeTenn(t, dir, "apps/part.tenn", partFile)
+	writeTenn(t, dir, "ui-kit.lib.tenn", kitFile)
+	writeTenn(t, dir, "design.tenn", designFile)
+	sh := &Shell{}
+	part := newDoc(t, sh, filepath.Join(dir, "apps/part.tenn"), partFile)
+	part.scene = gfx.NewScene()
+	use := part.stree.File("apps/part.tenn").Elems[0].Content[0]
+	part.goToComponentNode(use)
+	if len(sh.viewers) != 1 || sh.active != part {
+		t.Fatalf("opened %d windows, active %v; want the one window", len(sh.viewers), sh.active == part)
+	}
+	if want := filepath.Join(dir, "ui-kit.lib.tenn"); realPath(part.state.Doc.Path) != realPath(want) {
+		t.Errorf("the window shows %q, want %q", part.state.Doc.Path, want)
+	}
+	if got := part.state.Current; got == nil || got.FromFile != "lib/icon.tenn" {
+		t.Errorf("the window shows %v, want the element that mounts lib/icon.tenn", got)
+	}
+	if !slices.Equal(part.selNodes, []string{"Crosshair"}) {
+		t.Errorf("selected %q, want the component", part.selNodes)
 	}
 }

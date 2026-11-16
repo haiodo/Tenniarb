@@ -215,6 +215,9 @@ func (sh *Shell) clearRecent() {
 
 func (sh *Shell) setRecent(list []string) {
 	sh.recent = list
+	if sh.app == nil {
+		return
+	}
 	// The item that was chosen may be the one being replaced.
 	sh.app.Async(func() {
 		for _, v := range sh.viewers {

@@ -155,7 +155,7 @@ func (v *Viewer) realizeScene() {
 		v.pendingFit = first
 		v.placeCamera(first)
 		v.syncOutline()
-	} else if !v.pendingFit && oldSV != nil && !sv.classic {
+	} else if !v.pendingFit && oldSV != nil && !sv.classic && v.view != nil {
 		comp := v.view.Compositor()
 		v.setCamera(Follow(comp.Camera(), gfx.Point{X: sv.off.X - oldSV.off.X, Y: sv.off.Y - oldSV.off.Y}))
 	}
