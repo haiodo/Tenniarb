@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Swift: the scene engine starts in `Tenniarb/scene` with the file tree and its `--from-file` mounts
+  (paths relative to the mounting file), `export let` parameters, styles, kinds, and row/column
+  auto-layout with gap, padding, align, justify and fill/hug sizes. Rows of the port live in
+  `docs/swift-parity-map.md`.
+
 * `.tenn` is read with `github.com/haiodo/tenn` v1.0.1 in Go and v1.0.2 in Swift: the Swift app takes the
   parser as a package instead of its embedded copy, so both versions keep empty literals the same way.
 
