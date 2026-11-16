@@ -71,7 +71,6 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
         sb.heightAnchor.constraint(equalToConstant: 30).isActive = true
         self.searchBox = sb
 
-        // Results outline view in scroll view
         let resultsScroll = NSScrollView()
         resultsScroll.translatesAutoresizingMaskIntoConstraints = false
         resultsScroll.hasVerticalScroller = true
@@ -107,10 +106,6 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
         self.element = element
     }
 
-    //    func windowDidResignMain(_ notification: Notification) {
-    //        close()
-    //    }
-
     override func viewWillAppear() {
         self.view.window?.hidesOnDeactivate = true
 
@@ -129,10 +124,6 @@ class SearchBoxViewController: NSViewController, NSTextFieldDelegate, NSTextView
             self.close()
             return true
         }
-
-        //        if commandSelector == #selector(NSView.keyDown(with:)) {
-        //            return true
-        //        }
 
         if commandSelector == #selector(NSView.moveUp(_:)) {
             let row = self.resultView.selectedRow
@@ -296,10 +287,6 @@ class SearchBoxResultDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewD
         }
         return nil
     }
-
-    //    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-    //        return OutlineNSTableRowView()
-    //    }
 
     @objc func outlineViewSelectionDidChange(_ notification: Notification) {
 

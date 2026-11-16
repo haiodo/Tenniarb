@@ -39,11 +39,9 @@ class EditorViewController: NSObject {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
 
-        // Title bar
         let titleBar = createTitleBar()
         stackView.addArrangedSubview(titleBar)
 
-        // Scene view
         let scene = SceneDrawView(frame: .zero)
         scene.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(scene)
@@ -85,7 +83,6 @@ class EditorViewController: NSObject {
             ])
         }
 
-        // Title field
         let titleField = NSTextField(string: "Window title")
         titleField.translatesAutoresizingMaskIntoConstraints = false
         titleField.isBordered = false
@@ -105,19 +102,15 @@ class EditorViewController: NSObject {
             titleField.centerYAnchor.constraint(equalTo: titleBar.contentView!.centerYAnchor),
         ])
 
-        // Zoom controls
         let zoomStack = createZoomControls()
         titleBar.contentView!.addSubview(zoomStack)
 
-        // Extra buttons
         let extraSeg = createExtraButtons()
         titleBar.contentView!.addSubview(extraSeg)
 
-        // Help button
         let helpSeg = createHelpButton()
         titleBar.contentView!.addSubview(helpSeg)
 
-        // Export button
         let exportControl = createExportButton()
         titleBar.contentView!.addSubview(exportControl)
 

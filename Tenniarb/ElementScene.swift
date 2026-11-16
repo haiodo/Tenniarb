@@ -1332,7 +1332,7 @@ open class DrawableScene: DrawableContainer, @unchecked Sendable {
 
         var bodyAttrString: NSAttributedString?
         if let bodyNode = properties.get("body") {
-            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            // Body may carry custom properties like width, height, color, font-size, so parse it as is.
             let bodyStyle = style.copy()
             bodyStyle.fontSize -= 2  // Make a bit smaller for body
             var textValue = ""
@@ -1380,14 +1380,6 @@ open class DrawableScene: DrawableContainer, @unchecked Sendable {
             tokens: titleTokens, font: NSFont.systemFont(ofSize: style.fontSize), color: style.textColor, shift: &shift,
             imageProvider: imageProvider, layout: [horizontal, vertical])
 
-        //        do {
-        //            let dta = try attrString.data(from: NSMakeRange(0, attrString.length), documentAttributes: [ NSAttributedString.DocumentAttributeKey.documentType:NSAttributedString.DocumentType.html ])
-        //            Swift.debugPrint(String(data: dta, encoding: String.Encoding.utf8))
-        //        }
-        //        catch let error {
-        //            // Ignore
-        //        }
-
         if bodyAttrString != nil {
             attrString.append(bodyAttrString!)
         }
@@ -1432,23 +1424,6 @@ open class DrawableScene: DrawableContainer, @unchecked Sendable {
 
         var finalTextBounds = CGRect(
             origin: CGPoint(x: offx, y: offy), size: CGSize(width: textBounds.width + shift.x, height: textBounds.height + shift.y))
-
-        //        var resultHtmlText = ""
-        //               do {
-        //
-        //                   let r = NSRange(location: 0, length: attrString.length)
-        //                   let att = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
-        //
-        //                   let d = try attrString.data(from: r, documentAttributes: att)
-        //
-        //                   if let h = String(data: d, encoding: .utf8) {
-        //                       resultHtmlText = h
-        //                   }
-        //               }
-        //               catch {
-        //                   print("utterly failed to convert to html!!! \n>\(x)<\n")
-        //               }
-        //               print(resultHtmlText)
 
         if finalTextBounds.size.width + offx * 2 < width {
             finalTextBounds.size.width = width - offx * 2

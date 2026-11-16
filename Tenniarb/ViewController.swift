@@ -142,13 +142,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         mainSplitView = splitView
         self.editorSplitView = rightSplitView
 
-        // Create editor view controller
         editorViewController = EditorViewController()
         editorViewController.viewController = self
         let editorPanel = editorViewController.createView()
         rightSplitView.addArrangedSubview(editorPanel)
 
-        // Create properties panel controller
         propertiesPanelController = PropertiesPanelController()
         propertiesPanelController.viewController = self
         let propertiesPanel = propertiesPanelController.createView()

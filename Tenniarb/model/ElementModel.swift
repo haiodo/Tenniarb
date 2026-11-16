@@ -197,7 +197,6 @@ public class Element: Identifiable, @unchecked Sendable {
         el.parent = self
     }
 
-    /// Add a diagram item to current diagram
     func add(_ item: DiagramItem, at: Int? = nil) {
 
         assignModel(item)
@@ -209,7 +208,6 @@ public class Element: Identifiable, @unchecked Sendable {
         }
     }
 
-    /// Add a diagram item to current diagram
     func add(get item: DiagramItem) -> DiagramItem {
         self.add(item)
         return item
@@ -297,11 +295,6 @@ public class Element: Identifiable, @unchecked Sendable {
         }
     }
 }
-
-//public class Resource {
-//    public var name: String
-//    public var data: Data
-//}
 
 /**
  A root of element map

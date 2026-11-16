@@ -68,7 +68,6 @@ class OutlineSidebarController: NSObject {
         toolbarControl.topAnchor.constraint(equalTo: toolbarBox.contentView!.topAnchor).isActive = true
         self.toolbar = toolbarControl
 
-        // Outline scroll view
         let outlineScroll = NSScrollView()
         outlineScroll.translatesAutoresizingMaskIntoConstraints = false
         outlineScroll.hasVerticalScroller = true
@@ -79,7 +78,6 @@ class OutlineSidebarController: NSObject {
         outlineScroll.contentView.drawsBackground = false
         stackView.addArrangedSubview(outlineScroll)
 
-        // Outline view
         let outline = OutlineNSOutlineView(frame: .zero)
         outline.translatesAutoresizingMaskIntoConstraints = false
         let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "OutlineColumn"))

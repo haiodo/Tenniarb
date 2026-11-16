@@ -271,13 +271,6 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         return nil
     }
 
-    //    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
-    //        if let el = item as? Element {
-    //            return el.elements.count > 0
-    //        }
-    //        return false
-    //    }
-
     func outlineView(_ outlineView: NSOutlineView, viewFor viewForTableColumn: NSTableColumn?, item: Any) -> NSView? {
         if let el = item as? Element {
             let identifier = NSUserInterfaceItemIdentifier(rawValue: "ItemCell")

@@ -157,9 +157,6 @@ public class StyleManager: NSObject, NSMenuDelegate {
         } else if el.operation == .Apply, let nde = el.node {
             doApply(el.name, nde)
         }
-        //        else if el.operation == .ApplyDefault, let nde = el.node {
-        //            doApply(nde)
-        //        }
     }
 
     func createMenu() -> NSMenu {
@@ -175,11 +172,6 @@ public class StyleManager: NSObject, NSMenuDelegate {
                 continue;
             }
             let menuItem = NSMenuItem(title: itm.name, action: #selector(performAction), keyEquivalent: "")
-            //            let img = NSImage.init(named: itm.imgName)
-            //            exportHtmlItem.image = NSImage.init(size: NSSize(width: 24, height: 24), flipped: false, drawingHandler: {
-            //                (rect) in img?.draw(in: rect)
-            //                return true
-            //            })
             menuItem.target = self
             menuItem.tag = idx
             idx += 1

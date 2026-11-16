@@ -37,7 +37,6 @@ class PropertiesPanelController: NSObject {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         self.containerView = stackView
 
-        // Scroll view
         let textScroll = NSScrollView()
         textScroll.translatesAutoresizingMaskIntoConstraints = false
         textScroll.hasVerticalScroller = true
@@ -51,7 +50,6 @@ class PropertiesPanelController: NSObject {
         stackView.addArrangedSubview(textScroll)
         self.scrollView = textScroll
 
-        // Text view
         let textView = TennTextView(frame: NSRect(x: 0, y: 0, width: width, height: height))
         textView.drawsBackground = false
         textView.isVerticallyResizable = true

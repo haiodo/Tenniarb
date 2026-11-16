@@ -192,9 +192,6 @@ class SpringLayout: LayoutAlgorithm {
             return;
         }
         let startingBounds = getLayoutBounds();
-        //        let sizeScale = min(
-        //                destinationBounds.width / startingBounds.width,
-        //                destinationBounds.height / startingBounds.height);
         for i in 0..<self.entities.count {
             let entity = entities[i];
             let size = self.layoutContext.getBounds(node: entity);

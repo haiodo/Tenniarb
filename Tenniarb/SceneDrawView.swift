@@ -62,9 +62,6 @@ public class PopupEditField: NSTextField {
         }
         super.keyDown(with: event)
     }
-    //    override public func keyUp(with event: NSEvent) {
-    //        super.keyDown(with: event)
-    //    }
     public override func flagsChanged(with event: NSEvent) {
         if event.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             shiftKeyDown = true
@@ -998,7 +995,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     static func getBodyText(_ item: DiagramItem, _ bodyStyle: DrawableStyle?, _ textValue: inout String) {
         if let bodyNode = item.properties.get("body") {
-            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            // Body may carry custom properties like width, height, color, font-size, so parse it as is.
             if let bodyBlock = bodyNode.getChild(1) {
                 if bodyBlock.kind == .BlockExpr {
                     if let style = bodyStyle {
@@ -1027,7 +1024,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         let fieldName = findFieldName(item)
 
         if let bodyNode = item.properties.get(fieldName) {
-            // Body could have custome properties like width, height, color, font-size, so we will parse it as is.
+            // Body may carry custom properties like width, height, color, font-size, so parse it as is.
             if let bodyBlock = bodyNode.getChild(1) {
                 if let txt = getString(bodyBlock, [:]) {
                     textValue = txt
@@ -1244,10 +1241,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             scheduleRedraw()
         }
     }
-
-    //    override func becomeFirstResponder() -> Bool {
-    //        return true
-    //    }
 
     @objc func duplicateItem() {
         guard let curElement = self.element else {
@@ -1846,10 +1839,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        //        if self.mode != .Dragging && self.mode != .DiagramMove && self.mode != .LineDrawing && self.mode != .Selection  {
-        //            return
-        //        }
-
         self.hidePopup()
         self.updateMousePosition(event)
 
@@ -2390,13 +2379,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             } else {
                 let items = Element.parseItems(node: node)
                 if items.count > 0 {
-                    // Move items a bit,
-                    //                    for i in items {
-                    //                        if i.kind == .Item {
-                    //                            i.x += 10
-                    //                            i.y -= 10
-                    //                        }
-                    //                    }
                     self.store?.add(self.element!, items, undoManager: self.undoManager, refresh: self.scheduleRedraw)
 
                     self.setActiveItems(items)
@@ -2508,7 +2490,6 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             }
 
         } else {
-            //TODO:
         }
     }
 

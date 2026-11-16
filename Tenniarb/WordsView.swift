@@ -16,11 +16,6 @@ class WordsView: NSOutlineView {
         }
     }
 
-    //    override func drawBackground(inClipRect clipRect: NSRect) {
-    //        // No code here
-    //        clipRect.fill(using: .clear)
-    //        // NSRectFillUsingOperation(clipRect, NSCompositingOperation.clear);
-    //    }
     override func drawCell(_ cell: NSCell) {
         Swift.debugPrint("Draw cell:")
     }

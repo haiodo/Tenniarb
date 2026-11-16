@@ -181,7 +181,6 @@ public class TenniarbApplication: NSApplication {
         editMenu.addItem(NSMenuItem(title: "Redo", action: Selector(("redo:")), keyEquivalent: "Z"))
         editMenu.addItem(NSMenuItem.separator())
 
-        // Add submenu
         let addSubmenuItem = NSMenuItem(title: "Add", action: nil, keyEquivalent: "")
         let addSubmenu = NSMenu(title: "Add")
         addSubmenuItem.submenu = addSubmenu

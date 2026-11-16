@@ -459,9 +459,6 @@ class UpdatePosition: AbstractUpdateValue<CGPoint>, @unchecked Sendable {
         self.item.x = value.x
         self.item.y = value.y
     }
-    //    override func getEventKind() -> ModelEventKind {
-    //        return isUndoCalled ? .Structure:  .Layout
-    //    }
 }
 
 class UpdateName: AbstractUpdateValue<String>, @unchecked Sendable {
