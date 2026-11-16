@@ -31,13 +31,11 @@ final class SceneParityTests: XCTestCase {
     /// | fixture               | missing                          |
     /// |-----------------------|----------------------------------|
     /// | animations            | go/scene/anim.go                 |
-    /// | classic-image         | go/scene/image.go                |
     ///
     /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
     /// the paths an icon draws inside its leaf.
     private let skipped: [String: String] = [
-        "animations": "go/scene/anim.go",
-        "classic-image": "go/scene/image.go",
+        "animations": "go/scene/anim.go"
     ]
 
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.

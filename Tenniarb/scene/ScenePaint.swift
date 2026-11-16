@@ -227,9 +227,9 @@ extension Scene.Prep {
         var st = Scene.Look()
         var fill = Scene.Color.white
         var border = Scene.Color.black
-        // shortcut: a picture clears the defaults in go/scene; image.go is not ported, so an item with
-        // image keeps the white fill until then.
-        if inCtx {
+        // A picture is the content of the box: the white default would show through a transparent PNG and
+        // the black frame around every photo is not what a box of content draws.
+        if inCtx || fileImage(rn.prop("image")) {
             fill = Scene.Color()
             border = Scene.Color()
         }

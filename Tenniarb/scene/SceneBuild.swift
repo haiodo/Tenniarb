@@ -48,6 +48,8 @@ extension Scene {
         var bodyAt: [ObjectIdentifier: LayoutNode] = [:]
         var styles: [ObjectIdentifier: Look] = [:]
         var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
+        /// The classic inline pictures of a node, by the name its text draws them with.
+        var inlines: [ObjectIdentifier: [String: ItemImage]] = [:]
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
         /// The colours of the markdown markup already reported.
@@ -75,12 +77,22 @@ extension Scene {
             n.dir = .abs
             n.node = rn
             frames[id(rn)] = n
-            // shortcut: a root that is one picture takes its pixel size in image.go; until then only width and height size it.
-            if let pr = prop(rn, "width"), let v = pr.num(0) {
-                n.width = .fixed(v)
+            // The root sizes the screen: a number is its box, and a picture with no number written gives
+            // its own size, so a screen can be one image.
+            let im = loadImage(rn)
+            if let pr = prop(rn, "width") {
+                if let v = pr.num(0) {
+                    n.width = .fixed(v)
+                }
+            } else if let im {
+                n.width = .fixed(Double(im.w))
             }
-            if let pr = prop(rn, "height"), let v = pr.num(0) {
-                n.height = .fixed(v)
+            if let pr = prop(rn, "height") {
+                if let v = pr.num(0) {
+                    n.height = .fixed(v)
+                }
+            } else if let im {
+                n.height = .fixed(Double(im.h))
             }
             for k in rn.kids where k.kind == .item && !hidden(k) {
                 let kid = item(k, parentAuto: false, up: Scene.Color.black)
@@ -106,6 +118,15 @@ extension Scene {
             }
             n.width = size(rn, "width", inCtx, parentAuto)
             n.height = size(rn, "height", inCtx, parentAuto)
+            // A picture with no size written takes its own pixels as the size.
+            if let im = loadImage(rn) {
+                if prop(rn, "width") == nil {
+                    n.width = .fixed(Double(im.w))
+                }
+                if prop(rn, "height") == nil {
+                    n.height = .fixed(Double(im.h))
+                }
+            }
             if inCtx {
                 limits(rn, n)
                 n.absolute = flag(rn, "absolute")

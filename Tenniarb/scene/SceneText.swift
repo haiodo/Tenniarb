@@ -169,6 +169,14 @@ extension Scene {
             }
             func add(_ part: TitlePart) {
                 line.parts.append(part)
+                if let img = part.img {
+                    // go/render kept the advance of the `@` that names the picture as a space beside it;
+                    // dropping it made an item with a picture in its title five points narrower.
+                    line.w += img.w + m.measure(" ", partFont(part)).width
+                    line.h = max(line.h, img.h)
+                    started = true
+                    return
+                }
                 let f = partFont(part)
                 line.w += m.measure(part.text, f).width
                 if f != font {
@@ -180,6 +188,13 @@ extension Scene {
                 started = started || !part.text.isEmpty
             }
             for part in parts ?? [] {
+                if let img = part.img {
+                    if started && w > 0 && line.w + img.w > w + 1e-9 {
+                        flush()
+                    }
+                    add(part)
+                    continue
+                }
                 let pf = partFont(part)
                 for (pi, para) in part.text.components(separatedBy: "\n").enumerated() {
                     if pi > 0 {
@@ -237,12 +252,14 @@ extension Scene {
         }
     }
 
-    /// A span of a title: text in the item font or in a size and colour of its own, set by the markdown markup.
+    /// A span of a title: text in the item font or in a size and colour of its own, set by the markdown markup,
+    /// or an inline picture of a classic diagram.
     struct TitlePart {
         var text = ""
         var font = Font()  // zero: the font of the title
         var color = Color()
         var hasColor = false
+        var img: TextImage?  // an inline picture: text is empty
     }
 
     /// One laid out line of a title; h grows above lineH for a larger run, and asc/desc follow the largest run.
@@ -391,8 +408,9 @@ extension Scene.Prep {
         ti.lineH = box.h
         if classic {
             ti.parts = titleMarkupParts(rn, ti)
-            // skip: a title that names an inline picture is splitTitleImages of image.go; without it the
-            // characters of the reference stay in the text.
+            if ti.parts == nil {
+                ti.parts = splitTitleImages(ti.text, inlineImages(rn))
+            }
         }
         if let lh = prop(rn, "line-height") {
             if let v = lh.num(0), v > 0 {
@@ -491,12 +509,12 @@ extension Scene.Prep {
         if !ti.text.contains("!(") && !ti.text.contains("&(") {
             return nil
         }
-        // skip: the @(picture) of a title is an inline image of image.go; without it the reference stays literal.
         var color = Scene.Color()
         var hasColor = false
         var font = ti.font
         var parts: [Scene.TitlePart] = []
         var plain = ""
+        let imgs = inlineImages(rn)
         func flush() {
             if plain.isEmpty {
                 return
@@ -547,6 +565,13 @@ extension Scene.Prep {
                     font = sizedFont(ti.font, v)
                 } else {
                     font = ti.font
+                }
+            case "@":
+                if let img = resolveInline(imgs, arg) {
+                    flush()
+                    parts.append(Scene.TitlePart(font: font, img: img))
+                } else {
+                    plain += String(title[i..<next])
                 }
             default:
                 plain += String(title[i..<next])

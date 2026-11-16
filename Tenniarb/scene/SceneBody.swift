@@ -30,13 +30,15 @@ extension Scene {
     static let bodyHeadGap1 = 10.0
     static let bodyHeadGap2 = 6.0
 
-    /// One span of a line in one look: a markdown token after its glyphs are decided.
+    /// One span of a line in one look: a markdown token after its glyphs are decided, or an inline picture
+    /// of a classic diagram.
     struct BodyRun: Equatable {
         var text = ""
         var font = Font()
         var color = Color()  // the colour of the markup at this point of the line
         var code = false  // drawn over the code background
         var link = ""  // the target of the link the run is the label of, "" for plain text
+        var img: TextImage?  // an inline picture: text is empty
     }
 
     /// The blocks of a body: a heading, a paragraph, a list of items, a quote, a fenced code block.
@@ -86,6 +88,8 @@ extension Scene {
         private var widths: [WidthKey: Double] = [:]
         var pos = Pos()  // the body command, for a warning about its height
         var from = ""  // the markdown file the text was read from; "" for text written in the .tenn
+        /// The classic inline pictures the body may name with @(name).
+        var imgs: [String: ItemImage] = [:]
         /// The build this body belongs to: its measurer of line boxes and its classic profile.
         unowned let p: Prep
 
@@ -327,8 +331,8 @@ extension Scene {
                 started = false
             }
             func put(_ text: String, _ run: BodyRun, _ w: Double) {
-                if let last = line.runs.last, last.font == run.font, last.color == run.color, last.code == run.code,
-                    last.link == run.link
+                if let last = line.runs.last, last.img == nil, last.font == run.font, last.color == run.color,
+                    last.code == run.code, last.link == run.link
                 {
                     line.runs[line.runs.count - 1].text += text
                 } else {
@@ -366,6 +370,15 @@ extension Scene {
                 return true
             }
             for run in runs {
+                if let img = run.img {
+                    if started && width > 0 && line.x + line.w + img.w > width + 1e-9 {
+                        flush()
+                    }
+                    line.runs.append(run)
+                    line.w += img.w
+                    started = true
+                    continue
+                }
                 for (i, seg) in run.text.components(separatedBy: "\n").enumerated() {
                     if i > 0 && started {
                         flush()  // a newline of the text is a break, not a space
@@ -410,6 +423,11 @@ extension Scene {
             }
             if lineH > 0 {
                 line.h = lineH
+            }
+            for run in line.runs {
+                if let img = run.img {
+                    line.h = max(line.h, img.h)
+                }
             }
         }
 
@@ -489,8 +507,11 @@ extension Scene {
                 case .code:
                     add(t.literal, mono, st.color, true)
                 case .image:
-                    // skip: an inline picture of a body is image.go; until then the reference stays as written.
-                    add("@(" + t.literal + ")", st.font, st.color, false)
+                    if let img = resolveInline(imgs, t.literal) {
+                        runs.append(BodyRun(img: img))
+                    } else {
+                        add("@(" + t.literal + ")", st.font, st.color, false)
+                    }
                 case .color:
                     let (before, text, inline) = cut(t.literal, "|")
                     if inline {
@@ -1014,6 +1035,7 @@ extension Scene.Prep {
         body.pos = pr.pos
         body.from = from
         if classic {
+            body.imgs = inlineImages(rn)
             body.sep = "\n"  // a line break of a classic body is a break, as in go/render
         }
         if !family.isEmpty {
@@ -1063,7 +1085,7 @@ extension Scene.Prep {
 
     /// The path after --from-file among the arguments of a body command; ok is false when the command has no
     /// such flag, and the path is "" when the flag has none.
-    private func bodyFileArg(_ args: [TennNode]) -> (path: String, ok: Bool) {
+    func bodyFileArg(_ args: [TennNode]) -> (path: String, ok: Bool) {
         for (i, a) in args.enumerated() where a.getIdentText() == SceneLoader.fromFileFlag {
             return (bodyArgText(args, i + 1), true)
         }
@@ -1179,7 +1201,7 @@ private func bodyCommandName(_ c: TennNode) -> String {
 }
 
 /// The arguments of a command, its block excluded.
-private func bodyCommandArgs(_ c: TennNode) -> [TennNode] {
+func bodyCommandArgs(_ c: TennNode) -> [TennNode] {
     Array((c.children ?? []).dropFirst().filter { $0.kind != .BlockExpr })
 }
 
