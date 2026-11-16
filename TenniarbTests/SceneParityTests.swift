@@ -34,9 +34,6 @@ final class SceneParityTests: XCTestCase {
     /// | classic-body          | go/scene/classic.go (modelVals: ${value} of an item) |
     /// | classic-image         | go/scene/image.go                                   |
     /// | classic-values        | go/scene/classic.go (modelVals)                     |
-    /// | context               | go/scene/context.go                                 |
-    /// | context-classic       | go/scene/context.go                                 |
-    /// | context-file          | go/scene/context.go                                 |
     ///
     /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
     /// the paths an icon draws inside its leaf.
@@ -45,9 +42,6 @@ final class SceneParityTests: XCTestCase {
         "classic-body": "go/scene/classic.go (modelVals: ${value} of an item)",
         "classic-image": "go/scene/image.go",
         "classic-values": "go/scene/classic.go (modelVals)",
-        "context": "go/scene/context.go",
-        "context-classic": "go/scene/context.go",
-        "context-file": "go/scene/context.go",
     ]
 
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.

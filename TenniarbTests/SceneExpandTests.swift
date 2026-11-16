@@ -170,4 +170,79 @@ final class SceneExpandTests: XCTestCase {
             diag.message,
             #"cycle: item "A" (c.tenn:2:5) -> use A as a (c.tenn:2:16) -> item "A" (c.tenn:2:5)"#)
     }
+
+    func testContextReachesAChildExpression() throws {
+        let root = try workspace([
+            "t.tenn": """
+            context size 12
+            element "Screen" {
+                item "Deep" { title "${ctx.size}" }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("t.tenn")
+        let screen = try XCTUnwrap(
+            tree.build("Screen", measurer: Scene.TextMeasurer(estimated: true), eval: sceneEvalVars))
+        XCTAssertTrue(tree.diagnostics.isEmpty, "\(tree.diagnostics)")
+        let deep = try XCTUnwrap(screen.tree.kids.first)
+        XCTAssertEqual(deep.vars?["ctx.size"], "12", "a key reaches the subtree it is declared above")
+        XCTAssertEqual(screen.p.texts[ObjectIdentifier(deep)]?.text, "12")
+    }
+
+    func testNearestContextDeclarationWins() throws {
+        let root = try workspace([
+            "n.tenn": """
+            element "Screen" {
+                context tone dark
+                item "Outer" {
+                    context tone light
+                    item "Inner" { title "${ctx.tone}" }
+                }
+                item "Plain" { title "${ctx.tone}" }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("n.tenn")
+        let screen = try XCTUnwrap(tree.element("Screen"))
+        XCTAssertTrue(tree.diagnostics.isEmpty, "\(tree.diagnostics)")
+        let outer = try XCTUnwrap(screen.kids.first)
+        let inner = try XCTUnwrap(outer.kids.first)
+        let plain = try XCTUnwrap(screen.kids.last)
+        XCTAssertEqual(outer.vars?["ctx.tone"], "light")
+        XCTAssertEqual(inner.vars?["ctx.tone"], "light", "the declaration below wins for its subtree")
+        XCTAssertEqual(plain.vars?["ctx.tone"], "dark", "a sibling keeps the one of the parent")
+    }
+
+    func testUseBlockContextWinsOverTheProvider() throws {
+        let root = try workspace([
+            "b.tenn": """
+            element "Card" {
+                kind Component
+                context tone ?= light
+                item "Box" { title "${ctx.tone}" }
+            }
+            element "Screen" {
+                item "Dark" { context tone dark; use Card as dark }
+                item "Light" {
+                    context tone dark
+                    use Card as light { context tone light }
+                }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("b.tenn")
+        let screen = try XCTUnwrap(
+            tree.build("Screen", measurer: Scene.TextMeasurer(estimated: true), eval: sceneEvalVars))
+        XCTAssertTrue(tree.diagnostics.isEmpty, "\(tree.diagnostics)")
+        let dark = try XCTUnwrap(screen.tree.kids[0].kids.first)
+        let light = try XCTUnwrap(screen.tree.kids[1].kids.first)
+        XCTAssertEqual(dark.vars?["ctx.tone"], "dark", "the provider over the ?= default of the component")
+        XCTAssertEqual(light.vars?["ctx.tone"], "light", "the block of the use over the provider")
+    }
 }

@@ -37,7 +37,7 @@ extension Scene {
         var replaced = false  // RSlot: declared by the nodes of a replace, which win over a slot of the same name
         var from = ""
         var to = ""
-        var vars: [String: String]?  // the parameters of the component instance it is in
+        var vars: [String: String]?  // the parameters of its instance and the context as ctx.* keys (5c, 5f)
         var def: Node?  // the item or element the root of an instance stands for
         var src: Node?  // the command written for the node
 
@@ -77,6 +77,7 @@ extension Scene {
         /// Evaluates the value of a parameter (spec 5c); nil: no expression runs.
         let eval: EvalFunc?
         var vars: [String: String]?  // parameters of the instance being expanded
+        var env: [String: String]?  // context declarations in scope, key -> value (spec 5f)
 
         init(t: Tree, ctx: MountCtx?, eval: EvalFunc? = nil) {
             self.t = t
@@ -269,11 +270,12 @@ extension Scene.Expander {
     func leave() { stack.removeLast() }
 
     func newR(_ kind: Scene.RKind, _ n: Scene.Node) -> Scene.RNode {
-        Scene.RNode(kind: kind, name: n.name, key: n.key, pos: n.pos, props: n.props, vars: vars, src: n)
+        Scene.RNode(kind: kind, name: n.name, key: n.key, pos: n.pos, props: n.props, vars: scope(), src: n)
     }
 
-    /// Expands an element or a file: its content is the scene.
-    func container(_ n: Scene.Node) -> Scene.RNode? {
+    /// Expands an element or a file: its content is the scene. env is the context of an instance, nil when the
+    /// node's own context commands declare it.
+    func container(_ n: Scene.Node, _ env: [String: String]?) -> Scene.RNode? {
         guard enter(n, n.pos) else { return nil }
         defer { leave() }
         let saved = ctx
@@ -281,6 +283,13 @@ extension Scene.Expander {
             ctx = saved?.push(n) ?? Scene.MountCtx(n, nil)
         }
         defer { ctx = saved }
+        let savedEnv = self.env
+        if let env {
+            self.env = env
+        } else {
+            self.env = context(n, n.props, self.env)
+        }
+        defer { self.env = savedEnv }
         let r = newR(.item, n)
         r.kids = contents(n.content)
         return r
@@ -321,21 +330,33 @@ extension Scene.Expander {
             vars = defaults(n)
         }
         defer { vars = caller }
-        return itemBody(n)
+        return itemBody(n, nil)
     }
 
     /// Expands the content of an item in the scope vars already holds: the use of a component item has set the
-    /// values there, and they must not fall back to the defaults.
-    func itemBody(_ n: Scene.Node) -> Scene.RNode? {
+    /// values there, and they must not fall back to the defaults. env is the context of an instance, nil for an
+    /// item written in place: then its own context commands declare it.
+    func itemBody(_ n: Scene.Node, _ env: [String: String]?) -> Scene.RNode? {
         guard enter(n, n.pos) else { return nil }
         defer { leave() }
+        let saved = self.env
+        if let env {
+            self.env = env
+        } else {
+            self.env = context(n, n.props, self.env)
+        }
+        defer { self.env = saved }
         let r = newR(.item, n)
         r.kids = contents(n.content)
         return r
     }
 
-    /// Expands an instance. As the target of another use its slots stay open for that use.
-    func use(_ n: Scene.Node, asTarget: Bool = false) -> Scene.RNode? {
+    /// Expands an instance. As the target of another use its slots stay open for that use. env is the context
+    /// of the use site (nil: the current one), overlay the block declarations of the uses whose target it is,
+    /// weakest first (spec 5f).
+    func use(
+        _ n: Scene.Node, asTarget: Bool = false, env: [String: String]? = nil, overlay: [Scene.CtxDecl] = []
+    ) -> Scene.RNode? {
         guard let parent = n.parent else { return nil }
         guard enter(n, n.pos) else { return nil }
         defer { leave() }
@@ -344,13 +365,34 @@ extension Scene.Expander {
         let outer = ctx
         let (target, tctx) = t.resolve(parent, outer, n.path, n.pos)
         guard let target else { return nil }
+        // The values of the parameters are the scope of the block of the use, a default the scope of the
+        // declaration; without parameters of its own the target reads the scope it is written in.
         let caller = vars
-        let (values, used) = params(target, n)
-        ctx = tctx  // the component's names resolve in its own file
+        let callerEnv = env ?? self.env
+        var scope = scopeOf(caller, callerEnv)
+        let (values, used) = params(target, n, scope)
+        if let values {
+            scope = scopeOf(values, callerEnv)  // the block reads the parameters of the instance it makes
+        }
+        // The order of the context is: the place of the use, the definition root, the block of the use
+        // (spec 5f). A use as target keeps its own block below the block that inserts it, so the nested use
+        // applies the two itself.
+        let block = ctxDecls(n, blockProps(n.block), scope)
+        var inst: Scene.RNode?
+        var instEnv: [String: String]?
+        ctx = tctx  // the component's names resolve in its own file, the block's in this one
         if let values {
             vars = values
         }
-        let inst = instance(target, n)
+        if target.kind == .use {
+            inst = instance(target, n, callerEnv, block + overlay)
+        } else {
+            instEnv = applyCtx(callerEnv, ctxDecls(target, target.props, scope))
+            instEnv = applyCtx(instEnv, block)
+            instEnv = applyCtx(instEnv, overlay)
+            instEnv = applyCtx(instEnv, fileDefaults(target, callerEnv))
+            inst = instance(target, n, instEnv, [])
+        }
         ctx = outer
         vars = caller
         guard let inst else { return nil }
@@ -361,19 +403,27 @@ extension Scene.Expander {
         inst.inst = true
         inst.src = n
         inst.props = withoutProp(inst.props, "pos")  // the component's pos is its place on the library canvas
+        if instEnv == nil {
+            instEnv = ctxEnv(inst.vars)
+        }
+        let savedEnv = self.env  // the content of the slots and at reads the context of the instance it lands in
+        self.env = instEnv
         apply(inst, n.block, used)
+        self.env = savedEnv
         if !asTarget && depth == 1 {
             finalize(inst)
         }
         return inst
     }
 
-    func instance(_ target: Scene.Node, _ use: Scene.Node) -> Scene.RNode? {
+    func instance(
+        _ target: Scene.Node, _ use: Scene.Node, _ env: [String: String]?, _ overlay: [Scene.CtxDecl]
+    ) -> Scene.RNode? {
         switch target.kind {
-        case .item: return itemBody(target)
+        case .item: return itemBody(target, env)
         case .link: return content(target)
-        case .use: return self.use(target, asTarget: true)
-        case .element, .file: return container(target)
+        case .use: return self.use(target, asTarget: true, env: env, overlay: overlay)
+        case .element, .file: return container(target, env)
         default:
             t.fail(use.pos, "path \(use.path) names a \(target.kind), not a node")
             return nil
@@ -548,8 +598,13 @@ extension Scene.Tree {
     /// Expands a container in the context of its file, slots filled; a component on its own shows its defaults.
     func expandElement(_ target: Scene.Node, _ ctx: Scene.MountCtx?, eval: Scene.EvalFunc? = nil) -> Scene.RNode? {
         let x = Scene.Expander(t: self, ctx: ctx, eval: eval)
+        // The root of the file is a node above every element in it, so its context is inherited (spec 5f).
+        let file = fileRoot(target)
+        if file !== target {
+            x.env = x.context(file, file.props, nil)
+        }
         x.vars = x.defaults(target)
-        let rn = x.container(target)
+        let rn = x.container(target, nil)
         if let rn {
             finalize(rn)
         }

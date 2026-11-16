@@ -58,9 +58,12 @@ func evalWords(_ eval: Scene.EvalFunc?, _ pr: Scene.Prop, _ vars: [String: Strin
 
 extension Scene.Expander {
     /// The parameters of instance target in use: a value the use sets by name over the default from the
-    /// declaration (spec 5c). used holds the overrides that are parameter values, so they do not become
-    /// properties of the instance root. A parameter without a default that the use does not set is an error.
-    func params(_ target: Scene.Node, _ use: Scene.Node) -> (values: [String: String]?, used: Set<Int>) {
+    /// declaration (spec 5c). caller is the scope of the use, out of which the values it sets are read. used
+    /// holds the overrides that are parameter values, so they do not become properties of the instance root. A
+    /// parameter without a default that the use does not set is an error.
+    func params(_ target: Scene.Node, _ use: Scene.Node, _ caller: [String: String]?) -> (
+        values: [String: String]?, used: Set<Int>
+    ) {
         if target.params.isEmpty {
             return (nil, [])
         }
@@ -75,9 +78,9 @@ extension Scene.Expander {
         var missing: [String] = []
         for prm in target.params {
             if let pr = given[prm.name] {
-                values[prm.name] = value(pr)
+                values[prm.name] = value(pr, caller)
             } else if let def = prm.defaultValue {
-                values[prm.name] = value(def)
+                values[prm.name] = value(def, nil)
             } else {
                 missing.append(prm.name)
             }
@@ -97,7 +100,7 @@ extension Scene.Expander {
         var values: [String: String] = [:]
         for prm in n.params {
             if let def = prm.defaultValue {
-                values[prm.name] = value(def)
+                values[prm.name] = value(def, nil)
                 continue
             }
             values[prm.name] = ""  // a required parameter has no value on its own, and no warning either
@@ -107,7 +110,7 @@ extension Scene.Expander {
 
     /// The value of one parameter: its arguments as words, each an expression evaluated in vars. A list of styles
     /// is written as several words: "extras outlined rounded" (spec 5b, any-of).
-    func value(_ pr: Scene.Prop) -> String {
+    func value(_ pr: Scene.Prop, _ vars: [String: String]?) -> String {
         let (v, ok) = evalWords(eval, pr, vars)
         if !ok && eval != nil {
             t.warn(pr.pos, "\(pr.name): the expression is not evaluated")
