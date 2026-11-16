@@ -186,7 +186,6 @@ export class Element {
     }
   }
 
-  /** Add a diagram item to current diagram */
   addGet(item: DiagramItem): DiagramItem {
     this.add(item);
     return item;

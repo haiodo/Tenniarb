@@ -107,7 +107,6 @@ export class LayoutContext {
   }
 
   isMovable(_node: DiagramItem): boolean {
-    // For now any item are movable.
     return true;
   }
 

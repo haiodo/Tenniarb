@@ -1,12 +1,12 @@
 // Parity of the Go scene renderer and the web one: for every fixture, the web scene is drawn into a
-// Canvas2D that records the paint calls, and the result is compared node by node with the golden made
-// by go/cmd/tennlayout (web/fixtures/scene/<name>.layout.json).
+// Canvas2D that records the paint calls, and the result is compared node by node with the golden
+// made by go/cmd/tennlayout (web/fixtures/scene/<name>.layout.json).
 //
-// The golden is what Go paints: go/scene builds gfx pictures, tennlayout decodes them. The web side is
-// read the same way - from the draw calls, not from re-reading the properties - so a divergence is a
-// picture that differs, not a second implementation of the same rules.
+// The golden is what Go paints: go/scene builds gfx pictures, tennlayout decodes them. The web side
+// is read the same way - from the draw calls, not from re-reading the properties - so a divergence
+// is a picture that differs, not the same rules implemented twice.
 //
-// The files a fixture mounts with element --from-file are read from the fixture folder, as the CLI does.
+// The files a fixture mounts with --from-file are read from its folder, as the CLI does.
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";

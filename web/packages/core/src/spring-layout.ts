@@ -318,7 +318,6 @@ export class SpringLayout implements LayoutAlgorithm {
     }
   }
 
-  /** position = position + sprMove * force */
   computePositions(): void {
     for (let i = 0; i < this.entities.length; i++) {
       if (this.layoutContext.isMovable(this.entities[i]!)) {

@@ -503,7 +503,6 @@ class ItemContext {
   }
 }
 
-// JSValue.toString()
 function jsToString(v: unknown): string {
   try {
     return String(v);
