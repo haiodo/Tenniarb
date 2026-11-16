@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* The UI SDK wireframe kit groups its 256 parts under seven category elements - `Actions` (19), `Forms` (88),
+  `Display` (58), `Overlays` (37), `Navigation` (33), `Feedback` (6), `Media` (15). A category carries no
+  `kind` and no parameters, so the component browser lists the parts by group and a use names the category:
+  `use ui.Forms.Select`. The generated markup of `examples/ui-sdk.tenn` is unchanged.
+
 * Swift: the scene engine starts in `Tenniarb/scene` with the file tree and its `--from-file` mounts
   (paths relative to the mounting file), `export let` parameters, styles, kinds, and row/column
   auto-layout with gap, padding, align, justify and fill/hug sizes; text items take the size of their

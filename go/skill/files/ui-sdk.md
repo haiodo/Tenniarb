@@ -6,8 +6,11 @@ description: Compose a screen from the UI SDK wireframe kit in this repository, 
 # The UI SDK wireframe kit
 
 `libraries/ui-sdk.tenn` holds one element per part of [ui-sdk.dev](https://ui-sdk.dev/md/svelte/components):
-256 elements, exactly the part names of its Svelte library, grayscale, no behavior. A screen composes
-them the way the ui-sdk docs nest them, and `tenniarb generate` prints the code their `template`s record.
+256 elements, exactly the part names of its Svelte library, grayscale, no behavior. The parts sit under
+seven category elements - `Actions`, `Forms`, `Display`, `Overlays`, `Navigation`, `Feedback`, `Media` -
+which are groups for the component browser, not components: a use names the category, `use ui.Forms.Select`.
+A screen composes the parts the way the ui-sdk docs nest them, and `tenniarb generate` prints the code
+their `template`s record.
 
 This page is local to this repository: the kit is a checked-in `.tenn` file, not a package, and ui-sdk.dev
 has no skill to install - read its docs for prop names and composition, never for a copy of this kit.
@@ -20,7 +23,7 @@ element "ui" --from-file "tenniarb-library://ui-sdk"
 element "Settings" {
     item Page {
         auto-layout column; gap 16; padding 24; width 720
-        use ui.Button as save { text "Save changes" }
+        use ui.Actions.Button as save { text "Save changes" }
     }
 }
 ```
@@ -33,7 +36,8 @@ itself, never twice.
 
 - The name in the ui-sdk docs is the element name: `SelectContent`, `DialogTitle`, `ToolbarButton`.
 - `get_state {file: "libraries/ui-sdk.tenn", find: "Select"}` lists the parts that match.
-- `grep '^element' libraries/ui-sdk.tenn` lists all 256.
+- `grep 'element "' libraries/ui-sdk.tenn` lists all 256; the category element above a part is the group
+  the browser shows it under.
 - The composition of a part is in the docs (`Composition` block). Dialog, Menu, Listbox and the other
   roots draw their first level when used empty - see "What a part draws" below.
 - Which `@ui-sdk/svelte` entry a part comes from is written in the `template` of that part; the part name
@@ -42,7 +46,7 @@ itself, never twice.
 ## Compose a screen
 
 - A part that holds others declares the slot `content`: fill it with `slot content { ... }`. Nested
-  parts follow the docs: `use ui.Dialog { slot content { use ui.DialogContent { ... } } }`.
+  parts follow the docs: `use ui.Overlays.Dialog { slot content { use ui.Overlays.DialogContent { ... } } }`.
 - Place parts with ordinary `item` boxes (`auto-layout column`, `gap`, `padding`): the boxes are the
   layout of the wireframe and stay out of the markup. Only the parts become code.
 - Every part is grayscale and self-contained: it reads the palette of the file itself, so it looks the
@@ -101,7 +105,7 @@ point, not a finished screen: nothing is bound and no event handler is written.
 - Containers (`DialogContent`, `MenuContent`, `Listbox`, `Toolbar`, `TreeItem`, …) draw a box and keep
   a `slot content`; an empty one shows a faint hint line.
 - A composition root (`Dialog`, `Menu`, `Combobox`, `Autocomplete`, `Command`, `Tooltip`, …) fills its
-  slot with one level of its own composition, so `use ui.Dialog { }` already reads as a dialog. Your own
+  slot with one level of its own composition, so `use ui.Overlays.Dialog { }` already reads as a dialog. Your own
   slot replaces that fallback entirely.
 - Parts drawn whole, no slot: `Select`, `Tabs`, `Field`, `FileInput`, `Calendar`, `ColorPicker`,
   `ImageCropper`, `Waterfall`, `Tree`, `Timeline`, `Carousel`, `ScrollArea`, `Resizable`, `Pagination`,

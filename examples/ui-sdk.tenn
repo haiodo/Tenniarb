@@ -1,6 +1,7 @@
 // The UI SDK wireframe kit in use: a settings page, a members list and a dialog below them.
-// Parts keep the ui-sdk names, so `tenniarb generate examples/ui-sdk.tenn Settings` prints the same screen
-// as @ui-sdk/svelte markup; the template of Settings is the export around it.
+// Parts keep the ui-sdk names under the kit's categories, so a use names both: `use ui.Forms.Input`.
+// `tenniarb generate examples/ui-sdk.tenn Settings` prints the same screen as @ui-sdk/svelte markup;
+// the template of Settings is the export around it.
 
 element "ui" --from-file "../libraries/ui-sdk.tenn"
 
@@ -39,7 +40,7 @@ element "Settings" {
                 item Title { title "Workspace settings"; font-size 22; font-weight 700 }
                 item Sub { title "Plan, members and billing"; font-size 13; text-color #6b7280 }
             }
-            use ui.Button as save { text "Save changes" }
+            use ui.Actions.Button as save { text "Save changes" }
         }
 
         item Body {
@@ -60,14 +61,14 @@ element "Settings" {
 
                 item FormHead { auto-layout row; width fill; item h { title General; font-size 15; font-weight 600 } }
 
-                use ui.FieldLabel as nameLabel { text "Workspace name" }
-                use ui.Input as name { value "Acme Studio" }
+                use ui.Forms.FieldLabel as nameLabel { text "Workspace name" }
+                use ui.Forms.Input as name { value "Acme Studio" }
 
-                use ui.FieldLabel as mailLabel { text "Billing email" }
-                use ui.Input as mail { placeholder "billing@acme.com" }
-                use ui.FieldDescription as mailHelp { text "Invoices go here" }
+                use ui.Forms.FieldLabel as mailLabel { text "Billing email" }
+                use ui.Forms.Input as mail { placeholder "billing@acme.com" }
+                use ui.Forms.FieldDescription as mailHelp { text "Invoices go here" }
 
-                use ui.Select as plan { }
+                use ui.Forms.Select as plan { }
 
                 item NotifyRow {
                     auto-layout row
@@ -76,7 +77,7 @@ element "Settings" {
                     width fill
                     height 28
                     item NotifyLabel { title "Email notifications"; font-size 13 }
-                    use ui.Switch as notify { checked yes }
+                    use ui.Forms.Switch as notify { checked yes }
                 }
 
                 item TermsRow {
@@ -84,7 +85,7 @@ element "Settings" {
                     align center
                     gap 8
                     height 24
-                    use ui.Checkbox as terms { checked yes }
+                    use ui.Forms.Checkbox as terms { checked yes }
                     item TermsLabel { title "Send me release notes"; font-size 13 }
                 }
 
@@ -93,8 +94,8 @@ element "Settings" {
                     justify end
                     gap 8
                     width fill
-                    use ui.Button as cancel { text Cancel }
-                    use ui.Button as create { text "Create workspace" }
+                    use ui.Actions.Button as cancel { text Cancel }
+                    use ui.Actions.Button as create { text "Create workspace" }
                 }
             }
 
@@ -109,45 +110,45 @@ element "Settings" {
                     justify space-between
                     width fill
                     item h { title Members; font-size 15; font-weight 600 }
-                    use ui.Button as invite { text Invite }
+                    use ui.Actions.Button as invite { text Invite }
                 }
 
-                use ui.Listbox as members {
+                use ui.Forms.Listbox as members {
                     slot content {
-                        use ui.ListboxItem as ada { text "Ada Lovelace (owner)" }
-                        use ui.ListboxItem as grace { text "Grace Hopper (editor)" }
-                        use ui.ListboxItem as alan { text "Alan Turing (viewer)" }
-                        use ui.ListboxItem as edsger { text "Edsger Dijkstra (viewer)" }
+                        use ui.Forms.ListboxItem as ada { text "Ada Lovelace (owner)" }
+                        use ui.Forms.ListboxItem as grace { text "Grace Hopper (editor)" }
+                        use ui.Forms.ListboxItem as alan { text "Alan Turing (viewer)" }
+                        use ui.Forms.ListboxItem as edsger { text "Edsger Dijkstra (viewer)" }
                     }
                 }
 
-                use ui.Meter as seats { }
+                use ui.Display.Meter as seats { }
 
-                use ui.Toolbar as tools {
+                use ui.Actions.Toolbar as tools {
                     slot content {
-                        use ui.ToolbarButton as bold { text B }
-                        use ui.ToolbarButton as italic { text I }
-                        use ui.ToolbarSeparator as rule { }
-                        use ui.ToolbarLink as docs { text "Permissions" }
+                        use ui.Actions.ToolbarButton as bold { text B }
+                        use ui.Actions.ToolbarButton as italic { text I }
+                        use ui.Actions.ToolbarSeparator as rule { }
+                        use ui.Actions.ToolbarLink as docs { text "Permissions" }
                     }
                 }
             }
         }
 
-        use ui.Dialog as remove {
+        use ui.Overlays.Dialog as remove {
             slot content {
-                use ui.DialogTrigger as open { text "Delete workspace" }
-                use ui.DialogContent as panel {
+                use ui.Overlays.DialogTrigger as open { text "Delete workspace" }
+                use ui.Overlays.DialogContent as panel {
                     slot content {
-                        use ui.DialogTitle as panelTitle { text "Delete workspace?" }
-                        use ui.DialogDescription as panelNote { text "Members lose access at once. This cannot be undone." }
+                        use ui.Overlays.DialogTitle as panelTitle { text "Delete workspace?" }
+                        use ui.Overlays.DialogDescription as panelNote { text "Members lose access at once. This cannot be undone." }
                         item PanelFoot {
                             auto-layout row
                             justify end
                             gap 8
                             width fill
-                            use ui.Button as keep { text Cancel }
-                            use ui.Button as drop { text Delete }
+                            use ui.Actions.Button as keep { text Cancel }
+                            use ui.Actions.Button as drop { text Delete }
                         }
                     }
                 }
