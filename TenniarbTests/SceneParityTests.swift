@@ -32,34 +32,26 @@ final class SceneParityTests: XCTestCase {
     /// |-----------------------|-----------------------------------------------------|
     /// | animations            | go/scene/anim.go                                    |
     /// | auto-layout-tour      | go/scene/layout.go wrap/line-gap                    |
-    /// | classic-body          | go/scene/body.go                                    |
+    /// | classic-body          | go/scene/classic.go (modelVals: ${value} of an item) |
     /// | classic-image         | go/scene/image.go                                   |
-    /// | classic-styles        | go/scene/styles.go classicDefaults and body.go      |
     /// | classic-values        | go/scene/classic.go (modelVals)                     |
     /// | context               | go/scene/context.go                                 |
     /// | context-classic       | go/scene/context.go                                 |
     /// | context-file          | go/scene/context.go                                 |
-    /// | doc-body              | go/scene/body.go                                    |
-    /// | onboarding-flow       | go/scene/body.go                                    |
-    /// | scene-text            | go/scene/body.go                                    |
-    /// | slots-dialog          | go/scene/body.go                                    |
+    /// | slots-dialog          | go/scene/layout.go wrap (gowt gfx/layout layoutWrap) |
     ///
     /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
     /// the paths an icon draws inside its leaf.
     private let skipped: [String: String] = [
         "animations": "go/scene/anim.go",
         "auto-layout-tour": "go/scene/layout.go wrap/line-gap",
-        "classic-body": "go/scene/body.go",
+        "classic-body": "go/scene/classic.go (modelVals: ${value} of an item)",
         "classic-image": "go/scene/image.go",
-        "classic-styles": "go/scene/styles.go classicDefaults and go/scene/body.go",
         "classic-values": "go/scene/classic.go (modelVals)",
         "context": "go/scene/context.go",
         "context-classic": "go/scene/context.go",
         "context-file": "go/scene/context.go",
-        "doc-body": "go/scene/body.go",
-        "onboarding-flow": "go/scene/body.go",
-        "scene-text": "go/scene/body.go",
-        "slots-dialog": "go/scene/body.go",
+        "slots-dialog": "go/scene/layout.go wrap (gowt gfx/layout layoutWrap)",
     ]
 
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.
@@ -217,8 +209,27 @@ private func node(_ pl: Scene.Placed, _ path: String, _ screen: Scene.Screen, is
     }
 
     var lines: [String] = []
-    if painted, let ti = p.texts[id] {
-        lines = ti.wrap(w - 2 * ti.padX).filter { !$0.isEmpty }
+    if painted {
+        if let ti = p.texts[id] {
+            if ti.parts != nil {
+                // A marked-up title draws one text op per part of the line, as drawParts of go/scene does.
+                for line in ti.layout(w - 2 * ti.padX) {
+                    for part in line.parts where !part.text.isEmpty {
+                        lines.append(part.text)
+                    }
+                }
+            } else {
+                lines = ti.wrap(w - 2 * ti.padX).filter { !$0.isEmpty }
+            }
+        }
+        // The body is drawn under the title, one text op per run: the picture of an item carries both.
+        if let body = p.bodies[id], p.bodyAt[id] == nil {
+            for line in body.lines(w - 2 * body.padX) {
+                for run in line.runs where !run.text.isEmpty {
+                    lines.append(run.text)
+                }
+            }
+        }
     }
     if !lines.isEmpty {
         textColor = st.text

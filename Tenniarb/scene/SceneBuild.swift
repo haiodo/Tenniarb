@@ -39,10 +39,15 @@ extension Scene {
         let eval: EvalFunc?
         var frames: [ObjectIdentifier: LayoutNode] = [:]
         var texts: [ObjectIdentifier: TextInfo] = [:]
+        var bodies: [ObjectIdentifier: BodyText] = [:]
+        /// A body laid out as a child of its item, when the item is a flow container.
+        var bodyAt: [ObjectIdentifier: LayoutNode] = [:]
         var styles: [ObjectIdentifier: Look] = [:]
         var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
+        /// The colours of the markdown markup already reported.
+        var warned: Set<String> = []
         /// A property with an expression -> its evaluated copy, nil if it failed.
         private var evals: [EvalKey: Prop?] = [:]
 
@@ -108,11 +113,27 @@ extension Scene {
             }
             let st = style(rn, inCtx || (rn.inst && holdsItems(rn)), up)
             styles[id(rn)] = st
-            // shortcut: a body is not laid out: body.go sizes it, so a leaf with a body hugs 0 until then.
+            // A body is the content of a leaf; an item that holds items shows them instead and is a backdrop.
+            if !holdsItems(rn) {
+                bodies[id(rn)] = bodyInfo(rn, st, inCtx)
+            }
             for k in rn.kids where k.kind == .item && !hidden(k) {
                 let kid = item(k, parentAuto: auto, up: st.text)
                 kid.parent = n
                 n.kids.append(kid)
+            }
+            // The body of an auto-layout item is a text block of its own after the children, so the flow puts it
+            // below them and the item grows with it; a leaf paints it under its title instead.
+            if let body = bodies[id(rn)], auto, !n.kids.isEmpty {
+                let bn = LayoutNode()
+                bn.width = .fill
+                bn.leafW = { body.natural() }
+                bn.leafH = { w in body.height(w) }
+                body.padX = 0
+                body.padY = 0
+                bn.parent = n
+                n.kids.append(bn)
+                bodyAt[id(rn)] = bn
             }
             if n.kids.isEmpty {
                 leaf(rn, n, inCtx)
@@ -218,10 +239,11 @@ extension Scene {
             return .hug
         }
 
-        /// Gives an item without children the size of its title.
+        /// Gives an item without children the size of its title and body.
         private func leaf(_ rn: RNode, _ n: LayoutNode, _ inCtx: Bool) {
             // An icon draws no name as text, as in a layout context; icon.go is not ported.
             let ti = textOf(rn, inCtx)
+            let body = bodies[id(rn)]
             var padX = classic ? Scene.classicTextPad : Scene.textPadX
             var padY = classic ? Scene.classicTextPad : Scene.textPadY
             if inCtx {
@@ -234,7 +256,7 @@ extension Scene {
                 padX = n.padding.left
                 padY = n.padding.top
             }
-            guard let ti else {
+            guard ti != nil || body != nil else {
                 // go/render keeps the inset around an item with no text: a dot of eight points, which old
                 // diagrams use as markers and anchors.
                 if classic && !inCtx {
@@ -243,17 +265,37 @@ extension Scene {
                 }
                 return
             }
-            ti.padX = padX
-            ti.padY = padY
-            n.text = ti
+            if let ti {
+                ti.padX = padX
+                ti.padY = padY
+                n.text = ti
+            }
+            if let body {
+                body.padX = padX
+                body.padY = padY
+            }
             let classic = self.classic
             n.leafW = {
-                let w = ti.natural()
+                var w = 0.0
+                if let ti {
+                    w = max(w, ti.natural())
+                }
+                if let body {
+                    w = max(w, body.natural())
+                }
                 // go/render kept the fraction of a measured line; only a scene rounds its leaf to whole points.
                 return classic ? w + 2 * padX : ceil(w) + 2 * padX
             }
             n.leafH = { w in
-                ti.height(w - 2 * padX) + 2 * padY
+                let inner = w - 2 * padX
+                var h = 0.0
+                if let ti {
+                    h += ti.height(inner)
+                }
+                if let body {
+                    h += body.height(inner)
+                }
+                return h + 2 * padY
             }
         }
 

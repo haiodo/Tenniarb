@@ -14,10 +14,11 @@
 //
 
 import Cocoa
+import cmkdown
 
 extension Scene {
     /// A face of a text: the part of gfx.Font the layout reads.
-    struct Font {
+    struct Font: Hashable {
         var name = ""  // the exact face; wins over family
         var family = ""
         var weight = 0  // a CSS weight 100..900, 0 when not set
@@ -74,18 +75,30 @@ extension Scene {
         var asc = 0.0
         var desc = 0.0
         var align = TextAlign.middle
+        /// Set when the classic title carries markup: each line is laid out and drawn part by part.
+        var parts: [TitlePart]?
+        /// The build this text belongs to: it decides the line box of a classic title.
+        unowned let p: Prep
         private let m: TextMeasurer
 
-        init(font: Font, text: String, m: TextMeasurer) {
+        init(font: Font, text: String, m: TextMeasurer, p: Prep) {
             self.font = font
             self.text = text
             self.m = m
+            self.p = p
         }
 
         func width(_ s: String) -> Double { m.measure(s, font).width }
 
         /// The width of the widest line when only "\n" breaks lines.
         func natural() -> Double {
+            if parts != nil {
+                var w = 0.0
+                for ln in layout(.infinity) {
+                    w = max(w, ln.w)
+                }
+                return w
+            }
             var w = 0.0
             for line in text.components(separatedBy: "\n") {
                 w = max(w, width(line))
@@ -93,14 +106,24 @@ extension Scene {
             return w
         }
 
-        /// The height of the text at width w.
+        /// The height of the text at width w; a run of another size is taller than its line of text.
         func height(_ w: Double) -> Double {
-            Double(wrap(w).count) * lineH
+            guard parts != nil else {
+                return Double(wrap(w).count) * lineH
+            }
+            var h = 0.0
+            for ln in layout(w) {
+                h += ln.h
+            }
+            return h
         }
 
         /// The lines of the text at width w, broken at spaces and after a hyphen inside a word; a piece wider
         /// than w stays on its line.
         func wrap(_ w: Double) -> [String] {
+            if parts != nil {
+                return layout(w).map(\.text)
+            }
             var out: [String] = []
             for para in text.components(separatedBy: "\n") {
                 var line = ""
@@ -127,6 +150,110 @@ extension Scene {
             }
             return out
         }
+
+        /// The font of a part, the title font for a part that names none.
+        func partFont(_ part: TitlePart) -> Font {
+            part.font.size == 0 ? font : part.font
+        }
+
+        /// Breaks the title at width w: a marked-up title keeps its runs, and a word wider than a classic line
+        /// is broken by characters.
+        func layout(_ w: Double) -> [TitleLine] {
+            var lines: [TitleLine] = []
+            var line = TitleLine(h: lineH, asc: asc, desc: desc)
+            var started = false
+            func flush() {
+                lines.append(line)
+                line = TitleLine(h: lineH, asc: asc, desc: desc)
+                started = false
+            }
+            func add(_ part: TitlePart) {
+                line.parts.append(part)
+                let f = partFont(part)
+                line.w += m.measure(part.text, f).width
+                if f != font {
+                    let box = p.lineBox(f)
+                    line.asc = max(line.asc, box.asc)
+                    line.desc = max(line.desc, box.desc)
+                    line.h = max(line.h, box.h)
+                }
+                started = started || !part.text.isEmpty
+            }
+            for part in parts ?? [] {
+                let pf = partFont(part)
+                for (pi, para) in part.text.components(separatedBy: "\n").enumerated() {
+                    if pi > 0 {
+                        flush()
+                    }
+                    for (i, word) in para.components(separatedBy: " ").enumerated() {
+                        for (j, piece) in hyphenPieces(word).enumerated() {
+                            var text = piece
+                            if j == 0 && i > 0 {
+                                text = " " + piece
+                            }
+                            let blank = text.trimmingCharacters(in: .whitespaces).isEmpty
+                            if text.isEmpty || (!started && blank) {
+                                continue
+                            }
+                            if started && !blank && w > 0 && line.w + m.measure(text, pf).width > w + 1e-9 {
+                                flush()
+                                text = piece
+                            }
+                            // A word wider than the line is broken by characters in a classic diagram, as
+                            // go/render drew the title of an item: the box grows down instead of over.
+                            if p.classic && w > 0 && !blank {
+                                var rest = text
+                                while !rest.isEmpty {
+                                    if m.measure(rest, pf).width <= w - line.w + 1e-9 {
+                                        add(TitlePart(text: rest, font: part.font, color: part.color, hasColor: part.hasColor))
+                                        break
+                                    }
+                                    var cut = p.fitText(rest, pf, w - line.w)
+                                    if cut.isEmpty {
+                                        if !started {
+                                            cut = p.firstText(rest)
+                                        } else {
+                                            flush()
+                                            continue
+                                        }
+                                    }
+                                    add(TitlePart(text: cut, font: part.font, color: part.color, hasColor: part.hasColor))
+                                    rest = String(rest.dropFirst(cut.count))
+                                    flush()
+                                }
+                                continue
+                            }
+                            if !text.isEmpty {
+                                add(TitlePart(text: text, font: part.font, color: part.color, hasColor: part.hasColor))
+                            }
+                        }
+                    }
+                }
+            }
+            if started || lines.isEmpty {
+                flush()
+            }
+            return lines
+        }
+    }
+
+    /// A span of a title: text in the item font or in a size and colour of its own, set by the markdown markup.
+    struct TitlePart {
+        var text = ""
+        var font = Font()  // zero: the font of the title
+        var color = Color()
+        var hasColor = false
+    }
+
+    /// One laid out line of a title; h grows above lineH for a larger run, and asc/desc follow the largest run.
+    struct TitleLine {
+        var parts: [TitlePart] = []
+        var w = 0.0
+        var h = 0.0
+        var asc = 0.0
+        var desc = 0.0
+
+        var text: String { parts.map(\.text).joined() }
     }
 }
 
@@ -252,13 +379,18 @@ extension Scene.Prep {
             padX = 0
             padY = 0
         }
-        let ti = Scene.TextInfo(font: fontOf(rn, size), text: title, m: measurer)
+        let ti = Scene.TextInfo(font: fontOf(rn, size), text: title, m: measurer, p: self)
         ti.padX = padX
         ti.padY = padY
         let box = lineBox(ti.font)
         ti.asc = box.asc
         ti.desc = box.desc
         ti.lineH = box.h
+        if classic {
+            ti.parts = titleMarkupParts(rn, ti)
+            // skip: a title that names an inline picture is splitTitleImages of image.go; without it the
+            // characters of the reference stay in the text.
+        }
         if let lh = prop(rn, "line-height") {
             if let v = lh.num(0), v > 0 {
                 ti.lineH = v
@@ -325,6 +457,189 @@ extension Scene.Prep {
         }
         return Int(v)
     }
+
+    /// The longest prefix of s that fits avail, in whole characters; "" when not even one does.
+    func fitText(_ s: String, _ f: Scene.Font, _ avail: Double) -> String {
+        if avail <= 0 {
+            return ""
+        }
+        var cut = ""
+        for g in s {
+            if measurer.measure(cut + String(g), f).width > avail + 1e-9 {
+                break
+            }
+            cut += String(g)
+        }
+        return cut
+    }
+
+    /// The first character of s, so a line always makes progress.
+    func firstText(_ s: String) -> String {
+        s.first.map(String.init) ?? s
+    }
+
+    /// Cuts a classic title at the !(colour), &(size) and @(picture) of the markdown markup; nil when the
+    /// title writes none of them, so its text stays as written.
+    func titleMarkupParts(_ rn: Scene.RNode, _ ti: Scene.TextInfo) -> [Scene.TitlePart]? {
+        let title = Array(ti.text)
+        if let parts = titleEmphasisParts(ti) {
+            return parts
+        }
+        if !ti.text.contains("!(") && !ti.text.contains("&(") {
+            return nil
+        }
+        // skip: the @(picture) of a title is an inline image of image.go; without it the reference stays literal.
+        var color = Scene.Color()
+        var hasColor = false
+        var font = ti.font
+        var parts: [Scene.TitlePart] = []
+        var plain = ""
+        func flush() {
+            if plain.isEmpty {
+                return
+            }
+            parts.append(Scene.TitlePart(text: plain, font: font, color: color, hasColor: hasColor))
+            plain = ""
+        }
+        var i = 0
+        while i < title.count {
+            if title[i] == "\\", i + 1 < title.count, "@$*_#<~!".contains(title[i + 1]) {
+                plain.append(title[i + 1])
+                i += 2
+                continue
+            }
+            guard let (mark, arg, next) = parenAt(title, i) else {
+                plain.append(title[i])
+                i += 1
+                continue
+            }
+            switch mark {
+            case "!":
+                flush()
+                let (before, text, inline) = cut(arg, "|")
+                if inline {
+                    let c = markupColor(rn.pos, before)
+                    parts.append(
+                        Scene.TitlePart(text: text, font: font, color: c ?? Scene.Color(), hasColor: c != nil))
+                } else if arg.trimmingCharacters(in: .whitespaces).isEmpty {
+                    color = Scene.Color()
+                    hasColor = false
+                } else if let c = markupColor(rn.pos, arg) {
+                    color = c
+                    hasColor = true
+                } else {
+                    color = Scene.Color()
+                    hasColor = false
+                }
+            case "&":
+                flush()
+                let (size, text, inline) = cut(arg, "|")
+                if inline {
+                    if let v = markupSize(size) {
+                        parts.append(
+                            Scene.TitlePart(
+                                text: text, font: sizedFont(font, v), color: color, hasColor: hasColor))
+                    }
+                } else if let v = markupSize(arg) {
+                    font = sizedFont(ti.font, v)
+                } else {
+                    font = ti.font
+                }
+            default:
+                plain += String(title[i..<next])
+            }
+            i = next
+        }
+        flush()
+        return parts
+    }
+
+    /// The runs of a title with the emphasis go/render reads in it: **bold**, *italic*, `code`. nil when the
+    /// title writes none, so a plain title keeps its characters.
+    func titleEmphasisParts(_ ti: Scene.TextInfo) -> [Scene.TitlePart]? {
+        let text = ti.text
+        if text.rangeOfCharacter(from: CharacterSet(charactersIn: "*_`")) == nil {
+            return nil
+        }
+        // The raw text, as go/render lexes it: **bold** is bold and *italic* is italic, which the normalised
+        // form of a body would swap.
+        let toks = MarkdownLexer.getTokens(code: text)
+        if toks.isEmpty {
+            return nil
+        }
+        func styled(_ weight: Int, _ italic: Bool) -> Scene.Font {
+            var f = ti.font
+            if !f.name.isEmpty {
+                f.family = cut(f.name, ",").0.trimmingCharacters(in: .whitespaces)
+                f.name = ""
+            }
+            if weight != 0 {
+                f.weight = weight
+            }
+            f.italic = italic
+            return f
+        }
+        var parts: [Scene.TitlePart] = []
+        var plain = ""
+        func flush() {
+            if plain.isEmpty {
+                return
+            }
+            parts.append(Scene.TitlePart(text: plain, font: ti.font))
+            plain = ""
+        }
+        var marked = false
+        for t in toks {
+            switch t.type {
+            case .bold:
+                flush()
+                parts.append(Scene.TitlePart(text: t.literal, font: styled(700, false)))
+                marked = true
+            case .italic:
+                flush()
+                parts.append(Scene.TitlePart(text: t.literal, font: styled(0, true)))
+                marked = true
+            case .code:
+                flush()
+                var f = ti.font
+                f.family = Scene.bodyMonoFace
+                f.name = ""
+                parts.append(Scene.TitlePart(text: t.literal, font: f))
+                marked = true
+            case .eof:
+                break
+            default:
+                plain += t.literal
+            }
+        }
+        flush()
+        if !marked {
+            return nil
+        }
+        return parts
+    }
+}
+
+/// reads a marker of the markup at i: "!", "&" or "@" followed by "(...)", the content balanced the way the
+/// lexer reads it, and the index after the closing ")".
+private func parenAt(_ s: [Character], _ i: Int) -> (String, String, Int)? {
+    guard i + 1 < s.count, s[i + 1] == "(", s[i] == "!" || s[i] == "&" || s[i] == "@" else {
+        return nil
+    }
+    var depth = 1
+    var j = i + 2
+    while j < s.count {
+        if s[j] == "(" {
+            depth += 1
+        } else if s[j] == ")" {
+            depth -= 1
+            if depth == 0 {
+                return (String(s[i]), String(s[(i + 2)..<j]), j + 1)
+            }
+        }
+        j += 1
+    }
+    return nil
 }
 
 /// The title as the file should write it: every argument in one quoted text.

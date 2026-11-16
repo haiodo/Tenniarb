@@ -53,6 +53,27 @@ extension Scene {
             diagnostics.append(Diagnostic(pos: pos, message: message, warn: warn))
         }
 
+        /// Finds rel relative to file at, a slash path in the tree; ok is false when the result leaves the root.
+        func resolveIn(_ at: String, _ rel: String) -> (url: URL, rel: String, ok: Bool) {
+            let dir = (at as NSString).deletingLastPathComponent
+            let base = dir.isEmpty ? root : root.appendingPathComponent(dir)
+            let path = base.appendingPathComponent(rel).standardizedFileURL.resolvingSymlinksInPath()
+            let inside = path.path == root.path || path.path.hasPrefix(root.path + "/")
+            return (path, relative(path), inside)
+        }
+
+        /// The text of a file the tree reads: a body or a template that names a markdown file of the workspace.
+        func read(_ abs: URL) -> String? {
+            try? String(contentsOf: abs, encoding: .utf8)
+        }
+
+        /// The path of abs relative to the root, with slash separators.
+        private func relative(_ abs: URL) -> String {
+            let prefix = root.path + "/"
+            guard abs.path.hasPrefix(prefix) else { return abs.path }
+            return String(abs.path.dropFirst(prefix.count))
+        }
+
         func fail(_ pos: Pos, _ message: String) { report(pos, warn: false, message) }
 
         func warn(_ pos: Pos, _ message: String) { report(pos, warn: true, message) }
@@ -165,9 +186,8 @@ final class SceneLoader {
 
     /// Finds rel relative to file at, a slash path in the tree; ok is false when the result leaves the root.
     private func resolveIn(_ at: String, _ rel: String) -> (URL, Bool) {
-        let dir = (at as NSString).deletingLastPathComponent
-        let base = dir.isEmpty ? root : root.appendingPathComponent(dir)
-        return inside(base.appendingPathComponent(rel))
+        let found = tree.resolveIn(at, rel)
+        return (found.url, found.ok)
     }
 
     // MARK: - Commands

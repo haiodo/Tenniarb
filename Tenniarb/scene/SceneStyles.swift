@@ -156,3 +156,40 @@ private func styleScope(_ n: Scene.Node) -> Scene.Node? {
 private func hasStyles(_ n: Scene.Node) -> Bool {
     !(n.styles?.isEmpty ?? true) || !n.styleGroups.isEmpty
 }
+
+/// Gives the nodes of a classic diagram the default look its element declares with styles { item { … } } and
+/// styles { line { … } }: go/render reads those two names as the look of every box and every link of the element,
+/// not as styles a node has to name.
+func classicDefaults(_ r: Scene.RNode) {
+    guard let src = r.src else { return }
+    let item = src.styles?["item"]
+    let line = src.styles?["line"]
+    if item == nil && line == nil {
+        return
+    }
+    func walk(_ n: Scene.RNode) {
+        switch n.kind {
+        case .item:
+            n.props = defaultProps("item", item, n) + n.props
+        case .link:
+            n.props = defaultProps("line", line, n) + n.props
+        case .slot:
+            break
+        }
+        for k in n.kids {
+            walk(k)
+        }
+    }
+    for k in r.kids {
+        walk(k)
+    }
+}
+
+/// The properties the default style name gives n. A node that names the same style takes it through use-style
+/// alone, and a shadow of its own replaces the default one: go/render parsed the default first and the node's
+/// properties over it.
+private func defaultProps(_ name: String, _ st: Scene.Style?, _ n: Scene.RNode) -> [Scene.Prop] {
+    guard let st, !styleRefs(n.props).contains(normalizeName(name)) else { return [] }
+    let ownShadow = n.props.contains { $0.name == "shadow" }
+    return st.props.filter { !(ownShadow && $0.name == "shadow") }
+}

@@ -211,6 +211,10 @@ extension Scene.Tree {
         guard let rn = expand() else { return nil }
         let p = Scene.Prep(self, measurer: measurer, eval: eval)
         p.classic = !sceneRoot(rn)
+        // The default look of a classic diagram is settled before the styles: a node may still name its own.
+        if p.classic {
+            classicDefaults(rn)
+        }
         // The expressions of the screen come before the styles: use-style ${kind} picks a style by its value.
         if p.eval != nil {
             p.evalTree(rn)
@@ -222,6 +226,7 @@ extension Scene.Tree {
         }
         root.layout()
         p.warnOutside(rn)
+        p.warnBodyFit(rn)
         return Scene.Screen(name: rn.name, w: root.rw, h: root.rh, root: root, tree: rn, p: p)
     }
 }
