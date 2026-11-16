@@ -1,0 +1,44 @@
+# hum1izer settings for this project.
+# The file is looked up from the checked directory up to the root, flags override it.
+
+version: 1
+
+comments:
+  # Comment longer than this many lines counts as a finding. 0 disables the check.
+  max_lines: 2
+  # How many recent commits to check when scanning a git repo.
+  commits: 20
+  skip_tests: false
+
+languages:
+  # Found in project: go (504), ts (128), swift (76), js (5)
+  # only - allowlist, empty means all supported.
+  only: []
+  ignore: []
+
+# Paths to skip scanning. ** crosses directories, * stays within a segment.
+# node_modules, vendor, dist, gen and generated files are skipped by default.
+exclude: []
+
+# Baseline of known findings. Without this line, a run without --baseline
+# won't read it, and blocks deferred via fix --keep resurface again.
+baseline: .hum1izer-baseline
+
+rules:
+  # only - allowlist, empty means all. Name comes from the report: both a
+  # rule name and a whole category name work.
+  only: []
+  disable: []
+
+# Fires most often in this project:
+#    360  Long comment
+#     35  Comment restates the code
+#     20  Commented-out code
+#     18  TODO with no owner
+#      6  Markdown essay in a comment
+#      5  loop through / returns the result
+#      5  temporary / for now / will be removed
+#      4  we will
+#      2  constructor / getter / imports
+#      1  Changelog in a comment
+# If any of this is normal for the project, move the name to rules.disable.
