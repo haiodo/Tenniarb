@@ -40,7 +40,7 @@ extension SceneLoader {
     // shortcut: a name an at block or a slot brings in is not counted - port validate() when the app
     // shows a part file opened in the wrong context.
     func loadAuto(_ file: String) throws -> Scene.Tree {
-        if let property = Self.explicitEntry(root: root, file: file) {
+        if let property = Self.explicitEntry(root: root, file: file, overlay: overlay) {
             do {
                 return try loadIn(file, entry: property.path.path)
             } catch {
@@ -61,16 +61,17 @@ extension SceneLoader {
     }
 
     /// The absolute path a file names with its entry property, with the position of the property.
-    static func explicitEntry(root: URL, file: String) -> (path: URL, pos: Scene.Pos)? {
+    static func explicitEntry(root: URL, file: String, overlay: [String: String]) -> (path: URL, pos: Scene.Pos)? {
         let absRoot = realPath(root)
         let abs = realPath(absolute(root: absRoot, file: file))
-        guard let src = try? String(contentsOf: abs, encoding: .utf8) else { return nil }
+        let rel = slashPath(absRoot, abs)
+        guard let src = overlay[rel] ?? (try? String(contentsOf: abs, encoding: .utf8)) else { return nil }
         let ast = TennParser().parse(src)
         for c in ast.children ?? [] where cmdName(c) == entryProperty {
             let written = argText(split(c).args, 0)
             guard !written.isEmpty else { continue }
             let path = abs.deletingLastPathComponent().appendingPathComponent(written).standardizedFileURL
-            return (path, nodePos(slashPath(absRoot, abs), c))
+            return (path, nodePos(rel, c))
         }
         return nil
     }

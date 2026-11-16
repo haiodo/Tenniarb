@@ -18,8 +18,8 @@ import XCTest
 
 @testable import Tenniarb
 
-/// The document layer with a scene file: go/model/scenekind.go picks the kind on read, and a scene has
-/// no write side yet, so its bytes survive an open and a save.
+/// The document layer with a scene file: go/model/scenekind.go picks the kind on read, and a scene keeps
+/// its text, which an edit changes and a save writes.
 @MainActor
 final class SceneDocumentTests: XCTestCase {
 

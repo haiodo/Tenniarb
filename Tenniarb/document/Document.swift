@@ -27,9 +27,14 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// The tree of a scene document, read in on open; nil for a classic one.
     @MainActor private(set) var sceneTree: Scene.Tree?
 
-    /// The bytes a scene document was read from. A scene has no write side yet, so a save puts them back
-    /// instead of printing classic text over the file.
-    private var sceneBytes: Data?
+    /// The text a scene document holds now: every edit goes through it, and a save writes it.
+    @MainActor private(set) var sceneText: String?
+
+    /// The text the last read or save put on disk, so an undo back to it clears the edited mark.
+    @MainActor private var savedSceneText: String?
+
+    /// The workspace root the scene mounts resolve in, kept so an edit loads the same tree.
+    @MainActor private var sceneRoot: URL?
 
     override class var autosavesInPlace: Bool {
         return true
@@ -193,18 +198,24 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// Puts a classic document in the window, dropping the scene of a document read before.
     @MainActor private func showClassic(_ elementModel: ElementModel) {
         sceneTree = nil
-        sceneBytes = nil
+        sceneText = nil
+        savedSceneText = nil
+        sceneRoot = nil
         updateStore(elementModel)
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(nil)
     }
 
-    /// Opens a scene document read-only: the tree is kept, the outline stays empty, and a save writes the
-    /// file back as it came.
+    /// Opens a scene document: the tree is kept, the outline stays empty, and the text is what an edit
+    /// changes and a save writes.
     @MainActor private func readScene(_ url: URL, text: String) {
-        sceneBytes = Data(text.utf8)
+        let root = workspaceRoot(url)
+        sceneRoot = root
+        sceneText = text
+        savedSceneText = text
+        let loader = SceneLoader(root: root)
         do {
-            sceneTree = try SceneLoader(root: workspaceRoot(url)).loadAuto(url.path)
+            sceneTree = try loader.loadAuto(url.path)
         } catch {
             sceneTree = nil
             Swift.print("Failed to load scene \(url.path): \(error)")
@@ -215,6 +226,81 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(sceneTree)
         self.fileURL = url
+    }
+
+    /// Applies one text edit of a scene document: the edited text is loaded again before it is kept, and
+    /// an edit that does not parse or that adds an error is dropped whole, so a save never writes a
+    /// broken file. Only the main file can be edited: a mounted one has no window of its own yet.
+    ///
+    /// file is the file the offsets are in, as go/app's fileOf/ownFileOf choose it.
+    @MainActor
+    func applySceneEdit(_ edit: Scene.TextEdit, in file: String) throws {
+        guard let text = sceneText, let tree = sceneTree, let root = sceneRoot else {
+            throw SceneEditError(message: "the document is not a scene")
+        }
+        guard let main = tree.main?.pos.file, file == main else {
+            throw SceneEditError(message: "\(file) is a mounted file: open it to edit it")
+        }
+        let bytes = Array(text.utf8)
+        guard edit.start >= 0, edit.start <= edit.end, edit.end <= bytes.count else {
+            throw SceneEditError(message: "range \(edit.start)..\(edit.end) is outside the text of \(bytes.count) bytes")
+        }
+        let after =
+            String(decoding: bytes[..<edit.start], as: UTF8.self) + edit.new
+            + String(decoding: bytes[edit.end...], as: UTF8.self)
+        let loader = SceneLoader(root: root)
+        loader.overlay = [main: after]
+        let next: Scene.Tree
+        do {
+            next = try loader.loadAuto(main)
+        } catch {
+            throw SceneEditError(message: "not applied: \(error)")
+        }
+        if next.fatalCount > tree.fatalCount {
+            let first = next.diagnostics.first { !$0.warn }?.message ?? "the scene does not load"
+            throw SceneEditError(message: "not applied: \(first)")
+        }
+        keepScene(after, next)
+        // The undo keeps the text, not the tree: a scene tree is tens of megabytes, and the old text
+        // loads again as it did before the edit.
+        undoManager?.registerUndo(withTarget: self) { doc in
+            MainActor.assumeIsolated { doc.restoreScene(text) }
+        }
+        undoManager?.setActionName("Edit text")
+        updateChangeCount(.changeDone)
+    }
+
+    /// Puts the text and the tree of a scene in the document and in its window.
+    @MainActor
+    private func keepScene(_ text: String, _ tree: Scene.Tree) {
+        sceneText = text
+        sceneTree = tree
+        vc?.setSceneTree(tree)
+        syncSceneEdited()
+    }
+
+    /// Puts back the text an undo returns to, and makes the undo that comes next its redo.
+    @MainActor
+    private func restoreScene(_ text: String) {
+        guard let tree = sceneTree, let root = sceneRoot, let main = tree.main?.pos.file, let current = sceneText else {
+            return
+        }
+        let loader = SceneLoader(root: root)
+        loader.overlay = [main: text]
+        guard let next = try? loader.loadAuto(main) else { return }
+        keepScene(text, next)
+        undoManager?.registerUndo(withTarget: self) { doc in
+            MainActor.assumeIsolated { doc.restoreScene(current) }
+        }
+        undoManager?.setActionName("Edit text")
+    }
+
+    /// Keeps the edited mark and the title in step with the text, so an undo back to the saved text
+    /// clears them without a second count of the changes.
+    @MainActor
+    private func syncSceneEdited() {
+        store?.modified = sceneText != savedSceneText
+        vc?.updateWindowTitle()
     }
 
     override var isDocumentEdited: Bool {
@@ -231,6 +317,21 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             }
             return DispatchQueue.main.sync { MainActor.assumeIsolated { self.store } }
         }
+        let sceneTextNow: () -> String? = {
+            if Thread.isMainThread {
+                return MainActor.assumeIsolated { self.sceneText }
+            }
+            return DispatchQueue.main.sync { MainActor.assumeIsolated { self.sceneText } }
+        }
+        let markSaved: (String) -> Void = { text in
+            let work = {
+                MainActor.assumeIsolated {
+                    self.savedSceneText = text
+                    self.syncSceneEdited()
+                }
+            }
+            if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+        }
         let finish: (String) -> Void = { name in
             let work = {
                 MainActor.assumeIsolated {
@@ -242,8 +343,11 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             _ = name
         }
         do {
-            if let bytes = sceneBytes {
-                try bytes.write(to: url, options: .atomic)
+            if let text = sceneTextNow() {
+                // shortcut: a save under another name keeps the tree of the old path; an edit after it
+                // still loads from the folder the document was opened in.
+                try Data(text.utf8).write(to: url, options: .atomic)
+                markSaved(text)
                 finish(url.lastPathComponent)
                 self.fileURL = url
                 return
@@ -261,6 +365,13 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             Swift.print("Some error happen")
         }
     }
+}
+
+/// Why a scene edit was dropped: the message the window shows.
+struct SceneEditError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? { message }
 }
 
 /// The folder mounts resolve in, as app.WorkspaceRoot: the nearest folder up with .git or

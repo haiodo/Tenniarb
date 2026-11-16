@@ -91,6 +91,9 @@ final class SceneLoader {
     static let fromFileFlag = "--from-file"
 
     let root: URL
+    /// Text of files that stands in for the disk, by slash path from the root: an edit is loaded before
+    /// it is saved.
+    var overlay: [String: String] = [:]
     private var tree: Scene.Tree!
     private var currentFile = ""
     private var stack: [(abs: String, rel: String)] = []
@@ -170,11 +173,15 @@ final class SceneLoader {
         }
         let rel = relative(abs)
         let text: String
-        do {
-            text = try String(contentsOf: abs, encoding: .utf8)
-        } catch {
-            tree.fail(at ?? Scene.Pos(file: rel, line: 1, col: 1), "cannot read \(rel): \(error.localizedDescription)")
-            return nil
+        if let over = overlay[rel] {
+            text = over
+        } else {
+            do {
+                text = try String(contentsOf: abs, encoding: .utf8)
+            } catch {
+                tree.fail(at ?? Scene.Pos(file: rel, line: 1, col: 1), "cannot read \(rel): \(error.localizedDescription)")
+                return nil
+            }
         }
 
         stack.append((key, rel))

@@ -61,7 +61,7 @@ func sceneValue(_ v: String) -> Any {
 }
 
 /// FormatFloat(f, 'f', -1, 64) of Go: the shortest digits that read back as f, never an exponent.
-private func canonicalNumber(_ f: Double) -> String {
+func canonicalNumber(_ f: Double) -> String {
     if f.isNaN { return "NaN" }
     if f.isInfinite { return f < 0 ? "-Inf" : "+Inf" }
     var text = f.description  // the shortest digits that read back as f
