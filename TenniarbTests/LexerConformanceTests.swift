@@ -284,8 +284,7 @@ class LexerConformanceTests: XCTestCase {
         let fastParser = TennParser()
         let fast = fastParser.parse(source)
 
-        let slowParser = TennParser()
-        slowParser.factory = { SlowLexer($0) }
+        let slowParser = TennParser(lexerFactory: { SlowLexer($0) })
         let slow = slowParser.parse(source)
 
         XCTAssertFalse(fastParser.errors.hasErrors())

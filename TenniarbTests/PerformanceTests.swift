@@ -294,8 +294,7 @@ class PerformanceTests: XCTestCase {
         let str: String = generateString()
         measure {
             let now = Date()
-            let p = TennParser()
-            p.factory = { source in SlowLexer(source) }
+            let p = TennParser(lexerFactory: { source in SlowLexer(source) })
             _ = p.parse(str)
             Swift.print("\(#function) Elapsed: \(Date().timeIntervalSince(now))")
         }
