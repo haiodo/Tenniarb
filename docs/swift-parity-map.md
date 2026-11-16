@@ -31,9 +31,9 @@
 | `go/scene/tree.go:178` `Style`, `:184` `StyleKid`, `:191` `StyleBlock`, `:199` `StyleGroup` | `SceneNode.swift` `Style`, `StyleKid`, `StyleBlock`, `StyleGroup` | начат | нормализация имён, порядок объявления, `one-of`/`any-of` (`load.go:714`) |
 | `go/scene/tree.go:91` `Override`, `:81` `OvKind` | `SceneNode.swift` `Override`, `OvKind` | начат | `prop/node/at/replace/slot` и вложенность блока (`load.go:843`) |
 | `go/scene/tree.go:205` `IsPlate` | - | нет | имя с `§`; без `Nodes()`/путей не нужно |
-| `go/scene/names.go:14` `NormalizeName` | `SceneNode.swift` `normalizeName` | начат | буквы/метки/цифры сохраняются, всё прочее `_`; пустое имя пустое |
-| `go/scene/names.go:26` `Segment`, `:82` `splitPath` | `SceneLoader.swift` `validPath` | начат | синтаксис пути (точки, кавычки, `\"`); `Segment` и разбор на сегменты не портированы - нужны для `resolve` |
-| `go/scene/load.go:21` `Tree` | `SceneLoader.swift` `Tree` | начат | `root/main/files/order/src/diags`; `ctxs/overlay/top` не портированы |
+| `go/scene/names.go:14` `NormalizeName` | `SceneNode.swift` `normalizeName` | есть | буквы/метки/цифры сохраняются, всё прочее `_`; ключ сегмента - `Segment.key`, сравнение имён - NFC (`Segment.matches`); фикстура - кавычки и совпадающие ключи в `TenniarbTests/SceneResolveTests.swift` |
+| `go/scene/names.go:26` `Segment`, `:82` `splitPath` | `SceneNode.swift` `Segment`, `splitPath`, `quoteName` | есть | точки, кавычки, `\"`; пустой сегмент, незакрытая кавычка и текст после кавычки - nil; тот же разбор у загрузчика (`pathText`) и у `at`/`replace` (`SceneExpand.swift` `find`); `TenniarbTests/SceneResolveTests.swift` `testSplitPathReadsQuotedSegments` |
+| `go/scene/load.go:21` `Tree` | `SceneLoader.swift` `Tree` | начат | `root/main/files/order/src/diags`; `ctxs` (цепочка монтирований) есть, `overlay` не портирован |
 | `go/scene/load.go:46` `Load`, `:56` `LoadOverlay` | `SceneLoader.swift` `load(file:)` | начат | корень воркспейса, выход за корень - ошибка (`:228`); главный файл нечитаем - ошибка, остальное - диагностики |
 | `go/scene/load.go:64` `LoadIn` | - | нет | контекст `entry` (спека 5a.1) |
 | `go/scene/entry.go:218` `LoadAuto`, `:149` `FindEntry` | - | нет | поиск entry вверх по папкам; без него доска-часть не видит имена мастера |
@@ -49,10 +49,10 @@
 | `go/scene/load.go:792` `newUse` | `SceneLoader.swift` `newUse` | начат | форма `use <путь> as <имя>`, путь из слов и кавычек, блок - overrides |
 | `go/scene/load.go:304` `joinedBlocks` | - | нет | два блока в одной команде - предупреждение |
 | `go/scene/exprcheck.go:14` `checkExpressions` | - | нет | синтаксис выражений при загрузке |
-| `go/scene/resolve.go:86` `Resolve`, `:106` `lookup` | - | нет | путь по нормализованным именам, подъём по `Parent` и через точку монтирования; `ambiguous path` |
-| `go/scene/expand.go:20` `RNode`, `:58` `expander` | - | нет | разворот `use`: экземпляр, слоты, `at`/`replace`, параметры |
-| `go/scene/params.go:61` `params`, `:92` `defaults` | - | нет | значение параметра из `use` выше умолчания; обязательный без значения - ошибка |
-| `go/scene/styles.go:15` `applyStyles`, `:77` `inheritProps` | - | нет | свойства стиля после последнего `use-style`; наследование шрифта от родителя |
+| `go/scene/resolve.go:86` `Resolve`, `:106` `lookup` | `SceneResolve.swift` `Tree.resolve`, `lookup`, `MountCtx`, `Tree.mapMounts` | есть | первый сегмент ищется от scope вверх через точки монтирования (корень смонтированного файла продолжается в месте монтирования); сегмент в кавычках - по имени, голый - по ключу; ошибки `nothing named`/`ambiguous path` (кандидаты с позициями)/`is not defined here or above` как в Go; фикстура - `TenniarbTests/SceneResolveTests.swift` |
+| `go/scene/expand.go:20` `RNode`, `:58` `expander` | `SceneExpand.swift` `RNode`, `RKind`, `Expander`, `Tree.element` | есть | `use` даёт экземпляр с именем из `as`, детей из компонента; слот по имени и по умолчанию заменяются содержимым, незаполненный остаётся fallback, `slot {}` его снимает; `at`/`replace`; `pos` компонента с корня убирается; цикл - `cycle: ...`; контекст (5f) и выражения не портированы; голдены `web/fixtures/scene/*.layout.json` ещё не сверялись |
+| `go/scene/params.go:61` `params`, `:92` `defaults` | `SceneParams.swift` `Expander.params`, `defaults`, `value` | есть | значение из блока `use` выше умолчания, остальные - умолчания; обязательный без значения - `element "C" needs "size": set it in the block of the use`; значения доходят до узлов как `RNode.vars`, `${...}` не вычисляется (нет вычислителя); `TenniarbTests/SceneExpandTests.swift` |
+| `go/scene/styles.go:15` `applyStyles`, `:77` `inheritProps` | `SceneStyles.swift` `applyStyles`, `inheritProps`, `styleRefs` | есть | свойства стиля встают сразу после последнего `use-style` (выше - умолчания, ниже - свои), блоки детей как descendant-селектор в обратном порядке, шрифт наследуется item'ом; корень экземпляра берёт стили `Def`, остальные - ближайшего элемента; `classicDefaults` не портирован (нужен классической диаграмме); `TenniarbTests/SceneStyleTests.swift` |
 | `go/scene/context.go:48` `context`, `:23` `ctxDecl` | - | нет | `context`/`ctx` (спека 5f) |
 | `go/scene/layout.go:106` `prep`, `:192` `root`, `:400` `item` | `Tenniarb/scene/SceneLayout.swift` `LayoutEngine` | начат | корень `Abs` и его размер; `pos` - верхний левый угол, экранный `y = -pos.y` (`:405`) |
 | `go/scene/layout.go:494` `container` | `SceneLayout.swift` `container` | начат | `auto-layout row/column/abs`, `gap`, `align`, `justify`; `wrap`, `line-gap` не портированы |
@@ -172,5 +172,5 @@
 | `go/cmd/tennlayout/main.go:1` печать дерева | - | нет | вывод `layout` до и после порта; голдены `web/fixtures/scene/*.layout.json` |
 | `go/cmd/tennlayout/main_test.go:13` `TestGoldensAreCurrent` | - | нет | голден отстал от фикстуры - тест падает |
 | `web/packages/render/test/scene-parity.test.ts:1` сверка web | - | нет | эталон для Swift-сверки, сам тест не трогается |
-| `go/scene/*_test.go` (86 файлов пакета) | `TenniarbTests/SceneLoaderTests.swift`, `TenniarbTests/SceneAutoLayoutTests.swift` | начат | новые тесты не запускались (GUI-тест требует разрешения владельца); переносить по одному сценарию из `go/scene/layout_test.go` и `fromfile_test.go` |
+| `go/scene/*_test.go` (86 файлов пакета) | `TenniarbTests/SceneLoaderTests.swift`, `SceneAutoLayoutTests.swift`, `SceneResolveTests.swift`, `SceneExpandTests.swift`, `SceneStyleTests.swift` | начат | наборы проходят (545 тестов, 2026-11-16); сценарии переносятся по одному из `go/scene/layout_test.go`, `pathquote_test.go`, `scene_test.go`; сверки картинки нет |
 | `go/tenncorpus` golden/round-trip на `web/fixtures` | `TenniarbTests/TennGoldenTests.swift:1` | есть | тот же текст разбирается и печатается одинаково |

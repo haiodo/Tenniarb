@@ -29,13 +29,26 @@ extension Scene {
         case link
         case use
         case slot  // slot definition in a component; content is the fallback
+
+        var description: String {
+            switch self {
+            case .file: return "file"
+            case .element: return "element"
+            case .item: return "item"
+            case .link: return "link"
+            case .use: return "use"
+            case .slot: return "slot"
+            }
+        }
     }
 
     /// A source position, 1-based; file is a slash path relative to the workspace root.
-    struct Pos: Equatable {
+    struct Pos: Equatable, CustomStringConvertible {
         var file = ""
         var line = 1
         var col = 1
+
+        var description: String { "\(file):\(line):\(col)" }
     }
 
     /// The byte range [start, end) of a command in the text of its file.
@@ -194,7 +207,85 @@ extension Scene {
         func isContainer() -> Bool {
             kind == .file || kind == .element
         }
+
+        /// What a path segment can pick under n: elements, items and uses.
+        func named() -> [Node] {
+            var out = elems
+            for c in content where c.kind == .item || c.kind == .use {
+                out.append(c)
+            }
+            return out
+        }
     }
+
+    /// One step of a dotted path (spec 4.2): a bare segment names a node by its key, a quoted one by its name.
+    struct Segment {
+        var name: String  // a quoted segment: the text between the quotes, \" undone; a bare one: the text
+        var quoted = false
+
+        /// The segment as a node key: its name normalized.
+        var key: String { normalizeName(name) }
+
+        /// The segment as a path writes it.
+        var text: String { quoted ? quoteName(name) : name }
+
+        /// Whether the segment names n: a quoted one compares the name as written, a bare one the key.
+        func matches(_ n: Node) -> Bool {
+            if quoted {
+                return name.precomposedStringWithCanonicalMapping == n.name.precomposedStringWithCanonicalMapping
+            }
+            return n.key == key
+        }
+    }
+}
+
+/// Splits a dotted path into segments; nil for an empty segment, an unterminated quote, or text after a closing quote.
+func splitPath(_ path: String) -> [Scene.Segment]? {
+    let chars = Array(path)
+    var segs: [Scene.Segment] = []
+    var i = 0
+    while i < chars.count {
+        if chars[i] == "\"" {
+            var name = ""
+            var j = i + 1
+            var closed = false
+            while j < chars.count {
+                if chars[j] == "\\", j + 1 < chars.count, chars[j + 1] == "\"" {
+                    name.append("\"")
+                    j += 2
+                    continue
+                }
+                if chars[j] == "\"" {
+                    closed = true
+                    j += 1
+                    break
+                }
+                name.append(chars[j])
+                j += 1
+            }
+            guard closed, j == chars.count || chars[j] == "." else { return nil }
+            segs.append(Scene.Segment(name: name, quoted: true))
+            i = j
+            if i == chars.count { break }
+            i += 1  // the dot
+            if i == chars.count { return nil }
+            continue
+        }
+        var j = i
+        while j < chars.count, chars[j] != "." { j += 1 }
+        if j == i { return nil }  // an empty segment: two dots or a leading one
+        segs.append(Scene.Segment(name: String(chars[i..<j])))
+        i = j
+        if i == chars.count { break }
+        i += 1  // the dot
+        if i == chars.count { return nil }
+    }
+    return segs.isEmpty ? nil : segs
+}
+
+/// Writes name as a path segment in double quotes; a quote inside becomes \", as the lexer reads it.
+func quoteName(_ name: String) -> String {
+    "\"" + name.replacingOccurrences(of: "\"", with: "\\\"") + "\""
 }
 
 /// The kind words of an element or a file, as "kind Component" writes them; stored lowercase.

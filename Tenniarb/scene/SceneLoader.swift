@@ -39,6 +39,7 @@ extension Scene {
         var order: [Node] = []  // file roots in load order
         var texts: [String: String] = [:]  // text of every loaded file
         var diagnostics: [Diagnostic] = []
+        var ctxs: [ObjectIdentifier: MountCtx] = [:]  // file root -> the first chain of mounts that reaches it
 
         init(root: URL) {
             self.root = root
@@ -89,6 +90,7 @@ final class SceneLoader {
         }
         tree.top = top
         tree.main = top
+        tree.mapMounts()
         return tree
     }
 
@@ -515,54 +517,8 @@ final class SceneLoader {
         var out = ""
         for a in args {
             guard let s = a.getIdentText() else { return nil }
-            out += a.kind == .StringLit ? Self.quoteName(s) : s
+            out += a.kind == .StringLit ? quoteName(s) : s
         }
-        return Self.validPath(out) ? out : nil
-    }
-
-    private static func quoteName(_ name: String) -> String {
-        "\"" + name.replacingOccurrences(of: "\"", with: "\\\"") + "\""
-    }
-
-    /// Whether path is dotted segments, a quoted name allowed as a segment; no empty segment, no trailing dot.
-    private static func validPath(_ path: String) -> Bool {
-        var i = path.startIndex
-        var needSegment = true
-        while i < path.endIndex {
-            if path[i] == "\"" {
-                i = path.index(after: i)
-                var closed = false
-                while i < path.endIndex {
-                    if path[i] == "\\", path.index(after: i) < path.endIndex, path[path.index(after: i)] == "\"" {
-                        i = path.index(i, offsetBy: 2)
-                        continue
-                    }
-                    if path[i] == "\"" {
-                        i = path.index(after: i)
-                        closed = true
-                        break
-                    }
-                    i = path.index(after: i)
-                }
-                guard closed else { return false }
-                needSegment = false
-            } else {
-                var segment = ""
-                while i < path.endIndex, path[i] != "." {
-                    segment.append(path[i])
-                    i = path.index(after: i)
-                }
-                guard !segment.isEmpty, needSegment else { return false }
-                needSegment = false
-            }
-            if i == path.endIndex {
-                break
-            }
-            guard path[i] == "." else { return false }
-            i = path.index(after: i)
-            guard i < path.endIndex else { return false }
-            needSegment = true
-        }
-        return !needSegment
+        return splitPath(out) != nil ? out : nil
     }
 }
