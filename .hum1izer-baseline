@@ -1,0 +1,14 @@
+# hum1izer baseline v3
+# Snapshot of findings. A run with --baseline flags only what isn't here.
+# Regenerate: hum1izer --code --baseline <file> --write-baseline <path>
+# Format: <comment hash>\t<rule code>[\t<rule code>...]
+# Rule codes are decoded below. No path on purpose: the key is the comment
+# text, so moving code to another file doesn't resurrect the finding. The
+# flip side: a copy of the same comment in a new file also counts as known.
+#
+# 7bbde7 Long comment line
+# e67fb1 Long comment
+#
+3a006f3a0e38	7bbde7	e67fb1
+9fea435e7158	7bbde7	e67fb1
+d8b50847f4d4	7bbde7	e67fb1
