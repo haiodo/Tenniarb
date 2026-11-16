@@ -130,6 +130,9 @@ extension Element {
         return ee.toStr(0, false)
     }
 
+    // The format reads a coordinate as float32; writing its float64 tail back adds pointer noise.
+    static func roundPos(_ v: CGFloat) -> Double { (Double(v) * 100).rounded() / 100 }
+
     static func buildItemData(_ item: DiagramItem, _ itemBlock: TennNode, addPos: Bool) {
         if let descr = item.description {
             itemBlock.add(TennNode.newCommand(PersistenceItemKind.Description.commandName, TennNode.newStrNode(descr)))
@@ -141,7 +144,8 @@ extension Element {
         if nx || ny || addPos {
             itemBlock.add(
                 TennNode.newCommand(
-                    PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+                    PersistenceItemKind.Position.commandName, TennNode.newFloatNode(roundPos(item.x)),
+                    TennNode.newFloatNode(roundPos(item.y))))
         }
 
         for p in item.properties {
@@ -178,7 +182,8 @@ extension Element {
         if nx || ny || addPos {
             linkDataBlock.add(
                 TennNode.newCommand(
-                    PersistenceItemKind.Position.commandName, TennNode.newFloatNode(Double(item.x)), TennNode.newFloatNode(Double(item.y))))
+                    PersistenceItemKind.Position.commandName, TennNode.newFloatNode(roundPos(item.x)),
+                    TennNode.newFloatNode(roundPos(item.y))))
         }
 
         for p in item.properties {

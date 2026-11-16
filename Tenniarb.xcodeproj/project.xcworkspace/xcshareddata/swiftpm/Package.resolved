@@ -1,5 +1,5 @@
 {
-  "originHash" : "785e09f2dec2826fad810a394c99c0732f77dbf810354376cf1af3e9a6ead7a4",
+  "originHash" : "aa21d061167a95c81c002dbffe34e18f39da9c66e704dd16c0240c95afd74fa1",
   "pins" : [
     {
       "identity" : "cmkdown",
@@ -8,6 +8,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "df95663fa07adb51a6ca04b645b30257c5012655"
+      }
+    },
+    {
+      "identity" : "tenn",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/haiodo/tenn",
+      "state" : {
+        "revision" : "23ba03482e2de275da47dd4151dc95c3376b7773",
+        "version" : "1.0.3"
       }
     }
   ],

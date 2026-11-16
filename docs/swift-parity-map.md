@@ -87,8 +87,9 @@
 
 | Go | Swift | Статус | Что сверять |
 |---|---|---|---|
-| `github.com/haiodo/tenn/go` (lexer/parser/printer, v1.0.1) | SPM `Tenn` v1.0.2, `Tenniarb/document/Document.swift:141` `TennParser` | есть | общий формат читается обеими сторонами; `TenniarbTests/TennTests.swift`, `TenniarbTests/PersistenceTests.swift`; паритет версий пакета - `Tenniarb.xcodeproj` против `go/go.mod` |
+| `github.com/haiodo/tenn/go` (lexer/parser/printer, v1.0.1) | SPM `Tenn` v1.0.3, `Tenniarb/document/Document.swift:141` `TennParser` | есть | один и тот же код формата; номера расходятся только на публичную видимость Swift-API (1.0.2, 1.0.3), поведение парсинга общее - `TenniarbTests/TennTests.swift`, `TenniarbTests/PersistenceTests.swift` |
 | `go/app/document.go:43` чтение/запись документа | `Tenniarb/document/Document.swift:134` `read(from:)`, `:180` `write(to:)` | есть | сохранение не теряет блоки, `--from-file` пишется строкой (`docs/spec/tenn-scene.md:69`) |
+| `go/model/persistence.go:143` `roundPos` | `Tenniarb/ElementPersistence.swift:134` `roundPos` | сверено 2026-11-16 | координата пишется до 0.01, как в Go и web; стенд - общий голден `web/fixtures/Example.saved.tenn` в `TenniarbTests/TennGoldenTests.swift` |
 | `go/app/doccore.go:28` печать текста | `Tenniarb/document/tenn/AttributedPrinter.swift:1` | есть | отступы/кавычки при записи; `TenniarbTests/PersistenceTests.swift` |
 | `go/model` (3034) классическая модель | `Tenniarb/model/ElementModel.swift:89` `Element`, `:335` `DiagramItem`, `:370` `LinkItem` | есть | классика читается и рисуется; набор свойств - `Tenniarb/ElementPersistence.swift:53` |
 | `go/model/scenekind.go:6` `SceneElement` | - | нет | выбор рисователя элемента по содержимому (спека 5a.17) |

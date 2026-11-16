@@ -7,8 +7,12 @@
   auto-layout with gap, padding, align, justify and fill/hug sizes. Rows of the port live in
   `docs/swift-parity-map.md`.
 
-* `.tenn` is read with `github.com/haiodo/tenn` v1.0.1 in Go and v1.0.2 in Swift: the Swift app takes the
-  parser as a package instead of its embedded copy, so both versions keep empty literals the same way.
+* `.tenn` is read with `github.com/haiodo/tenn` in both versions: the Swift app takes the parser as a
+  package instead of its embedded copy, on v1.0.3 where the lexer, the token, `SlowLexer` and the
+  diagnostics are public; Go stays on v1.0.1, where empty literals survive the parse.
+
+* Swift saves a position to a hundredth of a point like Go and web do, so the shared golden
+  `web/fixtures/Example.saved.tenn` stops carrying the float32 noise as `-592.5537109375`.
 
 * `tenniarb generate FILE ELEMENT` prints a screen as code from the `template` of its parts: every `use`
   below the element prints the template of its component with the values of its block and the content of
