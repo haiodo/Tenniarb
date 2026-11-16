@@ -57,7 +57,7 @@ func TestGoToComponentMountedByEntry(t *testing.T) {
 }
 
 // Go to Component of a use in a part file with no library window opens the file that mounts the library in
-// the current window, not in a new one.
+// the current window, not in a new one, and selects the component there.
 func TestGoToComponentOpensMountInTheSameWindow(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.Mkdir(filepath.Join(dir, ".git"), 0o755); err != nil {
@@ -84,9 +84,35 @@ func TestGoToComponentOpensMountInTheSameWindow(t *testing.T) {
 		t.Errorf("the window shows %q, want %q", part.state.Doc.Path, want)
 	}
 	if got := part.state.Current; got == nil || got.FromFile != "lib/icon.tenn" {
-		t.Errorf("the window shows %v, want the element that mounts lib/icon.tenn", got)
+		t.Fatalf("the window shows %v, want the element that mounts lib/icon.tenn", got)
 	}
 	if !slices.Equal(part.selNodes, []string{"Crosshair"}) {
 		t.Errorf("selected %q, want the component", part.selNodes)
+	}
+}
+
+// A library below the workspace root is mounted by a path from the folder of the file that mounts it, not
+// from the root: Go to Component of a document that lives in a subfolder finds its own mount.
+func TestGoToComponentOfFileInSubfolder(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	design := filepath.Join(dir, "design")
+	if err := os.Mkdir(design, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTenn(t, dir, "design/icon.tenn", iconLib)
+	kits := "element Icon --from-file \"icon.tenn\"\nelement \"Panel\" {\n  use Icon.Crosshair as Crosshair\n}\n"
+	writeTenn(t, dir, "design/kit.tenn", kits)
+	sh := &Shell{}
+	kit := newDoc(t, sh, filepath.Join(design, "kit.tenn"), kits)
+	use := kit.stree.File("design/kit.tenn").Elems[1].Content[0]
+	kit.goToComponentNode(use)
+	if len(sh.viewers) != 1 {
+		t.Fatalf("%d windows, want the one that was open", len(sh.viewers))
+	}
+	if got := kit.state.Current; got == nil || got.FromFile != "icon.tenn" {
+		t.Errorf("the window shows %v, want the element that mounts icon.tenn", got)
 	}
 }

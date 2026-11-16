@@ -132,6 +132,11 @@ func (v *Viewer) showMount(path string) bool {
 		want = realPath(filepath.Join(v.root, filepath.FromSlash(path)))
 	}
 	var walk func(e *model.Element, dir string) *model.Element
+	// The files a document mounts are named from its own folder, not from the workspace root.
+	dir := v.root
+	if v.state.Doc.Path != "" {
+		dir = filepath.Dir(v.state.Doc.Path)
+	}
 	walk = func(e *model.Element, dir string) *model.Element {
 		if e == nil {
 			return nil
@@ -153,7 +158,7 @@ func (v *Viewer) showMount(path string) bool {
 		}
 		return nil
 	}
-	e := walk(&v.session.Root().Element, v.root)
+	e := walk(&v.session.Root().Element, dir)
 	if e == nil {
 		return false
 	}
