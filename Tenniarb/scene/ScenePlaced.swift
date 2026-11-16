@@ -113,6 +113,33 @@ extension Scene {
             return out
         }
 
+        /// The lines drawn for the links of the screen, in paint order, each with the path of the item whose
+        /// coordinates it is drawn in.
+        func links() -> [Link] {
+            var out: [Link] = []
+            func walk(_ rn: RNode, _ path: String) {
+                if rn !== tree, p.styles[ObjectIdentifier(rn)]?.display == "none" {
+                    return  // not drawn, its children with it
+                }
+                for k in p.paintOrder(rn) {
+                    switch k.kind {
+                    case .item:
+                        guard p.frames[ObjectIdentifier(k)] != nil else { continue }
+                        walk(k, path.isEmpty ? k.key : path + "." + k.key)
+                    case .link:
+                        p.checkRoute(k)
+                        guard var link = p.linkPicture(rn, k) else { continue }
+                        link.parent = path
+                        out.append(link)
+                    case .slot:
+                        break  // gone after finalize
+                    }
+                }
+            }
+            walk(tree, "")
+            return out
+        }
+
         /// The tree of the drawn items, the screen itself at the root. Hidden items are not in it.
         func placed() -> Placed {
             func walk(_ rn: RNode, _ parent: Placed?, _ ox: Double, _ oy: Double, _ parentDir: Dir) -> Placed {

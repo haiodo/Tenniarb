@@ -34,17 +34,13 @@ final class SceneParityTests: XCTestCase {
     /// | auto-layout-tour      | go/scene/layout.go wrap/line-gap                    |
     /// | classic-body          | go/scene/body.go                                    |
     /// | classic-image         | go/scene/image.go                                   |
-    /// | classic-link-index    | go/scene/linkroute.go                               |
-    /// | classic-shapes        | go/scene/linkroute.go and classic.go                |
-    /// | classic-styles        | go/scene/linkroute.go and go/scene/body.go          |
+    /// | classic-styles        | go/scene/styles.go classicDefaults and body.go      |
     /// | classic-values        | go/scene/classic.go (modelVals)                     |
     /// | context               | go/scene/context.go                                 |
     /// | context-classic       | go/scene/context.go                                 |
     /// | context-file          | go/scene/context.go                                 |
     /// | doc-body              | go/scene/body.go                                    |
-    /// | link-quad             | go/scene/linkroute.go                               |
-    /// | link-routes           | go/scene/linkroute.go                               |
-    /// | onboarding-flow       | go/scene/body.go and go/scene/linkroute.go          |
+    /// | onboarding-flow       | go/scene/body.go                                    |
     /// | scene-text            | go/scene/body.go                                    |
     /// | slots-dialog          | go/scene/body.go                                    |
     ///
@@ -55,17 +51,13 @@ final class SceneParityTests: XCTestCase {
         "auto-layout-tour": "go/scene/layout.go wrap/line-gap",
         "classic-body": "go/scene/body.go",
         "classic-image": "go/scene/image.go",
-        "classic-link-index": "go/scene/linkroute.go",
-        "classic-shapes": "go/scene/linkroute.go and classic.go",
-        "classic-styles": "go/scene/linkroute.go and go/scene/body.go",
+        "classic-styles": "go/scene/styles.go classicDefaults and go/scene/body.go",
         "classic-values": "go/scene/classic.go (modelVals)",
         "context": "go/scene/context.go",
         "context-classic": "go/scene/context.go",
         "context-file": "go/scene/context.go",
         "doc-body": "go/scene/body.go",
-        "link-quad": "go/scene/linkroute.go",
-        "link-routes": "go/scene/linkroute.go",
-        "onboarding-flow": "go/scene/body.go and go/scene/linkroute.go",
+        "onboarding-flow": "go/scene/body.go",
         "scene-text": "go/scene/body.go",
         "slots-dialog": "go/scene/body.go",
     ]
@@ -142,8 +134,31 @@ private func dump(_ screen: Scene.Screen) -> [String: Any] {
         "width": round3(screen.w),
         "height": round3(screen.h),
         "nodes": nodes,
-        "links": [Any](),
+        "links": screen.links().map(linkJSON),
     ]
+}
+
+/// One link as go/cmd/tennlayout writes it: the stroke, the arrow flag and the path in the item's coordinates.
+private func linkJSON(_ link: Scene.Link) -> [String: Any] {
+    let dash: Any = link.dash.map { $0.map(round3) } ?? NSNull()
+    return [
+        "parent": link.parent,
+        "path": link.path.map(pathStep),
+        "color": hex(link.color),
+        "width": round3(link.width),
+        "dash": dash,
+        "phase": round3(link.dashPhase),
+        "arrow": link.arrow,
+    ]
+}
+
+/// A path as verbs and points: ["m", x, y], ["l", x, y], ["q", cx, cy, x, y].
+private func pathStep(_ step: Scene.PathStep) -> [Any] {
+    switch step {
+    case let .move(x, y): return ["m", round3(x), round3(y)]
+    case let .line(x, y): return ["l", round3(x), round3(y)]
+    case let .quad(cx, cy, x, y): return ["q", round3(cx), round3(cy), round3(x), round3(y)]
+    }
 }
 
 private func node(_ pl: Scene.Placed, _ path: String, _ screen: Scene.Screen, isRoot: Bool) -> [String: Any] {

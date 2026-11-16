@@ -28,6 +28,7 @@
 		AE02EC000000000000000043 /* SceneParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000033 /* SceneParityTests.swift */; };
 		AE02EC000000000000000044 /* SceneEval.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000034 /* SceneEval.swift */; };
 		AE02EC000000000000000045 /* SceneEvalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000035 /* SceneEvalTests.swift */; };
+		AE02EC000000000000000046 /* SceneLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000036 /* SceneLink.swift */; };
 		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
@@ -204,6 +205,7 @@
 		AE02EC000000000000000033 /* SceneParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneParityTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000034 /* SceneEval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEval.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000035 /* SceneEvalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEvalTests.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000036 /* SceneLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneLink.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
@@ -662,6 +664,7 @@
 				AE02EC000000000000000031 /* ScenePaint.swift */,
 				AE02EC000000000000000032 /* ScenePlaced.swift */,
 				AE02EC000000000000000034 /* SceneEval.swift */,
+				AE02EC000000000000000036 /* SceneLink.swift */,
 			);
 			path = scene;
 			sourceTree = "<group>";
@@ -908,6 +911,7 @@
 				AE02EC000000000000000041 /* ScenePaint.swift in Sources */,
 				AE02EC000000000000000042 /* ScenePlaced.swift in Sources */,
 				AE02EC000000000000000044 /* SceneEval.swift in Sources */,
+				AE02EC000000000000000046 /* SceneLink.swift in Sources */,
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,

@@ -40,6 +40,7 @@ extension Scene {
         var frames: [ObjectIdentifier: LayoutNode] = [:]
         var texts: [ObjectIdentifier: TextInfo] = [:]
         var styles: [ObjectIdentifier: Look] = [:]
+        var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
         /// classic: the element being laid out is a classic diagram (sceneRoot is false).
         var classic = false
         /// A property with an expression -> its evaluated copy, nil if it failed.
@@ -76,6 +77,7 @@ extension Scene {
                 kid.parent = n
                 n.kids.append(kid)
             }
+            links(rn)
             return n
         }
 
@@ -114,8 +116,11 @@ extension Scene {
             }
             if n.kids.isEmpty {
                 leaf(rn, n, inCtx)
-            } else if !rn.inst {  // the name of an instance is an alias, not its content
-                n.text = textOf(rn, inCtx)
+            } else {
+                if !rn.inst {  // the name of an instance is an alias, not its content
+                    n.text = textOf(rn, inCtx)
+                }
+                links(rn)
             }
             texts[id(rn)] = n.text
             return n
