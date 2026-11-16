@@ -72,7 +72,7 @@ go-test: ## Go port (go/): vet + tests
 	cd go && go vet ./... && go test ./...
 
 examples-check: ## Validate every .tenn of the Intabia example, not just its entry
-	cd go && go run ./cmd/tenniarb check -root .. $$(find ../examples/intabia -name '*.tenn' | sort)
+	cd go && go run ./cmd/tenniarb check -root .. $$(find ../examples/intabia-fusion -name '*.tenn' | sort)
 
 ICONS_DIR = /tmp/lucide-static
 
