@@ -150,7 +150,7 @@ func (sh *Shell) newViewer(in viewerInit) *Viewer {
 // raise brings the window and the application to the front, as AppKit does when a document is opened
 // from Finder or with `open`; a QA run leaves the focus where the test put it.
 func (v *Viewer) raise() {
-	if os.Getenv(qa.EnvSocket) != "" {
+	if v.win == nil || os.Getenv(qa.EnvSocket) != "" {
 		return
 	}
 	v.win.Unwrap().ForceActive()

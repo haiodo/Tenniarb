@@ -138,6 +138,19 @@ func (t *Tree) Entry() string {
 	return t.top.Pos.File
 }
 
+// MountOf is the element that mounts file, a slash path relative to the root: the one the entry reached
+// it through first. Nil for the entry document itself and for a file outside the tree.
+func (t *Tree) MountOf(file string) *Node {
+	f := t.File(file)
+	if f == nil {
+		return nil
+	}
+	if c := t.ctxs[f]; c != nil {
+		return c.at
+	}
+	return nil
+}
+
 // Diagnose is LoadOverlay for validation: every problem comes back as Errors, with warnings. The
 // error is set only when the file could not be loaded at all. MCP validate and tenniarb check share it.
 func Diagnose(root, file string, overlay map[string]string) (Errors, *Tree, error) {

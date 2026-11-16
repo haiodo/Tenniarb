@@ -163,6 +163,24 @@ func (v *Viewer) showMount(path string) bool {
 	return true
 }
 
+// mountWindow is the window of the file that mounts file, opened when none has it: a part file is opened
+// in the context of its entry, so the libraries it uses are mounted above the document.
+func (v *Viewer) mountWindow(file string) *Viewer {
+	m := v.stree.MountOf(file)
+	if m == nil {
+		return nil
+	}
+	abs := filepath.Join(v.stree.Root(), filepath.FromSlash(m.Pos.File))
+	w, err := v.sh.viewer(abs)
+	if err != nil {
+		v.sh.openPath(abs)
+		if w, err = v.sh.viewer(abs); err != nil {
+			return nil
+		}
+	}
+	return w
+}
+
 // realPath is p absolute with symlinks resolved, as go/scene names files.
 func realPath(p string) string {
 	if a, err := filepath.Abs(p); err == nil {

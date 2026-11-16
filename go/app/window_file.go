@@ -208,6 +208,9 @@ func (v *Viewer) clearCanvas() {
 
 // setBanner shows text in the banner in the colour of an error.
 func (v *Viewer) setBanner(text string) {
+	if v.win == nil {
+		return
+	}
 	v.note = ""            // an error takes the banner over from a note and stays
 	v.banner.SetText(text) // the text decides whether Fix is offered, so it goes first
 	v.showBanner(text != "")

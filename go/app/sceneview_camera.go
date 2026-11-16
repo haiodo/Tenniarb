@@ -81,7 +81,7 @@ func (v *Viewer) selectScene(paths []string) {
 // revealScene centers the canvas on the first selected node when it is out of view.
 func (v *Viewer) revealScene() {
 	_, pl := v.selectedScene()
-	if pl == nil {
+	if pl == nil || v.view == nil {
 		return
 	}
 	w, h := v.view.Canvas().Size()

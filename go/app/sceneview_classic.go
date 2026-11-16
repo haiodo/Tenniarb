@@ -204,7 +204,7 @@ func (v *Viewer) shownNode() *scene.Node {
 }
 
 // goToComponent shows the element that defines the component the selected use takes: the library is a
-// mount of this document, so the window moves to it instead of opening the file on its own.
+// mount of this document or of its entry, so the window moves to it instead of opening it on its own.
 func (v *Viewer) goToComponent() { v.goToComponentNode(v.shownNode()) }
 
 // goToComponentNode is goToComponent for a node taken from a row of the Items tree, which the canvas
@@ -222,11 +222,29 @@ func (v *Viewer) goToComponentNode(n *scene.Node) {
 		v.setBanner("the component " + n.Path + " has no file of its own")
 		return
 	}
-	if !v.showMount(comp.Pos.File) {
-		v.setBanner("the component is in " + comp.Pos.File + ", which this document does not mount")
-		return
+	w := v
+	if !w.showMount(comp.Pos.File) {
+		// The library is mounted above this document, by the entry it was opened in: the window of the file
+		// that writes the mounting element is the one that shows the component.
+		if w = v.mountWindow(comp.Pos.File); w == nil || !w.showMount(comp.Pos.File) {
+			v.setBanner("the component is in " + comp.Pos.File + ", which this document does not mount")
+			return
+		}
+		w.raise()
+		v.sh.active = w
 	}
-	v.selectComponent(comp)
+	if c := w.componentNode(comp); c != nil {
+		w.selectComponent(c)
+	}
+}
+
+// componentNode is comp as the tree of this window has it: the trees share the files, not the nodes, so the
+// component is found by the place its name is written.
+func (v *Viewer) componentNode(comp *scene.Node) *scene.Node {
+	if v.stree == nil {
+		return nil
+	}
+	return v.stree.NodeNamedAt(comp.Pos.File, comp.NameArg.Start)
 }
 
 // selectComponent selects the node a component is defined in, once the window shows the element that
@@ -237,7 +255,8 @@ func (v *Viewer) selectComponent(comp *scene.Node) {
 	}
 	for path, pl := range v.sv.byPath {
 		if pl.Src == comp {
-			v.selectPaths([]string{path}, true)
+			v.selectScene([]string{path})
+			v.revealScene()
 			return
 		}
 	}

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Go to Component of a use in a part file reaches the library its entry mounts: the mount was looked for
+  in the open document alone, so a screen opened with `entry "../Design.tenn"` got "which this document
+  does not mount" for every library of the design system. The window of the file that writes the mounting
+  element comes forward with the component selected there.
+
 * Dragging a component row of the Items browser onto the canvas works with the mouse again: a click on
   the row ran the canvas's own selection with the use path, found no node and deselected the row, so the
   drag never started. The row menu of a component is Insert, as a double click does, not the canvas
