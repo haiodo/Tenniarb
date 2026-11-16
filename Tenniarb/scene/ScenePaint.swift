@@ -132,7 +132,7 @@ extension Scene.Prep {
         for pr in rn.props where pr.name == "shadow" {
             var pr = pr
             if hasExpr(pr) {
-                if eval == nil {
+                if !canEval() {
                     if !classic {
                         t.warn(pr.pos, "shadow: expressions are not evaluated")
                     }

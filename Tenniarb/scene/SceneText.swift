@@ -299,9 +299,12 @@ func measureText(_ m: Scene.TextMeasurer, _ text: String, _ fontSize: Double) ->
 extension Scene.Prep {
     /// The text of a title with each ${...} replaced by its value: the element model hands the whole title of a
     /// classic item, a scene asks the engine about each piece.
-    func evalText(_ rn: Scene.RNode, _ text: String) -> String {
+    func evalText(_ rn: Scene.RNode, _ pr: Scene.Prop, _ text: String) -> String {
         if !text.contains("${") {
             return text
+        }
+        if let vals = modelVals(rn, pr), let first = vals.first {
+            return first
         }
         guard let eval else { return text }
         var out = ""
@@ -346,7 +349,7 @@ extension Scene.Prep {
         }
         if let pr = prop(rn, "title") {
             title = pr.text(0) ?? ""
-            title = evalText(rn, title)
+            title = evalText(rn, pr, title)
             // A bare text with spaces is several arguments, and only the first would be drawn: name the
             // mistake instead of dropping the words. A classic diagram drops them, as go/render always has.
             if pr.args.count > 1 && !classic {

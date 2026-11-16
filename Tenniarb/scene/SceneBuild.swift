@@ -37,6 +37,10 @@ extension Scene {
         let measurer: TextMeasurer
         /// Options.EvalVars: nil means no expression runs and a ${...} is a warning.
         let eval: EvalFunc?
+        /// Options.Classic: the values of the element model in a classic diagram; nil when none.
+        let classicVals: ClassicFunc?
+        /// The element model name of every node of a classic diagram; empty in a scene.
+        var classicAt: [ObjectIdentifier: ClassicRef] = [:]
         var frames: [ObjectIdentifier: LayoutNode] = [:]
         var texts: [ObjectIdentifier: TextInfo] = [:]
         var bodies: [ObjectIdentifier: BodyText] = [:]
@@ -57,10 +61,11 @@ extension Scene {
             let prop: ObjectIdentifier
         }
 
-        init(_ t: Tree, measurer: TextMeasurer = TextMeasurer(), eval: EvalFunc? = nil) {
+        init(_ t: Tree, measurer: TextMeasurer = TextMeasurer(), eval: EvalFunc? = nil, classic: ClassicFunc? = nil) {
             self.t = t
             self.measurer = measurer
             self.eval = eval
+            self.classicVals = classic
         }
 
         /// The layout of an element: its content at their own positions.
@@ -338,7 +343,7 @@ extension Scene {
         func prop(_ rn: RNode, _ name: String) -> Prop? {
             let pr = rn.prop(name)
             guard let pr, hasExpr(pr) else { return pr }
-            if eval == nil {
+            if !canEval() {
                 if !classic {
                     t.warn(pr.pos, "\(name): expressions are not evaluated")
                 }
@@ -375,6 +380,9 @@ extension Scene {
         /// A copy of pr with every argument evaluated, the plain ones copied as they are; nil when an expression
         /// failed. The source property is shared between instances, so it is never changed.
         private func evaluated(_ rn: RNode, _ pr: Prop) -> Prop? {
+            if let vals = modelVals(rn, pr) {
+                return Prop(name: pr.name, args: pr.args, val: vals, block: pr.block, pos: pr.pos, range: pr.range)
+            }
             var vals: [String] = []
             for a in pr.args {
                 let (v, ok) = evalArg(eval, a, rn.vars)
@@ -449,8 +457,9 @@ extension Scene.Tree {
     /// The placed tree of the element at path ("" is the file itself): expanded, styled and laid out; nil when
     /// the element has an error and there is nothing to draw.
     func layout(
-        _ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil
+        _ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil,
+        classic: Scene.ClassicFunc? = nil
     ) -> Scene.LayoutNode? {
-        build(path, measurer: measurer, eval: eval)?.root
+        build(path, measurer: measurer, eval: eval, classic: classic)?.root
     }
 }

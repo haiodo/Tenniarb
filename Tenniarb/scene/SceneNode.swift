@@ -230,11 +230,15 @@ extension Scene {
         var text: String { quoted ? quoteName(name) : name }
 
         /// Whether the segment names n: a quoted one compares the name as written, a bare one the key.
-        func matches(_ n: Node) -> Bool {
+        func matches(_ n: Node) -> Bool { isName(n.name) }
+
+        /// Whether the segment is a way to write name: a quoted one when it says the name as written, a bare
+        /// one when it has the key.
+        func isName(_ name: String) -> Bool {
             if quoted {
-                return name.precomposedStringWithCanonicalMapping == n.name.precomposedStringWithCanonicalMapping
+                return self.name.precomposedStringWithCanonicalMapping == name.precomposedStringWithCanonicalMapping
             }
-            return n.key == key
+            return key == normalizeName(name)
         }
     }
 }

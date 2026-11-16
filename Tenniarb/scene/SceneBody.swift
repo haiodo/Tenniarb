@@ -993,7 +993,7 @@ extension Scene.Prep {
             // The ${...} of an old body is an expression of the element model. A body that writes \${...} shows
             // the syntax itself, and the model would swallow it, so such a text is kept as written.
             if hasPlainExpr(text) {
-                text = evalText(rn, text)
+                text = evalText(rn, pr, text)
             }
         }
         text = dedent(text).replacingOccurrences(of: "\t", with: "    ")

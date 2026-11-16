@@ -186,18 +186,20 @@ extension Scene.Prep {
 extension Scene.Tree {
     /// Builds the element at path ("" is the content of the file itself): expanded, styled and laid out.
     /// The error holds what is wrong with the element; the screen is nil then.
-    func build(_ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil)
-        -> Scene.Screen?
-    {
-        build(measurer, eval) { self.element(path, eval: eval) }
+    func build(
+        _ path: String = "", measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil,
+        classic: Scene.ClassicFunc? = nil
+    ) -> Scene.Screen? {
+        build(measurer, eval, classic) { self.element(path, eval: eval) }
     }
 
     /// buildElement is build of an element or file root of the tree, for a caller that holds the node:
     /// a path of names cannot tell elements with one name apart.
-    func buildElement(_ el: Scene.Node, measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil)
-        -> Scene.Screen?
-    {
-        build(measurer, eval) {
+    func buildElement(
+        _ el: Scene.Node, measurer: Scene.TextMeasurer = Scene.TextMeasurer(), eval: Scene.EvalFunc? = nil,
+        classic: Scene.ClassicFunc? = nil
+    ) -> Scene.Screen? {
+        build(measurer, eval, classic) {
             guard el.isContainer() else {
                 self.fail(el.pos, "a \(el.kind.description) is not an element")
                 return nil
@@ -206,17 +208,23 @@ extension Scene.Tree {
         }
     }
 
-    private func build(_ measurer: Scene.TextMeasurer, _ eval: Scene.EvalFunc?, _ expand: () -> Scene.RNode?) -> Scene.Screen? {
+    private func build(
+        _ measurer: Scene.TextMeasurer, _ eval: Scene.EvalFunc?, _ classic: Scene.ClassicFunc?, _ expand: () -> Scene.RNode?
+    ) -> Scene.Screen? {
         let failures = diagnostics.filter { !$0.warn }.count
         guard let rn = expand() else { return nil }
-        let p = Scene.Prep(self, measurer: measurer, eval: eval)
+        let p = Scene.Prep(self, measurer: measurer, eval: eval, classic: classic)
         p.classic = !sceneRoot(rn)
         // The default look of a classic diagram is settled before the styles: a node may still name its own.
         if p.classic {
             classicDefaults(rn)
+            // The element model names every node of a classic diagram, for Options.Classic.
+            if classic != nil {
+                p.classicRefs(rn)
+            }
         }
         // The expressions of the screen come before the styles: use-style ${kind} picks a style by its value.
-        if p.eval != nil {
+        if p.canEval() {
             p.evalTree(rn)
         }
         applyStyles(rn)

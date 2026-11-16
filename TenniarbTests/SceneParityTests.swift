@@ -28,20 +28,16 @@ final class SceneParityTests: XCTestCase {
 
     /// The fixtures the stand cannot build yet, with the Go file each one waits for:
     ///
-    /// | fixture               | missing                                             |
-    /// |-----------------------|-----------------------------------------------------|
-    /// | animations            | go/scene/anim.go                                    |
-    /// | classic-body          | go/scene/classic.go (modelVals: ${value} of an item) |
-    /// | classic-image         | go/scene/image.go                                   |
-    /// | classic-values        | go/scene/classic.go (modelVals)                     |
+    /// | fixture               | missing                          |
+    /// |-----------------------|----------------------------------|
+    /// | animations            | go/scene/anim.go                 |
+    /// | classic-image         | go/scene/image.go                |
     ///
     /// button-styles and fusio-1620 build without go/scene/icon.go: the dump reads boxes, fills and text, not
     /// the paths an icon draws inside its leaf.
     private let skipped: [String: String] = [
         "animations": "go/scene/anim.go",
-        "classic-body": "go/scene/classic.go (modelVals: ${value} of an item)",
         "classic-image": "go/scene/image.go",
-        "classic-values": "go/scene/classic.go (modelVals)",
     ]
 
     /// A .tenn with no golden is not a stand fixture; it must be named here so a new one cannot slip in.
@@ -79,9 +75,11 @@ final class SceneParityTests: XCTestCase {
         let element = golden["element"] as? String ?? ""
 
         let tree = try SceneLoader(root: fixtures).load(name + ".tenn")
+        // Options.Classic of go/cmd/tennlayout: the values of the element model, nil for a scene.
+        let classic = Scene.classicHook(tree, file: name + ".tenn", path: element, context: Scene.classicContext)
         guard
             let screen = tree.build(
-                element, measurer: Scene.TextMeasurer(estimated: true), eval: sceneEvalVars)
+                element, measurer: Scene.TextMeasurer(estimated: true), eval: sceneEvalVars, classic: classic)
         else {
             return XCTFail("\(name): the scene does not build: \(tree.diagnostics)")
         }

@@ -79,7 +79,7 @@ func fileRoot(_ n: Scene.Node) -> Scene.Node {
 }
 
 /// usesCtx: whether pr names ctx in an expression. The element model of a classic diagram has no ctx, so such
-/// a property is the scene's to evaluate (spec 5f, 6). Its only caller is modelVals of classic.go, not ported yet.
+/// a property is the scene's to evaluate (spec 5f, 6).
 ///
 /// shortcut: the code is scanned as text, so a property that mentions ctx inside a string or mixes it with the
 /// model scope (sum, items) is left unevaluated; give the model the context when such a file turns up.

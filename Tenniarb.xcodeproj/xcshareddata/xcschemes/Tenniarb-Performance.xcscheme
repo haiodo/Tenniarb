@@ -138,6 +138,9 @@
                   Identifier = "SceneBodyTextTests">
                </Test>
                <Test
+                  Identifier = "SceneClassicTests">
+               </Test>
+               <Test
                   Identifier = "SceneDrawViewAlignmentTests">
                </Test>
                <Test
