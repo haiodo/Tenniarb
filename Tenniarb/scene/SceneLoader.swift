@@ -33,7 +33,7 @@ extension Scene {
     /// A loaded workspace file with everything it imports.
     final class Tree {
         let root: URL  // absolute, symlinks resolved
-        var main: Node?  // the file loaded for; entry is not ported yet
+        var main: Node?  // the file loaded for; with an entry, a file mounted below the entry
         var top: Node?  // the document lookups end at; main when loaded alone
         var files: [String: Node] = [:]  // file roots by slash path relative to the root
         var order: [Node] = []  // file roots in load order
@@ -48,6 +48,12 @@ extension Scene {
         func file(_ rel: String) -> Node? { files[rel] }
 
         func source(_ rel: String) -> String? { texts[rel] }
+
+        /// The entry document the tree was loaded in the context of; "" when the file was loaded alone.
+        var entry: String { top === main ? "" : top?.pos.file ?? "" }
+
+        /// How many diagnostics are errors; a warning does not stop a render.
+        var fatalCount: Int { diagnostics.filter { !$0.warn }.count }
 
         func report(_ pos: Pos, warn: Bool, _ message: String) {
             diagnostics.append(Diagnostic(pos: pos, message: message, warn: warn))
@@ -84,7 +90,7 @@ extension Scene {
 final class SceneLoader {
     static let fromFileFlag = "--from-file"
 
-    private let root: URL
+    let root: URL
     private var tree: Scene.Tree!
     private var currentFile = ""
     private var stack: [(abs: String, rel: String)] = []
@@ -96,22 +102,36 @@ final class SceneLoader {
 
     /// Loads file (relative to the root, or absolute) and the files it mounts.
     func load(_ file: String) throws -> Scene.Tree {
+        try loadIn(file, entry: "")
+    }
+
+    /// Loads file in the context of an entry document (spec 5a.1): the entry is loaded, and a name the
+    /// file does not define itself is looked up where the file is mounted, up to the entry. The entry
+    /// must mount file, directly or through other files.
+    func loadIn(_ file: String, entry: String) throws -> Scene.Tree {
         let tree = Scene.Tree(root: root)
         self.tree = tree
         currentFile = ""
         stack = []
         loaded = [:]
 
-        let (abs, inside) = inside(absolute(file))
-        guard inside else {
+        let (abs, inRoot) = inside(absolute(file))
+        guard inRoot else {
             throw SceneLoadError(message: "\(file) is outside the workspace root \(root.path)")
         }
-        guard let top = loadFile(abs, at: nil) else {
-            throw SceneLoadError(message: "cannot read \(relative(abs))")
+        let (entryAbs, entryInside) = inside(entry.isEmpty ? abs : absolute(entry))
+        guard entryInside else {
+            throw SceneLoadError(message: "\(entry) is outside the workspace root \(root.path)")
+        }
+        guard let top = loadFile(entryAbs, at: nil) else {
+            throw SceneLoadError(message: "cannot read \(relative(entryAbs))")
         }
         tree.top = top
-        tree.main = top
         tree.mapMounts()
+        guard let main = tree.file(relative(abs)) else {
+            throw SceneLoadError(message: "\(relative(entryAbs)) does not mount \(relative(abs))")
+        }
+        tree.main = main
         return tree
     }
 
@@ -195,7 +215,7 @@ final class SceneLoader {
     /// Sorts the commands of an element, item or file into structure and properties.
     private func fill(_ owner: Scene.Node, _ cmds: [TennNode]) {
         for c in cmds {
-            guard let name = commandName(c) else { continue }
+            guard let name = cmdName(c) else { continue }
             if name == "element" && owner.isContainer() {
                 addElement(owner, c)
             } else if addContent(owner, c, name) != nil {
@@ -284,7 +304,7 @@ final class SceneLoader {
         var block = Scene.StyleBlock()
         let (_, cmds) = split(c)
         for cmd in cmds {
-            guard let name = commandName(cmd) else { continue }
+            guard let name = cmdName(cmd) else { continue }
             if !hasBlock(cmd) {
                 if let group = styleGroup(cmd) {
                     block.groups.append(group)
@@ -302,7 +322,7 @@ final class SceneLoader {
         let (args, _) = split(c)
         let mode = argText(args, 0)
         guard mode == "one-of" || mode == "any-of" else { return nil }
-        var group = Scene.StyleGroup(name: normalizeName(commandName(c) ?? ""), anyOf: mode == "any-of", styles: [])
+        var group = Scene.StyleGroup(name: normalizeName(cmdName(c) ?? ""), anyOf: mode == "any-of", styles: [])
         for i in 1..<args.count {
             group.styles.append(normalizeName(argText(args, i)))
         }
@@ -314,7 +334,7 @@ final class SceneLoader {
         var style = Scene.Style()
         let (_, cmds) = split(c)
         for cmd in cmds {
-            guard let name = commandName(cmd) else { continue }
+            guard let name = cmdName(cmd) else { continue }
             if hasBlock(cmd) {
                 if name == "animation" {
                     tree.warn(pos(cmd), "the keyframes block goes in the element, not in a style: write it next to styles")
@@ -347,7 +367,7 @@ final class SceneLoader {
             let link = Scene.Node(kind: .link, pos: pos(c), range: range(c), body: body(c), parent: owner)
             link.from = argText(args, 0)
             link.to = argText(args, 1)
-            for b in block where commandName(b) != nil {
+            for b in block where cmdName(b) != nil {
                 link.props.append(prop(b))
             }
             n = link
@@ -390,7 +410,7 @@ final class SceneLoader {
     private func overrides(_ use: Scene.Node, _ cmds: [TennNode]) -> [Scene.Override] {
         var out: [Scene.Override] = []
         for c in cmds {
-            guard let name = commandName(c) else { continue }
+            guard let name = cmdName(c) else { continue }
             let (args, block) = split(c)
             var ov = Scene.Override(pos: pos(c), range: range(c), body: body(c))
             switch name {
@@ -434,27 +454,7 @@ final class SceneLoader {
 
     private func prop(_ c: TennNode) -> Scene.Prop {
         let (args, _) = split(c)
-        return Scene.Prop(name: commandName(c) ?? "", args: args, block: lastBlock(c), pos: pos(c), range: range(c))
-    }
-
-    private func commandName(_ c: TennNode) -> String? {
-        guard c.kind == .Command else { return nil }
-        let name = c.getIdent(0) ?? ""
-        return name.isEmpty ? nil : name
-    }
-
-    /// Separates the arguments of a command from its block.
-    private func split(_ c: TennNode) -> (args: [TennNode], block: [TennNode]) {
-        var args: [TennNode] = []
-        var block: [TennNode] = []
-        for a in (c.children ?? []).dropFirst() {
-            if a.kind == .BlockExpr {
-                block.append(contentsOf: a.children ?? [])
-            } else {
-                args.append(a)
-            }
-        }
-        return (args, block)
+        return Scene.Prop(name: cmdName(c) ?? "", args: args, block: lastBlock(c), pos: pos(c), range: range(c))
     }
 
     private func lastBlock(_ c: TennNode) -> TennNode? {
@@ -466,15 +466,7 @@ final class SceneLoader {
         lastBlock(c) != nil
     }
 
-    private func argText(_ args: [TennNode], _ i: Int) -> String {
-        guard i < args.count else { return "" }
-        return args[i].getIdentText() ?? ""
-    }
-
-    private func pos(_ c: TennNode) -> Scene.Pos {
-        guard let token = c.token else { return Scene.Pos(file: currentFile, line: 1, col: 1) }
-        return Scene.Pos(file: currentFile, line: token.line + 1, col: token.col - token.size + 1)
-    }
+    private func pos(_ c: TennNode) -> Scene.Pos { nodePos(currentFile, c) }
 
     // The Swift Tenn node keeps no end of a command: the range ends at its last token.
     private func range(_ c: TennNode) -> Scene.Range {
@@ -513,14 +505,6 @@ final class SceneLoader {
         return nil
     }
 
-    /// Reads "--from-file <path>" among the arguments of an element command.
-    private func fromFile(_ args: [TennNode]) -> String? {
-        for (i, _) in args.enumerated() where argText(args, i) == Self.fromFileFlag && i + 1 < args.count {
-            return argText(args, i + 1)
-        }
-        return nil
-    }
-
     private func setKind(_ n: Scene.Node, _ name: String, _ pos: Scene.Pos) {
         n.type = name.lowercased()
         switch n.type {
@@ -541,4 +525,45 @@ final class SceneLoader {
         }
         return splitPath(out) != nil ? out : nil
     }
+}
+
+// The reading of commands that entry discovery shares with the loader, as the package-level ones of go/scene.
+
+func cmdName(_ c: TennNode) -> String? {
+    guard c.kind == .Command else { return nil }
+    let name = c.getIdent(0) ?? ""
+    return name.isEmpty ? nil : name
+}
+
+/// Separates the arguments of a command from its block.
+func split(_ c: TennNode) -> (args: [TennNode], block: [TennNode]) {
+    var args: [TennNode] = []
+    var block: [TennNode] = []
+    for a in (c.children ?? []).dropFirst() {
+        if a.kind == .BlockExpr {
+            block.append(contentsOf: a.children ?? [])
+        } else {
+            args.append(a)
+        }
+    }
+    return (args, block)
+}
+
+func argText(_ args: [TennNode], _ i: Int) -> String {
+    guard i < args.count else { return "" }
+    return args[i].getIdentText() ?? ""
+}
+
+/// Reads "--from-file <path>" among the arguments of an element command.
+func fromFile(_ args: [TennNode]) -> String? {
+    for (i, _) in args.enumerated() where argText(args, i) == SceneLoader.fromFileFlag && i + 1 < args.count {
+        return argText(args, i + 1)
+    }
+    return nil
+}
+
+/// The position of a command of the file named file, 1-based.
+func nodePos(_ file: String, _ c: TennNode) -> Scene.Pos {
+    guard let token = c.token else { return Scene.Pos(file: file, line: 1, col: 1) }
+    return Scene.Pos(file: file, line: token.line + 1, col: token.col - token.size + 1)
 }

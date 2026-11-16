@@ -36,6 +36,8 @@
 		AE02EC00000000000000005B /* SceneValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000004B /* SceneValues.swift */; };
 		AE02EC00000000000000005C /* SceneImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000004C /* SceneImage.swift */; };
 		AE02EC00000000000000005D /* SceneAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000004D /* SceneAnimation.swift */; };
+		AE02EC000000000000000063 /* SceneEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000004E /* SceneEntry.swift */; };
+		AE02EC000000000000000064 /* SceneEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000004F /* SceneEntryTests.swift */; };
 		AE02EC000000000000000062 /* SceneAnimationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000052 /* SceneAnimationTests.swift */; };
 		AE02EC000000000000000061 /* SceneImageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000051 /* SceneImageTests.swift */; };
 		AE02EC000000000000000060 /* SceneClassicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000050 /* SceneClassicTests.swift */; };
@@ -223,6 +225,8 @@
 		AE02EC00000000000000004B /* SceneValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneValues.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000004C /* SceneImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneImage.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000004D /* SceneAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneAnimation.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000004E /* SceneEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEntry.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000004F /* SceneEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEntryTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000052 /* SceneAnimationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneAnimationTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000051 /* SceneImageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneImageTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000050 /* SceneClassicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneClassicTests.swift; sourceTree = "<group>"; };
@@ -606,6 +610,7 @@
 				AE02EC000000000000000050 /* SceneClassicTests.swift */,
 				AE02EC000000000000000038 /* SceneBodyTests.swift */,
 				AE02EC000000000000000051 /* SceneImageTests.swift */,
+				AE02EC00000000000000004F /* SceneEntryTests.swift */,
 				AE02EC000000000000000052 /* SceneAnimationTests.swift */,
 				AE02EC000000000000000035 /* SceneEvalTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
@@ -695,6 +700,7 @@
 				AE02EC00000000000000004B /* SceneValues.swift */,
 				AE02EC00000000000000004C /* SceneImage.swift */,
 				AE02EC00000000000000004D /* SceneAnimation.swift */,
+				AE02EC00000000000000004E /* SceneEntry.swift */,
 			);
 			path = scene;
 			sourceTree = "<group>";
@@ -948,6 +954,7 @@
 				AE02EC00000000000000005B /* SceneValues.swift in Sources */,
 				AE02EC00000000000000005C /* SceneImage.swift in Sources */,
 				AE02EC00000000000000005D /* SceneAnimation.swift in Sources */,
+				AE02EC000000000000000063 /* SceneEntry.swift in Sources */,
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
 				0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */,
@@ -994,6 +1001,7 @@
 				AE02EC000000000000000048 /* SceneBodyTests.swift in Sources */,
 				AE02EC000000000000000061 /* SceneImageTests.swift in Sources */,
 				AE02EC000000000000000062 /* SceneAnimationTests.swift in Sources */,
+				AE02EC000000000000000064 /* SceneEntryTests.swift in Sources */,
 				AE02EC000000000000000045 /* SceneEvalTests.swift in Sources */,
 				AE01EC01000000000000005 /* ModelCoreTests.swift in Sources */,
 				AE01EC01000000000000006 /* DrawableStyleTests.swift in Sources */,
