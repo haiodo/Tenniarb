@@ -7,6 +7,9 @@
   auto-layout with gap, padding, align, justify and fill/hug sizes; text items take the size of their
   title and an expanded element comes out placed. Rows of the port live in `docs/swift-parity-map.md`.
 
+* Swift-приложение открывает сценовый документ как сцену, только на чтение, вместо классического
+  холста; сохранение возвращает те же байты, сцена пока не рисуется.
+
 * `.tenn` is read with `github.com/haiodo/tenn` in both versions: the Swift app takes the parser as a
   package instead of its embedded copy, on v1.0.3 where the lexer, the token, `SlowLexer` and the
   diagnostics are public; Go stays on v1.0.1, where empty literals survive the parse.

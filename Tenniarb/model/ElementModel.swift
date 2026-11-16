@@ -101,6 +101,10 @@ public class Element: Identifiable, @unchecked Sendable {
 
     var description: String? = nil
 
+    // "element ... --from-file": the path only, the mounted content is not in the tree.
+    // shortcut: port model.MountFiles when a document has to show what its library writes.
+    var fromFile: String = ""
+
     var properties: ModelProperties = ModelProperties()  // Extra nodes not supported directly by model.
 
     // Transient data values
@@ -130,6 +134,7 @@ public class Element: Identifiable, @unchecked Sendable {
         cloneEl.ox = self.ox
         cloneEl.oy = self.oy
         cloneEl.description = self.description
+        cloneEl.fromFile = self.fromFile
 
         cloneEl.properties.append(contentsOf: self.properties.map({ (itm) in itm.clone() }))
 

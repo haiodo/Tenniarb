@@ -418,6 +418,19 @@ extension Element {
         }
     }
 
+    /// The path of `--from-file <path>` among the arguments of an element command, as model.fromFileArg.
+    fileprivate static func fromFileArg(_ node: TennNode) -> String {
+        let children = node.children ?? []
+        var i = 2
+        while i + 1 < children.count {
+            if children[i].getIdentText() == SceneLoader.fromFileFlag {
+                return children[i + 1].getIdentText() ?? ""
+            }
+            i += 1
+        }
+        return ""
+    }
+
     fileprivate static func parseElement(node: TennNode) -> Element? {
         let el = Element(name: "")
 
@@ -427,6 +440,7 @@ extension Element {
             if let name = node.getIdent(1) {
                 el.name = name
             }
+            el.fromFile = fromFileArg(node)
 
             parseChildCommands(
                 node, 2,

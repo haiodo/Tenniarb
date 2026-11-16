@@ -24,6 +24,13 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
 
     @MainActor var vc: ViewController?
 
+    /// The tree of a scene document, read in on open; nil for a classic one. Nothing draws it yet.
+    @MainActor private(set) var sceneTree: Scene.Tree?
+
+    /// The bytes a scene document was read from. A scene has no write side yet, so a save puts them back
+    /// instead of printing classic text over the file.
+    private var sceneBytes: Data?
+
     override class var autosavesInPlace: Bool {
         return true
     }
@@ -149,19 +156,29 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
 
             Swift.debugPrint("Elapsed parse \(Date().timeIntervalSince(now))")
 
+            // The kind reads the parsed model, as go/app does; a scene document then keeps the tree and
+            // drops the model, so its file is never treated as a classic diagram.
+            if kindOfModel(elementModel) != .diagram {
+                let openScene = { MainActor.assumeIsolated { self.readScene(url, text: storedValue) } }
+                if Thread.isMainThread {
+                    openScene()
+                } else {
+                    DispatchQueue.main.sync(execute: openScene)
+                }
+                return
+            }
+
             elementModel.modelName = url.lastPathComponent
 
             // AppKit may call read() off the main queue (autosave, open-in-place, iCloud).
             if Thread.isMainThread {
                 MainActor.assumeIsolated {
-                    self.updateStore(elementModel)
-                    vc?.setElementModel(elementStore: self.store!)
+                    self.showClassic(elementModel)
                 }
             } else {
                 DispatchQueue.main.sync {
                     MainActor.assumeIsolated {
-                        self.updateStore(elementModel)
-                        self.vc?.setElementModel(elementStore: self.store!)
+                        self.showClassic(elementModel)
                     }
                 }
             }
@@ -170,6 +187,31 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         } catch {
             Swift.print("Failed to load file")
         }
+    }
+
+    /// Puts a classic document in the window, dropping the scene of a document read before.
+    @MainActor private func showClassic(_ elementModel: ElementModel) {
+        sceneTree = nil
+        sceneBytes = nil
+        updateStore(elementModel)
+        vc?.setElementModel(elementStore: self.store!)
+    }
+
+    /// Opens a scene document read-only: the tree is kept, the outline stays empty, and a save writes the
+    /// file back as it came.
+    @MainActor private func readScene(_ url: URL, text: String) {
+        sceneBytes = Data(text.utf8)
+        do {
+            sceneTree = try SceneLoader(root: workspaceRoot(url)).loadAuto(url.path)
+        } catch {
+            sceneTree = nil
+            Swift.print("Failed to load scene \(url.path): \(error)")
+        }
+        let model = ElementModel()
+        model.modelName = url.lastPathComponent
+        updateStore(model)
+        vc?.setElementModel(elementStore: self.store!)
+        self.fileURL = url
     }
 
     override var isDocumentEdited: Bool {
@@ -197,6 +239,12 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             _ = name
         }
         do {
+            if let bytes = sceneBytes {
+                try bytes.write(to: url, options: .atomic)
+                finish(url.lastPathComponent)
+                self.fileURL = url
+                return
+            }
             if let es = readStore() {
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
@@ -209,5 +257,23 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         } catch {
             Swift.print("Some error happen")
         }
+    }
+}
+
+/// The folder mounts resolve in, as app.WorkspaceRoot: the nearest folder up with .git or
+/// tenniarb.tenn, else the folder of the file.
+private func workspaceRoot(_ path: URL) -> URL {
+    let dir = path.deletingLastPathComponent().path
+    var d = dir
+    while true {
+        for mark in [".git", "tenniarb.tenn"] {
+            if FileManager.default.fileExists(atPath: (d as NSString).appendingPathComponent(mark)) {
+                return URL(fileURLWithPath: d)
+            }
+        }
+        // URL.deletingLastPathComponent of "/" gives "/..", so the string path is what terminates.
+        let up = (d as NSString).deletingLastPathComponent
+        if up == d { return URL(fileURLWithPath: dir) }
+        d = up
     }
 }
