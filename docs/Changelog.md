@@ -12,8 +12,10 @@
   auto-layout with gap, padding, align, justify and fill/hug sizes; text items take the size of their
   title and an expanded element comes out placed. Rows of the port live in `docs/swift-parity-map.md`.
 
-* Swift-приложение открывает сценовый документ как сцену, только на чтение, вместо классического
-  холста; сохранение возвращает те же байты, сцена пока не рисуется.
+* Swift-приложение открывает сценовый документ как сцену, только на чтение, и рисует первый элемент
+  сценовым движком: заливка и градиент, рамка и скругление, тени, прозрачность и поворот, строки
+  заголовка и тело, картинки файлов и связи со стрелкой. Камера - только fit и прокрутка, зума,
+  выделения и правки нет; сохранение возвращает те же байты.
 
 * `.tenn` is read with `github.com/haiodo/tenn` in both versions: the Swift app takes the parser as a
   package instead of its embedded copy, on v1.0.3 where the lexer, the token, `SlowLexer` and the

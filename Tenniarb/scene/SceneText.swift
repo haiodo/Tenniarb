@@ -156,6 +156,14 @@ extension Scene {
             part.font.size == 0 ? font : part.font
         }
 
+        /// The advance of a part, its picture or its text in its own font.
+        func partWidth(_ part: TitlePart) -> Double {
+            if let img = part.img {
+                return img.w
+            }
+            return m.measure(part.text, partFont(part)).width
+        }
+
         /// Breaks the title at width w: a marked-up title keeps its runs, and a word wider than a classic line
         /// is broken by characters.
         func layout(_ w: Double) -> [TitleLine] {

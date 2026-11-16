@@ -24,7 +24,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
 
     @MainActor var vc: ViewController?
 
-    /// The tree of a scene document, read in on open; nil for a classic one. Nothing draws it yet.
+    /// The tree of a scene document, read in on open; nil for a classic one.
     @MainActor private(set) var sceneTree: Scene.Tree?
 
     /// The bytes a scene document was read from. A scene has no write side yet, so a save puts them back
@@ -97,6 +97,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         windowController.contentViewController = contentVC
 
         self.vc?.setElementModel(elementStore: self.store!)
+        self.vc?.setSceneTree(sceneTree)
 
         // Restore saved window position (if any).
         if let uri = self.fileURL?.absoluteString, let window = windowController.window,
@@ -195,6 +196,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         sceneBytes = nil
         updateStore(elementModel)
         vc?.setElementModel(elementStore: self.store!)
+        vc?.setSceneTree(nil)
     }
 
     /// Opens a scene document read-only: the tree is kept, the outline stays empty, and a save writes the
@@ -211,6 +213,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         model.modelName = url.lastPathComponent
         updateStore(model)
         vc?.setElementModel(elementStore: self.store!)
+        vc?.setSceneTree(sceneTree)
         self.fileURL = url
     }
 

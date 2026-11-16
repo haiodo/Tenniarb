@@ -365,7 +365,7 @@ extension Scene.Prep {
         out.width = stroke.width
         out.dash = stroke.dash
         out.dashPhase = stroke.dashPhase
-        // shortcut: the arrow head is not drawn yet; the flag stands for the closed fill it would paint.
+        // The flag stands for the closed head the canvas paints; the dump records it, not the triangle.
         out.arrow = prop(lk, "display")?.text(0) == "arrow"
         return out
     }

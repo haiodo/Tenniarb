@@ -23,6 +23,7 @@ class EditorViewController: NSObject {
     weak var viewController: ViewController?
 
     private(set) var sceneView: SceneDrawView!
+    private(set) var sceneCanvas: SceneCanvasScrollView!
     private(set) var titleField: NSTextField!
     private(set) var zoomLabel: NSTextField!
     private(set) var containerView: NSView!
@@ -55,7 +56,26 @@ class EditorViewController: NSObject {
 
         self.sceneView = scene
 
+        // A scene document takes the place of the classic canvas, which keeps its own interaction.
+        let canvas = SceneCanvasScrollView()
+        canvas.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(canvas)
+        canvas.setContentHuggingPriority(.defaultLow, for: .vertical)
+        canvas.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        let canvasWidthConstraint = canvas.widthAnchor.constraint(equalTo: stackView.widthAnchor, constant: -5)
+        canvasWidthConstraint.priority = .defaultHigh
+        canvasWidthConstraint.isActive = true
+        canvas.isHidden = true
+        self.sceneCanvas = canvas
+
         return stackView
+    }
+
+    /// Shows the scene canvas of a scene document, or the classic canvas for anything else.
+    func showScene(_ tree: Scene.Tree?) {
+        sceneCanvas?.isHidden = tree == nil
+        sceneView?.isHidden = tree != nil
+        sceneCanvas?.show(tree)
     }
 
     private func createTitleBar() -> NSBox {
@@ -275,6 +295,7 @@ class EditorViewController: NSObject {
 
     func scheduleRedraw() {
         sceneView?.scheduleRedraw()
+        sceneCanvas?.canvas.needsDisplay = true
     }
 
     // MARK: - Actions

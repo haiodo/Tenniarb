@@ -26,6 +26,8 @@ extension Scene {
     static let bodyListIndent = 16.0
     static let bodyQuoteIndent = 12.0
     static let bodyCodePad = 8.0
+    /// The width of the bar a quote of a body draws on the left.
+    static let bodyBarW = 3.0
     static let bodyHeadSize1 = 6.0  // above the body, h2 +4, h3 +2
     static let bodyHeadGap1 = 10.0
     static let bodyHeadGap2 = 6.0
@@ -67,6 +69,8 @@ extension Scene {
         var h = 0.0  // line box height
         var gap = 0.0  // extra space before the line, between blocks
         var bullet = false  // a line of a list, measured with the head indent of its bullet
+        var quote = false  // a bar on the left
+        var code = false  // a background across the width
         var runs: [BodyRun] = []
     }
 
@@ -233,6 +237,9 @@ extension Scene {
                 case .quote:
                     // The bar go/render draws on the left; only its indent moves the text.
                     lines = wrap(blk.runs, width, Scene.bodyQuoteIndent, Scene.bodyQuoteIndent)
+                    for i in lines.indices {
+                        lines[i].quote = true
+                    }
                 case .list:
                     let bulletW = widthOf("• ", font)
                     // go/render hangs no indent on a list of a classic body: the bullet stands where the text
@@ -259,6 +266,7 @@ extension Scene {
                             var line = BodyLine(
                                 x: Scene.bodyCodePad, runs: [BodyRun(text: part, font: mono, color: color, code: true)])
                             finishLine(&line)
+                            line.code = true
                             lines.append(line)
                         }
                     }

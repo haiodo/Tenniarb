@@ -29,6 +29,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     var elementStore: ElementModelStore?
 
+    /// The scene tree of the document in this window; nil for a classic one.
+    private var sceneTree: Scene.Tree?
+
     var selectedElement: Element?
 
     var activeItems: [DiagramItem] = []
@@ -221,6 +224,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         propertiesPanelController.setupDelegate(self)
         editorViewController.onLoad(self)
         editorViewController.setupExportMenu(viewController: self)
+        editorViewController.showScene(sceneTree)
 
         // Legacy delegate setup for compatibility
         self.outlineViewDelegate = OutlineViewControllerDelegate(self)
@@ -723,6 +727,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         self.title = value
         self.windowTitle.stringValue = value
+    }
+
+    /// Puts the canvas of a scene document in the window, or the classic one when tree is nil.
+    func setSceneTree(_ tree: Scene.Tree?) {
+        sceneTree = tree
+        if isViewLoaded {
+            editorViewController?.showScene(tree)
+        }
     }
 
     public func setElementModel(elementStore: ElementModelStore) {

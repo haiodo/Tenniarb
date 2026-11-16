@@ -23,6 +23,10 @@ extension Scene {
     struct ItemImage {
         var w = 0
         var h = 0
+        /// The absolute path of the file; "" for an inline picture, whose pixels are not kept.
+        var path = ""
+        /// How the picture fills its box: fill, cover or contain.
+        var fit = "fill"
     }
 
     /// An inline picture drawn inside a title or a body: the box the reference @(name|width) asks for.
@@ -93,7 +97,44 @@ extension Scene.Prep {
             t.warn(pr.pos, "image \"\(rel)\": \(cfg.why), the item is drawn empty")
             return nil
         }
-        return Scene.ItemImage(w: cfg.w, h: cfg.h)
+        return Scene.ItemImage(w: cfg.w, h: cfg.h, path: abs.path, fit: fitOf(rn, pr))
+    }
+
+    /// fitOf reads fit: fill stretches the picture into the box, cover fills the box and cuts the sides,
+    /// contain fits all of it inside with empty bands; it goes after the path or in a command of its own.
+    func fitOf(_ rn: Scene.RNode, _ pr: Scene.Prop) -> String {
+        var s = "fill"
+        if let word = pr.text(1), !inlineImage(pr) {
+            if word != "fit" {
+                t.warn(pr.pos, "image takes a path and fit fill, cover or contain: image \"a.png\" fit cover")
+                return s
+            }
+            s = pr.text(2) ?? ""
+        }
+        if let fp = prop(rn, "fit") {
+            s = fp.text(0) ?? ""
+        }
+        switch s {
+        case "fill", "cover", "contain":
+            return s
+        case "":
+            return "fill"
+        default:
+            t.warn(pr.pos, "fit takes fill, cover or contain, got \"\(s)\"; fill is used")
+            return "fill"
+        }
+    }
+
+    /// rotation reads the static rotate of an item: degrees, clockwise, about the center of what it draws.
+    func rotation(_ rn: Scene.RNode) -> Double {
+        guard let pr = prop(rn, "rotate") else {
+            return 0
+        }
+        if let v = pr.num(0) {
+            return v
+        }
+        t.warn(pr.pos, "rotate takes degrees, as in rotate 15; ignored")
+        return 0
     }
 
     /// inlineImages collects the classic `image "name" @(data)` of rn by name: the pictures its text draws

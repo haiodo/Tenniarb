@@ -29,6 +29,8 @@ extension Scene {
     /// shortcut: the ratios approximate the real metrics of SF; a font with other metrics draws with these, as old files expect.
     static let classicAscentRatio = 1980.0 / 2048
     static let classicDescentRatio = 432.0 / 2048
+    /// The cap height of SF over the font size, as go/render places a picture inside a title line.
+    static let capHeightRatio = 1490.0 / 2048
 
     /// Turns resolved nodes into a layout tree and keeps what the drawing needs (prep of layout.go).
     final class Prep {
@@ -47,6 +49,8 @@ extension Scene {
         /// A body laid out as a child of its item, when the item is a flow container.
         var bodyAt: [ObjectIdentifier: LayoutNode] = [:]
         var styles: [ObjectIdentifier: Look] = [:]
+        /// The pictures of the screen, kept for the painter that draws them.
+        var images: [ObjectIdentifier: ItemImage] = [:]
         var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
         /// The classic inline pictures of a node, by the name its text draws them with.
         var inlines: [ObjectIdentifier: [String: ItemImage]] = [:]
@@ -83,6 +87,9 @@ extension Scene {
             // The root sizes the screen: a number is its box, and a picture with no number written gives
             // its own size, so a screen can be one image.
             let im = loadImage(rn)
+            if let im {
+                images[id(rn)] = im
+            }
             if let pr = prop(rn, "width") {
                 if let v = pr.num(0) {
                     n.width = .fixed(v)
@@ -123,6 +130,7 @@ extension Scene {
             n.height = size(rn, "height", inCtx, parentAuto)
             // A picture with no size written takes its own pixels as the size.
             if let im = loadImage(rn) {
+                images[id(rn)] = im
                 if prop(rn, "width") == nil {
                     n.width = .fixed(Double(im.w))
                 }

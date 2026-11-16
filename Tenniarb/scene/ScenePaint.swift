@@ -32,6 +32,18 @@ extension Scene {
         func base() -> Scene.Color {
             stops.first { $0.color.a > 0 }?.color ?? stops[0].color
         }
+
+        /// The line of the gradient through a box of w by h, as gradient.at of paint.go: the angle in
+        /// degrees runs 0 up, 90 right, 180 down, and the line reaches the corners of the box.
+        func line(_ w: Double, _ h: Double) -> (from: Scene.Point, to: Scene.Point) {
+            let a = angle * Double.pi / 180
+            let dx = sin(a)
+            let dy = -cos(a)
+            let half = (abs(w * dx) + abs(h * dy)) / 2
+            let cx = w / 2
+            let cy = h / 2
+            return (Scene.Point(x: cx - dx * half, y: cy - dy * half), Scene.Point(x: cx + dx * half, y: cy + dy * half))
+        }
     }
 
     /// A drop shadow: dx and dy in screen points, y down, as gfx.Shadow.
