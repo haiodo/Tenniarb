@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// generateSource is a screen whose code is the template of the only use below it, wrapped by a template
-// of its own.
+// generateSource is a screen whose code is the template of the only use below it, wrapped by a
+// template of its own.
 const generateSource = `element "Chip" {
     kind Component
     export let label = "Chip"
@@ -25,8 +25,8 @@ element "Screen" {
 }
 `
 
-// TestGenerate: the code of the uses below an element from their templates, the element's own template or
-// -template around them, and the exit codes of check: 0 done, 1 errors, 2 usage or an unreadable file.
+// TestGenerate: the code of the uses below an element from their templates, its own template or
+// -template around them, and check's exit codes: 0 done, 1 errors, 2 usage or an unreadable file.
 func TestGenerate(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "screen.tenn")

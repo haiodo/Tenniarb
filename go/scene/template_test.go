@@ -72,8 +72,8 @@ func renderOf(t *testing.T, tree *scene.Tree, path string, values map[string]str
 	return tree.Render(node, values, scene.Options{EvalVars: exec.SceneEvalVars})
 }
 
-// TestTemplateDefaults: a template renders with the defaults of the parameters, and -set overrides them;
-// a name the component does not declare is an error that lists the parameters.
+// TestTemplateDefaults: the parameters render with their defaults and -set overrides them; an
+// undeclared name is an error that lists the parameters.
 func TestTemplateDefaults(t *testing.T) {
 	tree := paramsTree(t, "tpl.tenn", templateDoc)
 	if d := tree.Diagnostics(); len(d) != 0 {
@@ -100,8 +100,8 @@ func TestTemplateDefaults(t *testing.T) {
 	}
 }
 
-// TestTemplateUse: a use of the component gives the values and the slot content, and a parameter may be a
-// list of words.
+// TestTemplateUse: a use of the component gives the values and the slot content, and a parameter
+// may be a list of words.
 func TestTemplateUse(t *testing.T) {
 	tree := paramsTree(t, "tpl.tenn", templateDoc)
 	cases := map[string]string{
@@ -120,8 +120,8 @@ func TestTemplateUse(t *testing.T) {
 	}
 }
 
-// TestTemplateSlots: <slot/> takes the nodes the use passes as their titles, named slots too; a slot the
-// use does not fill is an error.
+// TestTemplateSlots: <slot/> takes the nodes the use passes as their titles, named slots too; a
+// slot the use does not fill is an error.
 func TestTemplateSlots(t *testing.T) {
 	tree := paramsTree(t, "tpl.tenn", templateDoc)
 	got, err := renderOf(t, tree, "Screen.col.card", nil)
@@ -184,8 +184,8 @@ func TestTemplateNone(t *testing.T) {
 	}
 }
 
-// elementDoc is a screen of plain boxes and templated components: the code of the screen is the code of
-// the uses, the boxes only place them.
+// elementDoc is a screen of plain boxes and templated components: the code of the screen is the
+// code of the uses, the boxes only place them.
 const elementDoc = `element "Item" {
   kind Component
   export let text = "x"
@@ -210,8 +210,8 @@ element "Screen" {
 }
 `
 
-// TestTemplateNested: a use inside the slot of another prints its own template with the values of its own
-// block, not its name.
+// TestTemplateNested: a use inside the slot of another prints its own template with the values of
+// its own block, not its name.
 func TestTemplateNested(t *testing.T) {
 	tree := paramsTree(t, "elem.tenn", elementDoc)
 	if d := tree.Diagnostics(); len(d) != 0 {

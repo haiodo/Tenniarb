@@ -11,14 +11,14 @@
 //
 // Each file opens in its own window; without files the untitled documents of the last launch come
 // back, or a new document opens. Settings, the recent list and window frames live in the OS config
-// directory (TENNIARB_CONFIG_DIR overrides it). check validates files headless: exit 0 clean, 1 errors, 2 usage.
-// suggest reports what could be tidied in a file (repeats, styles, dead commands) and changes nothing.
-// bundle replaces every --from-file with the block of the file it mounts, so one file holds the whole
-// document: the browser has no neighbours to read. gen prints the code the template of an element
-// generates, the parameters set by name: exit 0 done, 1 errors, 2 usage. generate prints the code of
-// every use below an element, each from its own template, wrapped by the template of the element or by
-// the one given. Help prints the usage to stdout and exits 0; an unknown flag prints it to stderr and
-// exits 2.
+// directory (TENNIARB_CONFIG_DIR overrides it). check validates files headless: exit 0 clean, 1
+// errors, 2 usage. suggest reports what could be tidied in a file (repeats, styles, dead commands)
+// and changes nothing. bundle replaces every --from-file with the block of the file it mounts, so
+// one file holds the whole document: the browser has no neighbours to read. gen prints the code the
+// template of an element generates, the parameters set by name: exit 0 done, 1 errors, 2 usage.
+// generate prints the code of every use below an element, each from its own template, wrapped by
+// the template of the element or by the one given. Help prints the usage to stdout and exits 0; an
+// unknown flag prints it to stderr and exits 2.
 package main
 
 import (

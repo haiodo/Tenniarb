@@ -92,8 +92,8 @@ func (t *Tree) RenderElement(el *Node, tpl *Template, values map[string]string, 
 	return text, nil
 }
 
-// itemCode is the code of the uses below an item or an element, one per line: a use of a component with
-// no template prints nothing, a plain item prints the code of its content where it stands.
+// itemCode is the code of the uses below an item or an element, one per line: a use of a component
+// with no template prints nothing, a plain item prints the code of its content where it stands.
 func (t *Tree) itemCode(n *Node, eval evalFunc, depth int, errs *Errors) string {
 	var parts []string
 	for _, c := range n.Content {
@@ -134,8 +134,8 @@ func useProp(use *Node, name string) *Prop {
 	return found
 }
 
-// renderVars is the value of every parameter of target: the one values gives, the one the use writes, the
-// default. A parameter without any of them, and a name the element does not declare, are errors.
+// renderVars is the value of every parameter of target: values gives it, the use writes it, or the
+// default; a parameter without one, and a name the element does not declare, are errors.
 func renderVars(target, use *Node, values map[string]string, eval evalFunc, errs *Errors) map[string]string {
 	vars := make(map[string]string, len(target.Params))
 	for _, prm := range target.Params {
@@ -187,9 +187,8 @@ func joinSlot(slot, text string) string {
 	return slot + "\n" + text
 }
 
-// renderSlots is the content the block of use passes to the slots of the component, by normalized name and
-// "" for the default one, in file order, and the fallback of the component for a slot it leaves empty: the
-// element's own "slot { ... }" of that name (spec 4.7a).
+// renderSlots is the slot content the block of use passes, by normalized name ("" for the default)
+// in file order, and the element's own "slot { ... }" of that name (spec 4.7a) where empty.
 func (t *Tree) renderSlots(target, use *Node, eval evalFunc, depth int, code bool, errs *Errors) map[string]string {
 	slots := map[string]string{}
 	if use == nil {
@@ -214,8 +213,8 @@ func (t *Tree) renderSlots(target, use *Node, eval evalFunc, depth int, code boo
 	return t.fallbackSlots(target, slots, eval, depth, code, errs)
 }
 
-// fallbackSlots fills the slots the use leaves empty with the fallback the element writes for them: the
-// "slot { ... }" of the item that holds the slots (spec 4.7a).
+// fallbackSlots fills the slots the use leaves empty with the fallback the element writes for them:
+// the "slot { ... }" of the item that holds the slots (spec 4.7a).
 func (t *Tree) fallbackSlots(target *Node, slots map[string]string, eval evalFunc, depth int, code bool, errs *Errors) map[string]string {
 	var walk func(n *Node)
 	walk = func(n *Node) {
@@ -242,8 +241,8 @@ func (t *Tree) fallbackSlots(target *Node, slots map[string]string, eval evalFun
 	return slots
 }
 
-// nodeText is a node the use passes to a slot as code: the title it sets, the template of the component it
-// uses, the code of the items below a plain item when the whole element is printed, and its name otherwise.
+// nodeText is a node the use passes to a slot as code: its title, the template of the component it
+// uses, the code of the items below a plain item when the whole element prints, else its name.
 func (t *Tree) nodeText(n *Node, eval evalFunc, depth int, code bool, errs *Errors) string {
 	if n.Kind == KUse {
 		if target, err := t.Resolve(n.Parent, n.Path); err == nil && target.Template != nil {
