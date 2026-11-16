@@ -252,7 +252,7 @@ element "Meetings" {
 					use Libraries.ui_kit.Actions.ClassicButton as "ClassicButton/icon/medium 2" {
 						kind ghost; size medium; shape icon
 						replace icon_kit_PencilLine {
-							use Libraries.ui_kit.Icon.users as "icon/users" { width 18; height 18; color #00000099 }
+							use Libraries.ui_kit.Icon.users as "icon/users" { width 18; height 18; border-color #00000099 }
 						}
 					}
 				}
@@ -301,7 +301,7 @@ element "Meetings" {
 				item cb_spacer { width 210 }
 				item btn_people {
 					auto-layout row; gap 6; align center; height 40; padding 0 12; clip yes; color #1725470d; corner-radius 20
-					use Libraries.ui_kit.Icon.users as "icon/users 2" { width 18; height 18; color #0f121a }
+					use Libraries.ui_kit.Icon.users as "icon/users 2" { width 18; height 18; border-color #0f121a }
 					item pc { title 4; font-size 13; line-height 16; font-family "IBM Plex Sans"; font-weight 600; text-color #0f121a }
 				}
 				item btn_chat {
