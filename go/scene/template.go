@@ -13,33 +13,110 @@ type Template struct {
 	Pos  Pos    // the template command
 }
 
+// maxTemplateDepth stops a component that prints itself through the slot of its own use.
+const maxTemplateDepth = 64
+
 // Render is the text node generates from its template (spec 5c): ${name} is the value of the parameter
-// name, <slot/> and <slot name/> the content the use passes, each node as the title it sets or its name.
-// node is a component element, or a use of one: the values and the slots then come from the block of that
-// use, and values (the name=value pairs of "tenniarb gen -set") override both. Options.EvalVars evaluates
-// the expressions, as it does for the scene; without an evaluator a ${...} is an error. The errors come
-// back with the text and nothing is added to the diagnostics of the tree.
+// name, <slot/> and <slot name/> the content the use passes, each node as the title it sets or its name,
+// or as its own template when the node is a use of a component that has one. node is a component element,
+// or a use of one: the values and the slots then come from the block of that use, and values (the
+// name=value pairs of "tenniarb gen -set") override both. Options.EvalVars evaluates the expressions, as
+// it does for the scene; without an evaluator a ${...} is an error. The errors come back with the text
+// and nothing is added to the diagnostics of the tree.
 func (t *Tree) Render(node *Node, values map[string]string, o Options) (string, error) {
 	eval := evaluator(o)
 	var errs Errors
+	text := t.renderUse(node, values, eval, 0, false, &errs)
+	if errs.Fatal() {
+		return "", errs
+	}
+	return text, nil
+}
+
+// renderUse is Render for a node that is an element or a use of one, once the evaluator is known.
+func (t *Tree) renderUse(node *Node, values map[string]string, eval evalFunc, depth int, code bool, errs *Errors) string {
 	var use *Node
 	if node.Kind == KUse {
 		use = node
 		target, err := t.Resolve(node.Parent, node.Path)
 		if err != nil {
-			return "", Errors{{Pos: node.Pos, Msg: err.Error()}}
+			*errs = append(*errs, Error{Pos: node.Pos, Msg: err.Error()})
+			return ""
 		}
 		node = target
 	}
-	if node.Template == nil {
-		return "", Errors{{Pos: node.Pos, Msg: fmt.Sprintf("the %s %q has no template", node.Kind, node.Name)}}
+	return t.renderAt(node, use, values, eval, depth, code, errs)
+}
+
+// renderAt is the text of the template of target, with the values and the slots the use gives.
+func (t *Tree) renderAt(target, use *Node, values map[string]string, eval evalFunc, depth int, code bool, errs *Errors) string {
+	if target.Template == nil {
+		*errs = append(*errs, Error{Pos: target.Pos, Msg: fmt.Sprintf("the %s %q has no template", target.Kind, target.Name)})
+		return ""
 	}
-	vars := renderVars(node, use, values, eval, &errs)
-	text := renderText(node.Template, vars, renderSlots(node, use, eval, &errs), eval, &errs)
+	if depth > maxTemplateDepth {
+		*errs = append(*errs, Error{Pos: target.Pos, Msg: "the templates nest too deep: a use inside the slot of itself?"})
+		return ""
+	}
+	vars := renderVars(target, use, values, eval, errs)
+	return renderText(target.Template, vars, t.renderSlots(target, use, eval, depth, code, errs), eval, errs)
+}
+
+// RenderElement is the code an element generates: the template of every use below it in file order, the
+// content of each nested in the slots of its template, and tpl around all of it in place of its default
+// slot. A plain item draws the wireframe and prints nothing, so the code of its content stands where the
+// item is. tpl may name the parameters of the element in ${...}; without it the element's own template
+// wraps the code, and an element with no template prints the code alone.
+func (t *Tree) RenderElement(el *Node, tpl *Template, values map[string]string, o Options) (string, error) {
+	eval := evaluator(o)
+	var errs Errors
+	body := t.itemCode(el, eval, 0, &errs)
+	if body == "" && el.Template != nil {
+		// No use of its own: the element prints its template with the composition its slots fall back to.
+		return t.Render(el, values, o)
+	}
+	if tpl == nil {
+		tpl = el.Template
+	}
+	if tpl == nil {
+		if errs.Fatal() {
+			return "", errs
+		}
+		return body, nil
+	}
+	vars := renderVars(el, nil, values, eval, &errs)
+	text := renderText(tpl, vars, map[string]string{"": body}, eval, &errs)
 	if errs.Fatal() {
 		return "", errs
 	}
 	return text, nil
+}
+
+// itemCode is the code of the uses below an item or an element, one per line: a use of a component with
+// no template prints nothing, a plain item prints the code of its content where it stands.
+func (t *Tree) itemCode(n *Node, eval evalFunc, depth int, errs *Errors) string {
+	var parts []string
+	for _, c := range n.Content {
+		switch c.Kind {
+		case KUse:
+			target, err := t.Resolve(c.Parent, c.Path)
+			if err != nil {
+				*errs = append(*errs, Error{Pos: c.Pos, Msg: err.Error()})
+				continue
+			}
+			if target.Template == nil {
+				continue
+			}
+			if s := t.renderAt(target, c, nil, eval, 1, true, errs); s != "" {
+				parts = append(parts, s)
+			}
+		case KItem:
+			if s := t.itemCode(c, eval, depth+1, errs); s != "" {
+				parts = append(parts, s)
+			}
+		}
+	}
+	return strings.Join(parts, "\n")
 }
 
 // useProp is the value the block of use gives the parameter name, the last one written; nil for a use
@@ -102,18 +179,26 @@ func renderVars(target, use *Node, values map[string]string, eval evalFunc, errs
 	return vars
 }
 
+// joinSlot puts the code of one more node in a slot: one node per line.
+func joinSlot(slot, text string) string {
+	if slot == "" || text == "" {
+		return slot + text
+	}
+	return slot + "\n" + text
+}
+
 // renderSlots is the content the block of use passes to the slots of the component, by normalized name and
 // "" for the default one, in file order, and the fallback of the component for a slot it leaves empty: the
 // element's own "slot { ... }" of that name (spec 4.7a).
-func renderSlots(target, use *Node, eval evalFunc, errs *Errors) map[string]string {
+func (t *Tree) renderSlots(target, use *Node, eval evalFunc, depth int, code bool, errs *Errors) map[string]string {
 	slots := map[string]string{}
 	if use == nil {
-		return fallbackSlots(target, slots, eval, errs)
+		return t.fallbackSlots(target, slots, eval, depth, code, errs)
 	}
 	for _, ov := range use.Block {
 		switch ov.Kind {
 		case OvNode:
-			slots[""] += nodeText(ov.Node, eval, errs)
+			slots[""] = joinSlot(slots[""], t.nodeText(ov.Node, eval, depth, code, errs))
 		case OvSlot:
 			name := NormalizeName(ov.Slot)
 			if _, ok := slots[name]; !ok { // a slot filled with no node still counts as filled
@@ -121,17 +206,17 @@ func renderSlots(target, use *Node, eval evalFunc, errs *Errors) map[string]stri
 			}
 			for _, sub := range ov.Block {
 				if sub.Kind == OvNode {
-					slots[name] += nodeText(sub.Node, eval, errs)
+					slots[name] = joinSlot(slots[name], t.nodeText(sub.Node, eval, depth, code, errs))
 				}
 			}
 		}
 	}
-	return fallbackSlots(target, slots, eval, errs)
+	return t.fallbackSlots(target, slots, eval, depth, code, errs)
 }
 
 // fallbackSlots fills the slots the use leaves empty with the fallback the element writes for them: the
 // "slot { ... }" of the item that holds the slots (spec 4.7a).
-func fallbackSlots(target *Node, slots map[string]string, eval evalFunc, errs *Errors) map[string]string {
+func (t *Tree) fallbackSlots(target *Node, slots map[string]string, eval evalFunc, depth int, code bool, errs *Errors) map[string]string {
 	var walk func(n *Node)
 	walk = func(n *Node) {
 		for _, c := range n.Content {
@@ -144,9 +229,7 @@ func fallbackSlots(target *Node, slots map[string]string, eval evalFunc, errs *E
 			}
 			fill := ""
 			for _, sub := range c.Content {
-				if sub.Kind == KItem {
-					fill += nodeText(sub, eval, errs)
-				}
+				fill = joinSlot(fill, t.nodeText(sub, eval, depth, code, errs))
 			}
 			if fill != "" { // an empty fallback leaves the slot unfilled, and that is an error
 				slots[c.Key] = fill
@@ -159,8 +242,14 @@ func fallbackSlots(target *Node, slots map[string]string, eval evalFunc, errs *E
 	return slots
 }
 
-// nodeText is a node the use passes to a slot as code: the title it sets, and its name otherwise.
-func nodeText(n *Node, eval evalFunc, errs *Errors) string {
+// nodeText is a node the use passes to a slot as code: the title it sets, the template of the component it
+// uses, the code of the items below a plain item when the whole element is printed, and its name otherwise.
+func (t *Tree) nodeText(n *Node, eval evalFunc, depth int, code bool, errs *Errors) string {
+	if n.Kind == KUse {
+		if target, err := t.Resolve(n.Parent, n.Path); err == nil && target.Template != nil {
+			return t.renderAt(target, n, nil, eval, depth+1, code, errs)
+		}
+	}
 	var title *Prop
 	for _, p := range n.Props {
 		if p.Name == "title" {
@@ -168,6 +257,9 @@ func nodeText(n *Node, eval evalFunc, errs *Errors) string {
 		}
 	}
 	if title == nil {
+		if code && n.Kind == KItem {
+			return t.itemCode(n, eval, depth+1, errs)
+		}
 		return n.Name
 	}
 	v, ok := evalWords(eval, title, nil)

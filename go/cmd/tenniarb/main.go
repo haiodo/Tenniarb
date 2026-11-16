@@ -5,6 +5,7 @@
 //	tenniarb suggest [-json] [-root DIR] FILE...
 //	tenniarb bundle [-root DIR] [-o OUT] FILE
 //	tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
+//	tenniarb generate [-root DIR] [-set name=value]... [-template TEXT|@FILE] FILE ELEMENT
 //	tenniarb install [-dir DIR]
 //	tenniarb help | -h | --help
 //
@@ -14,9 +15,10 @@
 // suggest reports what could be tidied in a file (repeats, styles, dead commands) and changes nothing.
 // bundle replaces every --from-file with the block of the file it mounts, so one file holds the whole
 // document: the browser has no neighbours to read. gen prints the code the template of an element
-// generates, the parameters set by name: exit 0 done,
-// 1 errors, 2 usage. Help prints the usage to stdout and exits 0; an unknown flag prints it to stderr
-// and exits 2.
+// generates, the parameters set by name: exit 0 done, 1 errors, 2 usage. generate prints the code of
+// every use below an element, each from its own template, wrapped by the template of the element or by
+// the one given. Help prints the usage to stdout and exits 0; an unknown flag prints it to stderr and
+// exits 2.
 package main
 
 import (
@@ -39,6 +41,9 @@ const usage = `usage:
   tenniarb bundle [-root DIR] [-o OUT] FILE     replace every --from-file with the block of the file it mounts
   tenniarb gen [-root DIR] [-set name=value]... FILE ELEMENT
                                                 print the text the template of ELEMENT generates
+  tenniarb generate [-root DIR] [-set name=value]... [-template TEXT|@FILE] FILE ELEMENT
+                                                print the code of every use below ELEMENT from its template,
+                                                the element's own template or -template around them
   tenniarb install [-mcp] [-codex|-claude|-opencode|-agents]
                                                 write the agent skill, and with -mcp register the MCP server
                                                 in the config of those agents (every agent by default)
@@ -60,6 +65,8 @@ func dispatch(args []string, stdout, stderr io.Writer) (launch bool, files []str
 		return false, nil, bundleCmd(args[1:], stdout, stderr)
 	case "gen":
 		return false, nil, gen(args[1:], stdout, stderr)
+	case "generate":
+		return false, nil, generate(args[1:], stdout, stderr)
 	case "install":
 		return false, nil, install(args[1:], stdout, stderr)
 	case "help", "-h", "-help", "--help":

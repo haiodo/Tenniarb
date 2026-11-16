@@ -183,3 +183,70 @@ func TestTemplateNone(t *testing.T) {
 		t.Error("template inside an item is not kept as a property")
 	}
 }
+
+// elementDoc is a screen of plain boxes and templated components: the code of the screen is the code of
+// the uses, the boxes only place them.
+const elementDoc = `element "Item" {
+  kind Component
+  export let text = "x"
+  template %{<span>${text}</span>}
+}
+
+element "List" {
+  kind Component
+  template %{<ul><slot/></ul>}
+  item Box { auto-layout column; slot }
+}
+
+element "Screen" {
+  template %{<main><slot/></main>}
+  item Page {
+    auto-layout column
+    use List as list {
+      use Item as a { text "A" }
+      use Item as b { text "B" }
+    }
+  }
+}
+`
+
+// TestTemplateNested: a use inside the slot of another prints its own template with the values of its own
+// block, not its name.
+func TestTemplateNested(t *testing.T) {
+	tree := paramsTree(t, "elem.tenn", elementDoc)
+	if d := tree.Diagnostics(); len(d) != 0 {
+		t.Fatalf("diagnostics: %v", d)
+	}
+	got, err := renderOf(t, tree, "Screen.Page.list", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "<ul><span>A</span>\n<span>B</span></ul>"; got != want {
+		t.Errorf("nested: %q, want %q", got, want)
+	}
+}
+
+// TestRenderElement: an element prints the templates of the uses below it in file order, and its own
+// template wraps them in the default slot; a template given instead replaces it.
+func TestRenderElement(t *testing.T) {
+	tree := paramsTree(t, "elem.tenn", elementDoc)
+	node, err := tree.Resolve(tree.File(tree.Files()[0]), "Screen")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := tree.RenderElement(node, nil, nil, scene.Options{EvalVars: exec.SceneEvalVars})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "<main><ul><span>A</span>\n<span>B</span></ul></main>"; got != want {
+		t.Errorf("element: %q, want %q", got, want)
+	}
+	wrap := &scene.Template{Text: "<x>\n<slot/>\n</x>"}
+	got, err = tree.RenderElement(node, wrap, nil, scene.Options{EvalVars: exec.SceneEvalVars})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "<x>\n<ul><span>A</span>\n<span>B</span></ul>\n</x>"; got != want {
+		t.Errorf("wrapper: %q, want %q", got, want)
+	}
+}

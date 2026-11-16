@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* `tenniarb generate FILE ELEMENT` prints a screen as code from the `template` of its parts: every `use`
+  below the element prints the template of its component with the values of its block and the content of
+  its slots nested in, and the element's own template, or `-template`, wraps the result. `libraries/ui-sdk.tenn`
+  writes those snippets for the ui-sdk parts, `examples/ui-sdk.tenn` composes them into a settings page.
+
 * Go to Component finds the library a document mounts in its own folder: the path of a mount was resolved
   from the workspace root, so the design under `examples/` answered "which this document does not mount"
   for every component. A mount above the open document, of a screen opened with `entry "../Design.tenn"`,
