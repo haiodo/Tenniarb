@@ -48,8 +48,11 @@
 		AE02EC00000000000000006E /* ScenePaintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000006B /* ScenePaintTests.swift */; };
 		AE02EC000000000000000071 /* SceneRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000006F /* SceneRange.swift */; };
 		AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000070 /* SceneRangeTests.swift */; };
+		AE02EC000000000000000097 /* SceneExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000093 /* SceneExportTests.swift */; };
+		AE02EC000000000000000098 /* SceneJSONCanvasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000094 /* SceneJSONCanvasTests.swift */; };
 		AE02EC000000000000000074 /* SceneEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000073 /* SceneEdit.swift */; };
 		AE02EC00000000000000008E /* SceneComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000008D /* SceneComponents.swift */; };
+		AE02EC000000000000000096 /* SceneJSONCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000092 /* SceneJSONCanvas.swift */; };
 		AE02EC000000000000000076 /* SceneEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000075 /* SceneEditTests.swift */; };
 		AE02EC000000000000000077 /* SceneCanvasEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000078 /* SceneCanvasEditTests.swift */; };
 		AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000007A /* SceneDocumentSupport.swift */; };
@@ -69,6 +72,7 @@
 		0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34564D1ED88E9100341F1C /* SceneDrawView.swift */; };
 		0C3A36BE2085B41200CC646C /* SearchBoxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A36BD2085B41100CC646C /* SearchBoxController.swift */; };
 		0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E178620FD053A00AB9D3D /* ExportManager.swift */; };
+		AE02EC000000000000000095 /* SceneExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000091 /* SceneExport.swift */; };
 		0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3E41D11F07EC48009C2A2E /* ElementScene.swift */; };
 		0C439D201FFFFAD20031AE78 /* Outline-ViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */; };
 		0C439D25200337AB0031AE78 /* ElementProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C439D24200337AB0031AE78 /* ElementProperties.swift */; };
@@ -249,8 +253,11 @@
 		AE02EC00000000000000006B /* ScenePaintTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaintTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000006F /* SceneRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRange.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000070 /* SceneRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRangeTests.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000093 /* SceneExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneExportTests.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000094 /* SceneJSONCanvasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneJSONCanvasTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000073 /* SceneEdit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEdit.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000008D /* SceneComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneComponents.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000092 /* SceneJSONCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneJSONCanvas.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000075 /* SceneEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEditTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000078 /* SceneCanvasEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCanvasEditTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000007A /* SceneDocumentSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDocumentSupport.swift; sourceTree = "<group>"; };
@@ -273,6 +280,7 @@
 		0C35FF0120DC09BD00BE3B2C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		0C3A36BD2085B41100CC646C /* SearchBoxController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchBoxController.swift; path = views/SearchBoxController.swift; sourceTree = "<group>"; };
 		0C3E178620FD053A00AB9D3D /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = views/ExportManager.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000091 /* SceneExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneExport.swift; path = views/SceneExport.swift; sourceTree = "<group>"; };
 		0C3E41D11F07EC48009C2A2E /* ElementScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementScene.swift; sourceTree = "<group>"; };
 		0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Outline-ViewController-Extension.swift"; sourceTree = "<group>"; };
 		0C439D24200337AB0031AE78 /* ElementProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElementProperties.swift; path = model/ElementProperties.swift; sourceTree = "<group>"; };
@@ -499,6 +507,7 @@
 				0C439D1F1FFFFAD20031AE78 /* Outline-ViewController-Extension.swift */,
 				0C3A36BD2085B41100CC646C /* SearchBoxController.swift */,
 				0C3E178620FD053A00AB9D3D /* ExportManager.swift */,
+				AE02EC000000000000000091 /* SceneExport.swift */,
 				0C67960F210E215E00AEED63 /* SyncViewController.swift */,
 				0CF8902A2133BDD400F1A6EE /* StyleManager.swift */,
 				0C83E507219085BD00AD0317 /* ResourcesViewController.swift */,
@@ -646,6 +655,8 @@
 				AE02EC000000000000000052 /* SceneAnimationTests.swift */,
 				AE02EC00000000000000006B /* ScenePaintTests.swift */,
 				AE02EC000000000000000070 /* SceneRangeTests.swift */,
+				AE02EC000000000000000093 /* SceneExportTests.swift */,
+				AE02EC000000000000000094 /* SceneJSONCanvasTests.swift */,
 				AE02EC000000000000000035 /* SceneEvalTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
@@ -740,6 +751,7 @@
 				AE02EC00000000000000006F /* SceneRange.swift */,
 				AE02EC000000000000000073 /* SceneEdit.swift */,
 				AE02EC00000000000000008D /* SceneComponents.swift */,
+				AE02EC000000000000000092 /* SceneJSONCanvas.swift */,
 			);
 			path = scene;
 			sourceTree = "<group>";
@@ -968,6 +980,7 @@
 				0C7F8996233273FC0098B745 /* AttributedPrinter.swift in Sources */,
 				0C16C06B2321328800F77855 /* ImageUtils.swift in Sources */,
 				0C3E178720FD053A00AB9D3D /* ExportManager.swift in Sources */,
+				AE02EC000000000000000095 /* SceneExport.swift in Sources */,
 				0C3E41D21F07EC48009C2A2E /* ElementScene.swift in Sources */,
 				0C9EA46E27414A4800B10EB5 /* (null) in Sources */,
 				0C9C9411201F749800E67794 /* ElementOperations.swift in Sources */,
@@ -997,6 +1010,7 @@
 				AE02EC000000000000000071 /* SceneRange.swift in Sources */,
 				AE02EC000000000000000074 /* SceneEdit.swift in Sources */,
 				AE02EC00000000000000008E /* SceneComponents.swift in Sources */,
+				AE02EC000000000000000096 /* SceneJSONCanvas.swift in Sources */,
 				AE02EC000000000000000066 /* SceneModel.swift in Sources */,
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
@@ -1054,6 +1068,8 @@
 				AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */,
 				AE02EC00000000000000006E /* ScenePaintTests.swift in Sources */,
 				AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */,
+				AE02EC000000000000000097 /* SceneExportTests.swift in Sources */,
+				AE02EC000000000000000098 /* SceneJSONCanvasTests.swift in Sources */,
 				AE02EC000000000000000045 /* SceneEvalTests.swift in Sources */,
 				AE01EC01000000000000005 /* ModelCoreTests.swift in Sources */,
 				AE01EC01000000000000006 /* DrawableStyleTests.swift in Sources */,

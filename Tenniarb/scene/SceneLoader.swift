@@ -195,6 +195,7 @@ final class SceneLoader {
         }
         let saved = currentFile
         currentFile = rel
+        joinedBlocks(ast.children ?? [])
         fill(file, ast.children ?? [])
         currentFile = saved
         stack.removeLast()
@@ -203,6 +204,21 @@ final class SceneLoader {
         tree.files[rel] = file
         tree.order.append(file)
         return file
+    }
+
+    /// Warns on a command with two blocks: the format joins them into one, so the second name is lost.
+    private func joinedBlocks(_ ns: [TennNode]) {
+        for n in ns {
+            if n.kind == .Command {
+                let blocks = (n.children ?? []).filter { $0.kind == .BlockExpr }.count
+                if blocks > 1 {
+                    tree.warn(
+                        pos(n),
+                        "\(blocks) blocks in one command \"\(cmdName(n) ?? "")\" are joined: put each block on its own line")
+                }
+            }
+            joinedBlocks(n.children ?? [])
+        }
     }
 
     /// Finds rel relative to the file being read; reports a path that leaves the workspace root.

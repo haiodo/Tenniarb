@@ -91,59 +91,72 @@ class ExportManager: NSObject, NSMenuDelegate {
     }
 
     func renderImage() -> (NSImage, CGRect) {
-
-        let scene = DrawableScene(
-            self.element!, darkMode: false, executionContext: self.viewController?.elementStore?.executionContext,
-            items: self.activeItems)
-        let bounds = scene.getBounds()
-        let ox = CGFloat(15)
-        let oy = CGFloat(15)
-
-        var scaleFactor = self.viewController!.view.window!.backingScaleFactor
+        var scaleFactor = viewController?.view.window?.backingScaleFactor ?? 1
 
         if !PreferenceConstants.preference.renderUseNativeResolution {
             scaleFactor = 1
         }
+        return ExportManager.renderImage(
+            self.element!, items: self.activeItems, scaleFactor: scaleFactor,
+            executionContext: viewController?.elementStore?.executionContext)
+    }
+
+    /// The picture of one element, as the current one is drawn; nil items draws the whole element.
+    static func renderImage(
+        _ element: Element, items: [DiagramItem]?, scaleFactor: CGFloat, executionContext: ExecutionContextEvaluator?
+    ) -> (NSImage, CGRect) {
+
+        let scene = DrawableScene(element, darkMode: false, executionContext: executionContext, items: items)
+        let bounds = scene.getBounds()
+        let ox = CGFloat(15)
+        let oy = CGFloat(15)
 
         let imgBounds = bounds.insetBy(dx: CGFloat((-1 * ox) * 2), dy: CGFloat((-1 * oy) * 2))
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
-        let context = CGContext(
-            data: nil,
-            width: Int(imgBounds.width * scaleFactor),
-            height: Int(imgBounds.height * scaleFactor),
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: colorSpace,
-            bitmapInfo: bitmapInfo.rawValue)
+        guard
+            let context = CGContext(
+                data: nil,
+                width: Int(imgBounds.width * scaleFactor),
+                height: Int(imgBounds.height * scaleFactor),
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: bitmapInfo.rawValue)
+        else {
+            return (NSImage(size: .zero), bounds)
+        }
 
         let old = NSGraphicsContext.current
-        let nsContext = NSGraphicsContext(cgContext: context!, flipped: false)
+        let nsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = nsContext
 
-        context?.scaleBy(x: scaleFactor, y: scaleFactor)
-        context?.saveGState()
+        context.scaleBy(x: scaleFactor, y: scaleFactor)
+        context.saveGState()
 
         scene.offset = CGPoint(x: ox * scaleFactor + CGFloat(-1 * bounds.origin.x), y: oy * scaleFactor + CGFloat(-1 * bounds.origin.y))
         scene.layout(bounds, bounds)
 
-        context?.setFillColor(CGColor(red: 0xe7 / 255, green: 0xe9 / 255, blue: 0xeb / 255, alpha: 1))
+        context.setFillColor(CGColor(red: 0xe7 / 255, green: 0xe9 / 255, blue: 0xeb / 255, alpha: 1))
 
-        context?.setShouldAntialias(true)
+        context.setShouldAntialias(true)
         if PreferenceConstants.preference.renderEnableBackground {
-            context?.fill(
+            context.fill(
                 CGRect(
                     x: 0, y: 0, width: Int(imgBounds.width * scaleFactor),
                     height:
                         Int(imgBounds.height * scaleFactor)))
         }
 
-        scene.draw(context: context!)
-        context?.restoreGState()
+        scene.draw(context: context)
+        context.restoreGState()
 
-        let image = context!.makeImage()
-        let img = NSImage(cgImage: image!, size: imgBounds.size)
+        guard let cgImage = context.makeImage() else {
+            NSGraphicsContext.current = old
+            return (NSImage(size: .zero), bounds)
+        }
+        let img = NSImage(cgImage: cgImage, size: imgBounds.size)
 
         NSGraphicsContext.current = old
 

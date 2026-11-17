@@ -199,4 +199,21 @@ final class SceneLoaderTests: XCTestCase {
         XCTAssertEqual(inner.elems.first?.name, "B")
         XCTAssertEqual(inner.elems.first?.content.first?.name, "Leaf")
     }
+
+    /// Two blocks on one line are joined into one command by the parser, so the second name is lost;
+    /// the loader says so instead of dropping it quietly (go/scene/load.go joinedBlocks).
+    func testTwoBlocksInOneCommandAreReported() throws {
+        let root = try workspace([
+            "a.tenn": "element A { item a { width 1 } item b { width 2 } }\n"
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("a.tenn")
+        let warning = try XCTUnwrap(tree.diagnostics.first { $0.message.contains("blocks in one command") })
+        XCTAssertTrue(warning.warn)
+        XCTAssertEqual(
+            warning.message, "2 blocks in one command \"item\" are joined: put each block on its own line")
+        XCTAssertEqual(warning.pos.file, "a.tenn")
+    }
+
 }

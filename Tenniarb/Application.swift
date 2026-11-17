@@ -177,6 +177,31 @@ public class TenniarbApplication: NSApplication {
 
         fileMenu.addItem(NSMenuItem(title: "Print…", action: #selector(NSDocument.printDocument(_:)), keyEquivalent: "p"))
 
+        fileMenu.addItem(NSMenuItem.separator())
+
+        let selectionPNGItem = NSMenuItem(
+            title: "Selection as PNG…", action: #selector(ViewController.exportSelectionPNG(_:)), keyEquivalent: "E")
+        selectionPNGItem.keyEquivalentModifierMask = [.command, .shift]
+        fileMenu.addItem(selectionPNGItem)
+
+        let selectionScaleItem = NSMenuItem(title: "Selection as PNG at Scale", action: nil, keyEquivalent: "")
+        let selectionScaleMenu = NSMenu(title: "Selection as PNG at Scale")
+        for scale in SceneExport.minScale...SceneExport.maxScale {
+            let item = NSMenuItem(
+                title: "\(scale)x…", action: #selector(ViewController.exportSelectionPNGAtScale(_:)), keyEquivalent: "")
+            item.tag = scale
+            selectionScaleMenu.addItem(item)
+        }
+        selectionScaleItem.submenu = selectionScaleMenu
+        fileMenu.addItem(selectionScaleItem)
+
+        fileMenu.addItem(
+            NSMenuItem(
+                title: "Export Pages as PNG…", action: #selector(ViewController.exportPagesPNG(_:)), keyEquivalent: ""))
+        fileMenu.addItem(
+            NSMenuItem(
+                title: "Export Pages as PDF…", action: #selector(ViewController.exportPagesPDF(_:)), keyEquivalent: ""))
+
         // MARK: - Edit menu
         let editMenuItem = NSMenuItem()
         mainMenu.addItem(editMenuItem)

@@ -490,6 +490,12 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if let action = menuItem.action {
 
+            if action == #selector(exportSelectionPNG(_:)) || action == #selector(exportSelectionPNGAtScale(_:)) {
+                return canExportSelection
+            }
+            if action == #selector(exportPagesPNG(_:)) || action == #selector(exportPagesPDF(_:)) {
+                return document != nil
+            }
             if action == #selector(selectAllItems(_:)) {
                 if self.view.window?.firstResponder == self.scene {
                     return true
