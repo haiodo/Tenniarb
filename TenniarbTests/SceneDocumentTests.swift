@@ -878,4 +878,192 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertTrue(canvas.message?.contains("mounted file") ?? false, canvas.message ?? "no message")
     }
 
+    // MARK: - Element > Rename
+
+    /// A scene window whose rename dialogs the closures answer, so no alert opens.
+    private func renameDocument(_ files: [String: String], _ main: String = "a.tenn") throws -> (ViewController, Document) {
+        let document = try openTestDocument(try workspace(files).appendingPathComponent(main))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        return (vc, document)
+    }
+
+    /// Yes writes the node name and the use path that names it, as one undo step (go/app/rename_ui.go).
+    func testRenameNodeUpdatesTheUsePathAsOneUndoStep() throws {
+        let text = "element Parts {\n  item Button { width 40 }\n}\nelement Screen {\n  use Parts.Button as b\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        XCTAssertEqual(canvas.selectedNode?.name, "Button")
+        var asked: Scene.RenamePlan?
+        vc.renamePrompt = { _ in "Icon" }
+        vc.renameConfirm = { plan in
+            asked = plan
+            return .yes
+        }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(asked?.name, "Icon")
+        XCTAssertEqual(asked?.refs.count, 1, "the use path names the item")
+        XCTAssertEqual(
+            document.sceneText,
+            "element Parts {\n  item Icon { width 40 }\n}\nelement Screen {\n  use Parts.Icon as b\n}\n")
+        XCTAssertEqual(canvas.selectedNode?.name, "Icon", "the renamed node stays selected")
+        XCTAssertEqual(
+            canvas.selectedNode?.range.start,
+            try sceneNode(try XCTUnwrap(document.sceneTree), "Parts.Icon").range.start,
+            "the selection is where the node starts in the new text")
+
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, text, "one undo takes the name and the path back")
+    }
+
+    /// No writes the name alone: the use keeps the old name (go/app TestRenameOnlyLeavesReferences).
+    func testRenameNodeNoLeavesTheReference() throws {
+        let text = "element Parts {\n  item Button { width 40 }\n}\nelement Screen {\n  use Parts.Button as b\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        vc.renamePrompt = { _ in "Icon" }
+        vc.renameConfirm = { _ in .no }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(
+            document.sceneText,
+            "element Parts {\n  item Icon { width 40 }\n}\nelement Screen {\n  use Parts.Button as b\n}\n")
+    }
+
+    /// Cancel keeps the old name and writes nothing.
+    func testRenameNodeCancelKeepsTheName() throws {
+        let text = "element Parts {\n  item Button { width 40 }\n}\nelement Screen {\n  use Parts.Button as b\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        vc.renamePrompt = { _ in "Icon" }
+        vc.renameConfirm = { _ in .cancel }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(document.sceneText, text, "Cancel keeps the old name")
+    }
+
+    /// Nothing names this node, so the references question is not asked.
+    func testRenameNodeWithoutReferencesDoesNotAsk() throws {
+        let text = "element Screen {\n  item A { auto-layout abs; width 100 }\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        vc.renamePrompt = { _ in "C" }
+        vc.renameConfirm = { _ in
+            XCTFail("no references, so no question about them")
+            return .cancel
+        }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(document.sceneText, "element Screen {\n  item C { auto-layout abs; width 100 }\n}\n")
+        XCTAssertEqual(canvas.selectedNode?.name, "C")
+    }
+
+    /// A key a sibling holds is refused by the plan, and the plan's message is what the canvas shows.
+    func testRenameRefusesAKeyATakenSiblingHolds() throws {
+        let text = "element Screen {\n  item A { auto-layout abs }\n  item B { auto-layout abs }\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        vc.renamePrompt = { _ in "B" }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(canvas.message, "There is something named \"B\" here already.")
+        XCTAssertEqual(document.sceneText, text)
+    }
+
+    /// An empty name is refused by the plan, and nothing is written.
+    func testRenameRefusesAnEmptyName() throws {
+        let text = "element Screen {\n  item A { auto-layout abs }\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        vc.renamePrompt = { _ in "   " }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(canvas.message, "The name cannot be empty.")
+        XCTAssertEqual(document.sceneText, text)
+    }
+
+    /// A reference in a mounted file is refused whole, naming the file: this window has no undo for it.
+    func testRenameRefusesAReferenceInAMountedFile() throws {
+        let main = "element Parts {\n  item Button { width 40 }\n}\n\nelement kit --from-file \"lib.tenn\"\n"
+        let lib = "element Screen {\n  use Parts.Button as b\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": main, "lib.tenn": lib])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        XCTAssertEqual(canvas.selectedNode?.name, "Button")
+        vc.renamePrompt = { _ in "Icon" }
+        vc.renameConfirm = { _ in .yes }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(canvas.message, "lib.tenn is a mounted file: open it to edit it")
+        XCTAssertEqual(document.sceneText, main, "nothing of the main file is written")
+        XCTAssertEqual(document.sceneTree?.source("lib.tenn"), lib, "the mounted file keeps its text")
+    }
+
+    /// With no node selected, the element the canvas shows is renamed and the paths that name it follow.
+    func testRenameElementFollowsThePathsThatNameIt() throws {
+        let text = "element Parts {\n  item Button { width 40 }\n}\nelement Screen {\n  use Parts.Button as b\n}\n"
+        let (vc, document) = try renameDocument(["a.tenn": text])
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        XCTAssertEqual(canvas.screenNode?.name, "Parts")
+        canvas.select(nil)
+        var asked: Scene.RenamePlan?
+        vc.renamePrompt = { _ in "Kit" }
+        vc.renameConfirm = { plan in
+            asked = plan
+            return .yes
+        }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(asked?.refs.count, 1)
+        XCTAssertEqual(
+            document.sceneText,
+            "element Kit {\n  item Button { width 40 }\n}\nelement Screen {\n  use Kit.Button as b\n}\n")
+        XCTAssertEqual(document.store?.model.elements.first?.name, "Kit", "the outline row follows")
+
+        let row = try XCTUnwrap(document.store?.model.elements.first)
+        let index = vc.worldTree.row(forItem: row)
+        XCTAssertGreaterThanOrEqual(index, 0, "the outline lists the screen")
+        if index >= 0 {
+            vc.worldTree.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+            let item = NSMenuItem(
+                title: "Rename", action: #selector(OutlineViewControllerDelegate.renameElementAction(_:)), keyEquivalent: "")
+            XCTAssertTrue(vc.outlineViewDelegate?.validateMenuItem(item) ?? false, "a scene element row offers Rename")
+        }
+    }
+
+    /// A classic document has no scene text: the selected element is renamed through the model.
+    func testRenameClassicElementGoesThroughTheModel() throws {
+        let root = try workspace(["classic.tenn": "element D {\n  item A { pos 0 0; width 10 }\n}\n"])
+        let document = try openTestDocument(root.appendingPathComponent("classic.tenn"))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        let element = try XCTUnwrap(document.store?.model.elements.first)
+        vc.onElementSelected(element)
+        vc.renamePrompt = { _ in "Home" }
+
+        vc.renameSelection(nil)
+
+        XCTAssertEqual(element.name, "Home")
+        document.undoManager?.undo()
+        XCTAssertEqual(element.name, "D", "the model rename is one undo step")
+    }
+
 }

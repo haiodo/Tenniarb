@@ -286,6 +286,12 @@ public class TenniarbApplication: NSApplication {
         let elementMenu = NSMenu(title: "Element")
         elementMenuItem.submenu = elementMenu
 
+        let renameItem = NSMenuItem(
+            title: "Rename", action: #selector(ViewController.renameSelection(_:)), keyEquivalent: "r")
+        renameItem.keyEquivalentModifierMask = [.command, .shift]
+        elementMenu.addItem(renameItem)
+        elementMenu.addItem(NSMenuItem.separator())
+
         let moveUpItem = NSMenuItem(
             title: "Move Up", action: #selector(ViewController.moveSceneNodeUp(_:)), keyEquivalent: "\u{F700}")
         moveUpItem.keyEquivalentModifierMask = [.command, .option]

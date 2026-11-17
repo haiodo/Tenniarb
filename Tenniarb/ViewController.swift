@@ -525,6 +525,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             {
                 return movableSceneNode != nil
             }
+            if action == #selector(renameSelection(_:)) {
+                guard sceneTree != nil else { return selectedElement.map { $0.kind != .Root } ?? false }
+                guard let canvas = editorViewController?.sceneCanvas?.canvas else { return false }
+                return canvas.selectedNode != nil || canvas.screenNode != nil
+            }
             if action == #selector(exportSelectionPNG(_:)) || action == #selector(exportSelectionPNGAtScale(_:)) {
                 return canExportSelection
             }
@@ -1149,6 +1154,205 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         canvas.setMessage(nil)
         reloadSceneItems()
         canvas.selectSource(at: moved.at)
+    }
+
+    // MARK: - Rename
+
+    /// The answer to the question about the references of a rename, as Go's Yes/No/Cancel.
+    enum RenameAnswer {
+        case yes
+        case no
+        case cancel
+    }
+
+    /// Asks for the new name; nil when the dialog is cancelled. A test answers here instead of the dialog.
+    var renamePrompt: ((_ old: String) -> String?)?
+    /// Asks whether the references follow, as Go's confirmRename; nil opens the dialog. Not asked when
+    /// there are none.
+    var renameConfirm: ((_ plan: Scene.RenamePlan) -> RenameAnswer)?
+
+    /// Element > Rename (Cmd+Shift+R): the node the canvas selected, else the element it shows.
+    @objc func renameSelection(_ sender: Any?) {
+        guard sceneTree != nil, let canvas = editorViewController?.sceneCanvas?.canvas else {
+            if let element = selectedElement {
+                renameElement(element)
+            }
+            return
+        }
+        if let node = canvas.selectedNode {
+            renameSceneNode(node)
+        } else if let node = canvas.screenNode {
+            renameSceneNode(node, row: shownElementRow(canvas))
+        }
+    }
+
+    /// Renames an element of the outline: a classic document through the model, a scene through its text.
+    func renameElement(_ element: Element) {
+        guard sceneTree != nil else {
+            renameClassicElement(element)
+            return
+        }
+        if let node = sceneElementNode(element) {
+            renameSceneNode(node, row: element)
+        }
+    }
+
+    /// Renames a node of the scene as go/app/rename_ui.go renameNodeTo: the plan names the references, the
+    /// question asks about them, and the name and the references go in as one undo step.
+    func renameSceneNode(_ node: Scene.Node, row: Element? = nil) {
+        guard let tree = sceneTree, let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        guard node.pos.file == tree.main?.pos.file else {
+            canvas.setMessage("\(node.pos.file) is a mounted file: open it to edit it")
+            return
+        }
+        let old = node.name
+        let oldPath = CommentPaths.nodePath(of: node, from: canvas.screenNode)
+        guard let name = askName(old)?.trimmingCharacters(in: .whitespacesAndNewlines), name != old else {
+            return
+        }
+        let plan: Scene.RenamePlan
+        do {
+            plan = try tree.planRename(node, name)
+            let answer = askReferences(plan)
+            guard answer != .cancel else { return }
+            try applyRename(plan, update: answer == .yes)
+        } catch {
+            canvas.setMessage((error as? Scene.RenameError)?.message ?? error.localizedDescription)
+            return
+        }
+        canvas.setMessage(nil)
+        if let row, row.name != plan.name {
+            row.name = plan.name
+            reloadOutline()
+        }
+        reloadSceneItems()
+        selectRenamed(oldPath, plan.name, canvas)
+    }
+
+    /// The classic rename: the model names the element, and a diagram has nothing that names it by path.
+    private func renameClassicElement(_ element: Element) {
+        guard element.parent != nil,
+            let name = askName(element.name)?.trimmingCharacters(in: .whitespacesAndNewlines),
+            name != element.name
+        else { return }
+        guard !name.isEmpty else {
+            renameMessage("The name cannot be empty.")
+            return
+        }
+        elementStore?.updateName(element: element, name, undoManager: undoManager, refresh: {})
+    }
+
+    /// Says why a rename was refused; a classic window has no banner over a canvas.
+    private func renameMessage(_ text: String) {
+        let alert = NSAlert()
+        alert.messageText = text
+        alert.runModal()
+    }
+
+    /// The node of the element an outline row names; nil when the tree no longer holds it.
+    private func sceneElementNode(_ element: Element) -> Scene.Node? {
+        guard let tree = sceneTree, let path = document?.sceneElementPath(of: element) else { return nil }
+        var nodes = tree.main?.elems ?? []
+        var node: Scene.Node?
+        for i in path {
+            guard nodes.indices.contains(i) else { return nil }
+            node = nodes[i]
+            nodes = nodes[i].elems
+        }
+        return node?.kind == .element ? node : nil
+    }
+
+    /// The outline row of the element the canvas shows; the first element of the file when it shows none.
+    private func shownElementRow(_ canvas: SceneCanvasView) -> Element? {
+        let path =
+            canvas.elementPath
+            ?? sceneTree?.main?.elems.firstIndex(where: { $0.kind == .element }).map { [$0] }
+        guard let path else { return nil }
+        return document?.sceneElement(at: path)
+    }
+
+    /// Puts the plan in the text: its own name and, when update, the references, as one undo step. A
+    /// reference in a mounted file is refused whole, naming the file: this window has no undo for it.
+    private func applyRename(_ plan: Scene.RenamePlan, update: Bool) throws {
+        guard let document, let main = sceneTree?.main?.pos.file else { return }
+        let edits = plan.edits(update: update)
+        if let file = edits.first(where: { $0.file != main })?.file {
+            throw Scene.RenameError(message: "\(file) is a mounted file: open it to edit it")
+        }
+        // applySceneEdits edits the text from the end, so the offsets of the earlier edits stay valid.
+        try document.applySceneEdits(Array(edits.map(\.edit).reversed()), in: main)
+    }
+
+    /// Selects the node again at its new name's place in the text; a renamed element stays shown as it is.
+    private func selectRenamed(_ oldPath: String, _ name: String, _ canvas: SceneCanvasView) {
+        guard !oldPath.isEmpty, let shown = canvas.screenNode else { return }
+        let cut = oldPath.lastIndex(of: ".")
+        let parent = cut.map { String(oldPath[...$0]) } ?? ""
+        guard let node = CommentPaths.node(at: parent + normalizeName(name), from: shown) else { return }
+        canvas.selectSource(at: node.range.start)
+    }
+
+    /// The new name from a box, or nil when the dialog is cancelled.
+    private func askName(_ old: String) -> String? {
+        if let renamePrompt { return renamePrompt(old) }
+        let alert = NSAlert()
+        alert.messageText = "Rename"
+        alert.informativeText = "The new name of \(String(reflecting: old)):"
+        alert.addButton(withTitle: "Rename")
+        alert.addButton(withTitle: "Cancel")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        field.stringValue = old
+        alert.accessoryView = field
+        alert.window.initialFirstResponder = field
+        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
+        return field.stringValue
+    }
+
+    /// Whether the references follow, as Go's confirmRename: no references, no question.
+    private func askReferences(_ plan: Scene.RenamePlan) -> RenameAnswer {
+        guard !plan.refs.isEmpty else { return .yes }
+        if let renameConfirm { return renameConfirm(plan) }
+        let alert = NSAlert()
+        alert.messageText = "Rename to \(String(reflecting: plan.name))"
+        alert.informativeText = """
+            \(plan.refs.count) references name it:
+
+            \(refLines(plan.refs, 10))
+
+            Yes: rename and update \(plan.refs.count) references.
+            No: rename only; the references keep the old name and stop working.
+            Cancel: keep the old name.
+            """
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Yes")
+        alert.addButton(withTitle: "No")
+        alert.addButton(withTitle: "Cancel")
+        switch alert.runModal() {
+        case .alertFirstButtonReturn: return .yes
+        case .alertSecondButtonReturn: return .no
+        default: return .cancel
+        }
+    }
+
+    /// The places that name the node as go/app/rename.go refLines lists them: file:line and the line.
+    private func refLines(_ refs: [Scene.Ref], _ limit: Int) -> String {
+        var out: [String] = []
+        for (i, r) in refs.enumerated() {
+            if i == limit {
+                out.append("and \(refs.count - limit) more")
+                break
+            }
+            let text = sceneTree?.source(r.file) ?? ""
+            let bytes = Array(text.utf8)
+            let start = lineStart(text, r.arg.start)
+            let end = bytes[start...].firstIndex(of: 0x0A) ?? bytes.count
+            let line = bytes[..<start].reduce(1) { $1 == 0x0A ? $0 + 1 : $0 }
+            var body = String(decoding: bytes[start..<end], as: UTF8.self)
+                .trimmingCharacters(in: .whitespaces)
+            if body.count > 70 { body = String(body.prefix(70)) + "..." }
+            out.append("\(r.file):\(line)  \(body)")
+        }
+        return out.joined(separator: "\n")
     }
 
     /// A row of the component browser of the Items pane: the component goes where Insert Component… would

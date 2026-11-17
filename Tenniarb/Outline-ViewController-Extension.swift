@@ -183,10 +183,18 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
         controller.handleRemoveElement()
     }
 
+    @objc func renameElementAction(_ sender: NSMenuItem) {
+        guard let el = controller.worldTree.item(atRow: controller.worldTree.selectedRow) as? Element else { return }
+        controller.renameElement(el)
+    }
+
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         let selectedIndex = controller.worldTree.selectedRow
 
         if let el = controller.worldTree.item(atRow: selectedIndex) as? Element {
+            if menuItem.action == #selector(renameElementAction) {
+                return el.kind != .Root  // the root element of a diagram has no name of its own
+            }
             if el.kind == .Root && menuItem.action == #selector(deleteElementAction) {
                 return false
             }
@@ -201,6 +209,10 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             title: "New element", action: #selector(addElementAction), keyEquivalent: "")
         addAction.target = self
 
+        let renameAction = NSMenuItem(
+            title: "Rename", action: #selector(renameElementAction), keyEquivalent: "")
+        renameAction.target = self
+
         let duplicateAction = NSMenuItem(
             title: "Duplicate", action: #selector(duplicateElementAction), keyEquivalent: "")
 
@@ -210,6 +222,7 @@ class OutlineViewControllerDelegate: NSObject, NSOutlineViewDataSource, NSOutlin
             title: "Delete", action: #selector(deleteElementAction), keyEquivalent: "")
         deleteAction.target = self
         menu.addItem(addAction)
+        menu.addItem(renameAction)
         menu.addItem(duplicateAction)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(deleteAction)
