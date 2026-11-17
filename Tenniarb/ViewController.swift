@@ -518,6 +518,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if action == #selector(exportSelectionPNG(_:)) || action == #selector(exportSelectionPNGAtScale(_:)) {
                 return canExportSelection
             }
+            if action == #selector(exportSVG(_:)) {
+                return sceneTree != nil
+            }
             if action == #selector(exportPagesPNG(_:)) || action == #selector(exportPagesPDF(_:)) {
                 return document != nil
             }

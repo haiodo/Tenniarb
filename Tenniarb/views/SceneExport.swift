@@ -14,6 +14,7 @@
 //
 
 import Cocoa
+import UniformTypeIdentifiers
 
 /// The selection and pages exports of a document: go/app/export_png.go and export_pages.go.
 @MainActor
@@ -57,6 +58,38 @@ final class SceneExport {
         // A scene exports the whole drawing when nothing is selected.
         return canvas?.screenNode?.name ?? screen.name
     }
+
+    // MARK: - SVG
+
+    /// The element an SVG export draws: the one the canvas shows, else the first element of the file.
+    private var svgElement: Scene.Node? {
+        if let node = canvas?.screenNode, node.kind == .element { return node }
+        return document.sceneTree?.main?.elems.first { $0.kind == .element }
+    }
+
+    /// The default name of an SVG export; nil when the document has no element to draw.
+    var svgFileName: String? {
+        svgElement.map { Self.svgFileName($0.name) }
+    }
+
+    /// Writes the element the canvas shows, or the first element, as an SVG of the still picture.
+    func exportSVG(to url: URL) throws {
+        guard let tree = document.sceneTree else {
+            throw SceneExportError("this document is not a scene")
+        }
+        guard let el = svgElement else {
+            throw SceneExportError("the document has no element to export")
+        }
+        guard let screen = tree.buildElement(el, measurer: Scene.TextMeasurer(), eval: sceneEvalVars) else {
+            throw SceneExportError("the scene of \(el.name) does not build")
+        }
+        guard !screen.placed().kids.isEmpty else {
+            throw SceneExportError("\(el.name) draws nothing")
+        }
+        try SceneSVG.document(screen).write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    // MARK: - Selection
 
     /// Writes the selection, or the whole screen when nothing is selected, as a PNG with no background.
     func exportSelectionPNG(to url: URL, scale: Int) -> Bool {
@@ -304,6 +337,15 @@ final class SceneExport {
 
     /// The default name of a selection export, as go/app's selectionFileName.
     static func selectionFileName(_ name: String) -> String {
+        fileName(name, ".png")
+    }
+
+    /// The default name of an SVG export: the element name and .svg.
+    static func svgFileName(_ name: String) -> String {
+        fileName(name, ".svg")
+    }
+
+    private static func fileName(_ name: String, _ ext: String) -> String {
         var out = ""
         for ch in name.trimmingCharacters(in: .whitespacesAndNewlines) {
             if "/\\:*?\"<>|".contains(ch) || (ch.asciiValue.map { $0 < 32 } ?? false) {
@@ -313,7 +355,16 @@ final class SceneExport {
             }
         }
         let trimmed = out.trimmingCharacters(in: CharacterSet(charactersIn: ". "))
-        return (trimmed.isEmpty ? "Untitled" : trimmed) + ".png"
+        return (trimmed.isEmpty ? "Untitled" : trimmed) + ext
+    }
+}
+
+/// A failed export whose message is the line the window reports.
+private struct SceneExportError: LocalizedError {
+    var errorDescription: String?
+
+    init(_ message: String) {
+        errorDescription = message
     }
 }
 
@@ -361,6 +412,34 @@ extension ViewController {
                 exporter.canvas?.setMessage(nil)
             } else {
                 self.reportExport("Export failed: \(url.lastPathComponent) was not written")
+            }
+        }
+    }
+
+    @IBAction func exportSVG(_ sender: Any?) {
+        guard let exporter = sceneExporter, let name = exporter.svgFileName else {
+            reportExport("Select a scene element to export")
+            return
+        }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: "svg") ?? .xml]
+        panel.allowsOtherFileTypes = false
+        panel.isExtensionHidden = true
+        panel.nameFieldStringValue = name
+        panel.title = "Export SVG"
+        if let dir = document?.fileURL?.deletingLastPathComponent() {
+            panel.directoryURL = dir
+        }
+        panel.begin { response in
+            guard response == .OK, var url = panel.url else { return }
+            if url.pathExtension.isEmpty {
+                url.appendPathExtension("svg")
+            }
+            do {
+                try exporter.exportSVG(to: url)
+                exporter.canvas?.setMessage(nil)
+            } catch {
+                self.reportExport("Export failed: \(error.localizedDescription)")
             }
         }
     }

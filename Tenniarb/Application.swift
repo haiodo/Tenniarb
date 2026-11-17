@@ -196,6 +196,9 @@ public class TenniarbApplication: NSApplication {
         fileMenu.addItem(selectionScaleItem)
 
         fileMenu.addItem(
+            NSMenuItem(title: "Export SVG…", action: #selector(ViewController.exportSVG(_:)), keyEquivalent: ""))
+
+        fileMenu.addItem(
             NSMenuItem(
                 title: "Export Pages as PNG…", action: #selector(ViewController.exportPagesPNG(_:)), keyEquivalent: ""))
         fileMenu.addItem(

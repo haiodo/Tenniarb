@@ -14,6 +14,7 @@
 //
 
 import CoreGraphics
+import Foundation
 import XCTest
 
 @testable import Tenniarb
@@ -257,8 +258,182 @@ final class SceneExportTests: SceneDocumentTestCase {
         XCTAssertEqual(SceneExport.selectionFileName("Selection"), "Selection.png")
         XCTAssertEqual(SceneExport.selectionFileName("a/b:c"), "a_b_c.png")
         XCTAssertEqual(SceneExport.selectionFileName(" . "), "Untitled.png")
+        XCTAssertEqual(SceneExport.svgFileName("Inbox"), "Inbox.svg")
         XCTAssertEqual(SceneExport.clampScale(0), SceneExport.defaultScale)
         XCTAssertEqual(SceneExport.clampScale(-1), SceneExport.minScale)
         XCTAssertEqual(SceneExport.clampScale(9), SceneExport.maxScale)
     }
+
+    // MARK: - SVG
+
+    /// The width and height of the document root, the first attributes of the svg tag.
+    private func dimensions(_ svg: String) throws -> (width: Double, height: Double) {
+        func value(_ name: String) throws -> Double {
+            let range = try XCTUnwrap(svg.range(of: "\(name)=\""), "no \(name) in \(svg.prefix(160))")
+            let rest = svg[range.upperBound...]
+            let end = try XCTUnwrap(rest.firstIndex(of: "\""), "unterminated \(name)")
+            return try XCTUnwrap(Double(rest[..<end]), "\(name) is not a number")
+        }
+        return (try value("width"), try value("height"))
+    }
+
+    func testSceneSVGIsWellFormedAndDrawsTheScreen() throws {
+        let (_, canvas, _) = try libraryScreen()
+        let screen = try XCTUnwrap(canvas.screen)
+
+        let svg = SceneSVG.document(screen)
+        let parser = XMLParser(data: Data(svg.utf8))
+        XCTAssertTrue(parser.parse(), parser.parserError?.localizedDescription ?? "the SVG must parse")
+        let size = try dimensions(svg)
+        XCTAssertEqual(size.width, ceil(screen.w))
+        XCTAssertEqual(size.height, ceil(screen.h))
+        XCTAssertTrue(svg.contains("<rect") || svg.contains("<path"), "the screen has boxes")
+        XCTAssertTrue(svg.contains("<text"), "the screen has titles")
+        XCTAssertTrue(svg.contains("Invites"), "a title of the Inbox screen is in the document")
+    }
+
+    func testButtonIconIsDrawnAsAPath() throws {
+        let root = try workspace()
+        let url = try copy("web/fixtures/scene/button-styles.tenn", to: root)
+        let (_, canvas) = try scene(url)
+        let screen = try XCTUnwrap(canvas.screen)
+        XCTAssertEqual(screen.name, "Button")
+
+        let svg = SceneSVG.document(screen)
+        XCTAssertTrue(svg.contains("<path"), "the button and its icon are paths")
+        XCTAssertTrue(svg.contains("M8 3v10M3 8h10"), "the icon path of the fixture is written")
+        XCTAssertTrue(svg.contains("fill=\"rgb("), "the button is filled")
+        XCTAssertTrue(svg.contains("<text"), "the label of the button is drawn")
+    }
+
+    func testRelativeArcPathIsWrittenAsItIs() throws {
+        let root = try workspace()
+        let document = try document(
+            """
+            element "Arc" {
+                item frame {
+                    auto-layout column
+                    item curve {
+                        width 24
+                        height 24
+                        path "M2 2a8 8 0 1 0 16 0"
+                        border-color #000000
+                    }
+                }
+            }
+            """, in: root)
+        let tree = try XCTUnwrap(document.sceneTree)
+        let node = try XCTUnwrap(tree.main?.elems.first)
+        let screen = try XCTUnwrap(tree.buildElement(node, measurer: Scene.TextMeasurer(), eval: sceneEvalVars))
+
+        let svg = SceneSVG.document(screen)
+        XCTAssertTrue(svg.contains("a8 8 0 1 0"), "the relative arc is kept in the path")
+        let parser = XMLParser(data: Data(svg.utf8))
+        XCTAssertTrue(parser.parse(), parser.parserError?.localizedDescription ?? "the SVG must parse")
+    }
+
+    func testSVGEscapesTheTitle() throws {
+        let root = try workspace()
+        let document = try document(
+            """
+            element "Esc" {
+                item frame {
+                    auto-layout column
+                    item t { width 220; height 40; title "A <&\\" B"; font-size 16 }
+                }
+            }
+            """, in: root)
+        let tree = try XCTUnwrap(document.sceneTree)
+        let node = try XCTUnwrap(tree.main?.elems.first)
+        let screen = try XCTUnwrap(tree.buildElement(node, measurer: Scene.TextMeasurer(), eval: sceneEvalVars))
+
+        let svg = SceneSVG.document(screen)
+        XCTAssertTrue(svg.contains("A &lt;&amp;&quot; B"), "the title is escaped")
+        XCTAssertFalse(svg.contains("A <&\" B"), "the raw title is not in the document")
+        let parser = XMLParser(data: Data(svg.utf8))
+        XCTAssertTrue(parser.parse(), parser.parserError?.localizedDescription ?? "the SVG must parse")
+    }
+
+    func testExportSVGWritesTheElementFile() throws {
+        let (document, canvas, root) = try libraryScreen()
+        let exporter = SceneExport(document: document, canvas: canvas)
+        XCTAssertEqual(exporter.svgFileName, "Inbox.svg")
+
+        let name = try XCTUnwrap(exporter.svgFileName)
+        let url = root.appendingPathComponent(name)
+        try exporter.exportSVG(to: url)
+        let svg = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertTrue(svg.hasPrefix("<svg"), "the written file is an SVG document")
+        XCTAssertTrue(svg.contains("xmlns=\"http://www.w3.org/2000/svg\""))
+        XCTAssertGreaterThan(svg.utf8.count, 0)
+    }
+
+    func testExportSVGRefusesAClassicDocument() throws {
+        let root = try workspace()
+        let document = try document(classicTwoElements, in: root)
+        let exporter = SceneExport(document: document, canvas: nil)
+        XCTAssertNil(exporter.svgFileName)
+        XCTAssertThrowsError(try exporter.exportSVG(to: root.appendingPathComponent("classic.svg")))
+    }
+
+    /// The root size of the SVG go/cmd/tenn-render writes for the fixture: gfx and this writer lay out the
+    /// markup differently, so only the document size is comparable.
+    private func goDimensions(fixture: String, element: String) throws -> (width: Double, height: Double) {
+        let bin = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tenn-render-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: bin) }
+
+        let candidates = ["/opt/homebrew/bin/go", "/usr/local/go/bin/go", "/usr/local/bin/go", "/usr/bin/go"]
+        guard let go = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) else {
+            throw XCTSkip("the Go toolchain is not installed")
+        }
+        let build = Process()
+        build.executableURL = URL(fileURLWithPath: go)
+        build.arguments = ["build", "-o", bin.path, "./cmd/tenn-render"]
+        build.currentDirectoryURL = repo.appendingPathComponent("go")
+        do {
+            try build.run()
+        } catch {
+            throw XCTSkip("the Go toolchain is not available: \(error.localizedDescription)")
+        }
+        build.waitUntilExit()
+        guard build.terminationStatus == 0 else {
+            XCTFail("go build ./cmd/tenn-render failed with \(build.terminationStatus)")
+            throw XCTSkip("the renderer is not built")
+        }
+
+        let render = Process()
+        render.executableURL = bin
+        render.arguments = [
+            "-root", repo.appendingPathComponent("web/fixtures/scene").path, fixture, element,
+        ]
+        let pipe = Pipe()
+        render.standardOutput = pipe
+        render.standardError = Pipe()
+        do {
+            try render.run()
+        } catch {
+            throw XCTSkip("the renderer cannot start: \(error.localizedDescription)")
+        }
+        render.waitUntilExit()
+        guard render.terminationStatus == 0 else {
+            XCTFail("tenn-render \(fixture) \(element) failed with \(render.terminationStatus)")
+            throw XCTSkip("the fixture is not rendered")
+        }
+        let svg = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        return try dimensions(svg)
+    }
+
+    func testSVGDimensionsMatchTheGoRenderer() throws {
+        let (_, canvas, _) = try libraryScreen()
+        let screen = try XCTUnwrap(canvas.screen)
+        let ours = try dimensions(SceneSVG.document(screen))
+        let go = try goDimensions(fixture: "library-screen.tenn", element: "Inbox")
+
+        XCTAssertEqual(
+            ours.width, go.width, "width: Go writes \(go.width), Swift writes \(ours.width)")
+        XCTAssertEqual(
+            ours.height, go.height, "height: Go writes \(go.height), Swift writes \(ours.height)")
+    }
+
 }
