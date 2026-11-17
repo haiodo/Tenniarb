@@ -17,6 +17,7 @@
 //  limitations under the License.
 
 import Cocoa
+import UniformTypeIdentifiers
 import Tenn
 
 class ViewController: NSViewController, IElementModelListener, NSMenuItemValidation, NSSplitViewDelegate {
@@ -743,6 +744,48 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if isViewLoaded {
             editorViewController?.showScene(tree)
             reloadSceneItems()
+        }
+    }
+
+    /// Add Library…: a file of components becomes an element of the document that mounts it, and Insert
+    /// Component offers what it holds (go/app/outline_scene.go addLibrary).
+    @objc func addLibrary(_ sender: Any?) {
+        guard let window = view.window, let document, document.sceneTree != nil else { return }
+        let panel = NSOpenPanel()
+        panel.title = "Add Library"
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [UTType(filenameExtension: "tenn") ?? .data]
+        panel.directoryURL = document.fileURL?.deletingLastPathComponent()
+        panel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            MainActor.assumeIsolated {
+                guard let self, let document = self.document else { return }
+                do {
+                    try document.addLibrary(at: url)
+                    self.reloadSceneItems()
+                } catch {
+                    self.editorViewController?.sceneCanvas?.canvas.setMessage(error.localizedDescription)
+                }
+            }
+        }
+    }
+
+    /// Puts the rows of the scene outline back after an edit that added or removed a mount, with the
+    /// element the canvas shows selected again.
+    func reloadOutline() {
+        guard let model = elementStore?.model else { return }
+        worldTree.reloadData()
+        if PreferenceConstants.preference.autoExpand {
+            expandItems(model.elements, PreferenceConstants.preference.autoExpandLevel)
+        }
+        if let path = editorViewController?.sceneCanvas?.canvas.elementPath,
+            let el = document?.sceneElement(at: path)
+        {
+            let row = worldTree.row(forItem: el)
+            if row >= 0 {
+                worldTree.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+            }
         }
     }
 

@@ -283,4 +283,62 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.name, "Stage")
     }
 
+    // MARK: - Libraries
+
+    /// Add Library appends the element that mounts the file, one undo step, and the outline lists its row.
+    func testAddLibraryMountsTheFileAtTheEnd() throws {
+        let root = try workspace([
+            "screen.tenn": "element Screen { item Box { auto-layout row } }\n",
+            "lib.tenn": "item Chip { title c }\n",
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        try document.addLibrary(at: root.appendingPathComponent("lib.tenn"))
+
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen { item Box { auto-layout row } }\nelement \"lib\" --from-file \"lib.tenn\"\n")
+        XCTAssertNotNil(document.sceneTree?.file("lib.tenn"), "the mount is in the tree")
+        XCTAssertEqual(document.store?.model.elements.map(\.name), ["Screen", "lib"], "a row for the mount")
+        XCTAssertTrue(document.isDocumentEdited, "the edit is the document's")
+
+        // a second mount of the same file takes the next free name
+        try document.addLibrary(at: root.appendingPathComponent("lib.tenn"))
+        XCTAssertTrue(document.sceneText?.contains(#"element "lib 2" --from-file "lib.tenn""#) ?? false)
+        XCTAssertEqual(document.store?.model.elements.map(\.name), ["Screen", "lib", "lib 2"], "a row each")
+        document.undoManager?.undo()
+        XCTAssertFalse(document.sceneText?.contains("lib 2") ?? true, "undo takes the mount back")
+        XCTAssertFalse(document.store?.model.elements.contains { $0.name == "lib 2" } ?? true, "and its row")
+    }
+
+    /// The path is written from the folder of the document, with the document in a subfolder of the root.
+    func testAddLibraryUsesThePathFromTheDocumentFolder() throws {
+        let root = try workspace([
+            "tenniarb.tenn": "",
+            "sub/screen.tenn": "element Screen { item Box { auto-layout row } }\n",
+            "lib.tenn": "item Chip { title c }\n",
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("sub/screen.tenn"))
+        try document.addLibrary(at: root.appendingPathComponent("lib.tenn"))
+        XCTAssertTrue(
+            document.sceneText?.contains(#"--from-file "../lib.tenn""#) ?? false, document.sceneText ?? "")
+    }
+
+    func testAddLibraryRefusesAFileOutsideTheWorkspace() throws {
+        let root = try workspace([
+            "tenniarb.tenn": "",
+            "screen.tenn": "element Screen { item Box { auto-layout row } }\n",
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        let outside = FileManager.default.temporaryDirectory.appendingPathComponent("outside-\(UUID()).tenn")
+        try "item Chip { title c }\n".write(to: outside, atomically: true, encoding: .utf8)
+        addTeardownBlock { try? FileManager.default.removeItem(at: outside) }
+
+        XCTAssertThrowsError(try document.addLibrary(at: outside)) { error in
+            XCTAssertTrue(
+                error.localizedDescription.contains("is outside the workspace root"),
+                error.localizedDescription)
+        }
+        XCTAssertEqual(document.sceneText, "element Screen { item Box { auto-layout row } }\n")
+    }
+
 }

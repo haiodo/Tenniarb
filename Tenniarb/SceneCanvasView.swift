@@ -152,6 +152,12 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         }
     }
 
+    /// Shows a line of text over the canvas, as a refused edit does; nil clears it.
+    func setMessage(_ text: String?) {
+        message = text
+        needsDisplay = true
+    }
+
     /// The drawn item at an index path from the screen root's children; nil when the path is gone.
     func placed(at path: [Int]?) -> Scene.Placed? {
         guard let root = placed, let path else { return nil }

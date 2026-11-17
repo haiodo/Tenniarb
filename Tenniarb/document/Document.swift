@@ -39,11 +39,55 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// Where each row of the scene outline is: the index path of its element among the elements of the
     /// file the tree was loaded for.
     @MainActor private(set) var sceneElementPaths: [ObjectIdentifier: [Int]] = [:]
+    /// The rows of the outline by path, for the canvas to find the row of the element it shows.
+    @MainActor private var sceneElementsByPath: [[Int]: Element] = [:]
 
     /// The path of an outline row of a scene; nil for a classic document.
     @MainActor
     func sceneElementPath(of element: Element) -> [Int]? {
         sceneElementPaths[ObjectIdentifier(element)]
+    }
+
+    /// The row of the element at a path, as the canvas keeps it; nil when the path is gone.
+    @MainActor
+    func sceneElement(at path: [Int]) -> Element? {
+        sceneElementsByPath[path]
+    }
+
+    /// The rows of a scene: one element per row, nested as the file writes them, each with the index path
+    /// that tells the canvas which element to show.
+    @MainActor
+    private func sceneOutline(_ root: Scene.Node?) -> (rows: [Element], paths: [ObjectIdentifier: [Int]], byPath: [[Int]: Element]) {
+        var paths: [ObjectIdentifier: [Int]] = [:]
+        var byPath: [[Int]: Element] = [:]
+        func rows(_ nodes: [Scene.Node], _ path: [Int]) -> [Element] {
+            var out: [Element] = []
+            for (i, n) in nodes.enumerated() where n.kind == .element {
+                let row = Element(name: n.name)
+                paths[ObjectIdentifier(row)] = path + [i]
+                byPath[path + [i]] = row
+                // The content of --from-file is written in that file: the row is the mount, not its screen.
+                row.elements = n.mount == nil ? rows(n.elems, path + [i]) : []
+                out.append(row)
+            }
+            return out
+        }
+        let rows = rows(root?.elems ?? [], [])
+        return (rows, paths, byPath)
+    }
+
+    /// Keeps the outline rows in step with the tree after an edit: a property edit leaves the elements as
+    /// they are, so their rows and the selection stay; a mount added or undone makes new rows.
+    @MainActor
+    private func refreshOutlineRows() {
+        let (rows, paths, byPath) = sceneOutline(sceneTree?.main)
+        if Set(paths.values) == Set(sceneElementPaths.values) {
+            return
+        }
+        sceneElementPaths = paths
+        sceneElementsByPath = byPath
+        store?.model.elements = rows
+        vc?.reloadOutline()
     }
 
     override class var autosavesInPlace: Bool {
@@ -231,28 +275,75 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             sceneTree = nil
             Swift.print("Failed to load scene \(url.path): \(error)")
         }
-        // The outline lists the elements of the file as they nest; a row's path is what tells the canvas
-        // which element to show.
-        var paths: [ObjectIdentifier: [Int]] = [:]
-        func rows(_ nodes: [Scene.Node], _ path: [Int]) -> [Element] {
-            var out: [Element] = []
-            for (i, n) in nodes.enumerated() where n.kind == .element {
-                let row = Element(name: n.name)
-                paths[ObjectIdentifier(row)] = path + [i]
-                // The content of --from-file is written in that file: the row is the mount, not its screen.
-                row.elements = n.mount == nil ? rows(n.elems, path + [i]) : []
-                out.append(row)
-            }
-            return out
-        }
+        let (rows, paths, byPath) = sceneOutline(sceneTree?.main)
+        sceneElementPaths = paths
+        sceneElementsByPath = byPath
         let model = ElementModel()
         model.modelName = url.lastPathComponent
-        model.elements = rows(sceneTree?.main?.elems ?? [], [])
-        sceneElementPaths = paths
+        model.elements = rows
         updateStore(model)
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(sceneTree)
         self.fileURL = url
+    }
+
+    /// Mounts a library file as an element at the end of the document, as Go's Element > Add Library
+    /// does: the path is relative to the document, the name is the stem or the next free one, one undo step.
+    @MainActor
+    func addLibrary(at url: URL) throws {
+        guard let text = sceneText, let tree = sceneTree, let root = sceneRoot, let main = tree.main else {
+            throw SceneEditError(message: "the document is not a scene")
+        }
+        let target = url.resolvingSymlinksInPath().standardizedFileURL
+        let rootURL = root.resolvingSymlinksInPath().standardizedFileURL
+        guard isInside(target, rootURL) else {
+            throw SceneEditError(
+                message:
+                    "\(url.lastPathComponent) is outside the workspace root \(rootURL.path): move it into the folder of the document, then add it again"
+            )
+        }
+        let base = (fileURL?.deletingLastPathComponent() ?? rootURL).resolvingSymlinksInPath().standardizedFileURL
+        guard let rel = relativePath(from: base, to: target) else {
+            throw SceneEditError(message: "cannot mount \(url.lastPathComponent) from this document")
+        }
+        guard rel != "." else {
+            throw SceneEditError(message: "the document cannot mount itself as a library")
+        }
+        var name = target.deletingPathExtension().lastPathComponent
+        if name.isEmpty {
+            name = "library"
+        }
+        let taken = Set(tree.main?.elems.map(\.name) ?? [])
+        let first = name
+        var i = 2
+        while taken.contains(name) {
+            name = "\(first) \(i)"
+            i += 1
+        }
+        let cmd =
+            "element " + TennNode.newStrNode(name).toStr(0, false) + " --from-file "
+            + TennNode.newStrNode(rel).toStr(0, false)
+        let bytes = Array(text.utf8)
+        let prefix = bytes.last == 0x0A ? "" : "\n"
+        try applySceneEdit(
+            Scene.TextEdit(start: bytes.count, end: bytes.count, new: prefix + cmd + "\n"), in: main.pos.file)
+    }
+
+    /// Whether target is root or under it, both resolved.
+    private func isInside(_ target: URL, _ root: URL) -> Bool {
+        target.path == root.path || target.path.hasPrefix(root.path + "/")
+    }
+
+    /// The path of target from base as a slash path, the way filepath.Rel writes it; nil when the two are
+    /// on different volumes.
+    private func relativePath(from base: URL, to target: URL) -> String? {
+        let a = base.pathComponents
+        let b = target.pathComponents
+        var i = 0
+        while i < a.count, i < b.count, a[i] == b[i] { i += 1 }
+        var parts = Array(repeating: "..", count: a.count - i)
+        parts += b[i...]
+        return parts.isEmpty ? "." : parts.joined(separator: "/")
     }
 
     /// Applies one text edit of a scene document: the edited text is loaded again before it is kept, and
@@ -302,6 +393,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     private func keepScene(_ text: String, _ tree: Scene.Tree) {
         sceneText = text
         sceneTree = tree
+        refreshOutlineRows()
         vc?.setSceneTree(tree)
         syncSceneEdited()
     }
