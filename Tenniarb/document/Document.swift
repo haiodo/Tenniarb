@@ -36,6 +36,16 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// The workspace root the scene mounts resolve in, kept so an edit loads the same tree.
     @MainActor private var sceneRoot: URL?
 
+    /// Where each row of the scene outline is: the index path of its element among the elements of the
+    /// file the tree was loaded for.
+    @MainActor private(set) var sceneElementPaths: [ObjectIdentifier: [Int]] = [:]
+
+    /// The path of an outline row of a scene; nil for a classic document.
+    @MainActor
+    func sceneElementPath(of element: Element) -> [Int]? {
+        sceneElementPaths[ObjectIdentifier(element)]
+    }
+
     override class var autosavesInPlace: Bool {
         return true
     }
@@ -221,8 +231,24 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             sceneTree = nil
             Swift.print("Failed to load scene \(url.path): \(error)")
         }
+        // The outline lists the elements of the file as they nest; a row's path is what tells the canvas
+        // which element to show.
+        var paths: [ObjectIdentifier: [Int]] = [:]
+        func rows(_ nodes: [Scene.Node], _ path: [Int]) -> [Element] {
+            var out: [Element] = []
+            for (i, n) in nodes.enumerated() where n.kind == .element {
+                let row = Element(name: n.name)
+                paths[ObjectIdentifier(row)] = path + [i]
+                // The content of --from-file is written in that file: the row is the mount, not its screen.
+                row.elements = n.mount == nil ? rows(n.elems, path + [i]) : []
+                out.append(row)
+            }
+            return out
+        }
         let model = ElementModel()
         model.modelName = url.lastPathComponent
+        model.elements = rows(sceneTree?.main?.elems ?? [], [])
+        sceneElementPaths = paths
         updateStore(model)
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(sceneTree)

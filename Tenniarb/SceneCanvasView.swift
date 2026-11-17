@@ -48,6 +48,8 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     /// The node whose content the screen draws: the element, or the file root when it has no element.
     private var element: Scene.Node?
+    /// The element the canvas shows among the elements of the file; nil shows the first one.
+    private(set) var elementPath: [Int]?
     /// The drawn items a click can select: written in the element, or a part of a component under a use.
     private var selectable = Set<ObjectIdentifier>()
     /// Where the parts among them are edited; a written item is not here.
@@ -75,12 +77,13 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             selection = nil
             self.tree = nil
             element = nil
+            elementPath = nil
             forgetSelection()
             needsDisplay = true
             return
         }
         self.tree = tree
-        let el = tree.main?.elems.first { $0.kind == .element }
+        let el = shownElement(tree) ?? tree.main?.elems.first { $0.kind == .element }
         let built: Scene.Screen?
         if let el {
             built = tree.buildElement(el, measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
@@ -100,6 +103,25 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             selection = nil
         }
         needsDisplay = true
+    }
+
+    /// Shows another element of the same tree, as a click in the outline does.
+    func showElement(_ path: [Int]?) {
+        elementPath = path
+        show(tree)
+    }
+
+    /// The element at the path the outline chose; nil when it is gone, and the first element is shown.
+    private func shownElement(_ tree: Scene.Tree) -> Scene.Node? {
+        guard let path = elementPath, !path.isEmpty else { return nil }
+        var nodes = tree.main?.elems ?? []
+        var node: Scene.Node?
+        for i in path {
+            guard nodes.indices.contains(i) else { return nil }
+            node = nodes[i]
+            nodes = nodes[i].elems
+        }
+        return node?.kind == .element ? node : nil
     }
 
     /// The zoom that shows all of a cw by ch content in a vw by vh view, but never above 1, as FitCamera.

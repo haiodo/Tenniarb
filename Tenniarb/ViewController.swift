@@ -706,6 +706,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
             if let el = element {
                 self.scene.setActiveElement(el)
+                if sceneTree != nil, let path = document?.sceneElementPath(of: el) {
+                    editorViewController?.showSceneElement(path)
+                }
 
                 self.updateTextProperties()
             }

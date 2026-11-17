@@ -71,6 +71,11 @@ class EditorViewController: NSObject {
         return stackView
     }
 
+    /// Shows another element of the scene on the canvas, as a click in the outline does.
+    func showSceneElement(_ path: [Int]?) {
+        sceneCanvas?.canvas.showElement(path)
+    }
+
     /// Shows the scene canvas of a scene document, or the classic canvas for anything else.
     func showScene(_ tree: Scene.Tree?) {
         sceneCanvas?.isHidden = tree == nil

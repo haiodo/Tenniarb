@@ -114,7 +114,9 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertEqual(tree.main?.pos.file, "auto-layout-tour.tenn")
         XCTAssertEqual(tree.entry, "")
         XCTAssertEqual(tree.fatalCount, 0, "\(tree.diagnostics)")
-        XCTAssertEqual(try XCTUnwrap(document.store).model.elements.count, 0, "a scene is not a classic model")
+        XCTAssertEqual(
+            try XCTUnwrap(document.store).model.elements.map(\.name), ["Settings"],
+            "the outline lists the elements of the file, not the classic model")
         XCTAssertFalse(document.isDocumentEdited)
     }
 
@@ -127,7 +129,10 @@ final class SceneDocumentTests: SceneDocumentTestCase {
 
         let tree = try XCTUnwrap(document.sceneTree)
         XCTAssertNotNil(tree.file("design-kit.tenn"))
-        XCTAssertEqual(try XCTUnwrap(document.store).model.elements.count, 0)
+        let rows = try XCTUnwrap(document.store).model.elements
+        XCTAssertEqual(rows.map(\.name), ["kit", "Inbox"], "a mount is one row, its file is not parsed")
+        XCTAssertTrue(rows[0].elements.isEmpty)
+        XCTAssertTrue(rows[0].items.isEmpty, "the components of the mounted file stay out of the model")
     }
 
     func testSceneEntryPropertyIsLoadedInItsContext() throws {
@@ -154,7 +159,9 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         document.makeWindowControllers()
 
         XCTAssertNotNil(document.vc)
-        XCTAssertEqual(document.vc?.elementStore?.model.elements.count, 0, "nothing classic to draw")
+        let model = try XCTUnwrap(document.vc?.elementStore?.model)
+        XCTAssertEqual(model.elements.map(\.name), ["Settings"], "the outline lists the screen")
+        XCTAssertTrue(model.elements.allSatisfy { $0.items.isEmpty }, "no classic item is parsed")
     }
 
     // MARK: - Saving
@@ -193,4 +200,67 @@ final class SceneDocumentTests: SceneDocumentTestCase {
 
         XCTAssertEqual(try Data(contentsOf: url), before)
     }
+
+    /// A scene document lists its elements in the outline, nested as the file writes them: the canvas has
+    /// no other way to reach an element than the first one.
+    func testTheOutlineListsTheElementsOfAScene() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/library-screen.tenn", to: root))
+        let rows = try XCTUnwrap(document.store?.model.elements)
+
+        XCTAssertEqual(rows.map(\.name), ["kit", "Inbox"], "the file writes a mount, then the screen")
+        XCTAssertEqual(document.sceneElementPath(of: rows[0]), [0])
+        XCTAssertEqual(document.sceneElementPath(of: rows[1]), [1])
+        XCTAssertTrue(rows[0].elements.isEmpty, "a mount element holds no element of its own")
+    }
+
+    func testNestedElementsNestInTheOutline() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element Screen {
+                use kit.Chip as chip
+            }
+
+            element kit {
+                element Group { item Box { item Dot } }
+            }
+
+            element Other { item Row { auto-layout row } }
+
+            item Chip { title c }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let rows = try XCTUnwrap(document.store?.model.elements)
+
+        XCTAssertEqual(rows.map(\.name), ["Screen", "kit", "Other"], "a root item is no outline row")
+        XCTAssertEqual(rows[1].elements.map(\.name), ["Group"])
+        XCTAssertEqual(document.sceneElementPath(of: rows[1].elements[0]), [1, 0])
+        XCTAssertEqual(document.sceneElementPath(of: rows[2]), [2])
+    }
+
+    /// A click in the outline puts the element of that row on the canvas: the document opens on its first
+    /// element, and the mount of library-screen.tenn comes first.
+    func testSelectingAnOutlineRowShowsThatElement() throws {
+        let root = try workspace()
+        _ = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let document = try openTestDocument(copy("web/fixtures/scene/library-screen.tenn", to: root))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+
+        XCTAssertEqual(canvas.screen?.name, "kit", "the first element of the file is shown")
+
+        let inbox = try XCTUnwrap((document.store?.model.elements ?? []).last)
+        let row = vc.worldTree.row(forItem: inbox)
+        XCTAssertGreaterThanOrEqual(row, 0, "the outline has a row for the screen")
+        vc.worldTree.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+
+        XCTAssertEqual(canvas.screen?.name, "Inbox")
+        XCTAssertEqual(canvas.screen?.w, 640, "the screen of the document is drawn")
+        XCTAssertNotNil(canvas.placed)
+    }
+
 }
