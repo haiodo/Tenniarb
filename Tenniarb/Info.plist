@@ -34,6 +34,28 @@
 			<key>NSDocumentClass</key>
 			<string>Tenniarb.Document</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>canvas</string>
+			</array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/json</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>JSON Canvas file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>Tenniarb.Document</string>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>

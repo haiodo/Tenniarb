@@ -33,6 +33,9 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// The text the last read or save put on disk, so an undo back to it clears the edited mark.
     @MainActor private var savedSceneText: String?
 
+    /// What the last conversion from or to JSON Canvas left out; the window shows it.
+    @MainActor private(set) var sceneCanvasNotes: [String] = []
+
     /// The workspace root the scene mounts resolve in, kept so an edit loads the same tree.
     @MainActor private var sceneRoot: URL?
 
@@ -202,7 +205,16 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     override func read(from url: URL, ofType typeName: String) throws {
 
         do {
-            let storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            var storedValue: String
+            var notes: [String] = []
+            if JSONCanvas.isCanvas(url.path) {
+                let converted = try JSONCanvas.canvasText(path: url.path, data: try Data(contentsOf: url))
+                storedValue = converted.text
+                notes = converted.notes
+            } else {
+                storedValue = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            }
+            setCanvasNotes(notes)
 
             let now = Date()
 
@@ -269,8 +281,11 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         sceneText = text
         savedSceneText = text
         let loader = SceneLoader(root: root)
+        let source = url.resolvingSymlinksInPath().standardizedFileURL
+        let rel = relativePath(from: root.resolvingSymlinksInPath().standardizedFileURL, to: source) ?? url.lastPathComponent
+        loader.overlay[rel] = text
         do {
-            sceneTree = try loader.loadAuto(url.path)
+            sceneTree = try loader.loadAuto(rel)
         } catch {
             sceneTree = nil
             Swift.print("Failed to load scene \(url.path): \(error)")
@@ -530,6 +545,13 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         vc?.updateWindowTitle()
     }
 
+    /// Keeps the notes of a JSON Canvas conversion for the window; read and write may run off the
+    /// main queue.
+    private func setCanvasNotes(_ notes: [String]) {
+        let work = { MainActor.assumeIsolated { self.sceneCanvasNotes = notes } }
+        if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+    }
+
     override var isDocumentEdited: Bool {
         get {
             return store?.modified ?? true
@@ -569,6 +591,25 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
             _ = name
         }
+        if JSONCanvas.isCanvas(url.path) {
+            let convert: () throws -> (data: Data, notes: [String], text: String?) = {
+                let work = { try MainActor.assumeIsolated { try self.canvasData(to: url) } }
+                if Thread.isMainThread { return try work() }
+                return try DispatchQueue.main.sync(execute: work)
+            }
+            let converted = try convert()
+            try converted.data.write(to: url, options: .atomic)
+            if let text = converted.text {
+                markSaved(text)
+            } else if let es = readStore() {
+                es.modified = false
+                es.model.modelName = url.lastPathComponent
+            }
+            setCanvasNotes(converted.notes)
+            finish(url.lastPathComponent)
+            self.fileURL = url
+            return
+        }
         do {
             if let text = sceneTextNow() {
                 // shortcut: a save under another name keeps the tree of the old path; an edit after it
@@ -591,6 +632,41 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         } catch {
             Swift.print("Some error happen")
         }
+    }
+
+    /// The document as JSON Canvas: the current scene text, or the classic model written as .tenn, loaded
+    /// again through the workspace root so mounts resolve.
+    @MainActor
+    private func canvasData(to url: URL) throws -> (data: Data, notes: [String], text: String?) {
+        let text: String
+        let savedText: String?
+        if let sceneText {
+            text = sceneText
+            savedText = sceneText
+        } else if let modelText = store?.model.toTennStr() {
+            text = modelText
+            savedText = nil
+        } else {
+            throw SceneEditError(message: "the document has no text to write as JSON Canvas")
+        }
+        let source = (fileURL ?? url).resolvingSymlinksInPath().standardizedFileURL
+        let storedRoot = sceneRoot?.resolvingSymlinksInPath().standardizedFileURL
+        let root =
+            storedRoot.flatMap { isInside(source, $0) ? $0 : nil } ?? workspaceRoot(source).resolvingSymlinksInPath().standardizedFileURL
+        guard let rel = relativePath(from: root, to: source), rel != "..", !rel.hasPrefix("../") else {
+            throw SceneEditError(message: "\(source.path) is outside the workspace root \(root.path)")
+        }
+        let loader = SceneLoader(root: root)
+        loader.overlay[rel] = text
+        let tree = try loader.loadAuto(rel)
+        let converted = try JSONCanvas.fromTree(tree)
+        if let main = tree.main, !main.elems.isEmpty, converted.canvas.nodes.isEmpty {
+            let why =
+                converted.notes.isEmpty
+                ? "no element of the document could be written as JSON Canvas" : converted.notes.joined(separator: "\n")
+            throw SceneEditError(message: why)
+        }
+        return (try JSONCanvas.marshal(converted.canvas), converted.notes, savedText)
     }
 }
 
