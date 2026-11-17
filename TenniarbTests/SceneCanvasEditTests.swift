@@ -558,6 +558,146 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertFalse(document.isDocumentEdited)
     }
 
+    // MARK: - Drag and links
+
+    /// Two free siblings and a link, B far enough that the edge anchors barely turn as A moves.
+    private let linkedDoc = """
+        element Screen {
+            item Stage {
+                auto-layout abs
+                width 1200
+                height 300
+                item A { title a; pos 0 0; width 80; height 40 }
+                item B { title b; pos 1000 0; width 80; height 40 }
+                link "A" "B"
+            }
+        }
+        """
+
+    /// The points of the one link of the screen, in the coordinates of the item that owns it.
+    private func linkPoints(_ canvas: SceneCanvasView) throws -> [Scene.Point] {
+        let links = try XCTUnwrap(canvas.screen?.links())
+        XCTAssertEqual(links.count, 1, "the fixture writes one link")
+        return try XCTUnwrap(links.first).path.map { step in
+            switch step {
+            case let .move(x, y), let .line(x, y): return Scene.Point(x: x, y: y)
+            case let .quad(_, _, x, y): return Scene.Point(x: x, y: y)
+            }
+        }
+    }
+
+    /// The first point is the end near A; it follows the box while the drag is in flight, before the edit.
+    /// The anchor slides a little along the edge as the line turns, so the delta is not exact.
+    func testALinkFollowsTheDraggedItemBeforeTheMouseIsReleased() throws {
+        let document = try document(linkedDoc)
+        let canvas = try canvas(document)
+        let a = try XCTUnwrap(path(in: canvas) { $0.src?.key == "A" })
+        let box = try XCTUnwrap(canvas.placed(at: a))
+        let p = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+        let before = try linkPoints(canvas)
+        canvas.select(a)
+
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.moveDrag(Scene.Point(x: p.x + 30, y: p.y + 10))
+
+        let after = try linkPoints(canvas)
+        let from = try XCTUnwrap(before.first)
+        let moved = try XCTUnwrap(after.first)
+        XCTAssertEqual(moved.x - from.x, 30, accuracy: 1, "the end near A moves with it")
+        XCTAssertEqual(moved.y - from.y, 10, accuracy: 1, "the screen y down, as the pointer")
+        XCTAssertEqual(try XCTUnwrap(after.last).x, try XCTUnwrap(before.last).x, accuracy: 1, "B stays")
+        canvas.endDrag()
+    }
+
+    /// A press that never moves the pointer shifts neither the frame nor the line drawn from it.
+    func testAClickOnALinkedItemLeavesTheLinkAlone() throws {
+        let document = try document(linkedDoc)
+        let canvas = try canvas(document)
+        let a = try XCTUnwrap(path(in: canvas) { $0.src?.key == "A" })
+        let box = try XCTUnwrap(canvas.placed(at: a))
+        let p = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+        let before = try linkPoints(canvas)
+        let frame = try XCTUnwrap(canvas.screen?.p.frames[ObjectIdentifier(box.r)])
+        let x = frame.rx
+        let y = frame.ry
+        canvas.select(a)
+
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.moveDrag(p)
+        canvas.endDrag()
+
+        XCTAssertEqual(frame.rx, x)
+        XCTAssertEqual(frame.ry, y)
+        let after = try linkPoints(canvas)
+        XCTAssertEqual(try XCTUnwrap(after.first).x, try XCTUnwrap(before.first).x, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(after.first).y, try XCTUnwrap(before.first).y, accuracy: 1e-9)
+    }
+
+    /// The release writes pos and the rebuilt screen draws the link where the drag drew it.
+    func testARebuiltScreenLinksTheItemAtItsWrittenPos() throws {
+        let document = try document(linkedDoc)
+        let canvas = try canvas(document)
+        let a = try XCTUnwrap(path(in: canvas) { $0.src?.key == "A" })
+        let box = try XCTUnwrap(canvas.placed(at: a))
+        let p = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+        canvas.select(a)
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.moveDrag(Scene.Point(x: p.x + 30, y: p.y + 10))
+        let during = try linkPoints(canvas)
+        canvas.endDrag()
+
+        XCTAssertTrue(document.sceneText?.contains("pos 30 -10") ?? false, document.sceneText ?? "")
+        let moved = try XCTUnwrap(canvas.placed(at: a))
+        XCTAssertEqual(moved.x, 30)
+        XCTAssertEqual(moved.y, 10, "pos y up, the screen y down")
+        let after = try linkPoints(canvas)
+        XCTAssertEqual(try XCTUnwrap(after.first).x, try XCTUnwrap(during.first).x, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(after.first).y, try XCTUnwrap(during.first).y, accuracy: 1e-9)
+    }
+
+    /// A document refuses an item of a mounted file: the rebuilt screen undoes the drag, links with it.
+    func testARefusedDragLeavesTheLinkWhereItWas() throws {
+        let root = try workspace()
+        let library = root.appendingPathComponent("linked-kit.tenn")
+        let libraryText = """
+            item Card {
+                item A { title a; pos 0 0; width 80; height 40 }
+                item B { title b; pos 400 0; width 80; height 40 }
+                link "A" "B"
+            }
+            """
+        try libraryText.write(to: library, atomically: true, encoding: .utf8)
+        let document = try document(
+            """
+            element lib --from-file "linked-kit.tenn"
+
+            element Screen {
+                use lib.Card as card
+            }
+            """, in: root)
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let a = try XCTUnwrap(path(in: canvas) { $0.src?.key == "A" }, "a drawn node of the mounted file")
+        let box = try XCTUnwrap(canvas.placed(at: a))
+        let p = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+        let link = try linkPoints(canvas)
+        canvas.select(a)
+
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.moveDrag(Scene.Point(x: p.x + 30, y: p.y + 10))
+        XCTAssertEqual(
+            try XCTUnwrap(linkPoints(canvas).first).x - (try XCTUnwrap(link.first).x), 30, accuracy: 1,
+            "the link follows the drag before the edit is refused")
+        canvas.endDrag()
+
+        XCTAssertEqual(canvas.message, "linked-kit.tenn is a mounted file: open it to edit it")
+        XCTAssertEqual(document.sceneText, before)
+        XCTAssertEqual(try String(contentsOf: library, encoding: .utf8), libraryText)
+        let after = try linkPoints(canvas)
+        XCTAssertEqual(try XCTUnwrap(after.first).x, try XCTUnwrap(link.first).x, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(after.first).y, try XCTUnwrap(link.first).y, accuracy: 1e-9)
+    }
+
     // MARK: - Window
 
     /// The double click, on the canvas of a real window, reaches the document the canvas was given.

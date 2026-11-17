@@ -768,13 +768,17 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     }
 
     /// Moves the picked item with the pointer: the drawn tree follows, the document is written on release.
+    /// Links take the box of an end from its frame, so that moves too; the kids keep frames relative to it.
     func moveDrag(_ p: Scene.Point) {
         guard var d = drag else { return }
         let dx = p.x - d.from.x
         let dy = p.y - d.from.y
         d.moved = d.moved || abs(dx) + abs(dy) >= 1  // a click of a point or two is no move
         guard d.moved else { return }
-        shift(d.pl, dx - d.dx, dy - d.dy)
+        let stepX = dx - d.dx
+        let stepY = dy - d.dy
+        shift(d.pl, stepX, stepY)
+        screen?.p.frames[ObjectIdentifier(d.pl.r)]?.shift(stepX, stepY)
         d.dx = dx
         d.dy = dy
         drag = d

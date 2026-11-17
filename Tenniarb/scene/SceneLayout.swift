@@ -106,6 +106,12 @@ extension Scene {
             ry = 0
         }
 
+        /// Moves the box without laying it out again: the links of a drag read these frames.
+        func shift(_ dx: Double, _ dy: Double) {
+            rx += dx
+            ry += dy
+        }
+
         private func clampW(_ value: Double) -> Double { clamp(value, minWidth, maxWidth) }
 
         private func clampH(_ value: Double) -> Double { clamp(value, minHeight, maxHeight) }
