@@ -748,6 +748,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if selectedElement != element {
             self.selectedElement = element
             self.activeItems = []
+            self.inspectorController?.showClassic(items: [], element: element)
 
             if let el = element {
                 self.scene.setActiveElement(el)
@@ -762,6 +763,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     func updateTextProperties() {
+        if document?.sceneTree == nil {
+            inspectorController?.refresh()
+        }
         if let element = self.selectedElement, let delegate = self.textViewDelegate {
             DispatchQueue.main.async(execute: {
                 delegate.setTextValue(element, self.activeItems.first)
@@ -1024,10 +1028,12 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         scene.onSelection.removeAll()
         scene.onSelection.append({ (element) -> Void in
             self.activeItems = element
+            self.inspectorController?.showClassic(items: element, element: self.selectedElement)
             self.updateTextProperties()
         })
 
         scene.setActiveElement(elementStore.model)
+        inspectorController?.showClassic(items: scene.activeItems, element: self.selectedElement)
 
         worldTree.reloadData()
         // Expand all top level elements
@@ -1049,6 +1055,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     func notifyChanges(_ evt: ModelEvent) {
+        if document?.sceneTree == nil {
+            inspectorController?.refresh()
+        }
         if self.updatingProperties {
             self.updateWindowTitle()
             return

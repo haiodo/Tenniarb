@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+import Tenn
 import XCTest
 
 @testable import Tenniarb
@@ -871,5 +872,277 @@ final class InspectorTests: SceneDocumentTestCase {
         canvas.show(document.sceneTree)
         inspector.refresh()
         XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("width 120.6"), "undo restores the number")
+    }
+
+    // MARK: - Classic documents
+
+    /// The classic inspector of a document: no scene canvas, the item or link the canvas would select, and
+    /// the element the outline names.
+    private func classicInspector(
+        _ document: Document, items: [DiagramItem] = [], element: Element? = nil
+    ) -> InspectorController {
+        let controller = InspectorController()
+        controller.attach(canvas: nil, document: document)
+        controller.showClassic(items: items, element: element ?? items.first?.parent)
+        return controller
+    }
+
+    private func classicItem(_ name: String, _ document: Document) throws -> DiagramItem {
+        let element = try XCTUnwrap(document.store?.model.elements.first)
+        return try XCTUnwrap(element.items.first { $0.name == name })
+    }
+
+    private func modelText(_ document: Document) -> String {
+        document.store?.model.toTennStr() ?? ""
+    }
+
+    func testAClassicItemShowsItsOwnCommandsWithoutAScene() throws {
+        let document = try document(
+            """
+            element Screen {
+                item Box {
+                    pos 10 -20
+                    width 120
+                    height 40
+                    color #ffffff
+                    text-color #000000
+                    font-size 12
+                    border-color #cccccc
+                    line-width 1
+                    line-style dashed
+                    corner-radius 4
+                    display circle
+                    title "Titled"
+                }
+            }
+            """)
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+        inspector.createView().layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(inspector.title, "Item")
+        XCTAssertEqual(inspector.row("Header.Name")?.kind, .text)
+        XCTAssertEqual(inspector.row("Header.Name")?.text, "Box")
+        XCTAssertEqual(inspector.row("Header.Kind")?.kind, .info)
+        XCTAssertEqual(inspector.row("Header.Kind")?.text, "Item")
+        XCTAssertEqual(inspector.row("Header.Title")?.text, "Titled")
+        XCTAssertEqual(inspector.row("Position X")?.text, "10")
+        XCTAssertEqual(inspector.row("Position Y")?.text, "-20")
+        XCTAssertEqual(inspector.row("Size W")?.text, "120")
+        XCTAssertEqual(inspector.row("Size H")?.text, "40")
+        XCTAssertEqual(inspector.row("Fill.Color")?.text, "#ffffff")
+        XCTAssertEqual(inspector.row("Text.Color")?.text, "#000000")
+        XCTAssertEqual(inspector.row("Text.Size")?.text, "12")
+        XCTAssertEqual(inspector.row("Border.Color")?.text, "#cccccc")
+        XCTAssertEqual(inspector.row("Border.Style")?.text, "dashed")
+        XCTAssertEqual(inspector.row("Border.Style")?.choices, ["none", "solid", "dashed", "dotted"])
+        XCTAssertEqual(inspector.row("Shape.Display")?.text, "circle")
+        XCTAssertEqual(inspector.row("Shape.Display")?.choices, ["rect", "no-fill", "circle", "stack", "text"])
+
+        let sections = Set(inspector.rows.map(\.section))
+        XCTAssertTrue(
+            sections.isSuperset(of: ["Header", "Layout", "Fill", "Text", "Border", "Shape"]), "\(sections)")
+    }
+
+    func testAClassicLinkShowsTheLineRows() throws {
+        let document = try document(
+            """
+            element Screen {
+                item A { pos 0 0; width 10; height 10 }
+                item B { pos 100 0; width 10; height 10 }
+                link A B { label "goes"; color #ff0000; line-width 2; line-style dotted; display arrow }
+            }
+            """)
+        let element = try XCTUnwrap(document.store?.model.elements.first)
+        let link = try XCTUnwrap(element.items.first { $0 is LinkItem })
+        let inspector = classicInspector(document, items: [link])
+
+        XCTAssertEqual(inspector.title, "Link")
+        XCTAssertEqual(inspector.row("Header.Label")?.text, "goes")
+        XCTAssertEqual(inspector.row("Header.Kind")?.text, "Link")
+        XCTAssertEqual(inspector.row("Line.Color")?.text, "#ff0000")
+        XCTAssertEqual(inspector.row("Line.Width")?.text, "2")
+        XCTAssertEqual(inspector.row("Line.Style")?.text, "dotted")
+        XCTAssertEqual(inspector.row("Line.Arrows")?.text, "arrow")
+        XCTAssertEqual(inspector.row("Line.Arrows")?.choices, ["solid", "arrow", "arrows", "arrow-source"])
+
+        let sections = Set(inspector.rows.map(\.section))
+        XCTAssertTrue(sections.contains("Line"), "\(sections)")
+        XCTAssertFalse(sections.contains("Layout"), "a link has no box: \(sections)")
+        XCTAssertFalse(sections.contains("Border"), "a link has no box border: \(sections)")
+    }
+
+    func testAClassicDocumentWithoutSelectionShowsTheElement() throws {
+        let document = try document(
+            """
+            element Screen {
+                grid 10 20
+                item Box { width 100; height 40 }
+            }
+            """)
+        let element = try XCTUnwrap(document.store?.model.elements.first)
+        let inspector = InspectorController()
+        inspector.attach(canvas: nil, document: document)
+
+        XCTAssertEqual(inspector.title, "Element", "the column knows the classic document without a canvas")
+        XCTAssertEqual(inspector.row("Header.Name")?.text, "Screen", element.name)
+        XCTAssertEqual(inspector.row("Grid X")?.text, "10")
+        XCTAssertEqual(inspector.row("Grid Y")?.text, "20")
+        XCTAssertNil(inspector.row("Size W"), "no item, no box")
+    }
+
+    /// The title is the item's own command; undo puts the old command back.
+    func testAClassicTitleWritesTheCommandAndUndoRestoresIt() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40; title \"Old\" } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        inspector.setText("Shown", for: "Header.Title")
+        XCTAssertTrue(modelText(document).contains(#"title "Shown""#), modelText(document))
+        XCTAssertEqual(inspector.row("Header.Title")?.text, "Shown")
+
+        document.undoManager?.undo()
+        inspector.refresh()
+        XCTAssertTrue(modelText(document).contains(#"title "Old""#), modelText(document))
+        XCTAssertEqual(inspector.row("Header.Title")?.text, "Old")
+    }
+
+    /// Position is not a command of the item: it lives in x and y, and the edit goes through
+    /// updatePosition so the canvas and the file follow.
+    func testAClassicPositionWritesThroughUpdatePosition() throws {
+        let document = try document(
+            "element Screen { item Box { pos 10 -20; width 100; height 40 } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        inspector.setText("30", for: "Position X")
+        XCTAssertEqual(item.x, 30)
+        XCTAssertTrue(modelText(document).contains("pos 30.0 -20.0"), modelText(document))
+        XCTAssertEqual(inspector.row("Position X")?.text, "30")
+
+        document.undoManager?.undo()
+        inspector.refresh()
+        XCTAssertEqual(item.x, 10, "undo puts the item back")
+        XCTAssertEqual(inspector.row("Position X")?.text, "10")
+    }
+
+    func testAClassicWidthWritesAndClearingRemovesIt() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40 } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        inspector.setText("123", for: "Size W")
+        XCTAssertTrue(modelText(document).contains("width 123"), modelText(document))
+        XCTAssertEqual(inspector.row("Size W")?.text, "123")
+
+        inspector.setText("", for: "Size W")
+        XCTAssertFalse(modelText(document).contains("width"), "an empty field removes the command")
+        XCTAssertEqual(inspector.row("Size W")?.text, "")
+    }
+
+    func testAClassicNameWritesThroughUpdateNameAndUndoRestoresIt() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40 } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        inspector.setText("Renamed", for: "Header.Name")
+        XCTAssertEqual(item.name, "Renamed")
+        XCTAssertTrue(modelText(document).contains(#"item "Renamed""#), modelText(document))
+        XCTAssertEqual(inspector.row("Header.Name")?.text, "Renamed")
+
+        document.undoManager?.undo()
+        inspector.refresh()
+        XCTAssertEqual(item.name, "Box")
+        XCTAssertTrue(modelText(document).contains(#"item "Box""#), modelText(document))
+    }
+
+    func testAClassicLineStylePopupWritesAndNoneRemovesIt() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40 } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        XCTAssertEqual(inspector.row("Border.Style")?.text, "none", "the item writes no style")
+
+        inspector.setChoice("dashed", for: "Border.Style")
+        XCTAssertTrue(modelText(document).contains("line-style dashed"), modelText(document))
+        XCTAssertEqual(inspector.row("Border.Style")?.text, "dashed")
+
+        inspector.setChoice("none", for: "Border.Style")
+        XCTAssertFalse(modelText(document).contains("line-style"), "none removes the command")
+        XCTAssertEqual(inspector.row("Border.Style")?.text, "none")
+    }
+
+    /// Align and Vertical pick one word of `layout` each and keep the other axis.
+    func testAClassicLayoutChoicesKeepTheOtherAxis() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40 } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        XCTAssertEqual(inspector.row("Text.Align")?.choices, ["none", "left", "center", "right"])
+        XCTAssertEqual(inspector.row("Text.Vertical")?.choices, ["none", "top", "middle", "bottom", "fill"])
+
+        inspector.setChoice("center", for: "Text.Align")
+        XCTAssertTrue(modelText(document).contains("layout center"), modelText(document))
+        XCTAssertEqual(inspector.row("Text.Align")?.text, "center")
+
+        inspector.setChoice("middle", for: "Text.Vertical")
+        XCTAssertTrue(modelText(document).contains("layout middle center"), modelText(document))
+        XCTAssertEqual(inspector.row("Text.Vertical")?.text, "middle")
+        XCTAssertEqual(inspector.row("Text.Align")?.text, "center", "the axis that was not chosen stays")
+
+        inspector.setChoice("none", for: "Text.Align")
+        XCTAssertTrue(modelText(document).contains("layout middle"), modelText(document))
+        XCTAssertFalse(modelText(document).contains("layout center"), modelText(document))
+        XCTAssertEqual(inspector.row("Text.Align")?.text, "none")
+    }
+
+    /// A scene document keeps the scene column: its Name is a read-only row and it has the scene's Layout.
+    func testASceneDocumentDoesNotShowTheClassicRows() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/scene-text.tenn", to: root))
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "LeafTitle" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertEqual(inspector.title, "Item")
+        XCTAssertEqual(inspector.row("Header.Name")?.kind, .info, "the scene name is read-only")
+        XCTAssertNil(inspector.row("Header.Kind"), "no classic Kind row")
+        let labels = Set(inspector.rows.map(\.label))
+        XCTAssertTrue(labels.contains("Auto layout"), "the scene Layout rows stay: \(labels)")
+        XCTAssertFalse(labels.contains("Grid X"), "no classic element header")
+
+        canvas.select(nil)
+        inspector.refresh()
+        XCTAssertEqual(inspector.title, "Screen")
+    }
+
+    /// A model change refreshes the values; a newly added item can be selected without stale rows.
+    func testTheClassicInspectorFollowsAModelChange() throws {
+        let document = try document(
+            "element Screen { item Box { width 100; height 40; title \"Old\" } }")
+        let element = try XCTUnwrap(document.store?.model.elements.first)
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        let props = item.toTennAsProps(.BlockExpr)
+        props.removeNamed("title")
+        props.add(TennNode.newCommand("title", TennNode.newStrNode("Changed")))
+        document.store?.setProperties(
+            element, item, props, undoManager: document.undoManager, refresh: {})
+        inspector.refresh()
+        XCTAssertEqual(inspector.row("Header.Title")?.text, "Changed", "the row reads the new tree")
+
+        let added = DiagramItem(kind: .Item, name: "Second")
+        document.store?.add(
+            element, added, undoManager: document.undoManager, refresh: {})
+        inspector.showClassic(items: [added], element: element)
+        XCTAssertEqual(inspector.row("Header.Name")?.text, "Second")
+        XCTAssertEqual(inspector.row("Header.Title")?.text, "", "no title carried over")
+        XCTAssertEqual(inspector.row("Size W")?.text, "", "no stale size")
     }
 }

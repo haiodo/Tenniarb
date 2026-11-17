@@ -14,10 +14,10 @@
 //
 
 import Cocoa
+import Tenn
 
-/// The right column of a scene document: the properties of the selected node, as go/app/inspector_scene.go
-/// builds them. A field holds the node's own command; the value in effect from the component, a style or a
-/// default is the hint.
+/// The right column of a document: the properties of the selected scene node or classic item, as
+/// go/app builds them. A field writes its own command; the value in effect is the hint.
 @MainActor
 final class InspectorController: NSObject, NSTextFieldDelegate {
     /// The width Go gives the inspector; wide enough for a pair of fields without cutting them.
@@ -66,6 +66,11 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     private var rowControls: [RowControl] = []
     /// The selection path the controls were built for; a different one rebuilds them.
     private var shownSelection: [Int]?
+    /// The classic selection: one item or link, and the element shown when no single one is selected.
+    private weak var classicItem: DiagramItem?
+    private weak var classicElement: Element?
+    /// The classic selection the controls were built for.
+    private var shownClassic: String?
 
     // MARK: - Wiring
 
@@ -75,6 +80,30 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         self.document = document
         canvas?.onSelectionChange = { [weak self] in self?.refresh() }
         refresh()
+    }
+
+    /// A classic document is a diagram without a scene tree; the canvas may be nil until it is built.
+    private var isClassic: Bool { document?.sceneTree == nil }
+
+    /// Points the classic column at the selection: one item or link, or the element when none is.
+    func showClassic(items: [DiagramItem], element: Element?) {
+        guard isClassic else { return }
+        classicItem = items.count == 1 ? items[0] : nil
+        classicElement = element ?? classicItem?.parent
+        refresh()
+    }
+
+    /// The element the classic column falls back to: the one the outline names, else the owner of the
+    /// item, else the first diagram of the document.
+    private func classicShownElement() -> Element? {
+        classicElement ?? classicItem?.parent ?? document?.store?.model.elements.first
+    }
+
+    private var classicKey: String {
+        if let item = classicItem {
+            return (item is LinkItem ? "link:" : "item:") + item.id.uuidString
+        }
+        return "element:" + (classicShownElement()?.id.uuidString ?? "")
     }
 
     /// Builds the column: a scroll view around the sections, no horizontal bar, so a row that cannot wrap is
@@ -640,6 +669,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     }
 
     private func build() -> (title: String, rows: [InspectorRow]) {
+        if isClassic { return buildClassic() }
         guard let canvas, canvas.screen != nil else { return ("", []) }
         var head = "Screen"
         var name = canvas.screenNode?.name ?? ""
@@ -679,6 +709,10 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     /// Rebuilds the values from the tree behind the canvas, and the controls when the rows themselves
     /// changed; a value the user is typing into is not overwritten.
     func refresh() {
+        if isClassic {
+            refreshClassic()
+            return
+        }
         let built = build()
         let path = canvas?.selection
         let selectionChanged = path != shownSelection
@@ -782,6 +816,10 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             refresh()
             return
         }
+        if isClassic {
+            commitClassicText(row, value)
+            return
+        }
         if row.section == "Parameters" {
             guard let sel = selection(), let prm = param(sel, row.label) else { return }
             if value.isEmpty {
@@ -827,6 +865,10 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
 
     private func applyChoice(_ row: InspectorRow, _ choice: String) {
         guard row.kind == .popup, row.choices.contains(choice) else { return }
+        if isClassic {
+            applyClassicChoice(row, choice)
+            return
+        }
         guard let sel = selection() else { return }
         switch row.section {
         case "Parameters":
@@ -994,6 +1036,403 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     private func isNumberOrExpr(_ s: String) -> Bool {
         if Double(s) != nil { return true }
         return s.hasPrefix("${") || s.hasPrefix("$(")
+    }
+
+    // MARK: - Classic documents
+
+    /// One row of the classic column: the value the selection writes and the edit that writes it back.
+    private struct ClassicField {
+        let section: String
+        let label: String
+        var kind: InspectorRow.Kind = .text
+        var text = ""
+        var choices: [String] = []
+        var unset: String?
+        var numeric = false
+        var keep = false
+        var write: ((String) -> Void)?
+    }
+
+    /// The fields of the current classic selection; a write finds its row here by section and caption.
+    private var classicFields: [ClassicField] = []
+
+    private static let horizontalLayouts = ["left", "center", "right"]
+    private static let verticalLayouts = ["top", "middle", "bottom", "fill"]
+    /// The commands whose argument is text even when it looks like a number, as go/editor inspector.
+    private static let stringProps: Set<String> = ["name", "label", "title", "marker"]
+
+    /// The rows of a classic document: one item or link, or the element when nothing is selected.
+    private func buildClassic() -> (title: String, rows: [InspectorRow]) {
+        let item = classicItem
+        let link = item as? LinkItem
+        let element = classicShownElement()
+        var fields: [ClassicField] = []
+
+        if let link {
+            fields.append(
+                ClassicField(
+                    section: "Header", label: "Label", text: link.name,
+                    write: { [weak self] in self?.renameClassic($0) }))
+        } else if let item {
+            fields.append(
+                ClassicField(
+                    section: "Header", label: "Name", text: item.name,
+                    write: { [weak self] in self?.renameClassic($0) }))
+            fields.append(itemField("Header", "Title", "title", item))
+        } else {
+            fields.append(
+                ClassicField(
+                    section: "Header", label: "Name", text: element?.name ?? "",
+                    write: { [weak self] in self?.renameClassic($0) }))
+        }
+        if let item {
+            fields.append(
+                ClassicField(
+                    section: "Header", label: "Kind", kind: .info, text: link == nil ? "Item" : "Link"))
+            if link == nil {
+                fields.append(
+                    ClassicField(
+                        section: "Header", label: "Body", kind: .info,
+                        text: InspectorController.bodyKind(item.properties)))
+            }
+        } else if let element {
+            fields.append(
+                ClassicField(
+                    section: "Header", label: "Body", kind: .info,
+                    text: InspectorController.bodyKind(element.properties)))
+            fields.append(elementField("Header", "Grid X", "grid", 0, element))
+            fields.append(elementField("Header", "Grid Y", "grid", 1, element))
+        }
+
+        if let item, link == nil {
+            fields.append(positionField("Position X", 0, item))
+            fields.append(positionField("Position Y", 1, item))
+            fields.append(itemField("Layout", "Size W", "width", item, numeric: true))
+            fields.append(itemField("Layout", "Size H", "height", item, numeric: true))
+            fields.append(itemField("Layout", "Padding", "padding", item, list: true))
+            fields.append(itemField("Fill", "Color", "color", item))
+        }
+
+        if let item {
+            fields.append(itemField("Text", "Color", "text-color", item))
+            fields.append(itemField("Text", "Size", "font-size", item, numeric: true))
+            if link == nil {
+                fields.append(
+                    layoutField(
+                        "Text", "Align", InspectorController.horizontalLayouts,
+                        InspectorController.verticalLayouts, item))
+                fields.append(
+                    layoutField(
+                        "Text", "Vertical", InspectorController.verticalLayouts,
+                        InspectorController.horizontalLayouts, item))
+                fields.append(itemField("Text", "Marker", "marker", item))
+            }
+        }
+
+        if let item, link == nil {
+            fields.append(itemField("Border", "Color", "border-color", item))
+            fields.append(itemField("Border", "Width", "line-width", item, numeric: true))
+            fields.append(
+                popupField(
+                    "Border", "Style", "line-style", item,
+                    ["none", "solid", "dashed", "dotted"], "none"))
+            fields.append(itemField("Border", "Radius", "corner-radius", item, numeric: true))
+        }
+
+        if let item {
+            if link == nil {
+                fields.append(
+                    popupField(
+                        "Shape", "Display", "display", item,
+                        ["rect", "no-fill", "circle", "stack", "text"], "rect"))
+            }
+            fields.append(
+                popupField("Shape", "Layer", "layer", item, ["default", "background", "hover"], "default"))
+        }
+
+        if let link {
+            fields.append(itemField("Line", "Color", "color", link))
+            fields.append(itemField("Line", "Width", "line-width", link, numeric: true))
+            fields.append(
+                popupField("Line", "Style", "line-style", link, ["solid", "dashed", "dotted"], "solid"))
+            fields.append(
+                popupField("Line", "Arrows", "display", link, ["solid", "arrow", "arrows", "arrow-source"], "solid"))
+        }
+
+        classicFields = fields
+        let rows = fields.map {
+            InspectorRow(
+                section: $0.section, label: $0.label, text: $0.text,
+                kind: $0.kind, choices: $0.choices)
+        }
+        let title = item == nil ? "Element" : (link == nil ? "Item" : "Link")
+        return (title, rows)
+    }
+
+    private func refreshClassic() {
+        let built = buildClassic()
+        let key = classicKey
+        let selectionChanged = key != shownClassic
+        shownClassic = key
+        let keysChanged = built.rows.map(InspectorController.rowKey) != rows.map(InspectorController.rowKey)
+        let titleChanged = built.title != title
+        title = built.title
+        rows = built.rows
+        if selectionChanged || keysChanged || titleChanged {
+            reloadUI()
+        }
+        for (i, row) in rows.enumerated() where rowControls.indices.contains(i) {
+            rowControls[i].apply(row)
+        }
+    }
+
+    // MARK: - Reading the classic commands
+
+    private static func args(_ node: TennNode?) -> [String] {
+        (node?.children ?? []).dropFirst().map { $0.getIdentText() ?? "" }
+    }
+
+    private static func text(_ node: TennNode?, _ index: Int = 0) -> String {
+        let values = args(node)
+        return index < values.count ? values[index] : ""
+    }
+
+    /// None, Markdown or Image of a `body` command, as go/editor bodyKind.
+    private static func bodyKind(_ props: ModelProperties) -> String {
+        guard let body = props.get("body") else { return "None" }
+        return args(body).joined(separator: " ").contains("image") ? "Image" : "Markdown"
+    }
+
+    private static func numberText(_ value: CGFloat) -> String {
+        let rounded = (Double(value) * 100).rounded() / 100
+        if rounded.rounded() == rounded, abs(rounded) < 1e15 { return String(Int(rounded)) }
+        return String(rounded)
+    }
+
+    private static func layoutWords(_ item: DiagramItem) -> [String] {
+        args(item.properties.get("layout")).flatMap {
+            $0.split(whereSeparator: { $0 == "," || $0.isWhitespace })
+        }.map(String.init)
+    }
+
+    private func itemField(
+        _ section: String, _ label: String, _ name: String, _ item: DiagramItem,
+        index: Int = 0, numeric: Bool = false, list: Bool = false
+    ) -> ClassicField {
+        let values = InspectorController.args(item.properties.get(name))
+        let text: String
+        if list {
+            text = values.joined(separator: " ")
+        } else {
+            text = index < values.count ? values[index] : ""
+        }
+        return ClassicField(
+            section: section, label: label, text: text, numeric: numeric,
+            write: { [weak self] in self?.writeItem(item, name, $0, index: index, list: list) })
+    }
+
+    private func popupField(
+        _ section: String, _ label: String, _ name: String, _ item: DiagramItem,
+        _ choices: [String], _ unset: String
+    ) -> ClassicField {
+        let own = InspectorController.text(item.properties.get(name))
+        return ClassicField(
+            section: section, label: label, kind: .popup, text: own.isEmpty ? unset : own,
+            choices: choices, unset: unset,
+            write: { [weak self] in self?.writeItem(item, name, $0) })
+    }
+
+    private func layoutField(
+        _ section: String, _ label: String, _ mine: [String], _ other: [String], _ item: DiagramItem
+    ) -> ClassicField {
+        let word = InspectorController.layoutWords(item).first(where: mine.contains) ?? ""
+        return ClassicField(
+            section: section, label: label, kind: .popup, text: word.isEmpty ? "none" : word,
+            choices: ["none"] + mine, unset: "none",
+            write: { [weak self] value in
+                let keep = InspectorController.layoutWords(item).first(where: other.contains) ?? ""
+                let out = (value.isEmpty ? [] : [value]) + (keep.isEmpty ? [] : [keep])
+                self?.writeItem(item, "layout", out.joined(separator: " "), list: true)
+            })
+    }
+
+    private func positionField(_ label: String, _ axis: Int, _ item: DiagramItem) -> ClassicField {
+        ClassicField(
+            section: "Layout", label: label,
+            text: InspectorController.numberText(axis == 0 ? item.x : item.y),
+            write: { [weak self] in self?.moveItem(item, axis, $0) })
+    }
+
+    private func elementField(
+        _ section: String, _ label: String, _ name: String, _ index: Int, _ element: Element
+    ) -> ClassicField {
+        let values = InspectorController.args(element.properties.get(name))
+        return ClassicField(
+            section: section, label: label, text: index < values.count ? values[index] : "",
+            numeric: true, keep: true,
+            write: { [weak self] in self?.writeElement(element, name, $0, index: index) })
+    }
+
+    // MARK: - Writing the classic commands
+
+    private func commitClassicText(_ row: InspectorRow, _ value: String) {
+        guard
+            let f = classicFields.first(where: { $0.section == row.section && $0.label == row.label })
+        else {
+            refresh()
+            return
+        }
+        guard !f.numeric || value.isEmpty || isNumberOrExpr(value) else {
+            refresh()
+            return
+        }
+        if value.isEmpty && f.keep {
+            refresh()
+            return
+        }
+        f.write?(value)
+        refresh()
+    }
+
+    private func applyClassicChoice(_ row: InspectorRow, _ choice: String) {
+        guard let f = classicFields.first(where: { $0.section == row.section && $0.label == row.label })
+        else {
+            refresh()
+            return
+        }
+        f.write?(choice == f.unset ? "" : choice)
+        refresh()
+    }
+
+    /// Writes one argument of a command of the item; empty drops it and the arguments after it, and a
+    /// command left with no arguments is removed.
+    private func writeItem(
+        _ item: DiagramItem, _ name: String, _ value: String, index: Int = 0, list: Bool = false
+    ) {
+        guard let element = item.parent, let store = document?.store else { return }
+        let args: [TennNode]
+        if list {
+            args = value.split(whereSeparator: \.isWhitespace).map {
+                InspectorController.valueNode(String($0), string: false)
+            }
+        } else if let next = InspectorController.commandArgs(
+            item.properties.get(name), value, index: index, keep: false,
+            string: InspectorController.stringProps.contains(name))
+        {
+            args = next
+        } else {
+            return
+        }
+        let props = item.toTennAsProps(.BlockExpr)
+        InspectorController.setCommand(props, name, args)
+        store.setProperties(
+            element, item, props, undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    private func writeElement(_ element: Element, _ name: String, _ value: String, index: Int) {
+        guard !value.isEmpty, let store = document?.store else { return }
+        var args = (element.properties.get(name)?.children ?? []).dropFirst().map { $0.clone() }
+        while args.count <= index {
+            args.append(TennNode.newIntNode(0))
+        }
+        args[index] = InspectorController.valueNode(value, string: false)
+        let props = element.toTennAsProps(.BlockExpr)
+        InspectorController.setCommand(props, name, args)
+        store.setProperties(
+            element, props, undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    /// Renames the item, link or element the column shows; the model keeps the item name, the file calls
+    /// it label for a link.
+    private func renameClassic(_ value: String) {
+        guard !value.isEmpty, let store = document?.store else { return }
+        if let item = classicItem, item.parent != nil {
+            store.updateName(
+                item: item, value, undoManager: document?.undoManager,
+                refresh: { [weak self] in self?.refresh() })
+        } else if let element = classicShownElement() {
+            store.updateName(
+                element: element, value, undoManager: document?.undoManager,
+                refresh: { [weak self] in self?.refresh() })
+        }
+    }
+
+    private func moveItem(_ item: DiagramItem, _ axis: Int, _ value: String) {
+        guard !value.isEmpty, let store = document?.store, let number = Double(value),
+            item.parent != nil
+        else { return }
+        var x = item.x
+        var y = item.y
+        if axis == 0 {
+            x = CGFloat(number)
+        } else {
+            y = CGFloat(number)
+        }
+        store.updatePosition(
+            item: item, newPos: CGPoint(x: x, y: y), undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    private static func commandArgs(
+        _ node: TennNode?, _ value: String, index: Int, keep: Bool, string: Bool
+    ) -> [TennNode]? {
+        var args = (node?.children ?? []).dropFirst().map { $0.clone() }
+        if value.isEmpty {
+            if keep { return nil }
+            if index < args.count {
+                args.removeSubrange(index..<args.count)
+            }
+            return args
+        }
+        while args.count <= index {
+            args.append(TennNode.newIntNode(0))
+        }
+        args[index] = valueNode(value, string: string)
+        return args
+    }
+
+    private static func setCommand(_ props: TennNode, _ name: String, _ args: [TennNode]) {
+        if args.isEmpty {
+            props.removeNamed(name)
+            return
+        }
+        if let cmd = props.getNamedElement(name) {
+            cmd.children?.removeAll()
+            cmd.add(TennNode.newIdent(name))
+            cmd.add(args)
+            return
+        }
+        let cmd = TennNode.newCommand(name)
+        cmd.add(args)
+        props.add(cmd)
+    }
+
+    /// The node for a written value: text for the string commands, a number for a number, a symbol for a
+    /// word, a string for anything with blanks.
+    private static func valueNode(_ text: String, string: Bool) -> TennNode {
+        if string { return TennNode.newStrNode(text) }
+        if text.hasPrefix("${") || text.hasPrefix("$(") { return TennNode.newIdent(text) }
+        var body = Substring(text)
+        if body.hasPrefix("-") { body = body.dropFirst() }
+        var digits = 0
+        var dot = false
+        for c in body {
+            if c == "." {
+                if digits == 0 || dot { return TennNode.newIdent(text) }
+                dot = true
+            } else if c.isNumber {
+                digits += 1
+            } else if c.isWhitespace {
+                return TennNode.newStrNode(text)
+            } else {
+                return TennNode.newIdent(text)
+            }
+        }
+        guard digits > 0 else { return TennNode.newIdent(text) }
+        let type: TennTokenType = dot ? .floatLit : .intLit
+        return TennNode(kind: dot ? .FloatLit : .IntLit, tok: TennToken(type: type, literal: text))
     }
 
     // MARK: - The column
