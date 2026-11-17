@@ -383,14 +383,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Writes the title of the item at path through the document; a refusal stays on the canvas. A part of
     /// a component is written as an at override in the use around it, so its copies stay as they are.
     private func writeTitle(_ value: String, _ path: [Int]) {
-        guard let document else {
-            message = "the canvas is not attached to a document"
-            needsDisplay = true
-            return
-        }
         guard let pl = placed(at: path), let node = pl.src, let tree else { return }
-        let edit: Scene.TextEdit
-        let file: String
         if let part = partOf[ObjectIdentifier(pl)] {
             guard !part.at.isEmpty else {
                 // the same banner go/app/sceneview_pointer.go puts on a part that no name addresses
@@ -399,31 +392,159 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
                 return
             }
             guard let source = tree.source(part.use.pos.file),
-                let at = atPropEdit(source, part.use, part.at, "title", value)
+                let edit = atPropEdit(source, part.use, part.at, "title", value),
+                apply(edit, in: part.use.pos.file)
             else { return }
-            edit = at
-            file = part.use.pos.file
-        } else {
-            guard let source = tree.source(node.pos.file), let title = setPropEdit(source, node, "title", value)
-            else { return }
-            edit = title
-            file = node.pos.file
+            return
         }
+        guard let source = tree.source(node.pos.file), let edit = setPropEdit(source, node, "title", value)
+        else { return }
+        apply(edit, in: node.pos.file)
+    }
+
+    /// Applies one text edit of the scene through the document. A refusal is shown over the rebuilt scene:
+    /// a drag may have moved the drawn items, and the file did not take it.
+    @discardableResult
+    private func apply(_ edit: Scene.TextEdit, in file: String) -> Bool {
+        guard let document else {
+            message = "the canvas is not attached to a document"
+            needsDisplay = true
+            return false
+        }
+        guard let tree else { return false }
         do {
             try document.applySceneEdit(edit, in: file)
             if let next = document.sceneTree, next !== tree {
                 show(next)  // a canvas with no window controller hears nothing of the reload
             }
+            return true
         } catch {
+            show(tree)
             message = error.localizedDescription
             needsDisplay = true
+            return false
         }
+    }
+
+    // MARK: - Drag
+
+    /// The item a press picked up, and the point of the screen it was picked at.
+    private struct Drag {
+        let pl: Scene.Placed
+        let from: Scene.Point
+        var dx = 0.0  // how far the pointer went, in the coordinates of the screen (y down)
+        var dy = 0.0
+        var moved = false
+    }
+
+    private var drag: Drag?
+
+    /// The item a drag of pl moves: pl when its place comes from pos, else the nearest ancestor that has
+    /// one. A click on a node inside an auto-layout moves the container it sits in, as go/app movable.
+    private func movable(_ pl: Scene.Placed) -> Scene.Placed? {
+        var n: Scene.Placed? = pl
+        while let cur = n {
+            if cur.free && selectable.contains(ObjectIdentifier(cur)) { return cur }
+            n = cur.parent
+        }
+        return nil
+    }
+
+    private func holds(_ pl: Scene.Placed, _ p: Scene.Point) -> Bool {
+        pl.x <= p.x && p.x <= pl.x + pl.w && pl.y <= p.y && p.y <= pl.y + pl.h
+    }
+
+    /// A press on the selected item picks it up, wherever on it the press lands; false when the press is
+    /// no drag and the caller makes a click of it.
+    @discardableResult
+    func beginDrag(_ p: Scene.Point) -> Bool {
+        endTitleEdit(commit: true)
+        guard document != nil, let cur = placed(at: selection), holds(cur, p), let move = movable(cur) else {
+            return false
+        }
+        drag = Drag(pl: move, from: p)
+        return true
+    }
+
+    /// Moves the picked item with the pointer: the drawn tree follows, the document is written on release.
+    func moveDrag(_ p: Scene.Point) {
+        guard var d = drag else { return }
+        let dx = p.x - d.from.x
+        let dy = p.y - d.from.y
+        d.moved = d.moved || abs(dx) + abs(dy) >= 1  // a click of a point or two is no move
+        guard d.moved else { return }
+        shift(d.pl, dx - d.dx, dy - d.dy)
+        d.dx = dx
+        d.dy = dy
+        drag = d
+        needsDisplay = true
+    }
+
+    /// Writes the place the drag reached; a drag that never left its point writes nothing.
+    func endDrag() {
+        guard let d = drag else { return }
+        drag = nil
+        guard d.moved else { return }
+        writePos(d.pl, dx: d.dx, dy: d.dy)
+    }
+
+    /// Moves an item and its children in the drawn tree before the edit exists: Screen.MoveItem moves
+    /// the same gfx nodes of go/scene.
+    private func shift(_ pl: Scene.Placed, _ dx: Double, _ dy: Double) {
+        pl.x += dx
+        pl.y += dy
+        for k in pl.kids {
+            shift(k, dx, dy)
+        }
+    }
+
+    /// Writes the pos of the item a drag moved by dx, dy of the screen: pos is y up, the canvas y down,
+    /// as moveSceneNode of go/app. A part is an at override in its use.
+    private func writePos(_ pl: Scene.Placed, dx: Double, dy: Double) {
+        var x = 0.0
+        var y = 0.0
+        if let pos = pl.prop("pos") {
+            let values = pos.args.map { $0.getIdentText() ?? "" }
+            if values.count == 2 {
+                x = Double(values[0]) ?? 0
+                y = Double(values[1]) ?? 0
+            }
+        }
+        let nx = (x + dx).rounded()
+        let ny = (y - dy).rounded()
+        guard let tree else { return }
+        if let part = partOf[ObjectIdentifier(pl)] {
+            guard !part.at.isEmpty else {
+                message = "Not applied: the item has no unique name inside the instance, edit it in the use"
+                needsDisplay = true
+                return
+            }
+            guard let source = tree.source(part.use.pos.file),
+                let edit = atPropEdit(source, part.use, part.at, "pos", numText(nx), numText(ny))
+            else { return }
+            apply(edit, in: part.use.pos.file)
+            return
+        }
+        guard let node = pl.src, let source = tree.source(node.pos.file),
+            let edit = setPropEdit(source, node, "pos", numText(nx), numText(ny))
+        else { return }
+        apply(edit, in: node.pos.file)
     }
 
     // MARK: - Input
 
     override func mouseDown(with event: NSEvent) {
-        click(scenePoint(convert(event.locationInWindow, from: nil)), clicks: event.clickCount)
+        let p = scenePoint(convert(event.locationInWindow, from: nil))
+        if event.clickCount < 2, beginDrag(p) { return }
+        click(p, clicks: event.clickCount)
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        moveDrag(scenePoint(convert(event.locationInWindow, from: nil)))
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        endDrag()
     }
 
     /// A click at a point of the screen: selects what it lands on and, on the second click, edits the title.

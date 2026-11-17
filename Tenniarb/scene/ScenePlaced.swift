@@ -27,7 +27,8 @@ extension Scene {
         let free: Bool
         let parent: Placed?
         var kids: [Placed] = []  // in z order
-        let x, y, w, h: Double  // in the coordinates of the screen
+        var x, y: Double  // in the coordinates of the screen; moved while a drag is in flight
+        let w, h: Double
 
         let r: RNode
 

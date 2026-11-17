@@ -131,6 +131,15 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         c.blueComponent > c.redComponent + 0.2 && c.blueComponent > 0.6
     }
 
+    /// A mouse event at a point of the view, in window coordinates, as AppKit delivers it.
+    private func mouse(_ type: NSEvent.EventType, _ p: NSPoint, clicks: Int = 1, in view: NSView) throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.mouseEvent(
+                with: type, location: view.convert(p, to: nil), modifierFlags: [], timestamp: 0,
+                windowNumber: view.window?.windowNumber ?? 0, context: nil, eventNumber: 1, clickCount: clicks,
+                pressure: 1))
+    }
+
     // MARK: - Selection
 
     /// scene-text.tenn: Stage covers the 640 by 420 screen, LeafTitle is a 120 by 40 leaf at 160,20.
@@ -446,6 +455,109 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.selection, second, "a refused edit keeps the selection")
     }
 
+    // MARK: - Drag
+
+    /// scene-text.tenn writes LeafTitle at pos 160 -20; a drag of 30 right and 10 down keeps pos y up.
+    func testADragWritesThePositionOfAFreeItem() throws {
+        let document = try document(String(contentsOf: repo.appendingPathComponent("web/fixtures/scene/scene-text.tenn"), encoding: .utf8))
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let p = Scene.Point(x: 220, y: 40)  // the middle of LeafTitle
+        let path = try XCTUnwrap(canvas.hitItem(p))
+        canvas.select(path)
+
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.moveDrag(Scene.Point(x: p.x + 30, y: p.y + 10))
+        canvas.endDrag()
+
+        XCTAssertEqual(
+            document.sceneText, before.replacingOccurrences(of: "pos 160 -20", with: "pos 190 -30"))
+        XCTAssertEqual(canvas.placed(at: path)?.x, 190, "the canvas draws the item where the drag left it")
+        XCTAssertEqual(canvas.placed(at: path)?.y, 30, "pos y up, the screen y down")
+
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, before)
+        canvas.show(document.sceneTree)
+        XCTAssertEqual(canvas.placed(at: path)?.x, 160, "undo puts the item back")
+    }
+
+    /// A part with a pos of its own moves by an at override in its use.
+    func testADragOfAPartWritesPosInItsUse() throws {
+        let document = try document(
+            """
+            element Screen {
+                use tpl.Box as b
+            }
+
+            element tpl {
+                item Box {
+                    width 100
+                    height 100
+                    item Dot { title d; pos 10 10 }
+                }
+            }
+            """)
+        let canvas = try canvas(document)
+        let path = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Dot" })
+        let dot = try XCTUnwrap(canvas.placed(at: path))
+        canvas.select(path)
+
+        XCTAssertTrue(canvas.beginDrag(Scene.Point(x: dot.x + dot.w / 2, y: dot.y + dot.h / 2)))
+        canvas.moveDrag(Scene.Point(x: dot.x + dot.w / 2 + 5, y: dot.y + dot.h / 2 - 7))
+        canvas.endDrag()
+
+        XCTAssertTrue(
+            document.sceneText?.contains("\(commandText("at", "Dot")) { pos 15 17 }") ?? false,
+            document.sceneText ?? "")
+        XCTAssertEqual(canvas.placed(at: path)?.x, 15, "the part draws the override")
+        XCTAssertEqual(canvas.placed(at: path)?.y, -17, "pos y up, the screen y down")
+    }
+
+    /// A click on a node inside an auto-layout moves the container it sits in, as movable does: the pos
+    /// goes into the use of the instance, not into an at override of the leaf.
+    func testADragOfAFlowItemMovesItsContainer() throws {
+        let document = try document(
+            """
+            element Screen {
+                use tpl.Col as c
+            }
+
+            element tpl {
+                item Col {
+                    auto-layout column
+                    width 50
+                    item Leaf { title x }
+                }
+            }
+            """)
+        let canvas = try canvas(document)
+        let path = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Leaf" })
+        let leaf = try XCTUnwrap(canvas.placed(at: path))
+        canvas.select(path)
+
+        XCTAssertTrue(canvas.beginDrag(Scene.Point(x: leaf.x + leaf.w / 2, y: leaf.y + leaf.h / 2)))
+        canvas.moveDrag(Scene.Point(x: leaf.x + leaf.w / 2 + 4, y: leaf.y + leaf.h / 2 + 6))
+        canvas.endDrag()
+
+        XCTAssertTrue(
+            document.sceneText?.contains("use tpl.Col as c { pos 4 -6 }") ?? false, document.sceneText ?? "")
+        XCTAssertFalse(document.sceneText?.contains("at ") ?? true, "the leaf has no place of its own")
+    }
+
+    func testAPressWithoutAMoveWritesNothing() throws {
+        let document = try document(String(contentsOf: repo.appendingPathComponent("web/fixtures/scene/scene-text.tenn"), encoding: .utf8))
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let p = Scene.Point(x: 220, y: 40)
+        canvas.select(try XCTUnwrap(canvas.hitItem(p)))
+
+        XCTAssertTrue(canvas.beginDrag(p))
+        canvas.endDrag()
+
+        XCTAssertEqual(document.sceneText, before)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
     // MARK: - Window
 
     /// The double click, on the canvas of a real window, reaches the document the canvas was given.
@@ -491,4 +603,32 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(
             canvas.placed(at: canvas.selection)?.r.prop("title")?.text(0), "Titled", "the undo reaches the canvas")
     }
+
+    /// A drag of real events through the canvas of a window writes the new pos through the document.
+    func testADragInTheWindowWritesThePosition() throws {
+        let root = try workspace()
+        let url = try copy("web/fixtures/scene/scene-text.tenn", to: root)
+        let document = try openTestDocument(url)
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+
+        let down = canvas.viewPoint(Scene.Point(x: 220, y: 40))
+        // the first click selects; the press on the selection is what a drag picks the item up with
+        canvas.mouseDown(with: try mouse(.leftMouseDown, down, in: canvas))
+        canvas.mouseUp(with: try mouse(.leftMouseUp, down, in: canvas))
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.name, "LeafTitle")
+        canvas.mouseDown(with: try mouse(.leftMouseDown, down, in: canvas))
+
+        let up = canvas.viewPoint(Scene.Point(x: 250, y: 50))
+        canvas.mouseDragged(with: try mouse(.leftMouseDragged, up, in: canvas))
+        canvas.mouseUp(with: try mouse(.leftMouseUp, up, in: canvas))
+
+        let text = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(text.contains("pos 190 -30"), text)
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.x, 190, "the drawing follows the drag")
+    }
+
 }
