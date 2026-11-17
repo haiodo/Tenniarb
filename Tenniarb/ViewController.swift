@@ -38,6 +38,8 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     /// The comments of the document this window shows, and the pins of its element on the canvas.
     private var commentsController: CommentsController?
+    /// The file the comments controller was made for, so Save As makes a new one.
+    private var commentsForURL: URL?
 
     /// The sheet of Insert Component…, held while it is open.
     private var componentPicker: ComponentPickerController?
@@ -1003,9 +1005,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     /// The comments of the document: its file, standardized, names them; a document without a file has none.
     private func commentsForDocument() -> CommentsController? {
         guard sceneTree != nil else { return nil }
-        let key = document?.fileURL?.standardizedFileURL.path
-        if let commentsController, commentsController.key == key { return commentsController }
-        let comments = CommentsController(key: key)
+        let url = document?.fileURL
+        if let commentsController, commentsForURL == url { return commentsController }
+        let comments = CommentsController(url: url)
+        commentsForURL = url
         comments.onChange = { [weak self] in self?.refreshCommentPins() }
         commentsController = comments
         return comments
