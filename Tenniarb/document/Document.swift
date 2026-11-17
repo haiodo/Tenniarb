@@ -33,6 +33,10 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// The text the last read or save put on disk, so an undo back to it clears the edited mark.
     @MainActor private var savedSceneText: String?
 
+    /// The version of the file the last read or write left on disk; a different one there is another
+    /// program's.
+    @MainActor private var diskStamp: FileStamp?
+
     /// What the last conversion from or to JSON Canvas left out; the window shows it.
     @MainActor private(set) var sceneCanvasNotes: [String] = []
 
@@ -203,6 +207,8 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     }
 
     override func read(from url: URL, ofType typeName: String) throws {
+        // Stamped before the read, as go/app's Load: a write that lands during it is the next poll's.
+        let stamp = fileStamp(of: url)
 
         do {
             var storedValue: String
@@ -222,6 +228,8 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             let node = parser.parse(storedValue)
 
             if parser.errors.hasErrors() {
+                // The file is read, its text kept out of the document: stamping stops the poll retrying.
+                setDiskStamp(stamp)
                 return
             }
 
@@ -232,7 +240,12 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             // The kind reads the parsed model, as go/app does; a scene document then keeps the tree and
             // drops the model, so its file is never treated as a classic diagram.
             if kindOfModel(elementModel) != .diagram {
-                let openScene = { MainActor.assumeIsolated { self.readScene(url, text: storedValue) } }
+                let openScene = {
+                    MainActor.assumeIsolated {
+                        self.readScene(url, text: storedValue)
+                        self.setDiskStamp(stamp)
+                    }
+                }
                 if Thread.isMainThread {
                     openScene()
                 } else {
@@ -257,6 +270,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             }
 
             self.fileURL = url
+            setDiskStamp(stamp)
         } catch {
             Swift.print("Failed to load file")
         }
@@ -560,9 +574,35 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
     }
 
+    /// Keeps the stamp of the file version just read or written; read and write may run off the main queue.
+    nonisolated private func setDiskStamp(_ stamp: FileStamp?) {
+        let work = { MainActor.assumeIsolated { self.diskStamp = stamp } }
+        if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+    }
+
     override var isDocumentEdited: Bool {
         get {
             return store?.modified ?? true
+        }
+    }
+
+    /// Whether the file on disk is not the version this document last read or wrote. A file that cannot
+    /// be stat-ed (an editor replacing it) is not a change, as go/app's Watcher.Poll.
+    @MainActor
+    func diskChanged() -> Bool {
+        guard let url = fileURL, let known = diskStamp, let now = fileStamp(of: url) else { return false }
+        return now != known
+    }
+
+    /// Reads the file again when another program changed it and nothing would be lost. An edited
+    /// document keeps its text: Go asks in a dialog, and one every 500 ms takes the focus.
+    @MainActor
+    func pollExternalChanges() {
+        guard let url = fileURL, !isDocumentEdited, diskChanged() else { return }
+        do {
+            try revert(toContentsOf: url, ofType: fileType ?? "")
+        } catch {
+            // The text of the version already open stays; the next poll asks again.
         }
     }
 
@@ -607,6 +647,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             }
             let converted = try convert()
             try converted.data.write(to: url, options: .atomic)
+            setDiskStamp(fileStamp(of: url))
             if let text = converted.text {
                 markSaved(text)
             } else if let es = readStore() {
@@ -623,6 +664,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
                 // shortcut: a save under another name keeps the tree of the old path; an edit after it
                 // still loads from the folder the document was opened in.
                 try Data(text.utf8).write(to: url, options: .atomic)
+                setDiskStamp(fileStamp(of: url))
                 markSaved(text)
                 finish(url.lastPathComponent)
                 self.fileURL = url
@@ -631,6 +673,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             if let es = readStore() {
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
+                setDiskStamp(fileStamp(of: url))
                 es.modified = false
 
                 es.model.modelName = url.lastPathComponent
@@ -676,6 +719,23 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         }
         return (try JSONCanvas.marshal(converted.canvas), converted.notes, savedText)
     }
+}
+
+/// A version of a file on disk: modification time and size, as go/app's Stamp.
+private struct FileStamp: Equatable {
+    let modified: Date
+    let size: Int64
+}
+
+/// The stamp of the file at url, or nil when it cannot be stat-ed.
+private func fileStamp(of url: URL) -> FileStamp? {
+    guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+        let size = (attrs[.size] as? NSNumber)?.int64Value,
+        let modified = attrs[.modificationDate] as? Date
+    else {
+        return nil
+    }
+    return FileStamp(modified: modified, size: size)
 }
 
 /// Why a scene edit was dropped: the message the window shows.

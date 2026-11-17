@@ -217,3 +217,127 @@ class PersistenceTests: XCTestCase {
     }
 
 }
+
+/// An open document follows its file when another program changes it, as go/app's 500 ms poll.
+@MainActor
+final class ExternalChangeTests: SceneDocumentTestCase {
+
+    private let scene = "element A { item B { auto-layout row } }\n"
+
+    private func workspace(_ files: [String: String] = [:]) throws -> URL {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tenniarb-external-change-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        for (path, text) in files {
+            try Data(text.utf8).write(to: root.appendingPathComponent(path))
+        }
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        return root
+    }
+
+    /// Writes data as another program would, a minute ahead: the stamp differs even when the size does not.
+    private func write(_ data: Data, to url: URL) throws {
+        try data.write(to: url, options: .atomic)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date().addingTimeInterval(60)], ofItemAtPath: url.path)
+    }
+
+    func testAnUneditedDocumentFollowsTheFile() throws {
+        let root = try workspace(["a.tenn": scene])
+        let url = root.appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+        XCTAssertEqual(document.sceneText, scene)
+
+        let next = "element A { item B { auto-layout column } }\n"
+        try write(Data(next.utf8), to: url)
+        document.pollExternalChanges()
+
+        XCTAssertEqual(document.sceneText, next)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
+    func testAnEditedDocumentKeepsItsText() throws {
+        let root = try workspace(["a.tenn": scene])
+        let url = root.appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+        let text = try XCTUnwrap(document.sceneText)
+        let row = try XCTUnwrap(text.range(of: "row"))
+        let start = text.utf8.distance(from: text.startIndex, to: row.lowerBound)
+        try document.applySceneEdit(Scene.TextEdit(start: start, end: start + 3, new: "column"), in: "a.tenn")
+        XCTAssertTrue(document.isDocumentEdited)
+
+        let external = "element Z { item Y { auto-layout row } }\n"
+        try write(Data(external.utf8), to: url)
+        document.pollExternalChanges()
+
+        XCTAssertEqual(document.sceneText, text.replacingOccurrences(of: "row", with: "column"))
+        XCTAssertTrue(document.isDocumentEdited)
+        XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), external, "the file on disk is left alone")
+    }
+
+    func testTheSameChangeIsReadOnce() throws {
+        let root = try workspace(["a.tenn": scene])
+        let url = root.appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+
+        let next = "element A { item B { auto-layout column } }\n"
+        try write(Data(next.utf8), to: url)
+        document.pollExternalChanges()
+        let tree = try XCTUnwrap(document.sceneTree)
+
+        document.pollExternalChanges()
+
+        XCTAssertTrue(document.sceneTree === tree, "the same change is not read a second time")
+        XCTAssertEqual(document.sceneText, next)
+    }
+
+    func testACanvasChangeIsConvertedAgain() throws {
+        let root = try workspace()
+        let url = root.appendingPathComponent("board.canvas")
+        try Data(canvas("First").utf8).write(to: url)
+        let document = try openTestDocument(url)
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("First"))
+
+        let next = canvas("Second")
+        try write(Data(next.utf8), to: url)
+        document.pollExternalChanges()
+
+        XCTAssertEqual(document.sceneText, try JSONCanvas.canvasText(path: url.path, data: Data(next.utf8)).text)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
+    func testAnOwnSaveIsNotAChange() throws {
+        let root = try workspace(["a.tenn": scene])
+        let url = root.appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+        let tree = try XCTUnwrap(document.sceneTree)
+
+        try document.write(to: url, ofType: "tenn")
+        document.pollExternalChanges()
+
+        XCTAssertTrue(document.sceneTree === tree, "the stamp of the save matches the file it wrote")
+        XCTAssertEqual(document.sceneText, scene)
+    }
+
+    func testAMissingFileKeepsTheText() throws {
+        let root = try workspace(["a.tenn": scene])
+        let url = root.appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+
+        try FileManager.default.removeItem(at: url)
+        document.pollExternalChanges()
+
+        XCTAssertEqual(document.sceneText, scene)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
+    /// A group over a text node: the conversion nests items, which makes the file a scene.
+    private func canvas(_ text: String) -> String {
+        """
+        {"nodes":[
+         {"id":"g","type":"group","x":0,"y":0,"width":400,"height":300,"label":"Group"},
+         {"id":"t","type":"text","x":20,"y":20,"width":120,"height":40,"text":"\(text)"}
+        ]}
+        """
+    }
+}

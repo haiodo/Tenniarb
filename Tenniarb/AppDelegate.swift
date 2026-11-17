@@ -26,8 +26,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var terminateOnLastWindowClose = true
     var preferencesWindowController: NSWindowController?
 
+    /// Follows a file another program changes, as go/app's PollInterval.
+    private var externalChangeTimer: Timer?
+
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+        externalChangeTimer?.invalidate()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -46,6 +49,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.configureSettingsMenu()
         }
+        startExternalChangePoll()
+    }
+
+    /// Reads an open document again when another program changed its file: go/app asks every 500 ms.
+    private func startExternalChangePoll() {
+        guard externalChangeTimer == nil else { return }
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            MainActor.assumeIsolated {
+                for document in NSDocumentController.shared.documents {
+                    (document as? Document)?.pollExternalChanges()
+                }
+            }
+        }
+        timer.tolerance = 0.1
+        externalChangeTimer = timer
     }
 
     private func configureSettingsMenu() {
