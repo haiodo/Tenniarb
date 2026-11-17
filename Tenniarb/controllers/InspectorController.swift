@@ -33,6 +33,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             case text
             case popup
             case toggle
+            case checks
             case info
         }
 
@@ -260,7 +261,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             }
         case .toggle:
             text = own == nil ? "off" : "yes"
-        case .info:
+        case .info, .checks:
             break
         }
         return InspectorRow(
@@ -298,6 +299,213 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         return "\(f(w)) x \(f(h))"
     }
 
+    // MARK: - Parameters and styles
+
+    /// The use the Parameters section describes: the selected instance, or the use around a selected part.
+    private func paramUse(_ sel: Selection) -> Scene.Node? {
+        if let part = sel.part { return part.use }
+        guard let node = sel.node, node.kind == .use else { return nil }
+        return node
+    }
+
+    /// The component the use draws, nil when it declares no parameter.
+    private func paramNode(_ sel: Selection) -> Scene.Node? {
+        guard let document, let tree = document.sceneTree, let use = paramUse(sel),
+            let scope = use.parent, let target = try? tree.resolve(scope, use.path),
+            !target.params.isEmpty
+        else { return nil }
+        return target
+    }
+
+    private func param(_ sel: Selection, _ name: String) -> Scene.Param? {
+        paramNode(sel)?.params.first { $0.name == name }
+    }
+
+    /// The group of the component's styles the default of prm names, as go/app paramGroup: the component's own
+    /// groups, else those of the styles block above it.
+    private func paramGroup(_ sel: Selection, _ prm: Scene.Param) -> Scene.StyleGroup? {
+        guard let component = paramNode(sel), let first = prm.defaultValue?.text(0) else { return nil }
+        let name = normalizeName(first)
+        var scope = component
+        if component.styleGroups.isEmpty {
+            guard let above = styleScope(component) else { return nil }
+            scope = above
+        }
+        return scope.styleGroups.first { $0.styles.contains(name) }
+    }
+
+    /// The values of the parameter as the file writes them: what the use sets, else the default.
+    private func paramCurrent(_ sel: Selection, _ prm: Scene.Param) -> [String] {
+        if let use = paramUse(sel), let own = ownProp(use, prm.name) {
+            return InspectorController.texts(own)
+        }
+        return prm.defaultValue.map(InspectorController.texts) ?? []
+    }
+
+    /// The values the parameter holds in effect, as style names.
+    private func paramValues(_ sel: Selection, _ prm: Scene.Param) -> [String] {
+        paramCurrent(sel, prm).map(normalizeName)
+    }
+
+    /// The rows of the Parameters section: one per parameter of the component the selected use draws.
+    private func parameterRows(_ sel: Selection) -> [InspectorRow] {
+        guard let component = paramNode(sel) else { return [] }
+        return component.params.map { prm in
+            if let gr = paramGroup(sel, prm) {
+                if gr.anyOf {
+                    return InspectorRow(
+                        section: "Parameters", label: prm.name,
+                        text: checkedText(gr.styles, paramValues(sel, prm)), kind: .checks, choices: gr.styles)
+                }
+                let chosen = gr.styles.last(where: paramValues(sel, prm).contains) ?? ""
+                return InspectorRow(
+                    section: "Parameters", label: prm.name, text: chosen, kind: .popup, choices: gr.styles)
+            }
+            return InspectorRow(
+                section: "Parameters", label: prm.name,
+                text: paramCurrent(sel, prm).joined(separator: " "), kind: .text)
+        }
+    }
+
+    /// The styles the selected node names in effect: the use-style values drawn, the overrides of the uses
+    /// around a part already applied.
+    private func nodeStyles(_ sel: Selection) -> [String] {
+        styleRefs(sel.pl.props())
+    }
+
+    /// The groups of the nearest styles block above the selected node; a node that names no style gets none.
+    private func styleGroups(_ sel: Selection) -> [Scene.StyleGroup] {
+        guard !nodeStyles(sel).isEmpty, let node = sel.node, let scope = styleOwner(node) else { return [] }
+        return scope.styleGroups.filter { !$0.styles.isEmpty }
+    }
+
+    /// The rows of the Styles section: a popup for one-of, a check box per style for any-of.
+    private func styleRows(_ sel: Selection) -> [InspectorRow] {
+        let values = nodeStyles(sel)
+        return styleGroups(sel).map { gr in
+            if gr.anyOf {
+                return InspectorRow(
+                    section: "Styles", label: gr.name, text: checkedText(gr.styles, values),
+                    kind: .checks, choices: gr.styles)
+            }
+            let chosen = gr.styles.last(where: values.contains) ?? ""
+            return InspectorRow(
+                section: "Styles", label: gr.name, text: chosen, kind: .popup, choices: gr.styles)
+        }
+    }
+
+    /// The styles of a group that are in effect, in the order of the group.
+    private func checkedText(_ styles: [String], _ values: [String]) -> String {
+        styles.filter(values.contains).joined(separator: " ")
+    }
+
+    /// Writes the values as the command of parameter prm in the block of the use: one edit, one undo step.
+    private func setParam(_ sel: Selection, _ prm: Scene.Param, _ values: [String]) {
+        guard let use = paramUse(sel), let ctx = context(sel) else { return }
+        let line = ([prm.name] + values.map { paramValue(prm, $0) }).joined(separator: " ")
+        if let own = ownProp(use, prm.name) {
+            apply(Scene.TextEdit(start: own.range.start, end: own.range.end, new: line), in: ctx.file)
+        } else {
+            apply(insertEdit(ctx.text, use, line), in: ctx.file)
+        }
+    }
+
+    /// Drops the value of parameter prm of the use, so the default of the declaration comes back.
+    private func removeParam(_ sel: Selection, _ prm: Scene.Param) {
+        guard let use = paramUse(sel), let ctx = context(sel),
+            let edit = removeParamEdit(ctx.text, use, prm)
+        else { return }
+        apply(edit, in: ctx.file)
+    }
+
+    /// Adds a style to an any-of parameter, or drops it.
+    private func toggleParam(_ sel: Selection, _ prm: Scene.Param, _ style: String) {
+        var want = paramValues(sel, prm)
+        if want.contains(style) {
+            want.removeAll { $0 == style }
+        } else {
+            want.append(style)
+        }
+        setParam(sel, prm, want)
+    }
+
+    /// Makes style the choice of group gr: one-of replaces the styles of the group in place, any-of adds or
+    /// drops it.
+    private func setGroupStyle(_ sel: Selection, _ gr: Scene.StyleGroup, _ style: String) {
+        var want = nodeStyles(sel)
+        if gr.anyOf, want.contains(style) {
+            want.removeAll { $0 == style }
+        } else {
+            want = withStyle(want, gr, style)
+        }
+        setStyles(sel, want)
+    }
+
+    /// Puts style where the styles of the group are in want, so a choice takes the place of the default it
+    /// replaces; at the end when the group holds none of them.
+    private func withStyle(_ want: [String], _ gr: Scene.StyleGroup, _ style: String) -> [String] {
+        var out: [String] = []
+        var done = false
+        for name in want {
+            if gr.styles.contains(name) {
+                if !done {
+                    out.append(style)
+                    done = true
+                }
+                continue
+            }
+            out.append(name)
+        }
+        if !done {
+            out.append(style)
+        }
+        return out
+    }
+
+    /// Writes the styles the node names as one edit: the list itself on a node of the file; on a part of an
+    /// instance what differs from the defaults of its component, a dropped default by name (-medium).
+    private func setStyles(_ sel: Selection, _ want: [String]) {
+        guard let ctx = context(sel) else { return }
+        if let part = sel.part {
+            let base = nodeStyles(sel)
+            if base == want {
+                return
+            }
+            guard !part.at.isEmpty else {
+                canvas?.setMessage(
+                    "Not applied: the item has no unique name inside the instance, edit it in the use")
+                return
+            }
+            let args = removals(base, want) + additions(base, want)
+            guard let edit = atEdit(ctx.text, part.use, part.at, "use-style", args) else { return }
+            apply(edit, in: ctx.file)
+            return
+        }
+        guard let node = sel.node else { return }
+        var args = want
+        if ownUseStyle(node) > 1 {
+            args = removals(nodeStyles(sel), want) + want
+        }
+        guard let edit = propEdit(ctx.text, node, "use-style", args) else { return }
+        apply(edit, in: ctx.file)
+    }
+
+    /// The use-style commands written on n itself.
+    private func ownUseStyle(_ n: Scene.Node) -> Int {
+        if n.kind == .use {
+            return n.block.filter { $0.kind == .prop && $0.prop?.name == "use-style" }.count
+        }
+        return n.props.filter { $0.name == "use-style" }.count
+    }
+
+    private func removals(_ have: [String], _ want: [String]) -> [String] {
+        have.filter { !want.contains($0) }.map { "-" + $0 }
+    }
+
+    private func additions(_ have: [String], _ want: [String]) -> [String] {
+        want.filter { !have.contains($0) }
+    }
+
     private func build() -> (title: String, rows: [InspectorRow]) {
         guard let canvas, canvas.screen != nil else { return ("", []) }
         var head = "Screen"
@@ -323,6 +531,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         }
         rows.append(InspectorRow(section: "Header", label: "Size", text: size, kind: .info))
         guard let sel, sel.node != nil else { return (head, rows) }
+        rows += parameterRows(sel)
+        rows += styleRows(sel)
         rows += InspectorController.fields.map { fieldRow($0, sel) }
         return (head, rows)
     }
@@ -384,13 +594,30 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         applyToggle(row, on: row.text != "yes")
     }
 
+    /// Checks or unchecks a style of a check box group row, as a click on its box does.
+    func setCheck(_ style: String, on: Bool, for label: String) {
+        guard let row = row(label) else { return }
+        applyCheck(row, style, on: on)
+    }
+
     private func commitText(_ row: InspectorRow, _ raw: String) {
-        guard row.kind == .text, let f = field(for: row) else { return }
+        guard row.kind == .text else { return }
         let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value != row.text else {
             refresh()
             return
         }
+        if row.section == "Parameters" {
+            guard let sel = selection(), let prm = param(sel, row.label) else { return }
+            if value.isEmpty {
+                removeParam(sel, prm)  // an empty field drops the command: the default comes back
+            } else {
+                setParam(sel, prm, [value])
+            }
+            refresh()
+            return
+        }
+        guard let f = field(for: row) else { return }
         guard !f.numeric || value.isEmpty || isNumberOrExpr(value) else {
             refresh()  // a number field takes a number or the source of an expression, as go/app
             return
@@ -416,11 +643,41 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     }
 
     private func applyChoice(_ row: InspectorRow, _ choice: String) {
-        guard row.kind == .popup, let f = field(for: row), f.choices.contains(choice) else { return }
-        if choice == f.unset {
-            write(f.property, [])
-        } else {
-            write(f.property, [choice])
+        guard row.kind == .popup, row.choices.contains(choice) else { return }
+        guard let sel = selection() else { return }
+        switch row.section {
+        case "Parameters":
+            guard let prm = param(sel, row.label) else { return }
+            setParam(sel, prm, [choice])
+            refresh()
+        case "Styles":
+            guard let gr = styleGroups(sel).first(where: { $0.name == row.label }) else { return }
+            setGroupStyle(sel, gr, choice)
+            refresh()
+        default:
+            guard let f = field(for: row), f.choices.contains(choice) else { return }
+            if choice == f.unset {
+                write(f.property, [])
+            } else {
+                write(f.property, [choice])
+            }
+            refresh()
+        }
+    }
+
+    private func applyCheck(_ row: InspectorRow, _ style: String, on: Bool) {
+        guard row.kind == .checks, row.choices.contains(style), let sel = selection() else { return }
+        let checked = row.text.split(whereSeparator: \.isWhitespace).map(String.init)
+        guard checked.contains(style) != on else { return }
+        switch row.section {
+        case "Parameters":
+            guard let prm = param(sel, row.label) else { return }
+            toggleParam(sel, prm, style)
+        case "Styles":
+            guard let gr = styleGroups(sel).first(where: { $0.name == row.label }) else { return }
+            setGroupStyle(sel, gr, style)
+        default:
+            return
         }
         refresh()
     }
@@ -480,6 +737,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     }
 
     /// Applies one text edit through the document; a refusal stays over the canvas and the old text stays.
+    @discardableResult
     private func apply(_ edit: Scene.TextEdit, in file: String) -> Bool {
         guard let document else { return false }
         do {
@@ -556,6 +814,11 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         applyToggle(rows[button.tag], on: button.state == .on)
     }
 
+    @objc fileprivate func checkChanged(_ button: NSButton) {
+        guard rows.indices.contains(button.tag), let style = button.identifier?.rawValue else { return }
+        applyCheck(rows[button.tag], style, on: button.state == .on)
+    }
+
     func controlTextDidEndEditing(_ obj: Notification) {
         guard let field = obj.object as? NSTextField else { return }
         textCommitted(field)
@@ -573,6 +836,7 @@ private final class RowControl {
     private let text: NSTextField?
     private let popup: NSPopUpButton?
     private let toggleButton: NSButton?
+    private let checkBoxes: [NSButton]
 
     init(row: InspectorController.InspectorRow, tag: Int, target: InspectorController) {
         kind = row.kind
@@ -594,6 +858,7 @@ private final class RowControl {
             text = nil
             popup = nil
             toggleButton = nil
+            checkBoxes = []
             ctl = label
         case .text:
             let field = NSTextField(frame: .zero)
@@ -616,6 +881,7 @@ private final class RowControl {
             text = field
             popup = nil
             toggleButton = nil
+            checkBoxes = []
             ctl = field
         case .popup:
             let button = NSPopUpButton(frame: .zero, pullsDown: false)
@@ -630,6 +896,7 @@ private final class RowControl {
             text = nil
             popup = button
             toggleButton = nil
+            checkBoxes = []
             ctl = button
         case .toggle:
             let button = NSButton(checkboxWithTitle: "", target: target, action: #selector(InspectorController.toggleChanged(_:)))
@@ -639,7 +906,30 @@ private final class RowControl {
             text = nil
             popup = nil
             toggleButton = button
+            checkBoxes = []
             ctl = button
+        case .checks:
+            let group = NSStackView()
+            group.orientation = .vertical
+            group.alignment = .leading
+            group.spacing = 2
+            var boxes: [NSButton] = []
+            for choice in row.choices {
+                let button = NSButton(
+                    checkboxWithTitle: choice, target: target, action: #selector(InspectorController.checkChanged(_:)))
+                button.font = NSFont.systemFont(ofSize: 11)
+                button.controlSize = .small
+                button.tag = tag
+                button.identifier = NSUserInterfaceItemIdentifier(choice)
+                group.addArrangedSubview(button)
+                boxes.append(button)
+            }
+            info = nil
+            text = nil
+            popup = nil
+            toggleButton = nil
+            checkBoxes = boxes
+            ctl = group
         }
 
         let line = NSStackView(views: [caption, ctl])
@@ -671,6 +961,11 @@ private final class RowControl {
             }
         case .toggle:
             toggleButton?.state = row.text == "yes" ? .on : .off
+        case .checks:
+            let checked = Set(row.text.split(whereSeparator: \.isWhitespace).map(String.init))
+            for button in checkBoxes {
+                button.state = checked.contains(button.identifier?.rawValue ?? "") ? .on : .off
+            }
         }
     }
 
@@ -680,5 +975,8 @@ private final class RowControl {
         text?.delegate = nil
         popup?.target = nil
         toggleButton?.target = nil
+        for button in checkBoxes {
+            button.target = nil
+        }
     }
 }

@@ -66,7 +66,7 @@ func hasExpr(_ pr: Scene.Prop) -> Bool {
 
 /// The styles props name with use-style, in order; "-name" drops the one named before. An expression names its
 /// styles only once evaluated: before that its words are not style names.
-private func styleRefs(_ props: [Scene.Prop]) -> [String] {
+func styleRefs(_ props: [Scene.Prop]) -> [String] {
     var names: [String] = []
     for p in props where p.name == "use-style" {
         if p.val == nil && hasExpr(p) {
@@ -134,7 +134,7 @@ private func inheritProps(_ k: Scene.RNode, _ parent: Scene.RNode) {
 
 /// The node whose styles a node may name: the node itself when it holds a styles block (an item that is a
 /// component), else the nearest element above it.
-private func styleOwner(_ n: Scene.Node) -> Scene.Node? {
+func styleOwner(_ n: Scene.Node) -> Scene.Node? {
     if hasStyles(n) {
         return n
     }
@@ -142,7 +142,7 @@ private func styleOwner(_ n: Scene.Node) -> Scene.Node? {
 }
 
 /// The element whose styles a node may name: the nearest one above it in its own file.
-private func styleScope(_ n: Scene.Node) -> Scene.Node? {
+func styleScope(_ n: Scene.Node) -> Scene.Node? {
     var p = n.parent
     while let cur = p {
         if hasStyles(cur) {
