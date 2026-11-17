@@ -40,6 +40,10 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// program's.
     @MainActor private var diskStamp: FileStamp?
 
+    /// The versions of the files of the scene tree, the mounted ones included, when the tree was last
+    /// read, kept or saved; a different one there is a library another program changed.
+    @MainActor private var sceneStamps: [String: FileStamp?] = [:]
+
     /// What the last conversion from or to JSON Canvas left out; the window shows it.
     @MainActor private(set) var sceneCanvasNotes: [String] = []
 
@@ -286,6 +290,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         sceneText = nil
         savedSceneText = nil
         sceneRoot = nil
+        sceneStamps = [:]
         updateStore(elementModel)
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(nil)
@@ -319,6 +324,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         vc?.setElementModel(elementStore: self.store!)
         vc?.setSceneTree(sceneTree)
         self.fileURL = url
+        stampScene()
     }
 
     /// Mounts a library file as an element at the end of the document, as Go's Element > Add Library
@@ -379,6 +385,29 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         }
         walk(f)
         return out
+    }
+
+    /// The files the tree mounts, nested mounts included, as slash paths from the workspace root; the
+    /// tree holds every file it loaded, so a library mounted through another file is here too.
+    @MainActor
+    func mountedFiles() -> [String] {
+        guard let tree = sceneTree else { return [] }
+        let main = tree.main?.pos.file
+        return tree.order.map(\.pos.file).filter { $0 != main }
+    }
+
+    /// What File > Open Library offers: every mounted file with the alias of its first mount and its
+    /// absolute URL.
+    @MainActor
+    func mountedLibraries() -> [(lib: String, file: String, url: URL)] {
+        guard let root = sceneRoot else { return [] }
+        var aliases: [String: String] = [:]
+        for l in libraries() where aliases[l.file] == nil {
+            aliases[l.file] = l.lib
+        }
+        return mountedFiles().map { file in
+            (aliases[file] ?? (file as NSString).deletingPathExtension, file, root.appendingPathComponent(file))
+        }
     }
 
     /// What the mounted libraries offer for the query, then what the document itself reuses, grouped
@@ -543,6 +572,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     private func keepScene(_ text: String, _ tree: Scene.Tree) {
         sceneText = text
         sceneTree = tree
+        stampScene()
         refreshOutlineRows()
         vc?.setSceneTree(tree)
         syncSceneEdited()
@@ -585,6 +615,29 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
     }
 
+    /// Stamps every file of the tree: a load, an edit or a save makes the text of the mounted files
+    /// what the document shows now.
+    @MainActor
+    /// Takes the stamps of the files the tree was loaded from. A save that did not relayout the mounts
+    /// leaves theirs alone, so a library changed before the save is still read by the poll.
+    private func stampScene(includeMounts: Bool = true) {
+        guard let tree = sceneTree, let root = sceneRoot else {
+            sceneStamps = [:]
+            return
+        }
+        var next: [String: FileStamp?] = includeMounts ? [:] : sceneStamps
+        for n in tree.order where includeMounts || n.pos.file == tree.main?.pos.file {
+            next[n.pos.file] = fileStamp(of: root.appendingPathComponent(n.pos.file))
+        }
+        sceneStamps = next
+    }
+
+    /// The main-queue hop for a save, which AppKit may run off the main queue.
+    nonisolated private func refreshSceneStamps() {
+        let work = { MainActor.assumeIsolated { self.stampScene(includeMounts: false) } }
+        if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+    }
+
     /// Keeps the canonical classic text of the version just read or written.
     nonisolated private func setSavedText(_ text: String?) {
         let work = { MainActor.assumeIsolated { self.savedText = text } }
@@ -605,11 +658,55 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         return now != known
     }
 
-    /// Reads the file again when another program changed it and nothing would be lost. An edited
-    /// document keeps its text: Go asks in a dialog, and one every 500 ms takes the focus.
+    /// Whether a file the tree mounts changed on disk since the last read, edit or save. A stat error is
+    /// not a change, as for the main file.
+    @MainActor
+    func mountedFileChanged() -> Bool {
+        guard let root = sceneRoot else { return false }
+        let main = sceneTree?.main?.pos.file
+        for (file, known) in sceneStamps where file != main {
+            guard let now = fileStamp(of: root.appendingPathComponent(file)) else { continue }
+            if now != known { return true }
+        }
+        return false
+    }
+
+    /// Reads the whole scene again after one of its files changed, as go/app's sceneReload: the text of
+    /// the file on disk is loaded again and the document stops being edited.
+    @MainActor
+    private func reloadScene(from url: URL) {
+        let stamp = fileStamp(of: url)
+        do {
+            var text: String
+            var notes: [String] = []
+            if JSONCanvas.isCanvas(url.path) {
+                let converted = try JSONCanvas.canvasText(path: url.path, data: try Data(contentsOf: url))
+                text = converted.text
+                notes = converted.notes
+            } else {
+                text = try String(contentsOf: url, encoding: .utf8)
+            }
+            readScene(url, text: text)
+            sceneCanvasNotes = notes
+            diskStamp = stamp
+            stampScene()
+            updateChangeCount(.changeCleared)
+            syncSceneEdited()
+        } catch {
+            // The tree and the text already open stay; the next poll tries again.
+        }
+    }
+
+    /// Follows another program's changes: an unedited document reads the file again, a changed library
+    /// reloads the whole scene, an edited document keeps its text.
     @MainActor
     func pollExternalChanges() {
-        guard let url = fileURL, !isDocumentEdited, diskChanged() else { return }
+        guard let url = fileURL, !isDocumentEdited else { return }
+        if sceneTree != nil, mountedFileChanged() {
+            reloadScene(from: url)
+            return
+        }
+        guard diskChanged() else { return }
         do {
             try revert(toContentsOf: url, ofType: fileType ?? "")
         } catch {
@@ -739,6 +836,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             let converted = try convert()
             try converted.data.write(to: url, options: .atomic)
             setDiskStamp(fileStamp(of: url))
+            refreshSceneStamps()
             if let text = converted.text {
                 markSaved(text)
             } else if let es = readStore() {
@@ -757,6 +855,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
                 // still loads from the folder the document was opened in.
                 try Data(text.utf8).write(to: url, options: .atomic)
                 setDiskStamp(fileStamp(of: url))
+                refreshSceneStamps()
                 markSaved(text)
                 finish(url.lastPathComponent)
                 self.fileURL = url
@@ -766,6 +865,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
                 let value = es.model.toTennStr()
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 setDiskStamp(fileStamp(of: url))
+                refreshSceneStamps()
                 es.modified = false
                 setSavedText(value)
 

@@ -331,6 +331,130 @@ final class ExternalChangeTests: SceneDocumentTestCase {
         XCTAssertFalse(document.isDocumentEdited)
     }
 
+    // MARK: - Mounted libraries
+
+    private let screen = """
+        element Screen {
+            item Frame { auto-layout row }
+        }
+
+        element Kit --from-file "kit.tenn"
+
+        """
+
+    /// A scene that mounts kit.tenn, which mounts inner.tenn in turn.
+    private func mountingWorkspace() throws -> URL {
+        try workspace([
+            "screen.tenn": screen,
+            "kit.tenn": "element Inner --from-file \"inner.tenn\"\n",
+            "inner.tenn": "item Card { title \"Old\" }\n",
+        ])
+    }
+
+    /// The title of the card inner.tenn writes, as the tree read it.
+    private func cardTitle(_ tree: Scene.Tree, _ file: String) -> String? {
+        tree.file(file)?.content.first?.prop("title")?.text(0)
+    }
+
+    func testMountedFilesListsNestedMounts() throws {
+        let root = try mountingWorkspace()
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+
+        XCTAssertEqual(Set(document.mountedFiles()), ["kit.tenn", "inner.tenn"])
+        XCTAssertFalse(document.mountedFiles().contains("screen.tenn"), "the main file is not a mount")
+        XCTAssertEqual(Set(document.mountedLibraries().map { $0.file }), ["kit.tenn", "inner.tenn"])
+    }
+
+    func testAMountedFileChangeReloadsTheScene() throws {
+        let root = try mountingWorkspace()
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        XCTAssertEqual(cardTitle(tree, "inner.tenn"), "Old")
+
+        let next = "item Card { title \"New\" }\n"
+        try write(Data(next.utf8), to: root.appendingPathComponent("inner.tenn"))
+        document.pollExternalChanges()
+
+        let reloaded = try XCTUnwrap(document.sceneTree)
+        XCTAssertFalse(reloaded === tree, "the tree is read again")
+        XCTAssertEqual(reloaded.source("inner.tenn"), next)
+        XCTAssertEqual(cardTitle(reloaded, "inner.tenn"), "New")
+        XCTAssertEqual(document.sceneText, screen)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
+    func testAnEditedDocumentKeepsItsTextWhenALibraryChanges() throws {
+        let root = try mountingWorkspace()
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        let text = try XCTUnwrap(document.sceneText)
+        let row = try XCTUnwrap(text.range(of: "row"))
+        let start = text.utf8.distance(from: text.startIndex, to: row.lowerBound)
+        try document.applySceneEdit(Scene.TextEdit(start: start, end: start + 3, new: "column"), in: "screen.tenn")
+        let edited = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(document.isDocumentEdited)
+
+        try write(Data("item Card { title \"New\" }\n".utf8), to: root.appendingPathComponent("inner.tenn"))
+        document.pollExternalChanges()
+
+        XCTAssertEqual(document.sceneText, edited)
+        XCTAssertTrue(document.isDocumentEdited)
+    }
+
+    func testTheSameLibraryChangeIsReadOnce() throws {
+        let root = try mountingWorkspace()
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+
+        try write(Data("item Card { title \"New\" }\n".utf8), to: root.appendingPathComponent("inner.tenn"))
+        document.pollExternalChanges()
+        let tree = try XCTUnwrap(document.sceneTree)
+
+        document.pollExternalChanges()
+
+        XCTAssertTrue(document.sceneTree === tree, "the same change is not read a second time")
+    }
+
+    func testAMissingMountedFileKeepsTheScene() throws {
+        let root = try mountingWorkspace()
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+
+        try FileManager.default.removeItem(at: root.appendingPathComponent("inner.tenn"))
+        document.pollExternalChanges()
+
+        XCTAssertTrue(document.sceneTree === tree, "a stat error is not a change, as for the main file")
+        XCTAssertEqual(document.sceneText, screen)
+        XCTAssertFalse(document.isDocumentEdited)
+    }
+
+    /// A save writes the main file only: a library that changed before it is still read by the poll, as
+    /// the save did not lay the mounts out again (go/app keeps clean library stamps from the load).
+    func testASaveLeavesTheStampsOfChangedMountsAlone() throws {
+        let root = try mountingWorkspace()
+        let url = root.appendingPathComponent("screen.tenn")
+        let document = try openTestDocument(url)
+        let before = try XCTUnwrap(document.sceneTree)
+
+        try write(Data("item Card { title \"New\" }\n".utf8), to: root.appendingPathComponent("inner.tenn"))
+        try document.write(to: url, ofType: "tenn")
+        document.pollExternalChanges()
+
+        XCTAssertFalse(document.sceneTree === before, "the poll reads the library the save did not lay out")
+        XCTAssertFalse(document.isDocumentEdited)
+        XCTAssertTrue(document.sceneTree?.source("inner.tenn")?.contains("\"New\"") ?? false)
+    }
+
+    func testASaveWithNoMountChangeDoesNotReload() throws {
+        let root = try mountingWorkspace()
+        let url = root.appendingPathComponent("screen.tenn")
+        let document = try openTestDocument(url)
+        let tree = try XCTUnwrap(document.sceneTree)
+
+        try document.write(to: url, ofType: "tenn")
+        document.pollExternalChanges()
+
+        XCTAssertTrue(document.sceneTree === tree, "an unchanged mount is not read again")
+    }
+
     /// A group over a text node: the conversion nests items, which makes the file a scene.
     private func canvas(_ text: String) -> String {
         """

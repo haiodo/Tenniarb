@@ -141,6 +141,9 @@ public class TenniarbApplication: NSApplication {
 
         fileMenu.addItem(NSMenuItem(title: "New", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "n"))
         fileMenu.addItem(NSMenuItem(title: "Open…", action: #selector(NSDocumentController.openDocument(_:)), keyEquivalent: "o"))
+        let openLibraryItem = NSMenuItem(title: AppDelegate.openLibraryTitle, action: nil, keyEquivalent: "")
+        openLibraryItem.submenu = NSMenu(title: AppDelegate.openLibraryTitle)
+        fileMenu.addItem(openLibraryItem)
         fileMenu.addItem(
             NSMenuItem(title: "Add Library…", action: #selector(ViewController.addLibrary(_:)), keyEquivalent: ""))
         let insertComponentItem = NSMenuItem(

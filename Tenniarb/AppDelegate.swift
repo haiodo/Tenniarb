@@ -29,6 +29,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Follows a file another program changes, as go/app's PollInterval.
     private var externalChangeTimer: Timer?
 
+    /// File > Open Library and the File menu that holds it, kept for the menu delegate.
+    static let openLibraryTitle = "Open Library"
+    private weak var fileMenu: NSMenu?
+    private weak var openLibraryItem: NSMenuItem?
+
     /// Kept alive while the app runs: a released DispatchSourceSignal never fires.
     private var terminationSources: [DispatchSourceSignal] = []
 
@@ -60,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Use delayed execution to ensure menu is fully ready
         DispatchQueue.main.async { [weak self] in
             self?.configureSettingsMenu()
+            self?.installOpenLibraryMenu()
         }
         startExternalChangePoll()
         watchTerminate()
@@ -196,6 +202,59 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return a.resolvingSymlinksInPath().standardizedFileURL.path == b.resolvingSymlinksInPath().standardizedFileURL.path
     }
 
+    /// The files the active document mounts, so File > Open Library opens one in its own window. Both the
+    /// File menu and the submenu fill their items when shown: a library added since the last look appears.
+    private func installOpenLibraryMenu() {
+        guard let file = NSApp.mainMenu?.items.first(where: { $0.submenu?.title == "File" })?.submenu,
+            let item = file.items.first(where: { $0.title == Self.openLibraryTitle })
+        else { return }
+        fileMenu = file
+        openLibraryItem = item
+        file.delegate = self
+        item.submenu?.delegate = self
+        item.isEnabled = false
+    }
+
+    /// Fills Open Library with the mounts of the active document by alias and file.
+    private func fillOpenLibrary(_ menu: NSMenu) {
+        menu.removeAllItems()
+        let libraries = activeSceneDocument()?.mountedLibraries() ?? []
+        guard !libraries.isEmpty else {
+            let none = NSMenuItem(title: "No mounted libraries", action: nil, keyEquivalent: "")
+            none.isEnabled = false
+            menu.addItem(none)
+            return
+        }
+        let many = libraries.count > 1
+        for library in libraries {
+            let item = NSMenuItem(
+                title: many ? "\(library.lib) — \(library.file)" : "Open \(library.lib)",
+                action: #selector(openLibrary(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = library.url
+            menu.addItem(item)
+        }
+    }
+
+    /// Opens the chosen library in a window of its own; a window that already shows it comes to the front.
+    @objc func openLibrary(_ sender: NSMenuItem) {
+        guard let url = sender.representedObject as? URL else { return }
+        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { document, _, error in
+            if let error {
+                Swift.print("Could not open \(url.path): \(error)")
+                return
+            }
+            (document as? Document)?.showWindows()
+        }
+    }
+
+    /// The document the menus act on: the current one, else the one whose window is key.
+    private func activeSceneDocument() -> Document? {
+        let current = NSDocumentController.shared.currentDocument ?? NSApp.keyWindow?.windowController?.document
+        guard let document = current as? Document, document.sceneTree != nil else { return nil }
+        return document
+    }
+
     private func configureSettingsMenu() {
         Swift.print("configureSettingsMenu called, mainMenu: \(String(describing: NSApp.mainMenu))")
         if let appMenu = NSApp.mainMenu?.item(at: 0)?.submenu {
@@ -260,6 +319,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         helpWindow.setContentSize(NSSize(width: 800, height: 600))
         let wc = NSWindowController(window: helpWindow)
         wc.showWindow(self)
+    }
+}
+
+extension AppDelegate: NSMenuDelegate {
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        if menu === openLibraryItem?.submenu {
+            fillOpenLibrary(menu)
+        } else if menu === fileMenu {
+            openLibraryItem?.isEnabled = !(activeSceneDocument()?.mountedLibraries().isEmpty ?? true)
+            // Filled here too: AppKit may grey a submenu that is empty when the File menu opens.
+            if let submenu = openLibraryItem?.submenu {
+                fillOpenLibrary(submenu)
+            }
+        }
     }
 }
 
