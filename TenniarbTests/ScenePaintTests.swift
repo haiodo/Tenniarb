@@ -162,6 +162,198 @@ final class ScenePaintTests: SceneDocumentTestCase {
         XCTAssertLessThan(middle.greenComponent, 0.3)
     }
 
+    // MARK: - Icons
+
+    /// A screen of a scratch file, with its tree for the diagnostics.
+    private func scratch(_ text: String) throws -> (tree: Scene.Tree, screen: Scene.Screen) {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tenniarb-scene-icon-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        try text.write(to: root.appendingPathComponent("icon.tenn"), atomically: true, encoding: .utf8)
+        let tree = try SceneLoader(root: root).load("icon.tenn")
+        let screen = try XCTUnwrap(tree.build("Screen"), "\(tree.diagnostics)")
+        return (tree, screen)
+    }
+
+    /// Paints the screen into a transparent bitmap of its content size, y from the top.
+    private func painted(_ screen: Scene.Screen) throws -> NSBitmapImageRep {
+        let w = Int(ceil(screen.w))
+        let h = Int(ceil(screen.h))
+        let rep = try XCTUnwrap(
+            NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h, bitsPerSample: 8, samplesPerPixel: 4,
+                hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+        let context = try XCTUnwrap(NSGraphicsContext(bitmapImageRep: rep))
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        let c = context.cgContext
+        c.clear(CGRect(x: 0, y: 0, width: w, height: h))
+        c.translateBy(x: 0, y: CGFloat(h))
+        c.scaleBy(x: 1, y: -1)
+        ScenePainter(screen: screen).paint(c)
+        NSGraphicsContext.restoreGraphicsState()
+        return rep
+    }
+
+    private func alpha(_ rep: NSBitmapImageRep, _ x: Double, _ y: Double) throws -> CGFloat {
+        try color((rep: rep, scale: 1), x, y).alphaComponent
+    }
+
+    private func placed(_ pl: Scene.Placed, named name: String) -> Scene.Placed? {
+        if pl.r.name == name { return pl }
+        for k in pl.kids {
+            if let hit = placed(k, named: name) { return hit }
+        }
+        return nil
+    }
+
+    func testSVGPathParsesEveryCommand() throws {
+        func bounds(_ d: String) throws -> CGRect {
+            try XCTUnwrap(Scene.SVGPath.parse(d), d).bounds
+        }
+        XCTAssertEqual(try bounds("M1 2L3 4"), CGRect(x: 1, y: 2, width: 2, height: 2))
+        XCTAssertEqual(try bounds("M1 2H5V6"), CGRect(x: 1, y: 2, width: 4, height: 4))
+        XCTAssertEqual(try bounds("M0 0C0 10 10 10 10 0"), CGRect(x: 0, y: 0, width: 10, height: 10))
+        XCTAssertEqual(try bounds("M0 0S10 10 10 0"), CGRect(x: 0, y: 0, width: 10, height: 10))
+        XCTAssertEqual(try bounds("M0 0Q5 10 10 0"), CGRect(x: 0, y: 0, width: 10, height: 10))
+        XCTAssertEqual(try bounds("M0 0T10 0"), CGRect(x: 0, y: 0, width: 10, height: 0))
+        XCTAssertEqual(try bounds("M0 0L10 0L10 10Z"), CGRect(x: 0, y: 0, width: 10, height: 10))
+        let arc = try bounds("M0 0A5 5 0 0 0 10 0")
+        XCTAssertEqual(arc.width, 10, accuracy: 0.01)
+        XCTAssertEqual(arc.height, 5, accuracy: 0.01, "the half circle bulges to one side")
+    }
+
+    func testSVGPathParsesRelativeAndImplicitRepeats() throws {
+        let g = try XCTUnwrap(Scene.SVGPath.parse("m1 2l3 4 5 6"))
+        XCTAssertFalse(g.isEmpty)
+        XCTAssertEqual(g.bounds, CGRect(x: 1, y: 2, width: 8, height: 10), "l repeats its pair")
+        let box = try XCTUnwrap(Scene.SVGPath.parse("M0 0h10v10h-10v-10z"))
+        XCTAssertEqual(box.bounds, CGRect(x: 0, y: 0, width: 10, height: 10))
+        let line = try XCTUnwrap(Scene.SVGPath.parse("M0 0 10 0 10 10"))
+        XCTAssertEqual(line.bounds, CGRect(x: 0, y: 0, width: 10, height: 10), "M repeats as L")
+    }
+
+    func testSVGPathRejectsBadTextAndKeepsEmpty() throws {
+        XCTAssertNil(Scene.SVGPath.parse("M1 x"))
+        XCTAssertNil(Scene.SVGPath.parse("not a path"))
+        XCTAssertNil(Scene.SVGPath.parse("M0 0 L"))
+        XCTAssertNil(Scene.SVGPath.parse("X0 0"))
+        let empty = try XCTUnwrap(Scene.SVGPath.parse(""))
+        XCTAssertTrue(empty.isEmpty)
+    }
+
+    func testIconDrawsItsPathAndLeavesTheCornerTransparent() throws {
+        let shape = """
+            element "Screen" {
+                item "Icon" {
+                    width 40; height 40; auto-layout abs; color #ff0000; border-color none
+                    view-box 0 0 40 40
+                    path "M0 0L40 0L0 40Z"
+                }
+            }
+            """
+        let (_, screen) = try scratch(shape)
+        let rep = try painted(screen)
+        assertColor(try color((rep: rep, scale: 1), 10, 10), 1, 0, 0, "inside the triangle")
+        XCTAssertLessThan(try alpha(rep, 35, 35), 0.1, "outside the path the item is transparent")
+
+        let box = """
+            element "Screen" {
+                item "Icon" { width 40; height 40; auto-layout abs; color #ff0000 }
+            }
+            """
+        let (_, plain) = try scratch(box)
+        let paintedBox = try painted(plain)
+        assertColor(try color((rep: paintedBox, scale: 1), 35, 35), 1, 0, 0, "without path the box is drawn")
+    }
+
+    func testIconViewBoxFitsItsAspectRatioCentered() throws {
+        let (_, screen) = try scratch(
+            """
+            element "Screen" {
+                item "Band" {
+                    width 40; height 40; auto-layout abs; color #00ff00; border-color none
+                    view-box 0 0 40 20
+                    path "M0 0H40V20H0Z"
+                }
+            }
+            """)
+        let rep = try painted(screen)
+        XCTAssertLessThan(try alpha(rep, 20, 5), 0.1, "the band leaves a margin above")
+        assertColor(try color((rep: rep, scale: 1), 20, 20), 0, 1, 0, "the band fills the middle")
+        XCTAssertLessThan(try alpha(rep, 20, 35), 0.1, "and below")
+    }
+
+    func testIconHugsTheViewBox() throws {
+        let (tree, screen) = try scratch(
+            """
+            element "Screen" {
+                item "Star" { auto-layout abs; view-box 0 0 28 28; path "M14 2a12 12 0 1 0 12 12" }
+            }
+            """)
+        XCTAssertEqual(tree.diagnostics.filter { !$0.warn }.count, 0, "\(tree.diagnostics)")
+        let star = try XCTUnwrap(screen.placed().kids.first)
+        XCTAssertEqual(star.w, 28, accuracy: 1e-9)
+        XCTAssertEqual(star.h, 28, accuracy: 1e-9)
+    }
+
+    func testIconPerPathInkOverridesTheItemColor() throws {
+        let (_, screen) = try scratch(
+            """
+            element "Screen" {
+                item "Two" {
+                    width 40; height 20; auto-layout abs; color #ff0000; border-color none
+                    view-box 0 0 40 20
+                    path "M0 0H10V10H0Z" color #0000ff
+                    path "M20 0H30V10H20Z"
+                }
+            }
+            """)
+        let rep = try painted(screen)
+        assertColor(try color((rep: rep, scale: 1), 5, 5), 0, 0, 1, "the path names its own fill")
+        assertColor(try color((rep: rep, scale: 1), 25, 5), 1, 0, 0, "the second takes the item colour")
+        XCTAssertLessThan(try alpha(rep, 15, 5), 0.1)
+    }
+
+    func testBadViewBoxWarnsAndUsesThePathBounds() throws {
+        let (tree, screen) = try scratch(
+            """
+            element "Screen" {
+                item "Star" { auto-layout abs; view-box 0 0 0 10; path "M0 0H20V10H0Z" }
+            }
+            """)
+        XCTAssertTrue(
+            tree.diagnostics.contains {
+                $0.warn && $0.message.contains("view-box takes 4 numbers with width and height above 0")
+            }, "\(tree.diagnostics)")
+        let star = try XCTUnwrap(screen.placed().kids.first)
+        XCTAssertEqual(star.w, 20, accuracy: 1e-9, "the bounds of the path stand in")
+        XCTAssertEqual(star.h, 10, accuracy: 1e-9)
+    }
+
+    func testBadPathWarnsAndKeepsTheBox() throws {
+        let (tree, screen) = try scratch(
+            """
+            element "Screen" {
+                item "Icon" { width 40; height 40; auto-layout abs; color #ff0000; path "M1 x" }
+            }
+            """)
+        XCTAssertTrue(tree.diagnostics.contains { $0.warn && $0.message.contains("not an SVG path") }, "\(tree.diagnostics)")
+        let rep = try painted(screen)
+        assertColor(try color((rep: rep, scale: 1), 35, 35), 1, 0, 0, "a malformed path leaves the box")
+    }
+
+    func testTheSpinnerArcOfTheAnimationsFixtureDraws() throws {
+        let view = try canvas("web/fixtures/scene/animations.tenn")
+        let screen = try XCTUnwrap(view.screen)
+        let rep = try painted(screen)
+        let spinner = try XCTUnwrap(placed(screen.placed(), named: "Spinner"))
+        let rect = NSRect(x: spinner.x, y: spinner.y, width: spinner.w, height: spinner.h)
+        XCTAssertGreaterThan(
+            countOther((rep: rep, scale: 1), rect, NSColor(srgbRed: 1, green: 1, blue: 1, alpha: 1)), 5, "the relative arc drew nothing")
+    }
+
     // MARK: - Window
 
     func testASceneDocumentShowsTheCanvas() throws {

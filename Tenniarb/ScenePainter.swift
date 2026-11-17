@@ -91,6 +91,21 @@ final class ScenePainter {
         guard w > 0, h > 0, st.display != "none" else { return }
         let id = ObjectIdentifier(pl.r)
         let mask = pictureMask(st, w, h)
+        if let icons = p.icons[id], !icons.isEmpty {
+            for ic in icons {
+                drawIcon(ic, w, h, st, c)
+            }
+            if let ti = p.texts[id] {
+                c.saveGState()
+                if let mask {
+                    c.addPath(mask)
+                    c.clip()
+                }
+                drawTitle(ti, pl, st, leaf: true, shadow: nil, c)
+                c.restoreGState()
+            }
+            return
+        }
         if st.display == "stack" {
             // Three sheets behind the box, stepped 2 up and right, as the classic renderer draws a stack.
             for i in 1...3 {
@@ -136,7 +151,8 @@ final class ScenePainter {
             c.saveGState()
             c.setStrokeColor(st.border.cgColor)
             c.setLineWidth(st.lineW)
-            c.setLineJoin(.miter)
+            c.setLineCap(lineCap(st.lineCap))
+            c.setLineJoin(lineJoin(st.lineJoin))
             c.setMiterLimit(10)
             if let dash = st.dash {
                 c.setLineDash(phase: st.dashPhase, lengths: dash.map { CGFloat($0) })
@@ -464,6 +480,53 @@ final class ScenePainter {
 
     // MARK: - Shapes
 
+    /// Fits the view box into w by h keeping the aspect ratio, centered, in item units: the path is scaled,
+    /// not the canvas, so the stroke width stays as written.
+    private func drawIcon(_ ic: Scene.Icon, _ w: Double, _ h: Double, _ st: Scene.Look, _ c: CGContext) {
+        let v = ic.viewBox
+        guard v.width > 0, v.height > 0 else { return }
+        let s = min(w / v.width, h / v.height)
+        var t = CGAffineTransform(
+            a: s, b: 0, c: 0, d: s, tx: (w - v.width * s) / 2 - v.minX * s, ty: (h - v.height * s) / 2 - v.minY * s)
+        guard let path = ic.path.copy(using: &t) else { return }
+        if ic.fill.a > 0 {
+            if let g = ic.grad {
+                fillGradient(path, g, w, h, c, evenOdd: ic.evenOdd)
+            } else {
+                c.addPath(path)
+                c.setFillColor(ic.fill.cgColor)
+                c.fillPath(using: ic.evenOdd ? .evenOdd : .winding)
+            }
+        }
+        if ic.lineWidth > 0 && ic.stroke.a > 0 {
+            c.saveGState()
+            c.addPath(path)
+            c.setStrokeColor(ic.stroke.cgColor)
+            c.setLineWidth(ic.lineWidth)
+            c.setLineCap(lineCap(st.lineCap))
+            c.setLineJoin(lineJoin(st.lineJoin))
+            c.setMiterLimit(10)
+            c.strokePath()
+            c.restoreGState()
+        }
+    }
+
+    private func lineCap(_ name: String) -> CGLineCap {
+        switch name {
+        case "round": return .round
+        case "square": return .square
+        default: return .butt
+        }
+    }
+
+    private func lineJoin(_ name: String) -> CGLineJoin {
+        switch name {
+        case "round": return .round
+        case "bevel": return .bevel
+        default: return .miter
+        }
+    }
+
     /// The outline of the box of an item: an ellipse for display circle, else its rounded rectangle.
     private func boxPath(_ st: Scene.Look, _ w: Double, _ h: Double) -> CGPath {
         if st.display == "circle" {
@@ -498,7 +561,9 @@ final class ScenePainter {
         c.restoreGState()
     }
 
-    private func fillGradient(_ path: CGPath, _ g: Scene.Gradient, _ w: Double, _ h: Double, _ c: CGContext) {
+    private func fillGradient(
+        _ path: CGPath, _ g: Scene.Gradient, _ w: Double, _ h: Double, _ c: CGContext, evenOdd: Bool = false
+    ) {
         let (from, to) = g.line(w, h)
         guard let space = CGColorSpace(name: CGColorSpace.sRGB),
             let grad = CGGradient(
@@ -509,7 +574,7 @@ final class ScenePainter {
         }
         c.saveGState()
         c.addPath(path)
-        c.clip()
+        c.clip(using: evenOdd ? .evenOdd : .winding)
         c.drawLinearGradient(
             grad, start: CGPoint(x: from.x, y: from.y), end: CGPoint(x: to.x, y: to.y),
             options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])

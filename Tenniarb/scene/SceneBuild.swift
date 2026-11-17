@@ -51,6 +51,8 @@ extension Scene {
         var styles: [ObjectIdentifier: Look] = [:]
         /// The pictures of the screen, kept for the painter that draws them.
         var images: [ObjectIdentifier: ItemImage] = [:]
+        /// The vector shapes a leaf draws in place of its box, in file order.
+        var icons: [ObjectIdentifier: [Scene.Icon]] = [:]
         var ends: [ObjectIdentifier: (Scene.RNode, Scene.RNode)] = [:]  // link -> its two items
         /// The classic inline pictures of a node, by the name its text draws them with.
         var inlines: [ObjectIdentifier: [String: ItemImage]] = [:]
@@ -279,9 +281,14 @@ extension Scene {
 
         /// Gives an item without children the size of its title and body.
         private func leaf(_ rn: RNode, _ n: LayoutNode, _ inCtx: Bool) {
-            // An icon draws no name as text, as in a layout context; icon.go is not ported.
-            let ti = textOf(rn, inCtx)
-            let body = bodies[id(rn)]
+            icon(rn, n)
+            let shapes = icons[id(rn)] ?? []
+            // An icon draws no name as text, as in a layout context.
+            let ti = textOf(rn, inCtx || !shapes.isEmpty)
+            var body = bodies[id(rn)]
+            if !shapes.isEmpty {
+                body = nil  // an icon has no text body: the path is the content
+            }
             var padX = classic ? Scene.classicTextPad : Scene.textPadX
             var padY = classic ? Scene.classicTextPad : Scene.textPadY
             if inCtx {
@@ -382,6 +389,22 @@ extension Scene {
                 return nil
             }
             return evalProp(rn, pr)
+        }
+
+        /// The properties of that name on rn, evaluated (spec 6): a node may name several paths.
+        func namedProps(_ rn: RNode, _ name: String) -> [Prop] {
+            var out: [Prop] = []
+            for pr in rn.props where pr.name == name {
+                if !hasExpr(pr) {
+                    out.append(pr)
+                    continue
+                }
+                if !canEval() { continue }  // a value check cannot know; the build with an evaluator reports it
+                if let evaluated = evalProp(rn, pr) {
+                    out.append(evaluated)
+                }
+            }
+            return out
         }
 
         /// pr evaluated in the scope of rn, once per build; nil when an expression failed, which leaves the

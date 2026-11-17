@@ -25,6 +25,7 @@
 		AE02EC000000000000000040 /* SceneColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000030 /* SceneColor.swift */; };
 		AE02EC000000000000000041 /* ScenePaint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000031 /* ScenePaint.swift */; };
 		AE02EC000000000000000042 /* ScenePlaced.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000032 /* ScenePlaced.swift */; };
+		AE02EC00000000000000009E /* SceneSVGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000009D /* SceneSVGPath.swift */; };
 		AE02EC000000000000000043 /* SceneParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000033 /* SceneParityTests.swift */; };
 		AE02EC000000000000000044 /* SceneEval.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000034 /* SceneEval.swift */; };
 		AE02EC000000000000000045 /* SceneEvalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000035 /* SceneEvalTests.swift */; };
@@ -233,6 +234,7 @@
 		AE02EC000000000000000030 /* SceneColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneColor.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000031 /* ScenePaint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaint.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000032 /* ScenePlaced.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePlaced.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000009D /* SceneSVGPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneSVGPath.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000033 /* SceneParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneParityTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000034 /* SceneEval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEval.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000035 /* SceneEvalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEvalTests.swift; sourceTree = "<group>"; };
@@ -745,6 +747,7 @@
 				AE02EC000000000000000030 /* SceneColor.swift */,
 				AE02EC000000000000000031 /* ScenePaint.swift */,
 				AE02EC000000000000000032 /* ScenePlaced.swift */,
+				AE02EC00000000000000009D /* SceneSVGPath.swift */,
 				AE02EC000000000000000034 /* SceneEval.swift */,
 				AE02EC000000000000000036 /* SceneLink.swift */,
 				AE02EC000000000000000037 /* SceneBody.swift */,
@@ -1004,6 +1007,7 @@
 				AE02EC000000000000000040 /* SceneColor.swift in Sources */,
 				AE02EC000000000000000041 /* ScenePaint.swift in Sources */,
 				AE02EC000000000000000042 /* ScenePlaced.swift in Sources */,
+				AE02EC00000000000000009E /* SceneSVGPath.swift in Sources */,
 				AE02EC000000000000000044 /* SceneEval.swift in Sources */,
 				AE02EC000000000000000046 /* SceneLink.swift in Sources */,
 				AE02EC000000000000000047 /* SceneBody.swift in Sources */,

@@ -14,6 +14,7 @@
 //
 
 import Foundation
+import Tenn
 import cmkdown
 
 extension Scene {
@@ -62,6 +63,8 @@ extension Scene {
         var grad: Gradient?  // set by color linear ...; fill is then its first visible stop
         var shadows: [Shadow] = []  // in file order, the last one on top
         var lineW = 1.0
+        var lineCap = ""  // line-cap: butt when empty, else round or square
+        var lineJoin = ""  // line-join: miter when empty, else round or bevel
         var dash: [Double]?  // line-style dashed or dotted; nil is a solid line
         var dashPhase = 0.0
         var radius = [0.0, 0.0, 0.0, 0.0]  // top left, top right, bottom right, bottom left
@@ -257,6 +260,22 @@ extension Scene.Prep {
             text = Scene.contrast(st.fill)
         }
         st.text = color(rn, "text-color", text)
+        if let pr = prop(rn, "line-cap") {
+            let w = pr.text(0) ?? ""
+            switch w {
+            case "round", "square": st.lineCap = w
+            case "butt": break
+            default: t.warn(pr.pos, "line-cap takes butt, round or square, got \"\(w)\"")
+            }
+        }
+        if let pr = prop(rn, "line-join") {
+            let w = pr.text(0) ?? ""
+            switch w {
+            case "round", "bevel": st.lineJoin = w
+            case "miter": break
+            default: t.warn(pr.pos, "line-join takes miter, round or bevel, got \"\(w)\"")
+            }
+        }
         if let v = num(rn, "line-width") {
             st.lineW = v
         }
@@ -293,5 +312,120 @@ extension Scene.Prep {
             st.clip = flag(rn, "clip")
         }
         return st
+    }
+
+    /// Reads every path of a leaf, in file order, and the view-box of the item: a shape may name its own
+    /// ink - color fills it, border-color and line-width stroke it - and takes the one of the item otherwise.
+    /// The first path is drawn first, so it lies under the rest. Without view-box the bounds of the first
+    /// path stand in.
+    func icon(_ rn: Scene.RNode, _ n: Scene.LayoutNode) {
+        let list = namedProps(rn, "path")
+        if list.isEmpty { return }
+        var vx = 0.0
+        var vy = 0.0
+        var vw = 0.0
+        var vh = 0.0
+        var box = false
+        if let vb = prop(rn, "view-box") {
+            var v = [0.0, 0.0, 0.0, 0.0]
+            var ok = vb.args.count == 4
+            var i = 0
+            while ok && i < 4 {
+                if let x = vb.num(i) {
+                    v[i] = x
+                } else {
+                    ok = false
+                }
+                i += 1
+            }
+            if ok && v[2] > 0 && v[3] > 0 {
+                vx = v[0]
+                vy = v[1]
+                vw = v[2]
+                vh = v[3]
+                box = true
+            } else {
+                t.warn(vb.pos, "view-box takes 4 numbers with width and height above 0, the path bounds are used")
+            }
+        }
+        let hasFill = prop(rn, "color") != nil
+        let hasStroke = prop(rn, "border-color") != nil
+        let (itemFill, itemGrad) = fill(rn, Scene.Color())
+        let itemStroke = color(rn, "border-color", Scene.Color())
+        var out: [Scene.Icon] = []
+        for pr in list {
+            let d = pr.text(0) ?? ""
+            guard let g = Scene.SVGPath.parse(d), !g.isEmpty else {
+                t.warn(pr.pos, "path: not an SVG path, the item is drawn as a box")
+                continue
+            }
+            var ic = Scene.Icon(path: g.path, viewBox: CGRect(x: vx, y: vy, width: vw, height: vh))
+            if !box {
+                ic.viewBox = g.bounds
+            }
+            if ic.viewBox.width <= 0 || ic.viewBox.height <= 0 {
+                t.warn(pr.pos, "path: empty bounds, give a view-box")
+                continue
+            }
+            // The ink of the command is the whole ink of its shape: a shape that names a fill is filled and not
+            // stroked, one that names a stroke is stroked and not filled. Only a shape that names no ink at all
+            // takes the one of the item, as a shadow without a colour takes the alpha of the fill.
+            let (fillColor, hasOwnFill) = pr.colorOf("color")
+            let (strokeColor, hasOwnStroke) = pr.colorOf("border-color")
+            if hasOwnFill || hasOwnStroke {
+                ic.fill = fillColor
+                ic.stroke = strokeColor
+            } else if !hasFill && !hasStroke && out.isEmpty {
+                ic.fill = styles[ObjectIdentifier(rn)]?.text ?? Scene.Color()
+            } else {
+                ic.fill = itemFill
+                ic.grad = itemGrad
+                ic.stroke = itemStroke
+            }
+            if let v = pr.numOf("line-width"), v >= 0 {
+                ic.lineWidth = v
+            } else {
+                ic.lineWidth = styles[ObjectIdentifier(rn)]?.lineW ?? 1
+            }
+            if let v = pr.wordOf("fill-rule", ["evenodd", "nonzero"]) {
+                ic.evenOdd = v == "evenodd"
+            } else if let v = word(rn, "fill-rule", ["evenodd", "nonzero"]) {
+                ic.evenOdd = v == "evenodd"
+            }
+            out.append(ic)
+        }
+        if out.isEmpty { return }
+        icons[ObjectIdentifier(rn)] = out
+        n.leafW = { out[0].viewBox.width }
+        n.leafH = { _ in out[0].viewBox.height }
+    }
+}
+
+extension Scene.Prop {
+    /// The text of the argument that follows the word name in a command: `path "M…" color #e11` names its ink
+    /// that way.
+    private func argText(_ name: String) -> String? {
+        for (i, a) in args.enumerated() where i + 1 < args.count && a.getIdentText() == name {
+            return args[i + 1].getIdentText()
+        }
+        return nil
+    }
+
+    /// The colour written as an argument of the command, found false when it writes none.
+    func colorOf(_ name: String) -> (Scene.Color, Bool) {
+        guard let text = argText(name), let c = Scene.parseColor(text) else { return (Scene.Color(), false) }
+        return (c, true)
+    }
+
+    /// The number written as an argument of the command.
+    func numOf(_ name: String) -> Double? {
+        guard let text = argText(name) else { return nil }
+        return Double(text.trimmingCharacters(in: .whitespaces))
+    }
+
+    /// The word written as an argument of the command, one of the given.
+    func wordOf(_ name: String, _ words: [String]) -> String? {
+        guard let text = argText(name), words.contains(text) else { return nil }
+        return text
     }
 }
