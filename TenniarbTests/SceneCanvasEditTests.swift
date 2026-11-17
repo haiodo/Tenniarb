@@ -18,7 +18,8 @@ import XCTest
 @testable import Tenniarb
 
 /// Input on the scene canvas: a click selects the drawn item under it, a double click edits its title
-/// through the document, and a node of a mounted file is refused on the canvas.
+/// through the document, a part of a library is edited through its use, and a node of a mounted file
+/// shown as it is is refused.
 @MainActor
 final class SceneCanvasEditTests: SceneDocumentTestCase {
 
@@ -63,6 +64,31 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         return view
     }
 
+    /// A canvas over a .tenn written into a scratch workspace, no document: the picture and the hit-test.
+    private func canvas(text: String) throws -> SceneCanvasView {
+        let root = try workspace()
+        let url = root.appendingPathComponent("a.tenn")
+        try text.write(to: url, atomically: true, encoding: .utf8)
+        let view = SceneCanvasView(frame: .zero)
+        view.show(try SceneLoader(root: root).load("a.tenn"))
+        let screen = try XCTUnwrap(view.screen)
+        view.frame = NSRect(origin: .zero, size: SceneCanvasView.contentSize(screen))
+        return view
+    }
+
+    /// A scene document on text written into a scratch workspace.
+    private func document(_ text: String, in root: URL? = nil) throws -> Document {
+        let dir: URL
+        if let root {
+            dir = root
+        } else {
+            dir = try workspace()
+        }
+        let url = dir.appendingPathComponent("a.tenn")
+        try text.write(to: url, atomically: true, encoding: .utf8)
+        return try openTestDocument(url)
+    }
+
     /// The index path of the first drawn item below the screen root that matches.
     private func path(in canvas: SceneCanvasView, where match: (Scene.Placed) -> Bool) -> [Int]? {
         guard let root = canvas.placed else { return nil }
@@ -74,6 +100,16 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
             return nil
         }
         return walk(root, [])
+    }
+
+    /// Whether pl is drawn in the instance named name, itself or one of its parts.
+    private func inside(_ pl: Scene.Placed, _ name: String) -> Bool {
+        var p: Scene.Placed? = pl
+        while let c = p {
+            if c.r.name == name { return true }
+            p = c.parent
+        }
+        return false
     }
 
     // MARK: - Bitmap
@@ -191,22 +227,55 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.selection, path, "Escape keeps the selection and drops the text")
     }
 
-    func testATitleOfAMountedNodeIsRefused() throws {
+    func testATitleOfALibraryPartGoesToTheUseAroundIt() throws {
         let root = try workspace()
-        let url = try copy("web/fixtures/scene/library-screen.tenn", to: root)
         let library = try copy("web/fixtures/scene/design-kit.tenn", to: root)
         let libraryBefore = try Data(contentsOf: library)
-        let document = try openTestDocument(url)
+        let document = try document(
+            """
+            element Screen {
+                use kit.Badge as pending
+            }
+
+            element kit --from-file "design-kit.tenn"
+            """, in: root)
+        let canvas = try canvas(document)
+
+        let path = try XCTUnwrap(
+            path(in: canvas) { $0.src?.key == "t" && $0.src?.pos.file == "design-kit.tenn" },
+            "the label of a badge, a part of the mounted library")
+        canvas.select(path)
+        canvas.beginTitleEdit()
+        let field = try XCTUnwrap(canvas.editField, "a part of a component opens the field like an item")
+        XCTAssertEqual(field.stringValue, "New", "prefilled with the title the layout drew")
+        field.stringValue = "Nope"
+        canvas.endTitleEdit(commit: true)
+
+        let text = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(
+            text.contains("\(commandText("at", "Box.t")) { \(commandText("title", "Nope")) }"), text)
+        XCTAssertEqual(try Data(contentsOf: library), libraryBefore, "the mounted library is not touched")
+        XCTAssertEqual(
+            canvas.placed(at: path)?.r.prop("title")?.text(0), "Nope", "the part draws the override")
+        XCTAssertEqual(canvas.selection, path)
+    }
+
+    /// library-screen.tenn shows the mount element `kit` first, whose content is written in design-kit.tenn:
+    /// an item of that file is edited there, and the document refuses it.
+    func testANodeOfAMountedFileIsRefused() throws {
+        let root = try workspace()
+        let library = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let libraryBefore = try Data(contentsOf: library)
+        let document = try openTestDocument(copy("web/fixtures/scene/library-screen.tenn", to: root))
         let before = try XCTUnwrap(document.sceneText)
         let canvas = try canvas(document)
 
         let path = try XCTUnwrap(
-            path(in: canvas) { $0.src?.pos.file == "design-kit.tenn" && $0.prop("title") != nil },
-            "a drawn part of the mounted library")
+            path(in: canvas) { $0.src?.key == "t" && $0.src?.pos.file == "design-kit.tenn" },
+            "a drawn node of the mounted file")
         canvas.select(path)
         canvas.beginTitleEdit()
-        let field = try XCTUnwrap(canvas.editField, "a part of a component opens the field like an item")
-        XCTAssertFalse(field.stringValue.isEmpty, "prefilled with the title the layout drew")
+        let field = try XCTUnwrap(canvas.editField)
         field.stringValue = "Nope"
         canvas.endTitleEdit(commit: true)
 
@@ -215,6 +284,166 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertFalse(document.isDocumentEdited)
         XCTAssertEqual(try Data(contentsOf: library), libraryBefore)
         XCTAssertEqual(canvas.selection, path, "a refused edit keeps the selection")
+    }
+
+    // MARK: - Parts of a component
+
+    /// The template and two copies of it, as go/app/sceneedit_test.go sharedDoc: one command per copy.
+    private let copiesDoc = """
+        element Screen {
+            auto-layout row
+            use tpl.Card as one
+            use tpl.Card as two { pos 5 -5 }
+        }
+
+        element tpl {
+            item Card {
+                auto-layout column
+                width 80
+                item Title { title Hi; font-size 14 }
+                item Row { item Cell }
+            }
+        }
+        """
+
+    /// Two copies side by side: a click selects a copy whole, the next double click steps one level in.
+    private let pickDoc = """
+        element Screen {
+            item Row {
+                auto-layout row
+                gap 20
+                use tpl.Card as one
+                use tpl.Card as two
+            }
+        }
+
+        element tpl {
+            item Card {
+                auto-layout column
+                width 80
+                item Title { title Hi; font-size 14 }
+                item Row { item Cell }
+            }
+        }
+        """
+
+    func testAClickSelectsTheCopyAndADoubleClickStepsIn() throws {
+        let canvas = try canvas(text: pickDoc)
+        let title = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Title" && inside($0, "two") })
+        let box = try XCTUnwrap(canvas.placed(at: title))
+        let p = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+
+        canvas.click(p, clicks: 1)
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.name, "two", "the copy is selected whole")
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.src?.kind, .use)
+
+        canvas.click(p, clicks: 2)
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.src?.key, "Title", "the next click steps in")
+
+        let other = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Title" && inside($0, "one") })
+        let otherBox = try XCTUnwrap(canvas.placed(at: other))
+        canvas.click(Scene.Point(x: otherBox.x + otherBox.w / 2, y: otherBox.y + otherBox.h / 2), clicks: 1)
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.name, "one", "the other copy is its own")
+    }
+
+    /// The title of a part is an at override in the use around it, so the template and the other copy keep
+    /// theirs; a second edit updates that at instead of writing another.
+    func testATitleOfAPartStaysInItsUse() throws {
+        let document = try document(copiesDoc)
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let part = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Title" && inside($0, "two") })
+        let at = commandText("at", "Title")
+
+        canvas.select(part)
+        canvas.beginTitleEdit()
+        try XCTUnwrap(canvas.editField).stringValue = "Bye"
+        canvas.endTitleEdit(commit: true)
+
+        XCTAssertEqual(
+            document.sceneText,
+            before.replacingOccurrences(
+                of: "use tpl.Card as two { pos 5 -5 }",
+                with: "use tpl.Card as two { pos 5 -5; \(at) { title Bye } }"))
+        XCTAssertEqual(canvas.placed(at: part)?.r.prop("title")?.text(0), "Bye", "the part draws the override")
+        XCTAssertEqual(canvas.selection, part, "the edit keeps the selection")
+        let other = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Title" && inside($0, "one") })
+        XCTAssertEqual(canvas.placed(at: other)?.r.prop("title")?.text(0), "Hi", "the other copy keeps its title")
+
+        canvas.beginTitleEdit()
+        try XCTUnwrap(canvas.editField).stringValue = "Again"
+        canvas.endTitleEdit(commit: true)
+        let text = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(text.contains("\(at) { title Again }"), text)
+        XCTAssertEqual(text.components(separatedBy: at).count - 1, 1, "one at, not two")
+
+        document.undoManager?.undo()
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, before)
+        canvas.show(document.sceneTree)
+        XCTAssertEqual(canvas.placed(at: part)?.r.prop("title")?.text(0), "Hi", "undo draws the old title")
+    }
+
+    /// The fallback of a slot is reached through the slot, as go/app TestAtPathThroughASlot.
+    func testAPartReachedThroughASlotIsNamedThroughTheSlot() throws {
+        let document = try document(
+            """
+            element Screen {
+                use tpl.Box as b
+            }
+
+            element tpl {
+                item Box {
+                    item Head
+                    slot body { item Fallback { title a } }
+                }
+            }
+            """)
+        let canvas = try canvas(document)
+        let part = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Fallback" })
+
+        canvas.select(part)
+        canvas.beginTitleEdit()
+        try XCTUnwrap(canvas.editField).stringValue = "z"
+        canvas.endTitleEdit(commit: true)
+
+        XCTAssertTrue(
+            document.sceneText?.contains("\(commandText("at", "body.Fallback")) { title z }") ?? false,
+            document.sceneText ?? "")
+        XCTAssertEqual(canvas.placed(at: part)?.r.prop("title")?.text(0), "z")
+        XCTAssertNil(canvas.message)
+    }
+
+    /// Two parts with one name cannot be told apart by an at path, so the canvas refuses and keeps the text.
+    func testAPartWithNoUniqueNameIsRefused() throws {
+        let document = try document(
+            """
+            element Screen {
+                use tpl.Box as b
+            }
+
+            element tpl {
+                item Box {
+                    item Chip { title A }
+                    item Chip { title B }
+                }
+            }
+            """)
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let instance = try XCTUnwrap(path(in: canvas) { $0.inst })
+        let second = instance + [1]  // the second Chip among the drawn siblings: its name is chip#1
+
+        canvas.select(second)
+        canvas.beginTitleEdit()
+        try XCTUnwrap(canvas.editField).stringValue = "C"
+        canvas.endTitleEdit(commit: true)
+
+        XCTAssertEqual(
+            canvas.message, "Not applied: the item has no unique name inside the instance, edit it in the use")
+        XCTAssertEqual(document.sceneText, before)
+        XCTAssertFalse(document.isDocumentEdited)
+        XCTAssertEqual(canvas.selection, second, "a refused edit keeps the selection")
     }
 
     // MARK: - Window

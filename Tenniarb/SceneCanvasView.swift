@@ -39,6 +39,22 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// The indexes from the root of the drawn tree to the selected item; nil when nothing is selected.
     private(set) var selection: [Int]?
 
+    /// A part of a component drawn in an instance: the use around it, and its path from the root of the
+    /// instance. at is empty when the part cannot be named inside the instance.
+    struct Part {
+        let use: Scene.Node
+        let at: String
+    }
+
+    /// The node whose content the screen draws: the element, or the file root when it has no element.
+    private var element: Scene.Node?
+    /// The drawn items a click can select: written in the element, or a part of a component under a use.
+    private var selectable = Set<ObjectIdentifier>()
+    /// Where the parts among them are edited; a written item is not here.
+    private var partOf: [ObjectIdentifier: Part] = [:]
+    /// The index path of every selectable item from the root's children.
+    private var pathOf: [ObjectIdentifier: [Int]] = [:]
+
     /// The indexes of the item whose title the field edits, and the text it opened with.
     private var editing: [Int]?
     private var editTitle = ""
@@ -58,6 +74,8 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             message = nil
             selection = nil
             self.tree = nil
+            element = nil
+            forgetSelection()
             needsDisplay = true
             return
         }
@@ -69,6 +87,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         } else {
             built = tree.build("", measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
         }
+        element = el ?? tree.main
         screen = built
         placed = built?.placed()
         painter = built.map(ScenePainter.init)
@@ -76,6 +95,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             built == nil
             ? tree.diagnostics.first { !$0.warn }.map { "\($0.pos): \($0.message)" } ?? "the scene does not build"
             : nil
+        indexSelection()
         if placed(at: selection) == nil {
             selection = nil
         }
@@ -102,6 +122,165 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             pl = pl.kids[i]
         }
         return pl
+    }
+
+    // MARK: - What a click can select
+
+    private func forgetSelection() {
+        selectable = []
+        partOf = [:]
+        pathOf = [:]
+    }
+
+    /// Finds the items one can select, as go/app/sceneview.go index: what is written in the element, and
+    /// inside an instance the parts of the component the use around it names.
+    private func indexSelection() {
+        forgetSelection()
+        guard let root = placed else { return }
+        var seen = Set<ObjectIdentifier>()
+        func walk(_ pl: Scene.Placed, _ path: [Int]) {
+            for (i, k) in pl.kids.enumerated() {
+                add(k, path + [i], &seen)
+                walk(k, path + [i])
+            }
+        }
+        walk(root, [])
+    }
+
+    private func add(_ k: Scene.Placed, _ path: [Int], _ seen: inout Set<ObjectIdentifier>) {
+        let owner = nearestInstance(k.parent)
+        if let src = k.src, let segs = sourcePath(src), !segs.isEmpty,
+            owner == nil || written(owner) && under(src, owner?.src)
+        {
+            if seen.insert(ObjectIdentifier(src)).inserted {
+                selectable.insert(ObjectIdentifier(k))
+                pathOf[ObjectIdentifier(k)] = path
+            }
+            return
+        }
+        guard var anchor = k.parent else { return }
+        while !(anchor.inst && written(anchor)) {
+            guard let parent = anchor.parent else { return }
+            anchor = parent
+        }
+        var segs: [String] = []
+        var plain: [String] = []
+        var cur: Scene.Placed? = k
+        while let c = cur, c !== anchor {
+            plain.append(c.src?.key ?? "")
+            if let sl = c.src?.parent, sl.kind == .slot {  // the fallback of a slot is reached through the slot
+                plain.append(slotSeg(sl))
+            }
+            segs.append(drawnSeg(c))
+            cur = c.parent
+        }
+        guard let use = anchor.src else { return }
+        let base = sourcePath(use) ?? []
+        let addressable = plain.allSatisfy { !$0.isEmpty } && !(base + segs).contains { $0.contains("#") }
+        selectable.insert(ObjectIdentifier(k))
+        partOf[ObjectIdentifier(k)] = Part(
+            use: use, at: addressable ? plain.reversed().joined(separator: ".") : "")
+        pathOf[ObjectIdentifier(k)] = path
+    }
+
+    /// Whether pl is an item written in the element, not a part of a component: its path has no "/".
+    private func written(_ pl: Scene.Placed?) -> Bool {
+        guard let pl, selectable.contains(ObjectIdentifier(pl)) else { return false }
+        return partOf[ObjectIdentifier(pl)] == nil
+    }
+
+    private func nearestInstance(_ pl: Scene.Placed?) -> Scene.Placed? {
+        var p = pl
+        while let cur = p {
+            if cur.inst { return cur }
+            p = cur.parent
+        }
+        return nil
+    }
+
+    /// The names from the element down to n, with #n for a repeated name, as go/app NodePath; nil when n
+    /// is not written inside the element.
+    private func sourcePath(_ n: Scene.Node) -> [String]? {
+        guard let el = element else { return nil }
+        let mount = el.mount
+        var segs: [String] = []
+        var cur: Scene.Node? = n
+        while let c = cur, c !== el, c !== mount {
+            guard let parent = c.parent else { return nil }
+            segs.append(sourceSeg(parent, c))
+            cur = parent
+        }
+        return cur == nil ? nil : segs.reversed()
+    }
+
+    /// What go/editor SceneKids lists under n: the items and uses, and the slots of an item.
+    private func sceneKids(_ n: Scene.Node) -> [Scene.Node] {
+        var out: [Scene.Node] = []
+        for c in n.content {
+            switch c.kind {
+            case .item, .use: out.append(c)
+            case .slot where n.kind == .item: out.append(c)
+            default: break
+            }
+        }
+        return out
+    }
+
+    private func sourceSeg(_ parent: Scene.Node, _ n: Scene.Node) -> String {
+        var k = 0
+        for c in sceneKids(parent) {
+            if c === n { break }
+            if c.key == n.key { k += 1 }
+        }
+        return k > 0 ? "\(n.key)#\(k)" : n.key
+    }
+
+    /// The name of p among the drawn siblings, with #n for the n-th repeat.
+    private func drawnSeg(_ p: Scene.Placed) -> String {
+        let key = p.src?.key ?? ""
+        guard let parent = p.parent else { return key }
+        var k = 0
+        for c in parent.kids {
+            if c === p { break }
+            if c.src?.key == p.src?.key { k += 1 }
+        }
+        return k > 0 ? "\(key)#\(k)" : key
+    }
+
+    private func slotSeg(_ sl: Scene.Node) -> String { sl.key.isEmpty ? "default" : sl.key }
+
+    private func under(_ n: Scene.Node, _ owner: Scene.Node?) -> Bool {
+        guard let owner else { return false }
+        var c = n.parent
+        while let cur = c {
+            if cur === owner { return true }
+            c = cur.parent
+        }
+        return false
+    }
+
+    /// What a click on hit selects: the outermost instance above it, and a double click one level deeper
+    /// toward hit, as go/app/sceneview_hit.go pick.
+    private func pick(_ hit: [Int], clicks: Int) -> [Int] {
+        guard let hitPl = placed(at: hit) else { return hit }
+        var chain: [Scene.Placed] = []
+        var cur: Scene.Placed? = hitPl
+        while let c = cur {
+            if selectable.contains(ObjectIdentifier(c)) { chain.append(c) }
+            cur = c.parent
+        }
+        chain.reverse()
+        guard let top = chain.firstIndex(where: { $0.inst }) else { return hit }
+        let at = placed(at: selection).flatMap { sel in chain.firstIndex { $0 === sel } } ?? -1
+        if clicks >= 2 {
+            if at >= 0, at + 1 < chain.count, let next = pathOf[ObjectIdentifier(chain[at + 1])] {
+                return next
+            }
+            if selectable.contains(ObjectIdentifier(hitPl)), let p = pathOf[ObjectIdentifier(hitPl)] {
+                return p
+            }
+        }
+        return pathOf[ObjectIdentifier(chain[top])] ?? hit
     }
 
     // MARK: - Selection
@@ -154,7 +333,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Opens the field over the selected item, where go/app/editing.go onEdit puts it: over the box the
     /// canvas draws for the item, not a text rect of its own.
     func beginTitleEdit() {
-        // Only an item has a title of its own; a use or a link is edited through at overrides, absent here.
+        // Only an item has a title of its own; a selected use is the whole instance, edited in its file.
         guard editField == nil, let path = selection, let pl = placed(at: path), let src = pl.src,
             src.kind == .item, pl.w > 0, pl.h > 0
         else { return }
@@ -201,20 +380,37 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         field.font = NSFont.systemFont(ofSize: min(40, max(9, editFontSize * zoom)))
     }
 
-    /// Writes the title of the item at path through the document; a refusal stays on the canvas.
+    /// Writes the title of the item at path through the document; a refusal stays on the canvas. A part of
+    /// a component is written as an at override in the use around it, so its copies stay as they are.
     private func writeTitle(_ value: String, _ path: [Int]) {
-        // shortcut: a part of a use or of a mounted library is refused rather than edited through
-        // atPropEdit (go/app/sceneedit.go) or the library window (go/app/mountdoc.go), neither ported yet.
         guard let document else {
             message = "the canvas is not attached to a document"
             needsDisplay = true
             return
         }
-        guard let pl = placed(at: path), let node = pl.src, let tree,
-            let source = tree.source(node.pos.file), let edit = setPropEdit(source, node, "title", value)
-        else { return }
+        guard let pl = placed(at: path), let node = pl.src, let tree else { return }
+        let edit: Scene.TextEdit
+        let file: String
+        if let part = partOf[ObjectIdentifier(pl)] {
+            guard !part.at.isEmpty else {
+                // the same banner go/app/sceneview_pointer.go puts on a part that no name addresses
+                message = "Not applied: the item has no unique name inside the instance, edit it in the use"
+                needsDisplay = true
+                return
+            }
+            guard let source = tree.source(part.use.pos.file),
+                let at = atPropEdit(source, part.use, part.at, "title", value)
+            else { return }
+            edit = at
+            file = part.use.pos.file
+        } else {
+            guard let source = tree.source(node.pos.file), let title = setPropEdit(source, node, "title", value)
+            else { return }
+            edit = title
+            file = node.pos.file
+        }
         do {
-            try document.applySceneEdit(edit, in: node.pos.file)
+            try document.applySceneEdit(edit, in: file)
             if let next = document.sceneTree, next !== tree {
                 show(next)  // a canvas with no window controller hears nothing of the reload
             }
@@ -227,14 +423,18 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     // MARK: - Input
 
     override func mouseDown(with event: NSEvent) {
+        click(scenePoint(convert(event.locationInWindow, from: nil)), clicks: event.clickCount)
+    }
+
+    /// A click at a point of the screen: selects what it lands on and, on the second click, edits the title.
+    func click(_ p: Scene.Point, clicks: Int) {
         endTitleEdit(commit: true)
-        let p = scenePoint(convert(event.locationInWindow, from: nil))
         guard let hit = hitItem(p) else {
             select(nil)
             return
         }
-        select(hit)
-        if event.clickCount >= 2 {
+        select(pick(hit, clicks: clicks))
+        if clicks >= 2 {
             beginTitleEdit()
         }
     }

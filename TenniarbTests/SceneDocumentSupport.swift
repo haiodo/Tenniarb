@@ -35,6 +35,9 @@ class SceneDocumentTestCase: XCTestCase {
             document.store?.modified = false  // isDocumentEdited reads the store, not the change count
             document.updateChangeCount(.changeCleared)
             document.close()
+            // A closed document still naming a file was seen to hold up the next save of the suite for
+            // seconds; the workspace it names is removed right after this block.
+            document.fileURL = nil
         }
         try document.read(from: url, ofType: "tenn")
         return document
