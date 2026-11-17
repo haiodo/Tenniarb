@@ -105,6 +105,9 @@
                   Identifier = "LexerTests">
                </Test>
                <Test
+                  Identifier = "LibraryTests">
+               </Test>
+               <Test
                   Identifier = "MarkdownTests">
                </Test>
                <Test

@@ -90,10 +90,15 @@ extension Scene {
 final class SceneLoader {
     static let fromFileFlag = "--from-file"
 
+    /// The folder below the workspace root where a library named by a scheme is mounted. The file lies
+    /// outside the workspace, so its text comes from the overlay under this reserved path.
+    static let libraryMountDir = ".tenniarb-library"
+
     let root: URL
     /// Text of files that stands in for the disk, by slash path from the root: an edit is loaded before
     /// it is saved.
     var overlay: [String: String] = [:]
+    private var libraryTexts: [String: String] = [:]  // resolved library file -> its text, read once a load
     private var tree: Scene.Tree!
     private var currentFile = ""
     private var stack: [(abs: String, rel: String)] = []
@@ -119,6 +124,7 @@ final class SceneLoader {
         stack = []
         loaded = [:]
         blockEnds = [:]
+        libraryTexts = [:]
 
         let (abs, inRoot) = inside(absolute(file))
         guard inRoot else {
@@ -279,8 +285,16 @@ final class SceneLoader {
 
     /// Makes the content of the file the content of n: the lists are shared, so one file mounted twice is one subtree.
     private func mountFile(_ n: Scene.Node, _ rel: String) {
-        let (abs, inside) = resolveFile(rel, n.pos, "element --from-file")
-        guard inside, let file = loadFile(abs, at: n.pos) else { return }
+        let abs: URL
+        if Library.isScheme(rel) {
+            guard let mounted = mountLibrary(rel, n.pos) else { return }
+            abs = root.appendingPathComponent(mounted).standardizedFileURL
+        } else {
+            let (found, inside) = resolveFile(rel, n.pos, "element --from-file")
+            guard inside else { return }
+            abs = found
+        }
+        guard let file = loadFile(abs, at: n.pos) else { return }
         n.mount = file
         n.props = file.props
         n.content = file.content
@@ -288,6 +302,40 @@ final class SceneLoader {
         if n.type.isEmpty {  // the kind of the mounted file, unless the mounting element says its own
             n.type = file.type
         }
+    }
+
+    /// Reads the library of a tenniarb-library:// path and puts it in the overlay, so its file path and
+    /// ranges read as Go's. Answers the path to mount it at, nil when the name is bad or the file missing.
+    private func mountLibrary(_ scheme: String, _ pos: Scene.Pos) -> String? {
+        let p: Library.Path
+        do {
+            p = try Library.parse(scheme)
+        } catch {
+            tree.fail(pos, "\(error)")
+            return nil
+        }
+        let file: URL
+        do {
+            file = try Library.default(workspace: root).resolve(p)
+        } catch {
+            tree.fail(pos, "\(error)")
+            return nil
+        }
+        let text: String
+        if let cached = libraryTexts[file.path] {
+            text = cached
+        } else {
+            do {
+                text = try String(contentsOf: file, encoding: .utf8)
+            } catch {
+                tree.fail(pos, "library \(p.string): cannot read \(file.path): \(error.localizedDescription)")
+                return nil
+            }
+            libraryTexts[file.path] = text
+        }
+        let rel = Self.libraryMountDir + "/" + p.rel
+        overlay[rel] = text
+        return rel
     }
 
     /// Reads "export let name = value": a parameter, with its default; without "=" the use has to set it.

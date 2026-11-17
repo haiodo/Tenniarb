@@ -197,6 +197,9 @@
 		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
 		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
 		AE02EC000000000000000090 /* ComponentPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000008F /* ComponentPickerController.swift */; };
+		AE20B0000000000000000002 /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000001 /* Library.swift */; };
+		AE20B0000000000000000004 /* libraries in Resources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000003 /* libraries */; };
+		AE20B0000000000000000006 /* LibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000005 /* LibraryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -424,6 +427,9 @@
 		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000008F /* ComponentPickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ComponentPickerController.swift; path = controllers/ComponentPickerController.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
+		AE20B0000000000000000001 /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		AE20B0000000000000000003 /* libraries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = libraries; path = libraries; sourceTree = SOURCE_ROOT; };
+		AE20B0000000000000000005 /* LibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -495,6 +501,7 @@
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				AE02EC000000000000000020 /* scene */,
+				AE20B0000000000000000007 /* library */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
 				AE10C0000000000000000021 /* comments */,
 				AE02EC0000000000000000C0 /* links */,
@@ -505,6 +512,7 @@
 				0CD170CD22D6571400E217D4 /* TennIco.icns */,
 				0CCAE77122AACB560083F898 /* Application.swift */,
 				0CB75C8D2A36F1CB0084BFC7 /* LICENSE */,
+				AE20B0000000000000000003 /* libraries */,
 				AE01EC00000000000000090 /* tenniarb-embed.min.js */,
 			);
 			path = Tenniarb;
@@ -676,6 +684,7 @@
 				0C5C6D241EFF669500714971 /* TennTests.swift */,
 				AE01EC00000000000000099 /* TennGoldenTests.swift */,
 				AE02EC000000000000000004 /* SceneLoaderTests.swift */,
+				AE20B0000000000000000005 /* LibraryTests.swift */,
 				AE02EC000000000000000005 /* SceneAutoLayoutTests.swift */,
 				AE02EC00000000000000000A /* SceneResolveTests.swift */,
 				AE02EC00000000000000000B /* SceneExpandTests.swift */,
@@ -835,6 +844,14 @@
 			path = links;
 			sourceTree = "<group>";
 		};
+		AE20B0000000000000000007 /* library */ = {
+			isa = PBXGroup;
+			children = (
+				AE20B0000000000000000001 /* Library.swift */,
+			);
+			path = library;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -963,6 +980,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */,
+				AE20B0000000000000000004 /* libraries in Resources */,
 				0CFC3DF123D624F10016A7B7 /* quad-line-style.png in Resources */,
 				0CFC3DE823D624F10016A7B7 /* markdown_scratches.png in Resources */,
 				0CD170B722D5BB6500E217D4 /* duplicate_item.png in Resources */,
@@ -1055,6 +1073,7 @@
 				0C07F9551F4151250042C9F5 /* SceneMath.swift in Sources */,
 				AE02EC000000000000000011 /* SceneNode.swift in Sources */,
 				AE02EC000000000000000012 /* SceneLoader.swift in Sources */,
+				AE20B0000000000000000002 /* Library.swift in Sources */,
 				AE02EC000000000000000013 /* SceneLayout.swift in Sources */,
 				AE02EC000000000000000016 /* SceneResolve.swift in Sources */,
 				AE02EC000000000000000017 /* SceneExpand.swift in Sources */,
@@ -1128,6 +1147,7 @@
 				AE01EC01000000000000003 /* LexerConformanceTests.swift in Sources */,
 				AE01EC01000000000000004 /* SceneLayoutTests.swift in Sources */,
 				AE02EC000000000000000014 /* SceneLoaderTests.swift in Sources */,
+				AE20B0000000000000000006 /* LibraryTests.swift in Sources */,
 				AE02EC000000000000000015 /* SceneAutoLayoutTests.swift in Sources */,
 				AE02EC00000000000000001A /* SceneResolveTests.swift in Sources */,
 				AE02EC00000000000000001B /* SceneExpandTests.swift in Sources */,
