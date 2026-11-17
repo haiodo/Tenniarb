@@ -872,7 +872,7 @@ extension JSONCanvas {
             if !el.params.isEmpty {
                 report.add("element \(quote(el.name)): parameters are lost in JSON Canvas")
             }
-            if el.props.contains(where: { $0.name == "template" }) {
+            if el.template != nil {
                 report.add("element \(quote(el.name)): the template is lost in JSON Canvas")
             }
             if !el.elems.isEmpty {

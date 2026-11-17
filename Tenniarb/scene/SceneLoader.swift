@@ -252,6 +252,8 @@ final class SceneLoader {
                 setKind(owner, argText(args, 0), pos(c))
             } else if name == "export" && (owner.kind == .element || owner.kind == .item) {
                 addParam(owner, c)
+            } else if name == "template" && owner.kind == .element {
+                addTemplate(owner, c)
             } else {
                 owner.props.append(prop(c))
             }
@@ -312,6 +314,39 @@ final class SceneLoader {
             param.defaultValue = Scene.Prop(name: name, args: value, pos: self.pos(args[3]), range: spanOf(value))
         }
         owner.params.append(param)
+    }
+
+    /// Reads "template { ... }", "template %{ ... %}" or "template \"...\"" (spec 5c). A block is kept as
+    /// written: the commands the parser reads inside it are not read as commands.
+    private func addTemplate(_ owner: Scene.Node, _ c: TennNode) {
+        let pos = pos(c)
+        if owner.template != nil {
+            tree.warn(pos, "the element has a second template: the first one is used")
+            return
+        }
+        let (args, _) = split(c)
+        let src = tree.source(currentFile) ?? ""
+        let bytes = Array(src.utf8)
+        var text = ""
+        if hasBlock(c) {
+            let b = body(c)
+            if b.start + 1 <= b.end - 1, b.end <= bytes.count {
+                text = String(decoding: bytes[(b.start + 1)..<(b.end - 1)], as: UTF8.self)
+            }
+        } else if let a = args.first, a.kind == .MarkdownLit || a.kind == .StringLit {
+            text = a.getIdentText() ?? ""
+            // "%{ ... %}" is what a reader writes: the markdown literal closes at "}", so the percent of the
+            // closing marker lands in the text and is cut here.
+            if let token = a.token, text.hasSuffix("%"), token.pos + token.size < bytes.count,
+                bytes[token.pos + token.size] == 0x7D
+            {
+                text = String(text.dropLast())
+            }
+        } else {
+            tree.fail(pos, "template needs text: template { ... } or template %{ ... }")
+            return
+        }
+        owner.template = Scene.Template(text: templateDedent(text), pos: pos)
     }
 
     /// Reads "styles { name { properties } ... }": the named styles an element gives its nodes.
@@ -602,4 +637,30 @@ func fromFile(_ args: [TennNode]) -> String? {
 func nodePos(_ file: String, _ c: TennNode) -> Scene.Pos {
     guard let token = c.token else { return Scene.Pos(file: file, line: 1, col: 1) }
     return Scene.Pos(file: file, line: token.line + 1, col: token.col - token.size + 1)
+}
+
+/// Cuts the blank lines around text and the indentation its lines share, so a template starts at column 0
+/// and reads the way it is written in a component (load.go dedent).
+private func templateDedent(_ text: String) -> String {
+    var lines = text.trimmingCharacters(in: CharacterSet(charactersIn: "\n")).components(separatedBy: "\n")
+    var indent = -1
+    for line in lines where !line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let n = line.prefix { $0 == " " || $0 == "\t" }.count
+        if indent < 0 || n < indent {
+            indent = n
+        }
+    }
+    if indent < 0 {
+        indent = 0
+    }
+    lines = lines.map { line in
+        line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : String(line.dropFirst(indent))
+    }
+    while lines.first == "" {
+        lines.removeFirst()
+    }
+    while lines.last == "" {
+        lines.removeLast()
+    }
+    return lines.joined(separator: "\n")
 }

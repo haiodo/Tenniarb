@@ -177,6 +177,8 @@ extension Scene {
         var type = ""
         /// The parameters the element declares with "export let name = value".
         var params: [Param] = []
+        /// The code the element generates, from "template { ... }" or "template %{ ... }" in its block (spec 5c).
+        var template: Template?
 
         init(kind: Kind, name: String = "", pos: Pos = Pos(), range: Range = Range(), body: Range = Range(), parent: Node? = nil) {
             self.kind = kind
