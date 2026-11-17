@@ -233,6 +233,84 @@
                <Test
                   Identifier = "WindowAndAppTests">
                </Test>
+               <Test
+                  Identifier = "CommentsTests">
+               </Test>
+               <Test
+                  Identifier = "ExternalChangeTests">
+               </Test>
+               <Test
+                  Identifier = "InspectorTests">
+               </Test>
+               <Test
+                  Identifier = "RecoveryTests">
+               </Test>
+               <Test
+                  Identifier = "SceneAnimationTests">
+               </Test>
+               <Test
+                  Identifier = "SceneAutoLayoutTests">
+               </Test>
+               <Test
+                  Identifier = "SceneBodyTests">
+               </Test>
+               <Test
+                  Identifier = "SceneBuildTests">
+               </Test>
+               <Test
+                  Identifier = "SceneCanvasEditTests">
+               </Test>
+               <Test
+                  Identifier = "SceneComponentTests">
+               </Test>
+               <Test
+                  Identifier = "SceneDocumentTests">
+               </Test>
+               <Test
+                  Identifier = "SceneEditTests">
+               </Test>
+               <Test
+                  Identifier = "SceneEntryTests">
+               </Test>
+               <Test
+                  Identifier = "SceneEvalTests">
+               </Test>
+               <Test
+                  Identifier = "SceneExpandTests">
+               </Test>
+               <Test
+                  Identifier = "SceneExportTests">
+               </Test>
+               <Test
+                  Identifier = "SceneImageTests">
+               </Test>
+               <Test
+                  Identifier = "SceneJSONCanvasDocumentTests">
+               </Test>
+               <Test
+                  Identifier = "SceneJSONCanvasTests">
+               </Test>
+               <Test
+                  Identifier = "SceneLoaderTests">
+               </Test>
+               <Test
+                  Identifier = "ScenePaintTests">
+               </Test>
+               <Test
+                  Identifier = "SceneParityTests">
+               </Test>
+               <Test
+                  Identifier = "SceneRangeTests">
+               </Test>
+               <Test
+                  Identifier = "SceneResolveTests">
+               </Test>
+               <Test
+                  Identifier = "SceneStylesTests">
+               </Test>
+               <Test
+                  Identifier = "SceneTemplateTests">
+               </Test>
             </SkippedTests>
          </TestableReference>
       </Testables>
