@@ -147,8 +147,12 @@ final class CommentsController {
         }
     }
 
-    /// The identity of the document: its standardized absolute path, the name of its comments file.
+    /// The identity of the document: its repository and path inside it, or the absolute path when no
+    /// repository with a remote holds it; the name of its comments file.
     let key: String?
+
+    /// One lookup for every controller: git runs once per repository root.
+    private static let repos = Links.Repos()
 
     private let store: Comments.Store
     private var doc: Comments.Doc
@@ -167,6 +171,11 @@ final class CommentsController {
         store = Comments.Store(dir: Comments.dirIn(configDir))
         doc = Comments.Doc(key: key ?? "")
         reload()
+    }
+
+    /// The comments of the document at url; nil is an untitled document, which has no comments.
+    convenience init(url: URL?, configDir: URL = Comments.configDir()) {
+        self.init(key: url.map { CommentsController.repos.docKey($0.path) }, configDir: configDir)
     }
 
     // MARK: - Reading
