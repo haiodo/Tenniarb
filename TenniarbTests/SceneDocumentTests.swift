@@ -1066,4 +1066,192 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertEqual(element.name, "D", "the model rename is one undo step")
     }
 
+    // MARK: - Navigate: Back and Forward
+
+    /// A scene of two elements with a node each, in a window whose view is loaded and laid out.
+    private func navigationDocument() throws -> (ViewController, Document) {
+        let url = try workspace([
+            "a.tenn": """
+            element A {
+                item Box { auto-layout abs; width 100; height 50 }
+                item Two { auto-layout abs; pos 120 0; width 100; height 50 }
+            }
+            element B {
+                item Row { auto-layout abs; width 100; height 50 }
+            }
+            """
+        ]).appendingPathComponent("a.tenn")
+        let document = try openTestDocument(url)
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        return (vc, document)
+    }
+
+    private func validated(_ vc: ViewController, _ action: Selector) -> Bool {
+        vc.validateMenuItem(NSMenuItem(title: "", action: action, keyEquivalent: ""))
+    }
+
+    /// The selections in the order the canvas showed them; Back returns to the element and the node an
+    /// entry named, Forward walks ahead, and the menu offers only the directions that resolve.
+    func testBackAndForwardWalkTheSelections() throws {
+        let (vc, document) = try navigationDocument()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let rows = try XCTUnwrap(document.store?.model.elements)
+        XCTAssertEqual(canvas.screenNode?.name, "A", "the first element is shown")
+        XCTAssertEqual(vc.navigation.entries.count, 1, "the element on screen is the first entry")
+        XCTAssertFalse(validated(vc, #selector(ViewController.navigateBack(_:))), "nothing is behind it")
+        XCTAssertFalse(validated(vc, #selector(ViewController.navigateForward(_:))))
+
+        canvas.select([0])
+        vc.onElementSelected(rows[1])
+        XCTAssertEqual(canvas.screenNode?.name, "B")
+        XCTAssertEqual(canvas.selectedNode?.name, "Row")
+        XCTAssertEqual(vc.navigation.entries.map(\.element), [["A"], ["A"], ["B"]])
+        XCTAssertEqual(vc.navigation.entries.map(\.nodes), [[], ["Box"], ["Row"]])
+
+        vc.navigateBack(nil)
+        XCTAssertEqual(canvas.screenNode?.name, "A")
+        XCTAssertEqual(canvas.selectedNode?.name, "Box", "the entry keeps the selected node")
+
+        vc.navigateForward(nil)
+        XCTAssertEqual(canvas.screenNode?.name, "B")
+        XCTAssertEqual(canvas.selectedNode?.name, "Row")
+        XCTAssertTrue(validated(vc, #selector(ViewController.navigateBack(_:))))
+        XCTAssertFalse(validated(vc, #selector(ViewController.navigateForward(_:))), "nothing is ahead")
+
+        vc.navigateBack(nil)
+        vc.navigateBack(nil)
+        XCTAssertEqual(canvas.screenNode?.name, "A")
+        XCTAssertNil(canvas.selectedNode, "the first entry has no node")
+        XCTAssertFalse(validated(vc, #selector(ViewController.navigateBack(_:))), "the start of the history")
+        XCTAssertTrue(validated(vc, #selector(ViewController.navigateForward(_:))))
+    }
+
+    /// A selection made after Back cuts off the entries that were ahead, as Go's push does.
+    func testSelectionAfterBackDropsTheEntriesAhead() throws {
+        let (vc, document) = try navigationDocument()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let rows = try XCTUnwrap(document.store?.model.elements)
+        canvas.select([0])
+        vc.onElementSelected(rows[1])
+        vc.navigateBack(nil)
+
+        canvas.select([1])
+
+        XCTAssertEqual(canvas.screenNode?.name, "A")
+        XCTAssertEqual(canvas.selectedNode?.name, "Two")
+        XCTAssertEqual(vc.navigation.entries.map(\.nodes), [[], ["Box"], ["Two"]])
+        XCTAssertFalse(validated(vc, #selector(ViewController.navigateForward(_:))), "Forward is gone")
+        vc.navigateForward(nil)
+        XCTAssertEqual(canvas.selectedNode?.name, "Two", "nothing ahead to show")
+    }
+
+    /// The entry already on screen is not written again, so Back does not grow the list.
+    func testTheSameEntryIsWrittenOnce() {
+        var history = NavigateHistory()
+        let entry = NavigationEntry(element: ["A"], nodes: ["Box"])
+        history.push(entry)
+        history.push(entry)
+        XCTAssertEqual(history.entries.count, 1)
+        history.push(NavigationEntry(element: ["B"]))
+        XCTAssertEqual(history.entries.count, 2)
+        XCTAssertEqual(history.at, 1)
+
+        for i in 0..<130 { history.push(NavigationEntry(element: ["E\(i)"])) }
+        XCTAssertEqual(history.entries.count, NavigateHistory.limit, "the oldest entries go")
+        XCTAssertEqual(history.at, NavigateHistory.limit - 1)
+    }
+
+    /// The Navigate menu offers Back and Forward on Go's shortcuts.
+    func testTheNavigateMenuOffersBackAndForward() throws {
+        let menu = try XCTUnwrap(NSApp.mainMenu?.items.compactMap(\.submenu).first { $0.title == "Navigate" })
+        for (action, key) in [
+            (#selector(ViewController.navigateBack(_:)), "["),
+            (#selector(ViewController.navigateForward(_:)), "]"),
+        ] {
+            let item = try XCTUnwrap(menu.items.first { $0.action == action })
+            XCTAssertEqual(item.keyEquivalent, key)
+            XCTAssertEqual(item.keyEquivalentModifierMask, .command)
+        }
+    }
+
+    /// An entry whose node the file lost is skipped for the older one, and it stays in the list.
+    func testAnEntryWhoseNodeIsGoneIsSkipped() throws {
+        let (vc, document) = try navigationDocument()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let rows = try XCTUnwrap(document.store?.model.elements)
+        canvas.select([0])
+        vc.onElementSelected(rows[1])
+        let box = try sceneNode(try XCTUnwrap(document.sceneTree), "A.Box")
+        try document.applySceneEdit(Scene.TextEdit(start: box.range.start, end: box.range.end, new: ""), in: "a.tenn")
+
+        vc.navigateBack(nil)
+
+        XCTAssertEqual(canvas.screenNode?.name, "A")
+        XCTAssertNil(canvas.selectedNode)
+        XCTAssertEqual(vc.navigation.at, 0)
+        XCTAssertEqual(vc.navigation.entries.count, 3, "an entry that no longer resolves stays")
+    }
+
+    /// A classic document records the element and the items by name, and Back selects them again.
+    func testClassicHistoryRestoresTheElementAndItsItems() throws {
+        let root = try workspace([
+            "classic.tenn": """
+            element D {
+                item A { pos 0 0; width 10; height 10 }
+                item B { pos 20 0; width 10; height 10 }
+            }
+            element E {
+                item C { pos 0 0; width 10; height 10 }
+            }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("classic.tenn"))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        let rows = try XCTUnwrap(document.store?.model.elements)
+        XCTAssertNil(document.sceneTree, "a classic document")
+        vc.onElementSelected(rows[0])
+        vc.scene.setActiveItem(try XCTUnwrap(rows[0].items.first { $0.name == "A" }))
+        vc.onElementSelected(rows[1])
+
+        XCTAssertEqual(vc.navigation.entries.map(\.element), [["D"], ["D"], ["E"]])
+        XCTAssertEqual(vc.navigation.entries.map(\.items), [[], ["A"], []])
+
+        vc.navigateBack(nil)
+
+        XCTAssertTrue(vc.selectedElement === rows[0])
+        XCTAssertEqual(vc.activeItems.map(\.name), ["A"])
+        XCTAssertEqual(vc.scene.activeItems.map(\.name), ["A"])
+    }
+
+    /// A rename rewrites the entry that named the node, so Back and Forward still resolve it by its new
+    /// name.
+    func testRenameRewritesTheHistoryNodePath() throws {
+        let (vc, document) = try navigationDocument()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let rows = try XCTUnwrap(document.store?.model.elements)
+        canvas.select([0])
+        vc.onElementSelected(rows[1])
+        vc.navigateBack(nil)
+        XCTAssertEqual(canvas.selectedNode?.name, "Box")
+
+        vc.renamePrompt = { _ in "Crate" }
+        vc.renameConfirm = { _ in .yes }
+        vc.renameSelection(nil)
+
+        XCTAssertTrue(document.sceneText?.contains("item Crate") ?? false, document.sceneText ?? "")
+        XCTAssertEqual(vc.navigation.entries[1].nodes, ["Crate"], "the entry follows the rename")
+        XCTAssertEqual(vc.navigation.entries.count, 3, "the rename is no new entry")
+
+        vc.navigateForward(nil)
+        XCTAssertEqual(canvas.screenNode?.name, "B")
+        vc.navigateBack(nil)
+        XCTAssertEqual(canvas.screenNode?.name, "A")
+        XCTAssertEqual(canvas.selectedNode?.name, "Crate", "the rewritten entry resolves")
+    }
+
 }

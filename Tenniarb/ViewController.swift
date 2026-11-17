@@ -58,6 +58,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     var activeItems: [DiagramItem] = []
 
+    /// The selections Back and Forward walk in this window, and whether one is being shown again.
+    private(set) var navigation = NavigateHistory()
+    private var restoringNavigation = false
+
     var updateScheduled: Int = 0
     var updateKindScheduled: ModelEventKind = .Layout
 
@@ -269,6 +273,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         editorViewController.showScene(sceneTree)
         reloadSceneItems()
         installComments()
+        installNavigationHistory()
 
         // Legacy delegate setup for compatibility
         self.outlineViewDelegate = OutlineViewControllerDelegate(self)
@@ -547,6 +552,12 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if action == #selector(self.showSearchBox(_:)) {
                 return true
             }
+            if action == #selector(navigateBack(_:)) {
+                return navigation.can(-1, valid: navigationValid)
+            }
+            if action == #selector(navigateForward(_:)) {
+                return navigation.can(1, valid: navigationValid)
+            }
             if action == #selector(self.showCommentList(_:)) {
                 return commentsForDocument() != nil
             }
@@ -785,6 +796,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 }
 
                 self.updateTextProperties()
+                self.navigationSync()
             }
         }
     }
@@ -1207,19 +1219,29 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         let old = node.name
         let oldPath = CommentPaths.nodePath(of: node, from: canvas.screenNode)
+        let oldElement: [String] =
+            node.kind == .element
+            ? CommentPaths.elementPath(of: node) : canvas.screenNode.map(CommentPaths.elementPath(of:)) ?? []
         guard let name = askName(old)?.trimmingCharacters(in: .whitespacesAndNewlines), name != old else {
             return
         }
         let plan: Scene.RenamePlan
+        restoringNavigation = true
         do {
             plan = try tree.planRename(node, name)
             let answer = askReferences(plan)
-            guard answer != .cancel else { return }
+            guard answer != .cancel else {
+                restoringNavigation = false
+                return
+            }
             try applyRename(plan, update: answer == .yes)
         } catch {
+            restoringNavigation = false
             canvas.setMessage((error as? Scene.RenameError)?.message ?? error.localizedDescription)
             return
         }
+        restoringNavigation = false
+        navigationRenamed(wasElement: node.kind == .element, element: oldElement, node: oldPath, name: plan.name)
         canvas.setMessage(nil)
         if let row, row.name != plan.name {
             row.name = plan.name
@@ -1239,7 +1261,12 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             renameMessage("The name cannot be empty.")
             return
         }
+        let old = classicElementPath(element)
         elementStore?.updateName(element: element, name, undoManager: undoManager, refresh: {})
+        var now = old
+        now[now.count - 1] = element.name
+        navigation.elementRenamed(from: old, to: now)
+        navigationSync()
     }
 
     /// Says why a rename was refused; a classic window has no banner over a canvas.
@@ -1513,6 +1540,125 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         refreshCommentPins()
     }
 
+    // MARK: - Back and Forward
+
+    @objc func navigateBack(_ sender: Any?) { navigate(-1) }
+
+    @objc func navigateForward(_ sender: Any?) { navigate(1) }
+
+    /// Shows the nearest entry in direction that still resolves, without recording it, as go/app's navGo.
+    private func navigate(_ direction: Int) {
+        guard !restoringNavigation, let entry = navigation.move(direction, valid: navigationValid) else { return }
+        restoringNavigation = true
+        showNavigationEntry(entry)
+        restoringNavigation = false
+        navigationSync()
+    }
+
+    /// Puts the place an entry names on the canvas: the element and the node, or the classic items.
+    private func showNavigationEntry(_ entry: NavigationEntry) {
+        if let tree = sceneTree, let place = NavigateResolve.scene(entry, in: tree) {
+            editorViewController?.showSceneElement(place.path)
+            let canvas = editorViewController?.sceneCanvas?.canvas
+            if place.nodes.isEmpty {
+                canvas?.select(nil)
+            } else if let node = place.nodes.first {
+                canvas?.selectSource(at: node.range.start)
+            }
+            if let element = document?.sceneElement(at: place.path) {
+                outlineSidebarController?.setSelectedElement(element)
+            }
+            reloadSceneItems()
+            return
+        }
+        guard let model = elementStore?.model, let place = NavigateResolve.classic(entry, in: model) else { return }
+        onElementSelected(place.element)
+        outlineSidebarController?.setSelectedElement(place.element)
+        scene?.setActiveItems(place.items)
+    }
+
+    /// What is selected now in the form the history keeps; nil for a document that shows no element.
+    private func currentNavigationEntry() -> NavigationEntry? {
+        if sceneTree != nil {
+            guard let canvas = editorViewController?.sceneCanvas?.canvas, let shown = canvas.screenNode,
+                shown.kind == .element
+            else { return nil }
+            var entry = NavigationEntry(element: CommentPaths.elementPath(of: shown))
+            guard !entry.element.isEmpty else { return nil }
+            if let node = canvas.selectedNode {
+                let path = CommentPaths.nodePath(of: node, from: shown)
+                if !path.isEmpty { entry.nodes = [path] }
+            }
+            return entry
+        }
+        guard let element = selectedElement, element.parent != nil else { return nil }
+        return NavigationEntry(
+            element: classicElementPath(element), items: activeItems.filter { !($0 is LinkItem) }.map(\.name))
+    }
+
+    /// Whether an entry still resolves in the document; one that fails is skipped, not removed.
+    private func navigationValid(_ entry: NavigationEntry) -> Bool {
+        if let tree = sceneTree {
+            return NavigateResolve.scene(entry, in: tree) != nil
+        }
+        guard let model = elementStore?.model else { return false }
+        return NavigateResolve.classic(entry, in: model) != nil
+    }
+
+    /// Records the selection as an entry unless one is being restored, and shows which of Back and Forward
+    /// can go; go/app's navSync.
+    private func navigationSync() {
+        if !restoringNavigation, let entry = currentNavigationEntry() {
+            navigation.push(entry)
+        }
+        updateNavigationMenu()
+    }
+
+    /// Follows the canvas selection; its one handler is the inspector's, which keeps its half.
+    private func installNavigationHistory() {
+        guard let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        let inspector = canvas.onSelectionChange
+        canvas.onSelectionChange = { [weak self] in
+            inspector?()
+            self?.navigationSync()
+        }
+        navigationSync()
+    }
+
+    /// Shows which of Back and Forward can go in the Navigate menu, as go/app's navSync sets its items.
+    private func updateNavigationMenu() {
+        guard let menu = NSApp.mainMenu?.items.compactMap(\.submenu).first(where: { $0.title == "Navigate" })
+        else { return }
+        let back = navigation.can(-1, valid: navigationValid)
+        let forward = navigation.can(1, valid: navigationValid)
+        for item in menu.items {
+            if item.action == #selector(navigateBack(_:)) {
+                item.isEnabled = back
+            } else if item.action == #selector(navigateForward(_:)) {
+                item.isEnabled = forward
+            }
+        }
+    }
+
+    /// Rewrites the history after a rename, as go/app's afterElementRename and afterNodeRename. An element
+    /// rename moves the element names of the entries; a node rename the paths of it and below it.
+    private func navigationRenamed(wasElement: Bool, element: [String], node: String, name: String) {
+        if wasElement {
+            guard !element.isEmpty else { return }
+            var now = element
+            now[now.count - 1] = name
+            navigation.elementRenamed(from: element, to: now)
+            navigationSync()
+            return
+        }
+        guard !node.isEmpty else { return }
+        guard let cut = node.lastIndex(of: ".") else {
+            navigation.nodeRenamed(in: element, from: node, to: normalizeName(name))
+            return
+        }
+        navigation.nodeRenamed(in: element, from: node, to: String(node[..<cut]) + "." + normalizeName(name))
+    }
+
     public func setElementModel(elementStore: ElementModelStore) {
 
         if let es = self.elementStore, es.model == elementStore.model {
@@ -1546,6 +1692,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             self.activeItems = element
             self.inspectorController?.showClassic(items: element, element: self.selectedElement)
             self.updateTextProperties()
+            self.navigationSync()
         })
 
         scene.setActiveElement(elementStore.model)

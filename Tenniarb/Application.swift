@@ -322,6 +322,12 @@ public class TenniarbApplication: NSApplication {
         gotoItem.keyEquivalentModifierMask = [.command]
         navigateMenu.addItem(gotoItem)
 
+        navigateMenu.addItem(NSMenuItem.separator())
+        navigateMenu.addItem(
+            NSMenuItem(title: "Back", action: #selector(ViewController.navigateBack(_:)), keyEquivalent: "["))
+        navigateMenu.addItem(
+            NSMenuItem(title: "Forward", action: #selector(ViewController.navigateForward(_:)), keyEquivalent: "]"))
+
         // MARK: - View menu
         let viewMenuItem = NSMenuItem()
         mainMenu.addItem(viewMenuItem)

@@ -68,6 +68,7 @@
 		AE10C0000000000000000012 /* CommentsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE10C0000000000000000002 /* CommentsStore.swift */; };
 		AE10C0000000000000000013 /* CommentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE10C0000000000000000003 /* CommentsTests.swift */; };
 		AE02EC000000000000000022 /* CommentsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000021 /* CommentsController.swift */; };
+		AE02EC0000000000000000D1 /* NavigateHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000D0 /* NavigateHistory.swift */; };
 		AE02EC000000000000000024 /* CommentsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000023 /* CommentsUITests.swift */; };
 		AE02EC0000000000000000C2 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C1 /* Links.swift */; };
 		AE02EC0000000000000000C4 /* LinksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C3 /* LinksTests.swift */; };
@@ -303,6 +304,7 @@
 		AE10C0000000000000000002 /* CommentsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsStore.swift; sourceTree = "<group>"; };
 		AE10C0000000000000000003 /* CommentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000021 /* CommentsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CommentsController.swift; path = controllers/CommentsController.swift; sourceTree = "<group>"; };
+		AE02EC0000000000000000D0 /* NavigateHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NavigateHistory.swift; path = controllers/NavigateHistory.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000023 /* CommentsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsUITests.swift; sourceTree = "<group>"; };
 		AE02EC0000000000000000C1 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		AE02EC0000000000000000C3 /* LinksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinksTests.swift; sourceTree = "<group>"; };
@@ -577,6 +579,7 @@
 				AE02EC00000000000000008F /* ComponentPickerController.swift */,
 				AE02EC000000000000000099 /* InspectorController.swift */,
 				AE02EC000000000000000021 /* CommentsController.swift */,
+				AE02EC0000000000000000D0 /* NavigateHistory.swift */,
 				AE03D1000000000000000003 /* CompareController.swift */,
 			);
 			name = controllers;
@@ -1152,6 +1155,7 @@
 				AE10C0000000000000000011 /* Comments.swift in Sources */,
 				AE10C0000000000000000012 /* CommentsStore.swift in Sources */,
 				AE02EC000000000000000022 /* CommentsController.swift in Sources */,
+				AE02EC0000000000000000D1 /* NavigateHistory.swift in Sources */,
 				AE02EC0000000000000000C2 /* Links.swift in Sources */,
 				AE02EC0000000000000000C6 /* LinkOpen.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
