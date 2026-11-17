@@ -143,6 +143,10 @@ public class TenniarbApplication: NSApplication {
         fileMenu.addItem(NSMenuItem(title: "Open…", action: #selector(NSDocumentController.openDocument(_:)), keyEquivalent: "o"))
         fileMenu.addItem(
             NSMenuItem(title: "Add Library…", action: #selector(ViewController.addLibrary(_:)), keyEquivalent: ""))
+        let insertComponentItem = NSMenuItem(
+            title: "Insert Component…", action: #selector(ViewController.insertComponent(_:)), keyEquivalent: "I")
+        insertComponentItem.keyEquivalentModifierMask = [.command, .shift]
+        fileMenu.addItem(insertComponentItem)
 
         // Open Recent submenu - NSDocumentController will populate this automatically
         let openRecentItem = NSMenuItem(title: "Open Recent", action: nil, keyEquivalent: "")

@@ -111,6 +111,44 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         show(tree)
     }
 
+    /// The node the canvas draws the screen of: the element, or the file root.
+    var screenNode: Scene.Node? { element }
+
+    /// The written node of the selected item, or the use of a selected instance.
+    var selectedNode: Scene.Node? { placed(at: selection)?.src }
+
+    /// A place right of the content of the screen for a new top level node, as pos x y.
+    func freeSpot() -> (x: Double, y: Double) {
+        guard let root = placed, !root.kids.isEmpty else { return (0, 0) }
+        var maxX = -Double.infinity
+        var minY = Double.infinity
+        for k in root.kids {
+            maxX = max(maxX, k.x + k.w)
+            minY = min(minY, k.y)
+        }
+        return ((maxX + 100).rounded(), (-minY).rounded())
+    }
+
+    /// Selects the drawn node written at a byte offset of the file, after an insert put it there.
+    func selectSource(at offset: Int) {
+        guard let root = placed else { return }
+        var found: [Int]?
+        func walk(_ pl: Scene.Placed, _ path: [Int]) {
+            if found != nil {
+                return
+            }
+            for (i, k) in pl.kids.enumerated() {
+                if k.src?.range.start == offset {
+                    found = path + [i]
+                    return
+                }
+                walk(k, path + [i])
+            }
+        }
+        walk(root, [])
+        select(found)
+    }
+
     /// The element at the path the outline chose; nil when it is gone, and the first element is shown.
     private func shownElement(_ tree: Scene.Tree) -> Scene.Node? {
         guard let path = elementPath, !path.isEmpty else { return nil }

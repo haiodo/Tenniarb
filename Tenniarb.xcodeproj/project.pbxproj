@@ -49,6 +49,7 @@
 		AE02EC000000000000000071 /* SceneRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000006F /* SceneRange.swift */; };
 		AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000070 /* SceneRangeTests.swift */; };
 		AE02EC000000000000000074 /* SceneEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000073 /* SceneEdit.swift */; };
+		AE02EC00000000000000008E /* SceneComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000008D /* SceneComponents.swift */; };
 		AE02EC000000000000000076 /* SceneEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000075 /* SceneEditTests.swift */; };
 		AE02EC000000000000000077 /* SceneCanvasEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000078 /* SceneCanvasEditTests.swift */; };
 		AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000007A /* SceneDocumentSupport.swift */; };
@@ -174,6 +175,7 @@
 		FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000004 /* OutlineSidebarController.swift */; };
 		FA00D0000000000000000002 /* EditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000005 /* EditorViewController.swift */; };
 		FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00D0000000000000000006 /* PropertiesPanelController.swift */; };
+		AE02EC000000000000000090 /* ComponentPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000008F /* ComponentPickerController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -248,6 +250,7 @@
 		AE02EC00000000000000006F /* SceneRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRange.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000070 /* SceneRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRangeTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000073 /* SceneEdit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEdit.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000008D /* SceneComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneComponents.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000075 /* SceneEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEditTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000078 /* SceneCanvasEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCanvasEditTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000007A /* SceneDocumentSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDocumentSupport.swift; sourceTree = "<group>"; };
@@ -377,6 +380,7 @@
 		1E7CDF0B2394F3FF0005C824 /* Changelog.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
 		FA00D0000000000000000004 /* OutlineSidebarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutlineSidebarController.swift; path = controllers/OutlineSidebarController.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000005 /* EditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewController.swift; path = controllers/EditorViewController.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000008F /* ComponentPickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ComponentPickerController.swift; path = controllers/ComponentPickerController.swift; sourceTree = "<group>"; };
 		FA00D0000000000000000006 /* PropertiesPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertiesPanelController.swift; path = controllers/PropertiesPanelController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -504,6 +508,7 @@
 				FA00D0000000000000000004 /* OutlineSidebarController.swift */,
 				FA00D0000000000000000005 /* EditorViewController.swift */,
 				FA00D0000000000000000006 /* PropertiesPanelController.swift */,
+				AE02EC00000000000000008F /* ComponentPickerController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -734,6 +739,7 @@
 				AE02EC00000000000000004E /* SceneEntry.swift */,
 				AE02EC00000000000000006F /* SceneRange.swift */,
 				AE02EC000000000000000073 /* SceneEdit.swift */,
+				AE02EC00000000000000008D /* SceneComponents.swift */,
 			);
 			path = scene;
 			sourceTree = "<group>";
@@ -990,6 +996,7 @@
 				AE02EC000000000000000063 /* SceneEntry.swift in Sources */,
 				AE02EC000000000000000071 /* SceneRange.swift in Sources */,
 				AE02EC000000000000000074 /* SceneEdit.swift in Sources */,
+				AE02EC00000000000000008E /* SceneComponents.swift in Sources */,
 				AE02EC000000000000000066 /* SceneModel.swift in Sources */,
 				0CEA61DC21EDF10900FDA0E1 /* TreeLayout.swift in Sources */,
 				0C9A4C731FCBD3C30043FD52 /* ElementPersistence.swift in Sources */,
@@ -997,6 +1004,7 @@
 				FA00D0000000000000000001 /* OutlineSidebarController.swift in Sources */,
 				FA00D0000000000000000002 /* EditorViewController.swift in Sources */,
 				FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */,
+				AE02EC000000000000000090 /* ComponentPickerController.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,

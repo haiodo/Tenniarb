@@ -17,8 +17,8 @@
 //  limitations under the License.
 
 import Cocoa
-import UniformTypeIdentifiers
 import Tenn
+import UniformTypeIdentifiers
 
 class ViewController: NSViewController, IElementModelListener, NSMenuItemValidation, NSSplitViewDelegate {
 
@@ -35,6 +35,15 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
 
     /// The document this window shows, for the scene canvas to write its edits through.
     weak var document: Document?
+
+    /// The sheet of Insert Component…, held while it is open.
+    private var componentPicker: ComponentPickerController?
+    /// What the slot menu that follows Insert Component… writes and where.
+    private var pendingComponent: Scene.Component?
+    private var pendingInto: Scene.Node?
+    private var pendingSlots: [String] = []
+    private weak var pendingCanvas: SceneCanvasView?
+    private var pendingCanvasNode: Scene.Node?
 
     var selectedElement: Element?
 
@@ -786,6 +795,83 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if row >= 0 {
                 worldTree.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
             }
+        }
+    }
+
+    /// Insert Component…: the components of the mounted libraries and of the document, a sheet to pick
+    /// one, and a use written where the selection says (go/app/outline_scene.go showComponentPicker).
+    @objc func insertComponent(_ sender: Any?) {
+        guard let window = view.window, let document, document.sceneTree != nil,
+            let canvas = editorViewController?.sceneCanvas?.canvas, let canvasNode = canvas.screenNode
+        else { return }
+        guard !document.components("", limit: 1).isEmpty else {
+            canvas.setMessage("No component to insert: add a library with File > Add Library…")
+            return
+        }
+        let picker = ComponentPickerController(
+            provider: { [weak document] q in document?.components(q, limit: 200) ?? [] },
+            onPick: { [weak self] component in
+                self?.componentPicker = nil
+                self?.insert(component, canvas: canvas, canvasNode: canvasNode)
+            })
+        componentPicker = picker
+        picker.present(asSheetFor: window)
+    }
+
+    /// Writes the use of component where InsertTarget says, or offers its slots when the selected
+    /// instance has named ones.
+    private func insert(_ component: Scene.Component, canvas: SceneCanvasView, canvasNode: Scene.Node) {
+        guard let tree = document?.sceneTree else { return }
+        let (into, slots) = insertTarget(tree, canvas.selectedNode)
+        if let into, !slots.isEmpty {
+            pendingComponent = component
+            pendingInto = into
+            pendingSlots = slots
+            pendingCanvas = canvas
+            pendingCanvasNode = canvasNode
+            let menu = NSMenu()
+            for (i, slot) in slots.enumerated() {
+                let item = NSMenuItem(
+                    title: slot.isEmpty ? "Into the default slot" : "Into slot \(slot)",
+                    action: #selector(pickSlot(_:)), keyEquivalent: "")
+                item.tag = i
+                item.target = self
+                menu.addItem(item)
+            }
+            menu.addItem(.separator())
+            let free = NSMenuItem(title: "On the canvas", action: #selector(pickSlot(_:)), keyEquivalent: "")
+            free.tag = -1
+            free.target = self
+            menu.addItem(free)
+            menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+            return
+        }
+        write(component, into: into, slot: "", canvas: canvas, canvasNode: canvasNode)
+    }
+
+    @objc private func pickSlot(_ sender: NSMenuItem) {
+        guard let component = pendingComponent, let canvas = pendingCanvas, let canvasNode = pendingCanvasNode
+        else { return }
+        let onCanvas = sender.tag < 0
+        let slot = onCanvas || !pendingSlots.indices.contains(sender.tag) ? "" : pendingSlots[sender.tag]
+        write(component, into: onCanvas ? nil : pendingInto, slot: slot, canvas: canvas, canvasNode: canvasNode)
+    }
+
+    /// Writes the use through the document and selects what was written.
+    private func write(
+        _ component: Scene.Component, into: Scene.Node?, slot: String, canvas: SceneCanvasView,
+        canvasNode: Scene.Node
+    ) {
+        guard let document else { return }
+        do {
+            let offset = try document.insertComponent(
+                path: component.path, name: component.name, into: into, slot: slot, canvas: canvasNode,
+                spot: canvas.freeSpot())
+            canvas.setMessage(nil)
+            canvas.selectSource(at: offset)
+            reloadSceneItems()
+        } catch {
+            canvas.setMessage(error.localizedDescription)
         }
     }
 

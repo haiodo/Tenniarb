@@ -341,4 +341,243 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertEqual(document.sceneText, "element Screen { item Box { auto-layout row } }\n")
     }
 
+    // MARK: - Insert Component
+
+    /// A mounted library offers what it says are components: the elements marked kind component and
+    /// the items that declare parameters, never a plate or a part.
+    func testComponentsOfAMountedLibrary() throws {
+        let root = try workspace()
+        _ = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let document = try openTestDocument(try copy("web/fixtures/scene/library-screen.tenn", to: root))
+
+        let comps = document.components("", limit: 100)
+        XCTAssertEqual(comps.map(\.path), ["kit.Button", "kit.Badge"], "\(comps)")
+        XCTAssertEqual(comps.map(\.name), ["Button", "Badge"])
+        XCTAssertEqual(comps.map(\.group), ["", ""], "root components have no branch")
+
+        XCTAssertEqual(document.components("bad", limit: 100).map(\.name), ["Badge"], "the query folds case")
+        XCTAssertEqual(document.components("", limit: 1).map(\.name), ["Button"], "limit caps the list")
+        XCTAssertTrue(document.components("nothing", limit: 100).isEmpty)
+    }
+
+    /// The document's own use statements name nodes it can insert again, grouped by the branch they
+    /// are defined in, as go/app/component_browser_test.go TestOwnComponentsOfTheDocument.
+    func testOwnComponentsAreTheNodesTheDocumentReuses() throws {
+        let root = try workspace([
+            "own.tenn": """
+            element Kit {
+                item Icons {
+                    item Plus { width 10; height 10 }
+                    item Minus { width 10; height 10 }
+                }
+                item Chrome {
+                    item Check { width 10; height 10 }
+                }
+            }
+            element Screen {
+                item Frame {
+                    use Kit.Icons.Plus as plus
+                    use Kit.Chrome.Check as check
+                }
+            }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("own.tenn"))
+
+        let comps = document.components("", limit: 100)
+        XCTAssertEqual(comps.map(\.path), ["Kit.Icons.Plus", "Kit.Chrome.Check"])
+        XCTAssertEqual(comps.map(\.group), ["Icons", "Chrome"])
+        XCTAssertEqual(document.components("plus", limit: 100).map(\.name), ["Plus"], "the query filters")
+        XCTAssertTrue(document.components("minus", limit: 100).isEmpty, "an unused node is no component")
+    }
+
+    /// A use written into an item lands in its block and takes the next free name.
+    func testInsertComponentWritesAUseIntoAnItem() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element Screen {
+                item Frame { auto-layout row; width 300; height 200 }
+            }
+
+            item Chip { title c }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        let main = try XCTUnwrap(tree.main)
+        let screen = try XCTUnwrap(try? tree.resolve(main, "Screen"))
+        let frame = try XCTUnwrap(try? tree.resolve(main, "Screen.Frame"))
+
+        let offset = try document.insertComponent(
+            path: "Chip", name: "Chip", into: frame, slot: "", canvas: screen, spot: (0, 0))
+        XCTAssertTrue(
+            document.sceneText?.contains("item Frame { auto-layout row; width 300; height 200; use Chip as Chip }") ?? false,
+            document.sceneText ?? "")
+
+        let next = try XCTUnwrap(document.sceneTree)
+        let nextMain = try XCTUnwrap(next.main)
+        let use = try XCTUnwrap(try? next.resolve(nextMain, "Screen.Frame.Chip"))
+        XCTAssertEqual(use.kind, .use)
+        XCTAssertEqual(use.range.start, offset, "the answer is where the canvas selects")
+        XCTAssertEqual(use.key, "Chip")
+
+        // the same name again takes the next free one
+        let nextFrame = try XCTUnwrap(try? next.resolve(nextMain, "Screen.Frame"))
+        let second = try document.insertComponent(
+            path: "Chip", name: "Chip", into: nextFrame, slot: "", canvas: nextMain, spot: (0, 0))
+        XCTAssertTrue(document.sceneText?.contains("use Chip as Chip_2") ?? false, document.sceneText ?? "")
+        let after = try XCTUnwrap(document.sceneTree)
+        let afterMain = try XCTUnwrap(after.main)
+        XCTAssertEqual(try? after.resolve(afterMain, "Screen.Frame.Chip_2").range.start, second)
+    }
+
+    /// Inserting into an instance puts the use into the slot its component defines.
+    func testInsertComponentFillsTheSlotOfAnInstance() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element Screen {
+                item Frame { auto-layout row; width 300 }
+                use Card as card
+            }
+
+            item Card {
+                slot header
+                slot { item Empty { title e } }
+            }
+
+            item Chip { title c }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        var tree = try XCTUnwrap(document.sceneTree)
+        let main = try XCTUnwrap(tree.main)
+        let screen = try XCTUnwrap(try? tree.resolve(main, "Screen"))
+        let cardUse = try XCTUnwrap(screen.content.first { $0.kind == .use })
+        let card = try XCTUnwrap(try? tree.resolve(main, "Card"))
+        XCTAssertEqual(insertTarget(tree, cardUse).slots, ["", "header"], "the default slot comes first")
+        XCTAssertEqual(componentSlots(card).named, ["header"])
+
+        _ = try document.insertComponent(
+            path: "Chip", name: "Chip", into: cardUse, slot: "header", canvas: main, spot: (0, 0))
+        XCTAssertTrue(
+            document.sceneText?.contains("use Card as card { slot header { use Chip as Chip } }") ?? false,
+            document.sceneText ?? "")
+        tree = try XCTUnwrap(document.sceneTree)
+        let nextUse = try XCTUnwrap(try XCTUnwrap(tree.main).elems.first?.content.first { $0.kind == .use })
+        XCTAssertTrue(nextUse.block.contains { $0.slot == "header" }, "the use sits in the named slot")
+    }
+
+    /// On the canvas the use gets the spot the caller picked, and undo takes the whole use back.
+    func testInsertComponentOnTheCanvasWritesItsPosition() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element Screen {
+                item Frame { auto-layout row; width 300; height 200 }
+            }
+
+            item Chip { title c }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        let main = try XCTUnwrap(tree.main)
+        let screen = try XCTUnwrap(try? tree.resolve(main, "Screen"))
+
+        let offset = try document.insertComponent(
+            path: "Chip", name: "Chip", into: nil, slot: "", canvas: screen, spot: (420, 35))
+        XCTAssertTrue(
+            document.sceneText?.contains("use Chip as Chip { pos 420 35 }") ?? false, document.sceneText ?? "")
+        let next = try XCTUnwrap(document.sceneTree)
+        XCTAssertEqual(try? next.resolve(try XCTUnwrap(next.main), "Screen.Chip").range.start, offset)
+
+        document.undoManager?.undo()
+        XCTAssertFalse(document.sceneText?.contains("use Chip") ?? true, "undo takes the use back")
+    }
+
+    /// The items of the screen decide where a new top level node goes: right of the content, at its top.
+    func testFreeSpotSitsRightOfTheContent() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element Screen {
+                item A { auto-layout abs; pos 10 20; width 100; height 50 }
+                item B { auto-layout abs; pos 200 -30; width 80; height 40 }
+            }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let view = SceneCanvasView(frame: .zero)
+        view.show(document.sceneTree)
+        XCTAssertEqual(view.freeSpot().x, 380, "200 + 80 + the 100 gap")
+        XCTAssertEqual(view.freeSpot().y, 20, "the top of the placed content is -20")
+    }
+
+    /// The picker lists what the libraries offer and writes the chosen use where the selection points:
+    /// the sheet, its Insert button and the canvas selection, end to end.
+    func testInsertComponentSheetWritesThePickedUse() throws {
+        let root = try workspace()
+        _ = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let url = root.appendingPathComponent("screen.tenn")
+        try """
+        element Screen {
+            item Frame { auto-layout row; width 300 }
+        }
+
+        element kit --from-file "design-kit.tenn"
+        """.write(to: url, atomically: true, encoding: .utf8)
+        let document = try openTestDocument(url)
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        XCTAssertEqual(canvas.selectedNode?.name, "Frame")
+
+        vc.insertComponent(nil)
+        let sheet = try XCTUnwrap(vc.view.window?.attachedSheet, "Insert Component… opens a sheet")
+        let insert = try XCTUnwrap(button("Insert", in: try XCTUnwrap(sheet.contentView)))
+        insert.performClick(nil)
+
+        XCTAssertTrue(
+            document.sceneText?.contains("item Frame { auto-layout row; width 300; use kit.Button as Button }")
+                ?? false, document.sceneText ?? "")
+        XCTAssertNil(vc.view.window?.attachedSheet, "the sheet closes on insert")
+        XCTAssertEqual(canvas.selectedNode?.name, "Button", "the inserted use is selected")
+    }
+
+    private func button(_ title: String, in view: NSView) -> NSButton? {
+        if let b = view as? NSButton, b.title == title {
+            return b
+        }
+        for sub in view.subviews {
+            if let b = button(title, in: sub) {
+                return b
+            }
+        }
+        return nil
+    }
+
+    /// The picker puts a heading where the branch changes and filters by the search text.
+    func testThePickerGroupsAndFiltersItsRows() throws {
+        let node = Scene.Node(kind: .item)
+        let all = [
+            Scene.Component(path: "kit.Button", name: "Button", group: "", node: node),
+            Scene.Component(path: "kit.Input", name: "Input", group: "Forms", node: node),
+            Scene.Component(path: "kit.Tag", name: "Tag", group: "Forms", node: node),
+        ]
+        var picked: Scene.Component?
+        let picker = ComponentPickerController(
+            provider: { q in all.filter { q.isEmpty || $0.name.lowercased().contains(q) } },
+            onPick: { picked = $0 })
+
+        XCTAssertEqual(picker.rows.map(\.label), ["Button", "Forms", "Input", "Tag"], "one heading per branch")
+        XCTAssertEqual(picker.selectedComponent?.path, "kit.Button", "the first component is selected")
+        picker.query = "ta"
+        XCTAssertEqual(picker.rows.map(\.label), ["Forms", "Tag"])
+        XCTAssertEqual(picker.selectedComponent?.path, "kit.Tag")
+        picker.query = "nothing"
+        XCTAssertTrue(picker.rows.isEmpty)
+        XCTAssertNil(picked)
+    }
+
 }

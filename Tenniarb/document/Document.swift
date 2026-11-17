@@ -329,6 +329,114 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             Scene.TextEdit(start: bytes.count, end: bytes.count, new: prefix + cmd + "\n"), in: main.pos.file)
     }
 
+    /// The files the document mounts with --from-file, each once: the alias a use names and the file.
+    @MainActor
+    func libraries() -> [(lib: String, file: String)] {
+        guard let f = sceneTree?.main else { return [] }
+        var out: [(lib: String, file: String)] = []
+        var seen = Set<ObjectIdentifier>()
+        func walk(_ n: Scene.Node) {
+            for c in n.elems {
+                if let m = c.mount, seen.insert(ObjectIdentifier(m)).inserted {
+                    out.append((c.key, m.pos.file))
+                }
+                walk(c)
+            }
+        }
+        walk(f)
+        return out
+    }
+
+    /// What the mounted libraries offer for the query, then what the document itself reuses, grouped
+    /// by the branch they are defined in (go/app/outline_scene.go components).
+    @MainActor
+    func components(_ q: String, limit: Int) -> [Scene.Component] {
+        guard let tree = sceneTree else { return [] }
+        var out: [Scene.Component] = []
+        for r in libraries() {
+            guard let n = tree.file(r.file) else { continue }
+            out += sceneComponents(alias: r.lib, root: n, q: q, limit: limit - out.count)
+        }
+        return byGroup(out + ownComponents(q, limit: limit - out.count))
+    }
+
+    /// The nodes the document's own use statements target: a path from the root names them wherever
+    /// the insertion goes. A node the file never uses is not offered.
+    @MainActor
+    func ownComponents(_ q: String, limit: Int) -> [Scene.Component] {
+        guard let tree = sceneTree, let f = tree.main, limit > 0 else { return [] }
+        var seen = Set<ObjectIdentifier>()
+        var nodes: [Scene.Node] = []
+        func walk(_ n: Scene.Node) {
+            for k in sceneNodes(n) {
+                if k.mount != nil {
+                    continue
+                }
+                guard k.kind == .use else {
+                    walk(k)
+                    continue
+                }
+                guard let parent = k.parent, let target = try? tree.resolve(parent, k.path) else { continue }
+                guard !seen.contains(ObjectIdentifier(target)), target.pos.file == f.pos.file else { continue }
+                guard usePath("", target) != nil, !target.name.isEmpty else { continue }
+                seen.insert(ObjectIdentifier(target))
+                nodes.append(target)
+            }
+        }
+        walk(f)
+        let root = commonAncestor(nodes)
+        let query = q.lowercased()
+        var out: [Scene.Component] = []
+        for n in nodes {
+            if !query.isEmpty && !n.name.lowercased().contains(query) && !n.key.lowercased().contains(query) {
+                continue
+            }
+            guard let p = usePath("", n) else { continue }
+            out.append(Scene.Component(path: p, name: n.name, group: branchOf(root, n), node: n))
+            if out.count >= limit {
+                break
+            }
+        }
+        return out
+    }
+
+    /// Writes `use <path> as <name>` into node, in slot, or on the canvas at spot when node is nil.
+    /// Answers the byte offset of the use in the edited text, for the canvas to select it.
+    @MainActor
+    func insertComponent(
+        path: String, name: String, into node: Scene.Node?, slot: String, canvas: Scene.Node,
+        spot: (x: Double, y: Double)
+    ) throws -> Int {
+        guard let text = sceneText else {
+            throw SceneEditError(message: "the document is not a scene")
+        }
+        let target = node ?? canvas
+        let useName = freeName(target, name)
+        var use = commandText("use", path, "as", useName)
+        var cmd = slotCommand(slot, use)
+        if node == nil {
+            use += " { " + commandText("pos", numText(spot.x), numText(spot.y)) + " }"
+            cmd = use
+        }
+        let edit = insertEdit(text, target, cmd)
+        guard let at = byteOffset(of: use, in: edit.new) else {
+            throw SceneEditError(message: "cannot find the use in \(cmd)")
+        }
+        try applySceneEdit(edit, in: (target.mount ?? target).pos.file)
+        return edit.start + at
+    }
+
+    /// The byte offset of needle in text; nil when text does not hold it.
+    private func byteOffset(of needle: String, in text: String) -> Int? {
+        let hay = Array(text.utf8)
+        let pin = Array(needle.utf8)
+        guard !pin.isEmpty, hay.count >= pin.count else { return nil }
+        for i in 0...(hay.count - pin.count) where Array(hay[i..<i + pin.count]) == pin {
+            return i
+        }
+        return nil
+    }
+
     /// Whether target is root or under it, both resolved.
     private func isInside(_ target: URL, _ root: URL) -> Bool {
         target.path == root.path || target.path.hasPrefix(root.path + "/")

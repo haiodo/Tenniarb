@@ -331,3 +331,122 @@ private func segText(_ name: String) -> String {
 private func propPath(_ parent: String, _ name: String) -> String {
     parent.isEmpty ? name : parent + "." + name
 }
+
+/// The Swift listing of a library's components against what go/cmd/tenncomponents prints for every
+/// fixture on this run: the picker offers what Go offers, in the same order and groups.
+final class SceneComponentTests: XCTestCase {
+
+    private let repo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent()
+    private var fixtures: URL { repo.appendingPathComponent("web/fixtures/scene") }
+
+    struct Golden: Decodable {
+        struct Mount: Decodable {
+            struct Item: Decodable {
+                let path: String
+                let name: String
+                let group: String
+            }
+            let alias: String
+            let file: String
+            let components: [Item]
+        }
+        let file: String
+        let mounts: [Mount]
+    }
+
+    func testEveryFixtureMountListsLikeGo() throws {
+        try compare(args: [])
+        try compare(args: ["-q", "a"])
+        try compare(args: ["-limit", "1"])
+    }
+
+    private func compare(args: [String]) throws {
+        let tool = try componentsTool()
+        let data = try run(tool, ["-root", fixtures.path, "-dir", "."] + args)
+        let goldens = try JSONDecoder().decode([Golden].self, from: data)
+        let names = try FileManager.default.contentsOfDirectory(atPath: fixtures.path)
+            .filter { $0.hasSuffix(".tenn") }.sorted()
+        XCTAssertEqual(goldens.map(\.file), names, "the tool has to list every fixture")
+
+        for golden in goldens {
+            let tree = try SceneLoader(root: fixtures).loadAuto(golden.file)
+            var mounts: [(alias: String, file: String)] = []
+            var seen = Set<ObjectIdentifier>()
+            func walk(_ n: Scene.Node) {
+                for c in n.elems {
+                    if let m = c.mount, seen.insert(ObjectIdentifier(m)).inserted {
+                        mounts.append((c.key, m.pos.file))
+                    }
+                    walk(c)
+                }
+            }
+            walk(try XCTUnwrap(tree.main))
+            XCTAssertEqual(mounts.map(\.alias), golden.mounts.map(\.alias), "\(golden.file): mounts")
+            for (i, m) in golden.mounts.enumerated() {
+                XCTAssertEqual(mounts[i].file, m.file, "\(golden.file): the file of \(m.alias)")
+                let root = try XCTUnwrap(tree.file(m.file), "\(golden.file): \(m.file) is loaded")
+                let comps = sceneComponents(alias: m.alias, root: root, q: query(args), limit: limit(args))
+                XCTAssertEqual(comps.map(\.path), m.components.map(\.path), "\(golden.file) \(m.alias): paths")
+                XCTAssertEqual(comps.map(\.name), m.components.map(\.name), "\(golden.file) \(m.alias): names")
+                XCTAssertEqual(comps.map(\.group), m.components.map(\.group), "\(golden.file) \(m.alias): groups")
+            }
+        }
+    }
+
+    private func query(_ args: [String]) -> String {
+        guard let i = args.firstIndex(of: "-q"), i + 1 < args.count else { return "" }
+        return args[i + 1]
+    }
+
+    private func limit(_ args: [String]) -> Int {
+        guard let i = args.firstIndex(of: "-limit"), i + 1 < args.count, let n = Int(args[i + 1]) else { return 200 }
+        return n
+    }
+
+    /// go/cmd/tenncomponents built into the temp directory; the Go build cache keeps this to a moment.
+    private func componentsTool() throws -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "tenniarb-tenncomponents", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let exe = dir.appendingPathComponent("tenncomponents")
+        _ = try run(
+            try goExecutable(), ["build", "-o", exe.path, "./cmd/tenncomponents"],
+            cwd: repo.appendingPathComponent("go"))
+        return exe
+    }
+
+    private func goExecutable() throws -> URL {
+        for path in ["/opt/homebrew/bin/go", "/usr/local/bin/go", "/usr/bin/go"] where FileManager.default.isExecutableFile(atPath: path) {
+            return URL(fileURLWithPath: path)
+        }
+        throw NSError(
+            domain: "SceneComponentTests", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "no go toolchain: the component stand builds go/cmd/tenncomponents"])
+    }
+
+    @discardableResult
+    private func run(_ exe: URL, _ args: [String], cwd: URL? = nil) throws -> Data {
+        let process = Process()
+        process.executableURL = exe
+        process.arguments = args
+        if let cwd { process.currentDirectoryURL = cwd }
+        let out = Pipe()
+        let err = Pipe()
+        process.standardOutput = out
+        process.standardError = err
+        try process.run()
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        let message = err.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw NSError(
+                domain: "SceneComponentTests", code: Int(process.terminationStatus),
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "\(exe.lastPathComponent) \(args.joined(separator: " ")): \(String(decoding: message, as: UTF8.self))"
+                ])
+        }
+        return data
+    }
+}
