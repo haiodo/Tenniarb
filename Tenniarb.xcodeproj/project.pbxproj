@@ -69,6 +69,8 @@
 		AE02EC000000000000000024 /* CommentsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000023 /* CommentsUITests.swift */; };
 		AE02EC0000000000000000C2 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C1 /* Links.swift */; };
 		AE02EC0000000000000000C4 /* LinksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C3 /* LinksTests.swift */; };
+		AE02EC0000000000000000C6 /* LinkOpen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C5 /* LinkOpen.swift */; };
+		AE02EC0000000000000000C8 /* LinkOpenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000C7 /* LinkOpenTests.swift */; };
 		AE02EC0000000000000000B2 /* SceneTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000B1 /* SceneTemplate.swift */; };
 		AE02EC0000000000000000B4 /* SceneTemplateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000B3 /* SceneTemplateTests.swift */; };
 		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
@@ -293,6 +295,8 @@
 		AE02EC000000000000000023 /* CommentsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsUITests.swift; sourceTree = "<group>"; };
 		AE02EC0000000000000000C1 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		AE02EC0000000000000000C3 /* LinksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinksTests.swift; sourceTree = "<group>"; };
+		AE02EC0000000000000000C5 /* LinkOpen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkOpen.swift; sourceTree = "<group>"; };
+		AE02EC0000000000000000C7 /* LinkOpenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkOpenTests.swift; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
 		0C16C06A2321328800F77855 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
@@ -691,6 +695,7 @@
 				AE10C0000000000000000003 /* CommentsTests.swift */,
 				AE02EC000000000000000023 /* CommentsUITests.swift */,
 				AE02EC0000000000000000C3 /* LinksTests.swift */,
+				AE02EC0000000000000000C7 /* LinkOpenTests.swift */,
 				AE02EC0000000000000000B3 /* SceneTemplateTests.swift */,
 				AE02EC000000000000000052 /* SceneAnimationTests.swift */,
 				AE02EC00000000000000006B /* ScenePaintTests.swift */,
@@ -825,6 +830,7 @@
 			isa = PBXGroup;
 			children = (
 				AE02EC0000000000000000C1 /* Links.swift */,
+				AE02EC0000000000000000C5 /* LinkOpen.swift */,
 			);
 			path = links;
 			sourceTree = "<group>";
@@ -1101,6 +1107,7 @@
 				AE10C0000000000000000012 /* CommentsStore.swift in Sources */,
 				AE02EC000000000000000022 /* CommentsController.swift in Sources */,
 				AE02EC0000000000000000C2 /* Links.swift in Sources */,
+				AE02EC0000000000000000C6 /* LinkOpen.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
 				0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
@@ -1142,6 +1149,7 @@
 				AE10C0000000000000000013 /* CommentsTests.swift in Sources */,
 				AE02EC000000000000000024 /* CommentsUITests.swift in Sources */,
 				AE02EC0000000000000000C4 /* LinksTests.swift in Sources */,
+				AE02EC0000000000000000C8 /* LinkOpenTests.swift in Sources */,
 				AE02EC00000000000000006E /* ScenePaintTests.swift in Sources */,
 				AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */,
 				AE02EC000000000000000097 /* SceneExportTests.swift in Sources */,

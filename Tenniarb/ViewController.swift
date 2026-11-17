@@ -768,6 +768,50 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
+    /// Shows the place a link names in this window, as go/app's gotoLink: the element, its node, and a
+    /// line for what the file does not have.
+    func showLink(element: [String], node: String) {
+        guard isViewLoaded, let document else { return }
+        view.window?.makeKeyAndOrderFront(nil)
+        guard let target = LinkOpen.target(in: document, element: element, node: node) else {
+            linkMessage("No element \(element.joined(separator: ".")) in this file.")
+            return
+        }
+        if let path = target.elementPath {
+            editorViewController?.showSceneElement(path)
+            reloadSceneItems()
+            guard !node.isEmpty else { return }
+            if let offset = target.nodeOffset {
+                editorViewController?.sceneCanvas?.canvas.setMessage(nil)
+                editorViewController?.sceneCanvas?.canvas.selectSource(at: offset)
+            } else {
+                linkMessage("No node \(node) in the element \(element.joined(separator: ".")).")
+            }
+            return
+        }
+        guard let selected = target.element else { return }
+        onElementSelected(selected)
+        outlineSidebarController?.setSelectedElement(selected)
+        guard !node.isEmpty else { return }
+        if let name = target.item, let item = selected.items.first(where: { !($0 is LinkItem) && $0.name == name }) {
+            scene?.setActiveItem(item)
+        } else {
+            linkMessage("No node \(node) in the element \(element.joined(separator: ".")).")
+        }
+    }
+
+    /// Says what a link could not show; a classic window has no banner, so it asks.
+    private func linkMessage(_ text: String) {
+        if sceneTree != nil {
+            editorViewController?.sceneCanvas?.canvas.setMessage(text)
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = "Open Link"
+        alert.informativeText = text
+        alert.runModal()
+    }
+
     func updateTextProperties() {
         if document?.sceneTree == nil {
             inspectorController?.refresh()

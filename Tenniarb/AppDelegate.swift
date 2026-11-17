@@ -76,6 +76,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// The system hands a tenniarb:// link over, also before any window exists; each one opens its file
+    /// and shows the place in it.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls where Links.isURL(url.absoluteString) {
+            openLink(url.absoluteString, from: currentDocument())
+        }
+    }
+
     /// Reads an open document again when another program changed its file: go/app asks every 500 ms.
     private func startExternalChangePoll() {
         guard externalChangeTimer == nil else { return }
@@ -246,6 +254,77 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             (document as? Document)?.showWindows()
         }
+    }
+
+    /// File > Open Link…: a field for a link of either form, filled in when the clipboard holds one.
+    @objc func openLink(_ sender: Any?) {
+        let alert = NSAlert()
+        alert.messageText = "Open Link"
+        alert.informativeText =
+            "A tenniarb://open link, or a file with its element and node: File.tenn#Element/node."
+        alert.addButton(withTitle: "Open")
+        alert.addButton(withTitle: "Cancel")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 460, height: 24))
+        field.placeholderString = "tenniarb://open?… or File.tenn#Element/node"
+        if let text = NSPasteboard.general.string(forType: .string), Links.isLink(text) {
+            field.stringValue = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        alert.accessoryView = field
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        openLink(field.stringValue, from: currentDocument())
+    }
+
+    /// The document a link is opened from: the current one, else the one whose window is key.
+    private func currentDocument() -> Document? {
+        (NSDocumentController.shared.currentDocument ?? NSApp.keyWindow?.windowController?.document) as? Document
+    }
+
+    /// Opens the file a link names and shows its place, as go/app's openLink: every failure says why.
+    private func openLink(_ text: String, from: Document?) {
+        let link: Links.Link
+        do {
+            link = try Links.parse(text)
+        } catch {
+            say("Not a link: \(error.localizedDescription).")
+            return
+        }
+        let documents = NSDocumentController.shared.documents.compactMap { ($0 as? Document)?.fileURL }
+        guard
+            let path = LinkOpen.resolve(
+                link, active: from?.fileURL, openDocuments: documents,
+                home: FileManager.default.homeDirectoryForCurrentUser, exists: LinkOpen.isFile)
+        else {
+            say("Cannot find \(link.path)\(link.repo.isEmpty ? "" : " in \(link.repo)") on this machine.")
+            return
+        }
+        let url = URL(fileURLWithPath: path)
+        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { document, _, error in
+            MainActor.assumeIsolated {
+                guard let document = document as? Document else {
+                    self.say("Could not open \(path): \(error?.localizedDescription ?? "not a Tenniarb document").")
+                    return
+                }
+                self.show(link, in: document)
+            }
+        }
+    }
+
+    /// Brings the window of the document forward and shows the place the link names.
+    private func show(_ link: Links.Link, in document: Document) {
+        document.showWindows()
+        guard let vc = document.vc else {
+            say("Opened \(document.fileURL?.lastPathComponent ?? "the file") but found no window to show the place in.")
+            return
+        }
+        vc.showLink(element: link.element, node: link.node)
+    }
+
+    /// Says why a link did not open.
+    private func say(_ text: String) {
+        let alert = NSAlert()
+        alert.messageText = "Open Link"
+        alert.informativeText = text
+        alert.runModal()
     }
 
     /// The document the menus act on: the current one, else the one whose window is key.

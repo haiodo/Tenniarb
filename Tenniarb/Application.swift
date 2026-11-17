@@ -21,8 +21,14 @@ import Foundation
 
 public class TenniarbApplication: NSApplication {
 
+    /// NSApplication does not retain its delegate: this keeps the instance alive for the run.
+    private let appDelegate = AppDelegate()
+
     override init() {
         super.init()
+        // NSApplicationMain makes the principal class but no delegate: the lifecycle and the URL
+        // scheme hang off this one.
+        delegate = appDelegate
         // Setup the main menu immediately during application initialization
         // This ensures the menu is available before any windows are shown
         setupMainMenu()
@@ -141,6 +147,9 @@ public class TenniarbApplication: NSApplication {
 
         fileMenu.addItem(NSMenuItem(title: "New", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "n"))
         fileMenu.addItem(NSMenuItem(title: "Open…", action: #selector(NSDocumentController.openDocument(_:)), keyEquivalent: "o"))
+        let openLinkItem = NSMenuItem(title: "Open Link…", action: #selector(AppDelegate.openLink(_:)), keyEquivalent: "O")
+        openLinkItem.keyEquivalentModifierMask = [.command, .shift]
+        fileMenu.addItem(openLinkItem)
         let openLibraryItem = NSMenuItem(title: AppDelegate.openLibraryTitle, action: nil, keyEquivalent: "")
         openLibraryItem.submenu = NSMenu(title: AppDelegate.openLibraryTitle)
         fileMenu.addItem(openLibraryItem)
