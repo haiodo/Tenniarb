@@ -580,4 +580,126 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertNil(picked)
     }
 
+    // MARK: - The Items pane: component browser
+
+    /// A scene that mounts design-kit.tenn, with a Frame on the canvas for an insert to land in.
+    private func componentBrowserDocument() throws -> (ViewController, Document) {
+        let root = try workspace()
+        _ = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let url = root.appendingPathComponent("screen.tenn")
+        try """
+        element Screen {
+            item Frame { auto-layout row; width 300 }
+        }
+
+        element kit --from-file "design-kit.tenn"
+        """.write(to: url, atomically: true, encoding: .utf8)
+        let document = try openTestDocument(url)
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        return (vc, document)
+    }
+
+    /// The browser lists what the library offers, a root component under no heading, and the pane returns
+    /// to the drawn items of the canvas when switched back.
+    func testComponentBrowserRowsAndModeSwitch() throws {
+        let (vc, _) = try componentBrowserDocument()
+        let sidebar = try XCTUnwrap(vc.outlineSidebarController)
+        XCTAssertFalse(sidebar.showsComponents)
+        XCTAssertEqual(sidebar.itemsRows.map(\.label), ["Frame"], "the drawn items of the canvas")
+
+        sidebar.setItemsMode(true)
+        XCTAssertTrue(sidebar.showsComponents)
+        XCTAssertEqual(sidebar.itemsRows.map(\.label), ["Button", "Badge"])
+        XCTAssertTrue(sidebar.itemsRows.allSatisfy(\.component))
+        XCTAssertFalse(sidebar.itemsRows.contains { $0.kind == .group }, "a root component has no heading")
+
+        sidebar.setItemsMode(false)
+        XCTAssertEqual(sidebar.itemsRows.map(\.label), ["Frame"], "the items of the canvas again")
+    }
+
+    /// A document that mounts no library says where a library comes from instead of showing an empty list.
+    func testComponentBrowserHintsWhenNothingIsOffered() throws {
+        let root = try workspace([
+            "plain.tenn": """
+            element Screen {
+                item Frame { auto-layout row; width 100 }
+            }
+            """
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("plain.tenn"))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        let sidebar = try XCTUnwrap(vc.outlineSidebarController)
+
+        sidebar.setItemsMode(true)
+        let hint = try XCTUnwrap(sidebar.itemsRows.first)
+        XCTAssertEqual(sidebar.itemsRows.count, 1)
+        XCTAssertEqual(hint.kind, .hint)
+        XCTAssertFalse(hint.component)
+        XCTAssertTrue(hint.label.contains("Add Library"), hint.label)
+    }
+
+    /// A double click on a component row writes the use where the selection points and selects it.
+    func testComponentRowInsertWritesWhereTheSelectionPoints() throws {
+        let (vc, document) = try componentBrowserDocument()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        canvas.select([0])
+        XCTAssertEqual(canvas.selectedNode?.name, "Frame")
+
+        let sidebar = try XCTUnwrap(vc.outlineSidebarController)
+        sidebar.setItemsMode(true)
+        let button = try XCTUnwrap(sidebar.itemsRows.first { $0.usePath == "kit.Button" })
+        sidebar.itemsDelegate?.activate(button)
+
+        XCTAssertTrue(
+            document.sceneText?.contains("item Frame { auto-layout row; width 300; use kit.Button as Button }") ?? false,
+            document.sceneText ?? "")
+        XCTAssertEqual(canvas.selectedNode?.name, "Button", "the inserted use is selected")
+    }
+
+    /// A component dropped on the canvas takes the spot of the drop; a path the document does not offer
+    /// writes nothing.
+    func testComponentDropWritesAtTheDropPoint() throws {
+        let (vc, document) = try componentBrowserDocument()
+        XCTAssertTrue(vc.dropComponent(path: "kit.Button", at: Scene.Point(x: 420, y: 35)))
+        XCTAssertTrue(
+            document.sceneText?.contains("use kit.Button as Button { pos 420 35 }") ?? false,
+            document.sceneText ?? "")
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        XCTAssertEqual(canvas.selectedNode?.name, "Button", "the dropped use is selected")
+
+        let before = document.sceneText
+        XCTAssertFalse(vc.dropComponent(path: "kit.Nothing", at: Scene.Point(x: 10, y: 10)))
+        XCTAssertEqual(document.sceneText, before, "a component the document does not offer was written")
+    }
+
+    /// The picture of a component is the piece it draws; a component of slots does not break the preview.
+    func testComponentPreviewDrawsTheComponent() throws {
+        let (vc, document) = try componentBrowserDocument()
+        let sidebar = try XCTUnwrap(vc.outlineSidebarController)
+        sidebar.setItemsMode(true)
+
+        let button = try XCTUnwrap(sidebar.previewImage(path: "kit.Button"), "Button draws something")
+        XCTAssertEqual(button.size, NSSize(width: 160, height: 100))
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(button.tiffRepresentation)))
+        var drawn = false
+        for y in stride(from: 0, to: bitmap.pixelsHigh, by: 4) {
+            for x in stride(from: 0, to: bitmap.pixelsWide, by: 4)
+            where (bitmap.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0 {
+                drawn = true
+            }
+        }
+        XCTAssertTrue(drawn, "the preview shows the button, not an empty box")
+
+        // kit.Card is not offered by the browser; its slots are what the preview has to survive.
+        let tree = try XCTUnwrap(document.sceneTree)
+        let kit = try XCTUnwrap(tree.file("design-kit.tenn"))
+        let card = try XCTUnwrap(try? tree.resolve(kit, "Card"))
+        _ = ComponentPreview.image(tree: tree, node: card)
+    }
+
 }

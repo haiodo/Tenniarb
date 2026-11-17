@@ -907,6 +907,38 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         editorViewController?.sceneCanvas?.canvas.select(path)
     }
 
+    /// A row of the component browser of the Items pane: the component goes where Insert Component… would
+    /// put it, at the canvas selection or a free spot, and is selected.
+    func insertComponentRow(path: String, name: String) {
+        guard let document,
+            let component = document.components("", limit: 200).first(where: { $0.path == path }),
+            let canvas = editorViewController?.sceneCanvas?.canvas, let canvasNode = canvas.screenNode
+        else { return }
+        insert(component, canvas: canvas, canvasNode: canvasNode)
+    }
+
+    /// A component dropped on the canvas at a point of the scene: the use takes that spot, and the new
+    /// instance is selected. False for a path the document no longer offers.
+    @discardableResult
+    func dropComponent(path: String, at point: Scene.Point) -> Bool {
+        guard let document,
+            let component = document.components("", limit: 200).first(where: { $0.path == path }),
+            let canvas = editorViewController?.sceneCanvas?.canvas, let canvasNode = canvas.screenNode
+        else { return false }
+        do {
+            let offset = try document.insertComponent(
+                path: component.path, name: component.name, into: nil, slot: "", canvas: canvasNode,
+                spot: (point.x, point.y))
+            canvas.setMessage(nil)
+            canvas.selectSource(at: offset)
+            reloadSceneItems()
+            return true
+        } catch {
+            canvas.setMessage(error.localizedDescription)
+            return false
+        }
+    }
+
     /// Lists the items of the element the scene canvas shows.
     func reloadSceneItems() {
         guard sceneTree != nil else {

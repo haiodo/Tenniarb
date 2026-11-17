@@ -15,6 +15,13 @@
 
 import Cocoa
 
+extension NSPasteboard.PasteboardType {
+    /// The drag of a component row of the Items pane; the path of the use is the string it carries.
+    static let tenniarbComponent = NSPasteboard.PasteboardType("tenniarb.component")
+    /// The label of that row, for a receiver that shows what is dragged.
+    static let tenniarbComponentName = NSPasteboard.PasteboardType("tenniarb.component.name")
+}
+
 /// A scene document on the canvas: one built screen drawn by the scene engine, with a click selecting a
 /// drawn item and a double click editing its title in a native field.
 final class SceneCanvasView: NSView, NSTextFieldDelegate {
@@ -231,6 +238,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        registerForDraggedTypes([.tenniarbComponent])
         NotificationCenter.default.removeObserver(self, name: NSWindow.willCloseNotification, object: nil)
         guard let window else {
             stopTimer()
@@ -775,6 +783,35 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     override func mouseUp(with event: NSEvent) {
         endDrag()
+    }
+
+    // MARK: - Dropping a component
+
+    /// The use path a component drag carries, when the document still offers it; nil for any other drag,
+    /// which the canvas ignores like a plain text drop.
+    private func draggedComponent(_ sender: NSDraggingInfo) -> String? {
+        guard let path = sender.draggingPasteboard.string(forType: .tenniarbComponent),
+            let document, document.components("", limit: 200).contains(where: { $0.path == path })
+        else { return nil }
+        return path
+    }
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        draggedComponent(sender) == nil ? [] : .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        draggingEntered(sender)
+    }
+
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        draggedComponent(sender) != nil
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        guard let path = draggedComponent(sender) else { return false }
+        let point = scenePoint(convert(sender.draggingLocation, from: nil))
+        return document?.vc?.dropComponent(path: path, at: point) ?? false
     }
 
     /// A click at a point of the screen: selects what it lands on and, on the second click, edits the title.

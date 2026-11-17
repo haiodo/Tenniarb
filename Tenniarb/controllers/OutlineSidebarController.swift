@@ -26,9 +26,14 @@ class OutlineSidebarController: NSObject {
     private(set) var toolbar: NSSegmentedControl!
     private(set) var containerView: NSView!
     private(set) var itemsOutlineView: NSOutlineView!
+    /// The switch of the Items pane: the drawn items, or the components to insert.
+    private var itemsModeControl: NSSegmentedControl!
+    /// The picture of the component the pane has selected; shown in the components mode only.
+    private var itemsPreview: NSImageView!
+    private var itemsPreviewBox: NSView!
 
     private var outlineViewDelegate: OutlineViewControllerDelegate?
-    private var itemsDelegate: SceneItemsDelegate?
+    private(set) var itemsDelegate: SceneItemsDelegate?
 
     func createView() -> NSView {
         let stackView = NSStackView()
@@ -110,13 +115,37 @@ class OutlineSidebarController: NSObject {
         stackView.addArrangedSubview(itemsHeader)
         itemsHeader.heightAnchor.constraint(equalToConstant: 22).isActive = true
         itemsHeader.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
-        let itemsLabel = NSTextField(labelWithString: "Items")
-        itemsLabel.translatesAutoresizingMaskIntoConstraints = false
-        itemsLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        itemsLabel.textColor = .secondaryLabelColor
-        itemsHeader.contentView!.addSubview(itemsLabel)
-        itemsLabel.leadingAnchor.constraint(equalTo: itemsHeader.contentView!.leadingAnchor, constant: 8).isActive = true
-        itemsLabel.centerYAnchor.constraint(equalTo: itemsHeader.contentView!.centerYAnchor).isActive = true
+        let mode = NSSegmentedControl(
+            labels: ["Items", "Components"], trackingMode: .selectOne, target: self,
+            action: #selector(itemsModeChanged(_:)))
+        mode.translatesAutoresizingMaskIntoConstraints = false
+        mode.segmentStyle = .texturedRounded
+        mode.controlSize = .small
+        mode.font = NSFont.systemFont(ofSize: 11)
+        mode.selectedSegment = 0
+        itemsHeader.contentView!.addSubview(mode)
+        mode.leadingAnchor.constraint(equalTo: itemsHeader.contentView!.leadingAnchor, constant: 6).isActive = true
+        mode.trailingAnchor.constraint(equalTo: itemsHeader.contentView!.trailingAnchor, constant: -6).isActive = true
+        mode.centerYAnchor.constraint(equalTo: itemsHeader.contentView!.centerYAnchor).isActive = true
+        self.itemsModeControl = mode
+
+        // The picture of the component picked in the browser, above the rows it was picked from.
+        let previewBox = NSView()
+        previewBox.translatesAutoresizingMaskIntoConstraints = false
+        previewBox.isHidden = true
+        stackView.addArrangedSubview(previewBox)
+        previewBox.heightAnchor.constraint(equalToConstant: 104).isActive = true
+        previewBox.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
+        let preview = NSImageView()
+        preview.translatesAutoresizingMaskIntoConstraints = false
+        preview.imageScaling = .scaleProportionallyUpOrDown
+        previewBox.addSubview(preview)
+        preview.centerXAnchor.constraint(equalTo: previewBox.centerXAnchor).isActive = true
+        preview.centerYAnchor.constraint(equalTo: previewBox.centerYAnchor).isActive = true
+        preview.widthAnchor.constraint(equalToConstant: 160).isActive = true
+        preview.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        self.itemsPreviewBox = previewBox
+        self.itemsPreview = preview
 
         let itemsScroll = NSScrollView()
         itemsScroll.translatesAutoresizingMaskIntoConstraints = false
@@ -130,7 +159,7 @@ class OutlineSidebarController: NSObject {
         itemsScroll.heightAnchor.constraint(equalToConstant: 180).isActive = true
         itemsScroll.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
 
-        let items = NSOutlineView(frame: .zero)
+        let items = SceneItemsOutlineView(frame: .zero)
         items.translatesAutoresizingMaskIntoConstraints = false
         let itemsCol = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "ItemsColumn"))
         itemsCol.title = "Item"
@@ -156,16 +185,62 @@ class OutlineSidebarController: NSObject {
         outlineView.delegate = self.outlineViewDelegate
         outlineView.dataSource = self.outlineViewDelegate
 
-        self.itemsDelegate = SceneItemsDelegate(vc)
+        self.itemsDelegate = SceneItemsDelegate(vc, sidebar: self)
         itemsOutlineView.delegate = self.itemsDelegate
         itemsOutlineView.dataSource = self.itemsDelegate
+        itemsOutlineView.target = self.itemsDelegate
+        itemsOutlineView.doubleAction = #selector(SceneItemsDelegate.activateRow(_:))
+        (itemsOutlineView as? SceneItemsOutlineView)?.onReturn = { [weak itemsDelegate] in
+            itemsDelegate?.activateSelected()
+        }
+        itemsOutlineView.setDraggingSourceOperationMask(.copy, forLocal: true)
     }
 
     /// Lists the items of the scene on the canvas; nil clears the pane.
     func showItems(_ canvas: SceneCanvasView?) {
         itemsDelegate?.show(canvas)
-        itemsOutlineView?.reloadData()
-        itemsOutlineView?.expandItem(nil, expandChildren: false)
+    }
+
+    /// The rows the Items pane shows now; read by tests.
+    var itemsRows: [SceneItemsDelegate.Row] { itemsDelegate?.rows ?? [] }
+
+    /// Whether the pane lists the components to insert instead of the drawn items.
+    var showsComponents: Bool { itemsDelegate?.components ?? false }
+
+    /// Switches the pane between the drawn items and the components to insert, and reloads it.
+    func setItemsMode(_ components: Bool) {
+        guard let itemsDelegate, itemsDelegate.components != components else { return }
+        itemsDelegate.setComponents(components)
+        itemsModeControl.selectedSegment = components ? 1 : 0
+        itemsPreviewBox.isHidden = !components
+        showPreview(itemsDelegate.selectedComponentUsePath)
+    }
+
+    /// The picture of the built component at path, fitted into the pane; read by tests.
+    func previewImage(path: String, size: NSSize = NSSize(width: 160, height: 100)) -> NSImage? {
+        itemsDelegate?.previewImage(path: path, size: size)
+    }
+
+    /// Shows the component at path over the list; nil clears the picture.
+    fileprivate func showPreview(_ path: String?) {
+        guard showsComponents else {
+            itemsPreview.image = nil
+            return
+        }
+        if let path, let image = itemsDelegate?.previewImage(path: path) {
+            itemsPreview.contentTintColor = nil
+            itemsPreview.image = image
+        } else {
+            // A component of slots is empty until it is filled; the puzzle says what the row is.
+            itemsPreview.contentTintColor = .tertiaryLabelColor
+            itemsPreview.image =
+                path == nil
+                ? nil : NSImage(systemSymbolName: "puzzlepiece", accessibilityDescription: "component")
+        }
+    }
+
+    @objc private func itemsModeChanged(_ sender: NSSegmentedControl) {
+        setItemsMode(sender.selectedSegment == 1)
     }
 
     @objc private func toolbarAction(_ sender: NSSegmentedControl) {
@@ -228,56 +303,194 @@ class OutlineSidebarController: NSObject {
 }
 
 /// The rows of the Items pane: the drawn items of the scene on the canvas, one row per item and the parts
-/// of an instance under it. A row selects the item on the canvas.
+/// of an instance under it, or the components a use can insert, grouped by the branch they are defined in.
 @MainActor
 final class SceneItemsDelegate: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
-    /// One row: a drawn item, its index path from the root of the screen, and the rows under it.
-    final class Node {
-        let label: String
-        let path: [Int]
-        var kids: [Node] = []
+    /// What a row is: a drawn item, a heading of the browser, a component to insert, or the hint of an
+    /// empty browser.
+    enum Kind: String {
+        case item, group, component, hint
+    }
 
-        init(label: String, path: [Int]) {
+    /// One row: a drawn item and the rows under it, or a component to insert and the use path it writes.
+    final class Row {
+        let label: String
+        let kind: Kind
+        /// The index path from the root of the screen for a drawn item; empty otherwise.
+        let path: [Int]
+        /// The use path of a component row: what a double click inserts and a drag carries.
+        let usePath: String
+        var kids: [Row] = []
+
+        var component: Bool { kind == .component }
+
+        init(label: String, kind: Kind, path: [Int] = [], usePath: String = "") {
             self.label = label
+            self.kind = kind
             self.path = path
+            self.usePath = usePath
         }
     }
 
-    private var roots: [Node] = []
-    private weak var viewController: ViewController?
+    /// The rows the pane shows now; read by tests.
+    private(set) var rows: [Row] = []
+    /// Whether the pane lists the components to insert instead of the drawn items.
+    private(set) var components = false
 
-    init(_ viewController: ViewController) {
+    private weak var viewController: ViewController?
+    private weak var sidebar: OutlineSidebarController?
+    private weak var canvas: SceneCanvasView?
+    private var previews: [String: NSImage] = [:]
+    private var previewMisses = Set<String>()
+
+    init(_ viewController: ViewController, sidebar: OutlineSidebarController) {
         self.viewController = viewController
+        self.sidebar = sidebar
         super.init()
     }
 
     /// Lists the items of the scene on the canvas; nil clears the pane.
     func show(_ canvas: SceneCanvasView?) {
-        roots = Self.nodes(canvas, nil)
+        self.canvas = canvas
+        refresh()
     }
 
-    private static func nodes(_ canvas: SceneCanvasView?, _ path: [Int]?) -> [Node] {
+    /// Switches between the drawn items and the browser, and rebuilds the rows.
+    func setComponents(_ on: Bool) {
+        components = on
+        // The rows of the other mode are no rows of this one; the index would point at an unrelated item.
+        sidebar?.itemsOutlineView?.deselectAll(nil)
+        refresh()
+    }
+
+    /// Rebuilds the rows and reloads the list, keeping the component the pane had selected when it is
+    /// still offered.
+    func refresh() {
+        let outline = sidebar?.itemsOutlineView
+        let keep = selectedComponentUsePath
+        previews.removeAll()
+        previewMisses.removeAll()
+        rows = builtRows()
+        outline?.reloadData()
+        outline?.expandItem(nil, expandChildren: false)
+        guard components, let outline else { return }
+        let picked =
+            rows.firstIndex { $0.component && $0.usePath == keep }
+            ?? rows.firstIndex { $0.component }
+        if let picked {
+            outline.selectRowIndexes(IndexSet(integer: picked), byExtendingSelection: false)
+        } else {
+            outline.deselectAll(nil)
+            sidebar?.showPreview(nil)
+        }
+    }
+
+    /// The use path of the selected component, nil for another row or none.
+    var selectedComponentUsePath: String? {
+        guard let outline = sidebar?.itemsOutlineView, outline.selectedRow >= 0,
+            let row = outline.item(atRow: outline.selectedRow) as? Row, row.component
+        else { return nil }
+        return row.usePath
+    }
+
+    private func builtRows() -> [Row] {
+        components ? componentRows() : Self.itemRows(canvas, nil)
+    }
+
+    private static func itemRows(_ canvas: SceneCanvasView?, _ path: [Int]?) -> [Row] {
         (canvas?.itemRows(path) ?? []).map { row in
-            let node = Node(label: row.label, path: row.path)
-            if row.kids { node.kids = nodes(canvas, row.path) }
+            let node = Row(label: row.label, kind: .item, path: row.path)
+            if row.kids { node.kids = itemRows(canvas, row.path) }
             return node
         }
     }
 
+    /// The components of the mounted libraries and of the document, under a heading when they are defined
+    /// in a branch of one.
+    private func componentRows() -> [Row] {
+        guard let document = viewController?.document else { return [] }
+        var out: [Row] = []
+        var last = ""
+        for c in document.components("", limit: 200) {
+            if !c.group.isEmpty && c.group != last {
+                out.append(Row(label: c.group, kind: .group))
+            }
+            last = c.group
+            out.append(Row(label: c.name, kind: .component, usePath: c.path))
+        }
+        guard out.isEmpty else { return out }
+        let hint =
+            document.libraries().isEmpty
+            ? "No component to insert: add a library with File > Add Library…"
+            : "The libraries mount no component"
+        return [Row(label: hint, kind: .hint)]
+    }
+
+    // MARK: - Preview
+
+    /// The picture of the component at path, fitted into a size box; cached by path and size until the
+    /// pane reloads. Nil when the component draws nothing.
+    func previewImage(path: String, size: NSSize = NSSize(width: 160, height: 100)) -> NSImage? {
+        guard let document = viewController?.document, let tree = document.sceneTree else { return nil }
+        let key = "\(path)|\(Int(size.width))x\(Int(size.height))"
+        if let hit = previews[key] { return hit }
+        if previewMisses.contains(key) { return nil }
+        guard let component = document.components("", limit: 200).first(where: { $0.path == path }),
+            let image = ComponentPreview.image(tree: tree, node: component.node, size: size)
+        else {
+            previewMisses.insert(key)
+            return nil
+        }
+        previews[key] = image
+        return image
+    }
+
+    // MARK: - Activation
+
+    /// A double click on a row, as the list sends it.
+    @objc func activateRow(_ sender: Any?) {
+        guard let outline = (sender as? NSOutlineView) ?? sidebar?.itemsOutlineView else { return }
+        let index = outline.clickedRow >= 0 ? outline.clickedRow : outline.selectedRow
+        guard index >= 0, let row = outline.item(atRow: index) as? Row else { return }
+        activate(row)
+    }
+
+    /// Return on the selected row.
+    func activateSelected() {
+        guard let outline = sidebar?.itemsOutlineView, outline.selectedRow >= 0,
+            let row = outline.item(atRow: outline.selectedRow) as? Row
+        else { return }
+        activate(row)
+    }
+
+    /// A component row inserts its use where Insert Component… would; a heading, a hint and a drawn item
+    /// do nothing.
+    func activate(_ row: Row) {
+        guard row.component else { return }
+        viewController?.insertComponentRow(path: row.usePath, name: row.label)
+    }
+
+    // MARK: - Data source
+
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        (item as? Node)?.kids.count ?? roots.count
+        (item as? Row)?.kids.count ?? rows.count
     }
 
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        (item as? Node)?.kids[index] ?? roots[index]
+        (item as? Row)?.kids[index] ?? rows[index]
     }
 
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        !((item as? Node)?.kids.isEmpty ?? true)
+        !((item as? Row)?.kids.isEmpty ?? true)
     }
 
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
-        (item as? Node)?.label
+        (item as? Row)?.label
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
+        guard let row = item as? Row else { return false }
+        return row.kind == .item || row.component
     }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -299,7 +512,9 @@ final class SceneItemsDelegate: NSObject, NSOutlineViewDataSource, NSOutlineView
             ])
             cell = view
         }
-        cell?.textField?.stringValue = (item as? Node)?.label ?? ""
+        let row = item as? Row
+        cell?.textField?.stringValue = row?.label ?? ""
+        cell?.textField?.textColor = row?.kind == .group || row?.kind == .hint ? .secondaryLabelColor : .labelColor
         return cell
     }
 
@@ -307,10 +522,116 @@ final class SceneItemsDelegate: NSObject, NSOutlineViewDataSource, NSOutlineView
         OutlineNSTableRowView()
     }
 
+    /// Rows of the browser carry their use path, which the canvas reads on a drop.
+    func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any) -> NSPasteboardWriting? {
+        guard components, let row = item as? Row, row.component else { return nil }
+        let pasteboard = NSPasteboardItem()
+        pasteboard.setString(row.usePath, forType: .tenniarbComponent)
+        pasteboard.setString(row.label, forType: .tenniarbComponentName)
+        return pasteboard
+    }
+
     func outlineViewSelectionDidChange(_ notification: Notification) {
         guard let outline = notification.object as? NSOutlineView, outline.selectedRow >= 0,
-            let node = outline.item(atRow: outline.selectedRow) as? Node
-        else { return }
-        viewController?.selectSceneItem(node.path)
+            let row = outline.item(atRow: outline.selectedRow) as? Row
+        else {
+            sidebar?.showPreview(nil)
+            return
+        }
+        guard row.component else {
+            sidebar?.showPreview(nil)
+            if !row.path.isEmpty {
+                viewController?.selectSceneItem(row.path)
+            }
+            return
+        }
+        sidebar?.showPreview(row.usePath)
+    }
+}
+
+/// The list of the Items pane: Return acts on a row as a double click does.
+final class SceneItemsOutlineView: NSOutlineView {
+    var onReturn: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 36 || event.keyCode == 76, let onReturn {
+            onReturn()
+            return
+        }
+        super.keyDown(with: event)
+    }
+}
+
+/// A component as the browser draws it: the piece fitted into the box, centered on a transparent
+/// background. An item is its part of the element it sits in, an element whole (go/app/component_preview.go).
+enum ComponentPreview {
+    /// Where the component is drawn in its own element; nil when everything in it draws nothing.
+    @MainActor
+    static func image(tree: Scene.Tree, node: Scene.Node, size: NSSize = NSSize(width: 160, height: 100)) -> NSImage? {
+        // The canvas builds elements, so an item is drawn as its part of the element it sits in.
+        var build = node
+        if node.kind != .element && node.kind != .file {
+            for p in sequence(first: node.parent, next: { $0?.parent }) {
+                if let p, p.kind == .element || p.kind == .file {
+                    build = p
+                    break
+                }
+            }
+        }
+        guard let screen = tree.buildElement(build, measurer: Scene.TextMeasurer(), eval: sceneEvalVars),
+            let piece = placed(screen.placed(), of: node)
+        else { return nil }
+        let box = bounds(piece)
+        guard box.width > 0, box.height > 0 else { return nil }
+
+        let scale = min(size.width / box.width, size.height / box.height, 1)
+        let density = 2.0  // the image keeps its point size and stays sharp on a Retina screen
+        let w = Int(size.width * density)
+        let h = Int(size.height * density)
+        guard w > 0, h > 0,
+            let ctx = CGContext(
+                data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        ctx.setShouldAntialias(true)
+        ctx.scaleBy(x: density, y: density)
+        ctx.translateBy(x: 0, y: size.height)
+        ctx.scaleBy(x: 1, y: -1)  // the scene counts y down
+        ctx.translateBy(
+            x: (size.width - box.width * scale) / 2 - box.minX * scale,
+            y: (size.height - box.height * scale) / 2 - box.minY * scale)
+        ctx.scaleBy(x: scale, y: scale)
+        ScenePainter(screen: screen).paint(under(piece, screen: screen), ctx)
+        guard let cg = ctx.makeImage() else { return nil }
+        return NSImage(cgImage: cg, size: size)
+    }
+
+    /// Where n is drawn in the tree of placed nodes; nil when it is not drawn.
+    private static func placed(_ root: Scene.Placed, of n: Scene.Node) -> Scene.Placed? {
+        if root.src === n { return root }
+        for k in root.kids {
+            if let got = placed(k, of: n) { return got }
+        }
+        return nil
+    }
+
+    /// The box of pl and its drawn kids, in the coordinates of the screen.
+    private static func bounds(_ pl: Scene.Placed) -> CGRect {
+        var box = CGRect(x: pl.x, y: pl.y, width: pl.w, height: pl.h)
+        for k in pl.kids {
+            box = box.union(bounds(k))
+        }
+        return box
+    }
+
+    /// The piece under a stand-in root that draws nothing: ScenePainter skips the picture of the root it
+    /// is given, and the piece has a picture of its own.
+    private static func under(_ pl: Scene.Placed, screen: Scene.Screen) -> Scene.Placed {
+        let r = Scene.RNode(kind: .item)
+        screen.p.frames[ObjectIdentifier(r)] = Scene.LayoutNode()
+        let root = Scene.Placed(src: nil, inst: false, free: true, parent: nil, x: 0, y: 0, w: pl.w, h: pl.h, r: r)
+        root.kids = [pl]
+        return root
     }
 }
