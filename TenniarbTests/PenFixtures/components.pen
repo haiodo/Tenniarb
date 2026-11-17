@@ -1,0 +1,22 @@
+{"version":"2.21","children":[
+ {"type":"frame","id":"lib","name":"Library","x":0,"y":0,"layout":"vertical","gap":20,"children":[
+  {"type":"frame","id":"card","name":"Card","reusable":true,"layout":"vertical","width":200,"padding":8,"gap":4,"fill":"#eeeeee","children":[
+   {"type":"text","id":"ct","name":"Title","content":"Card title","fontSize":14,"fill":"#111111"},
+   {"type":"frame","id":"cb","name":"Body","layout":"vertical","gap":2,"children":[
+    {"type":"text","id":"cbt","name":"Line","content":"Body text","fontSize":12},
+    {"type":"text","id":"ghost","name":"Ghost","content":"hidden","enabled":false}]},
+   {"type":"frame","id":"cf","name":"Footer","gap":4,"children":[
+    {"type":"rectangle","id":"cok","name":"Ok","width":40,"height":20,"fill":"#00aa00"},
+    {"type":"rectangle","id":"ccancel","name":"Cancel","width":40,"height":20,"fill":"#aa0000","enabled":false}]}]},
+  {"type":"frame","id":"wrap2","name":"Wrapper","reusable":true,"layout":"vertical","gap":6,"children":[
+   {"type":"ref","id":"inner","name":"Inner card","ref":"card","descendants":{"ct":{"content":"Inner title"},"cok":{"width":55}}},
+   {"type":"text","id":"wt","name":"Caption","content":"caption","fontSize":10}]}]},
+ {"type":"frame","id":"s1","name":"Screen","x":500,"y":0,"layout":"none","width":900,"height":600,"children":[
+  {"type":"ref","id":"i1","name":"Plain","ref":"card","x":10,"y":10},
+  {"type":"ref","id":"i2","name":"Changed","ref":"card","x":250,"y":10,"width":220,"descendants":{"ct":{"content":"A much longer card title here","fontSize":18},"cok":{"width":60,"fill":"#0000ff"},"ccancel":{"enabled":true}}},
+  {"type":"ref","id":"i3","name":"No footer","ref":"card","x":10,"y":200,"descendants":{"cf":{"enabled":false},"cb":{"padding":[4,6]}}},
+  {"type":"ref","id":"i4","name":"Replaced","ref":"card","x":250,"y":200,"descendants":{"cok":{"id":"newok","type":"frame","name":"Fresh","width":10,"height":30,"layout":"vertical","children":[{"type":"rectangle","id":"fr","name":"Inside","width":4,"height":4}]}}},
+  {"type":"ref","id":"i5","name":"Nested","ref":"wrap2","x":10,"y":400,"descendants":{"ct":{"content":"Deep title"},"cok":{"width":70},"inner":{"width":150}}},
+  {"type":"ref","id":"i6","name":"Plain","ref":"i1","x":250,"y":400}
+ ]}
+]}

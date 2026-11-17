@@ -1,0 +1,12 @@
+{"version":"2.21","children":[
+ {"type":"frame","id":"sc","name":"Screen","layout":"vertical","width":300,"height":300,"gap":4,"padding":4,"children":[
+  {"type":"rectangle","id":"uni","name":"Uniform","width":40,"height":12,"fill":"#ffffff","stroke":"#ff0000","strokeWidth":{"top":2,"right":2,"bottom":2,"left":2}},
+  {"type":"frame","id":"top","name":"Top","width":40,"height":12,"fill":"#ffffff","stroke":"#00ff00","strokeWidth":{"top":1}},
+  {"type":"rectangle","id":"zero","name":"Zero","width":40,"height":12,"fill":"#ffffff","stroke":"#0000ff","strokeWidth":{"top":0,"right":0,"bottom":0,"left":0}},
+  {"type":"rectangle","id":"none","name":"NoWidth","width":40,"height":12,"fill":"#ffffff","stroke":"#0000ff","strokeWidth":0},
+  {"type":"rectangle","id":"clear","name":"Clear","width":40,"height":12,"fill":"#ffffff","stroke":"#ff000000","strokeWidth":1},
+  {"type":"path","id":"shape","name":"Shape","width":40,"height":12,"fill":"#ffffff","stroke":"#ff0000","strokeWidth":2,"geometry":"M0 0L40 12","viewBox":[0,0,40,12]},
+  {"type":"frame","id":"inn","name":"Inner","width":40,"height":12,"fill":"#ffffff","stroke":"#ff0000","strokeWidth":2,"strokeAlignment":"inner"},
+  {"type":"frame","id":"cen","name":"Center","width":40,"height":12,"fill":"#ffffff","stroke":"#ff0000","strokeWidth":2},
+  {"type":"frame","id":"out","name":"Outer","width":40,"height":12,"fill":"#ffffff","stroke":"#ff0000","strokeWidth":2,"strokeAlignment":"outer"}]}
+]}

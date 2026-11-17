@@ -207,6 +207,16 @@
 		AE20B0000000000000000002 /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000001 /* Library.swift */; };
 		AE20B0000000000000000004 /* libraries in Resources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000003 /* libraries */; };
 		AE20B0000000000000000006 /* LibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE20B0000000000000000005 /* LibraryTests.swift */; };
+		AE3E00000000000000000022 /* PenImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000011 /* PenImport.swift */; };
+		AE3E00000000000000000023 /* PenProps.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000012 /* PenProps.swift */; };
+		AE3E00000000000000000024 /* PenOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000013 /* PenOverrides.swift */; };
+		AE3E00000000000000000025 /* PenNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000014 /* PenNames.swift */; };
+		AE3E00000000000000000026 /* PenTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000015 /* PenTheme.swift */; };
+		AE3E00000000000000000027 /* PenIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000016 /* PenIcons.swift */; };
+		AE3E00000000000000000028 /* PenCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000017 /* PenCompact.swift */; };
+		AE3E00000000000000000029 /* PenEmit.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000018 /* PenEmit.swift */; };
+		AE3E0000000000000000002A /* PenImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3E00000000000000000019 /* PenImportTests.swift */; };
+		AE3E0000000000000000002B /* PenFixtures in Resources */ = {isa = PBXBuildFile; fileRef = AE3E0000000000000000001A /* PenFixtures */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -444,6 +454,16 @@
 		AE20B0000000000000000001 /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
 		AE20B0000000000000000003 /* libraries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = libraries; path = libraries; sourceTree = SOURCE_ROOT; };
 		AE20B0000000000000000005 /* LibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryTests.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000011 /* PenImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenImport.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000012 /* PenProps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenProps.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000013 /* PenOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenOverrides.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000014 /* PenNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenNames.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000015 /* PenTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenTheme.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000016 /* PenIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenIcons.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000017 /* PenCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenCompact.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000018 /* PenEmit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenEmit.swift; sourceTree = "<group>"; };
+		AE3E00000000000000000019 /* PenImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenImportTests.swift; sourceTree = "<group>"; };
+		AE3E0000000000000000001A /* PenFixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PenFixtures; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -477,6 +497,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AE3E00000000000000000031 /* pen */ = {
+			isa = PBXGroup;
+			children = (
+				AE3E00000000000000000011 /* PenImport.swift */,
+				AE3E00000000000000000012 /* PenProps.swift */,
+				AE3E00000000000000000013 /* PenOverrides.swift */,
+				AE3E00000000000000000014 /* PenNames.swift */,
+				AE3E00000000000000000015 /* PenTheme.swift */,
+				AE3E00000000000000000016 /* PenIcons.swift */,
+				AE3E00000000000000000017 /* PenCompact.swift */,
+				AE3E00000000000000000018 /* PenEmit.swift */,
+			);
+			path = pen;
+			sourceTree = "<group>";
+		};
 		0C1155282108C90E007FD827 /* extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -515,6 +550,7 @@
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				AE02EC000000000000000020 /* scene */,
+				AE3E00000000000000000031 /* pen */,
 				AE03D1000000000000000009 /* diff */,
 				AE20B0000000000000000007 /* library */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
@@ -742,6 +778,8 @@
 				AE02EC000000000000000035 /* SceneEvalTests.swift */,
 				0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */,
 				0C5C6D1E1EFF655B00714971 /* Info.plist */,
+				AE3E00000000000000000019 /* PenImportTests.swift */,
+				AE3E0000000000000000001A /* PenFixtures */,
 				0CC4D3531F930F5500875F9E /* PersistenceTests.swift */,
 				0CC4D3551F930FE700875F9E /* SampleElementModels.swift */,
 				AE01EC00000000000000001 /* ExecutionContextTests.swift */,
@@ -1066,6 +1104,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C4F0EC824C74BB10065918D /* Example.tenn in Resources */,
+				AE3E0000000000000000002B /* PenFixtures in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1084,6 +1123,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				0CCAE77222AACB560083F898 /* Application.swift in Sources */,
+				AE3E00000000000000000022 /* PenImport.swift in Sources */,
+				AE3E00000000000000000023 /* PenProps.swift in Sources */,
+				AE3E00000000000000000024 /* PenOverrides.swift in Sources */,
+				AE3E00000000000000000025 /* PenNames.swift in Sources */,
+				AE3E00000000000000000026 /* PenTheme.swift in Sources */,
+				AE3E00000000000000000027 /* PenIcons.swift in Sources */,
+				AE3E00000000000000000028 /* PenCompact.swift in Sources */,
+				AE3E00000000000000000029 /* PenEmit.swift in Sources */,
 				0C6ED8C2224F3F25009145E1 /* OperationController.swift in Sources */,
 				0C185AA821B263DF00D174B6 /* ExecutionModel.swift in Sources */,
 				0CC3F382200D07DB0050D7E6 /* TextPropertiesDelegate.swift in Sources */,
@@ -1232,6 +1279,7 @@
 				AE03D1000000000000000006 /* DiffTests.swift in Sources */,
 				AE03D1000000000000000008 /* CompareTests.swift in Sources */,
 				0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */,
+				AE3E0000000000000000002A /* PenImportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

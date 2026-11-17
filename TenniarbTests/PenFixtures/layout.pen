@@ -1,0 +1,20 @@
+{"version":"2.21","children":[
+ {"type":"frame","id":"root","name":"Root","x":10,"y":20,"layout":"vertical","width":300,"gap":8,"padding":[10,20],"alignItems":"center","fill":"#fff","stroke":"#000000","strokeWidth":2,"strokeAlignment":"inner","cornerRadius":6,"children":[
+  {"type":"text","id":"t1","name":"Title","content":"Hello \"quoted\" world","fontSize":20,"lineHeight":1.2,"fill":"#102030"},
+  {"type":"frame","id":"row","name":"Row","width":"fill_container","height":40,"gap":4,"justifyContent":"space_between","children":[
+   {"type":"rectangle","id":"r1","name":"A","width":30,"height":20,"fill":"#ff0000"},
+   {"type":"ellipse","id":"e1","name":"B","width":"fill_container","height":20,"fill":"#00ff00"},
+   {"type":"rectangle","id":"r2","name":"C","width":"fill_container(10)","height":"fill_container","fill":"#0000ff"}]},
+  {"type":"frame","id":"hug","name":"Hug","layout":"horizontal","padding":5,"gap":3,"alignItems":"end","children":[
+   {"type":"text","id":"t2","name":"Label","content":"Some longer label that wraps over lines","textGrowth":"fixed-width","width":80,"fontSize":12},
+   {"type":"text","id":"t3","name":"Small","content":"x","fontSize":10}]},
+  {"type":"frame","id":"abs","name":"Abs","layout":"none","width":200,"height":100,"clip":true,"children":[
+   {"type":"rectangle","id":"a1","name":"A1","x":5,"y":7,"width":50,"height":20},
+   {"type":"ellipse","id":"a4","name":"Dot","x":60,"y":7,"width":20,"height":20,"fill":"#00ff00"},
+   {"type":"frame","id":"a2","name":"A2","x":100,"y":50,"width":80,"height":"fill_container","layout":"vertical","justifyContent":"center","children":[
+    {"type":"rectangle","id":"a3","name":"A3","width":"fill_container","height":10}]}]},
+  {"type":"frame","id":"empty","name":"Empty","width":10,"height":12,"effect":{"type":"shadow","shadowType":"outer","offset":{"x":0,"y":2},"blur":4,"color":"#00000040"}},
+  {"type":"group","id":"g","name":"Skipped group","children":[]}
+ ]},
+ {"type":"text","id":"note","name":"Note","x":400,"y":0,"content":"line one\nline two","fontSize":14}
+]}

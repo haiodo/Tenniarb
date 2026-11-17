@@ -39,6 +39,9 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "PenImportTests">
+               </Test>
+               <Test
                   Identifier = "AttributedPrinterTests">
                </Test>
                <Test
