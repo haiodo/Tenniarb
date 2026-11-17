@@ -33,6 +33,9 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// The text the last read or save put on disk, so an undo back to it clears the edited mark.
     @MainActor private var savedSceneText: String?
 
+    /// The canonical text of a classic document as the last read or save put it on disk.
+    @MainActor private var savedText: String?
+
     /// The version of the file the last read or write left on disk; a different one there is another
     /// program's.
     @MainActor private var diskStamp: FileStamp?
@@ -271,6 +274,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
 
             self.fileURL = url
             setDiskStamp(stamp)
+            setSavedText(elementModel.toTennStr())
         } catch {
             Swift.print("Failed to load file")
         }
@@ -294,6 +298,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         sceneRoot = root
         sceneText = text
         savedSceneText = text
+        savedText = nil
         let loader = SceneLoader(root: root)
         let source = url.resolvingSymlinksInPath().standardizedFileURL
         let rel = relativePath(from: root.resolvingSymlinksInPath().standardizedFileURL, to: source) ?? url.lastPathComponent
@@ -580,6 +585,12 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
     }
 
+    /// Keeps the canonical classic text of the version just read or written.
+    nonisolated private func setSavedText(_ text: String?) {
+        let work = { MainActor.assumeIsolated { self.savedText = text } }
+        if Thread.isMainThread { work() } else { DispatchQueue.main.sync(execute: work) }
+    }
+
     override var isDocumentEdited: Bool {
         get {
             return store?.modified ?? true
@@ -604,6 +615,86 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
         } catch {
             // The text of the version already open stays; the next poll asks again.
         }
+    }
+
+    /// The text a stopped run keeps: the scene text, or the classic model written as .tenn.
+    @MainActor
+    func snapshotText() -> String? {
+        sceneText ?? store?.model.toTennStr()
+    }
+
+    /// Puts a kept text back as an unsaved draft, one undo step back to what the document held.
+    /// Nothing changes when the text does not load.
+    @MainActor
+    func restoreDraft(_ text: String) throws {
+        if let tree = sceneTree {
+            guard let root = sceneRoot, let main = tree.main?.pos.file else {
+                throw SceneEditError(message: "the document is not a scene")
+            }
+            let loader = SceneLoader(root: root)
+            loader.overlay = [main: text]
+            let next: Scene.Tree
+            do {
+                next = try loader.loadAuto(main)
+            } catch {
+                throw SceneEditError(message: "not restored: \(error)")
+            }
+            if next.fatalCount > tree.fatalCount {
+                let first = next.diagnostics.first { !$0.warn }?.message ?? "the scene does not load"
+                throw SceneEditError(message: "not restored: \(first)")
+            }
+            let before = sceneText
+            keepScene(text, next)
+            undoManager?.registerUndo(withTarget: self) { doc in
+                MainActor.assumeIsolated {
+                    if let before { doc.restoreScene(before) }
+                }
+            }
+            undoManager?.setActionName("Restore unsaved changes")
+            updateChangeCount(.changeDone)
+            return
+        }
+        guard let model = classicModel(text) else {
+            throw SceneEditError(message: "not restored: the text does not parse")
+        }
+        let before = store?.model.toTennStr()
+        showClassic(model)
+        store?.modified = text != savedText
+        undoManager?.registerUndo(withTarget: self) { doc in
+            MainActor.assumeIsolated {
+                if let before { doc.restoreClassicDraft(before) }
+            }
+        }
+        undoManager?.setActionName("Restore unsaved changes")
+        updateChangeCount(.changeDone)
+        vc?.updateWindowTitle()
+    }
+
+    /// Parses a classic document's text; nil when it does not parse.
+    @MainActor
+    private func classicModel(_ text: String) -> ElementModel? {
+        let parser = TennParser()
+        let node = parser.parse(text)
+        guard !parser.errors.hasErrors() else { return nil }
+        let model = ElementModel.parseTenn(node: node)
+        model.modelName = store?.model.modelName ?? ""
+        return model
+    }
+
+    /// Puts a classic text back in the document, as the undo of restoreDraft.
+    @MainActor
+    private func restoreClassicDraft(_ text: String) {
+        guard let model = classicModel(text) else { return }
+        let current = store?.model.toTennStr()
+        showClassic(model)
+        store?.modified = text != savedText
+        undoManager?.registerUndo(withTarget: self) { doc in
+            MainActor.assumeIsolated {
+                if let current { doc.restoreClassicDraft(current) }
+            }
+        }
+        undoManager?.setActionName("Restore unsaved changes")
+        vc?.updateWindowTitle()
     }
 
     override func write(to url: URL, ofType typeName: String) throws {
@@ -653,6 +744,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
             } else if let es = readStore() {
                 es.modified = false
                 es.model.modelName = url.lastPathComponent
+                setSavedText(es.model.toTennStr())
             }
             setCanvasNotes(converted.notes)
             finish(url.lastPathComponent)
@@ -675,6 +767,7 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
                 try value.write(to: url, atomically: true, encoding: String.Encoding.utf8)
                 setDiskStamp(fileStamp(of: url))
                 es.modified = false
+                setSavedText(value)
 
                 es.model.modelName = url.lastPathComponent
                 finish(url.lastPathComponent)

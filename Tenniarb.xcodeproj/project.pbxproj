@@ -59,6 +59,8 @@
 		AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000007A /* SceneDocumentSupport.swift */; };
 		AE02EC00000000000000009A /* InspectorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000099 /* InspectorController.swift */; };
 		AE02EC00000000000000009C /* InspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000009B /* InspectorTests.swift */; };
+		AE02EC0000000000000000A0 /* Recovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000009F /* Recovery.swift */; };
+		AE02EC0000000000000000A2 /* RecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC0000000000000000A1 /* RecoveryTests.swift */; };
 		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
@@ -269,6 +271,8 @@
 		AE02EC00000000000000009B /* InspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000050 /* SceneClassicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneClassicTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
+		AE02EC00000000000000009F /* Recovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recovery.swift; sourceTree = "<group>"; };
+		AE02EC0000000000000000A1 /* RecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryTests.swift; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
 		0C1155292108C92C007FD827 /* SyncExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncExtension.swift; sourceTree = "<group>"; };
 		0C16C06A2321328800F77855 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
@@ -660,6 +664,7 @@
 				AE02EC000000000000000078 /* SceneCanvasEditTests.swift */,
 				AE02EC00000000000000007A /* SceneDocumentSupport.swift */,
 				AE02EC00000000000000009B /* InspectorTests.swift */,
+				AE02EC0000000000000000A1 /* RecoveryTests.swift */,
 				AE02EC000000000000000052 /* SceneAnimationTests.swift */,
 				AE02EC00000000000000006B /* ScenePaintTests.swift */,
 				AE02EC000000000000000070 /* SceneRangeTests.swift */,
@@ -773,6 +778,7 @@
 				0C4C16061F2E3685000C5410 /* layout */,
 				0C27F05C1EDC223E006CD2A2 /* model */,
 				0C2375F21ED838D900ECB516 /* Document.swift */,
+				AE02EC00000000000000009F /* Recovery.swift */,
 			);
 			path = document;
 			sourceTree = "<group>";
@@ -1042,6 +1048,7 @@
 				0C7211D623A3CB2100F49031 /* SpringLayout.swift in Sources */,
 				0CF0C34A2749115D00E3F41D /* (null) in Sources */,
 				0C2375F31ED838D900ECB516 /* Document.swift in Sources */,
+				AE02EC0000000000000000A0 /* Recovery.swift in Sources */,
 				0C83E508219085BD00AD0317 /* ResourcesViewController.swift in Sources */,
 				0C8D17E423A29B1E002547F6 /* GridLayout.swift in Sources */,
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
@@ -1078,6 +1085,7 @@
 				AE02EC000000000000000077 /* SceneCanvasEditTests.swift in Sources */,
 				AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */,
 				AE02EC00000000000000009C /* InspectorTests.swift in Sources */,
+				AE02EC0000000000000000A2 /* RecoveryTests.swift in Sources */,
 				AE02EC00000000000000006E /* ScenePaintTests.swift in Sources */,
 				AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */,
 				AE02EC000000000000000097 /* SceneExportTests.swift in Sources */,
