@@ -36,6 +36,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     /// The document this window shows, for the scene canvas to write its edits through.
     weak var document: Document?
 
+    /// The comments of the document this window shows, and the pins of its element on the canvas.
+    private var commentsController: CommentsController?
+
     /// The sheet of Insert Component…, held while it is open.
     private var componentPicker: ComponentPickerController?
     /// What the slot menu that follows Insert Component… writes and where.
@@ -259,6 +262,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         inspectorController.attach(canvas: editorViewController.sceneCanvas?.canvas, document: document)
         editorViewController.showScene(sceneTree)
         reloadSceneItems()
+        installComments()
 
         // Legacy delegate setup for compatibility
         self.outlineViewDelegate = OutlineViewControllerDelegate(self)
@@ -988,13 +992,86 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    /// Lists the items of the element the scene canvas shows.
-    func reloadSceneItems() {
-        guard sceneTree != nil else {
-            outlineSidebarController?.showItems(nil)
+    /// Points the scene canvas at the comments of the document: pins, new threads and new comments.
+    private func installComments() {
+        guard let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        canvas.onPinClick = { [weak self] id in self?.showCommentThread(id) }
+        canvas.onAddComment = { [weak self] text, anchor in self?.addComment(text: text, anchor: anchor) }
+        refreshCommentPins()
+    }
+
+    /// The comments of the document: its file, standardized, names them; a document without a file has none.
+    private func commentsForDocument() -> CommentsController? {
+        guard sceneTree != nil else { return nil }
+        let key = document?.fileURL?.standardizedFileURL.path
+        if let commentsController, commentsController.key == key { return commentsController }
+        let comments = CommentsController(key: key)
+        comments.onChange = { [weak self] in self?.refreshCommentPins() }
+        commentsController = comments
+        return comments
+    }
+
+    /// Places the pins of the comments of the element the canvas shows, as go/app placePins.
+    private func refreshCommentPins() {
+        guard let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        // A scene without a file cannot write comments; the canvas says so instead of asking for the text.
+        canvas.commentUnavailable =
+            sceneTree != nil && document?.fileURL == nil ? "Save the file to comment on it." : nil
+        guard sceneTree != nil, let comments = commentsForDocument(), let element = canvas.screenNode else {
+            canvas.setCommentPins([])
             return
         }
-        outlineSidebarController?.showItems(editorViewController?.sceneCanvas?.canvas)
+        let boxes = commentBoxes(of: canvas, element: element)
+        let names = CommentPaths.elementPath(of: element)
+        canvas.setCommentPins(
+            comments.pins(element: names, box: { boxes[$0] }, origin: .zero, showResolved: false))
+    }
+
+    /// The boxes of the drawn nodes written in the element, by the node path a comment anchors with. A part
+    /// of an instance is not written there and has no path, so it places no pin.
+    private func commentBoxes(of canvas: SceneCanvasView, element: Scene.Node) -> [String: CGRect] {
+        var boxes: [String: CGRect] = [:]
+        guard let root = canvas.placed else { return boxes }
+        func walk(_ pl: Scene.Placed) {
+            if let src = pl.src, src !== element {
+                let path = CommentPaths.nodePath(of: src, from: element)
+                if !path.isEmpty, boxes[path] == nil {
+                    boxes[path] = CGRect(x: pl.x, y: pl.y, width: pl.w, height: pl.h)
+                }
+            }
+            for k in pl.kids { walk(k) }
+        }
+        walk(root)
+        return boxes
+    }
+
+    private func showCommentThread(_ id: String) {
+        guard let canvas = editorViewController?.sceneCanvas?.canvas, let comments = commentsForDocument()
+        else { return }
+        let at = canvas.commentPins.first { $0.id == id }.map { canvas.viewPoint(canvas.pinCenter($0)) }
+        let rect = NSRect(x: at?.x ?? canvas.bounds.midX, y: at?.y ?? canvas.bounds.midY, width: 1, height: 1)
+        comments.showThread(id: id, from: rect, of: canvas)
+    }
+
+    private func addComment(text: String, anchor: Comments.Anchor) {
+        guard let canvas = editorViewController?.sceneCanvas?.canvas, let comments = commentsForDocument()
+        else { return }
+        do {
+            try comments.addComment(text: text, anchor: anchor)
+            canvas.setMessage(nil)
+        } catch {
+            canvas.setMessage(error.localizedDescription)
+        }
+    }
+
+    /// Lists the items of the element the scene canvas shows.
+    func reloadSceneItems() {
+        if sceneTree == nil {
+            outlineSidebarController?.showItems(nil)
+        } else {
+            outlineSidebarController?.showItems(editorViewController?.sceneCanvas?.canvas)
+        }
+        refreshCommentPins()
     }
 
     public func setElementModel(elementStore: ElementModelStore) {

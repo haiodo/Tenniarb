@@ -50,6 +50,17 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Called after the selection or the tree behind it changed, so the inspector reads the new one.
     var onSelectionChange: (() -> Void)?
 
+    /// The pins of the comments of the shown element, in the scene coordinates of the element.
+    private(set) var commentPins: [CommentPin] = []
+    /// Why Add Comment… cannot write here; the menu shows it instead of the field.
+    var commentUnavailable: String?
+    /// The scene point the context menu was opened at, for the comment it adds.
+    private var commentPoint: Scene.Point?
+    /// Called with the id of the comment whose pin a click lands on.
+    var onPinClick: ((String) -> Void)?
+    /// Called with the text of a new comment and the anchor of the place it was asked at.
+    var onAddComment: ((String, Comments.Anchor) -> Void)?
+
     /// A part of a component drawn in an instance: the use around it, and its path from the root of the
     /// instance. at is empty when the part cannot be named inside the instance.
     struct Part {
@@ -785,19 +796,99 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         ClipboardUtils.copyHtml(html)
     }
 
-    /// The canvas menu: the export of the text of the selected item, as go/app gives a classic diagram.
+    /// The canvas menu: the export of the text of the selected item, as go/app gives a classic diagram,
+    /// and a comment at the place clicked.
     override func menu(for event: NSEvent) -> NSMenu? {
+        commentPoint = scenePoint(convert(event.locationInWindow, from: nil))
         let menu = NSMenu()
         menu.autoenablesItems = false
         let export = NSMenuItem(title: "Export text as html", action: #selector(copyTextAsHTML(_:)), keyEquivalent: "")
         export.target = self
         export.isEnabled = itemHTML(at: nil) != nil
         menu.addItem(export)
+        menu.addItem(.separator())
+        let comment = NSMenuItem(title: "Add Comment…", action: #selector(commentFromMenu(_:)), keyEquivalent: "")
+        comment.target = self
+        menu.addItem(comment)
         return menu
+    }
+
+    /// The anchor of a click at p, as Go's AnchorAt: the written item under it and the point from its box,
+    /// or the element origin when the click lands on nothing written.
+    func anchor(at p: Scene.Point) -> Comments.Anchor {
+        let element = screenNode.map { CommentPaths.elementPath(of: $0) } ?? []
+        guard let hit = hitItem(p), let pl = placed(at: hit), let src = pl.src else {
+            return Comments.Anchor(element: element, node: "", point: Comments.Point(x: p.x, y: p.y))
+        }
+        let node = CommentPaths.nodePath(of: src, from: screenNode)
+        guard !node.isEmpty else {
+            return Comments.Anchor(element: element, node: "", point: Comments.Point(x: p.x, y: p.y))
+        }
+        return Comments.Anchor(
+            element: element, node: node, point: Comments.Point(x: p.x - pl.x, y: p.y - pl.y))
+    }
+
+    /// Writes a comment at a point of the screen through the window controller's callback.
+    func addComment(text: String, at p: Scene.Point) {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        onAddComment?(text, anchor(at: p))
+    }
+
+    /// Puts the pins of the comments of the shown element over the picture.
+    func setCommentPins(_ pins: [CommentPin]) {
+        commentPins = pins
+        needsDisplay = true
+    }
+
+    /// The centre of a pin marker in the scene: above-right of its anchor, so a pin on a corner does not
+    /// hide the node (go/app comments.go pinView).
+    func pinCenter(_ pin: CommentPin) -> Scene.Point {
+        let r = CommentPin.radius / CGFloat(max(zoom, 0.0001))
+        return Scene.Point(x: Double(pin.point.x + r * 0.6), y: Double(pin.point.y - r * 0.6))
+    }
+
+    /// The pin a click at p lands on: the marker is a constant size in view points, the last drawn wins.
+    func pin(at p: Scene.Point) -> CommentPin? {
+        let q = viewPoint(p)
+        for pin in commentPins.reversed() {
+            let c = viewPoint(pinCenter(pin))
+            let dx = q.x - c.x
+            let dy = q.y - c.y
+            if dx * dx + dy * dy <= CommentPin.radius * CommentPin.radius { return pin }
+        }
+        return nil
+    }
+
+    /// Add Comment… of the menu: explains a document without a file, else asks for the text at the click.
+    @objc private func commentFromMenu(_ sender: Any?) {
+        if let reason = commentUnavailable {
+            setMessage(reason)
+            return
+        }
+        guard let p = commentPoint, let window else { return }
+        let alert = NSAlert()
+        alert.messageText = "Add Comment"
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        field.placeholderString = "Comment"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Post")
+        alert.addButton(withTitle: "Cancel")
+        alert.window.initialFirstResponder = field
+        alert.beginSheetModal(for: window) { [weak self] response in
+            MainActor.assumeIsolated {
+                guard response == .alertFirstButtonReturn else { return }
+                self?.addComment(text: field.stringValue, at: p)
+            }
+        }
     }
 
     override func mouseDown(with event: NSEvent) {
         let p = scenePoint(convert(event.locationInWindow, from: nil))
+        if let pin = pin(at: p) {
+            onPinClick?(pin.id)
+            return
+        }
         if event.clickCount < 2, beginDrag(p) { return }
         click(p, clicks: event.clickCount)
     }
@@ -934,6 +1025,35 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             let path = NSBezierPath(roundedRect: viewRect(pl, grow: 2), xRadius: 3, yRadius: 3)
             path.lineWidth = 1.5
             path.stroke()
+        }
+        drawPins()
+    }
+
+    /// Draws the markers of the comments over the picture: an accent disc with the number, a ring when the
+    /// anchor node is gone, faded when the thread is resolved.
+    private func drawPins() {
+        for pin in commentPins {
+            let c = viewPoint(pinCenter(pin))
+            let r = CommentPin.radius
+            let disc = NSBezierPath(ovalIn: NSRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
+            let color = pin.resolved ? NSColor.controlAccentColor.withAlphaComponent(0.45) : NSColor.controlAccentColor
+            let textColor: NSColor
+            if pin.detached {
+                color.setStroke()
+                disc.lineWidth = 2
+                disc.stroke()
+                textColor = color
+            } else {
+                color.setFill()
+                disc.fill()
+                textColor = .white
+            }
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.boldSystemFont(ofSize: 11), .foregroundColor: textColor,
+            ]
+            let number = "\(pin.number)" as NSString
+            let size = number.size(withAttributes: attributes)
+            number.draw(at: NSPoint(x: c.x - size.width / 2, y: c.y - size.height / 2), withAttributes: attributes)
         }
     }
 }

@@ -1,0 +1,329 @@
+//
+//  CommentsUITests.swift
+//  TenniarbTests
+//
+//  Licensed under the Eclipse Public License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.  You may
+//  obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+//  License for the specific language governing permissions and limitations under
+//  the License.
+//
+
+import XCTest
+
+@testable import Tenniarb
+
+/// The comments UI without a window: the node paths the Go service reads, the store, the pins and the
+/// anchors of a click.
+@MainActor
+final class CommentsUITests: XCTestCase {
+
+    /// 2026-10-28T10:00:00Z, the time of the Go tests.
+    private let t0 = Date(timeIntervalSince1970: 1_793_181_600)
+
+    private func scratch(_ prefix: String) throws -> URL {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(prefix)-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        return root
+    }
+
+    /// The config folder a test controller writes under.
+    private func configDir() throws -> URL {
+        try scratch("tenniarb-comments-ui").appendingPathComponent("cfg", isDirectory: true)
+    }
+
+    private func tree(_ text: String) throws -> Scene.Tree {
+        let root = try scratch("tenniarb-comments-scene")
+        try text.write(to: root.appendingPathComponent("scene.tenn"), atomically: true, encoding: .utf8)
+        return try SceneLoader(root: root).load("scene.tenn")
+    }
+
+    /// The canvas of the first element of a scratch file, at the size of its content.
+    private func canvas(_ text: String) throws -> SceneCanvasView {
+        let tree = try tree(text)
+        let view = SceneCanvasView(frame: .zero)
+        view.show(tree)
+        let screen = try XCTUnwrap(view.screen, "the scene does not build: \(tree.diagnostics)")
+        view.frame = NSRect(origin: .zero, size: SceneCanvasView.contentSize(screen))
+        return view
+    }
+
+    // MARK: - Node paths
+
+    func testNodePathRepeatsAndNests() throws {
+        let tree = try tree(
+            """
+            element "Screen" {
+                item A { width 10; height 10 }
+                item A { width 10; height 10 }
+                item Frame { width 10; height 10; item Badge { width 5; height 5 } }
+            }
+            """)
+        let el = try XCTUnwrap(tree.main?.elems.first)
+        let firstA = el.content[0]
+        let secondA = el.content[1]
+        let frame = el.content[2]
+        let badge = frame.content[0]
+
+        XCTAssertEqual(CommentPaths.nodePath(of: firstA, from: el), "A")
+        XCTAssertEqual(
+            CommentPaths.nodePath(of: secondA, from: el), "A#1",
+            "Go's nodeSeg counts the earlier siblings of the key: the second A is A#1")
+        XCTAssertEqual(CommentPaths.nodePath(of: frame, from: el), "Frame")
+        XCTAssertEqual(CommentPaths.nodePath(of: badge, from: el), "Frame.Badge")
+
+        XCTAssertTrue(CommentPaths.node(at: "A", from: el) === firstA)
+        XCTAssertTrue(CommentPaths.node(at: "A#1", from: el) === secondA)
+        XCTAssertTrue(CommentPaths.node(at: "Frame.Badge", from: el) === badge)
+        XCTAssertNil(CommentPaths.node(at: "A#2", from: el), "a repeat names the n-th earlier sibling")
+        XCTAssertNil(CommentPaths.node(at: "Frame.Nope", from: el))
+    }
+
+    func testNodePathGoesThroughSlots() throws {
+        let tree = try tree(
+            """
+            element "Screen" {
+                item Frame {
+                    width 200; height 100
+                    slot actions { item Badge { width 10; height 10 } }
+                    slot { item Fallback { width 10; height 10 } }
+                }
+            }
+            """)
+        let el = try XCTUnwrap(tree.main?.elems.first)
+        let frame = el.content[0]
+        let badge = try XCTUnwrap(frame.content.first { $0.kind == .slot }?.content.first)
+        let fallback = try XCTUnwrap(frame.content.last { $0.kind == .slot }?.content.first)
+
+        XCTAssertEqual(CommentPaths.nodePath(of: badge, from: el), "Frame.actions.Badge")
+        XCTAssertEqual(CommentPaths.nodePath(of: fallback, from: el), "Frame..Fallback")
+        XCTAssertTrue(CommentPaths.node(at: "Frame.actions.Badge", from: el) === badge)
+        XCTAssertTrue(CommentPaths.node(at: "Frame..Fallback", from: el) === fallback)
+    }
+
+    func testElementPathNamesNestedAndRepeatedElements() throws {
+        let tree = try tree(
+            """
+            element "Root" {
+                item Frame { width 10; height 10 }
+                element "Nested" { item One { width 5; height 5 } }
+                element "Nested" { item Two { width 5; height 5 } }
+            }
+            """)
+        let root = try XCTUnwrap(tree.main?.elems.first)
+        XCTAssertEqual(CommentPaths.elementPath(of: root), ["Root"])
+        XCTAssertEqual(CommentPaths.elementPath(of: root.elems[0]), ["Root", "Nested"])
+        XCTAssertEqual(CommentPaths.elementPath(of: root.elems[1]), ["Root", "Nested#1"])
+        XCTAssertEqual(CommentPaths.elementPath(of: try XCTUnwrap(tree.main)), [], "the file root is not an element")
+    }
+
+    // MARK: - The store through the controller
+
+    func testControllerWritesTheFileAndReloadsIt() throws {
+        let cfg = try configDir()
+        let key = "path:/design/a.tenn"
+        let anchor = Comments.Anchor(element: ["Screen"], node: "Frame", point: Comments.Point(x: 1, y: 2))
+        let comments = CommentsController(key: key, configDir: cfg)
+        XCTAssertEqual(comments.comments(), [])
+
+        let added = try comments.addComment(text: "  too tight\n", anchor: anchor, now: t0)
+        XCTAssertEqual(added.text, "too tight")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: Comments.Store(dir: Comments.dirIn(cfg)).file(for: key).path))
+
+        let again = CommentsController(key: key, configDir: cfg)
+        XCTAssertEqual(again.comments(), [added])
+
+        try again.reply(id: added.id, text: "padding is 4 now", now: t0.addingTimeInterval(60))
+        try again.resolve(id: added.id, text: "fixed", now: t0.addingTimeInterval(120))
+        var stored = try Comments.Store(dir: Comments.dirIn(cfg)).load(key)
+        XCTAssertEqual(stored.comments.first?.state, Comments.resolved)
+        XCTAssertEqual(stored.comments.first?.replies?.map(\.text), ["padding is 4 now", "fixed"])
+
+        try again.reopen(id: added.id, now: t0.addingTimeInterval(180))
+        stored = try Comments.Store(dir: Comments.dirIn(cfg)).load(key)
+        XCTAssertEqual(stored.comments.first?.state, Comments.open)
+
+        try again.delete(id: added.id)
+        XCTAssertTrue(try Comments.Store(dir: Comments.dirIn(cfg)).load(key).comments.isEmpty)
+        XCTAssertTrue(again.comments().isEmpty)
+    }
+
+    func testDeletingAnotherAuthorsCommentKeepsTheFile() throws {
+        let cfg = try configDir()
+        let key = "path:/design/a.tenn"
+        let store = Comments.Store(dir: Comments.dirIn(cfg))
+        let other = Comments.Comment(
+            id: "deadbeef", created: t0, author: "claude-code", text: "mine", anchor: Comments.Anchor(),
+            state: Comments.open)
+        _ = try store.update(key) { $0.comments.append(other) }
+
+        let comments = CommentsController(key: key, configDir: cfg)
+        XCTAssertThrowsError(try comments.delete(id: other.id)) {
+            XCTAssertEqual($0 as? Comments.Error, Comments.Error.notYours)
+        }
+        XCTAssertEqual(try store.load(key).comments.map(\.id), [other.id])
+    }
+
+    func testAnUntitledDocumentCannotWrite() throws {
+        let cfg = try configDir()
+        let comments = CommentsController(key: nil, configDir: cfg)
+        XCTAssertThrowsError(
+            try comments.addComment(text: "x", anchor: Comments.Anchor(), now: t0)
+        ) {
+            XCTAssertEqual($0 as? CommentsController.Error, CommentsController.Error.untitled)
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: Comments.dirIn(cfg).path))
+    }
+
+    // MARK: - Pins
+
+    func testPinsFollowTheGoPlacementRule() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let element = ["Screen"]
+        let boxes = ["Frame.Badge": CGRect(x: 100, y: 50, width: 40, height: 20)]
+        let corner = try comments.addComment(
+            text: "corner", anchor: Comments.Anchor(element: element, node: "Frame.Badge"),
+            now: t0)
+        let offset = try comments.addComment(
+            text: "offset",
+            anchor: Comments.Anchor(element: element, node: "Frame.Badge", point: Comments.Point(x: 5, y: 7)),
+            now: t0)
+        let origin = try comments.addComment(
+            text: "origin",
+            anchor: Comments.Anchor(element: element, node: "", point: Comments.Point(x: 3, y: 4)), now: t0)
+        let gone = try comments.addComment(
+            text: "gone", anchor: Comments.Anchor(element: element, node: "Gone"), now: t0)
+
+        let pins = comments.pins(
+            element: element, box: { boxes[$0] }, origin: CGPoint(x: 10, y: 20))
+        XCTAssertEqual(pins.map(\.id), [corner.id, offset.id, origin.id, gone.id])
+        XCTAssertEqual(pins.map(\.number), [1, 2, 3, 4])
+        XCTAssertEqual(pins[0].point, CGPoint(x: 140, y: 50), "a node without a point sits at its top right")
+        XCTAssertEqual(pins[1].point, CGPoint(x: 105, y: 57), "a point is measured from the top left of the box")
+        XCTAssertEqual(pins[2].point, CGPoint(x: 13, y: 24), "without a node it is measured from the origin")
+        XCTAssertEqual(pins[3].point, CGPoint(x: 10, y: 20), "a node that is gone sits at the origin")
+        XCTAssertFalse(pins[0].detached)
+        XCTAssertTrue(pins[3].detached)
+        XCTAssertEqual(comments.pin(at: CGPoint(x: 140, y: 50))?.id, corner.id)
+        XCTAssertNil(comments.pin(at: CGPoint(x: 400, y: 400)))
+    }
+
+    func testResolvedPinsAreHiddenUnlessAsked() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let element = ["Screen"]
+        let first = try comments.addComment(
+            text: "open", anchor: Comments.Anchor(element: element, node: "", point: Comments.Point(x: 0, y: 0)),
+            now: t0)
+        let second = try comments.addComment(
+            text: "done", anchor: Comments.Anchor(element: element, node: "", point: Comments.Point(x: 20, y: 20)),
+            now: t0)
+        try comments.resolve(id: second.id, now: t0.addingTimeInterval(60))
+
+        XCTAssertEqual(comments.pins(element: element, box: { _ in nil }).map(\.id), [first.id])
+        let all = comments.pins(element: element, box: { _ in nil }, showResolved: true)
+        XCTAssertEqual(all.map(\.id), [first.id, second.id])
+        XCTAssertEqual(all.map(\.number), [1, 2])
+        XCTAssertTrue(all[1].resolved)
+    }
+
+    func testPinHitTestPicksTheTopmost() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let anchor = Comments.Anchor(element: ["Screen"], node: "", point: Comments.Point(x: 0, y: 0))
+        let first = try comments.addComment(text: "first", anchor: anchor, now: t0)
+        let second = try comments.addComment(text: "second", anchor: anchor, now: t0)
+        let pins = comments.pins(element: ["Screen"], box: { _ in nil })
+
+        XCTAssertEqual(pins.count, 2)
+        XCTAssertEqual(comments.pin(at: CGPoint(x: 0, y: 0))?.id, second.id, "the last drawn wins")
+        XCTAssertEqual(comments.pin(at: CGPoint(x: 0, y: 0), radius: 0)?.id, second.id)
+        XCTAssertNil(comments.pin(at: CGPoint(x: 40, y: 0)))
+        XCTAssertNotEqual(first.id, second.id)
+    }
+
+    // MARK: - The canvas
+
+    func testCanvasBuildsTheAnchorOfAClick() throws {
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { pos 20 -40; width 100; height 50 }
+            }
+            """)
+        var got: (text: String, anchor: Comments.Anchor)?
+        canvas.onAddComment = { got = (text: $0, anchor: $1) }
+
+        canvas.addComment(text: "  near the corner\n", at: Scene.Point(x: 50, y: 60))
+        let (text, anchor) = try XCTUnwrap(got)
+        XCTAssertEqual(text, "near the corner")
+        XCTAssertEqual(anchor.element, ["Screen"])
+        XCTAssertEqual(anchor.node, "Frame")
+        XCTAssertEqual(try XCTUnwrap(anchor.point).x, 30, accuracy: 1e-6)
+        XCTAssertEqual(try XCTUnwrap(anchor.point).y, 20, accuracy: 1e-6)
+
+        got = nil
+        canvas.addComment(text: "empty space", at: Scene.Point(x: 400, y: 300))
+        let (_, empty) = try XCTUnwrap(got)
+        XCTAssertEqual(empty.element, ["Screen"])
+        XCTAssertEqual(empty.node, "")
+        XCTAssertEqual(try XCTUnwrap(empty.point).x, 400, accuracy: 1e-6)
+        XCTAssertEqual(try XCTUnwrap(empty.point).y, 300, accuracy: 1e-6)
+    }
+
+    func testCanvasPinHitTestAndCallback() throws {
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { pos 0 0; width 100; height 50 }
+            }
+            """)
+        let pins = [
+            CommentPin(id: "a", number: 1, point: CGPoint(x: 10, y: 10), detached: false, resolved: false),
+            CommentPin(id: "b", number: 2, point: CGPoint(x: 10, y: 10), detached: true, resolved: false),
+        ]
+        canvas.setCommentPins(pins)
+
+        let hit = try XCTUnwrap(canvas.pin(at: canvas.pinCenter(pins[1])))
+        XCTAssertEqual(hit.id, "b", "the hit test is the same list in draw order, topmost first")
+        XCTAssertNil(canvas.pin(at: Scene.Point(x: 300, y: 300)))
+
+        var clicked: String?
+        canvas.onPinClick = { clicked = $0 }
+        canvas.onPinClick?(hit.id)
+        XCTAssertEqual(clicked, "b")
+    }
+
+    // MARK: - The thread
+
+    func testThreadTextShowsTheRepliesAndTheState() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let anchor = Comments.Anchor(element: ["Screen"], node: "Frame")
+        let added = try comments.addComment(text: "first line\nsecond line", anchor: anchor, now: t0)
+
+        var lines = comments.threadText(id: added.id, now: t0.addingTimeInterval(3600))
+        XCTAssertTrue(lines[0].hasPrefix("#1  user  "), lines[0])
+        XCTAssertEqual(lines[1], "Screen / Frame")
+        XCTAssertEqual(lines[2], "first line\nsecond line")
+
+        try comments.reply(id: added.id, text: "answered", now: t0.addingTimeInterval(60))
+        lines = comments.threadText(id: added.id, now: t0.addingTimeInterval(3600))
+        XCTAssertTrue(lines.contains("answered"))
+        XCTAssertTrue(lines.contains { $0.hasPrefix("user  ") }, "a reply line holds its author and time")
+
+        try comments.resolve(id: added.id, text: "fixed", now: t0.addingTimeInterval(120))
+        lines = comments.threadText(id: added.id, now: t0.addingTimeInterval(3600))
+        XCTAssertTrue(lines[0].hasSuffix("(resolved)"), lines[0])
+        XCTAssertTrue(lines.contains("fixed"))
+
+        try comments.reopen(id: added.id, now: t0.addingTimeInterval(180))
+        XCTAssertFalse(comments.threadText(id: added.id)[0].contains("(resolved)"))
+
+        try comments.delete(id: added.id)
+        XCTAssertTrue(comments.threadText(id: added.id).isEmpty)
+    }
+}
