@@ -61,6 +61,15 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Called with the text of a new comment and the anchor of the place it was asked at.
     var onAddComment: ((String, Comments.Anchor) -> Void)?
 
+    /// The banner of the comment mode, as go/app comments_pins.go pinsPicture writes it.
+    static let commentHint = "Comment mode: click to place a comment, Esc to leave"
+    /// Whether a plain click places a comment instead of selecting; C toggles it and Esc leaves.
+    private(set) var commentMode = false
+    /// The cursor the canvas showed before the comment mode, put back when it leaves.
+    private var cursorBeforeCommentMode: NSCursor?
+    /// Asks for the text of a new comment; nil shows the sheet over the window. A test answers instead.
+    var commentPrompt: ((@escaping (String) -> Void) -> Void)?
+
     /// A part of a component drawn in an instance: the use around it, and its path from the root of the
     /// instance. at is empty when the part cannot be named inside the instance.
     struct Part {
@@ -91,6 +100,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Shows the first element of tree, as the Go window opens a document; nil clears the canvas.
     func show(_ tree: Scene.Tree?) {
         endTitleEdit(commit: false)
+        setCommentMode(false)  // another screen starts without the mode
         guard let tree else {
             screen = nil
             placed = nil
@@ -354,10 +364,29 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         }
     }
 
-    /// Shows a line of text over the canvas, as a refused edit does; nil clears it.
+    /// Shows a line of text over the canvas, as a refused edit does; nil clears it, leaving the banner of
+    /// the comment mode when it is on.
     func setMessage(_ text: String?) {
-        message = text
+        message = text ?? (commentMode ? SceneCanvasView.commentHint : nil)
         needsDisplay = true
+    }
+
+    /// Enters or leaves the mode where a plain click places a comment, as go/app setCommentMode.
+    func setCommentMode(_ on: Bool) {
+        guard on != commentMode else { return }
+        if on, let reason = commentUnavailable {
+            setMessage(reason)
+            return
+        }
+        commentMode = on
+        if on {
+            cursorBeforeCommentMode = NSCursor.current
+            NSCursor.crosshair.set()
+        } else {
+            (cursorBeforeCommentMode ?? .arrow).set()
+            cursorBeforeCommentMode = nil
+        }
+        setMessage(on ? SceneCanvasView.commentHint : nil)
     }
 
     /// The drawn item at an index path from the screen root's children; nil when the path is gone.
@@ -866,7 +895,17 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             setMessage(reason)
             return
         }
-        guard let p = commentPoint, let window else { return }
+        guard let p = commentPoint else { return }
+        askComment(at: p)
+    }
+
+    /// Asks for the text of a comment at p, then writes it through onAddComment.
+    private func askComment(at p: Scene.Point) {
+        if let commentPrompt {
+            commentPrompt { [weak self] text in self?.addComment(text: text, at: p) }
+            return
+        }
+        guard let window else { return }
         let alert = NSAlert()
         alert.messageText = "Add Comment"
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
@@ -884,9 +923,14 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     }
 
     override func mouseDown(with event: NSEvent) {
+        window?.makeFirstResponder(self)  // the C key reaches the canvas
         let p = scenePoint(convert(event.locationInWindow, from: nil))
         if let pin = pin(at: p) {
             onPinClick?(pin.id)
+            return
+        }
+        if commentMode, event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty {
+            askComment(at: p)  // no selection and no drag: the click only places a comment
             return
         }
         if event.clickCount < 2, beginDrag(p) { return }
@@ -899,6 +943,22 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     override func mouseUp(with event: NSEvent) {
         endDrag()
+    }
+
+    /// C toggles the comment mode and Esc leaves it, as go/app commentKey; the title field keeps its keys.
+    override func keyDown(with event: NSEvent) {
+        if commentMode, event.keyCode == 53 {
+            setCommentMode(false)
+            return
+        }
+        let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        if editField == nil, mods.isDisjoint(with: [.command, .control, .option]),
+            event.charactersIgnoringModifiers?.lowercased() == "c"
+        {
+            setCommentMode(!commentMode)
+            return
+        }
+        super.keyDown(with: event)
     }
 
     // MARK: - Dropping a component

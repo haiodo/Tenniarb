@@ -20,7 +20,7 @@ import XCTest
 /// The comments UI without a window: the node paths the Go service reads, the store, the pins and the
 /// anchors of a click.
 @MainActor
-final class CommentsUITests: XCTestCase {
+final class CommentsUITests: SceneDocumentTestCase {
 
     /// 2026-10-28T10:00:00Z, the time of the Go tests.
     private let t0 = Date(timeIntervalSince1970: 1_793_181_600)
@@ -325,5 +325,177 @@ final class CommentsUITests: XCTestCase {
 
         try comments.delete(id: added.id)
         XCTAssertTrue(comments.threadText(id: added.id).isEmpty)
+    }
+
+    // MARK: - Comment mode
+
+    /// A key event as AppKit delivers it to the first responder.
+    private func keyEvent(
+        _ characters: String, code: UInt16, modifiers: NSEvent.ModifierFlags = []
+    ) -> NSEvent {
+        NSEvent.keyEvent(
+            with: .keyDown, location: .zero, modifierFlags: modifiers, timestamp: 0, windowNumber: 0,
+            context: nil, characters: characters, charactersIgnoringModifiers: characters,
+            isARepeat: false, keyCode: code)!
+    }
+
+    /// A mouse event at a point of the canvas, in window coordinates.
+    private func mouseEvent(
+        _ type: NSEvent.EventType, at p: NSPoint, in view: NSView, clicks: Int = 1
+    ) throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.mouseEvent(
+                with: type, location: view.convert(p, to: nil), modifierFlags: [], timestamp: 0,
+                windowNumber: view.window?.windowNumber ?? 0, context: nil, eventNumber: 1,
+                clickCount: clicks, pressure: 1))
+    }
+
+    /// A scene document on text in a scratch workspace, closed by the teardown of the base case.
+    private func openDocument(_ text: String) throws -> Document {
+        let url = try scratch("tenniarb-comments-doc").appendingPathComponent("a.tenn")
+        try text.write(to: url, atomically: true, encoding: .utf8)
+        return try openTestDocument(url)
+    }
+
+    /// The canvas over a document, so a drag writes where the test can read it.
+    private func canvas(_ document: Document) throws -> SceneCanvasView {
+        let view = SceneCanvasView(frame: .zero)
+        view.document = document
+        view.show(document.sceneTree)
+        let screen = try XCTUnwrap(view.screen)
+        view.frame = NSRect(origin: .zero, size: SceneCanvasView.contentSize(screen))
+        return view
+    }
+
+    func testCKeyTogglesTheCommentModeAndEscLeavesIt() throws {
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { pos 0 0; width 100; height 50 }
+            }
+            """)
+        XCTAssertFalse(canvas.commentMode)
+        XCTAssertNil(canvas.message)
+
+        canvas.keyDown(with: keyEvent("c", code: 8))
+        XCTAssertTrue(canvas.commentMode)
+        XCTAssertEqual(canvas.message, "Comment mode: click to place a comment, Esc to leave")
+
+        canvas.keyDown(with: keyEvent("\u{1b}", code: 53))
+        XCTAssertFalse(canvas.commentMode)
+        XCTAssertNil(canvas.message, "leaving the mode clears its banner")
+
+        canvas.keyDown(with: keyEvent("c", code: 8))
+        XCTAssertTrue(canvas.commentMode)
+        canvas.keyDown(with: keyEvent("c", code: 8))
+        XCTAssertFalse(canvas.commentMode, "the same key leaves the mode")
+    }
+
+    func testAClickInCommentModePlacesACommentAndKeepsTheSelection() throws {
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { pos 20 -40; width 100; height 50 }
+            }
+            """)
+        canvas.select([0])
+        var added: [(text: String, anchor: Comments.Anchor)] = []
+        canvas.onAddComment = { added.append((text: $0, anchor: $1)) }
+        canvas.commentPrompt = { $0("too tight") }
+        canvas.setCommentMode(true)
+
+        let point = canvas.viewPoint(Scene.Point(x: 50, y: 60))
+        canvas.mouseDown(with: try mouseEvent(.leftMouseDown, at: point, in: canvas))
+        canvas.mouseUp(with: try mouseEvent(.leftMouseUp, at: point, in: canvas))
+
+        XCTAssertEqual(added.count, 1)
+        let (text, anchor) = try XCTUnwrap(added.first)
+        XCTAssertEqual(text, "too tight")
+        XCTAssertEqual(anchor.element, ["Screen"])
+        XCTAssertEqual(anchor.node, "Frame")
+        XCTAssertEqual(try XCTUnwrap(anchor.point).x, 30, accuracy: 1e-6)
+        XCTAssertEqual(try XCTUnwrap(anchor.point).y, 20, accuracy: 1e-6)
+        XCTAssertEqual(canvas.selection, [0], "a comment click leaves the selection")
+
+        canvas.setCommentMode(false)
+        canvas.select(nil)
+        canvas.mouseDown(with: try mouseEvent(.leftMouseDown, at: point, in: canvas))
+        canvas.mouseUp(with: try mouseEvent(.leftMouseUp, at: point, in: canvas))
+        XCTAssertEqual(canvas.selection, [0], "with the mode off the same click selects")
+        XCTAssertEqual(added.count, 1, "a plain click adds no comment")
+    }
+
+    func testADragInCommentModeLeavesTheItemWhereItWas() throws {
+        let document = try openDocument(
+            """
+            element "Screen" {
+                item Frame { pos 20 -40; width 100; height 50; item Leaf { width 10; height 10 } }
+            }
+            """)
+        let canvas = try canvas(document)
+        canvas.select([0])
+        canvas.commentPrompt = { $0("") }  // the click takes the mode path and writes nothing
+        canvas.setCommentMode(true)
+
+        let from = canvas.viewPoint(Scene.Point(x: 50, y: 60))
+        let to = canvas.viewPoint(Scene.Point(x: 150, y: 120))
+        canvas.mouseDown(with: try mouseEvent(.leftMouseDown, at: from, in: canvas))
+        canvas.mouseDragged(with: try mouseEvent(.leftMouseDragged, at: to, in: canvas))
+        canvas.mouseUp(with: try mouseEvent(.leftMouseUp, at: to, in: canvas))
+
+        let placed = try XCTUnwrap(canvas.placed(at: [0]))
+        XCTAssertEqual(placed.x, 20)
+        XCTAssertEqual(placed.y, 40)
+        XCTAssertTrue(document.sceneText?.contains("pos 20 -40") ?? false, document.sceneText ?? "")
+
+        canvas.setCommentMode(false)
+        canvas.mouseDown(with: try mouseEvent(.leftMouseDown, at: from, in: canvas))
+        canvas.mouseDragged(with: try mouseEvent(.leftMouseDragged, at: to, in: canvas))
+        canvas.mouseUp(with: try mouseEvent(.leftMouseUp, at: to, in: canvas))
+        XCTAssertEqual(
+            try XCTUnwrap(canvas.placed(at: [0])).x, 120, "leaving the mode restores the drag")
+    }
+
+    func testAClickOnAPinInCommentModeOpensTheThread() throws {
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { pos 0 0; width 100; height 50 }
+            }
+            """)
+        let pin = CommentPin(id: "a", number: 1, point: CGPoint(x: 10, y: 10), detached: false, resolved: false)
+        canvas.setCommentPins([pin])
+        var opened: String?
+        var added = 0
+        canvas.onPinClick = { opened = $0 }
+        canvas.onAddComment = { _, _ in added += 1 }
+        canvas.commentPrompt = { $0("note") }
+        canvas.setCommentMode(true)
+
+        let at = canvas.viewPoint(canvas.pinCenter(pin))
+        canvas.mouseDown(with: try mouseEvent(.leftMouseDown, at: at, in: canvas))
+
+        XCTAssertEqual(opened, "a")
+        XCTAssertEqual(added, 0, "a pin wins over placing a comment")
+    }
+
+    func testShowingAnotherElementLeavesTheCommentMode() throws {
+        let canvas = try canvas(
+            """
+            element "First" {
+                item A { width 10; height 10 }
+            }
+            element "Second" {
+                item B { width 10; height 10 }
+            }
+            """)
+        canvas.setCommentMode(true)
+        XCTAssertTrue(canvas.commentMode)
+        XCTAssertEqual(canvas.message, "Comment mode: click to place a comment, Esc to leave")
+
+        canvas.showElement([1])
+        XCTAssertFalse(canvas.commentMode)
+        XCTAssertNil(canvas.message)
+        XCTAssertEqual(canvas.screenNode?.name, "Second")
     }
 }
