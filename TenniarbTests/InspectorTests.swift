@@ -1145,4 +1145,207 @@ final class InspectorTests: SceneDocumentTestCase {
         XCTAssertEqual(inspector.row("Header.Title")?.text, "", "no title carried over")
         XCTAssertEqual(inspector.row("Size W")?.text, "", "no stale size")
     }
+
+    // MARK: - Classic body
+
+    /// The body row of a selected item reads the markdown of its `body` command, with the indent
+    /// prepareBodyText strips for the inline editor.
+    func testAClassicBodyRowShowsTheMarkdownOfTheSelectedItem() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/classic-body.tenn", to: root))
+        let item = try classicItem("Lines", document)
+        let inspector = classicInspector(document, items: [item])
+        let view = inspector.createView()
+        view.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        view.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(inspector.row("Body.Body")?.kind, .body)
+        XCTAssertEqual(inspector.row("Body.Body")?.text, "line one\nline two\nline three")
+        XCTAssertEqual(inspector.bodyText, "line one\nline two\nline three")
+    }
+
+    /// A body edit is one command written through the item's properties; undo restores the old text and
+    /// an empty body drops the command.
+    func testAClassicBodyWritesTheCommandAndEmptyRemovesIt() throws {
+        let document = try document("element Screen { item Box { width 100; height 40; body \"Old\" } }")
+        let item = try classicItem("Box", document)
+        let inspector = classicInspector(document, items: [item])
+
+        XCTAssertEqual(inspector.bodyText, "Old")
+
+        oneUndo(document) { inspector.setBody("New\ntext", for: "Body") }
+        XCTAssertTrue(modelText(document).contains("New"), modelText(document))
+        XCTAssertTrue(modelText(document).contains("text"), modelText(document))
+        XCTAssertEqual(inspector.bodyText, "New\ntext")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(inspector.bodyText, "Old", "undo puts the old body back")
+        XCTAssertTrue(modelText(document).contains(#"body "Old""#), modelText(document))
+
+        oneUndo(document) { inspector.setBody("", for: "Body") }
+        XCTAssertFalse(modelText(document).contains("body"), "an empty body removes the command")
+        XCTAssertEqual(inspector.bodyText, "")
+    }
+
+    /// With nothing selected the body field is the description of the element; an empty text removes it.
+    func testAClassicElementDescriptionIsTheBodyWhenNothingIsSelected() throws {
+        let document = try document(
+            "element Screen { description \"about D\"; item Box { width 100; height 40 } }")
+        let inspector = classicInspector(document)
+
+        XCTAssertEqual(inspector.title, "Element")
+        XCTAssertEqual(inspector.row("Description.Body")?.kind, .body)
+        XCTAssertEqual(inspector.bodyText, "about D")
+
+        oneUndo(document) { inspector.setBody("new about", for: "Body") }
+        XCTAssertTrue(modelText(document).contains(#"description "new about""#), modelText(document))
+        XCTAssertEqual(inspector.bodyText, "new about")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(inspector.bodyText, "about D")
+
+        oneUndo(document) { inspector.setBody("", for: "Body") }
+        XCTAssertFalse(modelText(document).contains("description"), modelText(document))
+        XCTAssertEqual(inspector.bodyText, "")
+    }
+
+    // MARK: - Classic shadows
+
+    /// A classic item that writes no shadow shows none; a preset writes its two layers as one undo step
+    /// and a layer edited by hand makes the row custom.
+    func testAClassicShadowPresetWritesTheLayersOfTheItem() throws {
+        let document = try document("element Screen { item Card { width 100; height 40 } }")
+        let item = try classicItem("Card", document)
+        let inspector = classicInspector(document, items: [item])
+
+        XCTAssertEqual(inspector.row("Shadow")?.kind, .popup)
+        XCTAssertEqual(inspector.row("Shadow")?.choices, ["none", "soft", "floating", "custom"])
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertNil(inspector.row("Shadow 1 X"), "no layer to list")
+        XCTAssertEqual(inspector.row("+ Shadow")?.kind, .button)
+
+        oneUndo(document) { inspector.setChoice("soft", for: "Shadow") }
+        let soft = modelText(document)
+        XCTAssertTrue(soft.contains("shadow 0 -4 12 #00000014"), soft)
+        XCTAssertTrue(soft.contains("shadow 0 -14 32 #00000010"), soft)
+        XCTAssertEqual(inspector.row("Shadow")?.text, "soft")
+        XCTAssertEqual(inspector.row("Shadow 2 Blur")?.text, "32")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertFalse(modelText(document).contains("shadow"), "one undo removes the preset")
+
+        oneUndo(document) { inspector.setChoice("soft", for: "Shadow") }
+        oneUndo(document) { inspector.setText("20", for: "Shadow 2 Blur") }
+        XCTAssertTrue(modelText(document).contains("shadow 0 -14 20 #00000010"), modelText(document))
+        XCTAssertEqual(inspector.row("Shadow")?.text, "custom", "an edited layer is no preset")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "12", "the other layer keeps its value")
+
+        oneUndo(document) { inspector.setChoice("none", for: "Shadow") }
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertFalse(modelText(document).contains("shadow"), "none removes every layer")
+    }
+
+    /// The classic shadow list reads X, Y, blur and colour of each layer and rewrites the whole list on
+    /// every change: add, drop and a blur edit are one undo step each.
+    func testTheClassicShadowListEditsTheWholeListInOneUndoStep() throws {
+        let document = try document(
+            """
+            element Screen {
+                item Card {
+                    width 100; height 40
+                    shadow 0 -2 4 #00000010
+                    shadow 0 -8 16 #00000008
+                }
+            }
+            """)
+        let item = try classicItem("Card", document)
+        let inspector = classicInspector(document, items: [item])
+        inspector.createView().layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(inspector.row("Shadow")?.text, "custom", "layers written by hand")
+        XCTAssertEqual(inspector.row("Shadow 1 X")?.text, "0")
+        XCTAssertEqual(inspector.row("Shadow 1 Y")?.text, "-2")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "4")
+        XCTAssertEqual(inspector.row("Shadow 1 Color")?.text, "#00000010")
+        XCTAssertEqual(inspector.row("Shadow 1 Color")?.action, "−")
+        XCTAssertEqual(inspector.row("Shadow 2 Blur")?.text, "16")
+
+        let before = modelText(document)
+        oneUndo(document) { inspector.setText("20", for: "Shadow 2 Blur") }
+        let blurred = modelText(document)
+        XCTAssertTrue(blurred.contains("shadow 0 -8 20 #00000008"), blurred)
+        XCTAssertTrue(blurred.contains("shadow 0 -2 4 #00000010"), "the other layer stays: \(blurred)")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "4")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(modelText(document), before, "one undo for the whole list")
+
+        oneUndo(document) { inspector.addShadow() }
+        XCTAssertTrue(modelText(document).contains("shadow 0 -2 4 #00000020"), modelText(document))
+        XCTAssertEqual(inspector.row("Shadow 3 Color")?.text, "#00000020", "the added layer comes last")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(modelText(document), before, "one undo for the added layer")
+
+        oneUndo(document) { inspector.removeShadow(at: 0) }
+        let dropped = modelText(document)
+        XCTAssertFalse(dropped.contains("shadow 0 -2 4 #00000010"), dropped)
+        XCTAssertTrue(dropped.contains("shadow 0 -8 16 #00000008"), dropped)
+        XCTAssertEqual(inspector.row("Shadow 1 Y")?.text, "-8", "the list starts with what is left")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertEqual(modelText(document), before, "one undo for the dropped layer")
+    }
+
+    // MARK: - Classic styles
+
+    /// With nothing selected the Styles section lists the element's styles: the named ones without the
+    /// item and line defaults, and the group declarations as Go's styleGroupText writes them.
+    func testAClassicElementListsItsStyleNamesAndGroups() throws {
+        let document = try document(
+            """
+            element Screen {
+                styles {
+                    item { color red }
+                    primary {}
+                    tone one-of primary
+                }
+                item Box { width 100; height 40 }
+            }
+
+            element Plain { item Dot { width 10; height 10 } }
+            """)
+        let screen = try XCTUnwrap(document.store?.model.elements.first)
+        let plain = try XCTUnwrap(document.store?.model.elements.last)
+
+        let inspector = classicInspector(document, element: screen)
+        XCTAssertEqual(inspector.row("Styles.Named")?.kind, .info)
+        XCTAssertEqual(inspector.row("Styles.Named")?.text, "primary", "item is the default, not a name")
+        XCTAssertEqual(inspector.row("Styles.Groups")?.kind, .info)
+        XCTAssertEqual(inspector.row("Styles.Groups")?.text, "tone (one-of primary)")
+
+        inspector.showClassic(items: [], element: plain)
+        XCTAssertEqual(inspector.row("Styles.Named")?.text, "None")
+        XCTAssertEqual(inspector.row("Styles.Groups")?.text, "None")
+    }
+
+    /// A scene document keeps the scene column: no body field and no classic element Styles rows.
+    func testASceneDocumentHasNoClassicBodyOrElementStyles() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/scene-text.tenn", to: root))
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "LeafTitle" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertFalse(inspector.rows.contains { $0.kind == .body }, "the scene rows carry no body field")
+        XCTAssertNil(inspector.row("Named"), "no classic element Styles rows")
+        XCTAssertEqual(inspector.bodyText, "")
+    }
 }

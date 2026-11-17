@@ -19,7 +19,7 @@ import Tenn
 /// The right column of a document: the properties of the selected scene node or classic item, as
 /// go/app builds them. A field writes its own command; the value in effect is the hint.
 @MainActor
-final class InspectorController: NSObject, NSTextFieldDelegate {
+final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelegate {
     /// The width Go gives the inspector; wide enough for a pair of fields without cutting them.
     static let width: CGFloat = 272
     /// How far the divider may move: the column is fixed in spirit, not in the way of a wider path.
@@ -37,6 +37,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             case info
             case button
             case slider
+            case body
         }
 
         let section: String
@@ -72,6 +73,23 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     /// The classic selection the controls were built for.
     private var shownClassic: String?
 
+    /// Where a body edit goes: the item's body, or the description of the element when nothing is
+    /// selected.
+    private enum ClassicBodyTarget {
+        case item(DiagramItem)
+        case element(Element)
+    }
+
+    private struct PendingBody {
+        let target: ClassicBodyTarget
+        let text: String
+    }
+
+    /// The body field is written after a pause, as Go's propsDelay; the counter drops a queued write
+    /// when the selection moves or the edit is committed early.
+    private var pendingBody: PendingBody?
+    private var bodyChanges = 0
+
     // MARK: - Wiring
 
     /// Points the column at a canvas and the document its edits go through.
@@ -88,6 +106,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     /// Points the classic column at the selection: one item or link, or the element when none is.
     func showClassic(items: [DiagramItem], element: Element?) {
         guard isClassic else { return }
+        commitBody()  // the pending text belongs to the selection that is about to move
         classicItem = items.count == 1 ? items[0] : nil
         classicElement = element ?? classicItem?.parent
         refresh()
@@ -389,7 +408,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             }
         case .toggle:
             text = own == nil ? "off" : "yes"
-        case .info, .checks, .button, .slider:
+        case .info, .checks, .button, .slider, .body:
             break
         }
         var row = InspectorRow(
@@ -793,6 +812,13 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
 
     /// Adds a layer with the default contact shadow to the selected node's own shadows.
     func addShadow() {
+        if isClassic {
+            guard let item = classicItem, !(item is LinkItem) else { return }
+            let layers = InspectorController.classicShadows(item) + [["0", "-2", "4", "#00000020"]]
+            writeClassicShadows(layers, item)
+            refresh()
+            return
+        }
         guard let sel = selection(), sel.part == nil, let node = sel.node else { return }
         let layers = shadowsOf(node).map(InspectorController.shadowTexts) + [["0", "-2", "4", "#00000020"]]
         writeShadowLayers(layers)
@@ -801,6 +827,15 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
 
     /// Drops the own shadow layer at index, as the − button of its row does.
     func removeShadow(at index: Int) {
+        if isClassic {
+            guard let item = classicItem, !(item is LinkItem) else { return }
+            var layers = InspectorController.classicShadows(item)
+            guard layers.indices.contains(index) else { return }
+            layers.remove(at: index)
+            writeClassicShadows(layers, item)
+            refresh()
+            return
+        }
         guard let sel = selection(), sel.part == nil, let node = sel.node else { return }
         var layers = shadowsOf(node).map(InspectorController.shadowTexts)
         guard layers.indices.contains(index) else { return }
@@ -1050,6 +1085,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         var unset: String?
         var numeric = false
         var keep = false
+        var action = ""
+        var layer = 0
         var write: ((String) -> Void)?
     }
 
@@ -1104,6 +1141,16 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             fields.append(elementField("Header", "Grid Y", "grid", 1, element))
         }
 
+        // The body of the item, or the description of the element when nothing is selected.
+        if link == nil {
+            let text =
+                item.map(InspectorController.classicBody)
+                ?? element.map(InspectorController.elementDescription) ?? ""
+            fields.append(
+                ClassicField(
+                    section: item == nil ? "Description" : "Body", label: "Body", kind: .body, text: text))
+        }
+
         if let item, link == nil {
             fields.append(positionField("Position X", 0, item))
             fields.append(positionField("Position Y", 1, item))
@@ -1150,6 +1197,10 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
                 popupField("Shape", "Layer", "layer", item, ["default", "background", "hover"], "default"))
         }
 
+        if let item, link == nil {
+            fields += shadowFields(item)
+        }
+
         if let link {
             fields.append(itemField("Line", "Color", "color", link))
             fields.append(itemField("Line", "Width", "line-width", link, numeric: true))
@@ -1159,11 +1210,17 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
                 popupField("Line", "Arrows", "display", link, ["solid", "arrow", "arrows", "arrow-source"], "solid"))
         }
 
+        if item == nil, let element {
+            let styles = InspectorController.classicStyles(element)
+            fields.append(ClassicField(section: "Styles", label: "Named", kind: .info, text: styles.names))
+            fields.append(ClassicField(section: "Styles", label: "Groups", kind: .info, text: styles.groups))
+        }
+
         classicFields = fields
         let rows = fields.map {
             InspectorRow(
                 section: $0.section, label: $0.label, text: $0.text,
-                kind: $0.kind, choices: $0.choices)
+                kind: $0.kind, choices: $0.choices, action: $0.action, layer: $0.layer)
         }
         let title = item == nil ? "Element" : (link == nil ? "Item" : "Link")
         return (title, rows)
@@ -1273,6 +1330,99 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             write: { [weak self] in self?.writeElement(element, name, $0, index: index) })
     }
 
+    /// The shadow commands the item writes, each as the arguments of `shadow`.
+    private static func classicShadows(_ item: DiagramItem) -> [[String]] {
+        (item.properties.node.children ?? [])
+            .filter { $0.kind == .Command && $0.getIdent(0) == "shadow" }
+            .map { (node: TennNode) in (node.children ?? []).dropFirst().map { $0.getIdentText() ?? "" } }
+    }
+
+    /// The preset the layers spell out, custom for layers no preset names, none for no layer.
+    private static func shadowPreset(_ layers: [[String]]) -> String {
+        guard !layers.isEmpty else { return "none" }
+        for (name, want) in shadowPresets where want == layers {
+            return name
+        }
+        return "custom"
+    }
+
+    /// The rows of the Effects section: the preset popup and one field per layer, as the scene list.
+    private func shadowFields(_ item: DiagramItem) -> [ClassicField] {
+        let layers = InspectorController.classicShadows(item)
+        var fields: [ClassicField] = [
+            ClassicField(
+                section: "Effects", label: "Shadow", kind: .popup,
+                text: InspectorController.shadowPreset(layers),
+                choices: ["none", "soft", "floating", "custom"], unset: "none",
+                write: { [weak self] in self?.setClassicShadowPreset($0, item) })
+        ]
+        for (i, layer) in layers.enumerated() {
+            func arg(_ k: Int) -> String { k < layer.count ? layer[k] : "" }
+            let n = i + 1
+            for (label, k) in [("X", 0), ("Y", 1), ("Blur", 2), ("Color", 3)] {
+                fields.append(
+                    ClassicField(
+                        section: "Effects", label: "Shadow \(n) \(label)", text: arg(k),
+                        numeric: k < 3, action: k == 3 ? "−" : "", layer: i,
+                        write: { [weak self] in
+                            self?.setClassicShadowText($0, layer: i, arg: k, item: item)
+                        }))
+            }
+        }
+        fields.append(ClassicField(section: "Effects", label: "+ Shadow", kind: .button))
+        return fields
+    }
+
+    /// The body of the item as the inline editor shows it: `body "text"` or the text of a body block.
+    private static func classicBody(_ item: DiagramItem) -> String {
+        guard let body = item.properties.get("body") else { return "" }
+        var node = body.getChild(1)
+        if let block = node, block.kind == .BlockExpr {
+            node = block.getNamedElement("text")?.getChild(1)
+        }
+        return prepareBodyText(node?.getIdentText() ?? "")
+    }
+
+    /// The description the element writes, if any.
+    private static func elementDescription(_ element: Element) -> String {
+        text(element.toTennAsProps(.BlockExpr).getNamedElement("description"))
+    }
+
+    /// A string for one line of text, markdown when the text carries a line break.
+    private static func bodyNode(_ text: String) -> TennNode {
+        if text.contains("\n") || text.contains("\\n") {
+            return TennNode.newMarkdownNode(text)
+        }
+        return TennNode.newStrNode(text)
+    }
+
+    /// The element's styles block read the way Go's StyleNames and StyleGroups read it: named styles
+    /// without the item and line defaults, and the group declarations as `name (one-of a b)`.
+    private static func classicStyles(_ element: Element) -> (names: String, groups: String) {
+        let block = element.properties.get("styles")?.getChild(1)
+        var names: [String] = []
+        var groups: [String] = []
+        for cmd in block?.children ?? [] where cmd.kind == .Command {
+            let name = cmd.getIdent(0) ?? ""
+            guard !name.isEmpty else { continue }
+            let args = (cmd.children ?? []).dropFirst().map { $0.getIdentText() ?? "" }
+            if cmd.getChild(1)?.kind != .BlockExpr {
+                let mode = args.first ?? ""
+                guard mode == "one-of" || mode == "any-of" else { continue }
+                let styles = args.dropFirst().map(normalizeName)
+                groups.append("\(normalizeName(name)) (\(mode) \(styles.joined(separator: " ")))")
+                continue
+            }
+            if name != "item" && name != "line" {
+                names.append(name)
+            }
+        }
+        return (
+            names.isEmpty ? "None" : names.joined(separator: ", "),
+            groups.isEmpty ? "None" : groups.joined(separator: ", ")
+        )
+    }
+
     // MARK: - Writing the classic commands
 
     private func commitClassicText(_ row: InspectorRow, _ value: String) {
@@ -1342,6 +1492,139 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         store.setProperties(
             element, props, undoManager: document?.undoManager,
             refresh: { [weak self] in self?.refresh() })
+    }
+
+    /// Replaces every shadow the item writes with layers, as one undo step; none leaves it without.
+    private func writeClassicShadows(_ layers: [[String]], _ item: DiagramItem) {
+        guard let element = item.parent, let store = document?.store else { return }
+        let props = item.toTennAsProps(.BlockExpr)
+        props.removeNamed("shadow")
+        for layer in layers {
+            let cmd = TennNode.newCommand("shadow")
+            cmd.add(layer.map { InspectorController.valueNode($0, string: false) })
+            props.add(cmd)
+        }
+        store.setProperties(
+            element, item, props, undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    /// Picks a preset of the classic Shadow row; custom is the state of layers written by hand.
+    private func setClassicShadowPreset(_ preset: String, _ item: DiagramItem) {
+        guard preset != "custom" else { return }
+        writeClassicShadows(InspectorController.shadowPresets[preset] ?? [], item)
+        refresh()
+    }
+
+    /// Sets one argument of a classic shadow layer; the whole list is written again as one edit.
+    private func setClassicShadowText(_ value: String, layer: Int, arg: Int, item: DiagramItem) {
+        var layers = InspectorController.classicShadows(item)
+        guard !value.isEmpty, layers.indices.contains(layer) else {
+            refresh()
+            return
+        }
+        while layers[layer].count <= arg {
+            layers[layer].append("0")
+        }
+        layers[layer][arg] = value
+        writeClassicShadows(layers, item)
+        refresh()
+    }
+
+    /// The text the body field holds: the pending edit, else what the selection writes.
+    var bodyText: String {
+        guard isClassic else { return "" }
+        if let pending = pendingBody { return pending.text }
+        guard let target = classicBodyTarget() else { return "" }
+        return InspectorController.bodyText(of: target)
+    }
+
+    /// Commits a body edit at once, as leaving the field does.
+    func setBody(_ text: String, for label: String) {
+        guard rows.contains(where: { $0.kind == .body && $0.label == label }),
+            let target = classicBodyTarget()
+        else { return }
+        pendingBody = PendingBody(target: target, text: text)
+        commitBody()
+    }
+
+    private func classicBodyTarget() -> ClassicBodyTarget? {
+        if let item = classicItem {
+            return item is LinkItem ? nil : .item(item)
+        }
+        return classicShownElement().map(ClassicBodyTarget.element)
+    }
+
+    private static func bodyText(of target: ClassicBodyTarget) -> String {
+        switch target {
+        case .item(let item):
+            return classicBody(item)
+        case .element(let element):
+            return elementDescription(element)
+        }
+    }
+
+    /// Writes the body after the pause Go gives it, so a burst of typing is one undo step.
+    private func scheduleBody(_ text: String, target: ClassicBodyTarget) {
+        bodyChanges += 1
+        let n = bodyChanges
+        pendingBody = PendingBody(target: target, text: text)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.bodyChanges == n else { return }
+                self.commitBody()
+            }
+        }
+    }
+
+    private func commitBody() {
+        bodyChanges += 1
+        guard let pending = pendingBody else { return }
+        pendingBody = nil
+        guard pending.text != InspectorController.bodyText(of: pending.target) else {
+            refresh()
+            return
+        }
+        writeBody(pending.text, to: pending.target)
+        refresh()
+    }
+
+    /// Writes the body of the item, or the description of the element, as one model operation.
+    private func writeBody(_ text: String, to target: ClassicBodyTarget) {
+        guard let store = document?.store else { return }
+        switch target {
+        case .item(let item):
+            guard let element = item.parent else { return }
+            let props = item.toTennAsProps(.BlockExpr)
+            if text.isEmpty {
+                props.removeNamed("body")
+            } else if let body = props.getNamedElement("body") {
+                guard let block = body.getChild(1) else { return }
+                let node = InspectorController.bodyNode(text)
+                if block.kind == .BlockExpr {
+                    guard let slot = block.getNamedElement("text") else { return }  // no text entry: left alone
+                    slot.children?.removeAll()
+                    slot.add(TennNode.newIdent("text"), node)
+                } else {
+                    body.children?.removeAll()
+                    body.add(TennNode.newIdent("body"), node)
+                }
+            } else {
+                props.add(TennNode.newCommand("body", InspectorController.bodyNode(text)))
+            }
+            store.setProperties(
+                element, item, props, undoManager: document?.undoManager,
+                refresh: { [weak self] in self?.refresh() })
+        case .element(let element):
+            let props = element.toTennAsProps(.BlockExpr)
+            props.removeNamed("description")
+            if !text.isEmpty {
+                props.add(TennNode.newCommand("description", InspectorController.bodyNode(text)))
+            }
+            store.setProperties(
+                element, props, undoManager: document?.undoManager,
+                refresh: { [weak self] in self?.refresh() })
+        }
     }
 
     /// Renames the item, link or element the column shows; the model keeps the item name, the file calls
@@ -1520,6 +1803,22 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         guard let field = obj.object as? NSTextField else { return }
         textCommitted(field)
     }
+
+    func textDidChange(_ notification: Notification) {
+        guard let editor = notification.object as? NSTextView,
+            let index = rowControls.firstIndex(where: { $0.bodyView === editor }),
+            rows.indices.contains(index), rows[index].kind == .body,
+            editor.string != rows[index].text,
+            let target = classicBodyTarget()
+        else { return }
+        scheduleBody(editor.string, target: target)
+    }
+
+    /// Leaving the field writes the pending text at once, as Go's focus-lost commit does.
+    func textDidEndEditing(_ notification: Notification) {
+        guard notification.object is NSTextView else { return }
+        commitBody()
+    }
 }
 
 /// One row of the column: the caption on the left and the control on the right, built once and refilled
@@ -1537,6 +1836,8 @@ private final class RowControl {
     private let segmented: NSSegmentedControl?
     private let action: NSButton?
     private var slider: NSSlider?
+    var bodyView: NSTextView?
+    private var bodyScroll: NSScrollView?
 
     init(row: InspectorController.InspectorRow, tag: Int, target: InspectorController) {
         kind = row.kind
@@ -1663,6 +1964,37 @@ private final class RowControl {
             action = nil
             slider = control
             ctl = control
+        case .body:
+            let editor = NSTextView(frame: NSRect(x: 0, y: 0, width: 240, height: 96))
+            editor.font = NSFont.systemFont(ofSize: 11)
+            editor.isRichText = false
+            editor.isAutomaticQuoteSubstitutionEnabled = false
+            editor.isAutomaticDashSubstitutionEnabled = false
+            editor.isAutomaticTextReplacementEnabled = false
+            editor.isVerticallyResizable = true
+            editor.isHorizontallyResizable = false
+            editor.autoresizingMask = [.width]
+            editor.minSize = NSSize(width: 0, height: 96)
+            editor.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+            editor.textContainer?.widthTracksTextView = true
+            editor.textContainer?.containerSize = NSSize(width: 240, height: CGFloat.greatestFiniteMagnitude)
+            editor.delegate = target
+            let scroll = NSScrollView()
+            scroll.hasVerticalScroller = true
+            scroll.autohidesScrollers = true
+            scroll.borderType = .bezelBorder
+            scroll.documentView = editor
+            scroll.heightAnchor.constraint(equalToConstant: 96).isActive = true
+            info = nil
+            text = nil
+            popup = nil
+            toggleButton = nil
+            checkBoxes = []
+            segmented = nil
+            action = nil
+            bodyView = editor
+            bodyScroll = scroll
+            ctl = scroll
         case .checks:
             let group = NSStackView()
             group.orientation = .vertical
@@ -1704,12 +2036,27 @@ private final class RowControl {
             ctl = button
         }
 
-        let line = NSStackView(views: [caption, ctl])
-        line.orientation = .horizontal
-        line.alignment = .centerY
-        line.spacing = 8
-        line.translatesAutoresizingMaskIntoConstraints = false
-        view = line
+        if let scroll = bodyScroll {
+            // The body field takes the whole row: a caption on the left would leave it too narrow.
+            let holder = NSView()
+            holder.translatesAutoresizingMaskIntoConstraints = false
+            scroll.translatesAutoresizingMaskIntoConstraints = false
+            holder.addSubview(scroll)
+            NSLayoutConstraint.activate([
+                scroll.leadingAnchor.constraint(equalTo: holder.leadingAnchor),
+                scroll.trailingAnchor.constraint(equalTo: holder.trailingAnchor),
+                scroll.topAnchor.constraint(equalTo: holder.topAnchor),
+                scroll.bottomAnchor.constraint(equalTo: holder.bottomAnchor),
+            ])
+            view = holder
+        } else {
+            let line = NSStackView(views: [caption, ctl])
+            line.orientation = .horizontal
+            line.alignment = .centerY
+            line.spacing = 8
+            line.translatesAutoresizingMaskIntoConstraints = false
+            view = line
+        }
         apply(row)
     }
 
@@ -1743,6 +2090,11 @@ private final class RowControl {
             }
         case .slider:
             break  // the thumb stays where the scrub put it
+        case .body:
+            // A refresh must not replace what the user is typing.
+            if let bodyView, bodyView.window?.firstResponder !== bodyView, bodyView.string != row.text {
+                bodyView.string = row.text
+            }
         }
     }
 
@@ -1755,6 +2107,7 @@ private final class RowControl {
         segmented?.target = nil
         action?.target = nil
         slider?.target = nil
+        bodyView?.delegate = nil
         for button in checkBoxes {
             button.target = nil
         }
