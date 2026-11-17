@@ -160,11 +160,14 @@ final class CommentsController {
     private(set) var lastPins: [CommentPin] = []
     /// The failure of the last thread action, shown in its popover.
     private(set) var threadError: String?
+    /// Whether resolved comments keep their pins and rows; View > Show Resolved Comments asks for it.
+    private(set) var showResolved = false
     /// Called after a write and its reload, so the canvas places the pins again.
     var onChange: (() -> Void)?
 
     private var threadPopover: NSPopover?
     private var threadID: String?
+    private var listPopover: NSPopover?
 
     init(key: String?, configDir: URL = Comments.configDir()) {
         self.key = key
@@ -287,6 +290,63 @@ final class CommentsController {
     /// The pin of the last pins(...) call under point; the one drawn last wins.
     func pin(at point: CGPoint, radius: CGFloat = CommentPin.radius) -> CommentPin? {
         CommentPin.at(lastPins, point: point, radius: radius)
+    }
+
+    /// Puts resolved comments back in or out of the canvas; the window redraws its pins through onChange.
+    func setShowResolved(_ on: Bool) {
+        guard on != showResolved else { return }
+        showResolved = on
+        onChange?()
+    }
+
+    // MARK: - The list
+
+    /// The rows of View > Comments…, in the order of the document, as go/app commentLabel: the number,
+    /// the time, the author and the start of the text, then the place.
+    func listRows(now: Date = Date()) -> [(id: String, number: Int, label: String, resolved: Bool)] {
+        doc.comments.enumerated().map { i, c in
+            let resolved = c.state == Comments.resolved
+            var label = "\(i + 1)  \(CommentsController.whenText(c.created, now: now))  \(c.author): \(Self.firstLine(c.text))"
+            let place = anchorText(c.anchor)
+            if !place.isEmpty { label += "  " + place }
+            if resolved { label += "  (resolved)" }
+            return (c.id, i + 1, label, resolved)
+        }
+    }
+
+    /// The first line of a text, its whitespace folded and its end capped as go/app commentLabel.
+    private static func firstLine(_ text: String) -> String {
+        let line = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        let folded = line.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        return folded.count > 48 ? String(folded.prefix(47)) + "..." : folded
+    }
+
+    /// The popover of View > Comments…: a row per comment, the resolved ones hidden until asked for; a
+    /// double click or Return goes to the place of the row (go/app comments_thread.go showCommentList).
+    func presentList(from window: NSWindow?, onJump: @escaping @MainActor (String) -> Void) {
+        guard let window, let anchor = window.contentView else { return }
+        closeThread()
+        listPopover?.close()
+        let rows = listRows().filter { showResolved || !$0.resolved }
+        let list = CommentListController(rows: rows) { [weak self] id in
+            self?.listPopover?.close()
+            self?.listPopover = nil
+            onJump(id)
+        }
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentViewController = list
+        listPopover = popover
+        popover.show(
+            relativeTo: NSRect(x: anchor.bounds.midX, y: anchor.bounds.maxY, width: 1, height: 1), of: anchor,
+            preferredEdge: .minY)
+    }
+
+    /// Where a comment sits, for the window of View > Comments… to show: the names of its element, the
+    /// node path inside it, and the point of the anchor when it has one.
+    func jumpTarget(id: String) -> (element: [String], node: String, point: Comments.Point?)? {
+        guard let c = doc.find(id) else { return nil }
+        return (c.anchor.element ?? [], c.anchor.node ?? "", c.anchor.point)
     }
 
     // MARK: - Thread
@@ -485,5 +545,125 @@ private final class ActionButton: NSButton {
 
     @objc private func clicked() {
         run()
+    }
+}
+
+/// The table of the comment list: a row goes to its place on a double click or Return.
+@MainActor
+private final class CommentListController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+
+    private let rows: [(id: String, number: Int, label: String, resolved: Bool)]
+    private let onJump: @MainActor (String) -> Void
+    private let table = CommentListTable()
+
+    init(
+        rows: [(id: String, number: Int, label: String, resolved: Bool)],
+        onJump: @escaping @MainActor (String) -> Void
+    ) {
+        self.rows = rows
+        self.onJump = onJump
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func loadView() {
+        let width: CGFloat = 460
+        let rowsHeight = min(CGFloat(rows.count) * 22 + 8, 320)
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: width, height: rows.isEmpty ? 30 : rowsHeight))
+        if rows.isEmpty {
+            let label = NSTextField(labelWithString: "No comments.")
+            label.font = NSFont.systemFont(ofSize: 12)
+            label.textColor = .secondaryLabelColor
+            label.frame = NSRect(x: 10, y: 6, width: width - 20, height: 18)
+            root.addSubview(label)
+        } else {
+            let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "CommentColumn"))
+            column.resizingMask = .autoresizingMask
+            table.addTableColumn(column)
+            table.columnAutoresizingStyle = .firstColumnOnlyAutoresizingStyle
+            table.headerView = nil
+            table.rowHeight = 22
+            table.intercellSpacing = .zero
+            table.allowsMultipleSelection = false
+            table.dataSource = self
+            table.delegate = self
+            table.target = self
+            table.doubleAction = #selector(doubleClicked)
+            table.onReturn = { [weak self] in
+                guard let self else { return }
+                self.jump(self.table.selectedRow)
+            }
+            table.frame = NSRect(x: 0, y: 0, width: width - 8, height: root.frame.height - 8)
+            table.autoresizingMask = [.width]
+            let scroll = NSScrollView(frame: root.bounds.insetBy(dx: 4, dy: 4))
+            scroll.autoresizingMask = [.width, .height]
+            scroll.hasVerticalScroller = true
+            scroll.autohidesScrollers = true
+            scroll.borderType = .noBorder
+            scroll.documentView = table
+            root.addSubview(scroll)
+            table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+        }
+        view = root
+        preferredContentSize = root.frame.size
+    }
+
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        view.window?.makeFirstResponder(table)
+    }
+
+    private func jump(_ row: Int) {
+        guard rows.indices.contains(row) else { return }
+        onJump(rows[row].id)
+    }
+
+    @objc private func doubleClicked() {
+        jump(table.clickedRow)
+    }
+
+    func numberOfRows(in tableView: NSTableView) -> Int { rows.count }
+
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let identifier = NSUserInterfaceItemIdentifier(rawValue: "CommentCell")
+        let cell: NSTableCellView
+        if let reused = tableView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView {
+            cell = reused
+        } else {
+            cell = NSTableCellView(frame: .zero)
+            cell.identifier = identifier
+            let text = NSTextField(labelWithString: "")
+            text.translatesAutoresizingMaskIntoConstraints = false
+            text.lineBreakMode = .byTruncatingTail
+            cell.addSubview(text)
+            cell.textField = text
+            NSLayoutConstraint.activate([
+                text.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 4),
+                text.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -4),
+                text.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            ])
+        }
+        guard rows.indices.contains(row) else { return cell }
+        cell.textField?.stringValue = rows[row].label
+        cell.textField?.font = NSFont.systemFont(ofSize: 12)
+        cell.alphaValue = rows[row].resolved ? 0.5 : 1
+        return cell
+    }
+}
+
+/// The table of the comment list, which takes Return as the jump of the selected row.
+@MainActor
+private final class CommentListTable: NSTableView {
+    var onReturn: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 36 || event.keyCode == 76 {
+            onReturn?()
+            return
+        }
+        super.keyDown(with: event)
     }
 }

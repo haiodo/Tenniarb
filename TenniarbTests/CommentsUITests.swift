@@ -498,4 +498,126 @@ final class CommentsUITests: SceneDocumentTestCase {
         XCTAssertNil(canvas.message)
         XCTAssertEqual(canvas.screenNode?.name, "Second")
     }
+
+    // MARK: - The list
+
+    func testListRowsShowTheNumberTheStartAndThePlace() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let node = try comments.addComment(
+            text: "  too tight\nsecond line",
+            anchor: Comments.Anchor(element: ["Screen"], node: "Frame.Badge"), now: t0)
+        let loose = try comments.addComment(
+            text: "near the corner", anchor: Comments.Anchor(element: ["Screen"], node: ""), now: t0)
+        try comments.resolve(id: loose.id, now: t0.addingTimeInterval(60))
+
+        let now = t0.addingTimeInterval(3600)
+        let rows = comments.listRows(now: now)
+        XCTAssertEqual(rows.map { $0.id }, [node.id, loose.id], "the rows keep the order of the document")
+        XCTAssertEqual(rows.map { $0.number }, [1, 2])
+        XCTAssertEqual(rows.map { $0.resolved }, [false, true])
+        XCTAssertTrue(rows[0].label.hasPrefix("1  "), rows[0].label)
+        XCTAssertTrue(rows[0].label.contains(CommentsController.whenText(node.created, now: now)), rows[0].label)
+        XCTAssertTrue(rows[0].label.contains("user: too tight"), rows[0].label)
+        XCTAssertFalse(rows[0].label.contains("second line"), "a row keeps the first line of the text")
+        XCTAssertTrue(rows[0].label.contains("Screen / Frame.Badge"), rows[0].label)
+        XCTAssertTrue(rows[1].label.contains("near the corner"), rows[1].label)
+        XCTAssertTrue(rows[1].label.hasSuffix("(resolved)"), rows[1].label)
+        XCTAssertFalse(rows[1].label.contains(" / "), "a comment without a node names no node")
+    }
+
+    func testJumpTargetNamesThePlaceOfAComment() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let node = try comments.addComment(
+            text: "node",
+            anchor: Comments.Anchor(element: ["Screen"], node: "Frame", point: Comments.Point(x: 3, y: 4)),
+            now: t0)
+        let loose = try comments.addComment(
+            text: "loose",
+            anchor: Comments.Anchor(element: ["Screen"], node: "", point: Comments.Point(x: 7, y: 8)), now: t0)
+        let bare = try comments.addComment(
+            text: "bare", anchor: Comments.Anchor(element: ["Screen"], node: ""), now: t0)
+
+        let target = try XCTUnwrap(comments.jumpTarget(id: node.id))
+        XCTAssertEqual(target.element, ["Screen"])
+        XCTAssertEqual(target.node, "Frame")
+        XCTAssertEqual(target.point, Comments.Point(x: 3, y: 4))
+
+        let withoutNode = try XCTUnwrap(comments.jumpTarget(id: loose.id))
+        XCTAssertEqual(withoutNode.element, ["Screen"])
+        XCTAssertEqual(withoutNode.node, "")
+        XCTAssertEqual(withoutNode.point, Comments.Point(x: 7, y: 8))
+
+        let noPoint = try XCTUnwrap(comments.jumpTarget(id: bare.id))
+        XCTAssertNil(noPoint.point, "a comment placed on the element names no point")
+        XCTAssertNil(comments.jumpTarget(id: "no-such-comment"))
+    }
+
+    func testShowResolvedBringsTheResolvedPinsBack() throws {
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let element = ["Screen"]
+        let open = try comments.addComment(
+            text: "open", anchor: Comments.Anchor(element: element, node: "", point: Comments.Point(x: 0, y: 0)),
+            now: t0)
+        let done = try comments.addComment(
+            text: "done", anchor: Comments.Anchor(element: element, node: "", point: Comments.Point(x: 20, y: 20)),
+            now: t0)
+        try comments.resolve(id: done.id, now: t0.addingTimeInterval(60))
+        var reloads = 0
+        comments.onChange = { reloads += 1 }
+
+        let shown = comments.pins(element: element, box: { _ in nil }, showResolved: comments.showResolved)
+        XCTAssertEqual(shown.map { $0.id }, [open.id], "resolved comments are absent until asked for")
+        XCTAssertNil(comments.pin(at: CGPoint(x: 20, y: 20)))
+
+        comments.setShowResolved(true)
+        XCTAssertTrue(comments.showResolved)
+        XCTAssertEqual(reloads, 1, "the canvas is asked to place the pins again")
+        let all = comments.pins(element: element, box: { _ in nil }, showResolved: comments.showResolved)
+        XCTAssertEqual(all.map { $0.id }, [open.id, done.id])
+        XCTAssertEqual(all.map { $0.resolved }, [false, true])
+        XCTAssertEqual(comments.pin(at: CGPoint(x: 20, y: 20))?.id, done.id, "a resolved pin is hit-testable")
+
+        let canvas = try canvas(
+            """
+            element "Screen" {
+                item Frame { width 100; height 50 }
+            }
+            """)
+        canvas.setCommentPins(all)
+        let pin = try XCTUnwrap(canvas.pin(at: canvas.pinCenter(try XCTUnwrap(all.last))))
+        XCTAssertEqual(pin.id, done.id)
+        XCTAssertTrue(pin.resolved, "the canvas draws the pin of a resolved thread faded")
+
+        comments.setShowResolved(false)
+        XCTAssertEqual(reloads, 2)
+        XCTAssertEqual(
+            comments.pins(element: element, box: { _ in nil }, showResolved: comments.showResolved).map { $0.id },
+            [open.id])
+    }
+
+    func testJumpShowsTheOtherElementAndSelectsItsNode() throws {
+        let document = try openDocument(
+            """
+            element "First" {
+                item A { auto-layout abs; width 10; height 10 }
+            }
+            element "Second" {
+                item B { auto-layout abs; pos 20 -10; width 10; height 10 }
+            }
+            """)
+        let canvas = try canvas(document)
+        let tree = try XCTUnwrap(document.sceneTree)
+        let second = try XCTUnwrap(tree.main?.elems.last)
+        let b = try XCTUnwrap(CommentPaths.node(at: "B", from: second))
+        XCTAssertEqual(CommentPaths.elementPath(of: second), ["Second"])
+
+        let place = try XCTUnwrap(LinkOpen.target(in: document, element: ["Second"], node: "B"))
+        XCTAssertEqual(place.elementPath, [1], "the element names the second row of the file")
+        XCTAssertEqual(place.nodeOffset, b.range.start)
+
+        canvas.showElement([1])
+        canvas.selectSource(at: b.range.start)
+        XCTAssertEqual(canvas.screenNode?.name, "Second", "the jump shows the element of the comment")
+        XCTAssertEqual(canvas.selection, [0], "the node of the comment is selected")
+    }
 }

@@ -538,6 +538,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             if action == #selector(self.showSearchBox(_:)) {
                 return true
             }
+            if action == #selector(self.showCommentList(_:)) {
+                return commentsForDocument() != nil
+            }
+            if action == #selector(self.toggleShowResolvedComments(_:)) {
+                guard let comments = commentsForDocument() else { return false }
+                menuItem.state = comments.showResolved ? .on : .off
+                return true
+            }
             if action == #selector(selectAllLinks) || action == #selector(selectAllItemsKind) {
                 return true
             }
@@ -1071,7 +1079,50 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         let boxes = commentBoxes(of: canvas, element: element)
         let names = CommentPaths.elementPath(of: element)
         canvas.setCommentPins(
-            comments.pins(element: names, box: { boxes[$0] }, origin: .zero, showResolved: false))
+            comments.pins(element: names, box: { boxes[$0] }, origin: .zero, showResolved: comments.showResolved))
+    }
+
+    /// View > Comments…: the comments of the document over the window; a row shows its place and opens
+    /// its thread (go/app comments_thread.go showCommentList).
+    @objc func showCommentList(_ sender: Any?) {
+        guard isViewLoaded, let window = view.window, let comments = commentsForDocument() else { return }
+        window.makeKeyAndOrderFront(nil)
+        comments.presentList(from: window) { [weak self] id in
+            self?.jumpToComment(id)
+        }
+    }
+
+    /// Shows the place of a comment and opens its thread, as go/app jumpToComment.
+    func jumpToComment(_ id: String) {
+        guard let comments = commentsForDocument(), let target = comments.jumpTarget(id: id), let document else {
+            return
+        }
+        guard let place = LinkOpen.target(in: document, element: target.element, node: target.node) else {
+            linkMessage("No element \(target.element.joined(separator: ".")) in this file.")
+            return
+        }
+        if let path = place.elementPath {
+            editorViewController?.showSceneElement(path)
+            reloadSceneItems()
+        }
+        guard !target.node.isEmpty else {
+            showCommentThread(id)
+            return
+        }
+        guard let offset = place.nodeOffset else {
+            linkMessage("No node \(target.node) in the element \(target.element.joined(separator: ".")).")
+            showCommentThread(id)
+            return
+        }
+        editorViewController?.sceneCanvas?.canvas.setMessage(nil)
+        editorViewController?.sceneCanvas?.canvas.selectSource(at: offset)
+        showCommentThread(id)
+    }
+
+    /// View > Show Resolved Comments: resolved pins stay on the canvas and in the list.
+    @objc func toggleShowResolvedComments(_ sender: Any?) {
+        guard let comments = commentsForDocument() else { return }
+        comments.setShowResolved(!comments.showResolved)
     }
 
     /// The boxes of the drawn nodes written in the element, by the node path a comment anchors with. A part

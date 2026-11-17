@@ -331,6 +331,16 @@ public class TenniarbApplication: NSApplication {
         viewMenu.addItem(NSMenuItem(title: "Zoom Out", action: #selector(SceneDrawView.zoomOut(_:)), keyEquivalent: "-"))
         viewMenu.addItem(NSMenuItem(title: "Reset Zoom", action: #selector(SceneDrawView.resetZoom(_:)), keyEquivalent: "0"))
 
+        viewMenu.addItem(NSMenuItem.separator())
+        let commentsItem = NSMenuItem(
+            title: "Comments…", action: #selector(ViewController.showCommentList(_:)), keyEquivalent: "M")
+        commentsItem.keyEquivalentModifierMask = [.command, .shift]
+        viewMenu.addItem(commentsItem)
+        viewMenu.addItem(
+            NSMenuItem(
+                title: "Show Resolved Comments", action: #selector(ViewController.toggleShowResolvedComments(_:)),
+                keyEquivalent: ""))
+
         // MARK: - Window menu
         let windowMenuItem = NSMenuItem()
         mainMenu.addItem(windowMenuItem)
