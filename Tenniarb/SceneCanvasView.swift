@@ -771,6 +771,31 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     // MARK: - Input
 
+    /// The text of the item at path as HTML for the clipboard, as go/scene ItemHTML builds it; nil when the
+    /// canvas draws no text for it.
+    func itemHTML(at path: [Int]? = nil) -> String? {
+        guard let screen, let pl = placed(at: path ?? selection) else { return nil }
+        let html = screen.itemHTML(pl)
+        return html.isEmpty ? nil : html
+    }
+
+    /// "Export text as html": the text of the selected item on the clipboard as HTML.
+    @objc func copyTextAsHTML(_ sender: Any?) {
+        guard let html = itemHTML(at: nil) else { return }
+        ClipboardUtils.copyHtml(html)
+    }
+
+    /// The canvas menu: the export of the text of the selected item, as go/app gives a classic diagram.
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        let export = NSMenuItem(title: "Export text as html", action: #selector(copyTextAsHTML(_:)), keyEquivalent: "")
+        export.target = self
+        export.isEnabled = itemHTML(at: nil) != nil
+        menu.addItem(export)
+        return menu
+    }
+
     override func mouseDown(with event: NSEvent) {
         let p = scenePoint(convert(event.locationInWindow, from: nil))
         if event.clickCount < 2, beginDrag(p) { return }

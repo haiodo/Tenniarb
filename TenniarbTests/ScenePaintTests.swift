@@ -176,6 +176,21 @@ final class ScenePaintTests: SceneDocumentTestCase {
         return (tree, screen)
     }
 
+    /// A canvas showing the Screen element of a scratch file, for the commands a click would run.
+    private func scratchCanvas(_ text: String) throws -> SceneCanvasView {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tenniarb-scene-html-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        try text.write(to: root.appendingPathComponent("html.tenn"), atomically: true, encoding: .utf8)
+        let tree = try SceneLoader(root: root).load("html.tenn")
+        let view = SceneCanvasView(frame: .zero)
+        view.show(tree)
+        let screen = try XCTUnwrap(view.screen, "\(tree.diagnostics)")
+        view.frame = NSRect(origin: .zero, size: SceneCanvasView.contentSize(screen))
+        return view
+    }
+
     /// Paints the screen into a transparent bitmap of its content size, y from the top.
     private func painted(_ screen: Scene.Screen) throws -> NSBitmapImageRep {
         let w = Int(ceil(screen.w))
@@ -376,5 +391,119 @@ final class ScenePaintTests: SceneDocumentTestCase {
         let classicEditor = try XCTUnwrap(cvc.editorViewController)
         XCTAssertTrue(classicEditor.sceneCanvas.isHidden, "a classic document keeps the classic canvas")
         XCTAssertFalse(classicEditor.sceneView.isHidden)
+    }
+
+    // MARK: - Export text as HTML
+
+    func testItemHTMLCarriesTheTitleRunsAndTheBodyBlocks() throws {
+        // A classic item: its title reads the markdown emphasis, and its body is the markdown of go/render.
+        let (tree, screen) = try scratch(
+            """
+            element "Screen" {
+                item Card {
+                    pos 0 0; width 240; height 400; text-color #336699
+                    title "A *bold* word"
+                    body %{
+                        ## Heading two
+
+                        A paragraph with words.
+
+                        - first
+                        - second
+
+                        > quoted words
+
+                        ```
+                        let x = 1
+                        ```
+                    }
+                }
+            }
+            """)
+        XCTAssertEqual(tree.diagnostics.filter { !$0.warn }.count, 0, "\(tree.diagnostics)")
+        let card = try XCTUnwrap(screen.placed().kids.first)
+        let html = screen.itemHTML(card)
+        for want in ["<div>", "<b>", "<h2>", "<ul><li>", "<blockquote>", "<pre><code>let x = 1</code></pre>", "color:#336699;"] {
+            XCTAssertTrue(html.contains(want), "\(want) is missing from \(html)")
+        }
+        // The runs of the title come from the laid out parts, not from the markdown as written.
+        XCTAssertTrue(html.contains("<b><span style=\"font-size:18px;\">bold</span></b>"), html)
+        XCTAssertFalse(html.contains("*bold*"), "the markup of the title is drawn: \(html)")
+    }
+
+    func testItemHTMLEscapesTheTextOfATitle() throws {
+        let (_, screen) = try scratch(
+            #"""
+            element "Screen" {
+                item Card { pos 0 0; title "A < B & \"C\"" }
+            }
+            """#)
+        let card = try XCTUnwrap(screen.placed().kids.first)
+        let html = screen.itemHTML(card)
+        XCTAssertTrue(html.contains("A &lt; B &amp; &#34;C&#34;"), html)
+        XCTAssertFalse(html.contains("A < B"), "the text is not escaped: \(html)")
+    }
+
+    func testItemHTMLKeepsTheLinkOfABodyRun() throws {
+        let (_, screen) = try scratch(
+            """
+            element "Screen" {
+                item Card { pos 0 0; body %{[label](https://example.com)} }
+            }
+            """)
+        let card = try XCTUnwrap(screen.placed().kids.first)
+        let html = screen.itemHTML(card)
+        XCTAssertTrue(html.contains("<a href=\"https://example.com\">"), html)
+        XCTAssertTrue(html.contains("label"), html)
+    }
+
+    func testItemHTMLIsEmptyWithoutTextAndNamesAPicture() throws {
+        let (_, blank) = try scratch(
+            """
+            element "Screen" {
+                item Nothing { pos 0 0; width 40; height 20; auto-layout abs }
+            }
+            """)
+        XCTAssertEqual(blank.itemHTML(try XCTUnwrap(blank.placed().kids.first)), "")
+
+        let (_, pictured) = try scratch(
+            """
+            element "Screen" {
+                item Card {
+                    pos 0 0
+                    title "@(pic)Text"
+                    image "pic" @(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==)
+                }
+            }
+            """)
+        let html = pictured.itemHTML(try XCTUnwrap(pictured.placed().kids.first))
+        XCTAssertTrue(html.hasPrefix("<div>[image]"), html)
+        XCTAssertTrue(html.hasSuffix("</div>"), html)
+    }
+
+    func testCopyTextAsHTMLPutsTheSameTextOnThePasteboard() throws {
+        let view = try scratchCanvas(
+            """
+            element "Screen" {
+                item Card { pos 0 0; width 240; height 60; auto-layout abs; title "Copied text" }
+                item Blank { pos 0 -80; width 40; height 20; auto-layout abs }
+            }
+            """)
+        view.select([0])
+        let html = try XCTUnwrap(view.itemHTML(at: nil))
+        XCTAssertTrue(html.contains("<div>"), html)
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        view.copyTextAsHTML(nil)
+        XCTAssertEqual(pasteboard.string(forType: .html), html)
+        XCTAssertEqual(pasteboard.string(forType: .string), html, "the plain text fallback")
+
+        view.select([1])
+        XCTAssertNil(view.itemHTML(at: nil), "an item with no text has nothing to copy")
+        pasteboard.clearContents()
+        pasteboard.setString("kept", forType: .string)
+        view.copyTextAsHTML(nil)
+        XCTAssertEqual(pasteboard.string(forType: .string), "kept")
     }
 }

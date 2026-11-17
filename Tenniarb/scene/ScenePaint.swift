@@ -429,3 +429,111 @@ extension Scene.Prop {
         return text
     }
 }
+
+extension Scene.Screen {
+    /// The text of an item as HTML, for "Export text as html": the title and the body as the canvas lays
+    /// them out, so a copy of the text matches the picture on the screen.
+    func itemHTML(_ pl: Scene.Placed) -> String {
+        let rn = pl.r
+        var out = ""
+        if let ti = p.texts[ObjectIdentifier(rn)] {
+            out += "<div>" + runsHTML(titleRuns(ti)) + "</div>"
+        }
+        if let body = p.bodies[ObjectIdentifier(rn)] {
+            out += blocksHTML(body)
+        }
+        return out
+    }
+}
+
+/// The title as one run list: the whole title is one line here, and its parts carry the fonts.
+private func titleRuns(_ ti: Scene.TextInfo) -> [Scene.BodyRun] {
+    guard let parts = ti.parts else {
+        return [Scene.BodyRun(text: ti.text, font: ti.font)]
+    }
+    return parts.map { part in
+        if part.img != nil {
+            return Scene.BodyRun(text: "[image]", font: part.font)
+        }
+        return Scene.BodyRun(text: part.text, font: ti.partFont(part), color: part.color)
+    }
+}
+
+/// The body of an item as HTML, a block at a time.
+private func blocksHTML(_ body: Scene.BodyText) -> String {
+    var out = ""
+    for blk in body.blocks {
+        switch blk.kind {
+        case .heading:
+            let level = blk.level >= 1 && blk.level <= 6 ? blk.level : 1
+            out += "<h\(level)>" + runsHTML(blk.runs) + "</h\(level)>"
+        case .paragraph:
+            out += "<div>" + runsHTML(blk.runs) + "</div>"
+        case .quote:
+            out += "<blockquote>" + runsHTML(blk.runs) + "</blockquote>"
+        case .list:
+            out += "<ul>"
+            for item in blk.items {
+                out += "<li>" + runsHTML(item) + "</li>"
+            }
+            out += "</ul>"
+        case .code:
+            out += "<pre><code>" + escapeHTML(blk.code.joined(separator: "\n")) + "</code></pre>"
+        case .toc:
+            break  // the table of contents repeats the headings of the body
+        }
+    }
+    return out
+}
+
+/// A run of text as HTML: the style of the run wraps its words, and the links nest inside.
+private func runsHTML(_ runs: [Scene.BodyRun]) -> String {
+    var out = ""
+    for r in runs where !r.text.isEmpty {
+        var text = escapeHTML(r.text)
+        var style = ""
+        if r.color.a > 0 {
+            style += String(format: "color:#%02x%02x%02x;", to8(r.color.r), to8(r.color.g), to8(r.color.b))
+        }
+        if r.font.size > 0 {
+            style += String(format: "font-size:%gpx;", r.font.size)
+        }
+        if !style.isEmpty {
+            text = "<span style=\"" + style + "\">" + text + "</span>"
+        }
+        if r.code {
+            text = "<code>" + text + "</code>"
+        }
+        if r.font.italic {
+            text = "<i>" + text + "</i>"
+        }
+        if r.font.weight >= 600 {
+            text = "<b>" + text + "</b>"
+        }
+        if !r.link.isEmpty {
+            text = "<a href=\"" + escapeHTML(r.link) + "\">" + text + "</a>"
+        }
+        out += text
+    }
+    return out
+}
+
+/// The five characters html.EscapeString of Go turns into entities, spelled as it spells them.
+private func escapeHTML(_ s: String) -> String {
+    s.replacingOccurrences(of: "&", with: "&amp;")
+        .replacingOccurrences(of: "'", with: "&#39;")
+        .replacingOccurrences(of: "<", with: "&lt;")
+        .replacingOccurrences(of: ">", with: "&gt;")
+        .replacingOccurrences(of: "\"", with: "&#34;")
+}
+
+/// A colour channel of 0...1 as the two digits of a hex colour.
+private func to8(_ v: Double) -> Int32 {
+    if v <= 0 {
+        return 0
+    }
+    if v >= 1 {
+        return 255
+    }
+    return Int32(v * 255 + 0.5)
+}
