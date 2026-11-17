@@ -476,19 +476,27 @@ class Document: NSDocument, IElementModelListener, NSWindowDelegate, @unchecked 
     /// file is the file the offsets are in, as go/app's fileOf/ownFileOf choose it.
     @MainActor
     func applySceneEdit(_ edit: Scene.TextEdit, in file: String) throws {
+        try applySceneEdits([edit], in: file)
+    }
+
+    /// Applies edits of one file as one undo step. A list from setShadowsEdit addresses one text, so its
+    /// edits come last-to-first and each one leaves the range of the next valid.
+    @MainActor
+    func applySceneEdits(_ edits: [Scene.TextEdit], in file: String) throws {
         guard let text = sceneText, let tree = sceneTree, let root = sceneRoot else {
             throw SceneEditError(message: "the document is not a scene")
         }
         guard let main = tree.main?.pos.file, file == main else {
             throw SceneEditError(message: "\(file) is a mounted file: open it to edit it")
         }
-        let bytes = Array(text.utf8)
-        guard edit.start >= 0, edit.start <= edit.end, edit.end <= bytes.count else {
-            throw SceneEditError(message: "range \(edit.start)..\(edit.end) is outside the text of \(bytes.count) bytes")
+        var bytes = Array(text.utf8)
+        for edit in edits {
+            guard edit.start >= 0, edit.start <= edit.end, edit.end <= bytes.count else {
+                throw SceneEditError(message: "range \(edit.start)..\(edit.end) is outside the text of \(bytes.count) bytes")
+            }
+            bytes.replaceSubrange(edit.start..<edit.end, with: edit.new.utf8)
         }
-        let after =
-            String(decoding: bytes[..<edit.start], as: UTF8.self) + edit.new
-            + String(decoding: bytes[edit.end...], as: UTF8.self)
+        let after = String(decoding: bytes, as: UTF8.self)
         let loader = SceneLoader(root: root)
         loader.overlay = [main: after]
         let next: Scene.Tree

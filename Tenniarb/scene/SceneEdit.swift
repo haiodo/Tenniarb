@@ -147,6 +147,38 @@ func ownProp(_ n: Scene.Node, _ name: String) -> Scene.Prop? {
     return found
 }
 
+/// The shadow commands written on n itself, in file order.
+func shadowsOf(_ n: Scene.Node) -> [Scene.Prop] {
+    if n.kind == .use {
+        return n.block.compactMap { $0.kind == .prop ? $0.prop : nil }.filter { $0.name == "shadow" }
+    }
+    return n.props.filter { $0.name == "shadow" }
+}
+
+/// Replaces every shadow of n with cmds: a soft shadow is more than one command, and the node may hold
+/// one already. The edits address one text, so apply them from the last to the first.
+func setShadowsEdit(_ text: String, _ n: Scene.Node, _ cmds: [String]) -> [Scene.TextEdit] {
+    let cur = shadowsOf(n)
+    var out: [Scene.TextEdit] = []
+    if cmds.isEmpty {
+        out = cur.map { removeEdit(text, $0.range) }
+    } else if cur.isEmpty {
+        out.append(insertEdit(text, n, cmds.joined(separator: "\n")))
+    } else {
+        // The first command takes the place of the first shadow, so the block never ends up without one.
+        let ind = indentAt(text, cur[0].range.start)
+        var repl = cmds[0]
+        if cmds.count > 1 {
+            repl += "\n" + indentLines(cmds.dropFirst().joined(separator: "\n"), ind)
+        }
+        out.append(Scene.TextEdit(start: cur[0].range.start, end: cur[0].range.end, new: repl))
+        for p in cur.dropFirst() {
+            out.append(removeEdit(text, p.range))
+        }
+    }
+    return out.sorted { $0.start > $1.start }
+}
+
 /// Writes `name args` on n: in place of its own command, else as a new command in its block. No args
 /// removes the command.
 func setPropEdit(_ text: String, _ n: Scene.Node, _ name: String, _ args: String...) -> Scene.TextEdit? {

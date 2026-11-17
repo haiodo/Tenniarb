@@ -35,6 +35,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             case toggle
             case checks
             case info
+            case button
         }
 
         let section: String
@@ -43,6 +44,12 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         var placeholder = ""
         let kind: Kind
         var choices: [String] = []
+        /// The segments of a size row and the one that is written, nil when none is.
+        var segments: [String] = []
+        var chosen: Int?
+        /// The title of a button beside the field of a shadow row, and the layer it drops.
+        var action = ""
+        var layer = 0
     }
 
     private(set) var rows: [InspectorRow] = []
@@ -184,6 +191,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         var unset = ""
         var numeric = false
         var list = false
+        var modes = false
     }
 
     private static let fields: [Field] = [
@@ -200,8 +208,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         Field(section: "Layout", label: "Clip", kind: .toggle, property: "clip"),
         Field(section: "Layout", label: "Position X", kind: .text, property: "pos", index: 0, numeric: true),
         Field(section: "Layout", label: "Position Y", kind: .text, property: "pos", index: 1, numeric: true),
-        Field(section: "Layout", label: "Size W", kind: .text, property: "width"),
-        Field(section: "Layout", label: "Size H", kind: .text, property: "height"),
+        Field(section: "Layout", label: "Size W", kind: .text, property: "width", modes: true),
+        Field(section: "Layout", label: "Size H", kind: .text, property: "height", modes: true),
         Field(section: "Layout", label: "Padding", kind: .text, property: "padding", list: true),
 
         Field(section: "Fill", label: "Color", kind: .text, property: "color"),
@@ -227,6 +235,9 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             choices: ["default", "background", "hover"], unset: "default"),
 
         Field(section: "Effects", label: "Opacity", kind: .text, property: "opacity", numeric: true),
+        Field(
+            section: "Effects", label: "Shadow", kind: .popup, property: "shadow",
+            choices: ["none", "soft", "floating", "custom"], unset: "none"),
         Field(section: "Effects", label: "Hidden", kind: .toggle, property: "hidden"),
     ]
 
@@ -234,8 +245,95 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         InspectorController.fields.first { $0.section == row.section && $0.label == row.label }
     }
 
+    /// The shadows the preset popup writes, by the name it shows: a tight contact layer and a wide
+    /// faint one, which is what reads as a soft shadow on a card or a plate.
+    private static let shadowPresets: [String: [[String]]] = [
+        "soft": [["0", "-4", "12", "#00000014"], ["0", "-14", "32", "#00000010"]],
+        "floating": [["0", "-12", "20", "#00000012"], ["0", "-32", "64", "#0000000f"]],
+    ]
+
+    /// The layer of a shadow as the file writes it: an expression stays text, not its value.
+    private static func shadowTexts(_ p: Scene.Prop) -> [String] {
+        (0..<p.args.count).map { p.args[$0].getIdentText() ?? "" }
+    }
+
+    /// Reports whether the commands of the node are the layers of a preset, as written.
+    private static func sameShadows(_ sh: [Scene.Prop], _ layers: [[String]]) -> Bool {
+        sh.count == layers.count && zip(sh, layers).allSatisfy { shadowTexts($0.0) == $0.1 }
+    }
+
+    /// The shadow commands the selected node writes itself; a part holds its own in an at override,
+    /// which the list does not edit.
+    private func ownShadows(_ sel: Selection) -> [Scene.Prop] {
+        guard sel.part == nil, let node = sel.node else { return [] }
+        return shadowsOf(node)
+    }
+
+    /// The Shadow row of the Effects section: the preset the node's own layers spell out, custom for
+    /// any others, none when it writes no layer.
+    private func shadowPresetRow(_ sel: Selection) -> InspectorRow {
+        let sh = ownShadows(sel)
+        var text = "none"
+        if !sh.isEmpty {
+            text = "custom"
+            for (name, layers) in InspectorController.shadowPresets where InspectorController.sameShadows(sh, layers) {
+                text = name
+                break
+            }
+        }
+        return InspectorRow(
+            section: "Effects", label: "Shadow", text: text, kind: .popup,
+            choices: ["none", "soft", "floating", "custom"])
+    }
+
+    /// The rows of the shadow list: X, Y, blur and colour of every layer the node writes, a button that
+    /// drops it, and the button that adds one.
+    private func shadowRows(_ sel: Selection) -> [InspectorRow] {
+        guard sel.part == nil, let node = sel.node else { return [] }
+        var rows: [InspectorRow] = []
+        for (i, p) in shadowsOf(node).enumerated() {
+            let args = InspectorController.shadowTexts(p)
+            func arg(_ k: Int) -> String { k < args.count ? args[k] : "" }
+            let n = i + 1
+            rows.append(InspectorRow(section: "Effects", label: "Shadow \(n) X", text: arg(0), kind: .text))
+            rows.append(InspectorRow(section: "Effects", label: "Shadow \(n) Y", text: arg(1), kind: .text))
+            rows.append(InspectorRow(section: "Effects", label: "Shadow \(n) Blur", text: arg(2), kind: .text))
+            rows.append(
+                InspectorRow(
+                    section: "Effects", label: "Shadow \(n) Color", text: arg(3), kind: .text,
+                    action: "−", layer: i))
+        }
+        rows.append(InspectorRow(section: "Effects", label: "+ Shadow", text: "", kind: .button))
+        return rows
+    }
+
+    /// Which segment a size row shows: Fixed for a number, Hug or Fill for the word, none for an
+    /// expression, and Fixed when the node writes no size.
+    private func sizeMode(_ sel: Selection, _ name: String) -> Int? {
+        guard let own = ownField(sel, name), let first = own.args.first else { return 0 }
+        if first.kind == .Expression || first.kind == .ExpressionBlock {
+            return nil
+        }
+        switch own.text(0) {
+        case "hug": return 1
+        case "fill": return 2
+        default: return 0
+        }
+    }
+
+    /// The layer and argument a shadow row of the list edits, nil for any other row.
+    private static func shadowField(_ row: InspectorRow) -> (layer: Int, arg: Int)? {
+        guard row.section == "Effects" else { return nil }
+        let parts = row.label.split(separator: " ")
+        guard parts.count == 3, parts[0] == "Shadow", let n = Int(parts[1]), n > 0 else { return nil }
+        return ["X": 0, "Y": 1, "Blur": 2, "Color": 3][String(parts[2])].map { (n - 1, $0) }
+    }
+
     /// One row as the current tree writes it.
     private func fieldRow(_ f: Field, _ sel: Selection) -> InspectorRow {
+        if f.property == "shadow" {
+            return shadowPresetRow(sel)
+        }
         let own = ownField(sel, f.property)
         let eff = sel.pl.prop(f.property)
         var text = ""
@@ -261,12 +359,17 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             }
         case .toggle:
             text = own == nil ? "off" : "yes"
-        case .info, .checks:
+        case .info, .checks, .button:
             break
         }
-        return InspectorRow(
+        var row = InspectorRow(
             section: f.section, label: f.label, text: text, placeholder: placeholder, kind: f.kind,
             choices: f.choices)
+        if f.modes {
+            row.segments = ["Fixed", "Hug", "Fill"]
+            row.chosen = sizeMode(sel, f.property)
+        }
+        return row
     }
 
     /// Item, Frame, Instance, Slot: what the header calls the shown node, as go/app sceneSections.
@@ -533,7 +636,12 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         guard let sel, sel.node != nil else { return (head, rows) }
         rows += parameterRows(sel)
         rows += styleRows(sel)
-        rows += InspectorController.fields.map { fieldRow($0, sel) }
+        for f in InspectorController.fields where !(f.property == "shadow" && sel.part != nil) {
+            rows.append(fieldRow(f, sel))
+            if f.property == "shadow" {
+                rows += shadowRows(sel)
+            }
+        }
         return (head, rows)
     }
 
@@ -557,7 +665,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     }
 
     private static func rowKey(_ r: InspectorRow) -> String {
-        "\(r.section)|\(r.label)|\(r.kind.rawValue)|\(r.choices.joined(separator: ","))"
+        "\(r.section)|\(r.label)|\(r.kind.rawValue)|\(r.choices.joined(separator: ","))|\(r.segments.joined(separator: ","))"
     }
 
     /// The row with this caption: "Text.Color" and "Text Color" pick the Color of the Text section, a plain
@@ -600,6 +708,42 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         applyCheck(row, style, on: on)
     }
 
+    /// Picks Fixed, Hug or Fill of a size row, as a click on its segment does. Fixed takes the size the
+    /// item is drawn with.
+    func setSizeMode(_ mode: String, for label: String) {
+        guard let row = row(label), let f = field(for: row), f.modes, let sel = selection() else { return }
+        switch mode {
+        case "Hug":
+            write(f.property, ["hug"])
+        case "Fill":
+            write(f.property, ["fill"])
+        case "Fixed":
+            let measured = f.property == "height" ? sel.pl.h : sel.pl.w
+            write(f.property, [String(format: "%.0f", measured)])
+        default:
+            return
+        }
+        refresh()
+    }
+
+    /// Adds a layer with the default contact shadow to the selected node's own shadows.
+    func addShadow() {
+        guard let sel = selection(), sel.part == nil, let node = sel.node else { return }
+        let layers = shadowsOf(node).map(InspectorController.shadowTexts) + [["0", "-2", "4", "#00000020"]]
+        writeShadowLayers(layers)
+        refresh()
+    }
+
+    /// Drops the own shadow layer at index, as the − button of its row does.
+    func removeShadow(at index: Int) {
+        guard let sel = selection(), sel.part == nil, let node = sel.node else { return }
+        var layers = shadowsOf(node).map(InspectorController.shadowTexts)
+        guard layers.indices.contains(index) else { return }
+        layers.remove(at: index)
+        writeShadowLayers(layers)
+        refresh()
+    }
+
     private func commitText(_ row: InspectorRow, _ raw: String) {
         guard row.kind == .text else { return }
         let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -615,6 +759,14 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
                 setParam(sel, prm, [value])
             }
             refresh()
+            return
+        }
+        if let layer = InspectorController.shadowField(row) {
+            guard layer.arg == 3 || value.isEmpty || isNumberOrExpr(value) else {
+                refresh()  // an offset and a blur take a number or the source of an expression, as go/app
+                return
+            }
+            setShadowText(value, layer: layer.layer, arg: layer.arg)
             return
         }
         guard let f = field(for: row) else { return }
@@ -654,6 +806,9 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             guard let gr = styleGroups(sel).first(where: { $0.name == row.label }) else { return }
             setGroupStyle(sel, gr, choice)
             refresh()
+        case "Effects" where row.label == "Shadow":
+            applyShadowPreset(choice)
+            refresh()
         default:
             guard let f = field(for: row), f.choices.contains(choice) else { return }
             if choice == f.unset {
@@ -685,6 +840,45 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     private func applyToggle(_ row: InspectorRow, on: Bool) {
         guard row.kind == .toggle, let f = field(for: row) else { return }
         write(f.property, on ? ["yes"] : [])
+        refresh()
+    }
+
+    /// Picks a preset of the Shadow row; custom is the state of layers written by hand and writes
+    /// nothing, none drops every layer.
+    private func applyShadowPreset(_ preset: String) {
+        guard preset != "custom" else { return }
+        writeShadowLayers(InspectorController.shadowPresets[preset] ?? [])
+    }
+
+    /// Writes layers as the shadow commands of the selected node, all of them as one undo step.
+    @discardableResult
+    private func writeShadowLayers(_ layers: [[String]]) -> Bool {
+        writeShadows(layers.map { commandText("shadow", $0) })
+    }
+
+    @discardableResult
+    private func writeShadows(_ cmds: [String]) -> Bool {
+        guard let sel = selection(), sel.part == nil, let node = sel.node, let ctx = context(sel) else {
+            return false
+        }
+        let edits = setShadowsEdit(ctx.text, node, cmds)
+        guard !edits.isEmpty else { return false }
+        return apply(edits, in: ctx.file)
+    }
+
+    /// Sets one argument of an own shadow layer: the whole list is written again as one edit.
+    private func setShadowText(_ value: String, layer: Int, arg: Int) {
+        guard let sel = selection(), sel.part == nil, let node = sel.node else { return }
+        var layers = shadowsOf(node).map(InspectorController.shadowTexts)
+        guard !value.isEmpty, layers.indices.contains(layer) else {
+            refresh()
+            return
+        }
+        while layers[layer].count <= arg {
+            layers[layer].append("0")
+        }
+        layers[layer][arg] = value
+        writeShadowLayers(layers)
         refresh()
     }
 
@@ -739,9 +933,15 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     /// Applies one text edit through the document; a refusal stays over the canvas and the old text stays.
     @discardableResult
     private func apply(_ edit: Scene.TextEdit, in file: String) -> Bool {
+        apply([edit], in: file)
+    }
+
+    /// Applies a list of edits of one file as one undo step, as setShadowsEdit hands them over.
+    @discardableResult
+    private func apply(_ edits: [Scene.TextEdit], in file: String) -> Bool {
         guard let document else { return false }
         do {
-            try document.applySceneEdit(edit, in: file)
+            try document.applySceneEdits(edits, in: file)
             canvas?.setMessage(nil)
             if let next = document.sceneTree, let canvas, next !== canvas.shownTree {
                 canvas.show(next)
@@ -819,6 +1019,22 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         applyCheck(rows[button.tag], style, on: button.state == .on)
     }
 
+    @objc fileprivate func sizeSegmentChanged(_ control: NSSegmentedControl) {
+        guard rows.indices.contains(control.tag) else { return }
+        let row = rows[control.tag]
+        guard row.segments.indices.contains(control.selectedSegment) else { return }
+        setSizeMode(row.segments[control.selectedSegment], for: row.label)
+    }
+
+    @objc fileprivate func shadowButtonPressed(_ button: NSButton) {
+        guard rows.indices.contains(button.tag) else { return }
+        if rows[button.tag].kind == .button {
+            addShadow()
+        } else {
+            removeShadow(at: rows[button.tag].layer)
+        }
+    }
+
     func controlTextDidEndEditing(_ obj: Notification) {
         guard let field = obj.object as? NSTextField else { return }
         textCommitted(field)
@@ -837,10 +1053,12 @@ private final class RowControl {
     private let popup: NSPopUpButton?
     private let toggleButton: NSButton?
     private let checkBoxes: [NSButton]
+    private let segmented: NSSegmentedControl?
+    private let action: NSButton?
 
     init(row: InspectorController.InspectorRow, tag: Int, target: InspectorController) {
         kind = row.kind
-        let caption = NSTextField(labelWithString: row.label)
+        let caption = NSTextField(labelWithString: row.kind == .button ? "" : row.label)
         caption.font = NSFont.systemFont(ofSize: 11)
         caption.textColor = .secondaryLabelColor
         caption.lineBreakMode = .byTruncatingTail
@@ -859,6 +1077,8 @@ private final class RowControl {
             popup = nil
             toggleButton = nil
             checkBoxes = []
+            segmented = nil
+            action = nil
             ctl = label
         case .text:
             let field = NSTextField(frame: .zero)
@@ -877,12 +1097,43 @@ private final class RowControl {
             field.setContentHuggingPriority(.defaultLow, for: .horizontal)
             field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             field.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
+            var views: [NSView] = [field]
+            var seg: NSSegmentedControl?
+            if !row.segments.isEmpty {
+                let control = NSSegmentedControl(
+                    labels: row.segments, trackingMode: .selectOne, target: target,
+                    action: #selector(InspectorController.sizeSegmentChanged(_:)))
+                control.controlSize = .small
+                control.tag = tag
+                control.setContentHuggingPriority(.required, for: .horizontal)
+                control.setContentCompressionResistancePriority(.required, for: .horizontal)
+                seg = control
+                views.append(control)
+            }
+            var more: NSButton?
+            if !row.action.isEmpty {
+                let button = NSButton(
+                    title: row.action, target: target,
+                    action: #selector(InspectorController.shadowButtonPressed(_:)))
+                button.controlSize = .small
+                button.bezelStyle = .rounded
+                button.tag = tag
+                button.widthAnchor.constraint(equalToConstant: 24).isActive = true
+                more = button
+                views.append(button)
+            }
             info = nil
             text = field
             popup = nil
             toggleButton = nil
             checkBoxes = []
-            ctl = field
+            segmented = seg
+            action = more
+            let group = NSStackView(views: views)
+            group.orientation = .horizontal
+            group.alignment = .centerY
+            group.spacing = 4
+            ctl = group
         case .popup:
             let button = NSPopUpButton(frame: .zero, pullsDown: false)
             button.font = NSFont.systemFont(ofSize: 11)
@@ -897,6 +1148,8 @@ private final class RowControl {
             popup = button
             toggleButton = nil
             checkBoxes = []
+            segmented = nil
+            action = nil
             ctl = button
         case .toggle:
             let button = NSButton(checkboxWithTitle: "", target: target, action: #selector(InspectorController.toggleChanged(_:)))
@@ -907,6 +1160,8 @@ private final class RowControl {
             popup = nil
             toggleButton = button
             checkBoxes = []
+            segmented = nil
+            action = nil
             ctl = button
         case .checks:
             let group = NSStackView()
@@ -929,7 +1184,24 @@ private final class RowControl {
             popup = nil
             toggleButton = nil
             checkBoxes = boxes
+            segmented = nil
+            action = nil
             ctl = group
+        case .button:
+            let button = NSButton(
+                title: row.label, target: target,
+                action: #selector(InspectorController.shadowButtonPressed(_:)))
+            button.controlSize = .small
+            button.bezelStyle = .rounded
+            button.tag = tag
+            info = nil
+            text = nil
+            popup = nil
+            toggleButton = nil
+            checkBoxes = []
+            segmented = nil
+            action = nil
+            ctl = button
         }
 
         let line = NSStackView(views: [caption, ctl])
@@ -951,6 +1223,9 @@ private final class RowControl {
             if text?.currentEditor() == nil {
                 text?.stringValue = row.text
             }
+            segmented?.selectedSegment = row.chosen ?? -1
+        case .button:
+            break
         case .popup:
             if let popup, popup.titleOfSelectedItem != row.text {
                 if let i = row.choices.firstIndex(of: row.text) {
@@ -975,6 +1250,8 @@ private final class RowControl {
         text?.delegate = nil
         popup?.target = nil
         toggleButton?.target = nil
+        segmented?.target = nil
+        action?.target = nil
         for button in checkBoxes {
             button.target = nil
         }

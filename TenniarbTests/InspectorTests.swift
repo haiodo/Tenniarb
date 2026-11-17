@@ -547,4 +547,264 @@ final class InspectorTests: SceneDocumentTestCase {
         XCTAssertEqual(inspector.row("look")?.text, "secondary")
         XCTAssertEqual(try Data(contentsOf: libraryURL), libraryBefore, "the library is not touched")
     }
+
+    // MARK: - Shadows
+
+    /// Runs a write as its own undo group; the body of a test is one event for the undo manager otherwise.
+    private func oneUndo(_ document: Document, _ work: () -> Void) {
+        document.undoManager?.beginUndoGrouping()
+        work()
+        document.undoManager?.endUndoGrouping()
+    }
+
+    /// A node that writes one shadow shows the custom state; a preset replaces every layer as one undo
+    /// step, and none drops them.
+    func testAShadowPresetReplacesTheLayersOfTheNode() throws {
+        let document = try document(
+            """
+            element Screen {
+                item Card {
+                    auto-layout abs
+                    width 100
+                    height 40
+                    shadow 0 -8 16 #00000008
+                }
+            }
+
+            """)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Card" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertEqual(inspector.row("Shadow")?.kind, .popup)
+        XCTAssertEqual(inspector.row("Shadow")?.choices, ["none", "soft", "floating", "custom"])
+        XCTAssertEqual(inspector.row("Shadow")?.text, "custom", "layers written by hand are no preset")
+        XCTAssertEqual(inspector.row("Shadow 1 Color")?.text, "#00000008")
+
+        oneUndo(document) { inspector.setChoice("soft", for: "Shadow") }
+        let soft = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(soft.contains("shadow 0 -4 12 #00000014"), soft)
+        XCTAssertTrue(soft.contains("shadow 0 -14 32 #00000010"), soft)
+        XCTAssertFalse(soft.contains("#00000008"), "the old layer is gone: \(soft)")
+        XCTAssertEqual(inspector.row("Shadow")?.text, "soft")
+        XCTAssertEqual(inspector.row("Shadow 2 Blur")?.text, "32", "the list shows both layers")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(inspector.row("Shadow")?.text, "custom", "one undo brings the layer back")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "16")
+        XCTAssertFalse(inspector.rows.contains { $0.label == "Shadow 2 Blur" })
+
+        oneUndo(document) { inspector.setChoice("none", for: "Shadow") }
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertFalse(try XCTUnwrap(document.sceneText).contains("shadow"), "none removes every layer")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(inspector.row("Shadow")?.text, "custom")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "16")
+    }
+
+    /// A node that writes no shadow shows none; a preset writes its layers as one undo step.
+    func testANodeWithoutShadowsShowsNoneAndAPresetWritesItsLayers() throws {
+        let document = try document(
+            """
+            element Screen {
+                item Card {
+                    auto-layout abs
+                    width 100
+                    height 40
+                }
+            }
+
+            """)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Card" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertNil(inspector.row("Shadow 1 X"), "no layer to list")
+        XCTAssertEqual(inspector.row("+ Shadow")?.kind, .button, "the list still adds a layer")
+
+        oneUndo(document) { inspector.setChoice("floating", for: "Shadow") }
+        let text = try XCTUnwrap(document.sceneText)
+        XCTAssertTrue(text.contains("shadow 0 -12 20 #00000012"), text)
+        XCTAssertTrue(text.contains("shadow 0 -32 64 #0000000f"), text)
+        XCTAssertEqual(inspector.row("Shadow")?.text, "floating")
+        XCTAssertEqual(inspector.row("Shadow 2 Y")?.text, "-32")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(inspector.row("Shadow")?.text, "none")
+        XCTAssertFalse(try XCTUnwrap(document.sceneText).contains("shadow"))
+    }
+
+    /// The list reads one row per own layer and rewrites the whole list on every change; each change is
+    /// one undo step and leaves exactly those commands in the file.
+    func testTheShadowListEditsTheWholeListInOneUndoStep() throws {
+        let text = """
+            element Screen {
+                item Card {
+                    auto-layout abs
+                    width 100
+                    height 40
+                    shadow 0 -2 4 #00000010
+                    shadow 0 -8 16 #00000008
+                }
+            }
+
+            """
+        let document = try document(text)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Card" }))
+        let inspector = inspector(document, canvas)
+        let view = inspector.createView()
+        view.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        view.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(inspector.row("Shadow 1 X")?.text, "0")
+        XCTAssertEqual(inspector.row("Shadow 1 Y")?.text, "-2")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "4")
+        XCTAssertEqual(inspector.row("Shadow 1 Color")?.text, "#00000010")
+        XCTAssertEqual(inspector.row("Shadow 2 Blur")?.text, "16")
+
+        oneUndo(document) { inspector.setText("20", for: "Shadow 2 Blur") }
+        let blurred = text.replacingOccurrences(
+            of: "shadow 0 -8 16 #00000008", with: "shadow 0 -8 20 #00000008")
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), blurred, "the whole list is written again")
+        XCTAssertEqual(inspector.row("Shadow 1 Blur")?.text, "4", "the other layer keeps its value")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), text, "one undo for the layer change")
+
+        oneUndo(document) { inspector.addShadow() }
+        let added = text.replacingOccurrences(
+            of: "shadow 0 -8 16 #00000008\n",
+            with: "shadow 0 -8 16 #00000008\n        shadow 0 -2 4 #00000020\n")
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), added, "the added layer comes last")
+        XCTAssertEqual(inspector.row("Shadow 3 Color")?.text, "#00000020")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), text, "one undo for the added layer")
+
+        oneUndo(document) { inspector.removeShadow(at: 0) }
+        let dropped = text.replacingOccurrences(of: "        shadow 0 -2 4 #00000010\n", with: "")
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), dropped, "the dropped layer takes its line with it")
+        XCTAssertEqual(inspector.row("Shadow 1 Y")?.text, "-8", "the list starts with what is left")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), text, "one undo for the dropped layer")
+    }
+
+    /// A part of an instance has no node of its own: the preset and the list are absent, as Go's own-node
+    /// rule.
+    func testAPartOfAnInstanceHasNoShadowList() throws {
+        let root = try workspace()
+        try library(
+            """
+            element Panel {
+                item Frame {
+                    width 200; height 100
+                    item Badge { width 100; height 40; shadow 0 -2 4 #00000010 }
+                }
+            }
+            """, in: root)
+        let document = try document(
+            """
+            element Screen {
+                use kit.Panel as panel
+            }
+
+            element kit --from-file "kit.tenn"
+            """, in: root)
+        let canvas = try canvas(document)
+        let part = try XCTUnwrap(path(in: canvas) { $0.src?.key == "Badge" })
+        XCTAssertNotNil(canvas.part(at: part), "a part of the instance")
+        canvas.select(part)
+        let inspector = inspector(document, canvas)
+
+        let labels = inspector.rows.map(\.label)
+        XCTAssertFalse(labels.contains("Shadow"), "no preset for a part: \(labels)")
+        XCTAssertFalse(labels.contains { $0.hasPrefix("Shadow ") || $0 == "+ Shadow" }, "no list: \(labels)")
+        XCTAssertTrue(Set(inspector.rows.map(\.section)).contains("Effects"), "the other Effects rows stay")
+    }
+
+    /// The shadow list refuses a node written in a mounted file, as the single-edit rows do.
+    func testTheShadowEditOfAMountedFileIsRefused() throws {
+        let root = try workspace()
+        let library = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let libraryBefore = try Data(contentsOf: library)
+        let document = try openTestDocument(copy("web/fixtures/scene/library-screen.tenn", to: root))
+        let before = try XCTUnwrap(document.sceneText)
+        let canvas = try canvas(document)
+        let mounted = try XCTUnwrap(
+            path(in: canvas) { $0.src?.pos.file == "design-kit.tenn" && $0.src?.kind == .item })
+        canvas.select(mounted)
+        let inspector = inspector(document, canvas)
+
+        inspector.addShadow()
+
+        XCTAssertEqual(canvas.message, "design-kit.tenn is a mounted file: open it to edit it")
+        XCTAssertEqual(document.sceneText, before, "a refused edit leaves the text as it was")
+        XCTAssertEqual(try Data(contentsOf: library), libraryBefore)
+    }
+
+    // MARK: - Sizes
+
+    /// Fixed, Hug and Fill of a size row: the word of a mode, or the size the item is drawn with.
+    func testTheSizeSegmentsWriteFixedHugAndFill() throws {
+        let document = try document(
+            """
+            element Screen {
+                item Card {
+                    auto-layout abs
+                    width 120.6
+                    height 40
+                }
+            }
+
+            """)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Card" }))
+        let inspector = inspector(document, canvas)
+        let view = inspector.createView()
+        view.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        view.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(inspector.row("Size W")?.segments, ["Fixed", "Hug", "Fill"])
+        XCTAssertEqual(inspector.row("Size W")?.chosen, 0, "a written size behaves as fixed")
+
+        oneUndo(document) { inspector.setSizeMode("Hug", for: "Size W") }
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("width hug"))
+        XCTAssertEqual(inspector.row("Size W")?.text, "hug")
+        XCTAssertEqual(inspector.row("Size W")?.chosen, 1)
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("width 120.6"))
+        XCTAssertEqual(inspector.row("Size W")?.chosen, 0, "undo selects Fixed again")
+
+        oneUndo(document) { inspector.setSizeMode("Fill", for: "Size H") }
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("height fill"))
+        XCTAssertEqual(inspector.row("Size H")?.chosen, 2)
+
+        oneUndo(document) { inspector.setSizeMode("Fixed", for: "Size W") }
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("width 121"), "the measured width, whole")
+        XCTAssertEqual(inspector.row("Size W")?.text, "121")
+
+        document.undoManager?.undoNestedGroup()
+        canvas.show(document.sceneTree)
+        inspector.refresh()
+        XCTAssertTrue(try XCTUnwrap(document.sceneText).contains("width 120.6"), "undo restores the number")
+    }
 }
