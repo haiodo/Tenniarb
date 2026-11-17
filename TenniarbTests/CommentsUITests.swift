@@ -620,4 +620,185 @@ final class CommentsUITests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.screenNode?.name, "Second", "the jump shows the element of the comment")
         XCTAssertEqual(canvas.selection, [0], "the node of the comment is selected")
     }
+
+    // MARK: - The poll of another program's writes
+
+    /// A store over the config folder of a test, standing for the service that writes the same file.
+    private func externalStore(_ cfg: URL) -> Comments.Store {
+        Comments.Store(dir: Comments.dirIn(cfg))
+    }
+
+    /// Appends an open comment of an agent to the file of key, as the service would.
+    @discardableResult
+    private func externalAdd(
+        _ store: Comments.Store, key: String, text: String, author: String = "claude-code"
+    ) throws -> Comments.Comment {
+        var added: Comments.Comment?
+        _ = try store.update(key) { doc in
+            added = try doc.add(
+                author: author, text: text, anchor: Comments.Anchor(element: ["Screen"], node: "Frame"), now: t0)
+        }
+        return try XCTUnwrap(added)
+    }
+
+    func testPollShowsAnExternalAddOnce() throws {
+        let cfg = try configDir()
+        let key = "path:/design/poll.tenn"
+        let comments = CommentsController(key: key, configDir: cfg)
+        var changes = 0
+        comments.onChange = { changes += 1 }
+
+        comments.pollOnce()
+        XCTAssertEqual(changes, 0, "the first check only records the file the store read")
+
+        let added = try externalAdd(externalStore(cfg), key: key, text: "  tighten this\n")
+        XCTAssertEqual(added.text, "tighten this")
+        XCTAssertTrue(comments.comments().isEmpty, "nothing is read between the polls")
+
+        comments.pollOnce()
+        XCTAssertEqual(changes, 1, "a file another program wrote redraws the window once")
+        XCTAssertEqual(comments.comments().map(\.id), [added.id])
+
+        comments.pollOnce()
+        XCTAssertEqual(changes, 1, "a file that did not change asks for no redraw")
+    }
+
+    func testPollFollowsAnExternalResolveReopenAndDelete() throws {
+        let cfg = try configDir()
+        let key = "path:/design/poll.tenn"
+        let store = externalStore(cfg)
+        let comments = CommentsController(key: key, configDir: cfg)
+        var changes = 0
+        comments.onChange = { changes += 1 }
+        comments.pollOnce()
+        let added = try externalAdd(store, key: key, text: "tighten this")
+        comments.pollOnce()
+        XCTAssertEqual(changes, 1)
+
+        _ = try store.update(key) { doc in
+            try doc.setState(
+                id: added.id, state: Comments.resolved, author: "claude-code", text: "fixed",
+                now: t0.addingTimeInterval(60))
+        }
+        comments.pollOnce()
+        XCTAssertEqual(changes, 2)
+        XCTAssertEqual(comments.comment(added.id)?.state, Comments.resolved)
+        XCTAssertEqual(comments.comment(added.id)?.replies?.map(\.text), ["fixed"])
+        let resolvedLines = comments.threadText(id: added.id)
+        XCTAssertTrue(resolvedLines.first?.hasSuffix("(resolved)") ?? false, resolvedLines.first ?? "")
+
+        _ = try store.update(key) { doc in
+            try doc.setState(
+                id: added.id, state: Comments.open, author: "claude-code", text: "",
+                now: t0.addingTimeInterval(120))
+        }
+        comments.pollOnce()
+        XCTAssertEqual(changes, 3)
+        XCTAssertEqual(comments.comment(added.id)?.state, Comments.open)
+
+        _ = try store.update(key) { doc in
+            try doc.delete(id: added.id, author: "claude-code")
+        }
+        comments.pollOnce()
+        XCTAssertEqual(changes, 4)
+        XCTAssertNil(comments.comment(added.id))
+        XCTAssertTrue(comments.threadText(id: added.id).isEmpty)
+    }
+
+    func testPollHandlesTheFileDisappearingAndReappearing() throws {
+        let cfg = try configDir()
+        let key = "path:/design/poll.tenn"
+        let store = externalStore(cfg)
+        let comments = CommentsController(key: key, configDir: cfg)
+        var changes = 0
+        comments.onChange = { changes += 1 }
+        comments.pollOnce()
+        let added = try externalAdd(store, key: key, text: "here")
+        comments.pollOnce()
+        XCTAssertEqual(changes, 1)
+        XCTAssertEqual(comments.comments().map(\.id), [added.id])
+
+        try FileManager.default.removeItem(at: store.file(for: key))
+        comments.pollOnce()
+        XCTAssertEqual(changes, 2, "a file that went away is a document without comments")
+        XCTAssertTrue(comments.comments().isEmpty)
+
+        comments.pollOnce()
+        XCTAssertEqual(changes, 2, "a file that stays missing asks for nothing")
+
+        let again = try externalAdd(store, key: key, text: "back")
+        comments.pollOnce()
+        XCTAssertEqual(changes, 3)
+        XCTAssertEqual(comments.comments().map(\.id), [again.id])
+    }
+
+    func testPollSkipsThisWindowsOwnWrite() throws {
+        let cfg = try configDir()
+        let key = "path:/design/poll.tenn"
+        let comments = CommentsController(key: key, configDir: cfg)
+        var changes = 0
+        comments.onChange = { changes += 1 }
+        comments.pollOnce()
+        let added = try comments.addComment(
+            text: "mine", anchor: Comments.Anchor(element: ["Screen"], node: "Frame"), now: t0)
+        XCTAssertEqual(changes, 1, "a write of this window redraws it once")
+
+        comments.pollOnce()
+        XCTAssertEqual(changes, 1, "the poll does not read back the write of this window")
+        XCTAssertEqual(comments.comments().map(\.id), [added.id])
+
+        try comments.reply(id: added.id, text: "and again", now: t0.addingTimeInterval(60))
+        comments.pollOnce()
+        XCTAssertEqual(changes, 2, "a reply of this window redraws it once, the poll adds nothing")
+        XCTAssertEqual(comments.comment(added.id)?.replies?.map(\.text), ["and again"])
+    }
+
+    func testPollBringsAnExternalReplyIntoTheThread() throws {
+        let cfg = try configDir()
+        let key = "path:/design/poll.tenn"
+        let store = externalStore(cfg)
+        let comments = CommentsController(key: key, configDir: cfg)
+        var changes = 0
+        comments.onChange = { changes += 1 }
+        comments.pollOnce()
+        let added = try externalAdd(store, key: key, text: "first")
+        comments.pollOnce()
+        XCTAssertFalse(comments.threadText(id: added.id, now: t0).contains("answered"))
+
+        _ = try store.update(key) { doc in
+            try doc.reply(
+                id: added.id, author: "claude-code", text: "answered", now: t0.addingTimeInterval(60))
+        }
+        comments.pollOnce()
+        XCTAssertEqual(changes, 2)
+        let lines = comments.threadText(id: added.id, now: t0.addingTimeInterval(60))
+        XCTAssertTrue(lines[0].hasPrefix("#1  claude-code  "), lines[0])
+        XCTAssertTrue(lines.contains("answered"))
+        XCTAssertTrue(lines.contains { $0.hasPrefix("claude-code  ") }, "a reply line holds its author and time")
+    }
+
+    func testTwoControllersOnOneDirBothSeeTheChange() throws {
+        let cfg = try configDir()
+        let key = "path:/design/two.tenn"
+        let first = CommentsController(key: key, configDir: cfg)
+        let second = CommentsController(key: key, configDir: cfg)
+        var firstChanges = 0
+        var secondChanges = 0
+        first.onChange = { firstChanges += 1 }
+        second.onChange = { secondChanges += 1 }
+        first.pollOnce()
+        second.pollOnce()
+
+        let added = try externalAdd(externalStore(cfg), key: key, text: "both")
+        first.pollOnce()
+        XCTAssertEqual([firstChanges, secondChanges], [1, 0], "each window polls its own file")
+        second.pollOnce()
+        XCTAssertEqual([firstChanges, secondChanges], [1, 1])
+        XCTAssertEqual(second.comments().map(\.id), [added.id])
+
+        try first.reply(id: added.id, text: "from the first window", now: t0.addingTimeInterval(60))
+        second.pollOnce()
+        XCTAssertEqual(secondChanges, 2, "a reply typed in one window reaches the other")
+        XCTAssertEqual(second.comment(added.id)?.replies?.map(\.text), ["from the first window"])
+    }
 }

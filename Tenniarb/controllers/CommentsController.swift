@@ -162,12 +162,30 @@ final class CommentsController {
     private(set) var threadError: String?
     /// Whether resolved comments keep their pins and rows; View > Show Resolved Comments asks for it.
     private(set) var showResolved = false
-    /// Called after a write and its reload, so the canvas places the pins again.
-    var onChange: (() -> Void)?
+    /// Called after a write and its reload, so the canvas places the pins again. The poll runs while the
+    /// window listens: a controller nobody redraws has no reason to read the file.
+    var onChange: (() -> Void)? {
+        didSet {
+            if onChange == nil {
+                stopPolling()
+            } else {
+                startPolling()
+            }
+        }
+    }
 
     private var threadPopover: NSPopover?
     private var threadID: String?
     private var listPopover: NSPopover?
+
+    /// The comments file as the last poll saw it; nil until the first check, which only records it.
+    private var lastStamp: Stamp?
+    /// The lines of the open thread when it was built, so a poll touches only a thread that changed.
+    private var openThreadLines: [String] = []
+    /// The reply of the open thread; a refresh puts its text back into the rebuilt field.
+    private weak var replyField: NSTextView?
+    /// The poll timer holds its controller weakly, so deinit stops it, hence a nonisolated read.
+    nonisolated(unsafe) private var pollTimer: Timer?
 
     init(key: String?, configDir: URL = Comments.configDir()) {
         self.key = key
@@ -243,11 +261,66 @@ final class CommentsController {
         do {
             _ = try store.update(key, body)
             reload()
+            lastStamp = Self.stamp(of: store.file(for: key))  // the poll skips what this window wrote
             onChange?()
         } catch {
             threadError = error.localizedDescription
             throw error
         }
+    }
+
+    // MARK: - The comments of another program
+
+    /// One check of the comments file; the timer calls it, a test calls it instead of waiting. The first
+    /// check only records the file, which the store read on init.
+    func pollOnce() {
+        guard let key else { return }
+        let now = Self.stamp(of: store.file(for: key))
+        guard let last = lastStamp else {
+            lastStamp = now
+            return
+        }
+        lastStamp = now
+        guard last != now else { return }
+        reload()
+        refreshThread()
+        onChange?()
+    }
+
+    /// The comments file in the state a poll compares: its content may be the same size after a write.
+    private enum Stamp: Equatable {
+        /// A missing file is a document without comments.
+        case missing
+        case file(modified: Date, size: Int)
+    }
+
+    private static func stamp(of url: URL) -> Stamp {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+            let modified = attributes[.modificationDate] as? Date
+        else { return .missing }
+        return .file(modified: modified, size: (attributes[.size] as? NSNumber)?.intValue ?? 0)
+    }
+
+    /// The interval of the poll, as go/app asks the service for updates: a second keeps an answer of the
+    /// agent close to instant at the cost of one stat per window.
+    private static let pollInterval: TimeInterval = 1
+
+    private func startPolling() {
+        guard key != nil, pollTimer == nil else { return }
+        let timer = Timer(timeInterval: Self.pollInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.pollOnce() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        pollTimer = timer
+    }
+
+    private func stopPolling() {
+        pollTimer?.invalidate()
+        pollTimer = nil
+    }
+
+    deinit {
+        pollTimer?.invalidate()
     }
 
     // MARK: - Pins
@@ -391,6 +464,21 @@ final class CommentsController {
         threadPopover?.close()
         threadPopover = nil
         threadID = nil
+        replyField = nil
+    }
+
+    /// Shows the open thread again when another program changed its text; the reply being typed stays.
+    private func refreshThread() {
+        guard let id = threadID, threadText(id: id) != openThreadLines else { return }
+        refreshOpenThread()
+    }
+
+    /// Rebuilds the open thread from the reloaded document, keeping the reply field as the user left it.
+    func refreshOpenThread() {
+        guard let controller = threadPopover?.contentViewController else { return }
+        let draft = replyField?.string ?? ""
+        rebuildThread(controller)
+        replyField?.string = draft
     }
 
     private func numberOf(_ id: String) -> Int {
@@ -425,7 +513,8 @@ final class CommentsController {
         stack.spacing = 6
         stack.edgeInsets = NSEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         stack.translatesAutoresizingMaskIntoConstraints = false
-        for (i, line) in threadText(id: id).enumerated() {
+        let lines = threadText(id: id)
+        for (i, line) in lines.enumerated() {
             stack.addArrangedSubview(label(line, faint: i == 0, width: width))
         }
 
@@ -494,6 +583,8 @@ final class CommentsController {
         controller.view = root
         controller.preferredContentSize = size
         popover.contentSize = size
+        replyField = field
+        openThreadLines = lines
     }
 
     private func label(_ text: String, faint: Bool, width: CGFloat) -> NSTextField {
