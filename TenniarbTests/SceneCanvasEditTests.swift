@@ -631,4 +631,20 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.placed(at: canvas.selection)?.x, 190, "the drawing follows the drag")
     }
 
+    // MARK: - Items pane
+
+    /// The rows under the element and under an item, as the Items pane lists them: a row per drawn item,
+    /// kids only where something is drawn under it.
+    func testItemRowsFollowTheDrawnTree() throws {
+        let canvas = try canvas(text: pickDoc)
+        let top = canvas.itemRows()
+        XCTAssertEqual(top.map(\.label), ["Row"])
+        XCTAssertTrue(top[0].kids)
+        XCTAssertEqual(canvas.itemRows(top[0].path).map(\.label), ["one", "two"])
+        XCTAssertEqual(canvas.itemRows([0, 1]).map(\.label), ["Title", "Row"])
+        XCTAssertFalse(canvas.itemRows([0, 1])[0].kids, "a leaf opens nothing")
+        XCTAssertTrue(canvas.itemRows([0, 1])[1].kids)
+        XCTAssertEqual(canvas.itemRows([9]).count, 0, "a stale path lists nothing")
+    }
+
 }

@@ -263,4 +263,24 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         XCTAssertNotNil(canvas.placed)
     }
 
+    /// The Items pane lists what the canvas draws: the rows of the shown element, and a row selects its
+    /// item on the canvas.
+    func testTheItemsPaneListsAndSelectsTheDrawnItems() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/scene-text.tenn", to: root))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let outline = try XCTUnwrap(vc.outlineSidebarController?.itemsOutlineView)
+
+        XCTAssertEqual(outline.numberOfRows, 1, "the element draws one item, Stage")
+        let cell = try XCTUnwrap(outline.view(atColumn: 0, row: 0, makeIfNecessary: true) as? NSTableCellView)
+        XCTAssertEqual(cell.textField?.stringValue, "Stage")
+
+        outline.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.name, "Stage")
+    }
+
 }

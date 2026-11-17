@@ -135,6 +135,23 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         NSSize(width: screen.w + 2 * padding, height: screen.h + 2 * padding)
     }
 
+    /// One row of the Items pane: a drawn item one can select and whether it holds items of its own.
+    struct ItemRow {
+        let label: String
+        let path: [Int]
+        let kids: Bool
+    }
+
+    /// The rows of the Items pane under an item: the drawn kids of the element, or of the item at path.
+    func itemRows(_ path: [Int]? = nil) -> [ItemRow] {
+        guard let pl = path == nil ? placed : placed(at: path) else { return [] }
+        return pl.kids.enumerated().map { i, k in
+            ItemRow(
+                label: k.r.name.isEmpty ? (k.src?.kind.description ?? "item") : k.r.name,
+                path: (path ?? []) + [i], kids: !k.kids.isEmpty)
+        }
+    }
+
     /// The drawn item at an index path from the screen root's children; nil when the path is gone.
     func placed(at path: [Int]?) -> Scene.Placed? {
         guard let root = placed, let path else { return nil }

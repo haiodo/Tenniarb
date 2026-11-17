@@ -228,6 +228,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         editorViewController.onLoad(self)
         editorViewController.setupExportMenu(viewController: self)
         editorViewController.showScene(sceneTree)
+        reloadSceneItems()
 
         // Legacy delegate setup for compatibility
         self.outlineViewDelegate = OutlineViewControllerDelegate(self)
@@ -708,6 +709,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 self.scene.setActiveElement(el)
                 if sceneTree != nil, let path = document?.sceneElementPath(of: el) {
                     editorViewController?.showSceneElement(path)
+                    reloadSceneItems()
                 }
 
                 self.updateTextProperties()
@@ -740,7 +742,22 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         sceneTree = tree
         if isViewLoaded {
             editorViewController?.showScene(tree)
+            reloadSceneItems()
         }
+    }
+
+    /// Selects a drawn item of the scene, as a row of the Items pane does.
+    func selectSceneItem(_ path: [Int]) {
+        editorViewController?.sceneCanvas?.canvas.select(path)
+    }
+
+    /// Lists the items of the element the scene canvas shows.
+    func reloadSceneItems() {
+        guard sceneTree != nil else {
+            outlineSidebarController?.showItems(nil)
+            return
+        }
+        outlineSidebarController?.showItems(editorViewController?.sceneCanvas?.canvas)
     }
 
     public func setElementModel(elementStore: ElementModelStore) {
