@@ -25,6 +25,9 @@ final class ScenePainter {
     private var rasters: [String: CGImage] = [:]
     private var broken: Set<String> = []
     private var rotations: [ObjectIdentifier: Double] = [:]
+    /// A frame the canvas plays, by drawn item: it replaces the static rotate, scales about the center of the
+    /// box and multiplies the opacity of the style; no entry draws the still picture.
+    var frames: [ObjectIdentifier: (rotate: Double, scale: Double, opacity: Double)] = [:]
     private let codeBackground = Scene.parseColor("grey-200") ?? Scene.Color()
     private let quoteBar = Scene.parseColor("grey-400") ?? Scene.Color()
 
@@ -52,17 +55,16 @@ final class ScenePainter {
         let id = ObjectIdentifier(pl.r)
         guard let ln = p.frames[id] else { return }
         let st = p.styles[id] ?? Scene.Look()
+        let frame = frames[id]
         c.saveGState()
         c.translateBy(x: pl.x - ox, y: pl.y - oy)
-        if let deg = rotation(pl), deg != 0 {
-            c.translateBy(x: pl.w / 2, y: pl.h / 2)
-            c.rotate(by: deg * .pi / 180)
-            c.translateBy(x: -pl.w / 2, y: -pl.h / 2)
+        setTransform(pl, frame, c)
+        let alpha = st.opacity * (frame?.opacity ?? 1)
+        // The root draws no picture of its own, so its style opacity was never applied; a frame still fades it.
+        if (!isRoot || frame != nil) && alpha < 1 {
+            c.setAlpha(alpha)
         }
         if !isRoot {
-            if st.opacity < 1 {
-                c.setAlpha(st.opacity)
-            }
             if st.clip {
                 clipToBox(st, pl.w, pl.h, c)
             }
@@ -179,6 +181,30 @@ final class ScenePainter {
             rotations[id] = deg
         }
         return deg == 0 ? nil : deg
+    }
+
+    /// Turns and scales an item about the center of its box: the frame the canvas plays, else its static rotate.
+    private func setTransform(
+        _ pl: Scene.Placed, _ frame: (rotate: Double, scale: Double, opacity: Double)?, _ c: CGContext
+    ) {
+        var deg = 0.0
+        var scale = 1.0
+        if let frame {
+            deg = frame.rotate
+            scale = frame.scale
+        } else {
+            guard let written = rotation(pl) else { return }
+            deg = written
+        }
+        guard deg != 0 || scale != 1 else { return }
+        c.translateBy(x: pl.w / 2, y: pl.h / 2)
+        if deg != 0 {
+            c.rotate(by: deg * .pi / 180)
+        }
+        if scale != 1 {
+            c.scaleBy(x: scale, y: scale)
+        }
+        c.translateBy(x: -pl.w / 2, y: -pl.h / 2)
     }
 
     private func clipToBox(_ st: Scene.Look, _ w: Double, _ h: Double, _ c: CGContext) {
@@ -307,11 +333,7 @@ final class ScenePainter {
             guard let parent = byPath[link.parent] else { continue }
             c.saveGState()
             c.translateBy(x: parent.x, y: parent.y)
-            if let deg = rotation(parent), deg != 0 {
-                c.translateBy(x: parent.w / 2, y: parent.h / 2)
-                c.rotate(by: deg * .pi / 180)
-                c.translateBy(x: -parent.w / 2, y: -parent.h / 2)
-            }
+            setTransform(parent, frames[ObjectIdentifier(parent.r)], c)
             let path = CGMutablePath()
             for step in link.path {
                 switch step {

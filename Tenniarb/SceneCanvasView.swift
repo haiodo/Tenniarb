@@ -26,7 +26,8 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     private(set) var placed: Scene.Placed?
     /// The tree the drawn item nodes belong to, for the text their edits are cut from.
     private var tree: Scene.Tree?
-    private var painter: ScenePainter?
+    /// The painter of the shown screen, for the frames the playback sets.
+    private(set) var painter: ScenePainter?
     private(set) var message: String?
     /// The scale the content is drawn at; the scroll view fits the screen into itself.
     var zoom = 1.0 {
@@ -82,6 +83,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             element = nil
             elementPath = nil
             forgetSelection()
+            indexAnimations()
             needsDisplay = true
             onSelectionChange?()
             return
@@ -106,6 +108,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         if placed(at: selection) == nil {
             selection = nil
         }
+        indexAnimations()
         needsDisplay = true
         onSelectionChange?()
     }
@@ -114,6 +117,134 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     func showElement(_ path: [Int]?) {
         elementPath = path
         show(tree)
+    }
+
+    // MARK: - Animations
+
+    /// The frame the playback aims at, as Go's 16 ms.
+    static let animFrame = 0.016
+
+    /// The animations of the drawn items, in paint order, and the clock that plays them.
+    private var animated: [(id: ObjectIdentifier, anim: Scene.Animation)] = []
+    /// The frame timer of the playback. A selector timer keeps its target, so the view stops it with its window;
+    /// deinit invalidates it too, hence a nonisolated read of a non-Sendable class.
+    nonisolated(unsafe) private var timer: Timer?
+    /// When the playback started, for the moment a frame shows.
+    private var animFrom = Date()
+    /// Whether the animations play; the Play switch of the inspector pauses them.
+    private(set) var animationsPlaying = true
+    /// The frame the painter draws every animated item with, kept for the tests as well.
+    private(set) var animationFrames: [ObjectIdentifier: (rotate: Double, scale: Double, opacity: Double)] = [:]
+
+    /// Whether the shown screen plays any animation, for the inspector.
+    var hasAnimations: Bool { !animated.isEmpty }
+
+    /// Plays one frame at now seconds from the start of the playback; a test calls it with a fixed moment
+    /// instead of waiting for the timer.
+    func tickAnimations(_ now: Double) {
+        guard animationsPlaying, !animated.isEmpty else { return }
+        applyAnimations { _ in now }
+    }
+
+    /// Plays or pauses the animations; a paused canvas keeps the frame the scrub left.
+    func setAnimationsPlaying(_ on: Bool) {
+        animationsPlaying = on
+        guard on else {
+            stopTimer()
+            return
+        }
+        animFrom = Date()  // a resume starts over, as the Play switch of the inspector does
+        startTimer()
+    }
+
+    /// Stops the playback and shows every animation at frac (0..1) of its duration, as the Frame slider does.
+    func scrubAnimations(_ frac: Double) {
+        animationsPlaying = false
+        stopTimer()
+        guard !animated.isEmpty else { return }
+        applyAnimations { frac * $0 }
+    }
+
+    /// Draws every animated item at a moment of its own animation, given its duration.
+    private func applyAnimations(_ at: (Double) -> Double) {
+        guard let painter else { return }
+        var frames: [ObjectIdentifier: (rotate: Double, scale: Double, opacity: Double)] = [:]
+        frames.reserveCapacity(animated.count)
+        for a in animated {
+            frames[a.id] = a.anim.values(at: at(a.anim.duration), loop: true)
+        }
+        animationFrames = frames
+        painter.frames = frames
+        needsDisplay = true
+    }
+
+    /// Finds the animations of the drawn items and starts their clock; a screen without them draws no frame.
+    private func indexAnimations() {
+        stopTimer()
+        animated = []
+        animationFrames = [:]
+        painter?.frames = [:]
+        animationsPlaying = true
+        guard let root = placed, let screen else { return }
+        func walk(_ pl: Scene.Placed) {
+            if let a = screen.animation(of: pl) {
+                animated.append((ObjectIdentifier(pl.r), a))
+            }
+            for k in pl.kids {
+                walk(k)
+            }
+        }
+        walk(root)
+        animFrom = Date()
+        startTimer()
+    }
+
+    /// Starts the frame timer, unless the playback is paused, the screen has no animation or the canvas is
+    /// not in a window (a test).
+    private func startTimer() {
+        stopTimer()
+        guard animationsPlaying, !animated.isEmpty, window != nil else { return }
+        let t = Timer(
+            timeInterval: SceneCanvasView.animFrame, target: self, selector: #selector(animTick), userInfo: nil,
+            repeats: true)
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    /// Plays one frame of the timer.
+    @objc private func animTick() {
+        guard window != nil else {  // the window went away without a close notice
+            stopTimer()
+            return
+        }
+        tickAnimations(Date().timeIntervalSince(animFrom))
+    }
+
+    @objc private func windowWillClose(_ note: Notification) {
+        stopTimer()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        NotificationCenter.default.removeObserver(self, name: NSWindow.willCloseNotification, object: nil)
+        guard let window else {
+            stopTimer()
+            return
+        }
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(windowWillClose(_:)), name: NSWindow.willCloseNotification, object: window)
+        animFrom = Date()
+        startTimer()
+    }
+
+    deinit {
+        timer?.invalidate()
+        NotificationCenter.default.removeObserver(self)
     }
 
     /// The node the canvas draws the screen of: the element, or the file root.

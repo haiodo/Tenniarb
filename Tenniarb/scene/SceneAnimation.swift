@@ -34,6 +34,104 @@ extension Scene {
     }
 }
 
+extension Scene.Animation {
+    /// The rotate in degrees, the scale and the opacity at now seconds, from the frames. loop plays a finite
+    /// animation again after its end: the editor previews every animation that way.
+    func values(at now: Double, loop: Bool) -> (rotate: Double, scale: Double, opacity: Double) {
+        guard !frames.isEmpty, duration > 0 else { return (0, 1, 1) }
+        var now = now
+        var total = duration
+        if loop || repeatCount < 0 {  // forever
+            total = 0
+        } else if repeatCount > 1 {
+            total *= Double(repeatCount)
+        }
+        if total > 0 && now >= total {
+            now = total - 1e-9  // the last frame stays
+        }
+        let at = now.truncatingRemainder(dividingBy: duration) / duration
+        var lo = frames[0]
+        var hi = frames[frames.count - 1]
+        for (i, f) in frames.enumerated() {
+            if f.offset > at { break }
+            lo = f
+            if i + 1 < frames.count {
+                hi = frames[i + 1]
+            }
+        }
+        var k = 1.0
+        let span = hi.offset - lo.offset
+        if span > 0 {
+            k = min(1, max(0, (at - lo.offset) / span))
+        }
+        k = ease(easing, k)
+        let (r0, s0, o0) = frameValues(lo)
+        let (r1, s1, o1) = frameValues(hi)
+        return (r0 + (r1 - r0) * k, s0 + (s1 - s0) * k, o0 + (o1 - o0) * k)
+    }
+}
+
+extension Scene.Screen {
+    /// The animation the drawn item plays (spec 13), nil when it plays none.
+    func animation(of pl: Scene.Placed) -> Scene.Animation? {
+        p.anim[ObjectIdentifier(pl.r)]
+    }
+}
+
+/// The rotate, the scale and the opacity a frame sets, and their defaults.
+func frameValues(_ f: Scene.Frame) -> (rotate: Double, scale: Double, opacity: Double) {
+    var rot = 0.0
+    var scale = 1.0
+    var opacity = 1.0
+    for p in f.props {
+        guard let v = p.num(0) else { continue }
+        switch p.name {
+        case "rotate": rot = v
+        case "scale": scale = v
+        case "opacity": opacity = v
+        default: break
+        }
+    }
+    return (rot, scale, opacity)
+}
+
+/// Maps the progress inside a segment by the CSS easing of the animation.
+func ease(_ name: String, _ t: Double) -> Double {
+    switch name {
+    case "linear":
+        return t
+    case "ease-in":
+        return bezier(t, 0.42, 0, 1, 1)
+    case "ease-out":
+        return bezier(t, 0, 0, 0.58, 1)
+    case "ease-in-out":
+        return bezier(t, 0.42, 0, 0.58, 1)
+    default:  // ease
+        return bezier(t, 0.25, 0.1, 0.25, 1)
+    }
+}
+
+/// Solves a cubic-bezier timing function: the y of the curve at x t.
+func bezier(_ t: Double, _ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) -> Double {
+    if t <= 0 || t >= 1 {
+        return t
+    }
+    func curve(_ s: Double, _ p1: Double, _ p2: Double) -> Double {
+        3 * (1 - s) * (1 - s) * s * p1 + 3 * (1 - s) * s * s * p2 + s * s * s
+    }
+    var lo = 0.0
+    var hi = 1.0
+    for _ in 0..<30 {
+        let mid = (lo + hi) / 2
+        if curve(mid, x1, x2) < t {
+            lo = mid
+        } else {
+            hi = mid
+        }
+    }
+    return curve((lo + hi) / 2, y1, y2)
+}
+
 /// The properties a keyframe may set (spec 13): appearance only, so the layout never has to run per frame.
 let animatedProps: Set<String> = [
     "rotate", "scale", "opacity", "color", "border-color", "text-color", "pos",

@@ -36,6 +36,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             case checks
             case info
             case button
+            case slider
         }
 
         let section: String
@@ -359,7 +360,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
             }
         case .toggle:
             text = own == nil ? "off" : "yes"
-        case .info, .checks, .button:
+        case .info, .checks, .button, .slider:
             break
         }
         var row = InspectorRow(
@@ -468,6 +469,35 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
                 section: "Parameters", label: prm.name,
                 text: paramCurrent(sel, prm).joined(separator: " "), kind: .text)
         }
+    }
+
+    // MARK: - Animation
+
+    /// The rows of the Animation section: what plays on the selected item, a Play switch and a slider that
+    /// walks through the frames.
+    private func animationRows(_ sel: Selection) -> [InspectorRow] {
+        guard let canvas, let a = canvas.screen?.animation(of: sel.pl) else { return [] }
+        return [
+            InspectorRow(section: "Animation", label: "Animation", text: InspectorController.animTitle(a), kind: .info),
+            InspectorRow(
+                section: "Animation", label: "Play", text: canvas.animationsPlaying ? "yes" : "off", kind: .toggle),
+            InspectorRow(section: "Animation", label: "Frame", text: "", kind: .slider),
+        ]
+    }
+
+    /// The animation as Go's animTitle shows it: the name, the duration and the easing.
+    private static func animTitle(_ a: Scene.Animation) -> String {
+        let d = a.duration
+        if d.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(a.name), \(Int(d))s \(a.easing)"
+        }
+        return "\(a.name), \(Int(d * 1000))ms \(a.easing)"
+    }
+
+    /// Stops the playback at frame percent 0..100, as dragging the Frame slider does.
+    func scrub(_ frame: Int) {
+        canvas?.scrubAnimations(Double(min(100, max(0, frame))) / 100)
+        refresh()
     }
 
     /// The styles the selected node names in effect: the use-style values drawn, the overrides of the uses
@@ -635,6 +665,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         rows.append(InspectorRow(section: "Header", label: "Size", text: size, kind: .info))
         guard let sel, sel.node != nil else { return (head, rows) }
         rows += parameterRows(sel)
+        rows += animationRows(sel)
         rows += styleRows(sel)
         for f in InspectorController.fields where !(f.property == "shadow" && sel.part != nil) {
             rows.append(fieldRow(f, sel))
@@ -838,7 +869,13 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
     }
 
     private func applyToggle(_ row: InspectorRow, on: Bool) {
-        guard row.kind == .toggle, let f = field(for: row) else { return }
+        guard row.kind == .toggle else { return }
+        if row.section == "Animation" {
+            canvas?.setAnimationsPlaying(on)  // the switch of the preview writes nothing to the file
+            refresh()
+            return
+        }
+        guard let f = field(for: row) else { return }
         write(f.property, on ? ["yes"] : [])
         refresh()
     }
@@ -1026,6 +1063,11 @@ final class InspectorController: NSObject, NSTextFieldDelegate {
         setSizeMode(row.segments[control.selectedSegment], for: row.label)
     }
 
+    @objc fileprivate func animationFrameChanged(_ slider: NSSlider) {
+        guard rows.indices.contains(slider.tag) else { return }
+        scrub(Int(slider.doubleValue.rounded()))
+    }
+
     @objc fileprivate func shadowButtonPressed(_ button: NSButton) {
         guard rows.indices.contains(button.tag) else { return }
         if rows[button.tag].kind == .button {
@@ -1055,6 +1097,7 @@ private final class RowControl {
     private let checkBoxes: [NSButton]
     private let segmented: NSSegmentedControl?
     private let action: NSButton?
+    private var slider: NSSlider?
 
     init(row: InspectorController.InspectorRow, tag: Int, target: InspectorController) {
         kind = row.kind
@@ -1163,6 +1206,24 @@ private final class RowControl {
             segmented = nil
             action = nil
             ctl = button
+        case .slider:
+            let control = NSSlider(
+                value: 0, minValue: 0, maxValue: 100, target: target,
+                action: #selector(InspectorController.animationFrameChanged(_:)))
+            control.controlSize = .small
+            control.isContinuous = true
+            control.tag = tag
+            control.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            control.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
+            info = nil
+            text = nil
+            popup = nil
+            toggleButton = nil
+            checkBoxes = []
+            segmented = nil
+            action = nil
+            slider = control
+            ctl = control
         case .checks:
             let group = NSStackView()
             group.orientation = .vertical
@@ -1241,6 +1302,8 @@ private final class RowControl {
             for button in checkBoxes {
                 button.state = checked.contains(button.identifier?.rawValue ?? "") ? .on : .off
             }
+        case .slider:
+            break  // the thumb stays where the scrub put it
         }
     }
 
@@ -1252,6 +1315,7 @@ private final class RowControl {
         toggleButton?.target = nil
         segmented?.target = nil
         action?.target = nil
+        slider?.target = nil
         for button in checkBoxes {
             button.target = nil
         }

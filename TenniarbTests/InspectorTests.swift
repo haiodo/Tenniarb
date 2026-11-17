@@ -548,6 +548,71 @@ final class InspectorTests: SceneDocumentTestCase {
         XCTAssertEqual(try Data(contentsOf: libraryURL), libraryBefore, "the library is not touched")
     }
 
+    // MARK: - Animation
+
+    /// An item that plays an animation shows its title, a Play switch and a Frame slider: the switch pauses
+    /// the canvas and the slider stops at a frame, neither writes a command.
+    func testTheAnimationOfAnItemPlaysAndScrubsWithoutWriting() throws {
+        let text = """
+            element Screen {
+                width 200; height 100
+                animation spin {
+                    from { rotate 0 }
+                    to { rotate 360 }
+                }
+                item Spinner { auto-layout abs; pos 20 -20; width 40; height 40; color #ff0000; animation spin 1s linear infinite }
+                item Plain { auto-layout abs; pos 100 -20; width 40; height 40; color #00ff00 }
+            }
+            """
+        let document = try document(text)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Spinner" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertTrue(canvas.hasAnimations)
+        let sections = Set(inspector.rows.map(\.section))
+        XCTAssertTrue(sections.contains("Animation"), "\(sections)")
+        XCTAssertEqual(inspector.row("Animation")?.kind, .info)
+        XCTAssertEqual(inspector.row("Animation")?.text, "spin, 1s linear")
+        XCTAssertEqual(inspector.row("Play")?.kind, .toggle)
+        XCTAssertEqual(inspector.row("Play")?.text, "yes", "the canvas plays by default")
+        XCTAssertEqual(inspector.row("Frame")?.kind, .slider)
+
+        inspector.toggle("Play")
+        XCTAssertFalse(canvas.animationsPlaying, "the switch pauses the canvas")
+        XCTAssertEqual(inspector.row("Play")?.text, "off")
+
+        inspector.scrub(50)
+        XCTAssertFalse(canvas.animationsPlaying, "the scrub stops the playback")
+        let half = try XCTUnwrap(canvas.animationFrames.values.first)
+        XCTAssertEqual(half.rotate, 180, accuracy: 0.5, "half of the turn")
+        XCTAssertEqual(try XCTUnwrap(document.sceneText), text, "Play and Frame write nothing")
+
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Plain" }))
+        XCTAssertFalse(inspector.rows.contains { $0.section == "Animation" }, "an item that plays none has no rows")
+        XCTAssertNil(inspector.row("Play"))
+    }
+
+    /// The title of the section shows whole seconds as s, anything else as ms, as Go's animTitle.
+    func testTheAnimationTitleShowsSecondsOrMilliseconds() throws {
+        let document = try document(
+            """
+            element Screen {
+                animation long { from { opacity 1 } to { opacity 0 } }
+                animation short { from { opacity 1 } to { opacity 0 } }
+                item A { auto-layout abs; pos 0 0; width 10; height 10; animation long 2s linear infinite }
+                item B { auto-layout abs; pos 20 0; width 10; height 10; animation short 600ms ease-out infinite }
+            }
+            """)
+        let canvas = try canvas(document)
+        let inspector = inspector(document, canvas)
+
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "A" }))
+        XCTAssertEqual(inspector.row("Animation")?.text, "long, 2s linear")
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "B" }))
+        XCTAssertEqual(inspector.row("Animation")?.text, "short, 600ms ease-out")
+    }
+
     // MARK: - Shadows
 
     /// Runs a write as its own undo group; the body of a test is one event for the undo manager otherwise.
