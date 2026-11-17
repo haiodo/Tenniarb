@@ -155,6 +155,9 @@ public class TenniarbApplication: NSApplication {
         fileMenu.addItem(openLibraryItem)
         fileMenu.addItem(
             NSMenuItem(title: "Add Library…", action: #selector(ViewController.addLibrary(_:)), keyEquivalent: ""))
+        fileMenu.addItem(
+            NSMenuItem(
+                title: "Import Pen File…", action: #selector(ViewController.importPenFile(_:)), keyEquivalent: ""))
         let insertComponentItem = NSMenuItem(
             title: "Insert Component…", action: #selector(ViewController.insertComponent(_:)), keyEquivalent: "I")
         insertComponentItem.keyEquivalentModifierMask = [.command, .shift]

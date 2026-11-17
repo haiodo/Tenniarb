@@ -549,6 +549,9 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     return true
                 }
             }
+            if action == #selector(importPenFile(_:)) {
+                return true
+            }
             if action == #selector(self.showSearchBox(_:)) {
                 return true
             }
@@ -1028,6 +1031,90 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                     self.editorViewController?.sceneCanvas?.canvas.setMessage(error.localizedDescription)
                 }
             }
+        }
+    }
+
+    /// File > Import Pen File…: the .pen files become .tenn beside the first of them and that output
+    /// opens (go/app/import_pen.go importPenDialog).
+    @objc func importPenFile(_ sender: Any?) {
+        let panel = NSOpenPanel()
+        panel.title = "Import Pen File"
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [UTType(filenameExtension: "pen") ?? .data]
+        panel.directoryURL = document?.fileURL?.deletingLastPathComponent()
+        panel.begin { [weak self] response in
+            guard response == .OK, let self else { return }
+            let paths = panel.urls.map(\.path)
+            // Converting reads whole files; the window stays as it was until the job is done.
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = Result { try Self.importPen(paths: paths) }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let report):
+                        self.showPenImport(report)
+                    case .failure(let error):
+                        self.showPenImport("Import failed", "\(error)")
+                    }
+                }
+            }
+        }
+    }
+
+    /// Converts paths and writes their .tenn beside the first of them; main is the output of that first
+    /// file, notes what the import left out (go/app/import_pen.go penImport).
+    nonisolated static func importPen(paths: [String]) throws -> (main: String, notes: [String], count: Int) {
+        guard let first = paths.first else { throw PenImportFailure(message: "no .pen file chosen") }
+        let url = URL(fileURLWithPath: first).standardizedFileURL
+        let result = try PenImport.convert(paths: paths)
+        try result.write(to: url.deletingLastPathComponent().path)
+        guard let file = result.files.first(where: { $0.path == url.path }) else {
+            throw PenImportFailure(message: "\(first): no output written")
+        }
+        let notes = penNotes(file)
+        return (url.deletingLastPathComponent().appendingPathComponent(file.name + ".tenn").path, notes.lines, notes.count)
+    }
+
+    /// The warnings and unsupported features of an import, warnings first and features by name; past
+    /// the limit the last line is how many more there are (go/app/import_pen.go penNotes).
+    nonisolated static func penNotes(_ f: PenImport.File, limit: Int = 8) -> (lines: [String], count: Int) {
+        var lines = f.warnings
+        for key in f.unsupported.keys.sorted() {
+            lines.append("\(key) (\(f.unsupported[key] ?? 0))")
+        }
+        let count = lines.count
+        if count > limit {
+            lines = Array(lines.prefix(limit)) + ["and \(count - limit) more"]
+        }
+        return (lines, count)
+    }
+
+    /// Says what the import left out, then opens what it wrote.
+    private func showPenImport(_ report: (main: String, notes: [String], count: Int)) {
+        if report.count > 0 {
+            showPenImport(
+                "Imported with notes", "\(report.count) notes:\n\n\(report.notes.joined(separator: "\n"))")
+        }
+        openPenImport(report.main)
+    }
+
+    private func showPenImport(_ title: String, _ text: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = text
+        alert.runModal()
+    }
+
+    /// Opens the .tenn of the import; a window that already shows it comes to the front.
+    private func openPenImport(_ path: String) {
+        let url = URL(fileURLWithPath: path)
+        if let document = NSDocumentController.shared.document(for: url) {
+            document.showWindows()
+            return
+        }
+        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { [weak self] _, _, error in
+            guard let error else { return }
+            self?.showPenImport("Import failed", "\(error)")
         }
     }
 

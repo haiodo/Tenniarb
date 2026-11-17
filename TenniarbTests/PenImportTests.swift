@@ -938,6 +938,86 @@ final class PenImportTests: XCTestCase {
         let g = try XCTUnwrap(set.glyphs[name], "the icons library has no \(name)")
         return g.paths[0].d
     }
+
+    // MARK: - File > Import Pen File
+
+    /// A fixture copied into a directory of its own, as a user's .pen sits beside the file it makes.
+    private func copyFixture(_ name: String) throws -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("pen-import-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: dir) }
+        let src = try fixture(name)
+        let dst = dir.appendingPathComponent((src as NSString).lastPathComponent)
+        try FileManager.default.copyItem(atPath: src, toPath: dst.path)
+        return dst
+    }
+
+    func testImportWritesBesideTheFirstFile() throws {
+        let src = try copyFixture("layout")
+        let out = src.deletingLastPathComponent().appendingPathComponent("layout.tenn")
+        let (main, notes, count) = try ViewController.importPen(paths: [src.path])
+        XCTAssertEqual(main, out.path)
+        XCTAssertEqual(count, notes.count)
+        let text = try String(contentsOf: out, encoding: .utf8)
+        XCTAssertFalse(text.isEmpty)
+        let tree = try SceneLoader(root: src.deletingLastPathComponent()).load("layout.tenn")
+        XCTAssertEqual(tree.fatalCount, 0, "\(tree.diagnostics)")
+    }
+
+    // The notes are Go's: the warnings first, then the unsupported features by name.
+    func testImportNotesOfImports() throws {
+        let src = try copyFixture("imports")
+        let lib = src.deletingLastPathComponent().appendingPathComponent("lib.pen")
+        try FileManager.default.copyItem(atPath: try fixture("lib"), toPath: lib.path)
+        let (main, notes, count) = try ViewController.importPen(paths: [src.path])
+        XCTAssertEqual(main, src.deletingLastPathComponent().appendingPathComponent("imports.tenn").path)
+        XCTAssertEqual(count, 3)
+        XCTAssertEqual(notes.count, 3)
+        XCTAssertTrue(notes[0].contains("Gone: the component is not there"), "\(notes)")
+        XCTAssertTrue(notes[1].hasPrefix("override of an id that is not in the file or library ("), "\(notes)")
+        XCTAssertTrue(notes[2].hasPrefix("unresolved ref ("), "\(notes)")
+    }
+
+    func testNotesAreCapped() throws {
+        let f = PenImport.File(path: "", name: "notes", alias: "notes", raw: [:])
+        f.warnings = (1...10).map { "warning \($0)" }
+        f.unsupported = ["b": 2, "a": 1]
+        let (lines, count) = ViewController.penNotes(f)
+        XCTAssertEqual(count, 12)
+        XCTAssertEqual(lines.count, 9)
+        XCTAssertEqual(lines[0], "warning 1")
+        XCTAssertEqual(lines[7], "warning 8")
+        XCTAssertEqual(lines[8], "and 4 more")
+        // the features follow the warnings in name order
+        f.warnings = []
+        let ordered = ViewController.penNotes(f).lines
+        XCTAssertEqual(ordered, ["a (1)", "b (2)"])
+    }
+
+    func testBadFileThrowsAndWritesNothing() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("pen-bad-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: dir) }
+        let src = dir.appendingPathComponent("bad.pen")
+        try "not json".write(to: src, atomically: true, encoding: .utf8)
+        XCTAssertThrowsError(try ViewController.importPen(paths: [src.path])) { error in
+            XCTAssertTrue("\(error)".contains("bad.pen"), "\(error)")
+        }
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: dir.path), ["bad.pen"])
+    }
+
+    func testImportWritesEveryFileIntoTheFirstFolder() throws {
+        let a = try copyFixture("layout")
+        let b = try copyFixture("strokes")
+        let dir = a.deletingLastPathComponent()
+        let (main, _, _) = try ViewController.importPen(paths: [a.path, b.path])
+        XCTAssertEqual(main, dir.appendingPathComponent("layout.tenn").path)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: main), main)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: dir.appendingPathComponent("strokes.tenn").path))
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: b.deletingLastPathComponent().appendingPathComponent("strokes.tenn").path))
+    }
 }
 
 /// The diagnostics of a parse, for the tests that only ask whether the text reads back.
