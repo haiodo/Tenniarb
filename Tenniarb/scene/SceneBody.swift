@@ -43,21 +43,31 @@ extension Scene {
         var img: TextImage?  // an inline picture: text is empty
     }
 
-    /// The blocks of a body: a heading, a paragraph, a list of items, a quote, a fenced code block.
+    /// The blocks of a body: a heading, a paragraph, a list, a quote, a code block and the table of
+    /// contents of the headings.
     enum BodyBlockKind: UInt8 {
         case heading
         case paragraph
         case list
         case quote
         case code
+        case toc
+    }
+
+    /// One line of the table of contents: a heading level and its text.
+    struct BodyTOCItem {
+        var level = 0
+        var runs: [BodyRun] = []
     }
 
     struct BodyBlock {
         var kind = BodyBlockKind.paragraph
         var level = 0  // heading level 1..3
+        var anchor = ""  // heading: the link target of the heading, see anchorOf
         var runs: [BodyRun] = []  // heading, paragraph, quote
         var items: [[BodyRun]] = []  // list: one run list per bullet
         var code: [String] = []  // code: source lines, wrapped at the width
+        var toc: [BodyTOCItem] = []  // the table of contents, built by toc
     }
 
     /// One laid out line of the body.
@@ -142,6 +152,7 @@ extension Scene {
             var list: BodyBlock?
             var code: [String] = []
             var inCode = false
+            var seen: [String: Int] = [:]  // heading anchors seen, for the -2, -3 of a repeat
             func flushPara() {
                 if !para.isEmpty {
                     blocks.append(BodyBlock(kind: .paragraph, runs: inline(para.joined(separator: lineSep()))))
@@ -200,8 +211,8 @@ extension Scene {
                     for i in runs.indices {
                         runs[i].font = weighted(runs[i].font, size)
                     }
-                    // skip: the anchor of a heading is what the table of contents links, toc.go.
-                    blocks.append(BodyBlock(kind: .heading, level: level, runs: runs))
+                    let anchor = uniqueAnchor(&seen, anchorOf(runsText(runs)))
+                    blocks.append(BodyBlock(kind: .heading, level: level, anchor: anchor, runs: runs))
                     continue
                 }
                 if let item = bulletLine(trimmed) {
@@ -224,6 +235,25 @@ extension Scene {
                 blocks.append(BodyBlock(kind: .code, code: code))
             }
             self.blocks = blocks
+        }
+
+        /// Puts the headings before the body: levels up to depth, the body font less 2 points.
+        func toc(_ depth: Int) {
+            if depth <= 0 {
+                return
+            }
+            let size = max(font.size - Scene.bodyFontDrop, 1)
+            var items: [BodyTOCItem] = []
+            for blk in blocks where blk.kind == .heading && blk.level <= depth {
+                var runs = blk.runs
+                for i in runs.indices {
+                    runs[i].font.size = size
+                }
+                items.append(BodyTOCItem(level: blk.level, runs: runs))
+            }
+            if !items.isEmpty {
+                blocks.insert(BodyBlock(kind: .toc, toc: items), at: 0)
+            }
         }
 
         /// The lines of the body at width; a width of 0 or less does not wrap.
@@ -255,6 +285,14 @@ extension Scene {
                             ls[i].bullet = true
                         }
                         lines += ls
+                    }
+                    if lines.isEmpty {
+                        continue
+                    }
+                case .toc:
+                    for item in blk.toc {
+                        let x = Double(item.level - 1) * Scene.bodyListIndent
+                        lines += wrap(item.runs, width, x, x)
                     }
                     if lines.isEmpty {
                         continue
@@ -819,6 +857,109 @@ private func headingKey(_ s: String) -> String {
     return s.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
 }
 
+/// The link target of a heading: lowercase, a space becomes "-", other characters are dropped.
+/// Cyrillic stays; "" when nothing is left.
+func anchorOf(_ s: String) -> String {
+    var out = ""
+    var dash = false
+    for u in s.unicodeScalars {
+        switch u.properties.generalCategory {
+        case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter,
+            .decimalNumber:
+            out += u.properties.lowercaseMapping
+            dash = false
+        default:
+            guard u == "-" || u.properties.isWhitespace else { continue }
+            if !out.isEmpty && !dash {
+                out += "-"
+                dash = true
+            }
+        }
+    }
+    return out.trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+}
+
+/// Numbers a repeated anchor -2, -3 and so on in document order.
+func uniqueAnchor(_ seen: inout [String: Int], _ base: String) -> String {
+    if base.isEmpty {
+        return ""
+    }
+    let n = seen[base, default: 0] + 1
+    seen[base] = n
+    return n > 1 ? "\(base)-\(n)" : base
+}
+
+/// The text of runs without their look.
+func runsText(_ runs: [Scene.BodyRun]) -> String {
+    runs.map(\.text).joined()
+}
+
+/// Lists the headings of markdown text as a reader sees them, with their anchors.
+func headingsOf(_ text: String) -> (names: [String], anchors: Set<String>) {
+    var names: [String] = []
+    var anchors: Set<String> = []
+    var seen: [String: Int] = [:]
+    for line in text.components(separatedBy: "\n") {
+        guard let (_, title) = headingAt(line) else { continue }
+        let name = headingKey(title)
+        if name.isEmpty {
+            continue
+        }
+        names.append(name)
+        let anchor = uniqueAnchor(&seen, anchorOf(name))
+        if !anchor.isEmpty {
+            anchors.insert(anchor)
+        }
+    }
+    return (names, anchors)
+}
+
+/// The targets of the explicit links [label](target) of markdown text, code spans and fenced blocks skipped.
+func bodyLinks(_ text: String) -> [String] {
+    var out: [String] = []
+    var inCode = false
+    for line in text.components(separatedBy: "\n") {
+        if line.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") {
+            inCode.toggle()
+            continue
+        }
+        if inCode {
+            continue
+        }
+        let chars = Array(line)
+        var i = 0
+        while i < chars.count {
+            if chars[i] == "`" {
+                if let j = chars[(i + 1)...].firstIndex(of: "`") {
+                    i = j + 1
+                } else {
+                    i += 1
+                }
+                continue
+            }
+            if chars[i] != "[" || (i > 0 && chars[i - 1] == "!") {  // an image is not a section link
+                i += 1
+                continue
+            }
+            guard let mid = indexOf(chars, "](", from: i) else {
+                i += 1
+                continue
+            }
+            guard let end = chars[(mid + 2)...].firstIndex(of: ")") else {
+                i += 1
+                continue
+            }
+            var target = String(chars[(mid + 2)..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let sp = target.firstIndex(where: { $0 == " " || $0 == "\t" }) {  // an optional title after the path
+                target = String(target[..<sp])
+            }
+            out.append(target)
+            i = end + 1
+        }
+    }
+    return out
+}
+
 /// Cuts the section under the heading name: the heading line and everything below it up to the next heading
 /// of the same or a higher level, as a reader of the markdown file sees it.
 private func bodySection(_ text: String, _ name: String) -> String? {
@@ -1064,9 +1205,34 @@ extension Scene.Prep {
             body.padY = Scene.textPadY
         }
         body.parse(text)
-        // skip: toc lists the headings of a body, toc.go; a body with toc renders as text until then.
-        // skip: the links and anchors of a body are bodylink.go.
+        if let toc = prop(rn, "toc") {
+            body.toc(tocDepth(toc))
+        }
+        var base = pr.pos.file
+        if !from.isEmpty {
+            let (file, _, _) = cut(from, "#")
+            if !file.isEmpty {
+                let (_, rel, inside) = t.resolveIn(pr.pos.file, file)
+                if inside {
+                    base = rel
+                }
+            }
+        }
+        checkBodyLinks(pr.pos, base, text)
+        // skip: the hit boxes of the links and anchors of a body are bodylink.go.
         return body
+    }
+
+    /// Reads the depth of a toc command: how many heading levels it lists, 3 when it gives none.
+    func tocDepth(_ pr: Scene.Prop) -> Int {
+        if pr.args.isEmpty {
+            return 3
+        }
+        guard let v = pr.num(0), v >= 1, v <= 6 else {
+            t.fail(pr.pos, "toc takes a depth from 1 to 6, got \"\(bodyArgText(pr.args, 0))\"")
+            return 0
+        }
+        return Int(v)
     }
 
     /// font-size of the item, the size the title is drawn with and the body is based on.
@@ -1145,6 +1311,59 @@ extension Scene.Prep {
             }
         }
         return nil
+    }
+
+    /// Reports a link [label](file#anchor) whose file or section is not there. base is the markdown file
+    /// the text came from, or the .tenn that writes it; pos is the body command, which the reader fixes.
+    func checkBodyLinks(_ pos: Scene.Pos, _ base: String, _ text: String) {
+        var own: Set<String>?
+        var ownNames: [String] = []
+        for target in bodyLinks(text) {
+            let (file, anchorText, _) = cut(target, "#")
+            let anchor = anchorText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if anchor.isEmpty || file.contains("://") {
+                continue
+            }
+            if file.isEmpty {
+                if own == nil {
+                    // A fragment names a heading of the markdown file, not only of the section the body shows.
+                    var src = text
+                    if base != pos.file, let s = t.read(t.root.appendingPathComponent(base)) {
+                        src = s
+                    }
+                    let found = headingsOf(src)
+                    ownNames = found.names
+                    own = found.anchors
+                }
+                if own?.contains(anchorOf(anchor)) != true {
+                    noSection(pos, target, anchor, base, ownNames)
+                }
+                continue
+            }
+            let (abs, rel, inside) = t.resolveIn(base, file)
+            guard inside else {
+                t.fail(pos, "link \"\(target)\" leaves the workspace root")
+                continue
+            }
+            guard let src = t.read(abs) else {
+                t.fail(pos, "link \"\(target)\": no such file \(rel)")
+                continue
+            }
+            let (names, anchors) = headingsOf(src)
+            if !anchors.contains(anchorOf(anchor)) {
+                noSection(pos, target, anchor, rel, names)
+            }
+        }
+    }
+
+    func noSection(_ pos: Scene.Pos, _ target: String, _ anchor: String, _ rel: String, _ names: [String]) {
+        if !names.isEmpty {
+            t.fail(
+                pos,
+                "link \"\(target)\": no section \"\(anchor)\" in \(rel) (headings: \(names.joined(separator: ", ")))")
+            return
+        }
+        t.fail(pos, "link \"\(target)\": no section \"\(anchor)\" in \(rel) (no headings)")
     }
 
     /// Reads the colour of !(...): a name of the cmkdown table or hex digits, reported once per build.

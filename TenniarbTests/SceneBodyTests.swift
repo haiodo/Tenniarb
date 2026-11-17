@@ -17,8 +17,8 @@ import XCTest
 
 @testable import Tenniarb
 
-/// The body of an item: the inline markup, the blocks and a section read from a markdown file, as
-/// go/scene/body.go.
+/// The body of an item: the inline markup, the blocks, heading anchors and a section read from a
+/// markdown file, as go/scene/body.go and toc.go.
 final class SceneBodyTests: XCTestCase {
 
     /// A workspace on disk: the loader reads mounts and bodies from it, as go/scene does.
@@ -104,5 +104,134 @@ final class SceneBodyTests: XCTestCase {
         XCTAssertTrue(screen.classic, "a file with no auto-layout is a classic diagram")
         XCTAssertEqual(
             try body(screen).lines(.infinity).map { $0.runs.map(\.text).joined() }, ["one", "two"])
+    }
+
+    // MARK: - Anchors and the table of contents
+
+    func testBodyHeadingAnchorsAreNumberedInDocumentOrder() throws {
+        let tree = try tree([
+            "board.tenn": """
+            element "Screen" {
+                item "I" {
+                    body %{
+                        # Цель
+
+                        ## Раздел 2: Итоги!
+
+                        ## Цель
+
+                        ### цель
+                    }
+                }
+            }
+            """
+        ])
+        let screen = try screen(tree)
+        let anchors = try body(screen).blocks.filter { $0.kind == .heading }.map(\.anchor)
+        XCTAssertEqual(anchors, ["цель", "раздел-2-итоги", "цель-2", "цель-3"])
+        XCTAssertEqual(anchorOf("  Пробелы   и   тире  "), "пробелы-и-тире")
+        XCTAssertEqual(anchorOf("Ёлка, ёж"), "ёлка-ёж")
+        XCTAssertEqual(anchorOf("**Жирный** `код`"), "жирный-код")
+        XCTAssertEqual(anchorOf("—"), "")
+        var seen: [String: Int] = [:]
+        XCTAssertEqual(uniqueAnchor(&seen, ""), "")
+        XCTAssertEqual(uniqueAnchor(&seen, "цель"), "цель")
+        XCTAssertEqual(uniqueAnchor(&seen, "цель"), "цель-2")
+        XCTAssertEqual(uniqueAnchor(&seen, "цель"), "цель-3")
+    }
+
+    func testHeadingsOfListsNamesAndAnchors() {
+        let (names, anchors) = headingsOf("# План\n\n## Цель ##\n\n## Цель\n\n#### Глубоко")
+        XCTAssertEqual(names, ["План", "Цель", "Цель", "Глубоко"])
+        XCTAssertEqual(anchors, ["план", "цель", "цель-2", "глубоко"])
+    }
+
+    func testBodyTOCListsTheHeadingsBeforeTheBody() throws {
+        let board = """
+            element "Screen" {
+                item "I" {
+                    body %{
+                        # План
+
+                        текст
+
+                        ## Цель
+
+                        ## Цель
+
+                        ### Дальше
+                    }
+                    toc 2
+                }
+            }
+            """
+        let loaded = try tree(["board.tenn": board])
+        let pageScreen = try screen(loaded)
+        let page = try body(pageScreen)
+        let first = try XCTUnwrap(page.blocks.first)
+        XCTAssertEqual(first.kind, .toc)
+        XCTAssertEqual(first.toc.map(\.level), [1, 2, 2])
+        XCTAssertEqual(first.toc.map { runsText($0.runs) }, ["План", "Цель", "Цель"])
+        let lines = page.lines(1000)
+        XCTAssertEqual(lines.prefix(3).map(\.x), [0, Scene.bodyListIndent, Scene.bodyListIndent])
+        XCTAssertEqual(lines[1].runs[0].font.size, 14)  // body 16 - 2
+        let plainTree = try tree(["board.tenn": board.replacingOccurrences(of: "toc 2", with: "")])
+        let plainScreen = try screen(plainTree)
+        XCTAssertGreaterThan(page.height(1000), try body(plainScreen).height(1000))
+        let noHeadings = try tree(["board.tenn": "element \"Screen\" { item \"I\" { body \"текст\"; toc 3 } }"])
+        let noHeadingsScreen = try screen(noHeadings)
+        XCTAssertNotEqual(try body(noHeadingsScreen).blocks.first?.kind, .toc)
+    }
+
+    func testTOCDepthMustBeAHeadingLevel() throws {
+        let range = try tree([
+            "board.tenn": """
+            element "Screen" {
+                item "I" { body "# Цель"; toc 9 }
+            }
+            """
+        ])
+        _ = range.build("Screen", measurer: Scene.TextMeasurer(estimated: true))
+        XCTAssertEqual(range.diagnostics.map(\.message), ["toc takes a depth from 1 to 6, got \"9\""])
+        let word = try tree([
+            "board.tenn": """
+            element "Screen" {
+                item "I" { body "# Цель"; toc deep }
+            }
+            """
+        ])
+        _ = word.build("Screen", measurer: Scene.TextMeasurer(estimated: true))
+        XCTAssertEqual(word.diagnostics.map(\.message), ["toc takes a depth from 1 to 6, got \"deep\""])
+    }
+
+    // MARK: - Links
+
+    func testBodyLinksSkipCodeAndImages() {
+        let text = "[a](one.md#A) `[b](two.md#B)`\n\n```\n[c](three.md#C)\n```\n\n![pic](four.md#F) [d](https://x#D) [e](#E)"
+        XCTAssertEqual(bodyLinks(text), ["one.md#A", "https://x#D", "#E"])
+    }
+
+    func testBodyLinkToAMissingHeadingIsReported() throws {
+        let tree = try tree([
+            "board.tenn": """
+            element "Screen" {
+                item "I" {
+                    body %{
+                        # Цель
+
+                        [ok](#Цель) [bad](#Дальше) [doc](doc.md#Раздел) [gone](nope.md#A)
+                    }
+                }
+            }
+            """,
+            "doc.md": "# Год\n\n## Раздел\n\nтекст\n",
+        ])
+        _ = tree.build("Screen", measurer: Scene.TextMeasurer(estimated: true))
+        XCTAssertEqual(
+            tree.diagnostics.map(\.message),
+            [
+                "link \"#Дальше\": no section \"Дальше\" in board.tenn (headings: Цель)",
+                "link \"nope.md#A\": no such file nope.md",
+            ])
     }
 }
