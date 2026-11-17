@@ -75,6 +75,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     var outlineSidebarController: OutlineSidebarController!
     var editorViewController: EditorViewController!
     var propertiesPanelController: PropertiesPanelController!
+    var inspectorController: InspectorController!
     @IBAction func clickExtraButton(_ sender: NSSegmentedCell) {
         switch sender.selectedSegment {
         case 0:
@@ -154,6 +155,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         rightSplitView.dividerStyle = .thin
         splitView.addArrangedSubview(rightSplitView)
 
+        // The inspector of a scene: the third column, next to the editor and the code.
+        inspectorController = InspectorController()
+        let inspectorPanel = inspectorController.createView()
+        splitView.addArrangedSubview(inspectorPanel)
+
         // Configure split view behavior
         splitView.delegate = self
         mainSplitView = splitView
@@ -185,6 +191,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         // Set initial split positions
         DispatchQueue.main.async {
             splitView.setPosition(217, ofDividerAt: 0)
+            if splitView.arrangedSubviews.count > 2 {
+                splitView.setPosition(
+                    splitView.bounds.width - InspectorController.width - splitView.dividerThickness,
+                    ofDividerAt: 1)
+            }
             let totalHeight = rightSplitView.bounds.height
             if totalHeight > 0 {
                 let textScrollHeight: CGFloat = 127
@@ -207,8 +218,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         -> CGFloat
     {
         if splitView == mainSplitView {
-            // Minimum left panel width
-            return 150
+            // No collapsing of any pane: the inspector is the last one, so its right edge follows the
+            // window. However, keep it from becoming the widest thing in the window.
+            if dividerIndex == 0 { return 150 }
+            return splitView.bounds.width - InspectorController.maxWidth
         } else if splitView == editorSplitView {
             // Minimum height for editor area (bottom part)
             return 200
@@ -220,13 +233,19 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         -> CGFloat
     {
         if splitView == mainSplitView {
-            // Maximum left panel width
-            return 400
+            // Maximum left panel width, and the room the inspector keeps at the last divider
+            if dividerIndex == 0 { return 400 }
+            return splitView.bounds.width - InspectorController.minWidth
         } else if splitView == editorSplitView {
             // Maximum height for editor area, leaving at least 50px for text
             return splitView.frame.height - 50
         }
         return proposedMaximumPosition
+    }
+
+    /// The inspector keeps its width when the window resizes; the middle column takes the room.
+    func splitView(_ splitView: NSSplitView, shouldAdjustSizeOfSubview view: NSView) -> Bool {
+        !(splitView == mainSplitView && view === inspectorController?.containerView)
     }
 
     override func viewDidLoad() {
@@ -237,6 +256,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         propertiesPanelController.setupDelegate(self)
         editorViewController.onLoad(self)
         editorViewController.setupExportMenu(viewController: self)
+        inspectorController.attach(canvas: editorViewController.sceneCanvas?.canvas, document: document)
         editorViewController.showScene(sceneTree)
         reloadSceneItems()
 
@@ -759,6 +779,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         if isViewLoaded {
             editorViewController?.showScene(tree)
             reloadSceneItems()
+            inspectorController?.refresh()
         }
     }
 

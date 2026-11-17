@@ -56,6 +56,8 @@
 		AE02EC000000000000000076 /* SceneEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000075 /* SceneEditTests.swift */; };
 		AE02EC000000000000000077 /* SceneCanvasEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000078 /* SceneCanvasEditTests.swift */; };
 		AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000007A /* SceneDocumentSupport.swift */; };
+		AE02EC00000000000000009A /* InspectorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC000000000000000099 /* InspectorController.swift */; };
+		AE02EC00000000000000009C /* InspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE02EC00000000000000009B /* InspectorTests.swift */; };
 		0CA11E022EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		0CA11E032EBE2E4E008582D8 /* Tenn in Frameworks */ = {isa = PBXBuildFile; productRef = 0CA11E012EBE2E4E008582D8 /* Tenn */; };
 		AE01EC01000000000000090 /* tenniarb-embed.min.js in Resources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000090 /* tenniarb-embed.min.js */; };
@@ -261,6 +263,8 @@
 		AE02EC000000000000000075 /* SceneEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEditTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000078 /* SceneCanvasEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCanvasEditTests.swift; sourceTree = "<group>"; };
 		AE02EC00000000000000007A /* SceneDocumentSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDocumentSupport.swift; sourceTree = "<group>"; };
+		AE02EC000000000000000099 /* InspectorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InspectorController.swift; path = controllers/InspectorController.swift; sourceTree = "<group>"; };
+		AE02EC00000000000000009B /* InspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorTests.swift; sourceTree = "<group>"; };
 		AE02EC000000000000000050 /* SceneClassicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneClassicTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000090 /* tenniarb-embed.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "web/tenniarb-embed.min.js"; sourceTree = "<group>"; };
 		0C07F9541F4151250042C9F5 /* SceneMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMath.swift; sourceTree = "<group>"; };
@@ -518,6 +522,7 @@
 				FA00D0000000000000000005 /* EditorViewController.swift */,
 				FA00D0000000000000000006 /* PropertiesPanelController.swift */,
 				AE02EC00000000000000008F /* ComponentPickerController.swift */,
+				AE02EC000000000000000099 /* InspectorController.swift */,
 			);
 			name = controllers;
 			sourceTree = "<group>";
@@ -652,6 +657,7 @@
 				AE02EC000000000000000075 /* SceneEditTests.swift */,
 				AE02EC000000000000000078 /* SceneCanvasEditTests.swift */,
 				AE02EC00000000000000007A /* SceneDocumentSupport.swift */,
+				AE02EC00000000000000009B /* InspectorTests.swift */,
 				AE02EC000000000000000052 /* SceneAnimationTests.swift */,
 				AE02EC00000000000000006B /* ScenePaintTests.swift */,
 				AE02EC000000000000000070 /* SceneRangeTests.swift */,
@@ -1019,6 +1025,7 @@
 				FA00D0000000000000000002 /* EditorViewController.swift in Sources */,
 				FA00D0000000000000000003 /* PropertiesPanelController.swift in Sources */,
 				AE02EC000000000000000090 /* ComponentPickerController.swift in Sources */,
+				AE02EC00000000000000009A /* InspectorController.swift in Sources */,
 				0C2375F11ED838D900ECB516 /* ViewController.swift in Sources */,
 				0CD170BC22D5C8BB00E217D4 /* HelpController.swift in Sources */,
 				0C2375EF1ED838D900ECB516 /* AppDelegate.swift in Sources */,
@@ -1066,6 +1073,7 @@
 				AE02EC000000000000000076 /* SceneEditTests.swift in Sources */,
 				AE02EC000000000000000077 /* SceneCanvasEditTests.swift in Sources */,
 				AE02EC000000000000000079 /* SceneDocumentSupport.swift in Sources */,
+				AE02EC00000000000000009C /* InspectorTests.swift in Sources */,
 				AE02EC00000000000000006E /* ScenePaintTests.swift in Sources */,
 				AE02EC000000000000000072 /* SceneRangeTests.swift in Sources */,
 				AE02EC000000000000000097 /* SceneExportTests.swift in Sources */,

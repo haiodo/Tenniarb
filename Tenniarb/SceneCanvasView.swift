@@ -39,6 +39,9 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// The indexes from the root of the drawn tree to the selected item; nil when nothing is selected.
     private(set) var selection: [Int]?
 
+    /// Called after the selection or the tree behind it changed, so the inspector reads the new one.
+    var onSelectionChange: (() -> Void)?
+
     /// A part of a component drawn in an instance: the use around it, and its path from the root of the
     /// instance. at is empty when the part cannot be named inside the instance.
     struct Part {
@@ -80,6 +83,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             elementPath = nil
             forgetSelection()
             needsDisplay = true
+            onSelectionChange?()
             return
         }
         self.tree = tree
@@ -103,6 +107,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             selection = nil
         }
         needsDisplay = true
+        onSelectionChange?()
     }
 
     /// Shows another element of the same tree, as a click in the outline does.
@@ -116,6 +121,15 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
 
     /// The written node of the selected item, or the use of a selected instance.
     var selectedNode: Scene.Node? { placed(at: selection)?.src }
+
+    /// The tree the canvas draws; nil when it shows nothing.
+    var shownTree: Scene.Tree? { tree }
+
+    /// Where the selected item is a part of an instance: the use around it and its path in that use.
+    func part(at path: [Int]?) -> Part? {
+        guard let pl = placed(at: path) else { return nil }
+        return partOf[ObjectIdentifier(pl)]
+    }
 
     /// A place right of the content of the screen for a new top level node, as pos x y.
     func freeSpot() -> (x: Double, y: Double) {
@@ -374,6 +388,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         guard next != selection else { return }
         selection = next
         needsDisplay = true
+        onSelectionChange?()
     }
 
     /// The item a press selects: the deepest item there that draws something, else the deepest box that
@@ -569,6 +584,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         drag = nil
         guard d.moved else { return }
         writePos(d.pl, dx: d.dx, dy: d.dy)
+        onSelectionChange?()
     }
 
     /// Moves an item and its children in the drawn tree before the edit exists: Screen.MoveItem moves
@@ -635,9 +651,11 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         endTitleEdit(commit: true)
         guard let hit = hitItem(p) else {
             select(nil)
+            onSelectionChange?()
             return
         }
         select(pick(hit, clicks: clicks))
+        onSelectionChange?()
         if clicks >= 2 {
             beginTitleEdit()
         }
