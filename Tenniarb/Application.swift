@@ -265,6 +265,32 @@ public class TenniarbApplication: NSApplication {
         editMenu.addItem(NSMenuItem(title: "Select All Links", action: #selector(ViewController.selectAllLinks(_:)), keyEquivalent: ""))
         editMenu.addItem(NSMenuItem(title: "Select None", action: #selector(ViewController.selectNoneItems(_:)), keyEquivalent: ""))
 
+        // MARK: - Element menu
+        let elementMenuItem = NSMenuItem()
+        mainMenu.addItem(elementMenuItem)
+        let elementMenu = NSMenu(title: "Element")
+        elementMenuItem.submenu = elementMenu
+
+        let moveUpItem = NSMenuItem(
+            title: "Move Up", action: #selector(ViewController.moveSceneNodeUp(_:)), keyEquivalent: "\u{F700}")
+        moveUpItem.keyEquivalentModifierMask = [.command, .option]
+        elementMenu.addItem(moveUpItem)
+
+        let moveDownItem = NSMenuItem(
+            title: "Move Down", action: #selector(ViewController.moveSceneNodeDown(_:)), keyEquivalent: "\u{F701}")
+        moveDownItem.keyEquivalentModifierMask = [.command, .option]
+        elementMenu.addItem(moveDownItem)
+
+        let moveLeftItem = NSMenuItem(
+            title: "Move Left", action: #selector(ViewController.moveSceneNodeIntoPrevious(_:)), keyEquivalent: "\u{F702}")
+        moveLeftItem.keyEquivalentModifierMask = [.command, .option]
+        elementMenu.addItem(moveLeftItem)
+
+        let moveRightItem = NSMenuItem(
+            title: "Move Right", action: #selector(ViewController.moveSceneNodeIntoNext(_:)), keyEquivalent: "\u{F703}")
+        moveRightItem.keyEquivalentModifierMask = [.command, .option]
+        elementMenu.addItem(moveRightItem)
+
         // MARK: - Navigate menu
         let navigateMenuItem = NSMenuItem()
         mainMenu.addItem(navigateMenuItem)

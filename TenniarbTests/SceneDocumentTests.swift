@@ -702,4 +702,180 @@ final class SceneDocumentTests: SceneDocumentTestCase {
         _ = ComponentPreview.image(tree: tree, node: card)
     }
 
+    // MARK: - Element > Move
+
+    /// The text one scene edit makes of text, as applySceneEdits does.
+    private func applied(_ text: String, _ edit: Scene.TextEdit) -> String {
+        var b = Array(text.utf8)
+        b.replaceSubrange(edit.start..<edit.end, with: Array(edit.new.utf8))
+        return String(decoding: b, as: UTF8.self)
+    }
+
+    private func sceneNode(_ tree: Scene.Tree, _ path: String) throws -> Scene.Node {
+        let main = try XCTUnwrap(tree.main)
+        return try XCTUnwrap(try? tree.resolve(main, path), "no node \(path)")
+    }
+
+    /// Down swaps a node with the sibling after it in one edit, the answer is where it starts in the new
+    /// text, and one undo puts the file back.
+    func testMoveNodeEditSwapsSiblings() throws {
+        let root = try workspace([
+            "a.tenn": "element Screen {\n  item A { auto-layout abs; pos 10 20; width 100 }\n"
+                + "  item B { width 120 }\n}\n"
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        let main = try XCTUnwrap(tree.main)
+        let text = try XCTUnwrap(tree.source(main.pos.file))
+        let a = try sceneNode(tree, "Screen.A")
+
+        let down = try XCTUnwrap(moveNodeEdit(text, a, 1))
+        XCTAssertEqual(
+            applied(text, down.edit),
+            "element Screen {\n  item B { width 120 }\n  item A { auto-layout abs; pos 10 20; width 100 }\n}\n")
+
+        try document.applySceneEdit(down.edit, in: a.pos.file)
+        XCTAssertEqual(document.sceneText, applied(text, down.edit))
+        XCTAssertEqual(try sceneNode(try XCTUnwrap(document.sceneTree), "Screen.A").range.start, down.at)
+
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, text, "one undo step puts the file back")
+    }
+
+    /// The first sibling has nothing above it and the last nothing below: no edit, no change.
+    func testMoveNodeEditHasNoPlaceAtTheEnds() throws {
+        let root = try workspace([
+            "a.tenn": "element Screen {\n  item A { auto-layout abs; width 100 }\n  item B { width 120 }\n}\n"
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        let text = try XCTUnwrap(tree.source(try XCTUnwrap(tree.main).pos.file))
+
+        XCTAssertNil(moveNodeEdit(text, try sceneNode(tree, "Screen.A"), -1))
+        XCTAssertNil(moveNodeEdit(text, try sceneNode(tree, "Screen.B"), 1))
+        XCTAssertEqual(document.sceneText, text, "a refused move writes nothing")
+    }
+
+    /// A flow layout places its kids by itself, so a node moved into it loses its pos; an absolute parent
+    /// keeps it.
+    func testMoveNodeEditDropsThePosOfAFlowParent() throws {
+        let root = try workspace([
+            "a.tenn": "element Flow {\n  item Row {\n    auto-layout row\n"
+                + "    item A { pos 5 5; width 10 }\n    item B { width 20 }\n  }\n}\n\n"
+                + "element Abs {\n  item A { pos 5 5; width 10 }\n  item B { width 20 }\n}\n"
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let tree = try XCTUnwrap(document.sceneTree)
+        let text = try XCTUnwrap(tree.source(try XCTUnwrap(tree.main).pos.file))
+
+        let flow = applied(text, try XCTUnwrap(moveNodeEdit(text, try sceneNode(tree, "Flow.Row.A"), 1)).edit)
+        XCTAssertTrue(
+            flow.hasPrefix(
+                "element Flow {\n  item Row {\n    auto-layout row\n    item B { width 20 }\n"
+                    + "    item A { width 10 }\n  }\n}"), "a flow parent places the node, its pos goes: \(flow)")
+
+        let abs = applied(text, try XCTUnwrap(moveNodeEdit(text, try sceneNode(tree, "Abs.A"), 1)).edit)
+        XCTAssertTrue(abs.contains("item A { pos 5 5; width 10 }"), "an absolute parent keeps the pos")
+    }
+
+    /// Left puts the node last inside the sibling before it, right first inside the one after; the answer
+    /// is where the node starts in the new text, and one undo puts the file back.
+    func testMoveNodeIntoEditTakesTheNeighbour() throws {
+        let root = try workspace([
+            "a.tenn": "element Screen {\n  item A { pos 1 2; width 10 }\n  item B { width 20 }\n"
+                + "  item F {\n    auto-layout column\n  }\n}\n"
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("a.tenn"))
+        let text = try XCTUnwrap(document.sceneText)
+        var tree = try XCTUnwrap(document.sceneTree)
+        let file = try XCTUnwrap(tree.main).pos.file
+
+        let left = try XCTUnwrap(moveNodeIntoEdit(text, try sceneNode(tree, "Screen.B"), -1))
+        try document.applySceneEdit(left.edit, in: file)
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen {\n  item A { pos 1 2; width 10; item B { width 20 } }\n"
+                + "  item F {\n    auto-layout column\n  }\n}\n")
+        tree = try XCTUnwrap(document.sceneTree)
+        XCTAssertEqual(try sceneNode(tree, "Screen.A.B").range.start, left.at)
+
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, text)
+        tree = try XCTUnwrap(document.sceneTree)
+        XCTAssertNil(moveNodeIntoEdit(text, try sceneNode(tree, "Screen.A"), -1), "no sibling before A")
+        XCTAssertNil(moveNodeIntoEdit(text, try sceneNode(tree, "Screen.F"), 1), "no sibling after the flow")
+
+        let right = try XCTUnwrap(moveNodeIntoEdit(text, try sceneNode(tree, "Screen.A"), 1))
+        try document.applySceneEdit(right.edit, in: file)
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen {\n  item B { item A { pos 1 2; width 10 }; width 20 }\n"
+                + "  item F {\n    auto-layout column\n  }\n}\n")
+        tree = try XCTUnwrap(document.sceneTree)
+        XCTAssertEqual(try sceneNode(tree, "Screen.B.A").range.start, right.at)
+    }
+
+    /// The Element menu actions edit through the document and keep the moved node selected.
+    func testMoveMenuActionsSwapAndSelectTheNode() throws {
+        let root = try workspace([
+            "screen.tenn": "element Screen {\n  item A { auto-layout abs; width 100 }\n  item B { width 120 }\n}\n"
+        ])
+        let document = try openTestDocument(root.appendingPathComponent("screen.tenn"))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        let tree = try XCTUnwrap(document.sceneTree)
+        canvas.selectSource(at: try sceneNode(tree, "Screen.A").range.start)
+        XCTAssertEqual(canvas.selectedNode?.name, "A")
+        let up = NSMenuItem(title: "Move Up", action: #selector(ViewController.moveSceneNodeUp(_:)), keyEquivalent: "")
+        XCTAssertTrue(vc.validateMenuItem(up), "a written node of the scene can move")
+
+        vc.moveSceneNodeDown(nil)
+
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen {\n  item B { width 120 }\n  item A { auto-layout abs; width 100 }\n}\n")
+        XCTAssertEqual(canvas.selectedNode?.name, "A", "the moved node stays selected")
+
+        document.undoManager?.undo()
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen {\n  item A { auto-layout abs; width 100 }\n  item B { width 120 }\n}\n")
+        canvas.selectSource(at: try sceneNode(try XCTUnwrap(document.sceneTree), "Screen.A").range.start)
+        vc.moveSceneNodeIntoNext(nil)
+        XCTAssertEqual(
+            document.sceneText,
+            "element Screen {\n  item B { item A { auto-layout abs; width 100 }; width 120 }\n}\n")
+        XCTAssertEqual(canvas.selectedNode?.name, "A", "the node moved into the sibling is selected")
+
+        canvas.select(nil)
+        XCTAssertFalse(vc.validateMenuItem(up), "no selection, no move")
+    }
+
+    /// A node written in a mounted file resolves to that file; the document refuses it and the main text
+    /// stays as it was.
+    func testMoveMenuActionLeavesTheMainTextOfAMountAlone() throws {
+        let root = try workspace()
+        _ = try copy("web/fixtures/scene/design-kit.tenn", to: root)
+        let document = try openTestDocument(try copy("web/fixtures/scene/library-screen.tenn", to: root))
+        document.makeWindowControllers()
+        let vc = try XCTUnwrap(document.vc)
+        _ = vc.view
+        vc.view.window?.contentView?.layoutSubtreeIfNeeded()
+        let canvas = try XCTUnwrap(vc.editorViewController?.sceneCanvas?.canvas)
+        XCTAssertEqual(canvas.screen?.name, "kit")
+
+        canvas.select([0])
+        let node = try XCTUnwrap(canvas.selectedNode, "the mount draws the items of its file")
+        XCTAssertEqual(node.pos.file, "design-kit.tenn")
+        let before = document.sceneText
+
+        vc.moveSceneNodeDown(nil)
+
+        XCTAssertEqual(document.sceneText, before, "the main file keeps its text")
+        XCTAssertTrue(canvas.message?.contains("mounted file") ?? false, canvas.message ?? "no message")
+    }
+
 }

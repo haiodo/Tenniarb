@@ -441,6 +441,99 @@ func insertEdit(_ text: String, _ node: Scene.Node, _ cmd: String) -> Scene.Text
         new: "\n" + indentLines(cmd, ind) + "\n" + indentAt(text, n.range.start))
 }
 
+/// What go/editor SceneKids lists under n: the items and uses, and the slots of an item, in file order.
+private func sceneKids(_ n: Scene.Node) -> [Scene.Node] {
+    n.content.filter { $0.kind == .item || $0.kind == .use || ($0.kind == .slot && n.kind == .item) }
+}
+
+/// Whether n lays its kids out in a flow: `auto-layout row` or `column`, also written bare. An item
+/// without auto-layout, or with `auto-layout abs`, places them by pos.
+func flowLayout(_ n: Scene.Node) -> Bool {
+    guard let p = ownProp(n, "auto-layout") else { return false }
+    return (p.args.first?.getIdentText() ?? "") != "abs"
+}
+
+/// The source of n as a move writes it: into a flow layout its pos goes, so the node does not jump; an
+/// absolute parent keeps it.
+func movedText(_ text: String, _ n: Scene.Node, _ into: Scene.Node) -> String {
+    let raw = textSlice(text, n.range.start, n.range.end)
+    if !flowLayout(into) {
+        return raw
+    }
+    guard let own = ownProp(n, "pos") else { return raw }
+    let e = removeEdit(text, own.range)
+    if e.start < n.range.start || e.end > n.range.end {
+        return raw
+    }
+    return textSlice(text, n.range.start, e.start) + e.new + textSlice(text, e.end, n.range.end)
+}
+
+/// Swaps n with the sibling delta places away among the kids of its parent, as one edit; at is where n
+/// starts in the new text. A node of a flow layout loses its pos.
+func moveNodeEdit(_ text: String, _ n: Scene.Node, _ delta: Int) -> (edit: Scene.TextEdit, at: Int)? {
+    guard let parent = n.parent else { return nil }
+    let sibs = sceneKids(parent)
+    guard let i = sibs.firstIndex(where: { $0 === n }) else { return nil }
+    let j = i + delta
+    guard j >= 0, j < sibs.count else { return nil }
+    var a = n
+    var b = sibs[j]
+    if a.range.start > b.range.start {
+        swap(&a, &b)
+    }
+    if b.range.start < a.range.end {
+        return nil
+    }
+    let left = textSlice(text, a.range.start, a.range.end)
+    let gap = textSlice(text, a.range.end, b.range.start)
+    let right = textSlice(text, b.range.start, b.range.end)
+    let moved = movedText(text, n, parent)
+    if n === a {
+        return (
+            Scene.TextEdit(start: a.range.start, end: b.range.end, new: right + gap + moved),
+            a.range.start + right.utf8.count + gap.utf8.count
+        )
+    }
+    return (Scene.TextEdit(start: a.range.start, end: b.range.end, new: moved + gap + left), a.range.start)
+}
+
+/// Moves n into the sibling delta places away, as its last kid (delta < 0) or its first (delta > 0), as
+/// one edit; at is where n starts in the new text.
+func moveNodeIntoEdit(_ text: String, _ n: Scene.Node, _ delta: Int) -> (edit: Scene.TextEdit, at: Int)? {
+    guard let parent = n.parent, delta != 0 else { return nil }
+    let sibs = sceneKids(parent)
+    guard let i = sibs.firstIndex(where: { $0 === n }) else { return nil }
+    let j = i + delta
+    guard j >= 0, j < sibs.count else { return nil }
+    let into = sibs[j]
+    let moved = movedText(text, n, into)
+    var ins = insertEdit(text, into, moved)
+    if delta > 0 {
+        ins = prependEdit(text, into, moved)
+    }
+    let rem = removeEdit(text, n.range)
+    if rem.start < ins.start && ins.start < rem.end {
+        return nil
+    }
+    guard let found = ins.new.range(of: moved) else { return nil }
+    let idx = ins.new[..<found.lowerBound].utf8.count
+    var lo = ins
+    var hi = rem
+    if rem.start < ins.start {
+        lo = rem
+        hi = ins
+    }
+    if hi.start < lo.end {
+        return nil
+    }
+    var at = ins.start + idx
+    if delta > 0 {  // the removal comes first: what it took shifts the inserted node
+        at = lo.start + lo.new.utf8.count + (hi.start - lo.end) + idx
+    }
+    let new = lo.new + textSlice(text, lo.end, hi.start) + hi.new
+    return (Scene.TextEdit(start: lo.start, end: hi.end, new: new), at)
+}
+
 /// Adds cmd as the first command of the content of n: the block of an element, an item or a use, a new
 /// block when n has none, the start of the file for a file root.
 func prependEdit(_ text: String, _ node: Scene.Node, _ cmd: String) -> Scene.TextEdit {

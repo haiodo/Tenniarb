@@ -510,6 +510,11 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if let action = menuItem.action {
 
+            if action == #selector(moveSceneNodeUp(_:)) || action == #selector(moveSceneNodeDown(_:))
+                || action == #selector(moveSceneNodeIntoPrevious(_:)) || action == #selector(moveSceneNodeIntoNext(_:))
+            {
+                return movableSceneNode != nil
+            }
             if action == #selector(exportSelectionPNG(_:)) || action == #selector(exportSelectionPNGAtScale(_:)) {
                 return canExportSelection
             }
@@ -905,6 +910,43 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     /// Selects a drawn item of the scene, as a row of the Items pane does.
     func selectSceneItem(_ path: [Int]) {
         editorViewController?.sceneCanvas?.canvas.select(path)
+    }
+
+    /// The node the Element > Move actions act on: written in the scene under a parent, not a part of an
+    /// instance.
+    private var movableSceneNode: Scene.Node? {
+        guard sceneTree != nil, let canvas = editorViewController?.sceneCanvas?.canvas,
+            let node = canvas.selectedNode, node.parent != nil,
+            canvas.part(at: canvas.selection) == nil
+        else { return nil }
+        return node
+    }
+
+    /// Element > Move Up/Down: the node changes places with the sibling before or after it, as one undo
+    /// step, and the selection follows it (go/app/scenemove.go moveNodeBy).
+    @objc func moveSceneNodeUp(_ sender: Any?) { moveSceneNode(-1, into: false) }
+    @objc func moveSceneNodeDown(_ sender: Any?) { moveSceneNode(1, into: false) }
+
+    /// Element > Move Left/Right: the node becomes the last kid of the sibling before it or the first
+    /// kid of the one after it, as one undo step (go/app/scenemove.go moveNodeInto).
+    @objc func moveSceneNodeIntoPrevious(_ sender: Any?) { moveSceneNode(-1, into: true) }
+    @objc func moveSceneNodeIntoNext(_ sender: Any?) { moveSceneNode(1, into: true) }
+
+    private func moveSceneNode(_ delta: Int, into: Bool) {
+        guard let document, let canvas = editorViewController?.sceneCanvas?.canvas,
+            let node = movableSceneNode, let text = sceneTree?.source(node.pos.file)
+        else { return }
+        let moved = into ? moveNodeIntoEdit(text, node, delta) : moveNodeEdit(text, node, delta)
+        guard let moved else { return }
+        do {
+            try document.applySceneEdit(moved.edit, in: node.pos.file)
+        } catch {
+            canvas.setMessage(error.localizedDescription)
+            return
+        }
+        canvas.setMessage(nil)
+        reloadSceneItems()
+        canvas.selectSource(at: moved.at)
     }
 
     /// A row of the component browser of the Items pane: the component goes where Insert Component… would
