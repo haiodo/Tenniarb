@@ -50,6 +50,17 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Called after the selection or the tree behind it changed, so the inspector reads the new one.
     var onSelectionChange: (() -> Void)?
 
+    /// A frame compare mode draws over a changed node: the path the comparison gives it, and its colour.
+    struct CompareFrame {
+        let path: String
+        let color: NSColor
+    }
+
+    /// The frames of the changed nodes; only those on the shown element are drawn.
+    private(set) var compareFrames: [CompareFrame] = []
+    /// The line below the message: the summary of the comparison while it is on.
+    private(set) var compareNote: String?
+
     /// The pins of the comments of the shown element, in the scene coordinates of the element.
     private(set) var commentPins: [CommentPin] = []
     /// Why Add Comment… cannot write here; the menu shows it instead of the field.
@@ -368,6 +379,19 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// the comment mode when it is on.
     func setMessage(_ text: String?) {
         message = text ?? (commentMode ? SceneCanvasView.commentHint : nil)
+        needsDisplay = true
+    }
+
+    /// Puts the frames of compare mode over the picture; an empty list takes them away.
+    func setCompareFrames(_ frames: [CompareFrame]) {
+        compareFrames = frames
+        needsDisplay = true
+    }
+
+    /// Shows the summary line of compare mode under the message; nil clears it.
+    func setCompareNote(_ text: String?) {
+        guard text != compareNote else { return }
+        compareNote = text
         needsDisplay = true
     }
 
@@ -1071,14 +1095,18 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             painter.paint(placed, c)
             c.restoreGState()
         }
-        if let message {
+        drawCompareFrames()
+        var textY = SceneCanvasView.padding
+        for (text, color) in [(message, NSColor.systemRed), (compareNote, NSColor.secondaryLabelColor)] {
+            guard let text else { continue }
             NSAttributedString(
-                string: message,
+                string: text,
                 attributes: [
                     .font: NSFont.systemFont(ofSize: 13),
-                    .foregroundColor: NSColor.systemRed,
+                    .foregroundColor: color,
                 ]
-            ).draw(at: NSPoint(x: SceneCanvasView.padding, y: SceneCanvasView.padding))
+            ).draw(at: NSPoint(x: SceneCanvasView.padding, y: textY))
+            textY += 18
         }
         if let pl = placed(at: selection) {
             NSColor.systemBlue.setStroke()
@@ -1087,6 +1115,69 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             path.stroke()
         }
         drawPins()
+    }
+
+    /// Draws the frames of compare mode over the nodes written in the shown element: the report names a
+    /// node from the file root, the placed tree names it from the element down.
+    private func drawCompareFrames() {
+        guard !compareFrames.isEmpty, let root = placed else { return }
+        let prefix = elementNames()
+        var boxes: [String: Scene.Placed] = [:]
+        func walk(_ pl: Scene.Placed) {
+            for k in pl.kids {
+                if let src = k.src, let segs = sourcePath(src), !segs.isEmpty {
+                    let key = segs.joined(separator: ".")
+                    if boxes[key] == nil {
+                        boxes[key] = k
+                    }
+                }
+                walk(k)
+            }
+        }
+        walk(root)
+        for frame in compareFrames {
+            let sel: String
+            if prefix.isEmpty {
+                sel = frame.path
+            } else if frame.path.hasPrefix(prefix + ".") {
+                sel = String(frame.path.dropFirst(prefix.count + 1))
+            } else {
+                continue
+            }
+            guard let pl = boxes[sel] else { continue }
+            frame.color.setStroke()
+            let path = NSBezierPath(rect: viewRect(pl))
+            path.lineWidth = 2
+            path.stroke()
+        }
+    }
+
+    /// The names from the file root to the shown element, joined by "/", as the comparison writes them:
+    /// a repeated name among sibling elements gets #n.
+    private func elementNames() -> String {
+        guard let element, element.kind != .file else { return "" }
+        var segs: [String] = []
+        var cur: Scene.Node? = element
+        while let c = cur, c.kind != .file {
+            segs.append(elementSeg(c))
+            cur = c.parent
+        }
+        return segs.reversed().joined(separator: "/")
+    }
+
+    private func elementSeg(_ n: Scene.Node) -> String {
+        var k = 0
+        if let parent = n.parent {
+            for c in parent.elems {
+                if c === n {
+                    break
+                }
+                if c.name == n.name {
+                    k += 1
+                }
+            }
+        }
+        return k > 0 ? "\(n.name)#\(k)" : n.name
     }
 
     /// Draws the markers of the comments over the picture: an accent disc with the number, a ring when the

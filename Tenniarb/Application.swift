@@ -341,6 +341,12 @@ public class TenniarbApplication: NSApplication {
                 title: "Show Resolved Comments", action: #selector(ViewController.toggleShowResolvedComments(_:)),
                 keyEquivalent: ""))
 
+        viewMenu.addItem(NSMenuItem.separator())
+        let compareItem = NSMenuItem(
+            title: "Compare with Git", action: #selector(ViewController.toggleCompare(_:)), keyEquivalent: "g")
+        compareItem.keyEquivalentModifierMask = [.command, .option]
+        viewMenu.addItem(compareItem)
+
         // MARK: - Window menu
         let windowMenuItem = NSMenuItem()
         mainMenu.addItem(windowMenuItem)

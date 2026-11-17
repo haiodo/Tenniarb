@@ -41,6 +41,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     /// The file the comments controller was made for, so Save As makes a new one.
     private var commentsForURL: URL?
 
+    /// Compare mode of the window, while it is on, and the report rows it puts in the outline.
+    private var compareController: CompareController?
+    private var compareOutlineSource: CompareOutlineSource?
+
     /// The sheet of Insert Component…, held while it is open.
     private var componentPicker: ComponentPickerController?
     /// What the slot menu that follows Insert Component… writes and where.
@@ -546,6 +550,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 menuItem.state = comments.showResolved ? .on : .off
                 return true
             }
+            if action == #selector(self.toggleCompare(_:)) {
+                menuItem.state = compareController?.isOn == true ? .on : .off
+                return sceneTree != nil
+            }
             if action == #selector(selectAllLinks) || action == #selector(selectAllItemsKind) {
                 return true
             }
@@ -841,6 +849,10 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         self.title = value
         self.windowTitle.stringValue = value
+        // A Save As names another file: the report of the old one is not this document any more.
+        if let compare = compareController, compare.isOn, !compare.isCurrent() {
+            closeCompare()
+        }
     }
 
     /// Puts the canvas of a scene document in the window, or the classic one when tree is nil.
@@ -850,7 +862,132 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
             editorViewController?.showScene(tree)
             reloadSceneItems()
             inspectorController?.refresh()
+            refreshCompare()
         }
+    }
+
+    // MARK: - Compare with Git
+
+    /// View > Compare with Git: the file against its last commit, over the outline and the canvas.
+    @objc func toggleCompare(_ sender: Any?) {
+        guard isViewLoaded else { return }
+        if compareController?.isOn == true {
+            closeCompare()
+            return
+        }
+        guard let document, sceneTree != nil else { return }
+        let compare = CompareController(document: document)
+        if !compare.start() {
+            closeCompare()
+            editorViewController?.sceneCanvas?.canvas.setMessage(compare.message)
+            return
+        }
+        compareController = compare
+        showCompare()
+    }
+
+    /// Swaps the element outline for the rows of the report and frames the changed nodes.
+    private func showCompare() {
+        guard let compare = compareController, let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        worldTree.menu = nil  // the element actions do not act on report rows
+        let source = CompareOutlineSource(compare: compare)
+        source.onSelect = { [weak self] row in self?.selectCompare(row) }
+        compareOutlineSource = source
+        worldTree.dataSource = source
+        worldTree.delegate = source
+        worldTree.reloadData()
+        for row in source.topRows {
+            worldTree.expandItem(row, expandChildren: true)
+        }
+        canvas.setMessage(nil)
+        paintCompare()
+    }
+
+    /// Compares the text again after an edit, or leaves the mode when the document is no longer the one
+    /// the comparison was started on.
+    private func refreshCompare() {
+        guard let compare = compareController else { return }
+        compare.refresh()
+        guard compare.isOn else {
+            closeCompare()
+            return
+        }
+        compareOutlineSource?.reload()
+        worldTree.reloadData()
+        if let source = compareOutlineSource {
+            for row in source.topRows {
+                worldTree.expandItem(row, expandChildren: true)
+            }
+        }
+        paintCompare()
+    }
+
+    /// Puts the summary and the frames of the report on the canvas, or the reason it could not be read.
+    private func paintCompare() {
+        guard let compare = compareController, let canvas = editorViewController?.sceneCanvas?.canvas else { return }
+        canvas.setCompareFrames(compare.frames())
+        canvas.setCompareNote(compare.summary())
+        canvas.setMessage(compare.message)
+    }
+
+    /// Leaves compare mode and puts the element outline and the canvas back as they were.
+    private func closeCompare() {
+        guard compareController != nil else { return }
+        compareController?.close()
+        compareController = nil
+        compareOutlineSource = nil
+        if isViewLoaded {
+            worldTree.menu = outlineViewDelegate?.createMenu()
+            worldTree.dataSource = outlineViewDelegate
+            worldTree.delegate = outlineViewDelegate
+            worldTree.reloadData()
+            editorViewController?.sceneCanvas?.canvas.setCompareFrames([])
+            editorViewController?.sceneCanvas?.canvas.setCompareNote(nil)
+            editorViewController?.sceneCanvas?.canvas.setMessage(nil)
+        }
+    }
+
+    /// Shows the element and the node a report row names in the version on the canvas; a node the new
+    /// version no longer has leaves its element shown.
+    private func selectCompare(_ row: CompareController.Row) {
+        guard let node = row.node, !node.element.isEmpty, let path = elementIndexPath(node.element) else { return }
+        editorViewController?.showSceneElement(path)
+        reloadSceneItems()
+        if let current = node.new {
+            editorViewController?.sceneCanvas?.canvas.selectSource(at: current.range.start)
+        }
+    }
+
+    /// The outline path of an element the comparison names by its names from the file root; #n picks
+    /// the repeated sibling an element path counts.
+    private func elementIndexPath(_ namePath: String) -> [Int]? {
+        guard let main = sceneTree?.main else { return nil }
+        var nodes = main.elems
+        var path: [Int] = []
+        for raw in namePath.components(separatedBy: "/") {
+            let (name, repeatIndex) = Self.pathSegment(raw)
+            var seen = 0
+            var found: Int?
+            for (i, n) in nodes.enumerated() where n.name == name {
+                if seen == repeatIndex {
+                    found = i
+                    break
+                }
+                seen += 1
+            }
+            guard let i = found else { return nil }
+            path.append(i)
+            nodes = nodes[i].elems
+        }
+        return path.isEmpty ? nil : path
+    }
+
+    /// A path segment with the #n a repeated name among siblings gets, as Diff writes it.
+    private static func pathSegment(_ text: String) -> (name: String, repeatIndex: Int) {
+        guard let hash = text.lastIndex(of: "#"), let n = Int(text[text.index(after: hash)...]) else {
+            return (text, 0)
+        }
+        return (String(text[..<hash]), n)
     }
 
     /// Add Library…: a file of components becomes an element of the document that mounts it, and Insert

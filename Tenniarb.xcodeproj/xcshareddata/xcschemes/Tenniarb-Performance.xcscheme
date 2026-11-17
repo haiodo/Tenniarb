@@ -51,6 +51,12 @@
                   Identifier = "ColorParsingTests">
                </Test>
                <Test
+                  Identifier = "CompareTests">
+               </Test>
+               <Test
+                  Identifier = "DiffTests">
+               </Test>
+               <Test
                   Identifier = "DocumentTests">
                </Test>
                <Test

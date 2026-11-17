@@ -102,6 +102,10 @@
 		0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D1C1EFF655B00714971 /* TenniarbTests.swift */; };
 		0C5C6D251EFF669500714971 /* TennTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5C6D241EFF669500714971 /* TennTests.swift */; };
 		AE01EC01000000000000099 /* TennGoldenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01EC00000000000000099 /* TennGoldenTests.swift */; };
+		AE03D1000000000000000002 /* Diff.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE03D1000000000000000001 /* Diff.swift */; };
+		AE03D1000000000000000004 /* CompareController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE03D1000000000000000003 /* CompareController.swift */; };
+		AE03D1000000000000000006 /* DiffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE03D1000000000000000005 /* DiffTests.swift */; };
+		AE03D1000000000000000008 /* CompareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE03D1000000000000000007 /* CompareTests.swift */; };
 		0C6375BF263FE9BF00E0BE20 /* corner.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BC263FE9BF00E0BE20 /* corner.png */; };
 		0C6375C0263FE9BF00E0BE20 /* markdown_font_size.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */; };
 		0C6375C1263FE9BF00E0BE20 /* corner-radius.png in Resources */ = {isa = PBXBuildFile; fileRef = 0C6375BE263FE9BF00E0BE20 /* corner-radius.png */; };
@@ -333,6 +337,10 @@
 		0C5C6D1E1EFF655B00714971 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C5C6D241EFF669500714971 /* TennTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennTests.swift; sourceTree = "<group>"; };
 		AE01EC00000000000000099 /* TennGoldenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennGoldenTests.swift; sourceTree = "<group>"; };
+		AE03D1000000000000000001 /* Diff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diff.swift; sourceTree = "<group>"; };
+		AE03D1000000000000000003 /* CompareController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CompareController.swift; path = controllers/CompareController.swift; sourceTree = "<group>"; };
+		AE03D1000000000000000005 /* DiffTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffTests.swift; sourceTree = "<group>"; };
+		AE03D1000000000000000007 /* CompareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareTests.swift; sourceTree = "<group>"; };
 		0C6375BC263FE9BF00E0BE20 /* corner.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = corner.png; sourceTree = "<group>"; };
 		0C6375BD263FE9BF00E0BE20 /* markdown_font_size.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = markdown_font_size.png; sourceTree = "<group>"; };
 		0C6375BE263FE9BF00E0BE20 /* corner-radius.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "corner-radius.png"; sourceTree = "<group>"; };
@@ -501,6 +509,7 @@
 				0C571C59206A069600ACDC6D /* Tenniarb.entitlements */,
 				0C439D1E1FFFFA7F0031AE78 /* Experiments */,
 				AE02EC000000000000000020 /* scene */,
+				AE03D1000000000000000009 /* diff */,
 				AE20B0000000000000000007 /* library */,
 				0CFBC7A41F0CAF190072E4FF /* document */,
 				AE10C0000000000000000021 /* comments */,
@@ -564,8 +573,17 @@
 				AE02EC00000000000000008F /* ComponentPickerController.swift */,
 				AE02EC000000000000000099 /* InspectorController.swift */,
 				AE02EC000000000000000021 /* CommentsController.swift */,
+				AE03D1000000000000000003 /* CompareController.swift */,
 			);
 			name = controllers;
+			sourceTree = "<group>";
+		};
+		AE03D1000000000000000009 /* diff */ = {
+			isa = PBXGroup;
+			children = (
+				AE03D1000000000000000001 /* Diff.swift */,
+			);
+			path = diff;
 			sourceTree = "<group>";
 		};
 		0C439D1E1FFFFA7F0031AE78 /* Experiments */ = {
@@ -703,6 +721,8 @@
 				AE02EC0000000000000000A1 /* RecoveryTests.swift */,
 				AE10C0000000000000000003 /* CommentsTests.swift */,
 				AE02EC000000000000000023 /* CommentsUITests.swift */,
+				AE03D1000000000000000005 /* DiffTests.swift */,
+				AE03D1000000000000000007 /* CompareTests.swift */,
 				AE02EC0000000000000000C3 /* LinksTests.swift */,
 				AE02EC0000000000000000C7 /* LinkOpenTests.swift */,
 				AE02EC0000000000000000B3 /* SceneTemplateTests.swift */,
@@ -1132,6 +1152,8 @@
 				0C34564E1ED88E9100341F1C /* SceneDrawView.swift in Sources */,
 				AE02EC00000000000000006D /* ScenePainter.swift in Sources */,
 				AE02EC00000000000000006C /* SceneCanvasView.swift in Sources */,
+				AE03D1000000000000000002 /* Diff.swift in Sources */,
+				AE03D1000000000000000004 /* CompareController.swift in Sources */,
 				0CB9183E1FFA465000725EBC /* SourcePopoverViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1195,6 +1217,8 @@
 				AE01EC01000000000000099 /* TennGoldenTests.swift in Sources */,
 				0CD4B320230D997A002F8D78 /* PerformanceTests.swift in Sources */,
 				0C7F899B233520880098B745 /* MarkDownTests.swift in Sources */,
+				AE03D1000000000000000006 /* DiffTests.swift in Sources */,
+				AE03D1000000000000000008 /* CompareTests.swift in Sources */,
 				0C5C6D1D1EFF655B00714971 /* TenniarbTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
