@@ -312,6 +312,9 @@
                   Identifier = "SceneRangeTests">
                </Test>
                <Test
+                  Identifier = "SceneRefsTests">
+               </Test>
+               <Test
                   Identifier = "SceneResolveTests">
                </Test>
                <Test
