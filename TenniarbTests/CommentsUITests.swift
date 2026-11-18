@@ -13,6 +13,7 @@
 //  the License.
 //
 
+import Tenn
 import XCTest
 
 @testable import Tenniarb
@@ -800,5 +801,195 @@ final class CommentsUITests: SceneDocumentTestCase {
         second.pollOnce()
         XCTAssertEqual(secondChanges, 2, "a reply typed in one window reaches the other")
         XCTAssertEqual(second.comment(added.id)?.replies?.map(\.text), ["from the first window"])
+    }
+
+    // MARK: - The classic diagram
+
+    /// A classic diagram of a source and the element it shows; no window.
+    private func classicView(
+        _ text: String = """
+        element D {
+            item Frame { pos 100 100; width 60; height 40 }
+        }
+        """
+    ) throws -> (SceneDrawView, Element) {
+        let model = ElementModel.parseTenn(node: TennParser().parse(text))
+        let store = ElementModelStore(model)
+        let view = SceneDrawView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        view.setModel(store: store)
+        let element = try XCTUnwrap(model.elements.first)
+        view.setActiveElement(element)
+        return (view, element)
+    }
+
+    func testClassicPinsSitOnTheItemBoxes() throws {
+        let (view, element) = try classicView()
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let names = classicElementPath(element)
+        XCTAssertEqual(names, ["D"])
+        let box = try XCTUnwrap(view.commentItemBoxes["Frame"])
+        let frame = try XCTUnwrap(element.items.first { $0.name == "Frame" })
+        let drawn = try XCTUnwrap(view.scene?.drawables[frame]?.getBounds())
+        XCTAssertEqual(
+            box, CGRect(x: drawn.minX, y: -drawn.maxY, width: drawn.width, height: drawn.height),
+            "the comment box counts y down from the top of the drawn item")
+        let corner = try comments.addComment(
+            text: "corner", anchor: Comments.Anchor(element: names, node: "Frame"), now: t0)
+        let offset = try comments.addComment(
+            text: "offset",
+            anchor: Comments.Anchor(element: names, node: "Frame", point: Comments.Point(x: 5, y: 7)),
+            now: t0)
+        let loose = try comments.addComment(
+            text: "loose", anchor: Comments.Anchor(element: names, node: ""), now: t0)
+
+        let pins = comments.pins(element: names, box: { view.commentItemBoxes[$0] }, origin: .zero)
+        XCTAssertEqual(pins.map(\.id), [corner.id, offset.id, loose.id])
+        XCTAssertEqual(pins[0].point, CGPoint(x: box.maxX, y: box.minY), "a node without a point sits at its top right")
+        XCTAssertEqual(
+            pins[1].point, CGPoint(x: box.minX + 5, y: box.minY + 7),
+            "a point is measured from the top left of the box")
+        XCTAssertEqual(pins[2].point, .zero, "without a node it is measured from the element origin")
+        XCTAssertFalse(pins[0].detached)
+    }
+
+    func testAClassicPinOfAGoneItemIsDetachedAtTheOrigin() throws {
+        let (view, element) = try classicView()
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let names = classicElementPath(element)
+        let gone = try comments.addComment(
+            text: "gone", anchor: Comments.Anchor(element: names, node: "Gone"), now: t0)
+
+        let pins = comments.pins(element: names, box: { view.commentItemBoxes[$0] })
+        XCTAssertEqual(pins.map(\.id), [gone.id])
+        XCTAssertEqual(pins[0].point, .zero, "an item that is not drawn puts its pin at the origin")
+        XCTAssertTrue(pins[0].detached)
+        XCTAssertEqual(comments.pin(at: .zero)?.id, gone.id)
+    }
+
+    func testAClassicClickOnEmptySpaceNamesTheElementAndThePoint() throws {
+        let (view, element) = try classicView()
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let names = classicElementPath(element)
+        let at = CGPoint(x: 400, y: 300)
+        let anchor = view.anchor(at: at)
+        XCTAssertEqual(anchor.element, names)
+        XCTAssertEqual(anchor.node, "")
+        XCTAssertEqual(anchor.point, Comments.Point(x: 400, y: 300), "without an item the point is the click")
+
+        _ = try comments.addComment(text: "loose", anchor: anchor, now: t0)
+        let pins = comments.pins(element: names, box: { view.commentItemBoxes[$0] }, origin: .zero)
+        XCTAssertEqual(
+            pins.first?.point, at, "a point without a node is y up, as go/app's classic SceneMap writes it")
+    }
+
+    func testAClassicPinClickOpensTheThreadWithoutSelecting() throws {
+        let (view, element) = try classicView()
+        let item = try XCTUnwrap(element.items.first)
+        view.setActiveItem(item)
+        let pins = [
+            CommentPin(id: "a", number: 1, point: CGPoint(x: 10, y: 10), detached: false, resolved: false),
+            CommentPin(id: "b", number: 2, point: CGPoint(x: 10, y: 10), detached: true, resolved: false),
+        ]
+        view.setCommentPins(pins)
+        XCTAssertEqual(view.pin(at: view.pinCenter(pins[1]))?.id, "b", "the last drawn wins")
+        XCTAssertNil(view.pin(at: CGPoint(x: 300, y: 300)))
+        let center = view.pinCenter(pins[0])
+        XCTAssertEqual(center.x, pins[0].point.x + CommentPin.radius * 0.6, accuracy: 1e-6)
+        XCTAssertEqual(
+            center.y, pins[0].point.y + CommentPin.radius * 0.6, accuracy: 1e-6,
+            "the marker sits above-right of the pin")
+
+        var clicked: String?
+        view.onPinClick = { clicked = $0 }
+        let at = view.viewPoint(view.pinCenter(pins[1]))
+        view.mouseDown(with: try mouseEvent(.leftMouseDown, at: at, in: view))
+        view.mouseUp(with: try mouseEvent(.leftMouseUp, at: at, in: view))
+        XCTAssertEqual(clicked, "b")
+        XCTAssertEqual(view.activeItems.map(\.name), ["Frame"], "a pin click leaves the selection")
+    }
+
+    func testCommentsForAClassicDocumentUseItsFile() throws {
+        let url = try scratch("tenniarb-comments-classic").appendingPathComponent("classic.tenn")
+        try """
+        element D {
+            item Frame { pos 100 100; width 60; height 40 }
+        }
+        """.write(to: url, atomically: true, encoding: .utf8)
+        let document = try openTestDocument(url)
+        XCTAssertNil(document.sceneTree, "the file is a classic diagram")
+        let controller = ViewController()
+        controller.document = document
+        let comments = try XCTUnwrap(controller.commentsForDocument())
+        XCTAssertEqual(comments.key, "path:" + url.standardizedFileURL.path)
+        comments.onChange = nil  // no poll for a window a test never shows
+    }
+
+    func testResolvedClassicPinsAreHiddenUntilAsked() throws {
+        let (view, element) = try classicView()
+        let comments = CommentsController(key: "path:/a.tenn", configDir: try configDir())
+        let names = classicElementPath(element)
+        let open = try comments.addComment(
+            text: "open", anchor: Comments.Anchor(element: names, node: "Frame"), now: t0)
+        let done = try comments.addComment(
+            text: "done", anchor: Comments.Anchor(element: names, node: "Frame"), now: t0)
+        try comments.resolve(id: done.id, now: t0.addingTimeInterval(60))
+
+        var pins = comments.pins(element: names, box: { view.commentItemBoxes[$0] })
+        view.setCommentPins(pins)
+        XCTAssertEqual(pins.map(\.id), [open.id], "a resolved comment has no pin until asked for")
+        XCTAssertEqual(pins.map(\.number), [1])
+        XCTAssertEqual(view.pin(at: view.pinCenter(try XCTUnwrap(pins.first)))?.id, open.id)
+
+        comments.setShowResolved(true)
+        pins = comments.pins(
+            element: names, box: { view.commentItemBoxes[$0] }, showResolved: comments.showResolved)
+        view.setCommentPins(pins)
+        XCTAssertEqual(pins.map(\.id), [open.id, done.id])
+        XCTAssertEqual(pins.map(\.number), [1, 2])
+        XCTAssertTrue(pins[1].resolved)
+    }
+
+    func testAClassicAnchorNamesTheSmallestItemAndThePointFromItsBox() throws {
+        let (view, element) = try classicView(
+            """
+            element D {
+                item Big { pos 90 100; width 200; height 150 }
+                item Small { pos 100 100; width 40; height 30 }
+            }
+            """)
+        let small = try XCTUnwrap(element.items.first { $0.name == "Small" })
+        let box = try XCTUnwrap(view.scene?.drawables[small]?.getBounds())
+        let anchor = view.anchor(at: CGPoint(x: box.minX + 3, y: box.maxY - 4))
+        XCTAssertEqual(anchor.element, ["D"])
+        XCTAssertEqual(anchor.node, "Small", "the smaller of the overlapping boxes wins")
+        XCTAssertEqual(anchor.point, Comments.Point(x: 3, y: 4), "the point is y down from the box top left")
+
+        let empty = view.anchor(at: CGPoint(x: -500, y: -500))
+        XCTAssertEqual(empty.node, "")
+        XCTAssertEqual(empty.point, Comments.Point(x: -500, y: -500), "without an item the point is the click, y up")
+    }
+
+    func testCKeyTogglesTheClassicCommentModeAndAClickPlacesAComment() throws {
+        let (view, _) = try classicView()
+        XCTAssertFalse(view.commentMode)
+        view.keyDown(with: keyEvent("c", code: 8))
+        XCTAssertTrue(view.commentMode)
+        XCTAssertEqual(view.message, SceneCanvasView.commentHint)
+
+        var added: (text: String, anchor: Comments.Anchor)?
+        view.onAddComment = { added = ($0, $1) }
+        view.commentPrompt = { $0("note") }
+        let at = view.viewPoint(CGPoint(x: 120, y: 80))
+        view.mouseDown(with: try mouseEvent(.leftMouseDown, at: at, in: view))
+        view.mouseUp(with: try mouseEvent(.leftMouseUp, at: at, in: view))
+        let result = try XCTUnwrap(added)
+        XCTAssertEqual(result.text, "note")
+        XCTAssertEqual(result.anchor.element, ["D"])
+        XCTAssertEqual(result.anchor.node, "Frame")
+        XCTAssertTrue(view.activeItems.isEmpty, "placing a comment leaves the selection")
+
+        view.keyDown(with: keyEvent("\u{1b}", code: 53))
+        XCTAssertFalse(view.commentMode)
+        XCTAssertNil(view.message)
     }
 }

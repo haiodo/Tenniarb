@@ -191,6 +191,27 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
     var onSelection: [([DiagramItem]) -> Void] = []
 
+    /// The pins of the comments of the shown element, in the coordinates of the diagram.
+    private(set) var commentPins: [CommentPin] = []
+    /// Why Add Comment… cannot write here; the menu says it instead of asking for the text.
+    var commentUnavailable: String?
+    /// The point of the diagram the context menu was opened at, for the comment it adds.
+    private var commentPoint: CGPoint?
+    /// Called with the id of the comment whose pin a click lands on.
+    var onPinClick: ((String) -> Void)?
+    /// Called with the text of a new comment and the anchor of the place it was asked at.
+    var onAddComment: ((String, Comments.Anchor) -> Void)?
+    /// Asks for the text of a new comment; nil shows the sheet over the window. A test answers instead.
+    var commentPrompt: ((@escaping (String) -> Void) -> Void)?
+    /// Whether a plain click places a comment instead of selecting; C toggles it and Esc leaves.
+    private(set) var commentMode = false
+    /// The cursor the canvas showed before the comment mode, put back when it leaves.
+    private var cursorBeforeCommentMode: NSCursor?
+    /// A press a pin or the comment mode took: its release must not select or drag.
+    private var commentPress = false
+    /// A line of text over the canvas, as a refused comment writes it; nil clears it.
+    private(set) var message: String?
+
     var scene: DrawableScene?
 
     var drawScheduled: Bool = false
@@ -427,6 +448,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
 
         if self.element == elementModel {
             return
+        }
+        if commentMode {
+            setCommentMode(false)
         }
         if self.popupView != nil {
             self.popupView?.removeFromSuperview()
@@ -1370,6 +1394,17 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         if self.mode == .Editing {
             return
         }
+        if self.commentMode, event.keyCode == 53 {
+            setCommentMode(false)
+            return
+        }
+        let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        if mods.isDisjoint(with: [.command, .control, .option]),
+            event.charactersIgnoringModifiers?.lowercased() == "c"
+        {
+            setCommentMode(!self.commentMode)
+            return
+        }
         if event.characters == "\t" {
             addNewItem(copyProps: event.modifierFlags.contains(NSEvent.ModifierFlags.option))
             return
@@ -1610,7 +1645,153 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         return self.scene?.find(point, allowAll: allowAll) ?? []
     }
 
+    // MARK: - Comments
+
+    /// A line of text over the canvas, as a comment the store refused writes it; nil clears it, leaving
+    /// the banner of the comment mode when it is on.
+    func setMessage(_ text: String?) {
+        message = text ?? (commentMode ? SceneCanvasView.commentHint : nil)
+        needsDisplay = true
+    }
+
+    /// Puts the pins of the comments of the shown element over the picture.
+    func setCommentPins(_ pins: [CommentPin]) {
+        commentPins = pins
+        needsDisplay = true
+    }
+
+    /// The boxes of the items a comment can name, by item name, in the coordinates of a comment: y down
+    /// from the top left, as go/app classicNamed and PlacePins read them. A link and an unnamed item have
+    /// no box, and the first item of a repeated name wins.
+    var commentItemBoxes: [String: CGRect] {
+        var boxes: [String: CGRect] = [:]
+        guard let element, let scene else { return boxes }
+        for item in element.items where item.kind != .Link && !item.name.isEmpty {
+            guard boxes[item.name] == nil, let b = scene.drawables[item]?.getBounds() else { continue }
+            boxes[item.name] = CGRect(x: b.minX, y: -b.maxY, width: b.width, height: b.height)
+        }
+        return boxes
+    }
+
+    /// The smallest drawn item under a point of the diagram, as go/app itemAt: links and unnamed items
+    /// place no anchor.
+    private func itemAt(_ p: CGPoint) -> (name: String, box: CGRect)? {
+        guard let element, let scene else { return nil }
+        var best: (name: String, box: CGRect)?
+        for item in element.items where item.kind != .Link && !item.name.isEmpty {
+            guard let box = scene.drawables[item]?.getBounds() else { continue }
+            guard p.x >= box.minX, p.x <= box.maxX, p.y >= box.minY, p.y <= box.maxY else { continue }
+            if best == nil || box.width * box.height < best!.box.width * best!.box.height {
+                best = (item.name, box)
+            }
+        }
+        return best
+    }
+
+    /// The anchor of a click at a point of the diagram, as go/app anchorAt: the smallest item under it,
+    /// the point from the top left of its box, or the element origin when the click lands on nothing. A
+    /// node point is y down, as go/app AnchorAt takes it from the gfx box; a point without a node is the
+    /// click of the editor scene, y up, as go/app smap.ToScene returns it.
+    func anchor(at p: CGPoint) -> Comments.Anchor {
+        let names = element.map { classicElementPath($0) } ?? []
+        guard let hit = itemAt(p) else {
+            return Comments.Anchor(element: names, node: "", point: Comments.Point(x: p.x, y: p.y))
+        }
+        return Comments.Anchor(
+            element: names, node: hit.name,
+            point: Comments.Point(x: p.x - hit.box.minX, y: hit.box.maxY - p.y))
+    }
+
+    /// Where a point of the diagram lands in the view, the inverse of updateMousePosition.
+    func viewPoint(_ p: CGPoint) -> NSPoint {
+        let sceneBounds = zoomBounds()
+        return NSPoint(
+            x: (p.x + ox + sceneBounds.midX) * zoomLevel,
+            y: (p.y + oy + sceneBounds.midY) * zoomLevel)
+    }
+
+    /// The centre of a pin's marker in the diagram: above-right of the anchor so it does not hide the
+    /// item, a view size that grows with the zoom, as go/app pinView. The pins are in the diagram, y up.
+    func pinCenter(_ pin: CommentPin) -> CGPoint {
+        let r = CommentPin.radius / max(zoomLevel, 0.0001)
+        return CGPoint(x: pin.point.x + r * 0.6, y: pin.point.y + r * 0.6)
+    }
+
+    /// The pin a click at a point of the diagram lands on; the one drawn last wins, as go/app PinAtView.
+    func pin(at p: CGPoint) -> CommentPin? {
+        let q = viewPoint(p)
+        for pin in commentPins.reversed() {
+            let c = viewPoint(pinCenter(pin))
+            let dx = q.x - c.x
+            let dy = q.y - c.y
+            if dx * dx + dy * dy <= CommentPin.radius * CommentPin.radius { return pin }
+        }
+        return nil
+    }
+
+    /// Enters or leaves the mode where a plain click places a comment, as go/app setCommentMode.
+    func setCommentMode(_ on: Bool) {
+        guard on != commentMode else { return }
+        if on, let reason = commentUnavailable {
+            setMessage(reason)
+            return
+        }
+        commentMode = on
+        if on {
+            cursorBeforeCommentMode = NSCursor.current
+            NSCursor.crosshair.set()
+        } else {
+            (cursorBeforeCommentMode ?? .arrow).set()
+            cursorBeforeCommentMode = nil
+        }
+        setMessage(on ? SceneCanvasView.commentHint : nil)
+    }
+
+    /// Writes a comment at a point of the diagram through the window controller's callback.
+    func addComment(text: String, at p: CGPoint) {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        onAddComment?(text, anchor(at: p))
+    }
+
+    /// Asks for the text of a comment at p, then writes it through onAddComment.
+    private func askComment(at p: CGPoint) {
+        if let commentPrompt {
+            commentPrompt { [weak self] text in self?.addComment(text: text, at: p) }
+            return
+        }
+        guard let window else { return }
+        let alert = NSAlert()
+        alert.messageText = "Add Comment"
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        field.placeholderString = "Comment"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Post")
+        alert.addButton(withTitle: "Cancel")
+        alert.window.initialFirstResponder = field
+        alert.beginSheetModal(for: window) { [weak self] response in
+            MainActor.assumeIsolated {
+                guard response == .alertFirstButtonReturn else { return }
+                self?.addComment(text: field.stringValue, at: p)
+            }
+        }
+    }
+
+    /// Add Comment… of the menu: explains a document without a file, else asks for the text at the click.
+    @objc private func commentFromMenu(_ sender: Any?) {
+        if let reason = commentUnavailable {
+            setMessage(reason)
+            return
+        }
+        guard let p = commentPoint else { return }
+        askComment(at: p)
+    }
+
     override func mouseUp(with event: NSEvent) {
+        if commentPress {
+            commentPress = false
+            return
+        }
         self.updateMousePosition(event)
         if self.mode == .Editing {
             // No dragging allowed until editing is not done
@@ -1698,13 +1879,27 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     var downDate: Date? = nil
 
     override func mouseDown(with event: NSEvent) {
+        window?.makeFirstResponder(self)  // the C key reaches the canvas
         self.updateMousePosition(event)
 
         self.downDate = Date()
+        self.commentPress = false
 
         if self.mode == .Editing {
             // No dragging allowed until editing is not done
             self.commitTitleEditing(nil)
+        }
+
+        let clickPoint = CGPoint(x: self.x, y: self.y)
+        if let pin = self.pin(at: clickPoint) {
+            self.commentPress = true
+            onPinClick?(pin.id)
+            return
+        }
+        if self.commentMode, event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty {
+            self.commentPress = true
+            askComment(at: clickPoint)  // no selection and no drag: the click only places a comment
+            return
         }
 
         self.mouseDownState = true
@@ -1840,6 +2035,9 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
     }
 
     override func mouseDragged(with event: NSEvent) {
+        if self.commentPress {
+            return
+        }
         self.hidePopup()
         self.updateMousePosition(event)
 
@@ -2220,7 +2418,47 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             context.restoreGState()
             context.restoreGState()
         }
+        drawPins()
+        drawMessage()
         //        Swift.debugPrint("draw \(Date().timeIntervalSince(now))")
+    }
+
+    /// Draws the markers of the comments over the picture: an accent disc with the number, a ring when the
+    /// anchor item is gone, faded when the thread is resolved, as SceneCanvasView.
+    private func drawPins() {
+        for pin in commentPins {
+            let c = viewPoint(pinCenter(pin))
+            let r = CommentPin.radius
+            let disc = NSBezierPath(ovalIn: NSRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
+            let color = pin.resolved ? NSColor.controlAccentColor.withAlphaComponent(0.45) : NSColor.controlAccentColor
+            let textColor: NSColor
+            if pin.detached {
+                color.setStroke()
+                disc.lineWidth = 2
+                disc.stroke()
+                textColor = color
+            } else {
+                color.setFill()
+                disc.fill()
+                textColor = .white
+            }
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.boldSystemFont(ofSize: 11), .foregroundColor: textColor,
+            ]
+            let number = "\(pin.number)" as NSString
+            let size = number.size(withAttributes: attributes)
+            number.draw(at: NSPoint(x: c.x - size.width / 2, y: c.y - size.height / 2), withAttributes: attributes)
+        }
+    }
+
+    /// Draws the line of a refused comment at the top left of the view.
+    private func drawMessage() {
+        guard let message else { return }
+        let text = NSAttributedString(
+            string: message,
+            attributes: [.font: NSFont.systemFont(ofSize: 13), .foregroundColor: NSColor.systemRed])
+        let size = text.size()
+        text.draw(at: NSPoint(x: 8, y: bounds.height - size.height - 8))
     }
 
     public func selectAllItems() {
@@ -2917,6 +3155,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             return nil
         }
         self.updateMousePosition(event)
+        self.commentPoint = CGPoint(x: self.x, y: self.y)
 
         self.dragMap.removeAll()
         self.dragElements.removeAll()
@@ -2943,6 +3182,10 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
 
         let addAction = NSMenuItem(title: "New item", action: #selector(addTopItm), keyEquivalent: "")
+
+        let commentAction = NSMenuItem(
+            title: "Add Comment…", action: #selector(commentFromMenu(_:)), keyEquivalent: "")
+        commentAction.target = self
 
         if self.activeItems.count > 0 {
             let menu = NSMenu()
@@ -2987,6 +3230,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
             menu.addItem(NSMenuItem.separator())
+            menu.addItem(commentAction)
             menu.addItem(NSMenuItem(title: "Copy Link", action: #selector(copyLink(_:)), keyEquivalent: ""))
 
             return menu
@@ -3006,6 +3250,7 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.createStylesMenu(menu)
             self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())
+            menu.addItem(commentAction)
             menu.addItem(NSMenuItem(title: "Copy Link", action: #selector(copyLink(_:)), keyEquivalent: ""))
 
             return menu
