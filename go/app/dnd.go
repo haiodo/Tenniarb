@@ -62,7 +62,7 @@ func (v *Viewer) dropElement() {
 }
 
 // componentDragPrefix marks the text a component row carries, told from the text drop of an outline row.
-const componentDragPrefix = "\x00tenniarb-component:"
+const componentDragPrefix = "tenniarb-component:"
 
 // dragComponents lets a row of the component browser of the Items pane be dragged onto the canvas: the
 // drag carries the use path of the component, and the drop writes the use where it lands.

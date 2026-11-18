@@ -122,6 +122,14 @@ func TestComponentDropIgnoresOtherText(t *testing.T) {
 	}
 }
 
+// A text transfer cuts the drag text at the first NUL, so a prefix that carries one reaches the canvas
+// empty and the drop is refused.
+func TestComponentDragPrefixHasNoNul(t *testing.T) {
+	if i := strings.IndexByte(componentDragPrefix, 0); i >= 0 {
+		t.Errorf("the drag prefix has a NUL at byte %d: a text transfer cuts the text there", i)
+	}
+}
+
 // The browser lists nothing when no library is mounted, and the pane says so instead of an empty list.
 func TestComponentBrowserWithoutLibrary(t *testing.T) {
 	dir := t.TempDir()

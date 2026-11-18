@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Перетаскивание компонента из панели Items на холст работает и в Linux, и в Windows: текст переноса
+  начинался с NUL, а перенос текста обрезает строку на первом NUL.
+
 * The UI SDK wireframe kit groups its 256 parts under seven category elements - `Actions` (19), `Forms` (88),
   `Display` (58), `Overlays` (37), `Navigation` (33), `Feedback` (6), `Media` (15). A category carries no
   `kind` and no parameters, so the component browser lists the parts by group and a use names the category:
