@@ -787,4 +787,124 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.itemRows([9]).count, 0, "a stale path lists nothing")
     }
 
+    // MARK: - Built screens
+
+    /// Five elements, one item each: a screen per element, and a sixth build of the first drops its entry.
+    private let cacheDoc = """
+        element A {
+            item One { auto-layout column; title a }
+        }
+
+        element B {
+            item One { auto-layout column; title b }
+        }
+
+        element C {
+            item One { auto-layout column; title c }
+        }
+
+        element D {
+            item One { auto-layout column; title d }
+        }
+
+        element E {
+            item One { auto-layout column; title e }
+        }
+        """
+
+    /// A switch back to an element shown before draws the screen it was built into, and reports the
+    /// selection as a build does.
+    func testAScreenOfAnotherElementComesBackAsItWasBuilt() throws {
+        let canvas = try canvas(text: cacheDoc)
+        let first = try XCTUnwrap(canvas.screen)
+        XCTAssertEqual(canvas.cachedScreenCount, 0, "the shown screen is not cached")
+        var changes = 0
+        canvas.onSelectionChange = { changes += 1 }
+
+        canvas.showElement([1])
+        XCTAssertFalse(canvas.screen === first, "another element builds its own screen")
+        XCTAssertEqual(canvas.cachedScreenCount, 1)
+        canvas.showElement([0])
+
+        XCTAssertTrue(canvas.screen === first, "the screen of the first element comes back as it was built")
+        XCTAssertEqual(canvas.placed(at: [0])?.r.prop("title")?.text(0), "a")
+        XCTAssertEqual(changes, 2, "a cache hit reports the selection as a build does")
+    }
+
+    /// An edit loads a new tree: its screens are built again, and the entries of the old tree are gone.
+    func testAnEditThatReloadsTheTreeDropsTheCachedScreens() throws {
+        let document = try document(cacheDoc)
+        let canvas = try canvas(document)
+        let first = try XCTUnwrap(canvas.screen)
+        let firstTree = try XCTUnwrap(canvas.shownTree)
+        canvas.showElement([1])
+        canvas.showElement([0])
+        XCTAssertTrue(canvas.screen === first, "the screen comes back before the edit")
+        XCTAssertEqual(canvas.cachedScreenCount, 1)
+
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "One" }))
+        canvas.beginTitleEdit()
+        try XCTUnwrap(canvas.editField).stringValue = "Edited"
+        canvas.endTitleEdit(commit: true)
+
+        XCTAssertFalse(canvas.shownTree === firstTree, "the edit reloaded the document")
+        XCTAssertFalse(canvas.screen === first, "the new tree builds the element anew")
+        XCTAssertEqual(canvas.cachedScreenCount, 0, "the screens of the old tree are gone")
+        XCTAssertEqual(canvas.placed(at: [0])?.r.prop("title")?.text(0), "Edited")
+    }
+
+    /// The cache holds four screens: the fifth one pushed out is the least recently shown.
+    func testAFifthElementDropsTheOldestScreen() throws {
+        let canvas = try canvas(text: cacheDoc)
+        var screens = [try XCTUnwrap(canvas.screen)]
+        for i in 1...4 {
+            canvas.showElement([i])
+            screens.append(try XCTUnwrap(canvas.screen))
+        }
+        XCTAssertEqual(canvas.cachedScreenCount, 4)
+
+        canvas.showElement([0])
+        XCTAssertFalse(canvas.screen === screens[0], "the screen of A was the oldest and is gone")
+        XCTAssertEqual(canvas.cachedScreenCount, 4)
+        canvas.showElement([3])
+        XCTAssertTrue(canvas.screen === screens[3], "the four newest stay for a switch back")
+    }
+
+    /// The element shown and the selection of the element survive a switch away and back.
+    func testTheSelectionAndTheElementStayOnTheCacheHit() throws {
+        let canvas = try canvas(text: cacheDoc)
+        let first = try XCTUnwrap(canvas.screen)
+        canvas.select([0])
+        XCTAssertNil(canvas.elementPath, "the canvas opens on the first element")
+
+        canvas.showElement([1])
+        XCTAssertEqual(canvas.elementPath, [1])
+        canvas.showElement([0])
+
+        XCTAssertEqual(canvas.elementPath, [0])
+        XCTAssertTrue(canvas.screen === first)
+        XCTAssertEqual(canvas.selection, [0], "the selection of the element is still there")
+        XCTAssertEqual(canvas.placed(at: canvas.selection)?.r.prop("title")?.text(0), "a")
+    }
+
+    /// A cache hit draws the placed tree the first build produced, item boxes and hit-test with it.
+    func testACacheHitDrawsTheItemWhereItWasBuilt() throws {
+        let canvas = try canvas(text: cacheDoc)
+        let before = try XCTUnwrap(canvas.placed(at: [0]))
+        let box = (x: before.x, y: before.y, w: before.w, h: before.h)
+        let middle = Scene.Point(x: box.x + box.w / 2, y: box.y + box.h / 2)
+        let hit = try XCTUnwrap(canvas.hitItem(middle))
+
+        canvas.showElement([1])
+        canvas.showElement([0])
+
+        let after = try XCTUnwrap(canvas.placed(at: [0]))
+        XCTAssertTrue(after === before, "the placed tree is the one the cache kept")
+        XCTAssertEqual(after.x, box.x)
+        XCTAssertEqual(after.y, box.y)
+        XCTAssertEqual(after.w, box.w)
+        XCTAssertEqual(after.h, box.h)
+        XCTAssertEqual(canvas.hitItem(middle), hit, "the hit-test lands on the same item")
+    }
+
 }

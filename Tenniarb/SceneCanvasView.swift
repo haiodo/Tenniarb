@@ -108,6 +108,47 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
 
+    // MARK: - Built screens
+
+    /// How many screens of other elements stay off the canvas for a quick switch back, as sceneCacheSize.
+    static let cacheSize = 4
+
+    /// A screen taken off the canvas: built for node (nil, the file root) out of tree, held weakly so a
+    /// deallocated tree can never be matched by a new one at the same address.
+    private struct Cached {
+        weak var tree: Scene.Tree?
+        let node: Scene.Node?
+        let screen: Scene.Screen
+        let placed: Scene.Placed
+        let painter: ScenePainter
+    }
+
+    /// The screens shown before, newest first. The shown one is not here, as a Go view is detached from the
+    /// canvas and put back; the entries die with their tree.
+    private var cache: [Cached] = []
+    /// How many screens the last show left cached; the tests read it.
+    var cachedScreenCount: Int { cache.count }
+    /// A drag shifted the drawn tree without writing the document: that screen must not be cached.
+    private var movedByDrag = false
+
+    /// Takes the shown screen off the canvas into the cache, as go/app cacheScene; the oldest entry goes
+    /// when the fifth one arrives.
+    private func cacheShown() {
+        let moved = movedByDrag
+        movedByDrag = false
+        guard !moved, let tree, let screen, let placed, let painter else { return }
+        cache.insert(Cached(tree: tree, node: element, screen: screen, placed: placed, painter: painter), at: 0)
+        if cache.count > SceneCanvasView.cacheSize {
+            cache.removeLast()
+        }
+    }
+
+    /// The screen built for node out of tree, taken out of the cache; nil builds it anew.
+    private func take(_ tree: Scene.Tree, _ node: Scene.Node?) -> Cached? {
+        guard let i = cache.firstIndex(where: { $0.tree === tree && $0.node === node }) else { return nil }
+        return cache.remove(at: i)
+    }
+
     /// Shows the first element of tree, as the Go window opens a document; nil clears the canvas.
     func show(_ tree: Scene.Tree?) {
         endTitleEdit(commit: false)
@@ -127,22 +168,33 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             onSelectionChange?()
             return
         }
+        cacheShown()
         self.tree = tree
+        cache.removeAll { $0.tree !== tree }  // an edit loads a new tree: the screens of the old one are gone
         let el = shownElement(tree) ?? tree.main?.elems.first { $0.kind == .element }
-        let built: Scene.Screen?
-        if let el {
-            built = tree.buildElement(el, measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
+        if let hit = take(tree, el ?? tree.main) {
+            element = hit.node
+            screen = hit.screen
+            placed = hit.placed
+            painter = hit.painter
+            message = nil
+            drag = nil
         } else {
-            built = tree.build("", measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
+            let built: Scene.Screen?
+            if let el {
+                built = tree.buildElement(el, measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
+            } else {
+                built = tree.build("", measurer: Scene.TextMeasurer(), eval: sceneEvalVars)
+            }
+            element = el ?? tree.main
+            screen = built
+            placed = built?.placed()
+            painter = built.map(ScenePainter.init)
+            message =
+                built == nil
+                ? tree.diagnostics.first { !$0.warn }.map { "\($0.pos): \($0.message)" } ?? "the scene does not build"
+                : nil
         }
-        element = el ?? tree.main
-        screen = built
-        placed = built?.placed()
-        painter = built.map(ScenePainter.init)
-        message =
-            built == nil
-            ? tree.diagnostics.first { !$0.warn }.map { "\($0.pos): \($0.message)" } ?? "the scene does not build"
-            : nil
         indexSelection()
         if placed(at: selection) == nil {
             selection = nil
@@ -782,6 +834,7 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         d.dx = dx
         d.dy = dy
         drag = d
+        movedByDrag = true
         needsDisplay = true
     }
 
