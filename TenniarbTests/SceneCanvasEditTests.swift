@@ -907,4 +907,54 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         XCTAssertEqual(canvas.hitItem(middle), hit, "the hit-test lands on the same item")
     }
 
+    // MARK: - Title field
+
+    /// The field over an item covers the box the canvas draws, filled and rounded as the Go editor draws
+    /// it: the native bezel let the title behind it show through.
+    func testTheTitleFieldIsTheItemBoxFilledAndRounded() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+        let path = try XCTUnwrap(canvas.hitItem(Scene.Point(x: 220, y: 40)))
+        canvas.select(path)
+        canvas.beginTitleEdit()
+        let field = try XCTUnwrap(canvas.editField, "a selected item opens the field")
+        let pl = try XCTUnwrap(canvas.placed(at: path))
+        let ti = try XCTUnwrap(canvas.screen?.p.texts[ObjectIdentifier(pl.r)])
+
+        XCTAssertTrue(field.drawsBackground)
+        XCTAssertFalse(field.isBordered, "no bezel over the drawn item")
+        XCTAssertFalse(field.isBezeled)
+        let origin = canvas.viewPoint(Scene.Point(x: pl.x, y: pl.y))
+        XCTAssertEqual(
+            field.frame,
+            NSRect(x: origin.x, y: origin.y, width: pl.w * canvas.zoom, height: pl.h * canvas.zoom),
+            "the field is the box of the item, not a text rect of its own")
+        XCTAssertEqual(field.font?.pointSize, ti.font.size * canvas.zoom, "the size the item draws its title in")
+        XCTAssertEqual(field.alignment, .center, "the item centres its title")
+        XCTAssertEqual(try XCTUnwrap(field.backgroundColor).alphaComponent, 1, "the fill hides the title behind it")
+        XCTAssertEqual(field.layer?.cornerRadius, 8, "no corner-radius written: the Go editor uses 8")
+
+        canvas.endTitleEdit(commit: false)
+        XCTAssertNil(canvas.editField)
+        XCTAssertNil(field.superview, "the field leaves the canvas with the edit")
+    }
+
+    /// corner-radius comes from the item, kept inside half the field and never under two points.
+    func testTheTitleFieldCornersFollowTheItem() throws {
+        let canvas = try canvas(
+            text: """
+                element A {
+                    item Round { width 120; height 40; title "R"; corner-radius 30 }
+                    item Square { width 120; height 40; title "S"; corner-radius 1 }
+                }
+                """)
+
+        for (path, radius) in [([0], CGFloat(20)), ([1], CGFloat(2))] {
+            canvas.select(path)
+            canvas.beginTitleEdit()
+            let field = try XCTUnwrap(canvas.editField, "an item of the element opens the field")
+            XCTAssertEqual(field.layer?.cornerRadius, radius, "radius of the item at \(path)")
+            canvas.endTitleEdit(commit: false)
+        }
+    }
+
 }

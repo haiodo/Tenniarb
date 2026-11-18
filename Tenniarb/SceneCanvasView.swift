@@ -693,11 +693,17 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         let ti = screen?.p.texts[ObjectIdentifier(pl.r)]
         editFontSize = ti?.font.size ?? Scene.defaultFontSize
         let field = NSTextField(frame: .zero)
+        field.cell = InlineTitleCell(textCell: "")
         field.stringValue = ti?.text ?? ""  // the drawn text; an edit of a title expression flattens it
-        field.isBordered = true
-        field.drawsBackground = true
-        field.backgroundColor = .textBackgroundColor
-        field.focusRingType = .none
+        field.usesSingleLineMode = true
+        // the title of a leaf is centred unless the file asks for another layout
+        switch ti?.align ?? .middle {
+        case .left: field.alignment = .left
+        case .right: field.alignment = .right
+        case .middle: field.alignment = .center
+        }
+        styleField(field)
+        field.isEditable = true
         field.delegate = self
         addSubview(field)
         editing = path
@@ -729,8 +735,43 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     private func placeEditor() {
         guard let field = editField, let pl = placed(at: editing), pl.w > 0, pl.h > 0 else { return }
         field.frame = viewRect(pl)
-        // the drawn size, floored so the text stays readable while typing
-        field.font = NSFont.systemFont(ofSize: min(40, max(9, editFontSize * zoom)))
+        field.font = NSFont.systemFont(ofSize: editFontSize * zoom)
+        field.layer?.cornerRadius = inlineRadius(pl)
+    }
+
+    /// Gives the field the look of inlineOpts: a rounded fill on the layer, so the title drawn behind it
+    /// does not show through, and a thin grey border instead of the native bezel.
+    private func styleField(_ field: NSTextField) {
+        let fill = inlineFill
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = true
+        field.backgroundColor = fill
+        field.focusRingType = .none
+        field.wantsLayer = true
+        field.layer?.backgroundColor = fill.cgColor
+        field.layer?.borderColor =
+            NSColor(
+                srgbRed: 128.0 / 255, green: 128.0 / 255, blue: 128.0 / 255, alpha: 64.0 / 255
+            ).cgColor
+        field.layer?.borderWidth = 1
+        field.layer?.masksToBounds = true
+    }
+
+    /// The fill of the field as inlineOpts: white in light, #1C1C1E in dark.
+    private var inlineFill: NSColor {
+        effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 28.0 / 255, green: 28.0 / 255, blue: 30.0 / 255, alpha: 1)
+            : .white
+    }
+
+    /// The corner radius of inlineOpts: the item's corner-radius at this zoom, no more than half the
+    /// field, and two points at least so a short box still reads as rounded.
+    private func inlineRadius(_ pl: Scene.Placed) -> CGFloat {
+        let written = pl.prop("corner-radius")?.num(0) ?? 0
+        let radius = ((written > 0 ? written : 8) * zoom).rounded()
+        let half = (pl.h * zoom).rounded() / 2
+        return max(2, min(radius, half.rounded(.down)))
     }
 
     /// Writes the title of the item at path through the document; a refusal stays on the canvas. A part of
@@ -1306,6 +1347,29 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
             let size = number.size(withAttributes: attributes)
             number.draw(at: NSPoint(x: c.x - size.width / 2, y: c.y - size.height / 2), withAttributes: attributes)
         }
+    }
+}
+
+/// A field over a box taller than its line: the cell keeps the text on the middle line, its editor
+/// with it, where a borderless field puts both at the top.
+private final class InlineTitleCell: NSTextFieldCell {
+    override func drawingRect(forBounds rect: NSRect) -> NSRect {
+        var out = super.drawingRect(forBounds: rect)
+        guard let font else { return out }
+        let line = (font.ascender - font.descender + font.leading).rounded(.up)
+        guard line > 0, line < out.height else { return out }
+        out.origin.y += (out.height - line) / 2
+        out.size.height = line
+        return out
+    }
+
+    override func select(
+        withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?,
+        start selStart: Int, length selLength: Int
+    ) {
+        super.select(
+            withFrame: drawingRect(forBounds: rect), in: controlView, editor: textObj, delegate: delegate,
+            start: selStart, length: selLength)
     }
 }
 
