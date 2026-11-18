@@ -1544,4 +1544,153 @@ final class InspectorTests: SceneDocumentTestCase {
         XCTAssertEqual(placed.maxY, view.bounds.maxY, accuracy: 1, "the column sits at the top of the pane")
         XCTAssertEqual(content.frame.width, scroll.contentView.bounds.width, "the rows keep the column width")
     }
+
+    // MARK: - The geometry of the column
+
+    /// A scene with an item that writes every kind of row the layout tests look at, and a second item to
+    /// select while the first one's column is rebuilt.
+    private let columnText = """
+        element Screen {
+            item Card {
+                auto-layout abs
+                pos 10 -20
+                width 100
+                height 40
+                color #ff0000
+            }
+            item Twin { auto-layout abs; width 20; height 20 }
+        }
+        """
+
+    /// The column of a scene document with the item of that name selected, laid out at Go's width so its
+    /// rows have frames without a window.
+    private func laidOutColumn(
+        _ text: String, selecting name: String
+    ) throws -> (controls: InspectorController, view: NSView, canvas: SceneCanvasView) {
+        let document = try document(text)
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == name }))
+        let controls = inspector(document, canvas)
+        let view = controls.createView()
+        view.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        view.layoutSubtreeIfNeeded()
+        return (controls, view, canvas)
+    }
+
+    /// A view of the built column by the identifier its row gives it.
+    private func view(_ root: NSView, _ id: String) -> NSView? {
+        if root.identifier?.rawValue == id { return root }
+        for sub in root.subviews {
+            if let found = view(sub, id) { return found }
+        }
+        return nil
+    }
+
+    /// The stack of the column, under the scroll view.
+    private func columnStack(_ column: NSView) throws -> NSView {
+        let scroll = try XCTUnwrap(column.subviews.compactMap { $0 as? NSScrollView }.first)
+        let content = try XCTUnwrap(scroll.documentView)
+        return try XCTUnwrap(content.subviews.first)
+    }
+
+    /// The caption column is Go's labelWidth, and the two fields of Position sit on one line with their
+    /// letters, as in.pair lays them out.
+    func testTheCaptionIsSixtyEightWideAndAPairSharesItsLine() throws {
+        let (_, column, _) = try laidOutColumn(columnText, selecting: "Card")
+
+        let caption = try XCTUnwrap(view(column, "caption:Position"))
+        XCTAssertEqual(caption.frame.width, 68, accuracy: 1, "the caption column of Go's labelWidth")
+
+        let x = try XCTUnwrap(view(column, "field:Layout.Position X") as? NSTextField)
+        let y = try XCTUnwrap(view(column, "field:Layout.Position Y") as? NSTextField)
+        XCTAssertTrue(x.superview === y.superview, "Position X and Y share one line")
+        XCTAssertEqual(x.frame.origin.y, y.frame.origin.y, accuracy: 0.5, "the pair sits on one line")
+        XCTAssertEqual(x.stringValue, "10")
+        XCTAssertEqual(y.stringValue, "-20")
+    }
+
+    /// A size row keeps its field and the Fixed/Hug/Fill segments on one line, the segments on the right.
+    func testTheSizeSegmentsSitOnTheFieldLine() throws {
+        let (_, column, _) = try laidOutColumn(columnText, selecting: "Card")
+
+        let field = try XCTUnwrap(view(column, "field:Layout.Size W") as? NSTextField)
+        let segments = try XCTUnwrap(view(column, "segments:Size W") as? NSSegmentedControl)
+        XCTAssertTrue(field.superview === segments.superview, "one row holds the field and its segments")
+        XCTAssertEqual(field.frame.origin.y, segments.frame.origin.y, accuracy: 2, "the row does not grow")
+        XCTAssertGreaterThan(segments.frame.minX, field.frame.maxX, "the segments follow the field")
+        XCTAssertEqual(segments.segmentCount, 3)
+    }
+
+    /// A colour row shows a swatch of the value beside its field, as Go's colorCtl: 24 points, filled with
+    /// the colour the row holds.
+    func testTheColorRowShowsASwatchOfItsValue() throws {
+        let (_, column, _) = try laidOutColumn(columnText, selecting: "Card")
+
+        let swatch = try XCTUnwrap(view(column, "swatch:Fill.Color"))
+        XCTAssertEqual(swatch.frame.width, 24, accuracy: 0.5)
+        XCTAssertEqual(swatch.frame.height, 24, accuracy: 0.5)
+        let fill = try XCTUnwrap(swatch.layer?.backgroundColor)
+        let channels = try XCTUnwrap(fill.components)
+        XCTAssertEqual(channels[0], 1, accuracy: 0.01, "the swatch is filled with the row's colour")
+        XCTAssertEqual(channels[1], 0, accuracy: 0.01)
+        XCTAssertEqual(channels[2], 0, accuracy: 0.01)
+
+        let field = try XCTUnwrap(view(column, "field:Fill.Color") as? NSTextField)
+        XCTAssertTrue(field.superview === swatch.superview, "the swatch sits in the row of its field")
+    }
+
+    /// A header folds its section, the rows of a folded section are hidden, and the column is shorter; the
+    /// fold survives the column being built again for another selection.
+    func testASectionFoldsAndStaysFolded() throws {
+        let (controls, column, canvas) = try laidOutColumn(columnText, selecting: "Card")
+        let stack = try columnStack(column)
+        let expanded = stack.fittingSize.height
+
+        let header = try XCTUnwrap(view(column, "section:Effects") as? NSButton)
+        let chevron = try XCTUnwrap(view(column, "chevron:Effects") as? NSButton)
+        XCTAssertEqual(header.title, "Effects")
+        XCTAssertEqual(chevron.state, .on, "sections start expanded")
+        XCTAssertTrue(controls.rows.contains { $0.label == "Opacity" })
+        header.performClick(nil)
+        column.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(chevron.state, .off, "the triangle points right on a folded section")
+        let body = try XCTUnwrap(view(column, "body:Effects"))
+        XCTAssertTrue(body.isHidden, "the body of a folded section is hidden")
+        let row = try XCTUnwrap(view(column, "field:Effects.Opacity"))
+        XCTAssertTrue(row.isHiddenOrHasHiddenAncestor, "the rows are hidden with the body")
+        XCTAssertLessThan(stack.fittingSize.height, expanded, "the folded column is shorter")
+
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Twin" }))
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Card" }))
+        column.layoutSubtreeIfNeeded()
+        XCTAssertEqual(
+            (view(column, "chevron:Effects") as? NSButton)?.state, .off, "the fold is remembered")
+        XCTAssertTrue(try XCTUnwrap(view(column, "body:Effects")).isHidden)
+    }
+
+    /// A typed body reaches the model: the field sits below the Grid pair of the element, and its editor
+    /// still finds the row it writes.
+    func testTypingTheBodyOfAnElementWritesTheDescription() throws {
+        let document = try document("element Screen { item Box { width 100; height 40 } }")
+        let controls = classicInspector(document)
+        let column = controls.createView()
+        column.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        column.layoutSubtreeIfNeeded()
+
+        let scroll = try XCTUnwrap(column.subviews.compactMap { $0 as? NSScrollView }.first)
+        let editor = try XCTUnwrap(textViews(scroll).first)
+        editor.string = "Described"
+        NotificationCenter.default.post(name: NSText.didChangeNotification, object: editor)
+
+        let written = expectation(description: "the body is written after the pause")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { written.fulfill() }
+        wait(for: [written], timeout: 5)
+        XCTAssertTrue(flat(modelText(document)).contains("description \"Described\""), modelText(document))
+    }
+
+    /// The text views of a built column, the body field among them.
+    private func textViews(_ root: NSView) -> [NSTextView] {
+        (root as? NSTextView).map { [$0] } ?? root.subviews.flatMap { textViews($0) }
+    }
 }

@@ -22,6 +22,10 @@ import Tenn
 final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelegate {
     /// The width Go gives the inspector; wide enough for a pair of fields without cutting them.
     static let width: CGFloat = 272
+    /// The caption column of a row, as go/app labelWidth: wide enough for the longest caption, no more.
+    static let captionWidth: CGFloat = 68
+    /// The room Go keeps around the column, g.Spacing.MD: the same on all four sides.
+    static let pad: CGFloat = 12
     /// How far the divider may move: the column is fixed in spirit, not in the way of a wider path.
     static let minWidth: CGFloat = 240
     static let maxWidth: CGFloat = 320
@@ -52,6 +56,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         /// The title of a button beside the field of a shadow row, and the layer it drops.
         var action = ""
         var layer = 0
+        /// A colour row shows a swatch of its value beside the field.
+        var swatch = false
     }
 
     private(set) var rows: [InspectorRow] = []
@@ -65,6 +71,15 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
 
     private var stack: NSStackView?
     private var rowControls: [RowControl] = []
+    /// The index of the row in `rows` and the control that shows it; a pair of fields is one control
+    /// under both of its rows.
+    private var rowIndex: [Int: Int] = [:]
+    /// The header and body of every section of the column, in the order of the rows.
+    private var sectionViews: [(key: String, chevron: NSButton, title: NSButton, body: NSStackView)] = []
+    /// The sections the user folded; they stay folded while the controller lives.
+    private var collapsed: Set<String> = []
+    /// The row the open colour panel writes into, nil when none is bound.
+    private var colorPickTag: Int?
     /// The selection path the controls were built for; a different one rebuilds them.
     private var shownSelection: [Int]?
     /// The classic selection: one item or link, and the element shown when no single one is selected.
@@ -154,7 +169,9 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 10
-        stack.edgeInsets = NSEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
+        stack.edgeInsets = NSEdgeInsets(
+            top: InspectorController.pad, left: InspectorController.pad,
+            bottom: InspectorController.pad, right: InspectorController.pad)
         content.addSubview(stack)
         scroll.documentView = content
         NSLayoutConstraint.activate([
@@ -350,7 +367,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
             rows.append(
                 InspectorRow(
                     section: "Effects", label: "Shadow \(n) Color", text: arg(3), kind: .text,
-                    action: "−", layer: i))
+                    action: "−", layer: i, swatch: true))
         }
         rows.append(InspectorRow(section: "Effects", label: "+ Shadow", text: "", kind: .button))
         return rows
@@ -414,6 +431,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         var row = InspectorRow(
             section: f.section, label: f.label, text: text, placeholder: placeholder, kind: f.kind,
             choices: f.choices)
+        row.swatch = f.property.hasSuffix("color")
         if f.modes {
             row.segments = ["Fixed", "Hug", "Fill"]
             row.chosen = sizeMode(sel, f.property)
@@ -743,8 +761,9 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         if selectionChanged || keysChanged || titleChanged {
             reloadUI()
         }
-        for (i, row) in rows.enumerated() where rowControls.indices.contains(i) {
-            rowControls[i].apply(row)
+        for (i, row) in rows.enumerated() {
+            guard let at = rowIndex[i], rowControls.indices.contains(at) else { continue }
+            rowControls[at].apply(row)
         }
     }
 
@@ -1101,6 +1120,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         var keep = false
         var action = ""
         var layer = 0
+        var swatch = false
         var write: ((String) -> Void)?
     }
 
@@ -1236,7 +1256,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         let rows = fields.map {
             InspectorRow(
                 section: $0.section, label: $0.label, text: $0.text,
-                kind: $0.kind, choices: $0.choices, action: $0.action, layer: $0.layer)
+                kind: $0.kind, choices: $0.choices, action: $0.action, layer: $0.layer,
+                swatch: $0.swatch)
         }
         let title = item == nil ? "Element" : (link == nil ? "Item" : "Link")
         return (title, rows)
@@ -1254,8 +1275,9 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         if selectionChanged || keysChanged || titleChanged {
             reloadUI()
         }
-        for (i, row) in rows.enumerated() where rowControls.indices.contains(i) {
-            rowControls[i].apply(row)
+        for (i, row) in rows.enumerated() {
+            guard let at = rowIndex[i], rowControls.indices.contains(at) else { continue }
+            rowControls[at].apply(row)
         }
     }
 
@@ -1300,7 +1322,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
             text = index < values.count ? values[index] : ""
         }
         return ClassicField(
-            section: section, label: label, text: text, numeric: numeric,
+            section: section, label: label, text: text, numeric: numeric, swatch: name.hasSuffix("color"),
             write: { [weak self] in self?.writeItem(item, name, $0, index: index, list: list) })
     }
 
@@ -1449,7 +1471,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         return ClassicField(
             section: section, label: label,
             text: list ? values.joined(separator: " ") : (index < values.count ? values[index] : ""),
-            numeric: numeric,
+            numeric: numeric, swatch: name.hasSuffix("color"),
             write: { [weak self] in self?.writeStyle(element, group, name, $0, index: index, list: list) })
     }
 
@@ -1906,6 +1928,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
 
     // MARK: - The column
 
+    /// Rebuilds the column from `rows`: one collapsible section per caption, and a pair of X/Y fields on
+    /// one line, as Go's `pair` lays them out.
     private func reloadUI() {
         guard let stack else { return }
         for control in rowControls {
@@ -1916,30 +1940,123 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
             view.removeFromSuperview()
         }
         rowControls = []
-        var section = ""
+        rowIndex = [:]
+        sectionViews = []
+        colorPickTag = nil
         var body: NSStackView?
-        for (i, row) in rows.enumerated() {
+        var section = ""
+        var i = 0
+        while i < rows.count {
+            let row = rows[i]
             if row.section != section {
                 section = row.section
-                let header = NSTextField(labelWithString: row.section == "Header" ? title : row.section)
-                header.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-                header.textColor = .secondaryLabelColor
-                header.lineBreakMode = .byTruncatingTail
-                stack.addArrangedSubview(header)
-                header.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -16).isActive = true
-                let next = NSStackView()
-                next.orientation = .vertical
-                next.alignment = .leading
-                next.spacing = 6
-                stack.addArrangedSubview(next)
-                next.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -16).isActive = true
-                body = next
+                body = makeSection(section, in: stack)
             }
-            let control = RowControl(row: row, tag: i, target: self)
+            let next = i + 1 < rows.count ? rows[i + 1] : nil
+            var partner: (row: InspectorRow, tag: Int)?
+            if let next, InspectorController.pairTitle(row, next) != nil {
+                partner = (next, i + 1)
+            }
+            let control = RowControl(row: row, tag: i, pair: partner, target: self)
             body?.addArrangedSubview(control.view)
             control.view.widthAnchor.constraint(equalTo: body!.widthAnchor).isActive = true
+            rowIndex[i] = rowControls.count
+            if let partner {
+                rowIndex[partner.tag] = rowControls.count
+            }
             rowControls.append(control)
+            i += partner == nil ? 1 : 2
         }
+    }
+
+    /// Adds the section of a caption and hands back its body: a chevron and a title that fold it, and the
+    /// rows below, folded when the user left it folded.
+    private func makeSection(_ key: String, in stack: NSStackView) -> NSStackView {
+        let chevron = NSButton(
+            title: "", target: self, action: #selector(InspectorController.sectionToggled(_:)))
+        chevron.isBordered = false
+        chevron.imagePosition = .imageOnly
+        chevron.setButtonType(.pushOnPushOff)
+        chevron.contentTintColor = .secondaryLabelColor
+        chevron.image = InspectorController.chevron(false)
+        chevron.identifier = NSUserInterfaceItemIdentifier("chevron:" + key)
+        chevron.setAccessibilityLabel(key == "Header" ? self.title : key)
+
+        let title = NSButton(
+            title: key == "Header" ? self.title : key, target: self,
+            action: #selector(InspectorController.sectionToggled(_:)))
+        title.isBordered = false
+        title.alignment = .left
+        title.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
+        title.identifier = NSUserInterfaceItemIdentifier("section:" + key)
+        title.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        title.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        let head = NSStackView(views: [chevron, title])
+        head.orientation = .horizontal
+        head.alignment = .centerY
+        head.spacing = 4
+
+        let body = NSStackView()
+        body.orientation = .vertical
+        body.alignment = .leading
+        body.spacing = 6
+        body.identifier = NSUserInterfaceItemIdentifier("body:" + key)
+
+        let section = NSStackView(views: [head, body])
+        section.orientation = .vertical
+        section.alignment = .leading
+        section.spacing = 0
+        stack.addArrangedSubview(section)
+
+        let inner = -(InspectorController.pad * 2)
+        section.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: inner).isActive = true
+        head.widthAnchor.constraint(equalTo: section.widthAnchor).isActive = true
+        body.widthAnchor.constraint(equalTo: section.widthAnchor).isActive = true
+
+        let open = !collapsed.contains(key)
+        chevron.state = open ? .on : .off
+        chevron.image = InspectorController.chevron(open)
+        body.isHidden = !open
+        sectionViews.append((key, chevron, title, body))
+        return body
+    }
+
+    /// The caption a pair of rows shares, nil when the two rows are not the two sides of one value.
+    private static func pairTitle(_ a: InspectorRow, _ b: InspectorRow) -> String? {
+        guard a.kind == .text, b.kind == .text, a.section == b.section,
+            a.label.hasSuffix(" X"), b.label.hasSuffix(" Y"),
+            a.label.dropLast(2) == b.label.dropLast(2),
+            a.segments.isEmpty, b.segments.isEmpty, a.action.isEmpty, b.action.isEmpty,
+            !a.swatch, !b.swatch
+        else { return nil }
+        return String(a.label.dropLast(2))
+    }
+
+    /// Folds or unfolds a section, and remembers the choice for the next column built.
+    @objc fileprivate func sectionToggled(_ sender: NSButton) {
+        guard let s = sectionViews.first(where: { $0.chevron === sender || $0.title === sender }) else {
+            return
+        }
+        let open: Bool
+        if collapsed.contains(s.key) {
+            collapsed.remove(s.key)
+            open = true
+        } else {
+            collapsed.insert(s.key)
+            open = false
+        }
+        s.chevron.state = open ? .on : .off
+        s.chevron.image = InspectorController.chevron(open)
+        s.body.isHidden = !open
+        containerView?.needsLayout = true
+    }
+
+    /// The chevron of a section header: pointing right on a folded section, down on an open one.
+    private static func chevron(_ open: Bool) -> NSImage? {
+        NSImage(
+            systemSymbolName: open ? "chevron.down" : "chevron.right", accessibilityDescription: nil
+        )?.withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
     }
 
     // MARK: - Controls
@@ -1985,6 +2102,36 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         }
     }
 
+    /// Opens the colour panel on the value of a swatch row; the panel writes its colour back through the
+    /// text path of the same row.
+    fileprivate func pickColor(tag: Int) {
+        guard rows.indices.contains(tag) else { return }
+        colorPickTag = tag
+        let panel = NSColorPanel.shared
+        panel.setTarget(self)
+        panel.setAction(#selector(colorPanelChanged(_:)))
+        panel.isContinuous = false
+        panel.color = RowControl.swatchColor(rows[tag].text) ?? .white
+        panel.orderFront(nil)
+    }
+
+    @objc fileprivate func colorPanelChanged(_ panel: NSColorPanel) {
+        guard let tag = colorPickTag, rows.indices.contains(tag) else { return }
+        commitText(rows[tag], InspectorController.colorText(panel.color))
+    }
+
+    /// The text a picked colour is written as: six hex digits, eight when it is not opaque.
+    private static func colorText(_ color: NSColor) -> String {
+        guard let c = color.usingColorSpace(.sRGB) else { return "" }
+        let r = Int((c.redComponent * 255).rounded())
+        let g = Int((c.greenComponent * 255).rounded())
+        let b = Int((c.blueComponent * 255).rounded())
+        let a = Int((c.alphaComponent * 255).rounded())
+        return a < 255
+            ? String(format: "#%02x%02x%02x%02x", r, g, b, a)
+            : String(format: "#%02x%02x%02x", r, g, b)
+    }
+
     func controlTextDidEndEditing(_ obj: Notification) {
         guard let field = obj.object as? NSTextField else { return }
         textCommitted(field)
@@ -1992,8 +2139,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
 
     func textDidChange(_ notification: Notification) {
         guard let editor = notification.object as? NSTextView,
-            let index = rowControls.firstIndex(where: { $0.bodyView === editor }),
-            rows.indices.contains(index), rows[index].kind == .body,
+            rowControls.contains(where: { $0.bodyView === editor }),
+            let index = rows.firstIndex(where: { $0.kind == .body }),
             editor.string != rows[index].text,
             let target = classicBodyTarget()
         else { return }
@@ -2013,6 +2160,31 @@ private final class InspectorDocumentView: NSView {
     override var isFlipped: Bool { true }
 }
 
+/// The caption of a row: an NSTextField whose alignment rect is its frame. The cell's two points of inset
+/// on each side would otherwise widen the caption column past Go's labelWidth.
+private final class CaptionLabel: NSTextField {
+    override var alignmentRectInsets: NSEdgeInsets { NSEdgeInsets() }
+
+    init(_ text: String) {
+        super.init(frame: .zero)
+        stringValue = text
+        isEditable = false
+        isSelectable = false
+        isBordered = false
+        isBezeled = false
+        drawsBackground = false
+        usesSingleLineMode = true
+        font = NSFont.systemFont(ofSize: 11)
+        textColor = .secondaryLabelColor
+        alignment = .left
+        lineBreakMode = .byTruncatingTail
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 /// One row of the column: the caption on the left and the control on the right, built once and refilled
 /// when the tree changes.
 @MainActor
@@ -2021,7 +2193,6 @@ private final class RowControl {
 
     private let kind: InspectorController.InspectorRow.Kind
     private let info: NSTextField?
-    private let text: NSTextField?
     private let popup: NSPopUpButton?
     private let toggleButton: NSButton?
     private let checkBoxes: [NSButton]
@@ -2030,25 +2201,39 @@ private final class RowControl {
     private var slider: NSSlider?
     var bodyView: NSTextView?
     private var bodyScroll: NSScrollView?
+    /// The fields of the row, by the caption of the row each one shows: a pair holds two.
+    private var texts: [String: NSTextField] = [:]
+    private var swatch: ColorSwatchView?
 
-    init(row: InspectorController.InspectorRow, tag: Int, target: InspectorController) {
+    /// A row, or a pair of rows whose fields sit on one line as Go's `pair` lays them out.
+    init(
+        row: InspectorController.InspectorRow, tag: Int,
+        pair: (row: InspectorController.InspectorRow, tag: Int)? = nil, target: InspectorController
+    ) {
         kind = row.kind
-        let caption = NSTextField(labelWithString: row.kind == .button ? "" : row.label)
-        caption.font = NSFont.systemFont(ofSize: 11)
-        caption.textColor = .secondaryLabelColor
-        caption.lineBreakMode = .byTruncatingTail
-        caption.widthAnchor.constraint(equalToConstant: 68).isActive = true
+        let captionText: String
+        if row.kind == .button {
+            captionText = ""
+        } else if pair != nil {
+            captionText = String(row.label.dropLast(2))
+        } else {
+            captionText = row.label
+        }
+        let caption = CaptionLabel(captionText)
+        caption.identifier = NSUserInterfaceItemIdentifier("caption:" + captionText)
+        caption.setContentHuggingPriority(.required, for: .horizontal)
+        caption.setContentCompressionResistancePriority(.required, for: .horizontal)
+        caption.widthAnchor.constraint(equalToConstant: InspectorController.captionWidth).isActive = true
 
         var ctl: NSView
         switch row.kind {
         case .info:
             let label = NSTextField(labelWithString: row.text)
-            label.font = NSFont.systemFont(ofSize: 11)
+            label.font = NSFont.systemFont(ofSize: 13)
             label.textColor = .secondaryLabelColor
             label.lineBreakMode = .byTruncatingMiddle
             label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             info = label
-            text = nil
             popup = nil
             toggleButton = nil
             checkBoxes = []
@@ -2056,23 +2241,29 @@ private final class RowControl {
             action = nil
             ctl = label
         case .text:
-            let field = NSTextField(frame: .zero)
-            field.font = NSFont.systemFont(ofSize: 11)
-            field.controlSize = .small
-            field.isEditable = true
-            field.isBordered = true
-            field.bezelStyle = .roundedBezel
-            field.lineBreakMode = .byTruncatingTail
-            field.usesSingleLineMode = true
-            field.placeholderString = row.placeholder
-            field.tag = tag
-            field.target = target
-            field.action = #selector(InspectorController.textCommitted(_:))
-            field.delegate = target
-            field.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-            field.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
-            var views: [NSView] = [field]
+            var views: [NSView] = []
+            if row.swatch {
+                let chip = ColorSwatchView(frame: .zero)
+                chip.onOpen = { [weak target] in target?.pickColor(tag: tag) }
+                chip.identifier = NSUserInterfaceItemIdentifier(
+                    "swatch:" + row.section + "." + row.label)
+                chip.toolTip = "Choose color"
+                chip.setAccessibilityLabel("Choose color")
+                swatch = chip
+                views.append(chip)
+            }
+            let first = RowControl.field(row, tag: tag, target: target)
+            texts[row.label] = first
+            if let pair {
+                let second = RowControl.field(pair.row, tag: pair.tag, target: target)
+                texts[pair.row.label] = second
+                views += [
+                    RowControl.letter(String(row.label.suffix(1))), first,
+                    RowControl.letter(String(pair.row.label.suffix(1))), second,
+                ]
+            } else {
+                views.append(first)
+            }
             var seg: NSSegmentedControl?
             if !row.segments.isEmpty {
                 let control = NSSegmentedControl(
@@ -2080,8 +2271,9 @@ private final class RowControl {
                     action: #selector(InspectorController.sizeSegmentChanged(_:)))
                 control.controlSize = .small
                 control.tag = tag
+                control.identifier = NSUserInterfaceItemIdentifier("segments:" + row.label)
                 control.setContentHuggingPriority(.required, for: .horizontal)
-                control.setContentCompressionResistancePriority(.required, for: .horizontal)
+                control.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
                 seg = control
                 views.append(control)
             }
@@ -2098,7 +2290,6 @@ private final class RowControl {
                 views.append(button)
             }
             info = nil
-            text = field
             popup = nil
             toggleButton = nil
             checkBoxes = []
@@ -2107,7 +2298,7 @@ private final class RowControl {
             let group = NSStackView(views: views)
             group.orientation = .horizontal
             group.alignment = .centerY
-            group.spacing = 4
+            group.spacing = 8
             ctl = group
         case .popup:
             let button = NSPopUpButton(frame: .zero, pullsDown: false)
@@ -2119,7 +2310,6 @@ private final class RowControl {
             button.action = #selector(InspectorController.popupChanged(_:))
             button.setContentHuggingPriority(.defaultLow, for: .horizontal)
             info = nil
-            text = nil
             popup = button
             toggleButton = nil
             checkBoxes = []
@@ -2131,7 +2321,6 @@ private final class RowControl {
             button.controlSize = .small
             button.tag = tag
             info = nil
-            text = nil
             popup = nil
             toggleButton = button
             checkBoxes = []
@@ -2148,7 +2337,6 @@ private final class RowControl {
             control.setContentHuggingPriority(.defaultLow, for: .horizontal)
             control.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
             info = nil
-            text = nil
             popup = nil
             toggleButton = nil
             checkBoxes = []
@@ -2178,7 +2366,6 @@ private final class RowControl {
             scroll.documentView = editor
             scroll.heightAnchor.constraint(equalToConstant: 96).isActive = true
             info = nil
-            text = nil
             popup = nil
             toggleButton = nil
             checkBoxes = []
@@ -2204,7 +2391,6 @@ private final class RowControl {
                 boxes.append(button)
             }
             info = nil
-            text = nil
             popup = nil
             toggleButton = nil
             checkBoxes = boxes
@@ -2219,7 +2405,6 @@ private final class RowControl {
             button.bezelStyle = .rounded
             button.tag = tag
             info = nil
-            text = nil
             popup = nil
             toggleButton = nil
             checkBoxes = []
@@ -2250,6 +2435,43 @@ private final class RowControl {
             view = line
         }
         apply(row)
+        if let pair {
+            apply(pair.row)
+        }
+    }
+
+    /// The field of a text row, as go/app builds one: a small rounded box that takes the rest of the line.
+    private static func field(
+        _ row: InspectorController.InspectorRow, tag: Int, target: InspectorController
+    ) -> NSTextField {
+        let field = NSTextField(frame: .zero)
+        field.font = NSFont.systemFont(ofSize: 11)
+        field.controlSize = .small
+        field.isEditable = true
+        field.isBordered = true
+        field.bezelStyle = .roundedBezel
+        field.lineBreakMode = .byTruncatingTail
+        field.usesSingleLineMode = true
+        field.placeholderString = row.placeholder
+        field.tag = tag
+        field.identifier = NSUserInterfaceItemIdentifier(
+            "field:" + row.section + "." + row.label)
+        field.target = target
+        field.action = #selector(InspectorController.textCommitted(_:))
+        field.delegate = target
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        field.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
+        return field
+    }
+
+    /// The X, Y, W or H that names the value beside its field, as faint as Go's pair writes them.
+    private static func letter(_ text: String) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = NSFont.systemFont(ofSize: 10)
+        label.textColor = .secondaryLabelColor
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        return label
     }
 
     func apply(_ row: InspectorController.InspectorRow) {
@@ -2258,11 +2480,16 @@ private final class RowControl {
             info?.stringValue = row.text
             info?.toolTip = row.text
         case .text:
-            text?.placeholderString = row.placeholder
-            if text?.currentEditor() == nil {
-                text?.stringValue = row.text
+            if let field = texts[row.label] {
+                field.placeholderString = row.placeholder
+                if field.currentEditor() == nil {
+                    field.stringValue = row.text
+                }
             }
             segmented?.selectedSegment = row.chosen ?? -1
+            if row.swatch {
+                swatch?.color = RowControl.swatchColor(row.text)
+            }
         case .button:
             break
         case .popup:
@@ -2290,10 +2517,20 @@ private final class RowControl {
         }
     }
 
+    /// The colour a swatch shows: nil for an unset property, a name the palette does not know, or a
+    /// value that is transparent.
+    fileprivate static func swatchColor(_ text: String) -> NSColor? {
+        guard let c = Scene.parseColor(text), c.a > 0 else { return nil }
+        return NSColor(srgbRed: c.r, green: c.g, blue: c.b, alpha: c.a)
+    }
+
     /// Takes the row out of the responder chain before its view is dropped with a rebuilt column.
     func detach() {
-        text?.target = nil
-        text?.delegate = nil
+        for field in texts.values {
+            field.target = nil
+            field.delegate = nil
+        }
+        swatch?.onOpen = nil
         popup?.target = nil
         toggleButton?.target = nil
         segmented?.target = nil
@@ -2303,5 +2540,62 @@ private final class RowControl {
         for button in checkBoxes {
             button.target = nil
         }
+    }
+}
+
+/// The swatch of a colour row: the value as a filled chip, a hairline border, and a slash when the row
+/// holds no colour - the way go/app's colorCtl draws it. A click opens the colour panel.
+private final class ColorSwatchView: NSView {
+    var onOpen: (() -> Void)?
+    private let slash = CAShapeLayer()
+
+    var color: NSColor? {
+        didSet {
+            paint()
+            needsDisplay = true  // AppKit may reset the backing layer: draw it again
+        }
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        translatesAutoresizingMaskIntoConstraints = false
+        wantsLayer = true
+        widthAnchor.constraint(equalToConstant: 24).isActive = true
+        heightAnchor.constraint(equalToConstant: 24).isActive = true
+        layer?.cornerRadius = 4
+        layer?.borderWidth = 1
+        layer?.borderColor = NSColor(white: 0.5, alpha: 0.63).cgColor
+        slash.lineWidth = 1
+        slash.strokeColor = NSColor(white: 0.5, alpha: 0.63).cgColor
+        layer?.addSublayer(slash)
+        paint()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        slash.frame = bounds
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: 5, y: bounds.height - 5))
+        path.addLine(to: CGPoint(x: bounds.width - 5, y: 5))
+        slash.path = path
+    }
+
+    override var wantsUpdateLayer: Bool { true }
+
+    override func updateLayer() {
+        paint()
+    }
+
+    private func paint() {
+        layer?.backgroundColor = color?.cgColor
+        slash.isHidden = color != nil
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        onOpen?()
     }
 }
