@@ -957,4 +957,101 @@ final class SceneCanvasEditTests: SceneDocumentTestCase {
         }
     }
 
+    // MARK: - Camera
+
+    /// The scene point under the pointer stays there while the zoom grows, as ZoomCamera of Go.
+    func testZoomKeepsThePointUnderThePointer() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+        let p = NSPoint(x: 200, y: 150)
+        let before = canvas.scenePoint(p)
+
+        canvas.zoom(by: 2, around: p)
+
+        XCTAssertEqual(canvas.zoom, 2, accuracy: 1e-9)
+        XCTAssertEqual(canvas.scenePoint(p).x, before.x, accuracy: 0.001)
+        XCTAssertEqual(canvas.scenePoint(p).y, before.y, accuracy: 0.001)
+    }
+
+    func testZoomStopsAtTheLimits() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+
+        canvas.zoom(by: 1000, around: .zero)
+        XCTAssertEqual(canvas.zoom, SceneCanvasView.maxZoom, accuracy: 1e-9)
+        XCTAssertEqual(canvas.zoom, 64, accuracy: 1e-9)
+
+        canvas.zoom(by: 1e-6, around: .zero)
+        XCTAssertEqual(canvas.zoom, SceneCanvasView.minZoom, accuracy: 1e-9)
+        XCTAssertEqual(canvas.zoom, 0.02, accuracy: 1e-9)
+    }
+
+    /// Zoom In divides the zoom by 0.75 and Zoom Out multiplies it, as SceneDrawView and ZoomStep.
+    func testTheToolbarZoomsByTheGoStep() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+        XCTAssertTrue(
+            canvas.responds(to: #selector(SceneDrawView.zoomIn(_:))),
+            "the View menu zoom items reach the scene canvas by the same selector")
+
+        canvas.zoomIn(nil)
+        XCTAssertEqual(canvas.zoom, 1 / 0.75, accuracy: 1e-9)
+        canvas.zoomOut(nil)
+        XCTAssertEqual(canvas.zoom, 1, accuracy: 1e-9)
+    }
+
+    /// Reset Zoom goes back to 100% with the content centred, as Go's resetZoom and the classic canvas.
+    func testResetZoomGoesToOneAndCentresTheContent() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+        let screen = try XCTUnwrap(canvas.screen)
+        var reported: [Int] = []
+        canvas.onZoomChange = { reported.append($0) }
+        canvas.frame = NSRect(origin: .zero, size: NSSize(width: 335, height: 225))
+        canvas.zoom = 3
+        canvas.scroll(by: NSPoint(x: 40, y: -20))
+
+        canvas.resetZoom(nil)
+
+        XCTAssertEqual(canvas.zoom, 1, accuracy: 1e-9)
+        XCTAssertEqual(canvas.pan, .zero, "Reset Zoom drops the pan")
+        XCTAssertEqual(reported.last, 100, "Reset Zoom reports 100%")
+        let centre = canvas.scenePoint(NSPoint(x: canvas.bounds.midX, y: canvas.bounds.midY))
+        XCTAssertEqual(centre.x, screen.w / 2, accuracy: 0.001, "100% is centred, with no pan")
+        XCTAssertEqual(centre.y, screen.h / 2, accuracy: 0.001)
+    }
+
+    /// A pan moves the picture by the delta, and the two mappings still invert each other.
+    func testAPanMovesThePictureAndKeepsTheMapping() throws {
+        let canvas = try canvas("web/fixtures/scene/scene-text.tenn")
+        let origin = canvas.viewPoint(Scene.Point())
+
+        canvas.scroll(by: NSPoint(x: 30, y: -12))
+
+        let moved = canvas.viewPoint(Scene.Point())
+        XCTAssertEqual(moved.x - origin.x, 30, accuracy: 1e-9)
+        XCTAssertEqual(moved.y - origin.y, -12, accuracy: 1e-9)
+        let p = NSPoint(x: 123, y: 77)
+        let s = canvas.scenePoint(p)
+        XCTAssertEqual(canvas.viewPoint(s).x, p.x, accuracy: 0.001)
+        XCTAssertEqual(canvas.viewPoint(s).y, p.y, accuracy: 0.001)
+    }
+
+    /// A clip larger than the content lets the camera pan, and a layout after that keeps the camera.
+    func testTheContainerLetsTheCameraPanOverALargeClip() throws {
+        let root = try workspace()
+        let url = try copy("web/fixtures/scene/scene-text.tenn", to: root)
+        let scroll = SceneCanvasScrollView()
+        scroll.frame = NSRect(origin: .zero, size: NSSize(width: 1200, height: 900))
+        scroll.show(try SceneLoader(root: root).load(url.lastPathComponent))
+        scroll.layout()
+        XCTAssertEqual(scroll.canvas.zoom, 1, accuracy: 1e-9, "a clip larger than the content fits at 1")
+
+        let before = scroll.canvas.viewPoint(Scene.Point())
+        scroll.canvas.scroll(by: NSPoint(x: 25, y: 15))
+        XCTAssertEqual(scroll.canvas.viewPoint(Scene.Point()).x - before.x, 25, accuracy: 1e-9)
+        XCTAssertEqual(scroll.canvas.viewPoint(Scene.Point()).y - before.y, 15, accuracy: 1e-9)
+
+        scroll.layout()
+        XCTAssertEqual(
+            scroll.canvas.viewPoint(Scene.Point()).x - before.x, 25, accuracy: 1e-9,
+            "a layout keeps the camera")
+    }
+
 }

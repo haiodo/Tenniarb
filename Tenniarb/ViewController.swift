@@ -446,14 +446,26 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     }
 
     @objc func zoomOutAction(_ sender: NSButton) {
+        if let canvas = editorViewController?.shownCanvas {
+            canvas.zoomOut(nil)
+            return
+        }
         scene?.zoomOut(nil)
     }
 
     @objc func zoomInAction(_ sender: NSButton) {
+        if let canvas = editorViewController?.shownCanvas {
+            canvas.zoomIn(nil)
+            return
+        }
         scene?.zoomIn(nil)
     }
 
     @objc func resetZoomAction(_ sender: NSButton) {
+        if let canvas = editorViewController?.shownCanvas {
+            canvas.resetZoom(nil)
+            return
+        }
         scene?.resetZoom(nil)
     }
 

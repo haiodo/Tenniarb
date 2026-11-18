@@ -27,6 +27,13 @@ extension NSPasteboard.PasteboardType {
 final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// Room around the content, as geometry.Padding of the Go canvas.
     static let padding = 15.0
+    /// The zoom limits of the camera, as Go's MinZoom and MaxZoom.
+    static let minZoom = 0.02
+    static let maxZoom = 64.0
+    /// The view points one notch of a wheel pans by, as wheelLine and the gfx view's lineStep.
+    static let wheelLine = 16.0
+    /// The zoom exponent per point of a wheel with Command, as the gfx view's wheelZoomRate.
+    static let wheelZoomRate = 0.005
 
     private(set) var screen: Scene.Screen?
     /// The drawn items of the screen; the picture and the hit-test share this tree.
@@ -38,8 +45,23 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     private(set) var message: String?
     /// The scale the content is drawn at; the scroll view fits the screen into itself.
     var zoom = 1.0 {
-        didSet { needsDisplay = true }
+        didSet {
+            needsDisplay = true
+            placeEditor()
+            onZoomChange?(Int((zoom * 100).rounded()))
+        }
     }
+    /// Where the picture sits from its fitted place, in view points: the wheel moves it, and a zoom
+    /// around a point sets it so that point stays under the pointer.
+    var pan = NSPoint.zero {
+        didSet {
+            needsDisplay = true
+            placeEditor()
+        }
+    }
+
+    /// Called with the zoom in percent after it changed, for the toolbar label.
+    var onZoomChange: ((Int) -> Void)?
 
     /// The document an edit is written through; nil on a canvas nobody can edit.
     weak var document: Document?
@@ -402,8 +424,11 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     /// The zoom that shows all of a cw by ch content in a vw by vh view, but never above 1, as FitCamera.
     static func fitZoom(_ cw: Double, _ ch: Double, _ vw: Double, _ vh: Double) -> Double {
         let zoom = cw > 0 && ch > 0 && vw > 0 && vh > 0 ? min(vw / cw, vh / ch) : 1
-        return min(1, max(0.02, zoom))
+        return min(1, clampZoom(zoom))
     }
+
+    /// Keeps a zoom within the limits of the camera, as Go's ClampZoom.
+    static func clampZoom(_ z: Double) -> Double { min(maxZoom, max(minZoom, z)) }
 
     /// The size of the content with the padding around it.
     static func contentSize(_ screen: Scene.Screen) -> NSSize {
@@ -1190,12 +1215,18 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     // MARK: - Geometry
 
     /// The origin of the scene content in the view: the padding and the centering at the zoom.
-    private var contentOrigin: NSPoint {
+    private var fittedOrigin: NSPoint {
         guard let screen else { return .zero }
         let content = SceneCanvasView.contentSize(screen)
         return NSPoint(
             x: (bounds.width - content.width * zoom) / 2 + SceneCanvasView.padding * zoom,
             y: (bounds.height - content.height * zoom) / 2 + SceneCanvasView.padding * zoom)
+    }
+
+    /// The origin of the scene content in the view: the fitted origin moved by the pan.
+    private var contentOrigin: NSPoint {
+        guard screen != nil else { return .zero }
+        return NSPoint(x: fittedOrigin.x + pan.x, y: fittedOrigin.y + pan.y)
     }
 
     /// Where a point of the screen lands in the view.
@@ -1220,6 +1251,71 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
     override func setFrameSize(_ newSize: NSSize) {
         super.setFrameSize(newSize)
         placeEditor()
+    }
+
+    // MARK: - Camera
+
+    /// Fits the shown screen into the view, centered; a window starts here.
+    func zoomToFit() {
+        guard let screen else {
+            zoom = 1
+            pan = .zero
+            return
+        }
+        let content = SceneCanvasView.contentSize(screen)
+        zoom = SceneCanvasView.fitZoom(content.width, content.height, bounds.width, bounds.height)
+        pan = .zero
+    }
+
+    /// Multiplies the zoom by factor about a point of the view, keeping the scene point under it there.
+    func zoom(by factor: Double, around v: NSPoint) {
+        let s = scenePoint(v)
+        zoom = SceneCanvasView.clampZoom(zoom * factor)
+        let o = fittedOrigin
+        pan = NSPoint(x: v.x - s.x * zoom - o.x, y: v.y - s.y * zoom - o.y)
+    }
+
+    /// Moves the picture by a scroll delta, in view points.
+    func scroll(by delta: NSPoint) {
+        pan = NSPoint(x: pan.x + delta.x, y: pan.y + delta.y)
+    }
+
+    /// Pans with the wheel, zooms about the pointer with Command, and turns a vertical wheel sideways
+    /// under Shift as go/app onScroll does.
+    override func scrollWheel(with event: NSEvent) {
+        var dx = event.scrollingDeltaX
+        var dy = event.scrollingDeltaY
+        if !event.hasPreciseScrollingDeltas {
+            dx *= SceneCanvasView.wheelLine
+            dy *= SceneCanvasView.wheelLine
+        }
+        if event.modifierFlags.contains(.shift), dx == 0 {
+            dx = dy
+            dy = 0
+        } else if event.modifierFlags.contains(.command) {
+            zoom(by: exp(dy * SceneCanvasView.wheelZoomRate), around: convert(event.locationInWindow, from: nil))
+            return
+        }
+        scroll(by: NSPoint(x: dx, y: dy))
+    }
+
+    /// Pinches about the pointer, as the gfx view's own magnify: 1 + magnification, kept in place.
+    override func magnify(with event: NSEvent) {
+        zoom(by: 1 + event.magnification, around: convert(event.locationInWindow, from: nil))
+    }
+
+    @objc func zoomIn(_ sender: NSMenuItem?) {
+        zoom(by: 1 / 0.75, around: NSPoint(x: bounds.midX, y: bounds.midY))
+    }
+
+    @objc func zoomOut(_ sender: NSMenuItem?) {
+        zoom(by: 0.75, around: NSPoint(x: bounds.midX, y: bounds.midY))
+    }
+
+    /// Reset Zoom: 100% with the content centred, as Go's resetZoom and the classic canvas.
+    @objc func resetZoom(_ sender: NSMenuItem? = nil) {
+        zoom = 1
+        pan = .zero
     }
 
     // MARK: - Drawing
@@ -1373,17 +1469,17 @@ private final class InlineTitleCell: NSTextFieldCell {
     }
 }
 
-/// Holds the canvas in a scroll view: the screen is fitted into it, and a screen too large for the
-/// zoom floor scrolls.
+/// Holds the canvas in a scroll view: the document view is the clip, and the canvas camera pans and
+/// zooms the picture inside it.
 final class SceneCanvasScrollView: NSScrollView {
     let canvas = SceneCanvasView(frame: .zero)
+    /// Whether the shown screen still waits for a clip with a size: show runs before the layout.
+    private var needsFit = false
 
     init() {
         super.init(frame: .zero)
         drawsBackground = false
         borderType = .noBorder
-        hasVerticalScroller = true
-        hasHorizontalScroller = true
         documentView = canvas
     }
 
@@ -1393,31 +1489,39 @@ final class SceneCanvasScrollView: NSScrollView {
 
     func show(_ tree: Scene.Tree?) {
         canvas.show(tree)
+        needsFit = true
         fit()
+    }
+
+    /// Fits the shown screen into the clip, as the Fit to Window command of Go does.
+    func zoomToFit() {
+        needsFit = false
+        canvas.zoomToFit()
+    }
+
+    /// The wheel and the pinch are the canvas camera; the clip has nothing to scroll.
+    override func scrollWheel(with event: NSEvent) {
+        canvas.scrollWheel(with: event)
+    }
+
+    override func magnify(with event: NSEvent) {
+        canvas.magnify(with: event)
     }
 
     override func layout() {
         super.layout()
-        fit()
+        canvas.frame = NSRect(origin: .zero, size: contentView.bounds.size)
+        if needsFit {
+            fit()
+        }
     }
 
-    /// Sizes the document view so the whole screen fits, and scrolls when it cannot.
+    /// Sizes the document view to the clip and fits the shown screen; a resize after that keeps the camera.
     private func fit() {
         let clip = contentView.bounds.size
-        guard let screen = canvas.screen else {
-            canvas.zoom = 1
-            canvas.frame = NSRect(origin: .zero, size: clip)
-            return
-        }
-        let content = SceneCanvasView.contentSize(screen)
-        let zoom = SceneCanvasView.fitZoom(content.width, content.height, clip.width, clip.height)
-        let size = NSSize(
-            width: max(content.width * zoom, clip.width), height: max(content.height * zoom, clip.height))
-        if canvas.zoom != zoom {
-            canvas.zoom = zoom
-        }
-        if canvas.frame.size != size {
-            canvas.frame = NSRect(origin: .zero, size: size)
-        }
+        guard clip.width > 0, clip.height > 0 else { return }
+        needsFit = false
+        canvas.frame = NSRect(origin: .zero, size: clip)
+        canvas.zoomToFit()
     }
 }

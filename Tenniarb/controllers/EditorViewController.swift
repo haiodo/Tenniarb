@@ -66,9 +66,18 @@ class EditorViewController: NSObject {
         canvasWidthConstraint.priority = .defaultHigh
         canvasWidthConstraint.isActive = true
         canvas.isHidden = true
+        canvas.canvas.onZoomChange = { [weak self] percentage in
+            self?.viewController?.updateZoomLabel(percentage)
+        }
         self.sceneCanvas = canvas
 
         return stackView
+    }
+
+    /// The scene canvas when it is the shown editor; the classic canvas answers nil.
+    var shownCanvas: SceneCanvasView? {
+        guard let canvas = sceneCanvas, !canvas.isHidden else { return nil }
+        return canvas.canvas
     }
 
     /// Shows another element of the scene on the canvas, as a click in the outline does.
@@ -307,14 +316,26 @@ class EditorViewController: NSObject {
     // MARK: - Actions
 
     @objc private func zoomOutAction(_ sender: NSButton) {
+        if let canvas = shownCanvas {
+            canvas.zoomOut(nil)
+            return
+        }
         sceneView?.zoomOut(nil)
     }
 
     @objc private func zoomInAction(_ sender: NSButton) {
+        if let canvas = shownCanvas {
+            canvas.zoomIn(nil)
+            return
+        }
         sceneView?.zoomIn(nil)
     }
 
     @objc private func resetZoomAction(_ sender: NSButton) {
+        if let canvas = shownCanvas {
+            canvas.resetZoom(nil)
+            return
+        }
         sceneView?.resetZoom(nil)
     }
 
