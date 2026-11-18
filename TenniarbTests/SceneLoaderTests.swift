@@ -216,4 +216,109 @@ final class SceneLoaderTests: XCTestCase {
         XCTAssertEqual(warning.pos.file, "a.tenn")
     }
 
+    /// A ${...} that is not JavaScript is a load-time diagnostic with the line of the command, not an
+    /// element that silently draws nothing (go/scene/exprcheck.go).
+    func testBrokenExpressionIsReportedAndTheFileStillLoads() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element "Board" {
+                item A {
+                    width ${1 +}
+                }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("a.tenn")
+        let reported = tree.diagnostics.filter { $0.message.contains("expression") }
+        XCTAssertEqual(reported.count, 1)
+        let broken = try XCTUnwrap(reported.first)
+        XCTAssertTrue(broken.message.hasPrefix("expression \"1 +\": "), broken.message)
+        XCTAssertGreaterThan(broken.message.count, "expression \"1 +\": ".count, "the compiler says why")
+        XCTAssertEqual(broken.pos.file, "a.tenn")
+        XCTAssertEqual(broken.pos.line, 3, "the line of the width command")
+        XCTAssertEqual(broken.pos.col, 17, "the column of the expression text, as Go's")
+
+        let board = try XCTUnwrap(tree.main?.elems.first)
+        XCTAssertEqual(board.name, "Board")
+        let item = try XCTUnwrap(board.content.first)
+        XCTAssertEqual(item.name, "A")
+        XCTAssertNotNil(item.prop("width"), "the diagnostic does not stop the load")
+    }
+
+    func testValidExpressionsAreNotReported() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element "Board" {
+                item A {
+                    width ${1 + 2}
+                    title "${1 + 2}"
+                }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("a.tenn")
+        XCTAssertTrue(tree.diagnostics.filter { $0.message.contains("expression") }.isEmpty)
+    }
+
+    /// The text of a template is code a component generates, not an expression of this file.
+    func testBrokenExpressionInsideTemplateIsIgnored() throws {
+        let root = try workspace([
+            "a.tenn": """
+            element "Board" {
+                template {
+                    width ${1 +}
+                }
+            }
+            """
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("a.tenn")
+        XCTAssertTrue(tree.diagnostics.filter { $0.message.contains("expression") }.isEmpty)
+        let board = try XCTUnwrap(tree.main?.elems.first)
+        XCTAssertEqual(board.template?.text, "width ${1 +}")
+    }
+
+    /// A library the board mounts is a file of its own: the diagnostic names it, as Go's does.
+    func testBrokenExpressionInMountedLibraryNamesTheLibrary() throws {
+        let root = try workspace([
+            "board.tenn": """
+            element "Board" {
+                element "Kit" --from-file "tenniarb-library://exprcheck"
+            }
+            """,
+            "libraries/exprcheck.tenn": """
+            item A {
+                width ${1 +}
+            }
+            """,
+        ])
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+
+        let tree = try SceneLoader(root: root).load("board.tenn")
+        let reported = tree.diagnostics.filter { $0.message.contains("expression") }
+        XCTAssertEqual(reported.count, 1)
+        XCTAssertEqual(reported.first?.pos.file, ".tenniarb-library/exprcheck.tenn")
+
+        let kit = try XCTUnwrap(tree.main?.elems.first?.elems.first)
+        XCTAssertEqual(kit.name, "Kit")
+        XCTAssertEqual(kit.content.first?.name, "A", "the library still loads its items")
+    }
+
+    /// The scene fixtures of web/ are files the engine must load without a false expression error.
+    func testSceneFixturesHaveNoExpressionDiagnostics() throws {
+        let fixtures = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("web/fixtures/scene")
+        for name in ["context.tenn", "classic-values.tenn", "hero.tenn", "theme-styles.tenn"] {
+            let tree = try SceneLoader(root: fixtures).load(name)
+            let found = tree.diagnostics.filter { $0.message.hasPrefix("expression \"") }
+            XCTAssertTrue(found.isEmpty, "\(name): \(found)")
+        }
+    }
+
 }

@@ -203,6 +203,7 @@ final class SceneLoader {
         currentFile = rel
         joinedBlocks(ast.children ?? [])
         fill(file, ast.children ?? [])
+        checkExpressions(ast.children ?? [])
         currentFile = saved
         stack.removeLast()
 
@@ -225,6 +226,36 @@ final class SceneLoader {
             }
             joinedBlocks(n.children ?? [])
         }
+    }
+
+    /// Reports a ${...} that is not JavaScript (go/scene/exprcheck.go): check and validate do not evaluate
+    /// expressions, so a broken one would otherwise show only as an element that draws nothing.
+    private func checkExpressions(_ ns: [TennNode]) {
+        for n in ns {
+            if n.kind == .Command && cmdName(n) == "template" {
+                continue  // the text a component generates is code of its own, not an expression here
+            }
+            if let message = exprSyntaxError(n) {
+                tree.fail(pos(n), message)
+            }
+            checkExpressions(n.children ?? [])
+        }
+    }
+
+    /// The message for an expression argument that does not compile; nil when it does or is not one.
+    private func exprSyntaxError(_ n: TennNode) -> String? {
+        let code: String
+        switch n.kind {
+        case .Expression, .ExpressionBlock:
+            code = n.getIdentText() ?? ""
+        case .StringLit:
+            let s = n.getIdentText() ?? ""
+            guard s.contains("${") else { return nil }
+            code = "`" + s + "`"  // a string with ${...} runs as a template
+        default:
+            return nil
+        }
+        return expressionSyntaxError(code)
     }
 
     /// Finds rel relative to the file being read; reports a path that leaves the workspace root.

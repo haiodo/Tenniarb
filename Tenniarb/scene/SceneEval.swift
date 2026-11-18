@@ -51,6 +51,34 @@ func sceneEvalVars(_ code: String, _ vars: [String: String]?) -> (String, Bool) 
     return (jsToString(v), true)
 }
 
+/// Whether code parses as JavaScript: the compiler's message, nil when it compiles. A script is checked
+/// without being run, as goja.Compile does, so `return` outside a function is an error here too.
+func expressionSyntaxError(_ code: String) -> String? {
+    guard let j = JSContext(), let script = JSStringCreateWithCFString(code as CFString) else { return nil }
+    defer { JSStringRelease(script) }
+    var thrown: JSValueRef?
+    guard !JSCheckScriptSyntax(j.jsGlobalContextRef, script, nil, 1, &thrown) else { return nil }
+    let error = thrown.flatMap { JSValue(jsValueRef: $0, in: j) }
+    let message = error?.objectForKeyedSubscript("message")?.toString() ?? error?.toString() ?? "not JavaScript"
+    return "expression \(quoted(code)): \(message)"
+}
+
+/// Go's %q for the common case of an expression: quotes and control characters escaped, the rest as is.
+private func quoted(_ s: String) -> String {
+    var out = "\""
+    for u in s.unicodeScalars {
+        switch u {
+        case "\\": out += "\\\\"
+        case "\"": out += "\\\""
+        case "\n": out += "\\n"
+        case "\t": out += "\\t"
+        case "\r": out += "\\r"
+        default: out.unicodeScalars.append(u)
+        }
+    }
+    return out + "\""
+}
+
 /// sceneValue of go/exec: v as a JS value, a number when it is written as one, else the text.
 func sceneValue(_ v: String) -> Any {
     // "007" or "1.50" stay the text they are, or they would come back changed as 7 and 1.5.
