@@ -810,12 +810,18 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         refresh()
     }
 
-    /// Adds a layer with the default contact shadow to the selected node's own shadows.
+    /// Adds a layer with the default contact shadow to the selected node's own shadows, or to the item
+    /// defaults when the classic column shows the element.
     func addShadow() {
         if isClassic {
-            guard let item = classicItem, !(item is LinkItem) else { return }
-            let layers = InspectorController.classicShadows(item) + [["0", "-2", "4", "#00000020"]]
-            writeClassicShadows(layers, item)
+            if let item = classicItem {
+                guard !(item is LinkItem) else { return }
+                let layers = InspectorController.classicShadows(item) + [["0", "-2", "4", "#00000020"]]
+                writeClassicShadows(layers, item)
+            } else if let element = classicShownElement() {
+                let layers = InspectorController.classicStyleShadows(element) + [["0", "-2", "4", "#00000020"]]
+                writeStyleShadows(layers, element)
+            }
             refresh()
             return
         }
@@ -825,14 +831,22 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         refresh()
     }
 
-    /// Drops the own shadow layer at index, as the − button of its row does.
+    /// Drops the own shadow layer at index, as the − button of its row does, or the item-default layer of
+    /// the element the classic column shows.
     func removeShadow(at index: Int) {
         if isClassic {
-            guard let item = classicItem, !(item is LinkItem) else { return }
-            var layers = InspectorController.classicShadows(item)
-            guard layers.indices.contains(index) else { return }
-            layers.remove(at: index)
-            writeClassicShadows(layers, item)
+            if let item = classicItem {
+                guard !(item is LinkItem) else { return }
+                var layers = InspectorController.classicShadows(item)
+                guard layers.indices.contains(index) else { return }
+                layers.remove(at: index)
+                writeClassicShadows(layers, item)
+            } else if let element = classicShownElement() {
+                var layers = InspectorController.classicStyleShadows(element)
+                guard layers.indices.contains(index) else { return }
+                layers.remove(at: index)
+                writeStyleShadows(layers, element)
+            }
             refresh()
             return
         }
@@ -1211,6 +1225,8 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         }
 
         if item == nil, let element {
+            fields += itemDefaultFields(element)
+            fields += linkDefaultFields(element)
             let styles = InspectorController.classicStyles(element)
             fields.append(ClassicField(section: "Styles", label: "Named", kind: .info, text: styles.names))
             fields.append(ClassicField(section: "Styles", label: "Groups", kind: .info, text: styles.groups))
@@ -1332,7 +1348,12 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
 
     /// The shadow commands the item writes, each as the arguments of `shadow`.
     private static func classicShadows(_ item: DiagramItem) -> [[String]] {
-        (item.properties.node.children ?? [])
+        shadowLayers(item.properties.asNode())
+    }
+
+    /// The shadow layers a block writes, each as the arguments of its `shadow` command.
+    private static func shadowLayers(_ block: TennNode?) -> [[String]] {
+        (block?.children ?? [])
             .filter { $0.kind == .Command && $0.getIdent(0) == "shadow" }
             .map { (node: TennNode) in (node.children ?? []).dropFirst().map { $0.getIdentText() ?? "" } }
     }
@@ -1356,21 +1377,92 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
                 choices: ["none", "soft", "floating", "custom"], unset: "none",
                 write: { [weak self] in self?.setClassicShadowPreset($0, item) })
         ]
+        fields += shadowLayerFields(layers, section: "Effects") { [weak self] in
+            self?.writeClassicShadows($0, item)
+        }
+        return fields
+    }
+
+    /// The rows of one shadow list: a field per argument of every layer, the − on its colour, and the
+    /// button that adds one. A change writes the whole list.
+    private func shadowLayerFields(
+        _ layers: [[String]], section: String, write: @escaping ([[String]]) -> Void
+    ) -> [ClassicField] {
+        var fields: [ClassicField] = []
         for (i, layer) in layers.enumerated() {
             func arg(_ k: Int) -> String { k < layer.count ? layer[k] : "" }
             let n = i + 1
             for (label, k) in [("X", 0), ("Y", 1), ("Blur", 2), ("Color", 3)] {
                 fields.append(
                     ClassicField(
-                        section: "Effects", label: "Shadow \(n) \(label)", text: arg(k),
+                        section: section, label: "Shadow \(n) \(label)", text: arg(k),
                         numeric: k < 3, action: k == 3 ? "−" : "", layer: i,
                         write: { [weak self] in
-                            self?.setClassicShadowText($0, layer: i, arg: k, item: item)
+                            self?.setShadowText($0, layer: i, arg: k, layers: layers, write: write)
                         }))
             }
         }
-        fields.append(ClassicField(section: "Effects", label: "+ Shadow", kind: .button))
+        fields.append(ClassicField(section: section, label: "+ Shadow", kind: .button))
         return fields
+    }
+
+    /// The rows of the Item defaults section: the `styles { item { ... } }` of the element, the commands
+    /// every item of it is drawn with unless it writes its own.
+    private func itemDefaultFields(_ element: Element) -> [ClassicField] {
+        var fields: [ClassicField] = [
+            styleField("Item defaults", "Fill", "item", "color", element),
+            styleField("Item defaults", "Border", "item", "border-color", element),
+            styleField("Item defaults", "Text", "item", "text-color", element),
+            styleField("Item defaults", "Font size", "item", "font-size", element, numeric: true),
+            styleField("Item defaults", "Padding", "item", "padding", element, list: true),
+            stylePopup(
+                "Item defaults", "Display", "item", "display", element,
+                ["rect", "no-fill", "circle", "stack", "text"], "rect"),
+        ]
+        let layers = InspectorController.classicStyleShadows(element)
+        fields += shadowLayerFields(layers, section: "Item defaults") { [weak self] in
+            self?.writeStyleShadows($0, element)
+        }
+        return fields
+    }
+
+    /// The rows of the Link defaults section: the `styles { line { ... } }` of the element.
+    private func linkDefaultFields(_ element: Element) -> [ClassicField] {
+        [
+            styleField("Link defaults", "Color", "line", "color", element),
+            styleField("Link defaults", "Width", "line", "line-width", element, numeric: true),
+            stylePopup(
+                "Link defaults", "Style", "line", "line-style", element, ["solid", "dashed", "dotted"],
+                "solid"),
+            stylePopup(
+                "Link defaults", "Arrows", "line", "display", element,
+                ["solid", "arrow", "arrows", "arrow-source"], "solid"),
+        ]
+    }
+
+    /// A field of one style group of the element: the argument of its command, written into `styles`.
+    private func styleField(
+        _ section: String, _ label: String, _ group: String, _ name: String, _ element: Element,
+        index: Int = 0, numeric: Bool = false, list: Bool = false
+    ) -> ClassicField {
+        let values = InspectorController.args(InspectorController.styleCommand(element, group, name))
+        return ClassicField(
+            section: section, label: label,
+            text: list ? values.joined(separator: " ") : (index < values.count ? values[index] : ""),
+            numeric: numeric,
+            write: { [weak self] in self?.writeStyle(element, group, name, $0, index: index, list: list) })
+    }
+
+    /// A popup of one style group; a command the group does not write shows the word the renderer uses.
+    private func stylePopup(
+        _ section: String, _ label: String, _ group: String, _ name: String, _ element: Element,
+        _ choices: [String], _ unset: String
+    ) -> ClassicField {
+        let own = InspectorController.text(InspectorController.styleCommand(element, group, name))
+        return ClassicField(
+            section: section, label: label, kind: .popup, text: own.isEmpty ? unset : own,
+            choices: choices, unset: unset,
+            write: { [weak self] in self?.writeStyle(element, group, name, $0) })
     }
 
     /// The body of the item as the inline editor shows it: `body "text"` or the text of a body block.
@@ -1421,6 +1513,27 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
             names.isEmpty ? "None" : names.joined(separator: ", "),
             groups.isEmpty ? "None" : groups.joined(separator: ", ")
         )
+    }
+
+    /// The command `name` of `styles { group { ... } }` of the element, nil when it writes none.
+    private static func styleCommand(_ element: Element, _ group: String, _ name: String) -> TennNode? {
+        guard let styles = element.properties.get("styles")?.getChild(1),
+            let block = styleCommand(styles, group)?.getChild(1)
+        else { return nil }
+        return styleCommand(block, name)
+    }
+
+    /// The command of that name in a block, nil when it writes none.
+    private static func styleCommand(_ block: TennNode?, _ name: String) -> TennNode? {
+        (block?.children ?? []).first { $0.kind == .Command && $0.getIdent(0) == name }
+    }
+
+    /// The shadow commands of `styles { item }`: the layers every item of the element is drawn with.
+    private static func classicStyleShadows(_ element: Element) -> [[String]] {
+        guard let styles = element.properties.get("styles")?.getChild(1),
+            let group = styleCommand(styles, "item")?.getChild(1)
+        else { return [] }
+        return shadowLayers(group)
     }
 
     // MARK: - Writing the classic commands
@@ -1516,19 +1629,92 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         refresh()
     }
 
-    /// Sets one argument of a classic shadow layer; the whole list is written again as one edit.
-    private func setClassicShadowText(_ value: String, layer: Int, arg: Int, item: DiagramItem) {
-        var layers = InspectorController.classicShadows(item)
+    /// Sets one argument of a shadow layer; the whole list is written again as one edit.
+    private func setShadowText(
+        _ value: String, layer: Int, arg: Int, layers: [[String]], write: ([[String]]) -> Void
+    ) {
         guard !value.isEmpty, layers.indices.contains(layer) else {
             refresh()
             return
         }
-        while layers[layer].count <= arg {
-            layers[layer].append("0")
+        var out = layers
+        while out[layer].count <= arg {
+            out[layer].append("0")
         }
-        layers[layer][arg] = value
-        writeClassicShadows(layers, item)
+        out[layer][arg] = value
+        write(out)
         refresh()
+    }
+
+    /// Writes one command of `styles { group { ... } }` of the element as one model operation; an empty
+    /// value drops the command and the arguments after it, as the other classic fields do.
+    private func writeStyle(
+        _ element: Element, _ group: String, _ name: String, _ value: String,
+        index: Int = 0, list: Bool = false
+    ) {
+        guard let store = document?.store else { return }
+        let props = element.toTennAsProps(.BlockExpr)
+        guard let block = InspectorController.styleGroupBlock(props, group, create: true) else { return }
+        let args: [TennNode]
+        if list {
+            args = value.split(whereSeparator: \.isWhitespace).map {
+                InspectorController.valueNode(String($0), string: false)
+            }
+        } else if let next = InspectorController.commandArgs(
+            InspectorController.styleCommand(block, name), value, index: index, keep: false, string: false)
+        {
+            args = next
+        } else {
+            return
+        }
+        InspectorController.setCommand(block, name, args)
+        store.setProperties(
+            element, props, undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    /// Writes the whole shadow list of the item defaults; none drops the layers, and an element that writes
+    /// no styles block is left alone.
+    private func writeStyleShadows(_ layers: [[String]], _ element: Element) {
+        guard let store = document?.store else { return }
+        let props = element.toTennAsProps(.BlockExpr)
+        guard let block = InspectorController.styleGroupBlock(props, "item", create: !layers.isEmpty) else {
+            return
+        }
+        block.removeNamed("shadow")
+        for layer in layers {
+            let cmd = TennNode.newCommand("shadow")
+            cmd.add(layer.map { InspectorController.valueNode($0, string: false) })
+            block.add(cmd)
+        }
+        store.setProperties(
+            element, props, undoManager: document?.undoManager,
+            refresh: { [weak self] in self?.refresh() })
+    }
+
+    /// The block of one group of the element's `styles`, made when absent and asked for.
+    private static func styleGroupBlock(_ props: TennNode, _ group: String, create: Bool) -> TennNode? {
+        if props.getNamedElement("styles") == nil {
+            guard create else { return nil }
+            props.add(TennNode.newCommand("styles", TennNode.newBlockExpr()))
+        }
+        guard let styles = props.getNamedElement("styles") else { return nil }
+        if styles.getChild(1) == nil {
+            guard create else { return nil }
+            styles.add(TennNode.newBlockExpr())
+        }
+        guard let block = styles.getChild(1) else { return nil }
+        if let cmd = styleCommand(block, group) {
+            if cmd.getChild(1) == nil {
+                guard create else { return nil }
+                cmd.add(TennNode.newBlockExpr())
+            }
+            return cmd.getChild(1)
+        }
+        guard create else { return nil }
+        let made = TennNode.newCommand(group, TennNode.newBlockExpr())
+        block.add(made)
+        return made.getChild(1)
     }
 
     /// The text the body field holds: the pending edit, else what the selection writes.

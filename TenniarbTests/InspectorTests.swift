@@ -1348,4 +1348,175 @@ final class InspectorTests: SceneDocumentTestCase {
         XCTAssertNil(inspector.row("Named"), "no classic element Styles rows")
         XCTAssertEqual(inspector.bodyText, "")
     }
+
+    // MARK: - Classic item and link defaults
+
+    /// The document text as one line: the printer breaks a block across lines.
+    private func flat(_ text: String) -> String {
+        text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
+
+    /// The text of a defaults row; those sections share captions with the item rows.
+    private func defaultText(_ section: String, _ label: String, _ inspector: InspectorController) -> String? {
+        inspector.rows.first { $0.section == section && $0.label == label }?.text
+    }
+
+    /// An element without a styles block shows both defaults sections, the fields empty and the popups on
+    /// the word the renderer would use.
+    func testAnElementWithoutStylesShowsEmptyItemAndLinkDefaults() throws {
+        let document = try document("element Screen { item Box { width 100; height 40 } }")
+        let inspector = classicInspector(document)
+
+        for label in ["Fill", "Border", "Text", "Font size", "Padding"] {
+            XCTAssertEqual(defaultText("Item defaults", label, inspector), "", label)
+        }
+        XCTAssertEqual(defaultText("Item defaults", "Display", inspector), "rect")
+        XCTAssertEqual(
+            inspector.rows.first { $0.section == "Item defaults" && $0.label == "Display" }?.choices,
+            ["rect", "no-fill", "circle", "stack", "text"])
+        XCTAssertNil(defaultText("Item defaults", "Shadow 1 X", inspector), "no default layer to list")
+
+        for label in ["Color", "Width"] {
+            XCTAssertEqual(defaultText("Link defaults", label, inspector), "", label)
+        }
+        XCTAssertEqual(defaultText("Link defaults", "Style", inspector), "solid")
+        XCTAssertEqual(defaultText("Link defaults", "Arrows", inspector), "solid")
+    }
+
+    /// A value typed into Item defaults writes `styles { item { ... } }` of the element, and one undo takes
+    /// the block it made away again.
+    func testItemDefaultsWriteTheGroupAndUndoRemovesIt() throws {
+        let document = try document("element Screen { item Box { width 100; height 40 } }")
+        let inspector = classicInspector(document)
+
+        oneUndo(document) { inspector.setText("red", for: "Fill") }
+        XCTAssertTrue(flat(modelText(document)).contains("styles { item { color red } }"), modelText(document))
+        XCTAssertEqual(defaultText("Item defaults", "Fill", inspector), "red")
+
+        document.undoManager?.undoNestedGroup()
+        inspector.refresh()
+        XCTAssertFalse(modelText(document).contains("styles"), "one undo removes the block the field made")
+        XCTAssertEqual(defaultText("Item defaults", "Fill", inspector), "")
+    }
+
+    /// Clearing a field drops its command and leaves the other commands of the group.
+    func testClearingADefaultFieldKeepsTheRestOfTheGroup() throws {
+        let document = try document(
+            """
+            element Screen {
+                styles {
+                    item {
+                        color red
+                        border-color #111111
+                        font-size 14
+                    }
+                }
+                item Box { width 100; height 40 }
+            }
+            """)
+        let inspector = classicInspector(document)
+        XCTAssertEqual(defaultText("Item defaults", "Border", inspector), "#111111")
+
+        oneUndo(document) { inspector.setText("", for: "Border") }
+        let text = flat(modelText(document))
+        XCTAssertFalse(text.contains("border-color"), text)
+        XCTAssertTrue(text.contains("styles { item { color red font-size 14 } }"), text)
+        XCTAssertEqual(defaultText("Item defaults", "Border", inspector), "")
+        XCTAssertEqual(defaultText("Item defaults", "Fill", inspector), "red", "the group keeps the rest")
+    }
+
+    /// The Link defaults write `styles { line { ... } }` and leave the item group alone.
+    func testLinkDefaultsWriteTheLineGroupOnly() throws {
+        let document = try document(
+            """
+            element Screen {
+                styles {
+                    item { color red }
+                }
+                item Box { width 100; height 40 }
+            }
+            """)
+        let inspector = classicInspector(document)
+
+        oneUndo(document) { inspector.setText("2", for: "Width") }
+        oneUndo(document) { inspector.setChoice("dashed", for: "Style") }
+        let text = flat(modelText(document))
+        XCTAssertTrue(text.contains("line { line-width 2 line-style dashed }"), text)
+        XCTAssertTrue(text.contains("item { color red }"), text)
+        XCTAssertEqual(defaultText("Link defaults", "Width", inspector), "2")
+        XCTAssertEqual(defaultText("Link defaults", "Style", inspector), "dashed")
+        XCTAssertEqual(defaultText("Item defaults", "Fill", inspector), "red", "the item group stays")
+    }
+
+    /// A document that already writes both groups shows their values, and an edit keeps the named styles
+    /// and the groups beside them.
+    func testDefaultsReadBothGroupsAndKeepTheOtherStyles() throws {
+        let document = try document(
+            """
+            element Screen {
+                styles {
+                    item {
+                        color #ffffff
+                        font-size 12
+                    }
+                    line {
+                        color #ff0000
+                        line-style dotted
+                        display arrow
+                    }
+                    primary { color blue }
+                    tone one-of primary
+                }
+                item Box { width 100; height 40 }
+            }
+            """)
+        let inspector = classicInspector(document)
+
+        XCTAssertEqual(defaultText("Item defaults", "Fill", inspector), "#ffffff")
+        XCTAssertEqual(defaultText("Item defaults", "Font size", inspector), "12")
+        XCTAssertEqual(defaultText("Item defaults", "Display", inspector), "rect", "the group writes no display")
+        XCTAssertEqual(defaultText("Link defaults", "Color", inspector), "#ff0000")
+        XCTAssertEqual(defaultText("Link defaults", "Style", inspector), "dotted")
+        XCTAssertEqual(defaultText("Link defaults", "Arrows", inspector), "arrow")
+
+        oneUndo(document) { inspector.setText("16", for: "Font size") }
+        let text = flat(modelText(document))
+        XCTAssertTrue(text.contains("font-size 16"), text)
+        XCTAssertTrue(text.contains("primary { color blue }"), text)
+        XCTAssertTrue(text.contains("tone one-of primary"), text)
+        XCTAssertTrue(text.contains("line { color #ff0000 line-style dotted display arrow }"), text)
+    }
+
+    /// A scene document keeps the scene column: no classic defaults at all.
+    func testASceneDocumentShowsNoClassicDefaults() throws {
+        let root = try workspace()
+        let document = try openTestDocument(copy("web/fixtures/scene/scene-text.tenn", to: root))
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "LeafTitle" }))
+        let inspector = inspector(document, canvas)
+
+        XCTAssertFalse(
+            inspector.rows.contains { $0.section == "Item defaults" || $0.section == "Link defaults" },
+            "\(Set(inspector.rows.map(\.section)))")
+    }
+
+    /// The shadow list of Item defaults writes its layers into the item group: an added layer, a blur typed
+    /// into it, and the − that drops it again.
+    func testItemDefaultShadowsWriteIntoTheItemGroup() throws {
+        let document = try document("element Screen { item Box { width 100; height 40 } }")
+        let inspector = classicInspector(document)
+
+        oneUndo(document) { inspector.addShadow() }
+        XCTAssertTrue(
+            flat(modelText(document)).contains("styles { item { shadow 0 -2 4 #00000020 } }"),
+            modelText(document))
+        XCTAssertEqual(defaultText("Item defaults", "Shadow 1 Blur", inspector), "4")
+
+        oneUndo(document) { inspector.setText("20", for: "Shadow 1 Blur") }
+        XCTAssertTrue(flat(modelText(document)).contains("shadow 0 -2 20 #00000020"), modelText(document))
+        XCTAssertEqual(defaultText("Item defaults", "Shadow 1 Blur", inspector), "20")
+
+        oneUndo(document) { inspector.removeShadow(at: 0) }
+        XCTAssertFalse(modelText(document).contains("shadow"), "none leaves the group without a layer")
+    }
 }
