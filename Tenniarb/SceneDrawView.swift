@@ -2615,6 +2615,23 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
         }
     }
 
+    /// The place of the selection a link names: the active element and the first selected item, as
+    /// go/app's copyLink; the node is empty when the selection holds no item.
+    var linkPlace: (element: [String], node: String) {
+        (
+            element.map { classicElementPath($0) } ?? [],
+            activeItems.first { !($0 is LinkItem) && !$0.name.isEmpty }?.name ?? ""
+        )
+    }
+
+    /// Copy Link of the menu: the active element and the first selected item.
+    @objc func copyLink(_ sender: NSMenuItem) {
+        let place = linkPlace
+        SceneCanvasView.copyLink(
+            document: viewController?.document, element: place.element, node: place.node,
+            say: { [weak self] in self?.viewController?.linkMessage($0, title: "Copy Link") })
+    }
+
     @objc public func copyItemAsHTML(_ sender: NSMenuItem) {
         if self.activeItems.count == 1 {
             if let actItem = self.activeItems.first, let scene = self.scene, let itm = scene.drawables[actItem] {
@@ -2969,6 +2986,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             self.createSelection(menu)
             menu.addItem(NSMenuItem.separator())
             menu.addItem(deleteAction)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(NSMenuItem(title: "Copy Link", action: #selector(copyLink(_:)), keyEquivalent: ""))
 
             return menu
         } else {
@@ -2986,6 +3005,8 @@ class SceneDrawView: NSView, IElementModelListener, NSMenuItemValidation {
             menu.addItem(NSMenuItem.separator())
             self.createStylesMenu(menu)
             self.createSelection(menu)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(NSMenuItem(title: "Copy Link", action: #selector(copyLink(_:)), keyEquivalent: ""))
 
             return menu
         }

@@ -853,8 +853,47 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         ClipboardUtils.copyHtml(html)
     }
 
+    /// The place of the selection a link names: the shown element and the selected node, as go/app's
+    /// copyLink; the node is empty when nothing is selected.
+    var linkPlace: (element: [String], node: String) {
+        (
+            screenNode.map { CommentPaths.elementPath(of: $0) } ?? [],
+            selectedNode.map { CommentPaths.nodePath(of: $0, from: screenNode) } ?? ""
+        )
+    }
+
+    /// The remotes of the clones a copy asks for: git runs once per root, as an open asks via LinkOpen.
+    private static let linkRepos = Links.Repos()
+
+    /// Puts the link to a place of document on the clipboard, as go/app's copyLink: say gets why it is not
+    /// copied, or the note about where the link works.
+    static func copyLink(document: Document?, element: [String], node: String, say: (String) -> Void) {
+        guard let path = document?.fileURL?.path else {
+            say("Save the file to copy a link to it.")
+            return
+        }
+        do {
+            let (link, note) = try linkRepos.of(
+                file: path, home: FileManager.default.homeDirectoryForCurrentUser.path,
+                element: element, node: node)
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(link.url(), forType: .string)
+            if !note.isEmpty { say(note) }
+        } catch {
+            say(error.localizedDescription)
+        }
+    }
+
+    /// Copy Link of the menu: the shown element and the selected node.
+    @objc private func copyLinkFromMenu(_ sender: Any?) {
+        let place = linkPlace
+        Self.copyLink(document: document, element: place.element, node: place.node) { [weak self] in
+            self?.setMessage($0)
+        }
+    }
+
     /// The canvas menu: the export of the text of the selected item, as go/app gives a classic diagram,
-    /// and a comment at the place clicked.
+    /// a comment at the place clicked and the link to the selection.
     override func menu(for event: NSEvent) -> NSMenu? {
         commentPoint = scenePoint(convert(event.locationInWindow, from: nil))
         let menu = NSMenu()
@@ -867,6 +906,10 @@ final class SceneCanvasView: NSView, NSTextFieldDelegate {
         let comment = NSMenuItem(title: "Add Comment…", action: #selector(commentFromMenu(_:)), keyEquivalent: "")
         comment.target = self
         menu.addItem(comment)
+        menu.addItem(.separator())
+        let link = NSMenuItem(title: "Copy Link", action: #selector(copyLinkFromMenu(_:)), keyEquivalent: "")
+        link.target = self
+        menu.addItem(link)
         return menu
     }
 

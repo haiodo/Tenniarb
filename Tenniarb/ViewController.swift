@@ -836,14 +836,14 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
     }
 
-    /// Says what a link could not show; a classic window has no banner, so it asks.
-    private func linkMessage(_ text: String) {
+    /// Says what a link could not show or copy; a classic window has no banner, so it asks.
+    func linkMessage(_ text: String, title: String = "Open Link") {
         if sceneTree != nil {
             editorViewController?.sceneCanvas?.canvas.setMessage(text)
             return
         }
         let alert = NSAlert()
-        alert.messageText = "Open Link"
+        alert.messageText = title
         alert.informativeText = text
         alert.runModal()
     }
