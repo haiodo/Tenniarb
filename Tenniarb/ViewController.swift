@@ -573,6 +573,16 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
                 menuItem.state = compareController?.isOn == true ? .on : .off
                 return sceneTree != nil
             }
+            if action == #selector(self.revertCompareNode(_:)) {
+                guard compareController?.isOn == true, let node = compareMenuRow()?.node else { return false }
+                return node.status != nil
+            }
+            if action == #selector(self.showCompareNode(_:)) {
+                return compareController?.isOn == true && compareMenuRow()?.node != nil
+            }
+            if action == #selector(self.stopCompare(_:)) {
+                return compareController?.isOn == true
+            }
             if action == #selector(selectAllLinks) || action == #selector(selectAllItemsKind) {
                 return true
             }
@@ -909,7 +919,7 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
     /// Swaps the element outline for the rows of the report and frames the changed nodes.
     private func showCompare() {
         guard let compare = compareController, let canvas = editorViewController?.sceneCanvas?.canvas else { return }
-        worldTree.menu = nil  // the element actions do not act on report rows
+        worldTree.menu = compareMenu()  // the element actions do not act on report rows
         let source = CompareOutlineSource(compare: compare)
         source.onSelect = { [weak self] row in self?.selectCompare(row) }
         compareOutlineSource = source
@@ -921,6 +931,50 @@ class ViewController: NSViewController, IElementModelListener, NSMenuItemValidat
         }
         canvas.setMessage(nil)
         paintCompare()
+    }
+
+    /// The menu of a compare row, as compareEntries of go/app: revert, show, stop.
+    private func compareMenu() -> NSMenu {
+        let menu = NSMenu()
+        for (title, action) in [
+            ("Revert to \(Diff.revHead)", #selector(revertCompareNode(_:))),
+            ("Show on Canvas", #selector(showCompareNode(_:))),
+        ] {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
+        let stop = NSMenuItem(title: "Stop Comparison", action: #selector(stopCompare(_:)), keyEquivalent: "")
+        stop.target = self
+        menu.addItem(stop)
+        return menu
+    }
+
+    /// The compare row a menu acts on: the one under a right click, else the single selected one.
+    private func compareMenuRow() -> CompareController.Row? {
+        if worldTree.clickedRow >= 0 {
+            return worldTree.item(atRow: worldTree.clickedRow) as? CompareController.Row
+        }
+        guard worldTree.selectedRowIndexes.count == 1 else { return nil }
+        return worldTree.item(atRow: worldTree.selectedRow) as? CompareController.Row
+    }
+
+    /// Writes the node of the row as HEAD has it; a node that cannot go back says why on the canvas.
+    @objc private func revertCompareNode(_ sender: Any?) {
+        guard let compare = compareController, let node = compareMenuRow()?.node else { return }
+        if let message = compare.revert(path: node.path) {
+            editorViewController?.sceneCanvas?.canvas.setMessage(message)
+        }
+    }
+
+    @objc private func showCompareNode(_ sender: Any?) {
+        guard let row = compareMenuRow() else { return }
+        selectCompare(row)
+    }
+
+    @objc private func stopCompare(_ sender: Any?) {
+        closeCompare()
     }
 
     /// Compares the text again after an edit, or leaves the mode when the document is no longer the one

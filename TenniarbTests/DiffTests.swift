@@ -182,6 +182,51 @@ final class DiffTests: XCTestCase {
         XCTAssertEqual(report.root.name, "Card")
     }
 
+    // MARK: - Revert
+
+    func testRevertOfAChangedNodeBringsTheOldTextBack() throws {
+        let newText = try replace(card, "width 240", "width 200")
+        let report = try compare(card, newText)
+        XCTAssertEqual(try apply(report, "Card", to: newText), card)
+    }
+
+    func testRevertOfAnAddedNodeCutsItsLine() throws {
+        let newText = try replace(
+            card, #"  item Body { title "Body" }"#, "  item Body { title \"Body\" }\n  item Footer { title \"Footer\" }")
+        let report = try compare(card, newText)
+        XCTAssertEqual(statuses(report), ["Card.Footer": .added])
+        XCTAssertEqual(try apply(report, "Card.Footer", to: newText), card)
+    }
+
+    func testRevertOfARemovedNodeWritesItAfterItsPreviousSibling() throws {
+        let newText = try replace(card, "  item Body { title \"Body\" }\n", "")
+        let report = try compare(card, newText)
+        XCTAssertEqual(statuses(report), ["Card.Body": .removed])
+        XCTAssertEqual(try apply(report, "Card.Body", to: newText), card)
+    }
+
+    func testRevertOfAnUnchangedNodeHasNoEdit() throws {
+        let report = try compare(card, card)
+        XCTAssertNil(report.revert("Card"))
+        XCTAssertNil(report.revert("Card.Header"))
+    }
+
+    func testARemovedChildWaitsForItsRemovedParent() throws {
+        let oldText = """
+            element "A" {
+            }
+            element "B" {
+              item X { title "x" }
+            }
+
+            """
+        let newText = "element \"A\" {\n}\n"
+        let report = try compare(oldText, newText)
+        XCTAssertEqual(statuses(report), ["B": .removed, "B.X": .removed])
+        XCTAssertNil(report.revert("B.X"), "the child has no place while its parent is gone")
+        XCTAssertEqual(try apply(report, "B", to: newText), oldText)
+    }
+
     // MARK: - git
 
     func testTheRepositoryAndTheCommittedText() throws {
@@ -245,6 +290,13 @@ final class DiffTests: XCTestCase {
     private func replace(_ text: String, _ old: String, _ new: String) throws -> String {
         let range = try XCTUnwrap(text.range(of: old), "\(old) is not in the text")
         return text.replacingCharacters(in: range, with: new)
+    }
+
+    /// The text after the revert of path; a report without an edit fails the test.
+    private func apply(_ report: Diff.Report, _ path: String, to text: String) throws -> String {
+        let revert = try XCTUnwrap(report.revert(path), "the report has no edit for \(path)")
+        XCTAssertEqual(revert.file, "x.tenn")
+        return try applyEdits(text, [revert.edit])
     }
 
     /// Runs git in dir; a machine without git skips the test.

@@ -71,13 +71,16 @@ enum Diff {
         let root: Node
         let old: String
         let new: String
+        /// The file the ranges are in, as the scene tree names it and the document edits it.
+        let file: String
         private var byPath: [String: Node] = [:]
         private var counts: [Status: Int] = [:]
 
-        fileprivate init(root: Node, old: String, new: String) {
+        fileprivate init(root: Node, old: String, new: String, file: String) {
             self.root = root
             self.old = old
             self.new = new
+            self.file = file
             index(root)
         }
 
@@ -103,6 +106,97 @@ enum Diff {
             }
             walk(root)
             return out
+        }
+
+        // MARK: - Revert
+
+        /// The edit that writes the node at path as the old version has it; nil for a node both
+        /// versions hold alike, or a removed node whose parent is gone too.
+        func revert(_ path: String) -> (edit: Scene.TextEdit, file: String)? {
+            guard let n = byPath[path], n.status != nil else { return nil }
+            if let old = n.old, let new = n.new {
+                let text = slice(self.old, old.range.start, old.range.end)
+                return (Scene.TextEdit(start: new.range.start, end: new.range.end, new: text), file)
+            }
+            if let new = n.new {
+                return (deleteEdit(new), file)
+            }
+            guard let edit = insertOld(n) else { return nil }
+            return (edit, file)
+        }
+
+        /// Writes a node the new text no longer has back after its old previous sibling, else at the end
+        /// of its parent, else at the end of the file.
+        private func insertOld(_ n: Node) -> Scene.TextEdit? {
+            guard let parent = byPath[n.parent], parent.new != nil, let old = n.old else {
+                return nil  // the parent is gone too: take it back first
+            }
+            let src = slice(self.old, old.range.start, old.range.end)
+            let olds = parent.kids.filter { $0.old != nil }
+                .sorted { ($0.old?.range.start ?? 0) < ($1.old?.range.start ?? 0) }
+            if let i = olds.firstIndex(where: { $0.path == n.path }) {
+                for prev in olds[..<i].reversed() {
+                    guard let new = prev.new else { continue }
+                    let at = new.range.end
+                    return Scene.TextEdit(start: at, end: at, new: "\n" + indent(self.new, new.range.start) + src)
+                }
+            }
+            if parent.path.isEmpty {  // a top-level element: at the end of the file
+                let at = self.new.utf8.count
+                return Scene.TextEdit(start: at, end: at, new: "\n" + src)
+            }
+            if let body = parent.new?.body, body.start > 0, body.start < self.new.utf8.count {
+                let text = "\n" + childIndent(self.new, parent) + src
+                return Scene.TextEdit(start: body.start + 1, end: body.start + 1, new: text)
+            }
+            return nil
+        }
+
+        /// Cuts the line a node is written on: the whole line when the node is alone on it.
+        private func deleteEdit(_ n: Scene.Node) -> Scene.TextEdit {
+            var start = n.range.start
+            var end = n.range.end
+            let line = lineStart(new, start)
+            if spaceOnly(slice(new, line, start)) {
+                start = line
+            }
+            let b = Array(new.utf8)
+            if end <= b.count, let i = b[end...].firstIndex(of: 0x0A), spaceOnly(slice(new, end, i)) {
+                end = i + 1
+            }
+            return Scene.TextEdit(start: start, end: end, new: "")
+        }
+
+        /// The whitespace before pos, "" when other text starts its line, as go/diff's indent.
+        private func indent(_ text: String, _ pos: Int) -> String {
+            let lead = slice(text, lineStart(text, pos), pos)
+            return spaceOnly(lead) ? lead : ""
+        }
+
+        /// The indentation a node added to parent gets: that of its first node, else one level in.
+        private func childIndent(_ text: String, _ parent: Node) -> String {
+            let kids = parent.kids.filter { $0.new != nil }
+                .sorted { ($0.new?.range.start ?? 0) < ($1.new?.range.start ?? 0) }
+            for k in kids {
+                guard let new = k.new else { continue }
+                let lead = indent(text, new.range.start)
+                if !lead.isEmpty {
+                    return lead
+                }
+            }
+            return indent(text, parent.new?.range.start ?? 0) + "  "
+        }
+
+        /// text between two byte offsets, as Go slices a string.
+        private func slice(_ text: String, _ start: Int, _ end: Int) -> String {
+            let b = Array(text.utf8)
+            guard start >= 0, start <= end, end <= b.count else { return "" }
+            return String(decoding: b[start..<end], as: UTF8.self)
+        }
+
+        /// Whether text is only whitespace, as strings.TrimSpace of Go reads it.
+        private func spaceOnly(_ text: String) -> Bool {
+            text.allSatisfy(\.isWhitespace)
         }
 
         private func index(_ n: Node) {
@@ -142,7 +236,7 @@ enum Diff {
         let builder = Builder(movedFrom: matchMoved(oldRoot, newRoot))
         let root = builder.node(oldRoot, newRoot)
         root.kids = builder.kids(oldRoot.kids, newRoot.kids)
-        return Report(root: root, old: old, new: new)
+        return Report(root: root, old: old, new: new, file: rel)
     }
 
     /// The name a row gives the file: its last component without the extension.

@@ -124,6 +124,26 @@ final class CompareController {
         comparedFile = nil
     }
 
+    /// Writes the node at path as the last commit has it, as one undo step. nil when the edit went in,
+    /// else the message to show; the report is compared again after an edit.
+    func revert(path: String) -> String? {
+        guard let report else { return nil }
+        guard let node = report.node(path), node.status != nil else {
+            return "The node is the same as \(rev)"
+        }
+        guard let (edit, file) = report.revert(path) else {
+            return "Not applied: the node has no place in this version; revert the node above it first"
+        }
+        guard let document else { return nil }
+        do {
+            try document.applySceneEdit(edit, in: file)
+        } catch {
+            return error.localizedDescription
+        }
+        refresh()
+        return nil
+    }
+
     /// Whether the document still names the file the comparison was started on; a Save As makes it false.
     func isCurrent() -> Bool {
         guard let file = document?.fileURL?.resolvingSymlinksInPath().standardizedFileURL else { return false }

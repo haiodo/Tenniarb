@@ -126,6 +126,29 @@ final class CompareTests: SceneDocumentTestCase {
         XCTAssertNotNil(node.new, "the node of the current version is where a row selects it")
     }
 
+    // MARK: - Revert
+
+    func testRevertWritesTheCommittedTextBackAsOneUndoStep() throws {
+        let root = try workspace(["Screen.tenn": screen])
+        try commit(root, "Screen.tenn")
+        let url = root.appendingPathComponent("Screen.tenn")
+        try editedScreen.write(to: url, atomically: true, encoding: .utf8)
+        let document = try openTestDocument(url)
+
+        let compare = CompareController(document: document)
+        XCTAssertTrue(compare.start())
+        XCTAssertEqual(compare.changedPaths(), ["Screen"])
+
+        XCTAssertNil(compare.revert(path: "Screen"), "the revert of a changed node goes in")
+        XCTAssertEqual(document.sceneText, screen)
+        XCTAssertEqual(compare.summary(), "No changes against HEAD")
+        XCTAssertTrue(compare.changedPaths().isEmpty)
+        XCTAssertEqual(compare.revert(path: "Screen"), "The node is the same as HEAD")
+
+        document.undoManager?.undo()
+        XCTAssertEqual(document.sceneText, editedScreen, "one undo step takes the revert back")
+    }
+
     // MARK: - Helpers
 
     /// A scratch workspace with the files written; the suite removes it after the documents are closed.
