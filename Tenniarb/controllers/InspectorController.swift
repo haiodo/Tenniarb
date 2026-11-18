@@ -147,7 +147,7 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
             scroll.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
-        let content = NSView()
+        let content = InspectorDocumentView()
         content.translatesAutoresizingMaskIntoConstraints = false
         let stack = NSStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -2005,6 +2005,12 @@ final class InspectorController: NSObject, NSTextFieldDelegate, NSTextViewDelega
         guard notification.object is NSTextView else { return }
         commitBody()
     }
+}
+
+/// The document view of the column: flipped, as AppKit pins an unflipped document shorter than the scroll
+/// view to the bottom.
+private final class InspectorDocumentView: NSView {
+    override var isFlipped: Bool { true }
 }
 
 /// One row of the column: the caption on the left and the control on the right, built once and refilled

@@ -1519,4 +1519,29 @@ final class InspectorTests: SceneDocumentTestCase {
         oneUndo(document) { inspector.removeShadow(at: 0) }
         XCTAssertFalse(modelText(document).contains("shadow"), "none leaves the group without a layer")
     }
+
+    // MARK: - The column
+
+    /// The column starts at the top of its scroll view: an unflipped document view would pin a content
+    /// shorter than the scroll view to the bottom edge.
+    func testTheColumnStartsAtTheTopOfItsScrollView() throws {
+        let document = try document(
+            "element Screen { item Box { auto-layout abs; width 100; height 40; color #ffffff } }")
+        let canvas = try canvas(document)
+        canvas.select(try XCTUnwrap(path(in: canvas) { $0.src?.key == "Box" }))
+        let inspector = inspector(document, canvas)
+        let view = inspector.createView()
+        view.frame = NSRect(x: 0, y: 0, width: InspectorController.width, height: 900)
+        view.layoutSubtreeIfNeeded()
+
+        let scroll = try XCTUnwrap(view.subviews.compactMap { $0 as? NSScrollView }.first)
+        let content = try XCTUnwrap(scroll.documentView)
+        XCTAssertTrue(content.isFlipped, "an unflipped document view sits at the bottom")
+
+        let stack = try XCTUnwrap(content.subviews.first)
+        XCTAssertEqual(stack.frame.maxY, content.bounds.maxY, accuracy: 1, "the rows begin at the top edge")
+        let placed = view.convert(content.bounds, from: content)
+        XCTAssertEqual(placed.maxY, view.bounds.maxY, accuracy: 1, "the column sits at the top of the pane")
+        XCTAssertEqual(content.frame.width, scroll.contentView.bounds.width, "the rows keep the column width")
+    }
 }
